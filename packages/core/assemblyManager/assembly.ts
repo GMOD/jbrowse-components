@@ -131,19 +131,12 @@ export interface BasicRegion {
   assemblyName: string
 }
 
-export interface Loading {
-  adapterRegionsWithAssembly: Region[]
-  refNameAliases: RefNameAliases
-  lowerCaseRefNameAliases: RefNameAliases
-  cytobands: Feature[]
-}
-
 /**
  * #stateModel Assembly
  */
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
-  pm: PluginManager,
+  pluginManager: PluginManager,
 ) {
   const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
     cache: new QuickLRU({ maxSize: 1000 }),
@@ -172,7 +165,6 @@ export default function assemblyFactory(
     })
     .volatile(() => ({
       error: undefined as unknown,
-      loaded: false,
       loadingP: undefined as Promise<void> | undefined,
       volatileRegions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as RefNameAliases | undefined,
@@ -180,6 +172,9 @@ export default function assemblyFactory(
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       getConf(arg: string) {
         return self.configuration ? getConf(self, arg) : undefined
       },
@@ -291,6 +286,7 @@ export default function assemblyFactory(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
+
         return (
           self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
         )
@@ -329,8 +325,12 @@ export default function assemblyFactory(
         refNameAliases,
         lowerCaseRefNameAliases,
         cytobands,
-      }: Loading) {
-        self.loaded = true
+      }: {
+        adapterRegionsWithAssembly: Region[]
+        refNameAliases: RefNameAliases
+        lowerCaseRefNameAliases: RefNameAliases
+        cytobands: Feature[]
+      }) {
         this.setRegions(adapterRegionsWithAssembly)
         this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
         this.setCytobands(cytobands)
@@ -339,7 +339,6 @@ export default function assemblyFactory(
        * #action
        */
       setError(e: unknown) {
-        console.error(e)
         self.error = e
       },
       /**
@@ -389,37 +388,50 @@ export default function assemblyFactory(
         const sequenceAdapterConf = conf?.sequence.adapter
         const assemblyName = self.name
 
-        const regions = await getAssemblyRegions(sequenceAdapterConf, pm)
+        // const regions = await getAssemblyRegions({
+        //   config: sequenceAdapterConf,
+        //   pluginManager,
+        // })
+
+        const regions = [
+          { refName: 'chr1', start: 0, end: 10000000 },
+          { refName: 'chr2', start: 0, end: 10000000 },
+          { refName: 'chr3', start: 0, end: 10000000 },
+        ]
         const adapterRegionsWithAssembly = regions.map(r => {
           checkRefName(r.refName)
           return { ...r, assemblyName }
         })
-        const refNameAliases: RefNameAliases = {}
+        const refNameAliases = {} as Record<string, string>
 
-        const ret = await getRefNameAliases(refNameAliasesAdapterConf, pm)
-        const cytobands = await getCytobands(cytobandAdapterConf, pm)
-        ret.forEach(({ refName, aliases }) => {
-          aliases.forEach(a => {
-            checkRefName(a)
-            refNameAliases[a] = refName
-          })
+        const refNameAliasCollection = await getRefNameAliases({
+          config: refNameAliasesAdapterConf,
+          pluginManager,
         })
+        const cytobands = await getCytobands({
+          config: cytobandAdapterConf,
+          pluginManager,
+        })
+        for (const { refName, aliases } of refNameAliasCollection) {
+          for (const alias of aliases) {
+            checkRefName(alias)
+            refNameAliases[alias] = refName
+          }
+        }
         // add identity to the refNameAliases list
-        adapterRegionsWithAssembly.forEach(region => {
+        for (const region of adapterRegionsWithAssembly) {
           refNameAliases[region.refName] = region.refName
-        })
-
-        const lowerCaseRefNameAliases = Object.fromEntries(
-          Object.entries(refNameAliases).map(([key, val]) => [
-            key.toLowerCase(),
-            val,
-          ]),
-        )
+        }
 
         this.setLoaded({
           adapterRegionsWithAssembly,
           refNameAliases,
-          lowerCaseRefNameAliases,
+          lowerCaseRefNameAliases: Object.fromEntries(
+            Object.entries(refNameAliases).map(([key, val]) => [
+              key.toLowerCase(),
+              val,
+            ]),
+          ),
           cytobands,
         })
       },
@@ -477,34 +489,52 @@ export default function assemblyFactory(
     }))
 }
 
-async function getRefNameAliases(
-  config: AnyConfigurationModel,
-  pm: PluginManager,
-  signal?: AbortSignal,
-) {
-  const type = pm.getAdapterType(config.type)!
+async function getRefNameAliases({
+  config,
+  pluginManager,
+  signal,
+}: {
+  config: AnyConfigurationModel
+  pluginManager: PluginManager
+  signal?: AbortSignal
+}) {
+  const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pm) as BaseRefNameAliasAdapter
+  const adapter = new CLASS(
+    config,
+    undefined,
+    pluginManager,
+  ) as BaseRefNameAliasAdapter
   return adapter.getRefNameAliases({ signal })
 }
 
-async function getCytobands(config: AnyConfigurationModel, pm: PluginManager) {
-  const type = pm.getAdapterType(config.type)!
+async function getCytobands({
+  config,
+  pluginManager,
+}: {
+  config: AnyConfigurationModel
+  pluginManager: PluginManager
+}) {
+  const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pm)
+  const adapter = new CLASS(config, undefined, pluginManager)
 
   // @ts-expect-error
   return adapter.getData()
 }
 
-async function getAssemblyRegions(
-  config: AnyConfigurationModel,
-  pm: PluginManager,
-  signal?: AbortSignal,
-) {
-  const type = pm.getAdapterType(config.type)!
+async function getAssemblyRegions({
+  config,
+  pluginManager,
+  signal,
+}: {
+  config: AnyConfigurationModel
+  pluginManager: PluginManager
+  signal?: AbortSignal
+}) {
+  const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pm) as RegionsAdapter
+  const adapter = new CLASS(config, undefined, pluginManager) as RegionsAdapter
   return adapter.getRegions({ signal })
 }
 

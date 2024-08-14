@@ -74,18 +74,15 @@ const RefNameAutocomplete = observer(function ({
     maxWidth,
   )
 
-  const regions = assembly?.regions
-  const regionOptions = useMemo(
-    () =>
-      regions?.map(option => ({
-        result: new RefSequenceResult({
-          refName: option.refName,
-          label: option.refName,
-          matchedAttribute: 'refName',
-        }),
-      })) || [],
-    [regions],
-  )
+  const refNames = assembly?.refNames
+  const regionOptions =
+    refNames?.map(refName => ({
+      result: new RefSequenceResult({
+        refName,
+        label: refName,
+        matchedAttribute: 'refName',
+      }),
+    })) || []
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
