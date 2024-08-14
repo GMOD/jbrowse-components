@@ -30,9 +30,10 @@ async function readRecentSessions(): Promise<RecentSession[]> {
   try {
     return parseJson(await readFile(recentSessionsPath, 'utf8'))
   } catch (e) {
-    throw new Error(
+    console.error(
       `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
     )
+    return []
   }
 }
 
