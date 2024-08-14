@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {

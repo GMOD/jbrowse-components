@@ -19,6 +19,13 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+
+    useUcscNameOverride: {
+      type: 'boolean',
+      defaultValue: true,
+      description:
+        'forces usage of the UCSC names over the NCBI style names from a FASTA',
+    },
   },
   { explicitlyTyped: true },
 )

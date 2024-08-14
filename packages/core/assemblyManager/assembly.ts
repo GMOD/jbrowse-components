@@ -417,17 +417,22 @@ export default function assemblyFactory(
           pluginManager,
         })
 
-        for (const { refName, aliases } of refNameAliasCollection) {
+        for (const { refName, aliases, override } of refNameAliasCollection) {
           for (const alias of aliases) {
             checkRefName(alias)
             refNameAliases[alias] = refName
           }
-          refNameAliases[refName] = refName
+          // the override field is supplied by a RefNameAliasAdapter to make
+          // the refName field returned by the adapter to be used as the
+          // primary names for this assembly
+          if (override) {
+            refNameAliases[refName] = refName
+          }
         }
         // add identity to the refNameAliases list
         for (const region of adapterRegionsWithAssembly) {
-          // this ||= means that if the refName allows the alias to be the
-          // primary designator of what the primary alias name is
+          // this ||= means that if the refNameAliasAdapter already set a
+          // mapping for the primary region to be an alias
           refNameAliases[region.refName] ||= region.refName
         }
 
@@ -457,7 +462,7 @@ export default function assemblyFactory(
           adapterConfigCacheKey(adapterConf),
           {
             adapterConf,
-            self: self as Assembly,
+            self,
             options: rest,
           } as CacheData,
 
