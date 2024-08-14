@@ -13,6 +13,7 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
+import Gridlines from './Gridlines'
 
 type LGV = LinearGenomeViewModel
 
@@ -23,7 +24,6 @@ const useStyles = makeStyles()(theme => ({
   },
   scalebarZoomContainer: {
     position: 'relative',
-    zIndex: 1,
   },
   scalebar: {
     position: 'absolute',
@@ -32,7 +32,6 @@ const useStyles = makeStyles()(theme => ({
   },
   majorTickLabel: {
     fontSize: 11,
-    zIndex: 1,
     background: theme.palette.background.paper,
     lineHeight: 'normal',
     pointerEvents: 'none',
@@ -51,7 +50,6 @@ const useStyles = makeStyles()(theme => ({
     top: -1,
     fontWeight: 'bold',
     lineHeight: 'normal',
-    zIndex: 1,
     pointerEvents: 'none',
     background: theme.palette.background.paper,
   },
@@ -187,6 +185,8 @@ const Scalebar = observer(
         style={style}
         {...other}
       >
+        {/* offset 1px since for left track border */}
+        <Gridlines model={model} offset={1} />
         <div
           className={classes.scalebarZoomContainer}
           style={{

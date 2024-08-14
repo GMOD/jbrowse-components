@@ -3,6 +3,7 @@ import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
@@ -24,6 +25,11 @@ const useStyles = makeStyles()(theme => ({
   },
   viewHeader: {
     display: 'flex',
+    height: VIEW_HEADER_HEIGHT,
+    position: 'sticky',
+    top: 0,
+    zIndex: 7,
+    background: theme.palette.secondary.main,
   },
   viewTitle: {
     display: 'flex',
@@ -61,12 +67,14 @@ const ViewHeader = observer(function ({
   view,
   onClose,
   onMinimize,
+  className,
 }: {
   view: IBaseViewModel
   onClose: () => void
   onMinimize: () => void
+  className?: string
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
 
@@ -78,7 +86,7 @@ const ViewHeader = observer(function ({
     }
   }, [])
   return (
-    <div ref={scrollRef} className={classes.viewHeader}>
+    <div ref={scrollRef} className={cx(classes.viewHeader, className)}>
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
       <div className={classes.grow} />
       <div className={classes.viewTitle}>

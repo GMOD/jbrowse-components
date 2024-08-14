@@ -2,18 +2,23 @@ import React, { useEffect } from 'react'
 import { Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getSession, useWidthSetter } from '@jbrowse/core/util'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import {
+  AbstractViewModel,
+  SessionWithFocusedViewAndDrawerWidgets,
+  useWidthSetter,
+} from '@jbrowse/core/util'
 
 // locals
 import ViewHeader from './ViewHeader'
+import ViewWrapper from './ViewWrapper'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
-    overflow: 'hidden',
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
+    overflow: 'clip',
+    // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
+    // note that contain:paint also seems to work
   },
   focusedView: {
     background: theme.palette.secondary.main,
@@ -25,19 +30,14 @@ const useStyles = makeStyles()(theme => ({
 
 const ViewContainer = observer(function ({
   view,
-  onClose,
-  onMinimize,
-  children,
+  session,
 }: {
-  view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
-  children: React.ReactNode
+  view: AbstractViewModel
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes, cx } = useStyles()
-  const session = getSession(view) as SessionWithFocusedViewAndDrawerWidgets
 
   useEffect(() => {
     function handleSelectView(e: Event) {
@@ -54,19 +54,30 @@ const ViewContainer = observer(function ({
     }
   }, [ref, session, view])
 
+  const backgroundColorClassName =
+    session.focusedViewId === view.id
+      ? classes.focusedView
+      : classes.unfocusedView
+  const viewContainerClassName = cx(
+    classes.viewContainer,
+    backgroundColorClassName,
+  )
+
   return (
-    <Paper
-      ref={ref}
-      elevation={12}
-      className={cx(
-        classes.viewContainer,
-        session.focusedViewId === view.id
-          ? classes.focusedView
-          : classes.unfocusedView,
-      )}
-    >
-      <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
-      <Paper>{children}</Paper>
+    <Paper ref={ref} elevation={12} className={viewContainerClassName}>
+      <ViewHeader
+        view={view}
+        onClose={() => {
+          session.removeView(view)
+        }}
+        onMinimize={() => {
+          view.setMinimized(!view.minimized)
+        }}
+        className={backgroundColorClassName}
+      />
+      <Paper elevation={0}>
+        <ViewWrapper view={view} session={session} />
+      </Paper>
     </Paper>
   )
 })

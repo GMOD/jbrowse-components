@@ -1,11 +1,17 @@
 import React, { lazy, Suspense, useEffect, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import { Paper } from '@mui/material'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import {
+  HEADER_BAR_HEIGHT,
+  HEADER_OVERVIEW_HEIGHT,
+  LinearGenomeViewModel,
+  SCALE_BAR_HEIGHT,
+} from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 
@@ -13,6 +19,16 @@ const ImportForm = lazy(() => import('./ImportForm'))
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 
 const useStyles = makeStyles()(theme => ({
+  header: {
+    background: theme.palette.background.paper,
+    position: 'sticky',
+    top: VIEW_HEADER_HEIGHT,
+    zIndex: 5,
+  },
+  pinnedTracks: {
+    position: 'sticky',
+    zIndex: 3,
+  },
   note: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
@@ -31,7 +47,14 @@ const LinearGenomeView = observer(function ({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { tracks, error, initialized, hasDisplayedRegions } = model
+  const {
+    tracks,
+    pinnedTracks,
+    unpinnedTracks,
+    error,
+    initialized,
+    hasDisplayedRegions,
+  } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
   const { classes } = useStyles()
@@ -62,6 +85,14 @@ const LinearGenomeView = observer(function ({
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
 
+  let pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
+  if (!model.hideHeader) {
+    pinnedTracksTop += HEADER_BAR_HEIGHT
+    if (!model.hideHeaderOverview) {
+      pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+    }
+  }
+
   return (
     <div
       className={classes.rel}
@@ -81,17 +112,32 @@ const LinearGenomeView = observer(function ({
         session.setHovered({ hoverPosition, hoverFeature })
       }}
     >
-      <HeaderComponent model={model} />
-      <MiniControlsComponent model={model} />
+      <div className={classes.header}>
+        <HeaderComponent model={model} />
+        <MiniControlsComponent model={model} />
+      </div>
       <TracksContainer model={model}>
         {!tracks.length ? (
           <Suspense fallback={<React.Fragment />}>
             <NoTracksActiveButton model={model} />
           </Suspense>
         ) : (
-          tracks.map(track => (
-            <TrackContainer key={track.id} model={model} track={track} />
-          ))
+          <>
+            {pinnedTracks.length ? (
+              <Paper
+                elevation={6}
+                className={classes.pinnedTracks}
+                style={{ top: pinnedTracksTop }}
+              >
+                {pinnedTracks.map(track => (
+                  <TrackContainer key={track.id} model={model} track={track} />
+                ))}
+              </Paper>
+            ) : null}
+            {unpinnedTracks.map(track => (
+              <TrackContainer key={track.id} model={model} track={track} />
+            ))}
+          </>
         )}
       </TracksContainer>
     </div>
