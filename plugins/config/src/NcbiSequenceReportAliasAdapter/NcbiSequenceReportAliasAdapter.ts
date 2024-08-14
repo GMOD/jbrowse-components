@@ -14,19 +14,16 @@ export default class NcbiSequenceReportAliasAdapter
       return []
     }
     const results = await openLocation(loc, this.pluginManager).readFile('utf8')
-    const colNames = results.split(/\n|\r\n|\r/)[0].split('\t')
-    const res = Object.fromEntries(
-      results
-        .split(/\n|\r\n|\r/)
-        .map(row => row.trim())
-        .filter(f => !!f && !f.startsWith('#'))
-        .map(row => {
-          const cols = row.split('\t')
-          return cols.map((c, i) => [colNames[i], c])
-        }),
-    )
-    console.log({ res })
-    return []
+    return results
+      .split(/\n|\r\n|\r/)
+      .slice(1)
+      .filter(f => !!f.trim())
+      .map(row => row.split('\t'))
+      .map(cols => ({
+        refName: cols[12]!,
+        aliases: [cols[9], cols[6]].filter(f => !!f),
+      }))
+      .filter(f => !!f.refName)
   }
 
   async freeResources() {}

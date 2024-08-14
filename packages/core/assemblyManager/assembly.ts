@@ -89,17 +89,14 @@ async function loadRefNameMap(
     }),
   )
 
-  // make the reversed map too
-  const reversed = Object.fromEntries(
-    Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
-      adapterName,
-      canonicalName,
-    ]),
-  )
-
   return {
     forwardMap: refNameMap,
-    reverseMap: reversed,
+    reverseMap: Object.fromEntries(
+      Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
+        adapterName,
+        canonicalName,
+      ]),
+    ),
   }
 }
 
@@ -168,8 +165,22 @@ export default function assemblyFactory(
       loadingP: undefined as Promise<void> | undefined,
       volatileRegions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as RefNameAliases | undefined,
-      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
       cytobands: undefined as Feature[] | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get lowerCaseRefNameAliases() {
+        return self.refNameAliases
+          ? Object.fromEntries(
+              Object.entries(self.refNameAliases).map(([key, val]) => [
+                key.toLowerCase(),
+                val,
+              ]),
+            )
+          : undefined
+      },
     }))
     .views(self => ({
       /**
@@ -188,12 +199,14 @@ export default function assemblyFactory(
         self.load()
         return !!self.refNameAliases
       },
+
       /**
        * #getter
        */
       get name(): string {
         return self.getConf('name') || ''
       },
+
       /**
        * #getter
        */
@@ -202,12 +215,14 @@ export default function assemblyFactory(
         self.load()
         return self.volatileRegions
       },
+
       /**
        * #getter
        */
       get aliases(): string[] {
         return self.getConf('aliases') || []
       },
+
       /**
        * #getter
        */
@@ -220,12 +235,14 @@ export default function assemblyFactory(
       hasName(name: string) {
         return this.allAliases.includes(name)
       },
+
       /**
        * #getter
        */
       get allAliases() {
         return [this.name, ...this.aliases]
       },
+
       /**
        * #getter
        * note: lowerCaseRefNameAliases not included here: this allows the list
@@ -299,10 +316,9 @@ export default function assemblyFactory(
           return undefined
         }
         const idx = self.refNames.indexOf(refName)
-        if (idx === -1) {
-          return undefined
-        }
-        return self.refNameColors[idx % self.refNameColors.length]
+        return idx === -1
+          ? undefined
+          : self.refNameColors[idx % self.refNameColors.length]
       },
       /**
        * #method
@@ -321,18 +337,16 @@ export default function assemblyFactory(
        * #action
        */
       setLoaded({
-        adapterRegionsWithAssembly,
+        regions,
         refNameAliases,
-        lowerCaseRefNameAliases,
         cytobands,
       }: {
-        adapterRegionsWithAssembly: Region[]
+        regions: Region[]
         refNameAliases: RefNameAliases
-        lowerCaseRefNameAliases: RefNameAliases
         cytobands: Feature[]
       }) {
-        this.setRegions(adapterRegionsWithAssembly)
-        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
+        this.setRegions(regions)
+        this.setRefNameAliases(refNameAliases)
         this.setCytobands(cytobands)
       },
       /**
@@ -350,9 +364,8 @@ export default function assemblyFactory(
       /**
        * #action
        */
-      setRefNameAliases(aliases: RefNameAliases, lcAliases: RefNameAliases) {
+      setRefNameAliases(aliases: RefNameAliases) {
         self.refNameAliases = aliases
-        self.lowerCaseRefNameAliases = lcAliases
       },
       /**
        * #action
@@ -388,16 +401,11 @@ export default function assemblyFactory(
         const sequenceAdapterConf = conf?.sequence.adapter
         const assemblyName = self.name
 
-        // const regions = await getAssemblyRegions({
-        //   config: sequenceAdapterConf,
-        //   pluginManager,
-        // })
+        const regions = await getAssemblyRegions({
+          config: sequenceAdapterConf,
+          pluginManager,
+        })
 
-        const regions = [
-          { refName: 'chr1', start: 0, end: 10000000 },
-          { refName: 'chr2', start: 0, end: 10000000 },
-          { refName: 'chr3', start: 0, end: 10000000 },
-        ]
         const adapterRegionsWithAssembly = regions.map(r => {
           checkRefName(r.refName)
           return { ...r, assemblyName }
@@ -408,31 +416,31 @@ export default function assemblyFactory(
           config: refNameAliasesAdapterConf,
           pluginManager,
         })
-        const cytobands = await getCytobands({
-          config: cytobandAdapterConf,
-          pluginManager,
-        })
+
         for (const { refName, aliases } of refNameAliasCollection) {
           for (const alias of aliases) {
             checkRefName(alias)
             refNameAliases[alias] = refName
           }
+          refNameAliases[refName] = refName
         }
         // add identity to the refNameAliases list
         for (const region of adapterRegionsWithAssembly) {
-          refNameAliases[region.refName] = region.refName
+          // this ||= means that if the refName allows the alias to be the
+          // primary designator of what the primary alias name is
+          refNameAliases[region.refName] ||= region.refName
         }
 
         this.setLoaded({
-          adapterRegionsWithAssembly,
           refNameAliases,
-          lowerCaseRefNameAliases: Object.fromEntries(
-            Object.entries(refNameAliases).map(([key, val]) => [
-              key.toLowerCase(),
-              val,
-            ]),
-          ),
-          cytobands,
+          regions: adapterRegionsWithAssembly.map(r => ({
+            ...r,
+            refName: refNameAliases[r.refName] || r.refName,
+          })),
+          cytobands: await getCytobands({
+            config: cytobandAdapterConf,
+            pluginManager,
+          }),
         })
       },
     }))
