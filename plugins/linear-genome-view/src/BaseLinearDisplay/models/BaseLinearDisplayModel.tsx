@@ -449,9 +449,9 @@ function stateModelFactory() {
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {
-        // watch the parent's blocks to update our block state when they change,
-        // then we recreate the blocks on our own model (creating and deleting to
-        // match the parent blocks)
+        // watch the parent's blocks to update our block state when they
+        // change, then we recreate the blocks on our own model (creating and
+        // deleting to match the parent blocks)
         addDisposer(
           self,
           autorun(() => {

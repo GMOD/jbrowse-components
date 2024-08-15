@@ -29,7 +29,13 @@ const useStyles = makeStyles()(theme => {
   }
 })
 
-const LoadingMessage = observer(({ model }: { model: { status?: string } }) => {
+const LoadingMessage = observer(function ({
+  model,
+}: {
+  model: {
+    status?: string
+  }
+}) {
   const { classes } = useStyles()
   const { status: blockStatus } = model
   const { message: displayStatus } = getParent<{ message?: string }>(model, 2)
@@ -75,7 +81,7 @@ const ServerSideRenderedBlockContent = observer(function ({
                 onClick={() => {
                   getSession(model).queueDialog(onClose => [
                     ErrorMessageStackTraceDialog,
-                    { onClose, error: model.error as Error },
+                    { onClose, error: model.error },
                   ])
                 }}
               >

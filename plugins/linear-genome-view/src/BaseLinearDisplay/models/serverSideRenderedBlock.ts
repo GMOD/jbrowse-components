@@ -30,6 +30,7 @@ import {
 
 // locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+import SvgFeatureRendering from '@jbrowse/plugin-svg/src/SvgFeatureRenderer/components/SvgFeatureRendering'
 
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
@@ -51,159 +52,9 @@ const blockState = types
     error: undefined as unknown,
     message: undefined as string | undefined,
     maxHeightReached: false,
-    ReactComponent: ServerSideRenderedBlockContent,
+    ReactComponent: SvgFeatureRendering,
     renderProps: undefined as any,
   }))
-  .actions(self => {
-    let renderInProgress: undefined | AbortController
-    return {
-      doReload() {
-        self.reloadFlag = self.reloadFlag + 1
-      },
-      afterAttach() {
-        const display = getContainingDisplay(self)
-        setTimeout(() => {
-          if (isAlive(self)) {
-            makeAbortableReaction(
-              self as any,
-              renderBlockData,
-              renderBlockEffect, // reaction doesn't expect async here
-              {
-                name: `${display.id}/${assembleLocString(
-                  self.region,
-                )} rendering`,
-                delay: display.renderDelay,
-                fireImmediately: true,
-              },
-              this.setLoading,
-              this.setRendered,
-              this.setError,
-            )
-          }
-        }, display.renderDelay)
-      },
-      setStatus(message: string) {
-        self.status = message
-      },
-      setLoading(abortController: AbortController) {
-        if (
-          renderInProgress !== undefined &&
-          !renderInProgress.signal.aborted
-        ) {
-          renderInProgress.abort()
-        }
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = abortController
-      },
-      setMessage(messageText: string) {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        self.filled = false
-        self.message = messageText
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = undefined
-      },
-      setRendered(
-        props:
-          | {
-              reactElement: React.ReactElement
-              features: Map<string, Feature>
-              layout: any
-              maxHeightReached: boolean
-              renderProps: any
-            }
-          | undefined,
-      ) {
-        if (!props) {
-          return
-        }
-        const {
-          reactElement,
-          features,
-          layout,
-          maxHeightReached,
-          renderProps,
-        } = props
-        self.filled = true
-        self.message = undefined
-        self.reactElement = reactElement
-        self.features = features
-        self.layout = layout
-        self.error = undefined
-        self.maxHeightReached = maxHeightReached
-        self.renderProps = renderProps
-        renderInProgress = undefined
-      },
-      setError(error: unknown) {
-        console.error(error)
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        // the rendering failed for some reason
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.maxHeightReached = false
-        self.error = error
-        self.renderProps = undefined
-        renderInProgress = undefined
-        if (isRetryException(error as Error)) {
-          this.reload()
-        }
-      },
-      reload() {
-        self.renderInProgress = undefined
-        self.filled = false
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.message = undefined
-        self.maxHeightReached = false
-        self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderProps = undefined
-        getParent<any>(self, 2).reload()
-      },
-      beforeDestroy() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            if (renderInProgress && !renderInProgress.signal.aborted) {
-              renderInProgress.abort()
-            }
-            const display = getContainingDisplay(self)
-            const { rpcManager } = getSession(self)
-            const { rendererType } = display
-            const { renderArgs } = renderBlockData(cast(self))
-            // renderArgs can be undefined if an error occurred in this block
-            if (renderArgs) {
-              await rendererType.freeResourcesInClient(
-                rpcManager,
-                JSON.parse(JSON.stringify(renderArgs)),
-              )
-            }
-          } catch (e) {
-            console.error('Error while destroying block', e)
-          }
-        })()
-      },
-    }
-  })
 
 export default blockState
 export type BlockStateModel = typeof blockState

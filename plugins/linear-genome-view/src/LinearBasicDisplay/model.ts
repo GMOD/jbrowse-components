@@ -7,13 +7,13 @@ import {
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { types, getEnv, Instance, cast } from 'mobx-state-tree'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
@@ -40,6 +40,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
         trackShowLabels: types.maybe(types.boolean),
         /**
          * #property
@@ -53,10 +57,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         trackMaxHeight: types.maybe(types.number),
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */

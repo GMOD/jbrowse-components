@@ -4,8 +4,18 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { bpToPx, measureText, Region, Feature } from '@jbrowse/core/util'
-import { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
+import {
+  bpToPx,
+  measureText,
+  Region,
+  Feature,
+  getSession,
+} from '@jbrowse/core/util'
+import {
+  BaseLayout,
+  GranularRectLayout,
+  SceneGraph,
+} from '@jbrowse/core/util/layouts'
 
 // locals
 import FeatureGlyph from './FeatureGlyph'
@@ -16,6 +26,7 @@ import {
   ExtraGlyphValidator,
   DisplayModel,
 } from './util'
+import { getParent } from 'mobx-state-tree'
 
 // used to make features have a little padding for their labels
 const xPadding = 3
@@ -192,38 +203,24 @@ const RenderedFeatures = observer(function RenderedFeatures(props: {
   )
 })
 
-const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
-  layout: BaseLayout<unknown>
-  blockKey: string
-  regions: Region[]
-  bpPerPx: number
-  detectRerender?: () => void
-  config: AnyConfigurationModel
-  colorByCDS: boolean
-  features: Map<string, Feature>
-  displayModel?: DisplayModel
-  exportSVG?: boolean
-  viewParams: {
-    start: number
-    end: number
-    offsetPx: number
-    offsetPx1: number
+const SvgFeatureRendering = observer(function SvgFeatureRendering({
+  model,
+}: {
+  model: {
+    region: Region
   }
-  featureDisplayHandler?: (f: Feature) => boolean
-  extraGlyphs?: ExtraGlyphValidator[]
-  onMouseOut?: React.MouseEventHandler
-  onMouseDown?: React.MouseEventHandler
-  onMouseLeave?: React.MouseEventHandler
-  onMouseEnter?: React.MouseEventHandler
-  onMouseOver?: React.MouseEventHandler
-  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
-  onMouseUp?: React.MouseEventHandler
-  onClick?: React.MouseEventHandler
 }) {
+  console.log({ model })
+  const display = getParent<{ renderProps: () => Record<string, unknown> }>(
+    model,
+    2,
+  )
+  const { region } = model
+  const props = display.renderProps()
+  const height = 100
+  const layout = new GranularRectLayout()
   const {
-    layout,
     blockKey,
-    regions = [],
     bpPerPx,
     config,
     displayModel = {},
@@ -238,15 +235,29 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     onMouseUp,
     onClick,
   } = props
+  const [features, setFeatures] = useState()
+  useEffect(() => {
+    ;(async () => {
+      const { rpcManager } = getSession(model)
+      const { rpcSessionId } = getParent(display, 2)
+      const feats = await rpcManager.call(rpcSessionId, 'CoreGetFeatures', {
+        adapterConfig: display.adapterConfig,
+        sessionId: rpcSessionId,
+        regions: [region],
+      })
+      console.log({ feats })
+      feats.forEach(f => {
+        layout.addRect(f.get('start'), f.get('end'), 0, 100)
+      })
+      setFeatures(feats)
+    })()
+  }, [model, display, region])
 
-  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
-  const maxConfHeight = readConfObject(config, 'maxHeight') as number
 
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
 
@@ -313,10 +324,6 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     },
     [movedDuringLastMouseDown, onClick],
   )
-
-  useEffect(() => {
-    setHeight(layout.getTotalHeight())
-  }, [layout])
 
   return exportSVG ? (
     <RenderedFeatures

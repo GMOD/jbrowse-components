@@ -10,6 +10,7 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from './Block'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import { getSnapshot } from 'mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 
@@ -48,6 +49,7 @@ const RenderedBlocks = observer(function ({
         const key = `${model.id}-${block.key}`
         if (block.type === 'ContentBlock') {
           const state = blockState.get(block.key)
+          console.log(getSnapshot(state), !!state.ReactComponent)
           return (
             <ContentBlockComponent block={block} key={key}>
               {state?.ReactComponent ? (
