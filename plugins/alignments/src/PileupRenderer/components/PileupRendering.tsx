@@ -51,12 +51,12 @@ const PileupRendering = observer(function (props: {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const selectedRect = selectedFeatureId
-    ? displayModel?.getFeatureByID?.(blockKey, selectedFeatureId)
+    ? displayModel?.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
 
   const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
   const highlightedRect = highlightedFeature
-    ? displayModel?.getFeatureByID?.(blockKey, highlightedFeature)
+    ? displayModel?.getFeatureByID(blockKey, highlightedFeature)
     : undefined
 
   function makeRect(r: [number, number, number, number], offset = 2) {

@@ -17,7 +17,7 @@ function Arc({
   onFeatureClick,
   feature,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
