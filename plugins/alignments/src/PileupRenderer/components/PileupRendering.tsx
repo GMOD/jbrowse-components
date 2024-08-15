@@ -5,23 +5,25 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface Rect {
-  left: number
-  top: number
-  width: number
-  height: number
-}
-
 const PileupRendering = observer(function (props: {
   blockKey: string
-  displayModel: BaseLinearDisplayModel
+  displayModel?: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]
   bpPerPx: number
-  sortedBy?: { type: string; pos: number; refName: string }
-  colorBy?: { type: string; tag?: string }
-  filterBy?: { tagFilter?: { tag: string } }
+  sortedBy?: {
+    type: string
+    pos: number
+    refName: string
+  }
+  colorBy?: {
+    type: string
+    tag?: string
+  }
+  filterBy?: {
+    tagFilter?: { tag: string }
+  }
   onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
 }) {
   const {
@@ -37,51 +39,40 @@ const PileupRendering = observer(function (props: {
     filterBy,
   } = props
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
-    displayModel
+    displayModel || {}
   const [firstRender, setFirstRender] = useState(false)
   useEffect(() => {
     setFirstRender(true)
   }, [])
 
   const region = regions[0]!
-  let selected = undefined as Rect | undefined
-  let highlight = undefined as Rect | undefined
   const ref = useRef<HTMLDivElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const selectedRect = selectedFeatureId
-    ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
-    : undefined
-  if (selectedRect) {
-    const [leftBp, topPx, rightBp, bottomPx] = selectedRect
-    const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-    const rectTop = Math.round(topPx)
-    const rectHeight = Math.round(bottomPx - topPx)
-    selected = {
-      left: leftPx - 2,
-      top: rectTop - 2,
-      width: rightPx - leftPx,
-      height: rectHeight,
-    }
-  }
-  const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
-  const highlightedRect = highlightedFeature
-    ? displayModel.getFeatureByID(blockKey, highlightedFeature)
+    ? displayModel?.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
 
-  if (highlightedRect) {
-    const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
+  const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
+  const highlightedRect = highlightedFeature
+    ? displayModel?.getFeatureByID(blockKey, highlightedFeature)
+    : undefined
+
+  function makeRect(r: [number, number, number, number], offset = 2) {
+    const [leftBp, topPx, rightBp, bottomPx] = r
     const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
     const rectTop = Math.round(topPx)
     const rectHeight = Math.round(bottomPx - topPx)
-    highlight = {
-      left: leftPx,
-      top: rectTop,
+    return {
+      left: leftPx - offset,
+      top: rectTop - offset,
       width: rightPx - leftPx,
       height: rectHeight,
     }
   }
+  const selected = selectedRect ? makeRect(selectedRect) : undefined
+  const highlight = highlightedRect ? makeRect(highlightedRect, 0) : undefined
 
   function onMouseDown(event: React.MouseEvent) {
     setMouseIsDown(true)
@@ -137,7 +128,7 @@ const PileupRendering = observer(function (props: {
 
     onMouseMove?.(
       event,
-      displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
+      displayModel?.getFeatureOverlapping(blockKey, clientBp, offsetY),
     )
   }
 

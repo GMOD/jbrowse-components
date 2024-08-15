@@ -16,18 +16,15 @@ import { firstValueFrom } from 'rxjs'
 import { AnyConfigurationModel } from '../../configuration'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: Record<string, unknown>
   blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: Record<string, unknown>
   blockKey: string
 }
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  displayModel: Record<string, unknown>
   blockKey: string
 }
 
@@ -53,10 +50,6 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * directly modifies the render arguments to prepare them to be serialized
    * and sent to the worker.
    *
-   * the base class replaces the `displayModel` param (which on the client is a
-   * MST model) with a stub that only contains the `selectedFeature`, since
-   * this is the only part of the track model that most renderers read.
-   *
    * @param args - the arguments passed to render
    * @returns the same object
    */
@@ -68,7 +61,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   serializeArgsInClient(args: RenderArgs) {
     const deserializedArgs = {
       ...args,
-      displayModel: {},
+      displayModel: undefined,
     }
 
     return super.serializeArgsInClient(deserializedArgs)
@@ -80,7 +73,10 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     args: RenderArgs,
   ): ResultsDeserialized {
     const deserialized = super.deserializeResultsInClient(result, args)
-    return { ...deserialized, blockKey: args.blockKey }
+    return {
+      ...deserialized,
+      blockKey: args.blockKey,
+    }
   }
 
   /**
