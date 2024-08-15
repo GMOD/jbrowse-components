@@ -116,7 +116,6 @@ export const BaseChordDisplayModel = types
       return {
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
-        displayModel: self,
         bezierRadius: view.radiusPx * self.bezierRadiusRatio,
         radius: view.radiusPx,
         blockDefinitions: this.blockDefinitions,

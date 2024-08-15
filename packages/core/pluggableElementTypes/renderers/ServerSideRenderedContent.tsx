@@ -21,15 +21,13 @@ const NewHydrate = observer(function ServerSideRenderedContent({
   ...rest
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-
   const rootRef = useRef<any>()
-
   const { hydrateFn } = getRoot<any>(rest.displayModel)
 
   useEffect(() => {
-    // requestIdleCallback here helps to avoid hydration mismatch
-    // because it provides time for dangerouslySetInnerHTML to set the innerHTML
-    // contents of the node, otherwise ref.current.innerHTML can be empty
+    // requestIdleCallback here helps to avoid hydration mismatch because it
+    // provides time for dangerouslySetInnerHTML to set the innerHTML contents
+    // of the node, otherwise ref.current.innerHTML can be empty
     const renderTimeout = rIC(() => {
       if (!ref.current) {
         return
