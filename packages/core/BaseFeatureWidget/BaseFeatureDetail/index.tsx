@@ -204,8 +204,8 @@ export function FeatureDetails(props: {
             {...props}
             feature={{
               ...m,
-              start: m.start as number,
-              end: m.end as number,
+              start: m.start,
+              end: m.end,
               refName: m.refName,
               uniqueId: `${uniqueId}-mate`,
             }}

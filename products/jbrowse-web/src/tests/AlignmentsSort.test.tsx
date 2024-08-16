@@ -30,7 +30,7 @@ test('selects a sort, sort by base pair', async () => {
     await screen.findByTestId(hts('volvox_cram_alignments_ctga'), ...opts),
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Sort by'))
+  await user.click(await screen.findByText('Sort by...'))
   await user.click(await screen.findByText('Base pair'))
   await screen.findAllByTestId('pileup-overlay-Base pair', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))

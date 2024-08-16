@@ -23,7 +23,7 @@ const AlignmentsFeatureDetails = observer(function (props: {
   const { model } = props
   const { featureData } = model
   const feat = clone(featureData)
-  const SA = getTag('SA', feat) as string
+  const SA = getTag('SA', feat) as string | undefined
   const { flags } = feat
   return (
     <Paper data-testid="alignment-side-drawer">

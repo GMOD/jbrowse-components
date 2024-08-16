@@ -77,7 +77,7 @@ export const FilterModel = types.model({
   tagFilter: types.maybe(
     types.model({
       tag: types.string,
-      value: types.string,
+      value: types.maybe(types.string),
     }),
   ),
 })
@@ -86,5 +86,8 @@ export interface IFilter {
   flagExclude: number
   flagInclude: number
   readName?: string
-  tagFilter?: { tag: string; value: string }
+  tagFilter?: {
+    tag: string
+    value?: string
+  }
 }

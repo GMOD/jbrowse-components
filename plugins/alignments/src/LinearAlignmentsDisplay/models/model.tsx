@@ -24,6 +24,7 @@ import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
+import { IFilter } from '../../shared'
 
 const minDisplayHeight = 20
 
@@ -153,7 +154,7 @@ function stateModelFactory(
       },
 
       /**
-       * #getter
+       * #getteralignmentsdisplaymodel
        */
       get DisplayBlurb() {
         return self.PileupDisplay?.DisplayBlurb
@@ -211,6 +212,13 @@ function stateModelFactory(
       setHeight(n: number) {
         self.heightPreConfig = Math.max(n, minDisplayHeight)
         return self.heightPreConfig
+      },
+      /**
+       * #action
+       */
+      setFilterBy(filter: IFilter) {
+        self.PileupDisplay.setFilterBy(filter)
+        self.SNPCoverageDisplay.setFilterBy(filter)
       },
       /**
        * #action
