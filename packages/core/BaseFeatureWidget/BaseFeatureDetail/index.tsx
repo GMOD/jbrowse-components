@@ -63,7 +63,12 @@ export function BaseCard({
       onChange={() => {
         setExpanded(s => !s)
       }}
-      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
+      slotProps={{
+        transition: {
+          unmountOnExit: true,
+          timeout: 150,
+        },
+      }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
@@ -186,24 +191,22 @@ export function FeatureDetails(props: {
     feature,
     model,
   }) as PanelDescriptor | undefined
+  const m = mate as { start: number; end: number; refName: string } | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
-      {mate ? (
+      {m ? (
         <>
           <Divider />
           <Typography>Mate details</Typography>
           <CoreDetails
             {...props}
             feature={{
-              ...mate,
-              // @ts-expect-error
-              start: mate.start,
-              // @ts-expect-error
-              end: mate.end,
-              // @ts-expect-error
-              refName: mate.refName,
+              ...m,
+              start: m.start as number,
+              end: m.end as number,
+              refName: m.refName,
               uniqueId: `${uniqueId}-mate`,
             }}
           />
@@ -237,7 +240,10 @@ export function FeatureDetails(props: {
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
               key={JSON.stringify(sub)}
-              feature={{ ...sub, uniqueId: `${uniqueId}_${idx}` }}
+              feature={{
+                ...sub,
+                uniqueId: `${uniqueId}_${idx}`,
+              }}
               model={model}
               depth={depth + 1}
             />

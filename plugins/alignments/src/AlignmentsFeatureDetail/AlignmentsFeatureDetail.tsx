@@ -21,8 +21,10 @@ const AlignmentsFeatureDetails = observer(function (props: {
   model: AlignmentFeatureWidgetModel
 }) {
   const { model } = props
-  const feat = clone(model.featureData)
+  const { featureData } = model
+  const feat = clone(featureData)
   const SA = getTag('SA', feat) as string
+  const { flags } = feat
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
@@ -39,8 +41,11 @@ const AlignmentsFeatureDetails = observer(function (props: {
           )
         }
       />
-      {SA ? <SuppAlignments model={model} tag={SA} feature={feat} /> : null}
-      {feat.flags !== undefined ? <Flags feature={feat} {...props} /> : null}
+      {SA !== undefined ? (
+        <SuppAlignments model={model} tag={SA} feature={feat} />
+      ) : null}
+
+      {flags !== undefined ? <Flags feature={feat} {...props} /> : null}
     </Paper>
   )
 })

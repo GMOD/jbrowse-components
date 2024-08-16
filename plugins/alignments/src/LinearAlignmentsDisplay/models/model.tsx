@@ -37,7 +37,7 @@ function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
   )
 }
 
-function preCheck(self: AlignmentsDisplayModel) {
+function preCheck(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   return (
     PileupDisplay ||
@@ -47,7 +47,7 @@ function preCheck(self: AlignmentsDisplayModel) {
   )
 }
 
-function propagateColorBy(self: AlignmentsDisplayModel) {
+function propagateColorBy(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   if (!preCheck(self) || !PileupDisplay.colorBy) {
     return
@@ -57,7 +57,7 @@ function propagateColorBy(self: AlignmentsDisplayModel) {
   }
 }
 
-function propagateFilterBy(self: AlignmentsDisplayModel) {
+function propagateFilterBy(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   if (!preCheck(self) || !PileupDisplay.filterBy) {
     return
@@ -259,8 +259,8 @@ function stateModelFactory(
               PileupDisplay.setConfig(self.pileupConf)
             }
 
-            propagateColorBy(self as AlignmentsDisplayModel)
-            propagateFilterBy(self as AlignmentsDisplayModel)
+            propagateColorBy(self as LinearAlignmentsDisplayModel)
+            propagateFilterBy(self as LinearAlignmentsDisplayModel)
           }),
         )
 
@@ -354,5 +354,9 @@ function stateModelFactory(
 }
 
 export default stateModelFactory
-export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type AlignmentsDisplayModel = Instance<AlignmentsDisplayStateModel>
+
+export type LinearAlignmentsDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearAlignmentsDisplayModel =
+  Instance<LinearAlignmentsDisplayStateModel>

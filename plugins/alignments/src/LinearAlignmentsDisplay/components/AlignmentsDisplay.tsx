@@ -5,7 +5,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
-import { AlignmentsDisplayModel } from '../models/model'
+import { LinearAlignmentsDisplayModel } from '../models/model'
 
 const useStyles = makeStyles()({
   resizeHandle: {
@@ -18,7 +18,7 @@ const useStyles = makeStyles()({
 const AlignmentsDisplay = observer(function AlignmentsDisplay({
   model,
 }: {
-  model: AlignmentsDisplayModel
+  model: LinearAlignmentsDisplayModel
 }) {
   const { PileupDisplay, SNPCoverageDisplay } = model
   const { classes } = useStyles()

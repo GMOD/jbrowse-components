@@ -20,7 +20,7 @@ import { FilterModel, IFilter } from '../shared'
 import { ChainData } from '../shared/fetchChains'
 
 // async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
+const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
 
 /**
  * #stateModel LinearReadCloudDisplay
