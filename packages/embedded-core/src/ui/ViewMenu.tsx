@@ -19,11 +19,6 @@ const ViewMenu = observer(function ({
   IconProps: SvgIconProps
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement>()
-
-  if (!model.menuItems().length) {
-    return null
-  }
-
   return (
     <>
       <IconButton
