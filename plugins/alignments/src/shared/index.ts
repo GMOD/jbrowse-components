@@ -4,16 +4,21 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-export async function getUniqueTagValues(
-  self: IAnyStateTreeNode & { adapterConfig: AnyConfigurationModel },
-  colorScheme: { type: string; tag?: string },
-  blocks: BlockSet,
+export async function getUniqueTagValues({
+  self,
+  tag,
+  blocks,
+  opts,
+}: {
+  self: IAnyStateTreeNode & { adapterConfig: AnyConfigurationModel }
+  tag: string
+  blocks: BlockSet
   opts?: {
     headers?: Record<string, string>
     signal?: AbortSignal
     filters: string[]
-  },
-) {
+  }
+}) {
   const { rpcManager } = getSession(self)
   const { adapterConfig } = self
   const sessionId = getRpcSessionId(self)
@@ -22,7 +27,7 @@ export async function getUniqueTagValues(
     'PileupGetGlobalValueForTag',
     {
       adapterConfig,
-      tag: colorScheme.tag,
+      tag,
       sessionId,
       regions: blocks.contentBlocks,
       ...opts,
@@ -33,19 +38,23 @@ export async function getUniqueTagValues(
 
 type Track = IAnyStateTreeNode & { configuration: AnyConfigurationModel }
 
-export async function getUniqueModificationValues(
+export async function getUniqueModificationValues({
+  self,
+  adapterConfig,
+  blocks,
+  opts,
+}: {
   self: IAnyStateTreeNode & {
     parentTrack: Track
-  },
-  adapterConfig: AnyConfigurationModel,
-  colorScheme: { type: string; tag?: string },
-  blocks: BlockSet,
+  }
+  adapterConfig: AnyConfigurationModel
+  blocks: BlockSet
   opts?: {
     headers?: Record<string, string>
     signal?: AbortSignal
     filters: string[]
-  },
-) {
+  }
+}) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   const values = await rpcManager.call(
@@ -53,7 +62,6 @@ export async function getUniqueModificationValues(
     'PileupGetVisibleModifications',
     {
       adapterConfig,
-      tag: colorScheme.tag,
       sessionId,
       regions: blocks.contentBlocks,
       ...opts,
@@ -69,7 +77,7 @@ export const FilterModel = types.model({
   tagFilter: types.maybe(
     types.model({
       tag: types.string,
-      value: types.string,
+      value: types.maybe(types.string),
     }),
   ),
 })
@@ -78,5 +86,8 @@ export interface IFilter {
   flagExclude: number
   flagInclude: number
   readName?: string
-  tagFilter?: { tag: string; value: string }
+  tagFilter?: {
+    tag: string
+    value?: string
+  }
 }

@@ -248,12 +248,11 @@ function stateModelFactory(
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
               const adapter = getConf(self.parentTrack, 'adapter')
-              const vals = await getUniqueModificationValues(
+              const vals = await getUniqueModificationValues({
                 self,
-                adapter,
-                colorBy,
-                staticBlocks,
-              )
+                adapterConfig: adapter,
+                blocks: staticBlocks,
+              })
               if (isAlive(self)) {
                 self.updateModificationColorMap(vals)
                 self.setModificationsReady(true)

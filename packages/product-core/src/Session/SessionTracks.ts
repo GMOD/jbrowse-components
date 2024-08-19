@@ -45,6 +45,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (self.adminMode) {
             return superAddTrackConf(trackConf)
           }
+
           const { trackId, type } = trackConf as {
             type: string
             trackId: string

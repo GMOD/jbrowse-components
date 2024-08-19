@@ -24,6 +24,7 @@ import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
+import { IFilter } from '../../shared'
 
 const minDisplayHeight = 20
 
@@ -37,7 +38,7 @@ function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
   )
 }
 
-function preCheck(self: AlignmentsDisplayModel) {
+function preCheck(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   return (
     PileupDisplay ||
@@ -47,7 +48,7 @@ function preCheck(self: AlignmentsDisplayModel) {
   )
 }
 
-function propagateColorBy(self: AlignmentsDisplayModel) {
+function propagateColorBy(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   if (!preCheck(self) || !PileupDisplay.colorBy) {
     return
@@ -57,7 +58,7 @@ function propagateColorBy(self: AlignmentsDisplayModel) {
   }
 }
 
-function propagateFilterBy(self: AlignmentsDisplayModel) {
+function propagateFilterBy(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   if (!preCheck(self) || !PileupDisplay.filterBy) {
     return
@@ -153,7 +154,7 @@ function stateModelFactory(
       },
 
       /**
-       * #getter
+       * #getteralignmentsdisplaymodel
        */
       get DisplayBlurb() {
         return self.PileupDisplay?.DisplayBlurb
@@ -215,6 +216,13 @@ function stateModelFactory(
       /**
        * #action
        */
+      setFilterBy(filter: IFilter) {
+        self.PileupDisplay.setFilterBy(filter)
+        self.SNPCoverageDisplay.setFilterBy(filter)
+      },
+      /**
+       * #action
+       */
       setLowerPanelType(type: string) {
         self.lowerPanelType = type
       },
@@ -259,8 +267,8 @@ function stateModelFactory(
               PileupDisplay.setConfig(self.pileupConf)
             }
 
-            propagateColorBy(self as AlignmentsDisplayModel)
-            propagateFilterBy(self as AlignmentsDisplayModel)
+            propagateColorBy(self as LinearAlignmentsDisplayModel)
+            propagateFilterBy(self as LinearAlignmentsDisplayModel)
           }),
         )
 
@@ -354,5 +362,9 @@ function stateModelFactory(
 }
 
 export default stateModelFactory
-export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type AlignmentsDisplayModel = Instance<AlignmentsDisplayStateModel>
+
+export type LinearAlignmentsDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearAlignmentsDisplayModel =
+  Instance<LinearAlignmentsDisplayStateModel>
