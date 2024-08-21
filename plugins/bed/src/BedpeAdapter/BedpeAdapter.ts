@@ -4,13 +4,9 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Region, Feature, SimpleFeature } from '@jbrowse/core/util'
+import { Region, Feature, SimpleFeature, isGzip } from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
 
 export function featureData(
   line: string,

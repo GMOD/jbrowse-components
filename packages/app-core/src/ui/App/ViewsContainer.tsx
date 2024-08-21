@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'

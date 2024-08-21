@@ -1462,6 +1462,10 @@ export function renderToStaticMarkup(
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
+export function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
+}
+
 export {
   default as SimpleFeature,
   type Feature,

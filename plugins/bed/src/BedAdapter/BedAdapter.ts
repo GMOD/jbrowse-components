@@ -5,16 +5,12 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Region, Feature } from '@jbrowse/core/util'
+import { Region, Feature, isGzip } from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
 
 // locals
 import { featureData } from '../util'
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
 
 export default class BedAdapter extends BaseFeatureDataAdapter {
   protected bedFeatures?: Promise<{
