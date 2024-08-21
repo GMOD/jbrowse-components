@@ -1,23 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { getParent } from 'mobx-state-tree'
+import React, { useRef, useState } from 'react'
+import { getParent, getSnapshot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import {
-  Region,
-  Feature,
-  getSession,
-  getContainingTrack,
-} from '@jbrowse/core/util'
-import { BaseLayout, GranularRectLayout } from '@jbrowse/core/util/layouts'
+import { Region, Feature } from '@jbrowse/core/util'
+import { BaseLayout } from '@jbrowse/core/util/layouts'
 
 // locals
 import SvgOverlay from './SvgOverlay'
 import { ExtraGlyphValidator, DisplayModel } from './util'
 // locals
 import RenderedFeatureGlyph from './RenderedFeatureGlyph'
+import { trace } from 'mobx'
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
@@ -86,6 +82,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering({
     onMouseUp,
     onClick,
   } = props
+  trace()
 
   const height = layout.getTotalHeight()
   const width = (region.end - region.start) / bpPerPx
@@ -95,6 +92,8 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering({
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
+
+  console.log('wtf')
 
   return !features ? (
     <div>Loading...</div>

@@ -38,6 +38,10 @@ import configSchema from './configSchema'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
 import { GranularRectLayout } from '@jbrowse/core/util/layouts'
+import {
+  chooseGlyphComponent,
+  layOut,
+} from '@jbrowse/plugin-svg/src/SvgFeatureRenderer/components/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -90,7 +94,10 @@ function stateModelFactory() {
     .volatile(() => ({
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      featureMap: observable.map<string, Map<string, Feature>>({}),
+      featureBlockMap: observable.map<
+        string,
+        { block: BaseBlock; features: Map<string, Feature> }
+      >({}),
       layout: new GranularRectLayout(),
     }))
     .views(self => ({
@@ -160,11 +167,9 @@ function stateModelFactory() {
        * the block data for that feature
        */
       get features() {
-        // const featureMaps = []
-        // for (const block of self.featureMap.values()) {
-        //   featureMaps.push(block.features)
-        // }
-        return new CompositeMap([...self.featureMap.values()])
+        return new CompositeMap(
+          [...self.featureBlockMap.values()].map(f => f.features),
+        )
       },
     }))
     .views(self => ({
@@ -487,21 +492,23 @@ function stateModelFactory() {
               const view = getContainingView(self) as LinearGenomeViewModel
 
               view.staticBlocks.contentBlocks.forEach(async block => {
-                const { rpcManager } = getSession(self)
-                const { rpcSessionId } = getContainingTrack(self)
-                const feats = (await rpcManager.call(
-                  rpcSessionId,
-                  'CoreGetFeatures',
-                  {
-                    adapterConfig: self.adapterConfig,
-                    sessionId: rpcSessionId,
-                    regions: [block],
-                  },
-                )) as Feature[]
-                self.featureMap.set(
-                  block.key,
-                  new Map(feats.map(f => [f.id(), f])),
-                )
+                if (!self.featureBlockMap.has(block.key)) {
+                  const { rpcManager } = getSession(self)
+                  const { rpcSessionId } = getContainingTrack(self)
+                  const feats = (await rpcManager.call(
+                    rpcSessionId,
+                    'CoreGetFeatures',
+                    {
+                      adapterConfig: self.adapterConfig,
+                      sessionId: rpcSessionId,
+                      regions: [block],
+                    },
+                  )) as Feature[]
+                  self.featureBlockMap.set(block.key, {
+                    block,
+                    features: new Map(feats.map(f => [f.id(), f])),
+                  })
+                }
               })
             } catch (e) {
               self.setError(e)
@@ -512,8 +519,16 @@ function stateModelFactory() {
         addDisposer(
           self,
           autorun(() => {
+            const { bpPerPx } = getContainingView(self) as LinearGenomeViewModel
             iterMap(self.features.values(), f => {
-              self.layout.addRect(f.id(), f.get('start'), f.get('end'), 20)
+              const glyph = chooseGlyphComponent(f)
+              ;(glyph.layOut || layOut)({
+                layout: self.layout,
+                feature: f,
+                bpPerPx,
+                reversed: false,
+                config: self.rendererConfig,
+              })
             })
           }),
         )
@@ -524,8 +539,8 @@ function stateModelFactory() {
       if (!snap) {
         return snap
       }
-      // rewrite "height" from older snapshots to "heightPreConfig", this allows
-      // us to maintain a height "getter" going forward
+      // rewrite "height" from older snapshots to "heightPreConfig", this
+      // allows us to maintain a height "getter" going forward
       // @ts-expect-error
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }

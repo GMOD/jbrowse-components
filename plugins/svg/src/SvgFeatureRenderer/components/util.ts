@@ -61,11 +61,7 @@ export function chooseGlyphComponent(
     ) {
       return ProcessedTranscript
     }
-    if (!feature.parent() && hasSubSub) {
-      // only do sub-sub on parent level features like gene
-      return Subfeatures
-    }
-    return Segments
+    return !feature.parent() && hasSubSub ? Subfeatures : Segments
   }
 
   return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
