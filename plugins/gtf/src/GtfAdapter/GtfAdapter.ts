@@ -6,7 +6,12 @@ import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
-import { SimpleFeature, Feature, updateStatus } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  Feature,
+  updateStatus,
+  isGzip,
+} from '@jbrowse/core/util'
 import { unzip } from '@gmod/bgzf-filehandle'
 import gtf from '@gmod/gtf'
 
