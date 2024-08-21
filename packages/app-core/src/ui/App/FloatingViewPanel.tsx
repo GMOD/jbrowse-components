@@ -41,7 +41,6 @@ const FloatingViewPanel = observer(function ({
     }
   }, [h, height])
 
-  console.log(view.floatingX, view.floatingY)
   return (
     <DraggableDialog zIndex={zIndex}>
       <ResizableBox

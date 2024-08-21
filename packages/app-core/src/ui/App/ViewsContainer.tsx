@@ -7,7 +7,8 @@ import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 // locals
 import ViewLauncher from './ViewLauncher'
-import ViewPanel from './ViewPanel'
+import FloatingViewPanel from './FloatingViewPanel'
+import StaticViewPanel from './StaticViewPanel'
 
 const useStyles = makeStyles()({
   viewsContainer: {
@@ -34,9 +35,21 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
   return (
     <div className={classes.viewsContainer}>
       {views.length > 0 ? (
-        views.map(view => (
-          <ViewPanel key={`view-${view.id}`} view={view} session={session} />
-        ))
+        views.map(view =>
+          view.isFloating ? (
+            <FloatingViewPanel
+              key={`view-${view.id}`}
+              view={view}
+              session={session}
+            />
+          ) : (
+            <StaticViewPanel
+              key={`view-${view.id}`}
+              view={view}
+              session={session}
+            />
+          ),
+        )
       ) : (
         <ViewLauncher {...props} />
       )}
