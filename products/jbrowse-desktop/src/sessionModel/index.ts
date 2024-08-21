@@ -156,10 +156,10 @@ export default function sessionModelFactory({
   return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snapshot) {
         // @ts-expect-error
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const { connectionInstances, ...rest } = snapshot || {}
+        const { connectionInstances, ...rest } = snapshot
         // connectionInstances schema changed from object to an array, so any old
         // connectionInstances as object is in snapshot, filter it out
         // https://github.com/GMOD/jbrowse-components/issues/1903
