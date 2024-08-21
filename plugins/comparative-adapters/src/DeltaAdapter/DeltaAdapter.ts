@@ -3,10 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 import { paf_delta2paf } from './util'
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+import { isGzip } from '@jbrowse/core/util'
 
 export default class DeltaAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {

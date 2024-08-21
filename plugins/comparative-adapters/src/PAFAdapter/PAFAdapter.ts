@@ -6,7 +6,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util'
+import { Feature, isGzip } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -20,7 +20,6 @@ import {
   flipCigar,
   swapIndelCigar,
   parsePAFLine,
-  isGzip,
   parseLineByLine,
 } from '../util'
 import { getWeightedMeans, PAFRecord } from './util'
