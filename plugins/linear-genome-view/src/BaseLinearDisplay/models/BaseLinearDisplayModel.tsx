@@ -12,11 +12,12 @@ import {
   isFeature,
   mergeIntervals,
   Feature,
+  iterMap,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { autorun, when } from 'mobx'
+import { autorun, observable, when } from 'mobx'
 import {
   addDisposer,
   isAlive,
@@ -36,6 +37,7 @@ import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
+import { GranularRectLayout } from '@jbrowse/core/util/layouts'
 
 type LGV = LinearGenomeViewModel
 
@@ -88,6 +90,8 @@ function stateModelFactory() {
     .volatile(() => ({
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
+      featureMap: observable.map<string, Map<string, Feature>>({}),
+      layout: new GranularRectLayout(),
     }))
     .views(self => ({
       /**
@@ -149,27 +153,27 @@ function stateModelFactory() {
       },
     }))
     .views(self => ({
+      // get layout() {},
       /**
        * #getter
        * a CompositeMap of `featureId -> feature obj` that just looks in all
        * the block data for that feature
        */
       get features() {
-        const featureMaps = []
-        for (const block of self.blockState.values()) {
-          if (block.features) {
-            featureMaps.push(block.features)
-          }
-        }
-        return new CompositeMap(featureMaps)
+        // const featureMaps = []
+        // for (const block of self.featureMap.values()) {
+        //   featureMaps.push(block.features)
+        // }
+        return new CompositeMap([...self.featureMap.values()])
       },
-
+    }))
+    .views(self => ({
       /**
        * #getter
        */
       get featureUnderMouse() {
         const feat = self.featureIdUnderMouse
-        return feat ? this.features.get(feat) : undefined
+        return feat ? self.features.get(feat) : undefined
       },
 
       /**
@@ -264,6 +268,7 @@ function stateModelFactory() {
       clearFeatureSelection() {
         getSession(self).clearSelection()
       },
+
       /**
        * #action
        */
@@ -290,9 +295,9 @@ function stateModelFactory() {
           self.setError()
           self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
-          ;[...self.blockState.values()].forEach(val => {
-            val.doReload()
-          })
+          // ;[...self.blockState.values()].forEach(val => {
+          //   val.doReload()
+          // })
           superReload()
         },
       }
@@ -398,14 +403,15 @@ function stateModelFactory() {
           ...getParentRenderProps(self),
           notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
-
+          features: self.features,
+          layout: self.layout,
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
             if (!f) {
               self.clearFeatureSelection()
             } else {
-              const feature = self.features.get(f)
+              const feature = self.features?.get(f)
               if (feature) {
                 self.selectFeature(feature)
               }
@@ -421,7 +427,7 @@ function stateModelFactory() {
               self.clearFeatureSelection()
             } else {
               // feature id under mouse passed to context menu
-              self.setContextMenuFeature(self.features.get(f))
+              self.setContextMenuFeature(self.features?.get(f))
             }
           },
 
@@ -470,6 +476,44 @@ function stateModelFactory() {
               if (!blocksPresent[key]) {
                 self.deleteBlock(key as string)
               }
+            })
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(async () => {
+            try {
+              const view = getContainingView(self) as LinearGenomeViewModel
+
+              view.staticBlocks.contentBlocks.forEach(async block => {
+                const { rpcManager } = getSession(self)
+                const { rpcSessionId } = getContainingTrack(self)
+                const feats = (await rpcManager.call(
+                  rpcSessionId,
+                  'CoreGetFeatures',
+                  {
+                    adapterConfig: self.adapterConfig,
+                    sessionId: rpcSessionId,
+                    regions: [block],
+                  },
+                )) as Feature[]
+                self.featureMap.set(
+                  block.key,
+                  new Map(feats.map(f => [f.id(), f])),
+                )
+              })
+            } catch (e) {
+              self.setError(e)
+            }
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            iterMap(self.features.values(), f => {
+              self.layout.addRect(f.id(), f.get('start'), f.get('end'), 20)
             })
           }),
         )

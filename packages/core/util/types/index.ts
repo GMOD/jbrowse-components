@@ -280,9 +280,10 @@ export interface AbstractViewModel {
   type: string
   width: number
   minimized: boolean
+  displayName: string | undefined
+
   setWidth(width: number): void
   setMinimized(flag: boolean): void
-  displayName: string | undefined
   setDisplayName: (arg: string) => void
   menuItems: () => MenuItem[]
 }
@@ -296,6 +297,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 }
 
 export interface AbstractTrackModel {
+  rpcSessionId: string
   displays: AbstractDisplayModel[]
   configuration: AnyConfigurationModel
 }
