@@ -28,10 +28,14 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type AppSession = SessionWithDrawerWidgets & {
-  savedSessionNames: string[]
-  menus: { label: string; menuItems: JBMenuItem[] }[]
-  renameCurrentSession: (arg: string) => void
+  menus: {
+    label: string
+    menuItems: JBMenuItem[]
+  }[]
+  savedSessionNames?: string[]
   snackbarMessages: SnackbarMessage[]
+
+  renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
 }
 
@@ -60,7 +64,7 @@ const AppToolbar = observer(function ({
         <EditableTypography
           value={name}
           setValue={newName => {
-            if (savedSessionNames.includes(newName)) {
+            if (savedSessionNames?.includes(newName)) {
               session.notify(
                 `Cannot rename session to "${newName}", a saved session with that name already exists`,
                 'warning',

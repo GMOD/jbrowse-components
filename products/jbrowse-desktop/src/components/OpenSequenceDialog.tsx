@@ -11,6 +11,8 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { Dialog, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
+
+// locals
 import AdapterInput from './AdapterInput'
 
 const { ipcRenderer } = window.require('electron')
