@@ -9,10 +9,9 @@ import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 // locals
 import AppToolbar from './AppToolbar'
-import ViewLauncher from './ViewLauncher'
-import ViewPanel from './ViewPanel'
 import DialogQueue from './DialogQueue'
 import AppFab from './AppFab'
+import ViewsContainer from './ViewsContainer'
 
 const DrawerWidget = lazy(() => import('./DrawerWidget'))
 
@@ -29,10 +28,7 @@ const useStyles = makeStyles()(theme => ({
     gridTemplateRows: '[menubar] min-content [components] auto',
     height: '100vh',
   },
-  viewContainer: {
-    overflowY: 'auto',
-    gridRow: 'components',
-  },
+
   appBar: {
     flexGrow: 1,
     gridRow: 'menubar',
@@ -59,26 +55,6 @@ const LazyDrawerWidget = observer(function (props: Props) {
   )
 })
 
-const ViewContainer = observer(function (props: Props) {
-  const { session } = props
-  const { views } = session
-  const { classes } = useStyles()
-  return (
-    <div className={classes.viewContainer}>
-      {views.length > 0 ? (
-        views.map(view => (
-          <ViewPanel key={`view-${view.id}`} view={view} session={session} />
-        ))
-      ) : (
-        <ViewLauncher {...props} />
-      )}
-
-      {/* blank space at the bottom of screen allows scroll */}
-      <div style={{ height: 300 }} />
-    </div>
-  )
-})
-
 const App = observer(function (props: Props) {
   const { session } = props
   const { classes } = useStyles()
@@ -101,7 +77,7 @@ const App = observer(function (props: Props) {
         <AppBar className={classes.appBar} position="static">
           <AppToolbar {...props} />
         </AppBar>
-        <ViewContainer {...props} />
+        <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
 
