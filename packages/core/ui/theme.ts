@@ -267,8 +267,11 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       MuiAccordion: {
         defaultProps: {
           disableGutters: true,
-          TransitionProps: {
-            timeout: 150,
+          slotProps: {
+            transition: {
+              timeout: 150,
+              unmountOnExit: true,
+            },
           },
         },
       },

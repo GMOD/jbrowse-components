@@ -78,7 +78,7 @@ export function cigarToMismatches(
       })
     } else if (op === 'X') {
       const r = seq?.slice(soffset, soffset + len) || []
-      const q = qual?.slice(soffset, soffset + len) || []
+      const q = qual?.subarray(soffset, soffset + len) || []
 
       for (let j = 0; j < len; j++) {
         mismatches.push({

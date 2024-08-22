@@ -56,7 +56,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       const n = buffer.indexOf('\n', blockStart)
       // could be a non-newline ended file, so slice to end of file if n===-1
       const b =
-        n === -1 ? buffer.slice(blockStart) : buffer.slice(blockStart, n)
+        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
       const line = (decoder?.decode(b) || b.toString()).trim()
       if (line) {
         if (line.startsWith('#')) {

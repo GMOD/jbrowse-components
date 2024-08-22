@@ -39,13 +39,13 @@
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.9",
     "@jbrowse/plugin-variants": "^2.14.0",
-    "@mui/icons-material": "^5.0.1",
+    "@mui/icons-material": "^6.0.0",
     "csvtojson": "^2.0.10"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

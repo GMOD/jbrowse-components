@@ -37,14 +37,14 @@
   },
   "dependencies": {
     "@gmod/vcf": "^5.0.9",
-    "@mui/icons-material": "^5.0.1",
+    "@mui/icons-material": "^6.0.0",
     "@types/file-saver": "^2.0.1",
     "file-saver": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

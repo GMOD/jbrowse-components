@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -45,7 +45,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
-  expandIcon: {
+  icon: {
     color: theme.palette.tertiary.contrastText || '#fff',
   },
 }))
@@ -56,23 +56,9 @@ export function BaseCard({
   defaultExpanded = true,
 }: BaseCardProps) {
   const { classes } = useStyles()
-  const [expanded, setExpanded] = useState(defaultExpanded)
   return (
-    <Accordion
-      expanded={expanded}
-      onChange={() => {
-        setExpanded(s => !s)
-      }}
-      slotProps={{
-        transition: {
-          unmountOnExit: true,
-          timeout: 150,
-        },
-      }}
-    >
-      <AccordionSummary
-        expandIcon={<ExpandMore className={classes.expandIcon} />}
-      >
+    <Accordion defaultExpanded={defaultExpanded}>
+      <AccordionSummary expandIcon={<ExpandMore className={classes.icon} />}>
         <Typography variant="button">{title}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.expansionPanelDetails}>

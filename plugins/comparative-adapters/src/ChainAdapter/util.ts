@@ -73,7 +73,7 @@ export function paf_chain2paf(buffer: Buffer) {
     if (n === -1) {
       break
     }
-    const b = buffer.slice(blockStart, n)
+    const b = buffer.subarray(blockStart, n)
     const l = (decoder?.decode(b) || b.toString()).trim()
     blockStart = n + 1
     const l_tab = l.replaceAll(' ', '\t') // There are CHAIN files with space-separated fields

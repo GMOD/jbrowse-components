@@ -33,6 +33,6 @@ describe('utils for text indexing', () => {
     expect(conf3.adapter?.type).toBe('VcfTabixAdapter')
     expect(() => {
       guessAdapterFromFileName(unsupported)
-    }).toThrowError(`Unsupported file type ${unsupported}`)
+    }).toThrow(`Unsupported file type ${unsupported}`)
   })
 })

@@ -4,6 +4,7 @@ import { ObservableCreate } from '../util/rxjs'
 import SimpleFeature, { Feature } from '../util/simpleFeature'
 import { Region } from '../util/types'
 import { ConfigurationSchema } from '../configuration/configurationSchema'
+import { firstValueFrom } from 'rxjs'
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {
@@ -27,10 +28,11 @@ describe('base data adapter', () => {
       start: 0,
       end: 20000,
     })
-    const featuresArray = features.pipe(toArray()).toPromise()
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    expect(featuresArray).rejects.toThrow(/something blew up/)
+    try {
+      await firstValueFrom(features.pipe(toArray()))
+    } catch (e) {
+      expect(`${e}`).toMatch(/something blew up/)
+    }
   })
 
   it('retrieves features', async () => {
@@ -64,7 +66,7 @@ describe('base data adapter', () => {
       start: 0,
       end: 20000,
     })
-    const featuresArray = await features.pipe(toArray()).toPromise()
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
     expect(featuresArray).toMatchSnapshot()
 
     const features2 = adapter.getFeatures({
@@ -73,7 +75,7 @@ describe('base data adapter', () => {
       start: 0,
       end: 20000,
     })
-    const featuresArray2 = await features2.pipe(toArray()).toPromise()
+    const featuresArray2 = await firstValueFrom(features2.pipe(toArray()))
     expect(featuresArray2).toMatchSnapshot()
   })
 })
