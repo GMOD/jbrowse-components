@@ -1,12 +1,11 @@
-import { ThemeProvider } from '@emotion/react'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { render } from '@testing-library/react'
+import { vi, afterEach, test, expect } from 'vitest'
 import userEvent from '@testing-library/user-event'
+import { cleanup, render } from '@testing-library/react'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import AddConnectionWidget2 from './AddConnectionWidget'
-
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+import { ThemeProvider } from '@emotion/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 function AddConnectionWidget({ model }: { model: unknown }) {
   return (
@@ -15,6 +14,9 @@ function AddConnectionWidget({ model }: { model: unknown }) {
     </ThemeProvider>
   )
 }
+afterEach(() => {
+  cleanup()
+})
 
 function makeSession() {
   const session = createTestSession()
@@ -54,32 +56,30 @@ test('renders', () => {
 }, 20000)
 
 test('can handle a custom UCSC trackHub URL', async () => {
-  jest
-    .spyOn(global, 'fetch')
-    .mockImplementation(async (url: string | Request | URL) => {
-      const urlText = `${url}`
-      if (urlText.endsWith('hub.txt')) {
-        return new Response(`hub TestHub
+  vi.spyOn(global, 'fetch').mockImplementation(async url => {
+    const urlText = `${url}`
+    if (urlText.endsWith('hub.txt')) {
+      return new Response(`hub TestHub
 shortLabel Test Hub
 longLabel Test Genome Informatics Hub for human DNase and RNAseq data
 genomesFile genomes.txt
 email genome@test.com
 descriptionUrl test.html
 `)
-      } else if (urlText.endsWith('genomes.txt')) {
-        return new Response(`genome volMyt1
+    } else if (urlText.endsWith('genomes.txt')) {
+      return new Response(`genome volMyt1
 trackDb hg19/trackDb.txt
 `)
-      } else if (urlText.endsWith('trackDb.txt')) {
-        return new Response(`track dnaseSignal
+    } else if (urlText.endsWith('trackDb.txt')) {
+      return new Response(`track dnaseSignal
 bigDataUrl dnaseSignal.bigWig
 shortLabel DNAse Signal
 longLabel Depth of alignments of DNAse reads
 type bigWig
 `)
-      }
-      throw new Error('unknown')
-    })
+    }
+    throw new Error('unknown')
+  })
 
   const {
     session,
@@ -107,9 +107,8 @@ type bigWig
 }, 20000)
 
 test('can handle a custom JBrowse 1 data directory URL', async () => {
-  jest
-    .spyOn(global, 'fetch')
-    .mockImplementation(async (url: RequestInfo | URL) => {
+  vi.spyOn(global, 'fetch').mockImplementation(
+    async (url: RequestInfo | URL) => {
       const urlText = `${url}`
       let responseText = ''
       if (urlText.endsWith('trackList.json')) {
@@ -118,7 +117,8 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
         responseText = '[]'
       }
       return new Response(responseText)
-    })
+    },
+  )
 
   const {
     findByTestId,

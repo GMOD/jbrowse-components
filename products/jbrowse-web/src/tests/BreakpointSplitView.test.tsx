@@ -1,9 +1,11 @@
-import '@testing-library/jest-dom'
-import { waitFor } from '@testing-library/react'
+import { cleanup, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
-
+import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+import { afterEach, beforeEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 setup()
 
 beforeEach(() => {
@@ -11,6 +13,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 40000 }
+
 
 test('breakpoint split view', () => {
   return mockConsoleWarn(async () => {

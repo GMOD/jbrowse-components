@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'

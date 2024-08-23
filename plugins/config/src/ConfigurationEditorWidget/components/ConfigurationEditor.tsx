@@ -27,7 +27,7 @@ import type { IAnyType } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   icon: {
-    color: theme.palette.tertiary.contrastText || '#fff',
+    color: theme.palette.tertiary?.contrastText || '#fff',
   },
   expansionPanelDetails: {
     display: 'block',

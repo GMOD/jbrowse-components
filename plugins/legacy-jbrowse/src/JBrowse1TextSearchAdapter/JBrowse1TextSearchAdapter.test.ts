@@ -1,12 +1,11 @@
-import path from 'path'
-
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-
-import Adapter from './JBrowse1TextSearchAdapter'
-import configSchema from './configSchema'
+import { vi, expect, test } from 'vitest'
+import path from 'path'
+import meta from '../../test_data/names/meta.json'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'
-import meta from '../../test_data/names/meta.json'
+import Adapter from './JBrowse1TextSearchAdapter'
+import configSchema from './configSchema'
 
 function mockFetch(url: RequestInfo | URL) {
   let response = {}
@@ -27,7 +26,7 @@ const rootTemplate = path
   .replaceAll('\\', '\\\\')
 
 test('search upper case', async () => {
-  const spy = jest.spyOn(global, 'fetch')
+  const spy = vi.spyOn(global, 'fetch')
   spy.mockImplementation(mockFetch)
 
   const adapter = new Adapter(
@@ -65,7 +64,7 @@ test('search upper case', async () => {
 })
 
 test('search lower case', async () => {
-  const spy = jest.spyOn(global, 'fetch')
+  const spy = vi.spyOn(global, 'fetch')
   spy.mockImplementation(mockFetch)
 
   const adapter = new Adapter(

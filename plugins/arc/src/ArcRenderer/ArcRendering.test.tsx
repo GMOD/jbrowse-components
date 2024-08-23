@@ -1,8 +1,11 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { render } from '@testing-library/react'
-
+import { cleanup, render } from '@testing-library/react'
 import Rendering from './ArcRendering'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { afterEach, expect, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 
 test('no features', () => {
   const { container } = render(

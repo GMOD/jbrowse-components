@@ -1,4 +1,4 @@
-import { fireEvent, within } from '@testing-library/react'
+import { cleanup, fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -9,7 +9,10 @@ import {
   pv,
   setup,
 } from './util'
-
+import { beforeEach, afterEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 setup()
 
 beforeEach(() => {

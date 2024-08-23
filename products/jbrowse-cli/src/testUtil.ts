@@ -6,9 +6,6 @@ import { runCommand } from '@oclif/test'
 
 const { mkdir, mkdtemp } = fs.promises
 
-// increase test timeout for all tests
-jest.setTimeout(20000)
-
 // On macOS, os.tmpdir() is not a real path:
 // https://github.com/nodejs/node/issues/11422
 const tmpDir = fs.realpathSync(os.tmpdir())

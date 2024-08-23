@@ -1,9 +1,11 @@
-import '@testing-library/jest-dom'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { cleanup, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createView, setup, doBeforeEach } from './util'
+import { beforeEach, afterEach, test } from 'vitest'
 
-import { createView, doBeforeEach, setup } from './util'
-
+afterEach(() => {
+  cleanup()
+})
 setup()
 
 beforeEach(() => {

@@ -1,11 +1,15 @@
+import { cleanup, fireEvent } from '@testing-library/react'
 import path from 'path'
-
-import { fireEvent } from '@testing-library/react'
-
-import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
-import dotplotSession from './dotplot_inverted_test.json'
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
+// configs
 import config from '../../test_data/config_dotplot.json'
+import dotplotSession from './dotplot_inverted_test.json'
+import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
+// misc
+import { setup, doBeforeEach, expectCanvasMatch, createView } from './util'
+import { afterEach, beforeEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 
 const delay = { timeout: 50000 }
 const opts = [{}, delay]

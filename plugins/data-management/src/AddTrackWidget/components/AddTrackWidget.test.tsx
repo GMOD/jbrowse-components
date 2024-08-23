@@ -1,8 +1,7 @@
+import { expect, test } from 'vitest'
+import { render, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { fireEvent, render } from '@testing-library/react'
-
 import AddTrackWidget from './AddTrackWidget'
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 function getSession() {
   const session = createTestSession()
@@ -98,18 +97,14 @@ test('adds a track', async () => {
   )
   expect(session.sessionTracks.length).toBe(1)
   fireEvent.change(getAllByTestId('urlInput')[0]!, {
-    target: {
-      value: 'test.txt',
-    },
+    target: { value: 'test.txt' },
   })
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
   fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
   const bamAdapter = await findByText('BAM adapter')
   fireEvent.click(bamAdapter)
   fireEvent.change(getByTestId('trackNameInput'), {
-    target: {
-      value: 'Test track name',
-    },
+    target: { value: 'Test track name' },
   })
   fireEvent.mouseDown(getByTestId('trackTypeSelect'))
   fireEvent.click(await findByText('Feature track'))

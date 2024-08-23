@@ -1,14 +1,10 @@
-/**
- * @jest-environment node
- */
-
 import fs from 'fs'
 import path from 'path'
 
+import { readConf, ctxDir, runInTmpDir } from '../testUtil'
 import { runCommand } from '@oclif/test'
 
-import { ctxDir, readConf, runInTmpDir } from '../testUtil'
-
+import { expect, test } from 'vitest'
 const { writeFile, copyFile } = fs.promises
 
 const exists = (p: string) => fs.existsSync(p)

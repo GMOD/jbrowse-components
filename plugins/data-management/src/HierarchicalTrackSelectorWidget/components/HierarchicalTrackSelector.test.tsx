@@ -1,26 +1,38 @@
+import { afterEach, expect, test } from 'vitest'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { cleanup, render } from '@testing-library/react'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
 
-import HierarchicalTrackSelector from './HierarchicalTrackSelector'
-import conf from '../../../../../test_data/test_order/config.json'
 
-import type { HierarchicalTrackSelectorModel } from '../model'
+import HierarchicalTrackSelector2 from './HierarchicalTrackSelector'
+import { HierarchicalTrackSelectorModel } from '../model'
 
 // test data
-
-// mock
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+import conf from '../../../../../test_data/test_order/config.json'
 
 function timeout(ms: number) {
   return new Promise(res => setTimeout(res, ms))
 }
 
 afterEach(() => {
+  cleanup()
   localStorage.clear()
   sessionStorage.clear()
 })
+// @ts-expect-error
+global.jest = true
+
+function HierarchicalTrackSelector(props: {
+  model: HierarchicalTrackSelectorModel
+  toolbarHeight: number
+}) {
+  return (
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector2 {...props} />
+    </ThemeProvider>
+  )
+}
 
 test('no tracks', () => {
   const session = createTestSession()
@@ -28,14 +40,9 @@ test('no tracks', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
-  render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
-  )
+  render(<HierarchicalTrackSelector model={model} toolbarHeight={20} />)
   expect(model.allTracks[0]!.tracks.length).toBe(0)
 })
-
 test('sm uncategorized tracks', async () => {
   // session tracks
   const session = addTestData(createTestSession())
@@ -51,12 +58,12 @@ test('sm uncategorized tracks', async () => {
   })
   const model = firstView.activateTrackSelector()
 
-  const { findAllByTestId: f } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+  const { findAllByTestId } = render(
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
-  expect((await f(/htsTrackLabel/)).map(e => e.textContent)).toMatchSnapshot()
+  expect(
+    (await findAllByTestId(/htsTrackLabel/)).map(e => e.textContent),
+  ).toMatchSnapshot()
 })
 
 test('sm categorized tracks', async () => {
@@ -81,13 +88,13 @@ test('sm categorized tracks', async () => {
   ])
   const model = firstView.activateTrackSelector()
 
-  const { findAllByTestId: f } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+  const { findAllByTestId } = render(
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
-  expect((await f(/htsTrackLabel/)).map(e => e.textContent)).toMatchSnapshot()
+  expect(
+    (await findAllByTestId(/htsTrackLabel/)).map(e => e.textContent),
+  ).toMatchSnapshot()
 })
 
 test('localstorage preference - collapse categorized tracks', async () => {
@@ -116,13 +123,13 @@ test('localstorage preference - collapse categorized tracks', async () => {
   ])
   const model = firstView.activateTrackSelector()
 
-  const { findAllByTestId: f } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+  const { findAllByTestId } = render(
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
   await timeout(1000)
-  expect((await f(/htsTrackLabel/)).map(e => e.textContent)).toMatchSnapshot()
+  expect(
+    (await findAllByTestId(/htsTrackLabel/)).map(e => e.textContent),
+  ).toMatchSnapshot()
 })
 
 test('configuration preference - collapse categorized tracks', async () => {
@@ -159,13 +166,13 @@ test('configuration preference - collapse categorized tracks', async () => {
   ])
   const model = firstView.activateTrackSelector()
 
-  const { findAllByTestId: f } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+  const { findAllByTestId } = render(
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
-  expect((await f(/htsTrackLabel/)).map(e => e.textContent)).toMatchSnapshot()
+  expect(
+    (await findAllByTestId(/htsTrackLabel/)).map(e => e.textContent),
+  ).toMatchSnapshot()
 })
 
 test('unsorted categories', async () => {
@@ -186,9 +193,7 @@ test('unsorted categories', async () => {
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
   expect(
@@ -224,9 +229,7 @@ test('configuration preference - sorting categories', async () => {
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
   expect(
@@ -262,9 +265,7 @@ test('configuration preference - sorting track names', async () => {
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
   expect(
@@ -294,9 +295,7 @@ test('localstorage preference - sorting categories', async () => {
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
   expect(
@@ -327,9 +326,7 @@ test('localstorage preference - sorting track names', async () => {
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+    <HierarchicalTrackSelector model={model} toolbarHeight={20} />,
   )
 
   const list = await findAllByTestId('htsTrackLabel', {

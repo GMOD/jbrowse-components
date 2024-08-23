@@ -1,12 +1,13 @@
-import { render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle2'
+import { cleanup, render, waitFor } from '@testing-library/react'
+import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
-
-// local
 import { App } from './loaderUtil'
+import { Image, createCanvas } from 'canvas'
+import { vi, afterEach, test } from 'vitest'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+afterEach(() => {
+  cleanup()
+})
 
 // @ts-ignore
 global.nodeImage = Image
@@ -18,11 +19,9 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 20000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
+vi.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   if (/plugin-store/.exec(`${url}`)) {
     return new Response(
       JSON.stringify({
@@ -64,9 +63,10 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
       }
       const { start, end } = range[0]!
       const len = end - start + 1
-      const buf = await file.read(len, start)
+      const buf = Buffer.alloc(len)
+      const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
-      return new Response(buf, {
+      return new Response(buf.slice(0, bytesRead), {
         status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
       })
@@ -84,7 +84,7 @@ afterEach(() => {
 })
 
 test('errors with config in URL that does not exist', async () => {
-  console.error = jest.fn()
+  console.error = vi.fn()
   const { findByText } = render(<App search="?config=doesNotExist.json" />)
   await findByText(/HTTP 404 fetching doesNotExist.json/)
 })
@@ -160,21 +160,21 @@ test('can use a spec url for lgv', async () => {
 }, 40000)
 
 test('can use a spec url for spreadsheet view', async () => {
-  console.warn = jest.fn()
+  console.warn = vi.fn()
   const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SpreadsheetView","uri":"test_data/volvox/volvox.filtered.vcf.gz","assembly":"volvox"}]}' />,
   )
 
-  await findByText('ctgA:8,471', {}, delay)
+  await findByText('ctgA:8470..8471', {}, delay)
 }, 40000)
 
 test('can use a spec url for sv inspector view', async () => {
-  console.warn = jest.fn()
+  console.warn = vi.fn()
   const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}' />,
   )
 
-  await findByText('ctgB:1,982', {}, delay)
+  await findByText('ctgB:1982..1983', {}, delay)
 }, 40000)
 
 test('can use a spec url for dotplot view', async () => {

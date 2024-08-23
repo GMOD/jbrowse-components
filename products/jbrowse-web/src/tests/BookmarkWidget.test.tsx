@@ -1,15 +1,12 @@
-import { fireEvent, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { cleanup, waitFor, fireEvent, within } from '@testing-library/react'
 import { saveAs } from 'file-saver'
-
-import { createView, doBeforeEach, setup } from './util'
-
-jest.mock('file-saver', () => {
-  return {
-    ...jest.requireActual('file-saver'),
-    saveAs: jest.fn(),
-  }
+import userEvent from '@testing-library/user-event'
+import { createView, setup, doBeforeEach } from './util'
+import { vi, expect, afterEach, beforeEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
 })
+
 setup()
 
 beforeEach(() => {
@@ -160,6 +157,30 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
   // get the focus away from the field
   fireEvent.click(document)
 
+  expect(field.innerHTML).toContain('new label')
+})
+test('Edit a bookmark label with a double click via the dialog', async () => {
+  const { session, findByText, findAllByRole, findByTestId } =
+    await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const field = (await findAllByRole('gridcell'))[2]!
+
+  await user.dblClick(field)
+  await user.type(await findByTestId('edit-bookmark-label-field'), 'new label')
+  await user.click(await findByText('Confirm'))
   expect(field.innerHTML).toContain('new label')
 })
 

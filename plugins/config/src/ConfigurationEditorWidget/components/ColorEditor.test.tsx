@@ -1,9 +1,10 @@
-import { fireEvent, render } from '@testing-library/react'
+import { vi, test, expect } from 'vitest'
+import { render, fireEvent } from '@testing-library/react'
 
 import { ColorSlot } from './ColorEditor'
 
 test('can change value via the text field', () => {
-  const myfn = jest.fn()
+  const myfn = vi.fn()
   const { getByDisplayValue } = render(
     <ColorSlot value="green" onChange={myfn} />,
   )

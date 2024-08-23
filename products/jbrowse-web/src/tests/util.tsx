@@ -1,26 +1,30 @@
 /* eslint-disable react-refresh/only-export-components */
-import PluginManager from '@jbrowse/core/PluginManager'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import React from 'react'
+import DefaultMenu from '@jbrowse/core/ui/Menu'
+import DefaultMenuButton from '@jbrowse/core/ui/MenuButton'
+import { vi, expect } from 'vitest'
 import { render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { Buffer } from 'buffer'
+import { QueryParamProvider } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+import { Image, createCanvas } from 'canvas'
 
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
+
+import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
-import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
-import JBrowse from './TestingJBrowse'
-
-import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { GenericFilehandle } from 'generic-filehandle2'
 
 type LGV = LinearGenomeViewModel
-
-jest.mock('../makeWorkerInstance', () => () => {})
 
 // @ts-expect-error
 global.nodeImage = Image
@@ -86,7 +90,6 @@ export function setup() {
 }
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
-  // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
@@ -103,10 +106,47 @@ export function expectCanvasMatch(
   })
 }
 
+export function JBrowse(props: any) {
+  return (
+    <QueryParamProvider adapter={WindowHistoryAdapter}>
+      <JBrowseWithoutQueryParamProvider {...props} />
+    </QueryParamProvider>
+  )
+}
+
 export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
+vi.mock('file-saver', () => {
+  return {
+    saveAs: vi.fn(),
+  }
+})
+vi.mock('@jbrowse/core/util/useMeasure', () => {
+  return {
+    default: () => {
+      return [{ current: undefined }, { width: 808 }] as const
+    },
+  }
+})
 
+vi.mock('@jbrowse/core/ReExports', () => {
+  return {
+    default: () => {
+      return {}
+    },
+  }
+})
+vi.mock('@jbrowse/core/ui/CascadingMenu', () => {
+  return {
+    default: DefaultMenu,
+  }
+})
+vi.mock('@jbrowse/core/ui/CascadingMenuButton', () => {
+  return {
+    default: DefaultMenuButton,
+  }
+})
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
@@ -120,13 +160,11 @@ export async function createView(args?: any, adminMode?: boolean) {
   }
   return ret
 }
-
 interface Results extends ReturnType<typeof render> {
   view: LGV
   session: AbstractSessionModel
   rootModel: AppRootModel
 }
-
 export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
@@ -135,16 +173,17 @@ export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   return { view, rootModel, session, ...rest }
 }
 
+// @ts-expect-error
+global.jest = true
+
 export function doBeforeEach(
   cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
 ) {
   clearCache()
   clearAdapterCache()
-
-  // @ts-expect-error
-  fetch.resetMocks()
-  // @ts-expect-error
-  fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
+  global.fetch = vi
+    .fn()
+    .mockImplementation(generateReadBuffer(url => new LocalFile(cb(url))))
 }
 interface Results2 extends Results {
   autocomplete: HTMLElement
@@ -180,32 +219,31 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
 
   return {
     autocomplete,
-    getInputValue,
     input,
+    getInputValue,
     ...args,
   }
 }
 
 export async function mockConsole(fn: () => Promise<void>) {
-  const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+  const consoleMock = vi.spyOn(console, 'error').mockImplementation(() => {})
   await fn()
   consoleMock.mockRestore()
 }
 
 export async function mockConsoleWarn(fn: () => Promise<void>) {
-  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
+  const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => {})
   await fn()
   consoleMock.mockRestore()
 }
 
 export function mockFile404(
   str: string,
-  readBuffer: (request: Request) => Promise<Response>,
+  readBuffer: (request: string) => Promise<Response>,
 ) {
-  // @ts-expect-error
-  fetch.mockResponse(async request =>
-    request.url === str ? { status: 404 } : readBuffer(request),
-  )
+  global.fetch = vi
+    .fn()
+    .mockImplementation(async request =>
+      request === str ? { status: 404 } : readBuffer(request),
+    )
 }
-
-export { default as JBrowse } from './TestingJBrowse'

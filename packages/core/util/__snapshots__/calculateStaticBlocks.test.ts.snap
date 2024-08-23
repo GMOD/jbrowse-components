@@ -1,6 +1,66 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`block calculation can calculate some blocks 1 1`] = `
+exports[`1 1`] = `
+BlockSet {
+  "blocks": [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "{test}ctgA:9201..10000[rev]-0-reversed-beforeFirstRegion",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "type": "InterRegionPaddingBlock",
+      "variant": "boundary",
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "assemblyName": "test",
+      "end": 10000,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "{test}ctgA:9201..10000[rev]-0-reversed",
+      "offsetPx": 0,
+      "parentRegion": {
+        "assemblyName": "test",
+        "end": 10000,
+        "refName": "ctgA",
+        "reversed": true,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "regionNumber": 0,
+      "reversed": true,
+      "start": 9200,
+      "type": "ContentBlock",
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "assemblyName": "test",
+      "end": 9200,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "{test}ctgA:8401..9200[rev]-0-reversed",
+      "offsetPx": 800,
+      "parentRegion": {
+        "assemblyName": "test",
+        "end": 10000,
+        "refName": "ctgA",
+        "reversed": true,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "regionNumber": 0,
+      "reversed": true,
+      "start": 8400,
+      "type": "ContentBlock",
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`can calculate some blocks 1 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
@@ -58,7 +118,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 2 1`] = `
+exports[`can calculate some blocks 2 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
@@ -137,7 +197,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 5 1`] = `
+exports[`can calculate some blocks 5 1`] = `
 BlockSet {
   "blocks": [
     ContentBlock {
@@ -184,7 +244,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 6 1`] = `
+exports[`can calculate some blocks 6 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
@@ -252,7 +312,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 7 1`] = `
+exports[`can calculate some blocks 7 1`] = `
 BlockSet {
   "blocks": [
     ContentBlock {
@@ -310,7 +370,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 8 1`] = `
+exports[`can calculate some blocks 8 1`] = `
 BlockSet {
   "blocks": [
     ContentBlock {
@@ -357,7 +417,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 9 1`] = `
+exports[`can calculate some blocks 9 1`] = `
 BlockSet {
   "blocks": [
     ContentBlock {
@@ -404,7 +464,7 @@ BlockSet {
 }
 `;
 
-exports[`block calculation can calculate some blocks 10 1`] = `
+exports[`can calculate some blocks 10 1`] = `
 [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
@@ -460,67 +520,7 @@ exports[`block calculation can calculate some blocks 10 1`] = `
 ]
 `;
 
-exports[`reverse block calculation 1 1`] = `
-BlockSet {
-  "blocks": [
-    InterRegionPaddingBlock {
-      "assemblyName": undefined,
-      "end": undefined,
-      "key": "{test}ctgA:9201..10000[rev]-0-reversed-beforeFirstRegion",
-      "offsetPx": -800,
-      "refName": undefined,
-      "start": undefined,
-      "type": "InterRegionPaddingBlock",
-      "variant": "boundary",
-      "widthPx": 800,
-    },
-    ContentBlock {
-      "assemblyName": "test",
-      "end": 10000,
-      "isLeftEndOfDisplayedRegion": true,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:9201..10000[rev]-0-reversed",
-      "offsetPx": 0,
-      "parentRegion": {
-        "assemblyName": "test",
-        "end": 10000,
-        "refName": "ctgA",
-        "reversed": true,
-        "start": 0,
-      },
-      "refName": "ctgA",
-      "regionNumber": 0,
-      "reversed": true,
-      "start": 9200,
-      "type": "ContentBlock",
-      "widthPx": 800,
-    },
-    ContentBlock {
-      "assemblyName": "test",
-      "end": 9200,
-      "isLeftEndOfDisplayedRegion": false,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:8401..9200[rev]-0-reversed",
-      "offsetPx": 800,
-      "parentRegion": {
-        "assemblyName": "test",
-        "end": 10000,
-        "refName": "ctgA",
-        "reversed": true,
-        "start": 0,
-      },
-      "refName": "ctgA",
-      "regionNumber": 0,
-      "reversed": true,
-      "start": 8400,
-      "type": "ContentBlock",
-      "widthPx": 800,
-    },
-  ],
-}
-`;
-
-exports[`reversed displayed regions with elided region 1`] = `
+exports[`with elided region 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
@@ -602,7 +602,7 @@ BlockSet {
 }
 `;
 
-exports[`reversed displayed regions without elided region 1`] = `
+exports[`without elided region 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {

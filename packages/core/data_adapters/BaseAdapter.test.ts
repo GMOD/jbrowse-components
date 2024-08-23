@@ -1,84 +1,78 @@
-import { firstValueFrom } from 'rxjs'
+import { expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
 import { BaseFeatureDataAdapter } from './BaseAdapter'
-import { ConfigurationSchema } from '../configuration/configurationSchema'
 import { ObservableCreate } from '../util/rxjs'
-import SimpleFeature from '../util/simpleFeature'
+import SimpleFeature, { Feature } from '../util/simpleFeature'
+import { Region } from '../util/types'
+import { ConfigurationSchema } from '../configuration/configurationSchema'
 
-import type { Feature } from '../util/simpleFeature'
-import type { Region } from '../util/types'
-
-describe('base data adapter', () => {
-  it('properly propagates errors in feature fetching', async () => {
-    class Adapter extends BaseFeatureDataAdapter {
-      async getRefNames() {
-        return ['ctgA', 'ctgB']
-      }
-
-      getFeatures(_region: Region) {
-        return ObservableCreate<Feature>(() =>
-          Promise.reject(new Error('something blew up')),
-        )
-      }
-
-      freeResources(): void {}
+test('properly propagates errors in feature fetching', async () => {
+  class Adapter extends BaseFeatureDataAdapter {
+    async getRefNames() {
+      return ['ctgA', 'ctgB']
     }
-    const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
-    const features = adapter.getFeatures({
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 0,
-      end: 20000,
-    })
-    try {
-      await firstValueFrom(features.pipe(toArray()))
-    } catch (e) {
-      expect(`${e}`).toMatch(/something blew up/)
+
+    getFeatures(_region: Region) {
+      return ObservableCreate<Feature>(() =>
+        Promise.reject(new Error('something blew up')),
+      )
     }
+
+    freeResources(): void {}
+  }
+  const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
+  const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
   })
+  const featuresArray = features.pipe(toArray()).toPromise()
 
-  it('retrieves features', async () => {
-    class Adapter extends BaseFeatureDataAdapter {
-      async getRefNames() {
-        return ['ctgA', 'ctgB']
-      }
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  expect(featuresArray).rejects.toThrow(/something blew up/)
+})
 
-      getFeatures(region: Region) {
-        return ObservableCreate<Feature>(observer => {
-          if (region.refName === 'ctgA') {
-            observer.next(
-              new SimpleFeature({
-                uniqueId: 'testFeature',
-                refName: region.refName,
-                start: 100,
-                end: 200,
-              }),
-            )
-          }
-          observer.complete()
-        })
-      }
-
-      freeResources(): void {}
+test('retrieves features', async () => {
+  class Adapter extends BaseFeatureDataAdapter {
+    async getRefNames() {
+      return ['ctgA', 'ctgB']
     }
-    const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
-    const features = adapter.getFeatures({
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 0,
-      end: 20000,
-    })
-    const featuresArray = await firstValueFrom(features.pipe(toArray()))
-    expect(featuresArray).toMatchSnapshot()
 
-    const features2 = adapter.getFeatures({
-      assemblyName: 'volvox',
-      refName: 'ctgC',
-      start: 0,
-      end: 20000,
-    })
-    const featuresArray2 = await firstValueFrom(features2.pipe(toArray()))
-    expect(featuresArray2).toMatchSnapshot()
+    getFeatures(region: Region) {
+      return ObservableCreate<Feature>(observer => {
+        if (region.refName === 'ctgA') {
+          observer.next(
+            new SimpleFeature({
+              uniqueId: 'testFeature',
+              refName: region.refName,
+              start: 100,
+              end: 200,
+            }),
+          )
+        }
+        observer.complete()
+      })
+    }
+
+    freeResources(): void {}
+  }
+  const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
+  const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
   })
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  expect(featuresArray).toMatchSnapshot()
+
+  const features2 = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgC',
+    start: 0,
+    end: 20000,
+  })
+  const featuresArray2 = await features2.pipe(toArray()).toPromise()
+  expect(featuresArray2).toMatchSnapshot()
 })

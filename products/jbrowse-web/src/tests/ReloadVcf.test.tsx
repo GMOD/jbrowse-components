@@ -10,7 +10,12 @@ import {
   mockFile404,
   setup,
 } from './util'
+import { vi, beforeEach, afterEach, test } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
+afterEach(() => {
+  cleanup()
+})
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
 )
@@ -33,8 +38,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    // @ts-expect-error
-    fetch.mockResponse(readBuffer)
+    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
@@ -50,8 +54,7 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     view.setNewView(0.05, 5000)
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    // @ts-expect-error
-    fetch.mockResponse(readBuffer)
+    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 

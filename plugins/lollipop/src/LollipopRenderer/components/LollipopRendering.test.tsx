@@ -1,9 +1,13 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 
 import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
 import ConfigSchema from '../configSchema'
 import Rendering from './LollipopRendering'
+import { afterEach, expect, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {

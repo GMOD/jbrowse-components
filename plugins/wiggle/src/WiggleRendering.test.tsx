@@ -1,5 +1,5 @@
-import { fireEvent, render } from '@testing-library/react'
-
+import { test, expect } from 'vitest'
+import { render, fireEvent } from '@testing-library/react'
 import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point

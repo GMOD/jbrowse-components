@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import SimpleFeature from './simpleFeature'
 
 test('can create a simple feature', () => {

@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import Adapter from './ChromSizesAdapter'
 import configSchema from './configSchema'
 

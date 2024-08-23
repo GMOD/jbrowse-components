@@ -1,8 +1,12 @@
-import { waitFor } from '@testing-library/react'
+import { cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
-
+// locals
+import { setup, expectCanvasMatch, doBeforeEach, createView, hts } from './util'
+import { afterEach, expect, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 setup()
 
 beforeEach(() => {
@@ -15,7 +19,7 @@ async function wait(view: any) {
   }, delay)
 }
 
-const delay = { timeout: 60000 }
+const delay = { timeout: 50000 }
 const opts = [{}, delay]
 
 test('toggle short-read arc display', async () => {
@@ -29,7 +33,7 @@ test('toggle short-read arc display', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 60000)
+}, 50000)
 
 test('toggle short-read cloud display', async () => {
   const user = userEvent.setup()
@@ -42,7 +46,7 @@ test('toggle short-read cloud display', async () => {
   await user.click((await findAllByText('Read cloud display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('cloud-canvas'))
-}, 60000)
+}, 50000)
 
 test('toggle long-read cloud display', async () => {
   const user = userEvent.setup()
@@ -55,7 +59,7 @@ test('toggle long-read cloud display', async () => {
   await user.click((await findAllByText('Read cloud display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('cloud-canvas'))
-}, 60000)
+}, 50000)
 
 test('toggle long-read arc display', async () => {
   const user = userEvent.setup()
@@ -68,7 +72,7 @@ test('toggle long-read arc display', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 60000)
+}, 50000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
   const user = userEvent.setup()
@@ -83,7 +87,7 @@ test('toggle long-read arc display, use out of view pairing', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 60000)
+}, 50000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
   const user = userEvent.setup()
@@ -96,4 +100,4 @@ test('toggle short-read arc display, use out of view pairing', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 60000)
+}, 50000)

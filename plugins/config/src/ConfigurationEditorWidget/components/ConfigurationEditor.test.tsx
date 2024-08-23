@@ -1,14 +1,17 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { cleanup, render } from '@testing-library/react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import PluginManager from '@jbrowse/core/PluginManager'
 import Alignments from '@jbrowse/plugin-alignments'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import SVG from '@jbrowse/plugin-svg'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import ConfigurationEditor from './ConfigurationEditor'
-
+import { afterEach, expect, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 test('renders with just the required model elements', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
     foo: {

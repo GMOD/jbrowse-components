@@ -1,3 +1,4 @@
+import { vi, expect, test } from 'vitest'
 import Layout from './GranularRectLayout'
 
 test('lays out non-overlapping features end to end', () => {
@@ -101,7 +102,7 @@ test('tests that adding +/- pitchX fixes resolution causing errors', () => {
 })
 
 test('tests reinitializing layout due to throwing away old one', () => {
-  const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const l = new Layout({
     pitchX: 1,
     pitchY: 1,

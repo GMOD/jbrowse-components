@@ -20,8 +20,8 @@ export abstract class BaseAdapter {
     public getSubAdapter?: getSubAdapterType,
     public pluginManager?: PluginManager,
   ) {
-    // note: we use switch on jest here for more simple feature IDs
-    // in test environment
+    // note: we use switch on jest here for more simple feature IDs in test
+    // environment
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(config) ? getSnapshot(config) : config
       this.id = `${idMaker(data)}`

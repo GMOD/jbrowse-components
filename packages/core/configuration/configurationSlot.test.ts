@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import ConfigSlot from './configurationSlot'
 
 test('can convert a string slot to and from a callback', () => {

@@ -1,7 +1,11 @@
+import { cleanup } from '@testing-library/react'
 import { createViewNoWait, doBeforeEach, mockConsole } from './util'
 import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json'
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json'
-
+import { beforeEach, afterEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 const delay = { timeout: 30000 }
 
 beforeEach(() => {

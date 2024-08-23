@@ -1,12 +1,15 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { ThemeProvider } from '@mui/material'
+import React from 'react'
+import { test, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-import VariantFeatureDetails from './VariantFeatureWidget'
+// locals
 import { stateModelFactory } from './stateModelFactory'
+import VariantFeatureDetails from './VariantFeatureWidget'
+import { ThemeProvider } from '@mui/material'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 test('renders with just the required model elements', () => {
   const pluginManager = new PluginManager([])

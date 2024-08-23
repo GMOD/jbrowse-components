@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`base data adapter retrieves features 1`] = `
+exports[`retrieves features 1`] = `
 [
   {
     "end": 200,
@@ -11,4 +11,4 @@ exports[`base data adapter retrieves features 1`] = `
 ]
 `;
 
-exports[`base data adapter retrieves features 2`] = `[]`;
+exports[`retrieves features 2`] = `[]`;

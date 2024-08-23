@@ -1,9 +1,13 @@
-import { fireEvent, render } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import StartScreen from '../components/StartScreen'
 import factoryReset from '../factoryReset'
 import { getPluginManager } from './util'
+import { expect, afterEach, test } from 'vitest'
 
+afterEach(() => {
+  cleanup()
+})
 test('Empty config', async () => {
   const pluginManager = getPluginManager({})
   const root = pluginManager.rootModel

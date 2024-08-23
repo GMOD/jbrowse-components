@@ -1,9 +1,10 @@
+import { expect, afterEach, test } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
-
 import FatalErrorDialog from './FatalErrorDialog'
 
-afterEach(cleanup)
-
+afterEach(() => {
+  cleanup()
+})
 test('open fatal error dialog in web', async () => {
   const { findByTestId, getByText } = render(
     <FatalErrorDialog

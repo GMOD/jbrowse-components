@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest'
 import { getNiceDomain, getScale } from './util'
 
 test('linear scale', () => {

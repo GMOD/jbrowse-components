@@ -1,6 +1,6 @@
-import { firstValueFrom } from 'rxjs'
+import { expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 import Adapter from './TwoBitAdapter'
 import configSchema from './configSchema'
 

@@ -1,10 +1,15 @@
-import { render } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
+import { cleanup, render } from '@testing-library/react'
+import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
 // local
 import { App } from './loaderUtil'
-import { expectCanvasMatch, setup } from './util'
+import { setup, expectCanvasMatch } from './util'
+import { vi, afterEach, test } from 'vitest'
+
+afterEach(() => {
+  cleanup()
+})
 setup()
 
 const getFile = (url: string) =>
@@ -12,11 +17,9 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 20000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
+vi.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   // this is the analytics
   if (/jb2=true/.exec(`${url}`)) {
     return new Response('{}')
@@ -31,9 +34,10 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
       }
       const { start, end } = range[0]!
       const len = end - start + 1
-      const buf = await file.read(len, start)
+      const buf = Buffer.alloc(len)
+      const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
-      return new Response(buf, {
+      return new Response(buf.slice(0, bytesRead), {
         status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
       })
@@ -52,7 +56,7 @@ afterEach(() => {
 })
 
 // onAction listener warning
-console.warn = jest.fn()
+console.warn = vi.fn()
 
 test('horizontally flipped inverted alignment', async () => {
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(

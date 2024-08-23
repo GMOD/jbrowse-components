@@ -1,9 +1,17 @@
-import { firstValueFrom } from 'rxjs'
+import { vi, afterEach, beforeEach, test, expect } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 import Adapter from './BamAdapter'
 import configSchema from './configSchema'
+beforeEach(() => {
+  // tell vitest we use mocked time
+  vi.useFakeTimers()
+})
 
+afterEach(() => {
+  // restoring date after each test run
+  vi.useRealTimers()
+})
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(
     configSchema.create({
@@ -62,7 +70,17 @@ test('adapter can fetch features from volvox.bam', async () => {
   })
   const featuresArrayCSI = await firstValueFrom(featuresCSI.pipe(toArray()))
   const featuresJsonArrayCSI = featuresArrayCSI.map(f => f.toJSON())
-  expect(featuresJsonArrayCSI).toEqual(featuresJsonArray)
+  expect(
+    featuresJsonArrayCSI.map(s => {
+      delete s.uniqueId
+      return s
+    }),
+  ).toEqual(
+    featuresJsonArray.map(s => {
+      delete s.uniqueId
+      return s
+    }),
+  )
 })
 
 test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async () => {
@@ -120,6 +138,5 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
     end: 13340,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
-  const f = featuresArray[0]!
-  expect(f.get('mismatches')).toMatchSnapshot()
+  expect(featuresArray[0]!.get('mismatches')).toMatchSnapshot()
 })

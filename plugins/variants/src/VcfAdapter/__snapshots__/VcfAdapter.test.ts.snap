@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`adapter can fetch variants from volvox.vcf 1`] = `
 [
@@ -67,7 +67,7 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     },
     "start": 276,
     "type": "SNV",
-    "uniqueId": "test-ctgA-0",
+    "uniqueId": "-2132769972-ctgA-0",
   },
   {
     "ALT": [
@@ -134,7 +134,7 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     },
     "start": 1693,
     "type": "SNV",
-    "uniqueId": "test-ctgA-1",
+    "uniqueId": "-2132769972-ctgA-1",
   },
   {
     "ALT": [
@@ -201,7 +201,7 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     },
     "start": 2643,
     "type": "SNV",
-    "uniqueId": "test-ctgA-2",
+    "uniqueId": "-2132769972-ctgA-2",
   },
   {
     "ALT": [
@@ -262,7 +262,7 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     },
     "start": 3212,
     "type": "SNV",
-    "uniqueId": "test-ctgA-3",
+    "uniqueId": "-2132769972-ctgA-3",
   },
   {
     "ALT": [
@@ -324,7 +324,7 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     },
     "start": 3857,
     "type": "deletion",
-    "uniqueId": "test-ctgA-4",
+    "uniqueId": "-2132769972-ctgA-4",
   },
 ]
 `;

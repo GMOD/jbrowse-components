@@ -1,6 +1,6 @@
-import { firstValueFrom } from 'rxjs'
+import { test, expect } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 import Adapter from './VcfTabixAdapter'
 import configSchema from './configSchema'
 
@@ -56,9 +56,18 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
 
   const featArray = await firstValueFrom(feat.pipe(toArray()))
   const csiFeaturesArray = await firstValueFrom(csiFeatures.pipe(toArray()))
-  expect(featArray.slice(0, 5)).toMatchSnapshot()
-  expect(JSON.stringify(csiFeaturesArray.slice(0, 5))).toEqual(
-    JSON.stringify(featArray.slice(0, 5)),
+  expect(
+    featArray.map(r => {
+      const s = r.toJSON()
+      delete s.uniqueId
+      return s
+    }),
+  ).toEqual(
+    csiFeaturesArray.map(r => {
+      const s = r.toJSON()
+      delete s.uniqueId
+      return s
+    }),
   )
 
   const featNonExist = adapter.getFeatures({

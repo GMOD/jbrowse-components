@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import SerializableFilterChain from './serializableFilterChain'
 
 test('one', () => {

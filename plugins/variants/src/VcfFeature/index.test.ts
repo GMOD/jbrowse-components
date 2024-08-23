@@ -1,6 +1,7 @@
 import VcfParser from '@gmod/vcf'
 
 import VcfFeature from './index'
+import { expect, test } from 'vitest'
 
 test('test usage of the VcfFeature', () => {
   const parser = new VcfParser({

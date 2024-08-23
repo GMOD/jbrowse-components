@@ -1,14 +1,17 @@
-import '@testing-library/jest-dom'
-import { waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-
+import { cleanup, waitFor } from '@testing-library/react'
 import { createView, doBeforeEach, hts } from './util'
-jest.mock('../makeWorkerInstance', () => () => {})
-
-const delay = { timeout: 30000 }
+import { afterEach, expect, beforeEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
+const delay = { timeout: 20000 }
 
 beforeEach(() => {
   doBeforeEach()
+})
+afterEach(() => {
+  cleanup()
 })
 
 test('change color on track', async () => {

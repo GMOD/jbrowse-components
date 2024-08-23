@@ -12,7 +12,12 @@ import {
   pv,
   setup,
 } from './util'
+import { vi, beforeEach, afterEach, test } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
+afterEach(() => {
+  cleanup()
+})
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
 )
@@ -34,8 +39,7 @@ test('reloads bigwig (BW 404)', async () => {
     view.setNewView(10, 0)
     fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    // @ts-expect-error
-    fetch.mockResponse(readBuffer)
+    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
     expectCanvasMatch(await findByTestId(pv('1..8000-0'), ...opts))

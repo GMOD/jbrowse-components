@@ -1,9 +1,17 @@
-import { firstValueFrom } from 'rxjs'
+import { vi, afterEach, beforeEach, expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 import BigBedAdapter from './BigBedAdapter'
 import configSchema from './configSchema'
+beforeEach(() => {
+  // tell vitest we use mocked time
+  vi.useFakeTimers()
+})
 
+afterEach(() => {
+  // restoring date after each test run
+  vi.useRealTimers()
+})
 test('adapter can fetch features from volvox.bb', async () => {
   const adapter = new BigBedAdapter(
     configSchema.create({

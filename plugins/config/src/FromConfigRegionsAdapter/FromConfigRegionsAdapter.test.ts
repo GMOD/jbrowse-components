@@ -1,4 +1,5 @@
 import Adapter from './FromConfigRegionsAdapter'
+import { expect, test } from 'vitest'
 import regionsConfigSchema from './configSchema'
 
 test('adapter can fetch regions 1', async () => {

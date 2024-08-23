@@ -29,6 +29,7 @@ exports[`renders with the available plugins 1`] = `
         >
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+            id=":r1:"
             tabindex="0"
             type="button"
           >
@@ -858,6 +859,7 @@ exports[`renders with the available plugins 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                    id=":rv:"
                     tabindex="0"
                     type="button"
                   >

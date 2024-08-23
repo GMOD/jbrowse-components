@@ -240,6 +240,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           >
                             <button
                               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                              id=":r4:"
                               tabindex="0"
                               type="button"
                             >
@@ -280,6 +281,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           >
                             <button
                               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                              id=":r6:"
                               tabindex="0"
                               type="button"
                             >
@@ -301,6 +303,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </li>
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                      id=":r7:"
                       style="margin: 4px;"
                       tabindex="0"
                       type="button"
@@ -351,6 +354,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       >
                         <button
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                          id=":r8:"
                           tabindex="0"
                           type="button"
                         >
@@ -400,6 +404,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               >
                                 <button
                                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                                  id=":ra:"
                                   tabindex="0"
                                   type="button"
                                 >
@@ -440,6 +445,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               >
                                 <button
                                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                                  id=":rc:"
                                   tabindex="0"
                                   type="button"
                                 >
@@ -461,6 +467,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         </li>
                         <button
                           class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                          id=":rd:"
                           style="margin: 4px;"
                           tabindex="0"
                           type="button"
@@ -505,6 +512,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               <button
                                 class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                                 disabled=""
+                                id=":rf:"
                                 tabindex="-1"
                                 type="button"
                               >
@@ -973,6 +981,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall css-1dyipzh-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
+                      id=":ro:"
                       tabindex="0"
                       type="button"
                     >
@@ -995,6 +1004,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                    id=":rp:"
                     tabindex="0"
                     title="convert to regular value"
                     type="button"
@@ -1029,6 +1039,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                      id=":rq:"
                       style="margin: 4px;"
                       tabindex="0"
                       type="button"
@@ -1225,6 +1236,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                               >
                                 <button
                                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                                  id=":ru:"
                                   tabindex="0"
                                   title="convert to callback"
                                   type="button"
@@ -1602,6 +1614,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                               >
                                 <button
                                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                                  id=":r17:"
                                   tabindex="0"
                                   title="convert to callback"
                                   type="button"

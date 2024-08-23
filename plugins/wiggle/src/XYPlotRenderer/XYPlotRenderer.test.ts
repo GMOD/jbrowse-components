@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
 import { Image, createCanvas } from 'canvas'
 

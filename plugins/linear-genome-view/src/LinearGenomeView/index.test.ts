@@ -1,27 +1,27 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { vi, it, beforeEach, describe, expect, test } from 'vitest'
+import { waitFor } from '@testing-library/react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { waitFor } from '@testing-library/react'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { types } from 'mobx-state-tree'
 
-import { stateModelFactory } from '.'
+// locals
+import { LinearGenomeViewModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
 
-import type { LinearGenomeViewModel } from '.'
-
 type LGV = LinearGenomeViewModel
 
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
-  console.warn = jest.fn()
+  console.warn = vi.fn()
   // a stub linear genome view state model that only accepts base track types.
   // used in unit tests.
   const stubManager = new PluginManager()

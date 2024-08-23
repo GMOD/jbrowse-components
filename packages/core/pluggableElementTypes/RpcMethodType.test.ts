@@ -1,3 +1,4 @@
+import { vi, test, expect } from 'vitest'
 import PluginManager from '../PluginManager'
 import RpcMethodType from './RpcMethodType'
 
@@ -9,7 +10,7 @@ class MockRpcMethodType extends RpcMethodType {
 
 test('test serialize arguments with augmentLocationObject', async () => {
   const mockRpc = new MockRpcMethodType(pluginManager)
-  mockRpc.serializeNewAuthArguments = jest.fn().mockReturnValue({
+  mockRpc.serializeNewAuthArguments = vi.fn().mockReturnValue({
     locationType: 'UriLocation',
     uri: 'test',
     internetAccountId: 'HTTPBasicInternetAccount-test',

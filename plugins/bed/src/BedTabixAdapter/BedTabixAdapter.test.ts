@@ -1,29 +1,25 @@
-import { firstValueFrom } from 'rxjs'
+import { test, expect } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 import BedTabixAdapter from './BedTabixAdapter'
 import MyConfigSchema from './configSchema'
 
-function makeAdapter(f: string, extra?: Record<string, unknown>) {
-  return new BedTabixAdapter(
+test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
+  const adapter = new BedTabixAdapter(
     MyConfigSchema.create({
       bedGzLocation: {
-        localPath: require.resolve(f),
+        localPath: require.resolve('./test_data/volvox-bed12.bed.gz'),
         locationType: 'LocalPathLocation',
       },
       index: {
         location: {
-          localPath: require.resolve(`${f}.tbi`),
+          localPath: require.resolve('./test_data/volvox-bed12.bed.gz.tbi'),
           locationType: 'LocalPathLocation',
         },
       },
-      ...extra,
     }),
   )
-}
 
-test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
-  const adapter = makeAdapter('./test_data/volvox-bed12.bed.gz')
   const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
@@ -39,7 +35,21 @@ test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
 })
 
 test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () => {
-  const adapter = makeAdapter('./test_data/volvox.sort.bed.gz')
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/volvox.sort.bed.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/volvox.sort.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+
   const features = adapter.getFeatures({
     refName: 'contigA',
     start: 0,
@@ -55,8 +65,19 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
 })
 
 test('adapter can fetch features bed with autosql', async () => {
-  const adapter = makeAdapter('./test_data/volvox-autosql.bed.gz', {
-    autoSql: `table gdcCancer
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/volvox-autosql.bed.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/volvox-autosql.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+      autoSql: `table gdcCancer
 "somatic variants converted from MAF files obtained through the NCI GDC"
     (
     string chrom;      "Chromosome (or contig, scaffold, etc.)"
@@ -97,7 +118,8 @@ test('adapter can fetch features bed with autosql', async () => {
     lstring Matched_Norm_Sample_Barcode;  "Matcheds normal sample barcode"
     lstring case_id;                "Case ID number"
 )`,
-  })
+    }),
+  )
   const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
@@ -113,7 +135,25 @@ test('adapter can fetch features bed with autosql', async () => {
 })
 
 test('adapter can fetch bed with header', async () => {
-  const adapter = makeAdapter('./test_data/volvox.sort.with.header.bed.gz')
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve(
+          './test_data/volvox.sort.with.header.bed.gz',
+        ),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve(
+            './test_data/volvox.sort.with.header.bed.gz.tbi',
+          ),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+
   const features = adapter.getFeatures({
     refName: 'contigA',
     start: 0,
@@ -129,7 +169,21 @@ test('adapter can fetch bed with header', async () => {
 })
 
 test('adapter can use gwas header', async () => {
-  const adapter = makeAdapter('./test_data/gwas.bed.gz')
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/gwas.bed.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/gwas.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+
   const features = adapter.getFeatures({
     refName: '1',
     start: 0,

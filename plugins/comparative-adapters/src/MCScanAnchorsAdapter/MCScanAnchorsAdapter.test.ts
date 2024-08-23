@@ -1,7 +1,8 @@
-import { firstValueFrom } from 'rxjs'
+import { expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 import Adapter from './MCScanAnchorsAdapter'
+
 import configSchema from './configSchema'
 
 test('adapter can fetch features from mcscan anchors file', async () => {

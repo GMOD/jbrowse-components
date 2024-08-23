@@ -1,25 +1,24 @@
+import { cleanup, fireEvent, waitFor } from '@testing-library/react'
 import fs from 'fs'
 import path from 'path'
-
-import { fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
-
-import { createView, doBeforeEach, setup } from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
 
+// locals
+import { createView, setup, doBeforeEach } from './util'
+import { vi, expect, afterEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
-
-// mock from https://stackoverflow.com/questions/44686077
-jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
-
 setup()
 
 const delay = { timeout: 50000 }
 
 test('export svg of breakpoint split view', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
-  console.warn = jest.fn()
+  console.warn = vi.fn()
   const { findByTestId, findAllByText, findByText } =
     await createView(breakpointConfig)
 

@@ -1,13 +1,13 @@
-import Plugin from '@jbrowse/core/Plugin'
+import { expect, test } from 'vitest'
+import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import stateModelFactory from './model'
 import Alignments from '@jbrowse/plugin-alignments'
-import Hic from '@jbrowse/plugin-hic'
 import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
-import { types } from 'mobx-state-tree'
-
-import stateModelFactory from './model'
+import Hic from '@jbrowse/plugin-hic'
 
 function standardInitializer() {
   const pluginManager = new PluginManager([
@@ -118,7 +118,6 @@ test('test wrongProtocol returning false', () => {
   setWindowLoc('http://google.com')
 
   expect(widget.wrongProtocol).toBe(false)
-  // @ts-expect-error
   window.location = realLocation
 })
 
@@ -131,7 +130,6 @@ test('test wrongProtocol returning true', () => {
   })
   setWindowLoc('https://google.com')
   expect(widget.wrongProtocol).toBe(true)
-  // @ts-expect-error
   window.location = realLocation
 })
 

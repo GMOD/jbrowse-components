@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`add-assembly no load flag 1`] = `"Please specify the loading operation for this file with --load copy|symlink|move|inPlace"`;
 

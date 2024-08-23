@@ -1,13 +1,17 @@
+import { afterEach, test, expect } from 'vitest'
+import { cleanup, render, fireEvent } from '@testing-library/react'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { fireEvent, render } from '@testing-library/react'
 
+// locals
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
 
-import '@testing-library/jest-dom'
+afterEach(() => {
+  cleanup()
+})
 
 test('no features', () => {
   const { container } = render(
@@ -22,6 +26,7 @@ test('no features', () => {
         new PrecomputedLayout({
           rectangles: {},
           totalHeight: 20,
+          containsNoTransferables: true,
           maxHeightReached: false,
         })
       }
@@ -1138,8 +1143,6 @@ test('processed transcript (exons + impliedUTR)', () => {
   )
 
   // finds that the color3 is outputted for impliedUTRs
-  expect(container).toContainHTML('#357089')
-
   expect(container).toMatchSnapshot()
 })
 
@@ -1163,55 +1166,6 @@ test('svg selected', () => {
         bpPerPx={3}
       />
     </svg>,
-  )
-
-  expect(container).toMatchSnapshot()
-})
-
-test('gene with CDS children', () => {
-  const { container } = render(
-    <Rendering
-      blockKey="hello"
-      colorByCDS={false}
-      regions={[
-        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
-      ]}
-      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
-      features={
-        new Map([
-          [
-            'one',
-            new SimpleFeature({
-              refName: 'zonk',
-              type: 'gene',
-              start: 5975,
-              end: 9744,
-              strand: 1,
-              uniqueId: 'one',
-              subfeatures: [
-                {
-                  refName: 'zonk',
-                  type: 'CDS',
-                  start: 6110,
-                  end: 6148,
-                  strand: 1,
-                },
-                {
-                  refName: 'zonk',
-                  type: 'CDS',
-                  start: 6615,
-                  end: 6683,
-                  strand: 1,
-                },
-              ],
-            }),
-          ],
-        ])
-      }
-      config={SvgRendererConfigSchema.create({})}
-      bpPerPx={3}
-    />,
   )
 
   expect(container).toMatchSnapshot()

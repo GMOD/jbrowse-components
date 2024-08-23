@@ -1,4 +1,5 @@
-import { formatFastaLines, formatSeqFasta } from './formatFastaStrings'
+import { expect, test } from 'vitest'
+import { formatSeqFasta, formatFastaLines } from './formatFastaStrings'
 
 const small = 'cattgttgcg'
 const medium =

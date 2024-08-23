@@ -1,7 +1,11 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { waitFor, fireEvent, cleanup } from '@testing-library/react'
 
-import { doBeforeEach, doSetupForImportForm, setup } from './util'
+import { setup, doSetupForImportForm, doBeforeEach } from './util'
+import { expect, beforeEach, afterEach, test } from 'vitest'
 
+afterEach(() => {
+  cleanup()
+})
 setup()
 
 beforeEach(() => {
@@ -12,14 +16,7 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('search eden.1 and hit open', async () => {
-  const { findByPlaceholderText, findByText, getInputValue } =
-    await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { input, getInputValue, findByText } = await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.click(await findByText('Open'))
@@ -29,14 +26,7 @@ test('search eden.1 and hit open', async () => {
 }, 30000)
 
 test('dialog with multiple results, searching seg02', async () => {
-  const { autocomplete, findByPlaceholderText, findByText } =
-    await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { input, findByText, autocomplete } = await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
@@ -45,14 +35,8 @@ test('dialog with multiple results, searching seg02', async () => {
 }, 30000)
 
 test('search eden.1 and hit enter', async () => {
-  const { autocomplete, findByPlaceholderText, findByText, getInputValue } =
+  const { input, findByText, autocomplete, getInputValue } =
     await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
 
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
@@ -63,18 +47,11 @@ test('search eden.1 and hit enter', async () => {
 }, 30000)
 
 test('lower case refname, searching: contigb', async () => {
-  const { autocomplete, findByPlaceholderText, findByText, getInputValue } =
+  const { input, autocomplete, findByText, getInputValue } =
     await doSetupForImportForm()
 
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
   fireEvent.change(input, { target: { value: 'contigb' } })
-  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.keyDown(autocomplete, { key: 'Enter' })
-
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
 
   await waitFor(() => {
@@ -83,13 +60,9 @@ test('lower case refname, searching: contigb', async () => {
 }, 30000)
 
 test('description of gene, searching: kinase', async () => {
-  const { findByPlaceholderText, findByText, getInputValue, autocomplete } =
+  const { input, findByText, getInputValue, autocomplete } =
     await doSetupForImportForm()
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+
   fireEvent.change(input, { target: { value: 'kinase' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
@@ -101,14 +74,7 @@ test('description of gene, searching: kinase', async () => {
 }, 30000)
 
 test('search matches description for feature in two places', async () => {
-  const { autocomplete, findByPlaceholderText, findByText } =
-    await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { input, findByText, autocomplete } = await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
   fireEvent.click(await findByText(/b101.2/, ...opts))

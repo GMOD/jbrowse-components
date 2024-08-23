@@ -1,13 +1,12 @@
-import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-
+import { vi, expect, test } from 'vitest'
 import Adapter from './SPARQLAdapter'
-import configSchema from './configSchema'
 import emptyQueryResponse from './test_data/emptyQueryResponse.json'
 import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'
 
-// window.fetch = jest.fn(url => new Promise(resolve => resolve()))
+import configSchema from './configSchema'
+import { firstValueFrom } from 'rxjs'
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   function mockFetch(url: RequestInfo | URL) {
@@ -24,7 +23,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     return Promise.resolve(new Response(JSON.stringify(response)))
   }
 
-  const spy = jest.spyOn(global, 'fetch')
+  const spy = vi.spyOn(global, 'fetch')
   spy.mockImplementation(mockFetch)
   const adapter = new Adapter(
     configSchema.create({
@@ -44,7 +43,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     'http://somesite.com/sparql?query=fakeRefNamesQuery&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
-      stopToken: undefined,
+      signal: undefined,
     },
   )
   expect(refNames.length).toBe(17)
@@ -61,7 +60,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr1&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
-      stopToken: undefined,
+      signal: undefined,
     },
   )
 
@@ -78,7 +77,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr80&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
-      stopToken: undefined,
+      signal: undefined,
     },
   )
 })

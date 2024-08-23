@@ -130,6 +130,7 @@ exports[`renders 1`] = `
                       <a
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1evhbjz-MuiButtonBase-root-MuiIconButton-root"
                         href="https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
+                        id=":r4:"
                         rel="noopener noreferrer"
                         tabindex="0"
                         target="_blank"
@@ -155,6 +156,7 @@ exports[`renders 1`] = `
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-179qsk4-MuiButtonBase-root-MuiButton-root-button"
                     disabled=""
+                    id=":r0:"
                     tabindex="-1"
                     type="button"
                   >
@@ -163,6 +165,7 @@ exports[`renders 1`] = `
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1aobgzj-MuiButtonBase-root-MuiButton-root-button"
                     data-testid="addConnectionNext"
+                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >

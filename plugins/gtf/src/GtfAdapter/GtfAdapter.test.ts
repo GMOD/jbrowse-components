@@ -1,8 +1,20 @@
 import { firstValueFrom } from 'rxjs'
+import { vi, beforeEach, afterEach, expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
 
 import GtfAdapter from './GtfAdapter'
 import configSchema from './configSchema'
+
+
+beforeEach(() => {
+  // tell vitest we use mocked time
+  vi.useFakeTimers()
+})
+
+afterEach(() => {
+  // restoring date after each test run
+  vi.useRealTimers()
+})
 
 describe('adapter can fetch features from volvox.sorted.gtf', () => {
   let adapter: GtfAdapter

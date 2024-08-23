@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react'
+import { cleanup, screen, within } from '@testing-library/react'
+import { afterEach, beforeEach, test } from 'vitest'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -15,8 +16,11 @@ setup()
 beforeEach(() => {
   doBeforeEach()
 })
+afterEach(() => {
+  cleanup()
+})
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 test('color by tag', async () => {

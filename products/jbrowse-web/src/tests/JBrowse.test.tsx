@@ -1,18 +1,19 @@
-import '@testing-library/jest-dom'
-
+import { cleanup, fireEvent } from '@testing-library/react'
+import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { fireEvent } from '@testing-library/react'
 
-import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import corePlugins from '../corePlugins'
+// locals
 import JBrowseRootModelFactory from '../rootModel/rootModel'
-import sessionModelFactory from '../sessionModel'
+import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
+import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
+import { doBeforeEach, setup, createView, hts } from './util'
 import TestPlugin from './TestPlugin'
-import { createView, doBeforeEach, hts, setup } from './util'
-
-jest.mock('../makeWorkerInstance', () => () => {})
+import sessionModelFactory from '../sessionModel'
+import { beforeEach, afterEach, test } from 'vitest'
+afterEach(() => {
+  cleanup()
+})
 
 setup()
 
@@ -76,7 +77,7 @@ test('nclist track test with long name', async () => {
 
 test('test sharing', async () => {
   // @ts-expect-error
-  sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
+  sessionSharing.shareSessionToDynamo = vi.fn().mockReturnValue({
     encryptedSession: 'A',
     json: {
       sessionId: 'abc',
