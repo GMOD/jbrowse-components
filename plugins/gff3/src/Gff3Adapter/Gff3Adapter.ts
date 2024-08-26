@@ -11,7 +11,7 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import gff from '@gmod/gff'
 import { isGzip, updateStatus } from '@jbrowse/core/util'
 
-import { featureData } from './featureData'
+import { featureData } from '../featureData'
 
 type StatusCallback = (arg: string) => void
 

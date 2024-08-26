@@ -12,14 +12,12 @@ export function featureData(data: GFF3FeatureLineWithRefs) {
   } else {
     f.strand = undefined
   }
-  f.phase = Number(data.phase)
+  f.phase = data.phase === null ? undefined : Number(data.phase)
   f.refName = data.seq_id
   if (data.score === null) {
     f.score = undefined
   }
-  if (data.phase === null) {
-    f.score = undefined
-  }
+
   const defaultFields = new Set([
     'start',
     'end',
