@@ -37,6 +37,14 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
           'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
         defaultValue: '',
       },
+      /**
+       * #slot
+       */
+      description: {
+        description: 'a description of the track',
+        type: 'string',
+        defaultValue: '',
+      },
 
       /**
        * #slot

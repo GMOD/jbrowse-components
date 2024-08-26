@@ -1,13 +1,9 @@
 import { unzip } from '@gmod/bgzf-filehandle'
 
 // locals
-import { SimpleFeature } from '../../util'
+import { isGzip, SimpleFeature } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
-
-export function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
 
 export default class CytobandAdapter extends BaseAdapter {
   async getData() {

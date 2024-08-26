@@ -16,15 +16,18 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import SortIcon from '@mui/icons-material/Sort'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
+import ColorLensIcon from '@mui/icons-material/ColorLens'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { observable } from 'mobx'
 
-// lzies
-const SortByTagDialog = lazy(() => import('./components/SortByTag'))
+// lazies
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
+const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
 const ModificationsDialog = lazy(
-  () => import('./components/ColorByModifications'),
+  () => import('./components/ColorByModificationsDialog'),
 )
 
 type LGV = LinearGenomeViewModel
@@ -277,21 +280,36 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show soft clipping',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showSoftClipping,
-              onClick: () => {
-                self.toggleSoftClipping()
-                // if toggling from off to on, will break sort for this track
-                // so clear it
-                if (self.showSoftClipping) {
-                  self.clearSelected()
-                }
-              },
+              label: 'Color by...',
+              icon: ColorLensIcon,
+              subMenu: [
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'pairOrientation' })
+                  },
+                },
+                {
+                  label: 'Modifications or methylation',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      ModificationsDialog,
+                      { model: self, handleClose: doneCallback },
+                    ])
+                  },
+                },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
+                },
+                ...superColorSchemeSubMenuItems(),
+              ],
             },
+
             {
-              label: 'Sort by',
+              label: 'Sort by...',
               icon: SortIcon,
               disabled: self.showSoftClipping,
               subMenu: [
@@ -321,31 +339,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Color scheme',
-              subMenu: [
-                {
-                  label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
-                  },
-                },
-                {
-                  label: 'Modifications or methylation',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ModificationsDialog,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                ...superColorSchemeSubMenuItems(),
-              ],
+              label: 'Group by...',
+              icon: WorkspacesIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  GroupByDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Show soft clipping',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showSoftClipping,
+              onClick: () => {
+                self.toggleSoftClipping()
+                // if toggling from off to on, will break sort for this track
+                // so clear it
+                if (self.showSoftClipping) {
+                  self.clearSelected()
+                }
+              },
             },
             {
               label: 'Fade mismatches by quality',
@@ -355,7 +370,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.toggleMismatchAlpha()
               },
             },
-          ]
+          ] as const
         },
       }
     })
@@ -426,12 +441,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const { staticBlocks } = getContainingView(self) as LGV
           if (colorBy?.type === 'modifications') {
             const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
+            const vals = await getUniqueModificationValues({
               self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
+              adapterConfig: adapter,
+              blocks: staticBlocks,
+            })
             self.updateModificationColorMap(vals)
           }
           self.setModificationsReady(true)

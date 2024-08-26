@@ -1,12 +1,10 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { unzip } from '@gmod/bgzf-filehandle'
+import { isGzip } from '@jbrowse/core/util'
+
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 import { parseLineByLine } from '../util'
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
 
 export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {

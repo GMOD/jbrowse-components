@@ -362,7 +362,8 @@ export function parseLocStringOneBased(
   }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  // refNames can have colons, refer to
+  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
   const assemblyMatch = /({(.+)})?(.+)/.exec(locString)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
@@ -376,7 +377,11 @@ export function parseLocStringOneBased(
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location, reversed }
+      return {
+        assemblyName,
+        refName: location,
+        reversed,
+      }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
@@ -433,10 +438,18 @@ export function parseLocStringOneBased(
         )
       }
     } else {
-      return { assemblyName, refName: prefix, reversed }
+      return {
+        assemblyName,
+        refName: prefix,
+        reversed,
+      }
     }
   } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location, reversed }
+    return {
+      assemblyName,
+      refName: location,
+      reversed,
+    }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
@@ -1447,6 +1460,10 @@ export function renderToStaticMarkup(
     }
   })
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
+}
+
+export function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
 export {

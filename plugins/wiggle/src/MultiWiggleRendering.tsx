@@ -14,7 +14,7 @@ const MultiWiggleRendering = observer(function (props: {
   height: number
   blockKey: string
   sources: Source[]
-  displayModel: { isMultiRow: boolean }
+  displayModel?: { isMultiRow: boolean }
   onMouseLeave?: (event: React.MouseEvent) => void
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
@@ -33,6 +33,7 @@ const MultiWiggleRendering = observer(function (props: {
   } = props
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
+  const { isMultiRow } = displayModel || {}
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     if (!ref.current) {
@@ -48,7 +49,7 @@ const MultiWiggleRendering = observer(function (props: {
     const px = region.reversed ? width - offsetX : offsetX
     const mouseoverBp = region.start + bpPerPx * px
     let featureUnderMouse: Feature | undefined
-    if (displayModel.isMultiRow) {
+    if (isMultiRow) {
       for (const feature of features.values()) {
         if (feature.get('source') !== source.name) {
           continue

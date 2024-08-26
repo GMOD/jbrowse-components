@@ -28,8 +28,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     sequenceAdapter?: BaseFeatureDataAdapter
   }>
 
-  // derived classes may not use the same configuration so a custom
-  // configure method allows derived classes to override this behavior
+  // derived classes may not use the same configuration so a custom configure
+  // method allows derived classes to override this behavior
   protected async configurePre() {
     const bamLocation = this.getConf('bamLocation')
     const location = this.getConf(['index', 'location'])
@@ -40,10 +40,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       bamFilehandle: openLocation(bamLocation, pm),
       csiFilehandle: csi ? openLocation(location, pm) : undefined,
       baiFilehandle: !csi ? openLocation(location, pm) : undefined,
-
-      // chunkSizeLimit and fetchSizeLimit are more troublesome than
-      // helpful, and have given overly large values on the ultra long
-      // nanopore reads even with 500MB limits, so disabled with infinity
       yieldThreadTime: Number.POSITIVE_INFINITY,
     })
 
@@ -204,11 +200,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const v = record.get(tagFilter.tag)
+            const readVal = record.get(tagFilter.tag)
+            const filterVal = tagFilter.value
             if (
-              !(tagFilter.value === '*'
-                ? v !== undefined
-                : `${v}` === tagFilter.value)
+              filterVal === '*'
+                ? readVal !== undefined
+                : `${readVal}` !== `${filterVal}`
             ) {
               continue
             }

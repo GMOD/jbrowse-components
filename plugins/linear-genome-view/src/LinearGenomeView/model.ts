@@ -1447,15 +1447,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async navToLocString(input: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        const { isValidRefName } = assemblyManager
         const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
-          // wait before isValidRefName can be called
           await assemblyManager.waitForAssembly(assemblyName)
         }
 
         return this.navToLocations(
-          parseLocStrings(input, assemblyName, isValidRefName),
+          parseLocStrings(input, assemblyName, (ref, asm) =>
+            assemblyManager.isValidRefName(ref, asm),
+          ),
           assemblyName,
         )
       },

@@ -13,13 +13,12 @@ const StructuralVariantChordsReactComponent = observer(function ({
   blockDefinitions,
   radius,
   bezierRadius,
-  displayModel: { selectedFeatureId },
   onChordClick,
 }: {
   features: Map<string, Feature>
   radius: number
   config: AnyConfigurationModel
-  displayModel: { id: string; selectedFeatureId: string }
+  displayModel?: { id: string; selectedFeatureId: string }
   blockDefinitions: Block[]
   bezierRadius: number
   onChordClick: (
@@ -29,6 +28,7 @@ const StructuralVariantChordsReactComponent = observer(function ({
     evt: unknown,
   ) => void
 }) {
+  const { id, selectedFeatureId } = displayModel || {}
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
     const blocksForRefs = {} as Record<string, Block>
@@ -44,27 +44,19 @@ const StructuralVariantChordsReactComponent = observer(function ({
   }, [blockDefinitions])
 
   return (
-    <g
-      id={`chords-${typeof jest !== 'undefined' ? 'test' : displayModel.id}`}
-      data-testid="structuralVariantChordRenderer"
-    >
-      {[...features.values()].map(feature => {
-        const id = feature.id()
-        const selected = String(selectedFeatureId) === String(id)
-
-        return (
-          <Chord
-            key={id}
-            feature={feature}
-            config={config}
-            radius={radius}
-            bezierRadius={bezierRadius}
-            blocksForRefs={blocksForRefsMemo}
-            selected={selected}
-            onClick={onChordClick}
-          />
-        )
-      })}
+    <g data-testid="structuralVariantChordRenderer">
+      {[...features.values()].map(feature => (
+        <Chord
+          key={feature.id()}
+          feature={feature}
+          config={config}
+          radius={radius}
+          bezierRadius={bezierRadius}
+          blocksForRefs={blocksForRefsMemo}
+          selected={String(selectedFeatureId) === String(id)}
+          onClick={onChordClick}
+        />
+      ))}
     </g>
   )
 })

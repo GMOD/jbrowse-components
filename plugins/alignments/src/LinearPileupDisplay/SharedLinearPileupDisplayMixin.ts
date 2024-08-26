@@ -17,6 +17,7 @@ import {
   isSessionModelWithWidgets,
   getContainingView,
   SimpleFeature,
+  SimpleFeatureSerialized,
   Feature,
 } from '@jbrowse/core/util'
 
@@ -33,17 +34,16 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTagValues, FilterModel, IFilter } from '../shared'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import { createAutorun } from '../util'
 import { ColorByModel, ExtraColorBy } from '../shared/color'
 
-// async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
-const ColorByTagDialog = lazy(() => import('./components/ColorByTag'))
+// lazies
+const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeight'),
+  () => import('./components/SetFeatureHeightDialog'),
 )
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeight'))
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -490,8 +490,9 @@ export function SharedLinearPileupDisplayMixin(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Filter by',
+              label: 'Filter by...',
               icon: FilterListIcon,
+              priority: -1,
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
                   FilterByTagDialog,
@@ -500,7 +501,8 @@ export function SharedLinearPileupDisplayMixin(
               },
             },
             {
-              label: 'Set feature height',
+              label: 'Set feature height...',
+              priority: -1,
               subMenu: [
                 {
                   label: 'Normal',
@@ -579,7 +581,11 @@ export function SharedLinearPileupDisplayMixin(
             const { colorBy, tagsReady } = self
             const { staticBlocks } = view
             if (colorBy?.tag && !tagsReady) {
-              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
+              const vals = await getUniqueTagValues({
+                self,
+                tag: colorBy.tag,
+                blocks: staticBlocks,
+              })
               self.updateColorTagMap(vals)
             }
             self.setTagsReady(true)

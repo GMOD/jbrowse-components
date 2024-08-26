@@ -5,14 +5,12 @@ import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
 
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  return 'localPath' in location
+function isLocalPathLocation(loc: FileLocation): loc is LocalPathLocation {
+  return 'localPath' in loc
 }
 
-function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blobId' in location
+function isBlobLocation(loc: FileLocation): loc is BlobLocation {
+  return 'blobId' in loc
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -50,8 +48,9 @@ function LocalFileChooser({
                 const file = target.files?.[0]
                 if (file) {
                   if (isElectron) {
+                    const { webUtils } = window.require('electron')
                     setLocation({
-                      localPath: (file as File & { path: string }).path,
+                      localPath: webUtils.getPathForFile(file),
                       locationType: 'LocalPathLocation',
                     })
                   } else {

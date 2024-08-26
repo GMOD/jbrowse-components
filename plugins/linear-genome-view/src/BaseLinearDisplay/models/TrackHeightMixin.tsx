@@ -15,17 +15,11 @@ export default function TrackHeightMixin() {
       /**
        * #property
        */
-      heightPreConfig: types.maybe(
-        types.refinement(
-          'displayHeight',
-          types.number,
-          n => n >= minDisplayHeight,
-        ),
-      ),
+      heightPreConfig: types.number,
     })
     .volatile(() => ({
       /**
-       * #property
+       * #volatile
        */
       scrollTop: 0,
     }))
@@ -52,7 +46,8 @@ export default function TrackHeightMixin() {
       },
       /**
        * #getter
-       * returns the height of the track as a combination of the config and the settings
+       * returns the height of the track as a combination of the config and the
+       * settings
        */
       get height() {
         // @ts-expect-error
@@ -83,7 +78,8 @@ export default function TrackHeightMixin() {
        * #action
        */
       resizeHeight(distance: number) {
-        // if the user resizes their height, we want the setting to turn off and maintain their set height
+        // if the user resizes their height, we want the setting to turn off
+        // and maintain their set height
         if (self.adjustTrackLayoutHeightSetting !== 'static') {
           // @ts-ignore
           self.setAdjustTrackLayoutHeightSetting('static')

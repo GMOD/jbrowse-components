@@ -30,7 +30,6 @@ const ViewMenu = observer(function ({
   IconButtonProps?: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
-  const { menuItems } = model
   const session = getSession(model) as AbstractSessionModel & {
     moveViewDown: (arg: string) => void
     moveViewUp: (arg: string) => void
@@ -102,7 +101,7 @@ const ViewMenu = observer(function ({
                 },
               ]
             : []),
-          ...menuItems(),
+          ...model.menuItems(),
         ]}
         popupState={popupState}
       />

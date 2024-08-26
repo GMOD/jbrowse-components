@@ -1,4 +1,11 @@
-import electron, { dialog } from 'electron'
+import electron, {
+  dialog,
+  app,
+  ipcMain,
+  shell,
+  BrowserWindow,
+  Menu,
+} from 'electron'
 import fs from 'fs'
 import debug from 'electron-debug'
 import path from 'path'
@@ -14,12 +21,10 @@ import { getFileStream } from './generateFastaIndex'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
-const { app, ipcMain, shell, BrowserWindow, Menu } = electron
-
 interface RecentSession {
   path: string
   updated: number
-  name: string
+  name?: string
 }
 
 function stringify(obj: unknown) {
@@ -30,9 +35,10 @@ async function readRecentSessions(): Promise<RecentSession[]> {
   try {
     return parseJson(await readFile(recentSessionsPath, 'utf8'))
   } catch (e) {
-    throw new Error(
+    console.error(
       `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
     )
+    return []
   }
 }
 
@@ -142,7 +148,7 @@ if (!fs.existsSync(jbrowseDocDir)) {
 }
 
 interface SessionSnap {
-  defaultSession: {
+  defaultSession?: {
     name: string
   }
 
@@ -286,7 +292,10 @@ ipcMain.handle('userData', () => {
 
 ipcMain.handle(
   'indexFasta',
-  async (event: unknown, location: { uri: string } | { localPath: string }) => {
+  async (
+    _event: unknown,
+    location: { uri: string } | { localPath: string },
+  ) => {
     const filename = 'localPath' in location ? location.localPath : location.uri
     const faiPath = getFaiPath(`${path.basename(filename)}${+Date.now()}.fai`)
     const stream = await getFileStream(location)
@@ -398,7 +407,7 @@ ipcMain.handle(
     const entry = {
       path: autosavePath,
       updated: +Date.now(),
-      name: snap.defaultSession.name,
+      name: snap.defaultSession?.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -427,7 +436,7 @@ ipcMain.handle(
     const entry = {
       path,
       updated: +Date.now(),
-      name: snap.defaultSession.name,
+      name: snap.defaultSession?.name,
     }
     if (idx === -1) {
       rows.unshift(entry)

@@ -1,11 +1,9 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { GenericFilehandle } from 'generic-filehandle'
 import { unzip } from '@gmod/bgzf-filehandle'
-import { PAFRecord } from './PAFAdapter/util'
+import { isGzip } from '@jbrowse/core/util'
 
-export function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+import { PAFRecord } from './PAFAdapter/util'
 
 export function parseBed(text: string) {
   return new Map(

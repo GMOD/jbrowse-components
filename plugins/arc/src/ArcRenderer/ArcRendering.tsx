@@ -17,7 +17,7 @@ function Arc({
   onFeatureClick,
   feature,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
@@ -136,7 +136,7 @@ function SemiCircles({
   onFeatureClick,
   feature,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
@@ -214,21 +214,22 @@ const ArcRendering = observer(function ({
   bpPerPx,
   height,
   exportSVG,
+  displayModel,
   onFeatureClick,
-  displayModel: { selectedFeatureId },
 }: {
   features: Map<string, Feature>
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
   height: number
-  displayModel: { selectedFeatureId: string }
+  displayModel?: { selectedFeatureId: string }
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
+  const { selectedFeatureId } = displayModel || {}
 
   return (
     <Wrapper exportSVG={exportSVG} width={width} height={height}>
