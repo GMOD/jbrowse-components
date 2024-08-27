@@ -115,33 +115,41 @@ function Translation({
   )
 }
 
-function DNA(props: {
+function Sequence({
+  bpPerPx,
+  region,
+  feature,
+  sequenceType,
+  theme,
+  height,
+  seq,
+  y,
+}: {
   seq: string
   theme: Theme
   bpPerPx: number
+  sequenceType: string
   height: number
   region: Region
   feature: Feature
   y: number
 }) {
-  const { bpPerPx, region, feature, theme, height, seq, y } = props
   const render = 1 / bpPerPx >= 12
-
-  const [leftPx, rightPx] = bpSpanPx(
-    feature.get('start'),
-    feature.get('end'),
-    region,
-    bpPerPx,
-  )
+  const s = feature.get('start')
+  const e = feature.get('end')
+  const [leftPx, rightPx] = bpSpanPx(s, e, region, bpPerPx)
   const reverse = region.reversed
-  const len = feature.get('end') - feature.get('start')
+  const len = e - s
   const w = Math.max((rightPx - leftPx) / len, 0.8)
 
   return (
     <>
       {seq.split('').map((letter, index) => {
-        // @ts-expect-error
-        const color = theme.palette.bases[letter.toUpperCase()]
+        const color =
+          sequenceType === 'dna'
+            ? // @ts-expect-error
+              theme.palette.bases[letter.toUpperCase()]
+            : undefined
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
@@ -183,6 +191,7 @@ function SequenceSVG({
   showReverse = true,
   showForward = true,
   showTranslation = true,
+  sequenceType = 'dna',
   bpPerPx,
   rowHeight,
 }: {
@@ -193,6 +202,7 @@ function SequenceSVG({
   showReverse?: boolean
   showForward?: boolean
   showTranslation?: boolean
+  sequenceType?: string
   bpPerPx: number
   rowHeight: number
 }) {
@@ -212,7 +222,7 @@ function SequenceSVG({
   // (applies to both translation rows and dna rows)
   let currY = -rowHeight
 
-  const showDNA = bpPerPx <= 1
+  const showSequence = bpPerPx <= 1
 
   const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
   const reverseFrames: Frame[] =
@@ -241,9 +251,10 @@ function SequenceSVG({
         />
       ))}
 
-      {showForward && showDNA ? (
-        <DNA
+      {showForward && showSequence ? (
+        <Sequence
           height={rowHeight}
+          sequenceType={sequenceType}
           y={(currY += rowHeight)}
           feature={feature}
           region={region}
@@ -253,9 +264,10 @@ function SequenceSVG({
         />
       ) : null}
 
-      {showReverse && showDNA ? (
-        <DNA
+      {showReverse && showSequence ? (
+        <Sequence
           height={rowHeight}
+          sequenceType={sequenceType}
           y={(currY += rowHeight)}
           feature={feature}
           region={region}

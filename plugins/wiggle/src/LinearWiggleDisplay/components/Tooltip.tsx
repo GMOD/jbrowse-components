@@ -16,8 +16,13 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, ref) {
     const start = feature.get('start')
     const end = feature.get('end')
-    const name = feature.get('refName')
-    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+    const refName = feature.get('refName')
+    const name = feature.get('name')
+    const loc = [
+      refName,
+      name,
+      start === end ? en(start) : `${en(start)}..${en(end)}`,
+    ]
       .filter(f => !!f)
       .join(':')
 
