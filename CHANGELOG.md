@@ -1,3 +1,68 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.14.0
+
+## 2.14.0 (2024-08-28)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4532](https://github.com/GMOD/jbrowse-components/pull/4532) De-duplicate
+    snackbar messages ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4516](https://github.com/GMOD/jbrowse-components/pull/4516) Add NCBI
+    sequence_report.tsv alias adapter, with ability to recode NCBI fasta files
+    to use UCSC style names ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4533](https://github.com/GMOD/jbrowse-components/pull/4533) Allow setting
+    sequenceType='pep' in ReferenceSequenceTrack configuration
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4531](https://github.com/GMOD/jbrowse-components/pull/4531) Add
+    UnindexedFastaAdapter for fetching small plaintext FASTA files
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4528](https://github.com/GMOD/jbrowse-components/pull/4528) Add
+    description config slot to reference sequence track
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`
+  - [#4523](https://github.com/GMOD/jbrowse-components/pull/4523) Allow
+    plaintext GTF and VCF files greater than 512Mb
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`
+  - [#4519](https://github.com/GMOD/jbrowse-components/pull/4519) Add "Group by"
+    method for alignments tracks ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4535](https://github.com/GMOD/jbrowse-components/pull/4535) Fix crash after
+  navToLocString in some cases ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- Other
+  - [#4530](https://github.com/GMOD/jbrowse-components/pull/4530) Consolidate
+    gff3 adapter featureData routine, avoid Number-ifying null phase
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4518](https://github.com/GMOD/jbrowse-components/pull/4518) Don't send
+    displayModel to "rendering" components on server side
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `__mocks__`, `app-core`, `core`, `embedded-core`, `product-core`,
+  `text-indexing`, `web-core`
+  - [#4513](https://github.com/GMOD/jbrowse-components/pull/4513) Add new eslint
+    rules (no-unnecessary-condition, no-unused-expressions, etc) and tsconfig
+    noUncheckedIndexedAccess ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `embedded-core`, `product-core`, `text-indexing`,
+  `web-core`
+  - [#4510](https://github.com/GMOD/jbrowse-components/pull/4510) Add biome lint
+    fixes ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`, `text-indexing`
+  - [#4508](https://github.com/GMOD/jbrowse-components/pull/4508) Use
+    @mui/x-charts-vendor for d3 upgrade
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.27s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.13.1
 
 ## 2.13.1 (2024-07-31)
