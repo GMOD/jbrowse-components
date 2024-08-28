@@ -254,14 +254,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const v =
+            const readVal =
               tagFilter.tag === 'RG'
                 ? samHeader.readGroups?.[record.readGroupId]
                 : record.tags[tagFilter.tag]
+            const filterVal = tagFilter.value
             if (
-              !(tagFilter.value === '*'
-                ? v !== undefined
-                : `${v}` === tagFilter.value)
+              filterVal === '*'
+                ? readVal !== undefined
+                : `${readVal}` !== `${filterVal}`
             ) {
               continue
             }
