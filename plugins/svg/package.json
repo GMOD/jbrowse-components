@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-svg",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 plugin for svg features",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/svg",
+    "test": "cd ../..; jest --passWithNoTests plugins/svg",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

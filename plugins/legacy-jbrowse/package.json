@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/legacy-jbrowse",
+    "test": "cd ../..; jest --passWithNoTests plugins/legacy-jbrowse",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

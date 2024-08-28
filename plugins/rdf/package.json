@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-rdf",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 RDF resources",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/rdf",
+    "test": "cd ../..; jest --passWithNoTests plugins/rdf",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

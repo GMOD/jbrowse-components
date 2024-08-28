@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trix",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/trix",
+    "test": "cd ../..; jest --passWithNoTests plugins/trix",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

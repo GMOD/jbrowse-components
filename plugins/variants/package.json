@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-variants",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/variants",
+    "test": "cd ../..; jest --passWithNoTests plugins/variants",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

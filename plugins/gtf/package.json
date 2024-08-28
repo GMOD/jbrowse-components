@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gtf",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 gtf feature adapter",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/gtf --passWithNoTests",
+    "test": "cd ../..; jest --passWithNoTests plugins/gtf --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-breakpoint-split-view",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 breakpoint detail split view",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/breakpoint-split-view",
+    "test": "cd ../..; jest --passWithNoTests plugins/breakpoint-split-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

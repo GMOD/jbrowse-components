@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sequence",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/sequence",
+    "test": "cd ../..; jest --passWithNoTests plugins/sequence",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/gff3 --passWithNoTests",
+    "test": "cd ../..; jest --passWithNoTests plugins/gff3 --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

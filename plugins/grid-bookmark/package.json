@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-grid-bookmark",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 grid bookmark widget",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/grid-bookmark",
+    "test": "cd ../..; jest --passWithNoTests plugins/grid-bookmark",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",

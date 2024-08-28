@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "2.14.0",
+  "version": "2.13.1",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -20,7 +20,7 @@
   "author": "JBrowse Team",
   "main": "index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/core",
+    "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "coverage": "yarn test --coverage",
