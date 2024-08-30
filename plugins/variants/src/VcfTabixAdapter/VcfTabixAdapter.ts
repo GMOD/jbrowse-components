@@ -31,7 +31,6 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
       tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      chunkSizeLimit: 1000000000,
     })
 
     const header = await vcf.getHeader()
