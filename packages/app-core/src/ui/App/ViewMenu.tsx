@@ -101,11 +101,7 @@ const ViewMenu = observer(function ({
                 },
               ]
             : []),
-
-          // old plugins use menuItems as a function
-          ...(typeof model.menuItems === 'function'
-            ? model.menuItems()
-            : model.menuItems),
+          model.menuItems(),
         ]}
         popupState={popupState}
       />
