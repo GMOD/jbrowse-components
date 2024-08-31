@@ -183,7 +183,6 @@ export function onSynClick(
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
   const id = getId(r1!, g1!, b1!, unitMultiplier)
   const feat = model.featPositions[id]
-  console.log('WOWOWOWOW')
   if (feat) {
     const { f } = feat
     model.setClickId(f.id())
