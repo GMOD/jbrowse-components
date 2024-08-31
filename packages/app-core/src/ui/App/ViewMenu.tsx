@@ -101,7 +101,7 @@ const ViewMenu = observer(function ({
                 },
               ]
             : []),
-          model.menuItems(),
+          ...model.menuItems(),
         ]}
         popupState={popupState}
       />
