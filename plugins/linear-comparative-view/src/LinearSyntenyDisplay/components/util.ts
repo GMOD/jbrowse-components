@@ -5,6 +5,8 @@ import {
   getSession,
   isSessionModelWithWidgets,
   Feature,
+  getContainingTrack,
+  getContainingView,
 } from '@jbrowse/core/util'
 
 // locals
@@ -162,6 +164,8 @@ export function onSynClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
 ) {
+  const view = getContainingView(model)
+  const track = getContainingTrack(model)
   const ref1 = model.clickMapCanvas
   const ref2 = model.cigarClickMapCanvas
   if (!ref1 || !ref2) {
@@ -179,17 +183,17 @@ export function onSynClick(
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
   const id = getId(r1!, g1!, b1!, unitMultiplier)
   const feat = model.featPositions[id]
+  console.log('WOWOWOWOW')
   if (feat) {
     const { f } = feat
     model.setClickId(f.id())
     const session = getSession(model)
     if (isSessionModelWithWidgets(session)) {
       session.showWidget(
-        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-          featureData: {
-            feature1: f.toJSON(),
-            feature2: f.get('mate'),
-          },
+        session.addWidget('BaseFeatureWidget', 'baseFeature', {
+          view,
+          track,
+          featureData: f.toJSON(),
         }),
       )
     }

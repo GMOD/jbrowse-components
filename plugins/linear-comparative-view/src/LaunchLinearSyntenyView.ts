@@ -4,7 +4,14 @@ import { when } from 'mobx'
 
 // locals
 import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
+
 type LSV = LinearSyntenyViewModel
+
+interface ViewData {
+  loc: string
+  assembly: string
+  tracks?: string[]
+}
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -16,7 +23,7 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       tracks = [],
     }: {
       session: AbstractSessionModel
-      views: { loc: string; assembly: string; tracks?: string[] }[]
+      views: ViewData[]
       tracks?: string[]
     }) => {
       try {

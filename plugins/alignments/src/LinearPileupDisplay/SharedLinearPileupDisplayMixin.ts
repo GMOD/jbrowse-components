@@ -19,6 +19,7 @@ import {
   SimpleFeature,
   SimpleFeatureSerialized,
   Feature,
+  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import {
@@ -202,7 +203,11 @@ export function SharedLinearPileupDisplayMixin(
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
             'alignmentFeature',
-            { featureData: feature.toJSON(), view: getContainingView(self) },
+            {
+              featureData: feature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
           )
           session.showWidget(featureWidget)
         }
