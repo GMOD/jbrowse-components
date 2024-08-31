@@ -1456,6 +1456,7 @@ export function renderToStaticMarkup(
     if (createRootFn) {
       createRootFn(div).render(node)
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       render(node, div)
     }
   })

@@ -52,7 +52,7 @@ export function parseLineByLine(
     if (n === -1) {
       break
     }
-    const b = buffer.slice(blockStart, n)
+    const b = buffer.subarray(blockStart, n)
     const line = (decoder?.decode(b) || b.toString()).trim()
     if (line) {
       entries.push(cb(line))

@@ -57,7 +57,7 @@ export function makeAbortError() {
 
 export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
   if (!signal) {
-    return Observable.create()
+    return new Observable()
   }
   return fromEvent(signal, 'abort')
 }

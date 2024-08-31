@@ -78,7 +78,6 @@ export default tseslint.config(
         },
       ],
 
-      '@typescript-eslint/no-deprecated': 'off',
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
       'react/prop-types': 'off',

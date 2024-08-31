@@ -82,10 +82,12 @@ const OldHydrate = observer(function ({
     const domNode = ref.current
     function doHydrate() {
       if (domNode) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         unmountComponentAtNode(domNode)
         domNode.innerHTML = html
 
         rIC(() => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           hydrate(
             <ThemeProvider theme={jbrowseTheme}>
               <RenderingComponent {...rest} />
@@ -100,6 +102,7 @@ const OldHydrate = observer(function ({
 
     return () => {
       if (domNode) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         unmountComponentAtNode(domNode)
       }
     }

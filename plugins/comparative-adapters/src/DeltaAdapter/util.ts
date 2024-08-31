@@ -53,7 +53,7 @@ export function paf_delta2paf(buffer: Buffer) {
     if (n === -1) {
       break
     }
-    const b = buffer.slice(blockStart, n)
+    const b = buffer.subarray(blockStart, n)
     const line = (decoder?.decode(b) || b.toString()).trim()
     blockStart = n + 1
     i++

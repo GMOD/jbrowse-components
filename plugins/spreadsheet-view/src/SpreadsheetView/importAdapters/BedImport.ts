@@ -34,7 +34,7 @@ export function removeBedHeaders(buffer: Buffer) {
     }
   }
   if (i) {
-    return buffer.slice(i)
+    return buffer.subarray(i)
   }
   return buffer
 }

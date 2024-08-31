@@ -34,7 +34,7 @@
     "@gmod/abortable-promise-cache": "^2.0.0",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/http-range-fetcher": "^3.0.4",
-    "@mui/icons-material": "^5.0.1",
+    "@mui/icons-material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
     "@types/clone": "^2.0.0",
     "canvas-sequencer": "^3.1.0",
@@ -60,7 +60,7 @@
     "svg-path-generator": "^1.1.0"
   },
   "peerDependencies": {
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

@@ -89,7 +89,7 @@ autoUpdater.on('update-available', async () => {
 
 debug({ showDevTools: false, isEnabled: true })
 
-const devServerUrl = url.parse(
+const devServerUrl = new URL(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
 )
 
