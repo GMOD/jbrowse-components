@@ -1,52 +1,39 @@
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import clone from 'clone'
-import {
-  getContainingView,
-  getSession,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
-
 import { autorun, reaction } from 'mobx'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
+
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSession, Region } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
+import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
+
+// icons
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // locals
 import {
   canOpenBreakpointSplitViewFromTableRow,
   openBreakpointSplitViewFromTableRow,
-  getSerializedFeatureForRow,
+  getFeatureForRow,
 } from './breakpointSplitViewFromTableRow'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
-import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 
-function defaultOnChordClick(
-  feature: Feature,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  chordTrack: any,
-  pluginManager: PluginManager,
-) {
-  const session = getSession(chordTrack)
-  session.setSelection(feature)
-  const view = getContainingView(chordTrack)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const viewType = pluginManager.getViewType('BreakpointSplitView') as any
-  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
-
-  // try to center the offsetPx
-  viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-  viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-  viewSnapshot.featureData = feature.toJSON()
-
-  session.addView('BreakpointSplitView', viewSnapshot)
-}
-
-const SvInspectorViewF = (pluginManager: PluginManager) => {
-  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
-  const CircularViewType = pluginManager.getViewType('CircularView')
+/**
+ * #stateModel SvInspectorView
+ * #category view
+ * does not extend, but is a combination of a
+ * - [SpreadsheetView](../spreadsheetview)
+ * - [CircularView](../circularview)
+ *
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
+ */
+function SvInspectorViewF(pluginManager: PluginManager) {
+  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')!
+  const CircularViewType = pluginManager.getViewType('CircularView')!
 
   const SpreadsheetModel =
     SpreadsheetViewType.stateModel as SpreadsheetViewStateModel
@@ -56,92 +43,124 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
   const defaultHeight = 550
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
-  const model = types
-    .model('SvInspectorView', {
-      id: ElementId,
-      type: types.literal('SvInspectorView'),
-      dragHandleHeight: 4,
-      height: types.optional(
-        types.refinement(
-          'SvInspectorViewHeight',
-          types.number,
-          n => n >= minHeight,
+  return types
+    .compose(
+      'SvInspectorView',
+      BaseViewModel,
+      types.model({
+        /**
+         * #property
+         */
+        id: ElementId,
+        /**
+         * #property
+         */
+        type: types.literal('SvInspectorView'),
+
+        /**
+         * #property
+         */
+        height: types.optional(
+          types.refinement(
+            'SvInspectorViewHeight',
+            types.number,
+            n => n >= minHeight,
+          ),
+          defaultHeight,
         ),
-        defaultHeight,
-      ),
-
-      onlyDisplayRelevantRegionsInCircularView: false,
-
-      // switch specifying whether we are showing the import wizard or the
-      // spreadsheet in our viewing area
-      mode: types.optional(
-        types.enumeration('SvInspectorViewMode', ['import', 'display']),
-        'import',
-      ),
-
-      spreadsheetView: types.optional(SpreadsheetModel, () =>
-        SpreadsheetModel.create({
-          type: 'SpreadsheetView',
-          hideViewControls: true,
-          hideVerticalResizeHandle: true,
-        }),
-      ),
-
-      circularView: types.optional(CircularModel, () =>
-        CircularModel.create({
-          type: 'CircularView',
-          hideVerticalResizeHandle: true,
-          hideTrackSelectorButton: true,
-          disableImportForm: true,
-        }),
-      ),
-    })
+        /**
+         * #property
+         */
+        onlyDisplayRelevantRegionsInCircularView: false,
+        /**
+         * #property
+         * switch specifying whether we are showing the import wizard or the
+         * spreadsheet in our viewing area
+         */
+        mode: types.optional(
+          types.enumeration('SvInspectorViewMode', ['import', 'display']),
+          'import',
+        ),
+        /**
+         * #property
+         */
+        spreadsheetView: types.optional(SpreadsheetModel, () =>
+          SpreadsheetModel.create({
+            type: 'SpreadsheetView',
+            hideVerticalResizeHandle: true,
+          }),
+        ),
+        /**
+         * #property
+         */
+        circularView: types.optional(CircularModel, () =>
+          CircularModel.create({
+            type: 'CircularView',
+            hideVerticalResizeHandle: true,
+            hideTrackSelectorButton: true,
+            disableImportForm: true,
+          }),
+        ),
+      }),
+    )
     .volatile(() => ({
       width: 800,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get selectedRows() {
-        // @ts-ignore
-        return self.spreadsheetView.rowSet.selectedRows
+        return self.spreadsheetView.spreadsheet?.rowSet.selectedRows
       },
-
+      /**
+       * #getter
+       */
       get assemblyName() {
         const { assembly } = self.spreadsheetView
-        return assembly ? readConfObject(assembly, 'name') : undefined
+        return assembly
+          ? (readConfObject(assembly, 'name') as string)
+          : undefined
       },
-
+      /**
+       * #getter
+       */
       get showCircularView() {
         return self.spreadsheetView.mode === 'display'
       },
 
-      get featuresAdapterConfigSnapshot() {
+      /**
+       * #getter
+       */
+      get features() {
         const session = getSession(self)
         const { spreadsheetView } = self
         const { outputRows = [] } = spreadsheetView
+        return outputRows
+          .map((r, i) => getFeatureForRow(session, spreadsheetView, r, i))
+          .filter(f => !!f)
+      },
+      /**
+       * #getter
+       */
+      get featuresAdapterConfigSnapshot() {
         return {
           type: 'FromConfigAdapter',
-          features: outputRows
-            .map((r, i) =>
-              getSerializedFeatureForRow(session, spreadsheetView, r, i),
-            )
-            .filter(f => !!f),
+          features: this.features,
         }
       },
-
-      // Promise<string[]> of refnames
-      get featuresRefNamesP(): Promise<string[]> {
-        const { getAdapterClass } =
-          pluginManager.getAdapterType('FromConfigAdapter')
-        return getAdapterClass().then(Adapter =>
-          // @ts-ignore
-          new Adapter(self.featuresAdapterConfigSnapshot).getRefNames(),
-        )
+      /**
+       * #getter
+       */
+      get featureRefNames() {
+        const refs = this.features.map(r => r.refName)
+        const CHR2 = this.features.flatMap(r => r.INFO?.CHR2).filter(f => !!f)
+        return [...refs, ...CHR2]
       },
+      /**
+       * #getter
+       */
       get featuresCircularTrackConfiguration() {
-        pluginManager.jexl.addFunction(
-          'defaultOnChordClick',
-          defaultOnChordClick,
-        )
         return {
           type: 'VariantTrack',
           trackId: `sv-inspector-variant-track-${self.id}`,
@@ -152,7 +171,8 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
             {
               type: 'ChordVariantDisplay',
               displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
-              onChordClick: `jexl:defaultOnChordClick(feature, track, pluginManager)`,
+              onChordClick:
+                'jexl:defaultOnChordClick(feature, track, pluginManager)',
               renderer: { type: 'StructuralVariantChordRenderer' },
             },
           ],
@@ -165,40 +185,65 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
       circularViewOptionsBarHeight,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setWidth(newWidth: number) {
         self.width = newWidth
       },
+      /**
+       * #action
+       */
       setHeight(newHeight: number) {
-        if (newHeight > minHeight) {
-          self.height = newHeight
-        } else {
-          self.height = minHeight
-        }
+        self.height = newHeight > minHeight ? newHeight : minHeight
         return self.height
       },
-
+      /**
+       * #action
+       */
       setImportMode() {
         self.spreadsheetView.setImportMode()
       },
-
+      /**
+       * #action
+       */
       setDisplayMode() {
         self.spreadsheetView.setDisplayMode()
       },
 
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
+      /**
+       * #action
+       */
       setDisplayedRegions(regions: Region[]) {
         self.circularView.setDisplayedRegions(regions)
       },
-
+      /**
+       * #action
+       */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
         self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      menuItems() {
+        return [
+          {
+            label: 'Return to import form',
+            onClick: () => {
+              self.setImportMode()
+            },
+            icon: FolderOpenIcon,
+          },
+        ]
+      },
+    }))
     .actions(self => ({
+      /**
+       * #action
+       */
       resizeHeight(distance: number) {
         const oldHeight = self.height
         const newHeight = self.setHeight(self.height + distance)
@@ -236,8 +281,9 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
             { name: 'SvInspectorView height binding' },
           ),
         )
-        // bind circularview displayedRegions to spreadsheet assembly, mediated by
-        // the onlyRelevantRegions toggle
+
+        // bind circularview displayedRegions to spreadsheet assembly, mediated
+        // by the onlyRelevantRegions toggle
         addDisposer(
           self,
           autorun(
@@ -246,28 +292,27 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
                 assemblyName,
                 onlyDisplayRelevantRegionsInCircularView,
                 circularView,
-                featuresRefNamesP,
+                featureRefNames,
               } = self
               const { tracks } = circularView
-              const session = getSession(self)
+              const { assemblyManager } = getSession(self)
               if (!assemblyName) {
                 return
               }
-              const { assemblyManager } = session
               const asm = await assemblyManager.waitForAssembly(assemblyName)
               if (!asm) {
-                circularView.setDisplayedRegions([])
                 return
               }
+
               const { getCanonicalRefName, regions = [] } = asm
               if (onlyDisplayRelevantRegionsInCircularView) {
                 if (tracks.length === 1) {
                   try {
-                    const refNames = await featuresRefNamesP
                     // canonicalize the store's ref names if necessary
                     const refSet = new Set(
-                      refNames.map(r => getCanonicalRefName(r) || r),
+                      featureRefNames.map(r => getCanonicalRefName(r) || r),
                     )
+
                     circularView.setDisplayedRegions(
                       clone(regions.filter(r => refSet.has(r.refName))),
                     )
@@ -288,23 +333,21 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
           self,
           reaction(
             () => ({
-              generatedTrackConf: self?.featuresCircularTrackConfiguration,
-              assemblyName: self?.assemblyName,
+              generatedTrackConf: self.featuresCircularTrackConfiguration,
+              assemblyName: self.assemblyName,
             }),
             data => {
-              if (!data) {
-                return
-              }
               const { assemblyName, generatedTrackConf } = data
+              const { circularView } = self
               // hide any visible tracks
-              self.circularView.tracks.forEach(track => {
-                self.circularView.hideTrack(track.configuration.trackId)
-              })
+              circularView.tracks.forEach(t =>
+                circularView.hideTrack(t.configuration.trackId),
+              )
 
               // put our track in as the only track
-              if (assemblyName && generatedTrackConf) {
-                // @ts-ignore
-                self.circularView.addTrackConf(generatedTrackConf, {
+              if (assemblyName) {
+                // @ts-expect-error
+                circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,
                 })
               }
@@ -328,7 +371,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
                 {
                   label: 'Open split detail view',
                   icon: OpenInNewIcon,
-                  // @ts-ignore
+                  // @ts-expect-error
                   disabled(spreadsheetView, spreadsheet, rowNumber, row) {
                     return !canOpenBreakpointSplitViewFromTableRow(
                       self,
@@ -339,7 +382,6 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
                     )
                   },
 
-                  // @ts-ignore
                   onClick(spreadsheetView, spreadsheet, rowNumber, row) {
                     openBreakpointSplitViewFromTableRow(
                       self,
@@ -356,13 +398,9 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
         )
       },
     }))
-
-  return { stateModel: types.compose(BaseViewModel, model) }
 }
 
-export type SvInspectorViewStateModel = ReturnType<
-  typeof SvInspectorViewF
->['stateModel']
+export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>
 export type SvInspectorViewModel = Instance<SvInspectorViewStateModel>
 
 export default SvInspectorViewF

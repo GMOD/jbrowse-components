@@ -1,8 +1,8 @@
-import Rpc from 'librpc-web-mod'
-import shortid from 'shortid'
 import { deserializeError } from 'serialize-error'
+import Rpc from 'librpc-web-mod'
 
 // locals
+import { nanoid } from '../util/nanoid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
@@ -11,19 +11,19 @@ interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
 }
 
 interface Options {
-  statusCallback?: (arg0: string) => void
+  statusCallback?: (arg0: unknown) => void
   rpcDriverClassName: string
 }
 
 class WebWorkerHandle extends Rpc.Client {
   destroy(): void {
-    this.workers[0].terminate()
+    this.workers[0]!.terminate()
   }
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
-    const channel = `message-${shortid.generate()}`
-    const listener = (message: string) => {
+    const channel = `message-${nanoid()}`
+    const listener = (message: unknown) => {
       statusCallback?.(message)
     }
     this.on(channel, listener)
@@ -59,6 +59,9 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     // load balancing rather than using librpc's builtin round-robin
     const instance = this.makeWorkerInstance()
 
+    // @ts-ignore this is used to avoid warning in jbrowse-web startup
+    // (because this file is referred to via src, declare.d.ts file is in
+    // e.g. products/jbrowse-web)
     const worker = new WebWorkerHandle({ workers: [instance] })
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
@@ -73,19 +76,27 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     // send the worker its boot configuration using info from the pluginManager
     return new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
       const listener = (e: MessageEvent) => {
-        if (e.data.message === 'ready') {
-          resolve(worker)
-          worker.workers[0].removeEventListener('message', listener)
-        } else if (e.data.message === 'readyForConfig') {
-          worker.workers[0].postMessage({
-            message: 'config',
-            config: this.workerBootConfiguration,
-          })
-        } else if (e.data.message === 'error') {
-          reject(deserializeError(e.data.error))
+        switch (e.data.message) {
+          case 'ready': {
+            resolve(worker)
+            worker.workers[0]!.removeEventListener('message', listener)
+            break
+          }
+          case 'readyForConfig': {
+            worker.workers[0]!.postMessage({
+              message: 'config',
+              config: this.workerBootConfiguration,
+            })
+            break
+          }
+          case 'error': {
+            reject(deserializeError(e.data.error))
+            break
+          }
+          // No default
         }
       }
-      worker.workers[0].addEventListener('message', listener)
+      worker.workers[0]!.addEventListener('message', listener)
     })
   }
 }

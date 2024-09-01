@@ -5,7 +5,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
@@ -26,11 +26,11 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       const data = await file.readFile('utf8')
       return Object.fromEntries(
         data
-          ?.split(/\n|\r\n|\r/)
+          .split(/\n|\r\n|\r/)
           .filter(line => !!line.trim())
           .map(line => {
             const [name, length] = line.split('\t')
-            return [name, +length]
+            return [name!, +length!]
           }),
       )
     }
@@ -43,12 +43,10 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
+    const pm = this.pluginManager
     this.chromSizesData = this.initChromSizes()
     this.twobit = new TwoBitFile({
-      filehandle: openLocation(
-        readConfObject(config, 'twoBitLocation'),
-        this.pluginManager,
-      ),
+      filehandle: openLocation(this.getConf('twoBitLocation'), pm),
     })
   }
 
@@ -66,14 +64,14 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       return Object.keys(chromSizesData).map(refName => ({
         refName,
         start: 0,
-        end: chromSizesData[refName],
+        end: chromSizesData[refName]!,
       }))
     }
     const refSizes = await this.twobit.getSequenceSizes()
     return Object.keys(refSizes).map(refName => ({
       refName,
       start: 0,
-      end: refSizes[refName],
+      end: refSizes[refName]!,
     }))
   }
 

@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Menu } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 
 // local utils
 import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
@@ -14,21 +15,18 @@ import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
+import HighlightGroup from './Highlight'
 
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     overflow: 'hidden',
   },
-  spacer: {
-    position: 'relative',
-    height: 3,
-  },
 })
 
 type LGV = LinearGenomeViewModel
 
-function TracksContainer({
+const TracksContainer = observer(function TracksContainer({
   children,
   model,
 }: {
@@ -36,6 +34,7 @@ function TracksContainer({
   model: LGV
 }) {
   const { classes } = useStyles()
+  const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
   const ref = useRef<HTMLDivElement>(null)
   const {
@@ -47,13 +46,19 @@ function TracksContainer({
     width,
     left,
     anchorPosition,
-    handleMenuItemClick,
     open,
+    handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown: mouseDown2,
   } = useRangeSelect(ref, model, true)
   useWheelScroll(ref, model)
+
+  const additional = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-TracksContainerComponent',
+    undefined,
+    { model },
+  ) as React.ReactNode
 
   return (
     <div
@@ -103,9 +108,11 @@ function TracksContainer({
           />
         }
       />
+      <HighlightGroup model={model} />
+      {additional}
       {children}
     </div>
   )
-}
+})
 
-export default observer(TracksContainer)
+export default TracksContainer

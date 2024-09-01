@@ -4,9 +4,12 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 
-export default class extends BaseAdapter implements RegionsAdapter {
+export default class ChromSizesAdapter
+  extends BaseAdapter
+  implements RegionsAdapter
+{
   // the map of refSeq to length
-  protected setupP?: Promise<{ [key: string]: number }>
+  protected setupP?: Promise<Record<string, number>>
 
   async setupPre() {
     const pm = this.pluginManager
@@ -17,16 +20,16 @@ export default class extends BaseAdapter implements RegionsAdapter {
         .split(/\n|\r\n|\r/)
         .map(f => f.trim())
         .filter(f => !!f)
-        .map((line: string) => {
+        .map(line => {
           const [name, length] = line.split('\t')
-          return [name, +length]
+          return [name!, +length!]
         }),
     )
   }
 
   async setup() {
     if (!this.setupP) {
-      this.setupP = this.setupPre().catch(e => {
+      this.setupP = this.setupPre().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -39,7 +42,7 @@ export default class extends BaseAdapter implements RegionsAdapter {
     return Object.keys(refSeqs).map(refName => ({
       refName,
       start: 0,
-      end: refSeqs[refName],
+      end: refSeqs[refName]!,
     }))
   }
 

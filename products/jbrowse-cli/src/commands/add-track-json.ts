@@ -1,9 +1,9 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
-import JBrowseCommand, { Config } from '../base'
+import JBrowseCommand, { Config, Track } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   target: string
 
   static description =
@@ -14,30 +14,30 @@ export default class AddTrackJson extends JBrowseCommand {
     '$ jbrowse add-track-json track.json --update',
   ]
 
-  static args = [
-    {
-      name: 'track',
+  static args = {
+    track: Args.string({
       required: true,
-      description: `track JSON file or command line arg blob`,
-    },
-  ]
+      description: 'track JSON file or command line arg blob',
+    }),
+  }
 
   static flags = {
-    update: flags.boolean({
+    update: Flags.boolean({
       char: 'u',
-      description: `update the contents of an existing track, matched based on trackId`,
+      description:
+        'update the contents of an existing track, matched based on trackId',
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
   }
 
   async run() {
-    const { args, flags: runFlags } = this.parse(AddTrackJson)
+    const { args, flags: runFlags } = await this.parse(AddTrackJson)
 
     const output = runFlags.target || runFlags.out || '.'
     const isDir = (await fsPromises.lstat(output)).isDirectory()
@@ -50,7 +50,7 @@ export default class AddTrackJson extends JBrowseCommand {
     const config: Config = await this.readJsonFile(this.target)
     this.debug(`Found existing config file ${this.target}`)
 
-    const track = await this.readInlineOrFileJson(inputtedTrack)
+    const track = await this.readInlineOrFileJson<Track>(inputtedTrack)
     if (!config.tracks) {
       config.tracks = []
     }
@@ -58,7 +58,7 @@ export default class AddTrackJson extends JBrowseCommand {
       ({ trackId }: { trackId: string }) => trackId === track.trackId,
     )
     if (idx !== -1) {
-      const existing = config.tracks[idx].name
+      const existing = config.tracks[idx]?.name
       this.debug(`Found existing track ${existing} in configuration`)
       if (update) {
         this.debug(`Overwriting track ${existing} in configuration`)

@@ -1,13 +1,12 @@
-import React from 'react'
 import {
-  getConf,
   readConfObject,
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import clone from 'clone'
 import {
+  dedupe,
+  Feature,
   getContainingView,
   getSession,
   makeAbortableReaction,
@@ -15,10 +14,11 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
 /**
  * #stateModel LinearComparativeDisplay
+ * extends
+ * - [BaseDisplay](../basedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -42,20 +42,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile((/* self */) => ({
       renderInProgress: undefined as AbortController | undefined,
-      filled: false,
-      data: undefined as unknown,
-      reactElement: undefined as React.ReactElement | undefined,
+      features: undefined as Feature[] | undefined,
       message: undefined as string | undefined,
-      renderingComponent: undefined as unknown,
-      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
       /**
        * #getter
        */
@@ -76,12 +66,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setLoading(abortController: AbortController) {
-          self.filled = false
           self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
           self.error = undefined
-          self.renderingComponent = undefined
           renderInProgress = abortController
         },
 
@@ -93,12 +79,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()
           }
-          self.filled = false
           self.message = messageText
-          self.reactElement = undefined
-          self.data = undefined
           self.error = undefined
-          self.renderingComponent = undefined
           renderInProgress = undefined
         },
 
@@ -106,22 +88,42 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #action
          * controlled by a reaction
          */
-        setRendered(args?: {
-          data: unknown
-          reactElement: React.ReactElement
-          renderingComponent: React.Component
-        }) {
+        setRendered(args?: { features: Feature[] }) {
           if (!args) {
             return
           }
-          const { data, reactElement, renderingComponent } = args
-          self.filled = true
+          const { features } = args
+          const existingFeatures = self.features || []
+
+          const featIds = new Set(existingFeatures.map(f => f.id()))
+          const newFeatIds = new Set(features.map(f => f.id()))
+
+          let foundNewFeatureNotInExistingMap = false
+          let foundExistingFeatureNotInNewMap = false
+          for (const feat of features) {
+            if (!featIds.has(feat.id())) {
+              foundNewFeatureNotInExistingMap = true
+              break
+            }
+          }
+          for (const existingFeat of existingFeatures) {
+            if (!newFeatIds.has(existingFeat.id())) {
+              foundExistingFeatureNotInNewMap = true
+              break
+            }
+          }
+
           self.message = undefined
-          self.reactElement = reactElement
-          self.data = data
           self.error = undefined
-          self.renderingComponent = renderingComponent
           renderInProgress = undefined
+
+          if (
+            foundNewFeatureNotInExistingMap ||
+            foundExistingFeatureNotInNewMap ||
+            !self.features
+          ) {
+            self.features = features
+          }
         },
 
         /**
@@ -134,12 +136,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             renderInProgress.abort()
           }
           // the rendering failed for some reason
-          self.filled = false
           self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
           self.error = error
-          self.renderingComponent = undefined
           renderInProgress = undefined
         },
       }
@@ -147,7 +145,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => ({
       afterAttach() {
         makeAbortableReaction(
-          // @ts-ignore
+          // @ts-expect-error
           self,
           renderBlockData,
           renderBlockEffect,
@@ -166,7 +164,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self)
   const display = self
-  const { rendererType } = display
 
   // Alternative to readConfObject(config) is below used because renderProps is
   // something under our control.  Compare to serverSideRenderedBlock
@@ -179,15 +176,14 @@ function renderBlockData(self: LinearComparativeDisplay) {
 
   return parent.initialized
     ? {
-        rendererType,
         rpcManager,
         renderProps: {
           ...display.renderProps(),
-          view: clone(getSnapshot(parent)),
+          view: parent,
           adapterConfig,
-          rendererType: rendererType.name,
           sessionId,
           timeout: 1000000,
+          self,
         },
       }
     : undefined
@@ -198,15 +194,19 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
     return
   }
 
-  const { rendererType, rpcManager, renderProps } = props
+  const { rpcManager, renderProps } = props
+  const { adapterConfig } = renderProps
+  const view0 = renderProps.view.views[0]
 
-  // @ts-ignore
-  const { reactElement, ...data } = await rendererType.renderInClient(
-    rpcManager,
-    renderProps,
-  )
+  const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+    regions: view0.staticBlocks.contentBlocks,
+    sessionId: 'getFeats',
+    adapterConfig,
+  })) as Feature[]
 
-  return { reactElement, data, renderingComponent: rendererType.ReactComponent }
+  return {
+    features: dedupe(features, f => f.id()),
+  }
 }
 
 export default stateModelFactory

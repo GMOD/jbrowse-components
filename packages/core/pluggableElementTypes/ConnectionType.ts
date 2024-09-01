@@ -1,6 +1,6 @@
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 import { AnyReactComponentType } from '../util'
 
 export default class ConnectionType extends PluggableElementBase {
@@ -29,11 +29,5 @@ export default class ConnectionType extends PluggableElementBase {
     this.description = stuff.description
     this.url = stuff.url
     this.configEditorComponent = stuff.configEditorComponent
-    if (!this.stateModel) {
-      throw new Error(`no stateModel defined for connection ${this.name}`)
-    }
-    if (!this.configSchema) {
-      throw new Error(`no configSchema defined for connection ${this.name}`)
-    }
   }
 }

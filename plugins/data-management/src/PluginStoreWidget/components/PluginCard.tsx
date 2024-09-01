@@ -20,11 +20,13 @@ import { makeStyles } from 'tss-react/mui'
 import PersonIcon from '@mui/icons-material/Person'
 import AddIcon from '@mui/icons-material/Add'
 import CheckIcon from '@mui/icons-material/Check'
+
+// locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   card: {
-    margin: '1em',
+    margin: '0.5em',
   },
   icon: {
     marginLeft: '0.5em',
@@ -36,11 +38,10 @@ const useStyles = makeStyles()(() => ({
   dataField: {
     display: 'flex',
     alignItems: 'center',
-    margin: '0.4em 0em',
   },
-}))
+})
 
-function PluginCard({
+const PluginCard = observer(function PluginCard({
   plugin,
   model,
   adminMode,
@@ -52,30 +53,27 @@ function PluginCard({
   const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
-  const isInstalled = Boolean(
-    pluginManager.runtimePluginDefinitions.find(def => def.url === plugin.url),
-  )
+  const { runtimePluginDefinitions } = pluginManager
+  // @ts-expect-error
+  const isInstalled = runtimePluginDefinitions.some(d => d.url === plugin.url)
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rootModel = getParent<any>(model, 3)
   const { jbrowse } = rootModel
 
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
       <CardContent>
-        <div className={classes.dataField}>
-          <Typography variant="h5">
-            <Link
-              href={`${plugin.location}#readme`}
-              target="_blank"
-              rel="noopener"
-            >
-              {plugin.name}
-            </Link>
-          </Typography>
-        </div>
+        <Typography variant="h5">
+          <Link
+            href={`${plugin.location}#readme`}
+            target="_blank"
+            rel="noopener"
+          >
+            {plugin.name}
+          </Link>
+        </Typography>
         <div className={classes.dataField}>
           <PersonIcon style={{ marginRight: '0.5em' }} />
           <Typography>{plugin.authors.join(', ')}</Typography>
@@ -86,7 +84,6 @@ function PluginCard({
       <CardActions>
         <Button
           variant="contained"
-          color="primary"
           disabled={disableButton}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
@@ -103,6 +100,6 @@ function PluginCard({
       </CardActions>
     </Card>
   )
-}
+})
 
-export default observer(PluginCard)
+export default PluginCard

@@ -2,9 +2,8 @@ import ReactComponent from '../WiggleRendering'
 import PluginManager from '@jbrowse/core/PluginManager'
 import XYPlotRenderer from './XYPlotRenderer'
 import configSchema from './configSchema'
-export { XYPlotRenderer, configSchema, ReactComponent }
 
-export default (pluginManager: PluginManager) => {
+export default function XYPlotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new XYPlotRenderer({
@@ -15,3 +14,7 @@ export default (pluginManager: PluginManager) => {
       }),
   )
 }
+
+export { default as XYPlotRenderer } from './XYPlotRenderer'
+export { default as ReactComponent } from '../WiggleRendering'
+export { default as configSchema } from './configSchema'

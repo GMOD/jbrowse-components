@@ -8,8 +8,7 @@ import typescript from '@rollup/plugin-typescript'
 import path from 'path'
 import { defineConfig, OutputOptions, Plugin, RollupOptions } from 'rollup'
 import externalGlobals from 'rollup-plugin-external-globals'
-import builtins from 'rollup-plugin-node-builtins'
-import globals from 'rollup-plugin-node-globals'
+import nodePolyfills from 'rollup-plugin-polyfill-node'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import { terser } from 'rollup-plugin-terser'
 import { babelPluginJBrowse } from './babelPluginJBrowse'
@@ -25,7 +24,7 @@ interface JBrowseRollupConfigOptions {
 
 const appPath = fs.realpathSync(process.cwd())
 const packageJsonPath = path.join(appPath, 'package.json')
-const packageJsonText = fs.readFileSync(packageJsonPath, 'utf-8')
+const packageJsonText = fs.readFileSync(packageJsonPath, 'utf8')
 const packageJson = JSON.parse(packageJsonText)
 const packageName = safePackageName(packageJson.name || '')
 const umdName = `JBrowsePlugin${packageJson.config?.jbrowse?.plugin?.name}`
@@ -37,13 +36,11 @@ const nodeEnv = process.env.NODE_ENV || 'production'
 
 function createGlobalMap(jbrowseGlobals: string[], dotSyntax = false) {
   const globalMap: Record<string, string> = {}
-  jbrowseGlobals.forEach(global => {
-    if (dotSyntax) {
-      globalMap[global] = `JBrowseExports.${global}`
-    } else {
-      globalMap[global] = `JBrowseExports["${global}"]`
-    }
-  })
+  for (const global of jbrowseGlobals) {
+    globalMap[global] = dotSyntax
+      ? `JBrowseExports.${global}`
+      : `JBrowseExports["${global}"]`
+  }
   return globalMap
 }
 
@@ -79,7 +76,7 @@ function getPlugins(
       externalGlobals(createGlobalMap(jbrowseGlobals)),
     babelPluginJBrowse({
       exclude: ['node_modules/**', '__virtual__/**'],
-      // @ts-ignore
+      // @ts-expect-error
       custom: {
         extractErrors: false,
         format: mode === 'esmBundle' || mode === 'npm' ? 'esm' : mode,
@@ -88,8 +85,11 @@ function getPlugins(
     }),
     mode === 'npm' && sourceMaps(),
     mode === 'npm' && writeIndex(packageName, distPath),
-    (mode === 'esmBundle' || mode === 'umd') && globals(),
-    (mode === 'esmBundle' || mode === 'umd') && builtins(),
+    (mode === 'esmBundle' || mode === 'umd') &&
+      // By default, nodePolyfills only polyfills code in node_modules/. We set
+      // to null here to include the plugin source code itself (and for Yarn 2/3
+      // compatibility, since it doesn't use node_modules/).
+      nodePolyfills({ include: null }),
     (mode === 'cjs' || mode === 'esmBundle') && omitUnresolved(),
   ].filter(Boolean)
 
@@ -159,10 +159,8 @@ export function createRollupConfig(
       input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         const isExternal = external(id)
-        if (isExternal) {
-          if (!jbrowseGlobals.includes(id)) {
-            return false
-          }
+        if (isExternal && !jbrowseGlobals.includes(id)) {
+          return false
         }
         return isExternal
       },
@@ -208,10 +206,8 @@ export function createRollupConfig(
       input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         const isExternal = external(id)
-        if (isExternal) {
-          if (!jbrowseGlobals.includes(id)) {
-            return false
-          }
+        if (isExternal && !jbrowseGlobals.includes(id)) {
+          return false
         }
         return isExternal
       },
@@ -239,10 +235,8 @@ export function createRollupConfig(
           return true
         }
         const isExternal = external(id)
-        if (isExternal) {
-          if (!jbrowseGlobals.includes(id)) {
-            return false
-          }
+        if (isExternal && !jbrowseGlobals.includes(id)) {
+          return false
         }
         return isExternal
       },

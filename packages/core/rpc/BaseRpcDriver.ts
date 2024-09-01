@@ -6,9 +6,9 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
-  error?: Error
-  on?: (channel: string, callback: (message: string) => void) => void
-  off?: (channel: string, callback: (message: string) => void) => void
+  error?: unknown
+  on?: (channel: string, callback: (message: unknown) => void) => void
+  off?: (channel: string, callback: (message: unknown) => void) => void
   destroy(): void
   call(
     functionName: string,
@@ -25,14 +25,8 @@ export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
 
-function isClonable(thing: unknown): boolean {
-  if (typeof thing === 'function') {
-    return false
-  }
-  if (thing instanceof Error) {
-    return false
-  }
-  return true
+function isClonable(thing: unknown) {
+  return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
 // watches the given worker object, returns a promise that will be rejected if
@@ -43,6 +37,8 @@ export async function watchWorker(
   rpcDriverClassName: string,
 ) {
   // after first ping succeeds, apply wait for timeout
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     await worker.call('ping', [], {
       timeout: pingTime * 2,
@@ -71,22 +67,20 @@ class LazyWorker {
         .makeWorker()
         .then(worker => {
           watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-            error => {
-              if (worker) {
-                console.error(
-                  'worker did not respond, killing and generating new one',
-                )
-                console.error(error)
-                worker.destroy()
-                worker.status = 'killed'
-                worker.error = error
-                this.workerP = undefined
-              }
+            (error: unknown) => {
+              console.error(
+                'worker did not respond, killing and generating new one',
+              )
+              console.error(error)
+              worker.destroy()
+              worker.status = 'killed'
+              worker.error = error
+              this.workerP = undefined
             },
           )
           return worker
         })
-        .catch(e => {
+        .catch((e: unknown) => {
           this.workerP = undefined
           throw e
         })
@@ -120,7 +114,7 @@ export default abstract class BaseRpcDriver {
   filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
     if (Array.isArray(thing)) {
       return thing
-        .filter(isClonable)
+        .filter(thing => isClonable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
@@ -167,7 +161,11 @@ export default abstract class BaseRpcDriver {
       readConfObject(this.config, 'workerCount') ||
       clamp(1, Math.max(1, hardwareConcurrency - 1), 5)
 
-    return [...new Array(workerCount)].map(() => new LazyWorker(this))
+    const workers = []
+    for (let i = 0; i < workerCount; i++) {
+      workers.push(new LazyWorker(this))
+    }
+    return workers
   }
 
   getWorkerPool() {
@@ -189,27 +187,31 @@ export default abstract class BaseRpcDriver {
       workerNumber = workerAssignment
     }
 
-    // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber].getWorker()
-    if (!worker) {
-      throw new Error('no web workers registered for RPC')
-    }
-    return worker
+    return workers[workerNumber]!.getWorker()
   }
 
   async call(
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: { statusCallback?: (message: string) => void },
+    args: {
+      statusCallback?: (message: unknown) => void
+    },
     options = {},
   ) {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
     let done = false
-    const worker = await this.getWorker(sessionId)
+    const unextendedWorker = await this.getWorker(sessionId)
+    const worker = pluginManager.evaluateExtensionPoint(
+      'Core-extendWorker',
+      unextendedWorker,
+    ) as WorkerHandle
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    if (!rpcMethod) {
+      throw new Error(`unknown RPC method ${functionName}`)
+    }
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 

@@ -1,13 +1,14 @@
 ---
 id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/alignments/src/LinearAlignmentsDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/configSchema.ts)
 
 has a "pileup" sub-display, where you can see individual reads and a
 quantitative "snpcoverage" sub-display track showing SNP frequencies
@@ -26,7 +27,16 @@ pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema
 snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay').configSchema
 ```
 
-## LinearAlignmentsDisplay - Derives from
+#### slot: height
+
+```js
+height: {
+        type: 'number',
+        defaultValue: 250,
+      }
+```
+
+### LinearAlignmentsDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

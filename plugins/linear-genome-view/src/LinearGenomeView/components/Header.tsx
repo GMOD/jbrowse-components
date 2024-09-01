@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Button, FormGroup, Typography, alpha } from '@mui/material'
+import { Button, IconButton, FormGroup, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
@@ -10,12 +10,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
-import {
-  LinearGenomeViewModel,
-  WIDGET_HEIGHT,
-  SPACING,
-  HEADER_BAR_HEIGHT,
-} from '..'
+import { LinearGenomeViewModel, SPACING } from '..'
 import OverviewScalebar from './OverviewScalebar'
 import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
@@ -23,7 +18,6 @@ import SearchBox from './SearchBox'
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   headerBar: {
-    height: HEADER_BAR_HEIGHT,
     display: 'flex',
   },
   headerForm: {
@@ -36,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
 
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
-    height: WIDGET_HEIGHT,
+    color: theme.palette.text.primary,
     margin: SPACING,
   },
   bp: {
@@ -47,7 +41,7 @@ const useStyles = makeStyles()(theme => ({
   toggleButton: {
     height: 44,
     border: 'none',
-    margin: theme.spacing(0.5),
+    marginLeft: theme.spacing(4),
   },
   buttonSpacer: {
     marginRight: theme.spacing(2),
@@ -57,15 +51,14 @@ const useStyles = makeStyles()(theme => ({
 const HeaderButtons = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
   return (
-    <Button
+    <IconButton
       onClick={model.activateTrackSelector}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
-      color="secondary"
     >
       <TrackSelectorIcon className={classes.buttonSpacer} />
-    </Button>
+    </IconButton>
   )
 })
 
@@ -76,14 +69,18 @@ function PanControls({ model }: { model: LGV }) {
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(-0.9)}
+        onClick={() => {
+          model.slide(-0.9)
+        }}
       >
         <ArrowBackIcon />
       </Button>
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(0.9)}
+        onClick={() => {
+          model.slide(0.9)
+        }}
       >
         <ArrowForwardIcon />
       </Button>

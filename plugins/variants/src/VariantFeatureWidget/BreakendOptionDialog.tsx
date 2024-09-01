@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
@@ -10,9 +9,11 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSnapshot } from 'mobx-state-tree'
-// jbrowse
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession, Feature } from '@jbrowse/core/util'
+import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+// locals
+import { VariantFeatureWidgetModel } from './stateModelFactory'
 
 const useStyles = makeStyles()({
   block: {
@@ -20,43 +21,67 @@ const useStyles = makeStyles()({
   },
 })
 
-function BreakendOptionDialog({
+interface Track {
+  id: string
+  displays: { id: string; [key: string]: unknown }[]
+  [key: string]: unknown
+}
+
+function stripIds(arr: Track[]) {
+  return arr.map(({ id, displays, ...rest }) => ({
+    ...rest,
+    displays: displays.map(({ id, ...rest }) => rest),
+  }))
+}
+
+function Checkbox2({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean
+  label: string
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <FormControlLabel
+      className={classes.block}
+      control={<Checkbox checked={checked} onChange={onChange} />}
+      label={label}
+    />
+  )
+}
+
+const BreakendOptionDialog = observer(function ({
   model,
   handleClose,
   feature,
   viewType,
 }: {
-  model: any
+  model: VariantFeatureWidgetModel
   handleClose: () => void
   feature: Feature
-  viewType: any
+  viewType: ViewType
 }) {
-  const { classes } = useStyles()
   const [copyTracks, setCopyTracks] = useState(true)
-  const [mirrorTracks, setMirrorTracks] = useState(true)
+  const [mirror, setMirror] = useState(true)
 
   return (
     <Dialog open onClose={handleClose} title="Breakpoint split view options">
       <DialogContent>
-        <FormControlLabel
-          className={classes.block}
-          control={
-            <Checkbox
-              checked={copyTracks}
-              onChange={() => setCopyTracks(val => !val)}
-            />
-          }
+        <Checkbox2
+          checked={copyTracks}
+          onChange={event => {
+            setCopyTracks(event.target.checked)
+          }}
           label="Copy tracks into the new view"
         />
-
-        <FormControlLabel
-          className={classes.block}
-          control={
-            <Checkbox
-              checked={mirrorTracks}
-              onChange={() => setMirrorTracks(val => !val)}
-            />
-          }
+        <Checkbox2
+          checked={mirror}
+          onChange={event => {
+            setMirror(event.target.checked)
+          }}
           label="Mirror tracks vertically in vertically stacked view"
         />
       </DialogContent>
@@ -66,26 +91,32 @@ function BreakendOptionDialog({
             const { view } = model
             const session = getSession(model)
             try {
+              // @ts-expect-error
               const viewSnapshot = viewType.snapshotFromBreakendFeature(
                 feature,
                 view,
               )
-              function remapIds(arr: any[]) {
-                return arr.map((v: any) => ({
-                  ...v,
-                  id: v.trackId + '-' + Math.random(),
-                }))
-              }
-              viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-              viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-              viewSnapshot.featureData = feature
-              const viewTracks = getSnapshot(view.tracks) as any
-              viewSnapshot.views[0].tracks = remapIds(viewTracks)
-              viewSnapshot.views[1].tracks = remapIds(
-                mirrorTracks ? viewTracks.slice().reverse() : viewTracks,
-              )
+              const [view1, view2] = viewSnapshot.views
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+              const viewTracks = getSnapshot(view.tracks) as Track[]
 
-              session.addView('BreakpointSplitView', viewSnapshot)
+              session.addView('BreakpointSplitView', {
+                ...viewSnapshot,
+                views: [
+                  {
+                    ...view1,
+                    tracks: stripIds(viewTracks),
+                    offsetPx: view1.offsetPx - view.width / 2 + 100,
+                  },
+                  {
+                    ...view2,
+                    tracks: stripIds(
+                      mirror ? [...viewTracks].reverse() : viewTracks,
+                    ),
+                    offsetPx: view2.offsetPx - view.width / 2 + 100,
+                  },
+                ],
+              })
             } catch (e) {
               console.error(e)
               session.notify(`${e}`)
@@ -99,7 +130,9 @@ function BreakendOptionDialog({
           OK
         </Button>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           color="secondary"
           variant="contained"
         >
@@ -108,5 +141,6 @@ function BreakendOptionDialog({
       </DialogActions>
     </Dialog>
   )
-}
-export default observer(BreakendOptionDialog)
+})
+
+export default BreakendOptionDialog

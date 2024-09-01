@@ -10,7 +10,7 @@ import config from '../docusaurus.config.json'
 
 ## Prerequisites
 
-- Node.js 12+. Note: we recommend not using `apt` to install Node.js, it often
+- Node.js 16+. Note: we recommend not using `apt` to install Node.js, it often
   installs old versions. Good alternatives include
   [NodeSource](https://github.com/nodesource) or
   [NVM](https://github.com/nvm-sh/nvm).
@@ -20,9 +20,6 @@ import config from '../docusaurus.config.json'
 - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
   `sudo apt install tabix` and `brew install htslib`, used for creating tabix
   indexes for BED/VCF/GFF files
-- (optional) [`genometools`](http://genometools.org/) installed e.g.
-  `sudo apt install genometools` or `brew install brewsci/bio/genometools` used
-  for sorting GFF3. can use awk instead of `genometools` instead
 
 ## Installing the JBrowse CLI
 
@@ -78,14 +75,14 @@ The directory where you downloaded JBrowse should look something like this:
 
 ```txt
 jbrowse2/
-├── asset-manifest.json
-├── favicon.ico
-├── index.html
-├── manifest.json
-├── robots.txt
-├── static/
-├── test_data/
-└── version.txt
+- asset-manifest.json
+- favicon.ico
+- index.html
+- manifest.json
+- robots.txt
+- static/
+- test_data/
+- version.txt
 ```
 
 ## Running JBrowse 2
@@ -227,29 +224,20 @@ jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse
 
 ### Adding a GFF3 file with GFF3Tabix
 
-To load a GFF3 file, we can sort and index it with tabix, make sure you have
-[GenomeTools](http://genometools.org/) (to install can use
-`sudo apt install genometools`).
-
 ```bash
-gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
-bgzip yourfile.sorted.gff
+jbrowse sort-gff yourfile.gff | bgzip > yourfile.sorted.gff.gz
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
-As an alternative to `gt gff3 -sortlines`, use `awk` and GNU `sort`, as follows:
+Note: the `jbrowse sort-gff` command just automates the following shell command
 
 ```bash
-awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n"}' file.gff > file.sorted.gff
-bgzip file.sorted.gff
-tabix file.sorted.gff.gz
+(grep "^#" in.gff; grep -v "^#" in.gff | sort -t"`printf '\t'`" -k1,1 -k4,4n)  > sorted.gff;
 ```
 
-The `awk` command is inspired by the method in the
-[tabix documentation](http://www.htslib.org/doc/tabix.html), but avoids
-subshells and properly sets the tab delimiter for GNU sort in case there are
-spaces in the GFF.
+This command comes from the
+[tabix documentation](http://www.htslib.org/doc/tabix.html)
 
 ### Adding a synteny track from a PAF file
 

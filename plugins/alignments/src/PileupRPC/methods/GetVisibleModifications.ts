@@ -3,6 +3,7 @@ import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 
 // locals
 import { getModificationTypes } from '../../MismatchParser'
@@ -14,7 +15,7 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
       headers?: Record<string, string>
       regions: Region[]
@@ -29,10 +30,9 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const featuresArray = await dataAdapter
-      .getFeaturesInMultipleRegions(regions)
-      .pipe(toArray())
-      .toPromise()
+    const featuresArray = await firstValueFrom(
+      dataAdapter.getFeaturesInMultipleRegions(regions).pipe(toArray()),
+    )
 
     const uniqueValues = new Set<string>()
     featuresArray.forEach(f => {

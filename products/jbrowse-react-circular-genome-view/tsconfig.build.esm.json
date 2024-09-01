@@ -1,14 +1,11 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "noEmit": false,
     "outDir": "esm",
-    "rootDir": "./src",
     "target": "es2018",
     "composite": true
   },
-  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "include": ["src"],
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },

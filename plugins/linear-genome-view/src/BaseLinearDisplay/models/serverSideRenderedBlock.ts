@@ -1,6 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
+import {
+  types,
+  getParent,
+  isAlive,
+  cast,
+  Instance,
+  getSnapshot,
+} from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
@@ -22,6 +28,7 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 
+// locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 // the MST state of a single server-side-rendered block in a display
@@ -55,28 +62,35 @@ const blockState = types
       },
       afterAttach() {
         const display = getContainingDisplay(self)
-        makeAbortableReaction(
-          self as any,
-          renderBlockData,
-          renderBlockEffect as any, // reaction doesn't expect async here
-          {
-            name: `${display.id}/${assembleLocString(self.region)} rendering`,
-            delay: display.renderDelay,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
+        setTimeout(() => {
+          if (isAlive(self)) {
+            makeAbortableReaction(
+              self as any,
+              renderBlockData,
+              renderBlockEffect, // reaction doesn't expect async here
+              {
+                name: `${display.id}/${assembleLocString(
+                  self.region,
+                )} rendering`,
+                delay: display.renderDelay,
+                fireImmediately: true,
+              },
+              this.setLoading,
+              this.setRendered,
+              this.setError,
+            )
+          }
+        }, display.renderDelay)
       },
       setStatus(message: string) {
         self.status = message
       },
       setLoading(abortController: AbortController) {
-        if (renderInProgress !== undefined) {
-          if (!renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
+        if (
+          renderInProgress !== undefined &&
+          !renderInProgress.signal.aborted
+        ) {
+          renderInProgress.abort()
         }
         self.filled = false
         self.message = undefined
@@ -133,7 +147,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: Error | unknown) {
+      setError(error: unknown) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -166,25 +180,27 @@ const blockState = types
         getParent<any>(self, 2).reload()
       },
       beforeDestroy() {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        const display = getContainingDisplay(self)
-        const { rpcManager } = getSession(self)
-        const { rendererType } = display
-        const { renderArgs } = renderBlockData(cast(self))
-        // renderArgs can be undefined if an error occurred in this block
-        if (renderArgs) {
-          rendererType
-            .freeResourcesInClient(
-              rpcManager,
-              JSON.parse(JSON.stringify(renderArgs)),
-            )
-            .catch((e: Error) => {
-              // just console.error if it's something while it's being destroyed
-              console.warn('Error while destroying block', e)
-            })
-        }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            if (renderInProgress && !renderInProgress.signal.aborted) {
+              renderInProgress.abort()
+            }
+            const display = getContainingDisplay(self)
+            const { rpcManager } = getSession(self)
+            const { rendererType } = display
+            const { renderArgs } = renderBlockData(cast(self))
+            // renderArgs can be undefined if an error occurred in this block
+            if (renderArgs) {
+              await rendererType.freeResourcesInClient(
+                rpcManager,
+                JSON.parse(JSON.stringify(renderArgs)),
+              )
+            }
+          } catch (e) {
+            console.error('Error while destroying block', e)
+          }
+        })()
       },
     }
   })
@@ -207,7 +223,7 @@ export function renderBlockData(
     const regionAsm = self.region.assemblyName
     if (
       !assemblyNames.includes(regionAsm) &&
-      !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
+      !assemblyNames.some(name => assemblyManager.get(name)?.hasName(regionAsm))
     ) {
       throw new Error(
         `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
@@ -238,7 +254,7 @@ export function renderBlockData(
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [self.region],
+        regions: [getSnapshot(self.region)],
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
@@ -253,24 +269,14 @@ export function renderBlockData(
   }
 }
 
-interface RenderProps {
-  displayError: Error
-  rendererType: any
-  renderProps: { [key: string]: any }
-  rpcManager: { call: Function }
-  cannotBeRenderedReason: string
-  renderArgs: { [key: string]: any }
-}
-
-interface ErrorProps {
-  displayError: string
-}
-
 async function renderBlockEffect(
-  props: RenderProps | ErrorProps,
+  props: ReturnType<typeof renderBlockData> | undefined,
   signal: AbortSignal,
   self: BlockModel,
 ) {
+  if (!props) {
+    return
+  }
   const {
     rendererType,
     renderProps,
@@ -278,7 +284,7 @@ async function renderBlockEffect(
     renderArgs,
     cannotBeRenderedReason,
     displayError,
-  } = props as RenderProps
+  } = props
   if (!isAlive(self)) {
     return undefined
   }
@@ -308,5 +314,6 @@ async function renderBlockEffect(
     features,
     layout,
     maxHeightReached,
+    renderProps,
   }
 }

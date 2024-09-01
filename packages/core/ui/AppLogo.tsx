@@ -14,11 +14,11 @@ const Logo = observer(function ({
 }) {
   const { configuration } = session
   const logoPath = readConfObject(configuration, 'logoPath')
-  if (!logoPath?.uri) {
-    return <LogoFull variant="white" />
-  } else {
-    return <img src={logoPath.uri} alt="Custom logo" />
-  }
+  return logoPath?.uri ? (
+    <img src={logoPath.uri} alt="Custom logo" />
+  ) : (
+    <LogoFull variant="white" />
+  )
 })
 
 export default Logo

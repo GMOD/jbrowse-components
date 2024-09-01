@@ -2,12 +2,12 @@ import LocString from './LocString'
 import LocRef from './LocRef'
 import LocStart from './LocStart'
 import LocEnd from './LocEnd'
-import { NumberColumn as Number } from './Number'
+import { NumberColumn } from './Number'
 import { TextColumn as Text } from './Text'
 import { types, IAnyModelType } from 'mobx-state-tree'
 
 const ColumnTypes = {
-  Number,
+  Number: NumberColumn,
   Text,
   LocString,
   LocRef,
@@ -22,10 +22,10 @@ const AnyFilterModelType = types.union(
     .map(columnType => {
       // just instantiate the blank types to get their filter model types
       const { FilterModelType } = columnType.create({
-        // @ts-ignore
+        // @ts-expect-error
         type: columnType.properties.type.value,
       })
-      return FilterModelType as unknown as IAnyModelType
+      return FilterModelType as unknown as IAnyModelType | undefined
     })
     // some column types might not have filter machinery, filter those out
     .filter(t => !!t),

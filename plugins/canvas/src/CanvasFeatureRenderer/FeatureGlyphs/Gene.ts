@@ -28,8 +28,8 @@ export default class Gene extends BoxGlyph {
       return super.getFeatureRectangle(viewArgs, feature)
     }
 
-    let l = Infinity
-    let r = -Infinity
+    let l = Number.POSITIVE_INFINITY
+    let r = Number.NEGATIVE_INFINITY
     let h = 0
 
     const subRects = subfeatures
@@ -98,7 +98,7 @@ export default class Gene extends BoxGlyph {
       feature,
     ) as LaidOutFeatureRectWithSubRects
 
-    fRect?.subRects?.forEach(subRect => {
+    fRect.subRects?.forEach(subRect => {
       subRect.t += fRect.t
       subRect.rect.t += fRect.t
     })
@@ -112,8 +112,8 @@ export default class Gene extends BoxGlyph {
     return subType === transcriptType
       ? new ProcessedTranscriptGlyph()
       : noncodingType.includes(subType)
-      ? new NoncodingGlyph()
-      : new BoxGlyph()
+        ? new NoncodingGlyph()
+        : new BoxGlyph()
   }
 
   renderFeature(

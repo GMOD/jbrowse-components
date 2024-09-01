@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function JsonEditor({
+const JsonEditor = observer(function JsonEditor({
   slot,
 }: {
   slot: {
@@ -68,7 +68,9 @@ function JsonEditor({
           value={contents}
           helperText={slot.description}
           multiline
-          onChange={event => setContents(event.target.value)}
+          onChange={event => {
+            setContents(event.target.value)
+          }}
           style={{ background: error ? '#fdd' : undefined }}
           InputProps={{
             classes: {
@@ -79,6 +81,6 @@ function JsonEditor({
       </div>
     </>
   )
-}
+})
 
-export default observer(JsonEditor)
+export default JsonEditor

@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config Gff3TabixAdapter
+ * #category adapter
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -46,7 +47,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
      */
     dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
+      defaultValue: ['chromosome', 'region', 'contig'],
     },
   },
   { explicitlyTyped: true },

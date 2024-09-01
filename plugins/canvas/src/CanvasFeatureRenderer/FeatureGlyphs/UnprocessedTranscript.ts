@@ -10,6 +10,6 @@ export default class UnprocessedTranscript extends SegmentsGlyph {
     top: number,
     overallHeight: number,
   ) {
-    return super.renderBox(context, viewInfo, feature, top, overallHeight)
+    super.renderBox(context, viewInfo, feature, top, overallHeight)
   }
 }

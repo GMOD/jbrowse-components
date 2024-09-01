@@ -1,6 +1,5 @@
 ---
 id: basic_usage
-toplevel: true
 title: Basic usage
 ---
 
@@ -61,7 +60,7 @@ You can search a location in several ways when typing in the search box:
 
 To configure name searching, you or the admin of the instance will need to
 create a "text index". See the
-[configuration guide](/docs/tutorials/config_cli#indexing-feature-names-for-searching)
+[configuration guide](/docs/quickstart_web/#indexing-feature-names-for-searching)
 for more information.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
@@ -135,7 +134,7 @@ specify the index file explicitly.
 :::info Note
 
 If you are an administrator, you can add tracks with the
-[command line](/docs/tutorials/config_cli/#adding-a-track) or with the
+[command line](/docs/quickstart_web/#adding-tracks) or with the
 [admin server](/docs/tutorials/config_gui).
 
 :::
@@ -185,6 +184,19 @@ from the track label, but more basic options like "About track" are available
 from the track menu on the track selector.
 
 <Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with it's track menu open" src="/img/track_menu.png" />
+
+### Recently used and Favorite tracks
+
+Users can specify favorite tracks using the Track menu, and view them using the
+star icon button in the top right corner of the Available tracks widget.
+
+<Figure caption="Add a track to your list of favorite tracks from the Track menu, then view them in the top right menu." src="/img/favorite_tracks.png" />
+
+Tracks that have been recently opened will be automatically added to the list of
+recently used tracks, and can be viewed using the clock icon button in the top
+right corner of the Available tracks widget.
+
+<Figure caption="Selected tracks will be added to a recently used list, then they can be viewed using the top right menu." src="/img/recent_tracks.png" />
 
 ### About track dialog
 

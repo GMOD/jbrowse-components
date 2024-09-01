@@ -7,12 +7,13 @@ import {
   DialogTitle,
 } from '@mui/material'
 import FactoryResetDialog from './FactoryResetDialog'
+import ErrorMessage from './ErrorMessage'
 
 const ResetComponent = ({
   onFactoryReset,
   resetButtonText,
 }: {
-  onFactoryReset: Function
+  onFactoryReset: () => void
   resetButtonText: string
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -23,12 +24,16 @@ const ResetComponent = ({
         data-testid="fatal-error"
         color="primary"
         variant="contained"
-        onClick={() => setDialogOpen(true)}
+        onClick={() => {
+          setDialogOpen(true)
+        }}
       >
         {resetButtonText}
       </Button>
       <FactoryResetDialog
-        onClose={() => setDialogOpen(false)}
+        onClose={() => {
+          setDialogOpen(false)
+        }}
         open={dialogOpen}
         onFactoryReset={onFactoryReset}
       />
@@ -36,7 +41,7 @@ const ResetComponent = ({
   )
 }
 
-const FatalErrorDialog = ({
+export default function FatalErrorDialog({
   componentStack,
   error = 'No error message provided',
   onFactoryReset,
@@ -44,24 +49,23 @@ const FatalErrorDialog = ({
 }: {
   componentStack?: string
   error?: unknown
-  onFactoryReset: Function
+  onFactoryReset: () => void
   resetButtonText?: string
-}) => {
-  console.error(error)
+}) {
   return (
-    <Dialog open>
-      <DialogTitle style={{ background: '#e88' }}>Fatal error</DialogTitle>
+    <Dialog maxWidth="xl" open>
+      <DialogTitle>Fatal error</DialogTitle>
       <DialogContent>
-        <pre>
-          {`${error}`}
-          {componentStack}
-        </pre>
+        <ErrorMessage error={error} />
+        <pre>{componentStack}</pre>
       </DialogContent>
       <DialogActions>
         <Button
           color="secondary"
           variant="contained"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            window.location.reload()
+          }}
         >
           Refresh
         </Button>
@@ -73,5 +77,3 @@ const FatalErrorDialog = ({
     </Dialog>
   )
 }
-
-export default FatalErrorDialog

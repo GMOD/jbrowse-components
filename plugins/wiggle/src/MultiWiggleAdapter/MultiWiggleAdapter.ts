@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature } from '@jbrowse/core/util'
+import { SimpleFeature, Feature, min, max } from '@jbrowse/core/util'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 
@@ -19,8 +19,11 @@ function getFilename(uri: string) {
 
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
+  source: string
   [key: string]: unknown
 }
+
+type MaybeStats = { scoreMin: number; scoreMax: number } | undefined
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
@@ -47,7 +50,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
 
     return Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       subConfs.map(async (conf: any) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
@@ -72,13 +74,13 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
     const stats = (
-      await Promise.all(
-        // @ts-ignore
+      (await Promise.all(
+        // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
-      )
+      )) as MaybeStats[]
     ).filter(f => !!f)
-    const scoreMin = Math.min(...stats.map(s => s.scoreMin))
-    const scoreMax = Math.max(...stats.map(s => s.scoreMax))
+    const scoreMin = min(stats.map(s => s.scoreMin))
+    const scoreMax = max(stats.map(s => s.scoreMax))
     return { scoreMin, scoreMax }
   }
 
@@ -94,7 +96,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
                 ? p
                 : new SimpleFeature({
                     ...p.toJSON(),
-                    uniqueId: adp.source + '-' + p.id(),
+                    uniqueId: `${adp.source}-${p.id()}`,
                     source: adp.source,
                   }),
             ),
@@ -105,7 +107,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   }
 
   // always render bigwig instead of calculating a feature density for it
-  async estimateRegionsStats(_regions: Region[]) {
+  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return { featureDensity: 0 }
   }
 

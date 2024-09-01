@@ -63,7 +63,7 @@ source ~/.bashrc
 Now if you run the command `jbrowse --help` in the terminal, you should see
 something like this:
 
-![The output of `jbrowse --help` in a terminal](../../../img/bcc2020_jbrowse_help.png)
+![The output of `jbrowse --help` in a terminal](/img/bcc2020_jbrowse_help.png)
 
 :::note
 

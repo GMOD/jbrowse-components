@@ -1,12 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { Region, dedupe } from '@jbrowse/core/util'
+import { Region, dedupe, groupBy } from '@jbrowse/core/util'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 // locals
 import { filterForPairs, getInsertSizeStats } from '../util'
-import { ReducedFeature } from '../../shared/fetchChains'
 import PileupBaseRPC from '../base'
 import { getTag } from '../../util'
 
@@ -16,7 +15,7 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
       headers?: Record<string, string>
       regions: Region[]
@@ -31,10 +30,9 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const featuresArray = await dataAdapter
-      .getFeaturesInMultipleRegions(regions, des)
-      .pipe(toArray())
-      .toPromise()
+    const featuresArray = await firstValueFrom(
+      dataAdapter.getFeaturesInMultipleRegions(regions, des).pipe(toArray()),
+    )
 
     const reduced = dedupe(
       featuresArray.map(f => ({
@@ -57,15 +55,8 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
 
     const filtered = filterForPairs(reduced)
     const stats = filtered.length ? getInsertSizeStats(filtered) : undefined
-    const chains = {} as { [key: string]: ReducedFeature[] }
+    const chains = groupBy(reduced, f => f.name)
 
-    // pair features
-    reduced.forEach(f => {
-      if (!chains[f.name]) {
-        chains[f.name] = []
-      }
-      chains[f.name].push(f)
-    })
     return {
       chains: Object.values(chains),
       stats,

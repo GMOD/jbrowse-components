@@ -22,14 +22,9 @@ const RowFullTextFilter = types
         row: { cellsWithDerived: { text: string }[] },
       ) {
         const { cellsWithDerived } = row
-        for (
-          let columnNumber = 0;
-          columnNumber < cellsWithDerived.length;
-          columnNumber += 1
-        ) {
-          const cell = cellsWithDerived[columnNumber]
+        for (const cell of cellsWithDerived) {
           // note: case insensitive
-          if (cell.text && cell.text.toLowerCase().includes(s)) {
+          if (cell.text.toLowerCase().includes(s)) {
             return true
           }
         }
@@ -54,7 +49,7 @@ const model = types
         ({
           type: 'RowFullText',
           stringToFind: '',
-        } as SnapshotIn<typeof RowFullTextFilter>),
+        }) as SnapshotIn<typeof RowFullTextFilter>,
     ),
     columnFilters: types.array(AnyColumnFilter),
   })
@@ -63,15 +58,15 @@ const model = types
       return [self.rowFullText, ...self.columnFilters].filter(f => !!f)
     },
     setRowFullTextFilter(stringToFind: string) {
-      // @ts-ignore
+      // @ts-expect-error
       self.rowFullText = {
         type: 'RowFullText',
         stringToFind,
       }
     },
     rowPassesFilters(sheet: unknown, row: unknown) {
-      for (let i = 0; i < this.filters.length; i += 1) {
-        if (!this.filters[i].predicate(sheet, row)) {
+      for (const filter of this.filters) {
+        if (!filter.predicate(sheet, row)) {
           return false
         }
       }
@@ -81,7 +76,6 @@ const model = types
   .actions(self => ({
     addBlankColumnFilter(columnNumber: number) {
       const { dataType } =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).spreadsheet.columns[columnNumber]
       self.columnFilters.push({
         type: dataType.type,

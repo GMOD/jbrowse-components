@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+
+// locals
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
@@ -40,9 +42,9 @@ export default class CoreGetFeatures extends RpcMethodType {
     args: {
       sessionId: string
       regions: Region[]
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       opts?: any
     },
     rpcDriver: string,
@@ -58,7 +60,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       ...opts,
       signal,
     })
-    const r = await ret.pipe(toArray()).toPromise()
+    const r = await firstValueFrom(ret.pipe(toArray()))
     return r.map(f => f.toJSON())
   }
 }

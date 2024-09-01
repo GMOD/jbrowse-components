@@ -56,12 +56,11 @@ export interface PAFRecord {
 // situations
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  const scoreMap: { [key: string]: { quals: number[]; len: number[] } } = {}
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  const scoreMap: Record<string, { quals: number[]; len: number[] }> = {}
+  for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     if (!scoreMap[key]) {
       scoreMap[key] = { quals: [], len: [] }
     }
@@ -75,23 +74,20 @@ export function getWeightedMeans(ret: PAFRecord[]) {
       return [key, weightedMean(vals)]
     }),
   )
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     entry.extra.meanScore = meanScoreMap[key]
   }
 
   let min = 10000
   let max = 0
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     min = Math.min(entry.extra.meanScore || 0, min)
     max = Math.max(entry.extra.meanScore || 0, max)
   }
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     const b = entry.extra.meanScore || 0
     entry.extra.meanScore = (b - min) / (max - min)
   }
@@ -109,72 +105,4 @@ function weightedMean(tuples: [number, number][]) {
     [0, 0],
   )
   return valueSum / weightSum
-}
-
-export function parsePAF(text: string) {
-  return text
-    .split(/\n|\r\n|\r/)
-    .filter(line => !!line)
-    .map(line => {
-      const [
-        qname,
-        ,
-        qstart,
-        qend,
-        strand,
-        tname,
-        ,
-        tstart,
-        tend,
-        numMatches,
-        blockLen,
-        mappingQual,
-        ...fields
-      ] = line.split('\t')
-
-      const rest = Object.fromEntries(
-        fields.map(field => {
-          const r = field.indexOf(':')
-          const fieldName = field.slice(0, r)
-          const fieldValue = field.slice(r + 3)
-          return [fieldName, fieldValue]
-        }),
-      )
-
-      return {
-        tname,
-        tstart: +tstart,
-        tend: +tend,
-        qname,
-        qstart: +qstart,
-        qend: +qend,
-        strand: strand === '-' ? -1 : 1,
-        extra: {
-          numMatches: +numMatches,
-          blockLen: +blockLen,
-          mappingQual: +mappingQual,
-          ...rest,
-        },
-      } as PAFRecord
-    })
-}
-
-export function flipCigar(cigar: string[]) {
-  const arr = []
-  for (let i = cigar.length - 2; i >= 0; i -= 2) {
-    arr.push(cigar[i])
-    const op = cigar[i + 1]
-    if (op === 'D') {
-      arr.push('I')
-    } else if (op === 'I') {
-      arr.push('D')
-    } else {
-      arr.push(op)
-    }
-  }
-  return arr
-}
-
-export function swapIndelCigar(cigar: string) {
-  return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }

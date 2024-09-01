@@ -2,44 +2,89 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import React from 'react'
 import { render } from '@testing-library/react'
 import Rendering from './ArcRendering'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 test('no features', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 300 }]}
-      blockKey={1}
-      config={{}}
+      exportSVG={false}
+      height={400}
+      displayModel={{ selectedFeatureId: 'none' }}
+      onFeatureClick={() => {}}
+      config={ConfigurationSchema('Test', {}).create()}
+      regions={[
+        { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
+      ]}
       bpPerPx={3}
-      displayModel={{}}
       features={new Map()}
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
-      blockKey={1}
+      exportSVG={false}
+      height={400}
+      config={ConfigurationSchema('Test', {}).create()}
+      displayModel={{ selectedFeatureId: 'none' }}
+      onFeatureClick={() => {}}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       features={
         new Map([
           [
             'one',
-            new SimpleFeature({ uniqueId: 'one', score: 10, start: 1, end: 3 }),
+            new SimpleFeature({
+              refName: 't1',
+              uniqueId: 'one',
+              score: 10,
+              start: 1,
+              end: 3,
+            }),
           ],
         ])
       }
-      config={{ type: 'DummyRenderer' }}
       bpPerPx={3}
-      displayModel={{}}
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
+})
+
+test('one semicircle', () => {
+  const { container } = render(
+    <Rendering
+      exportSVG={false}
+      height={400}
+      config={ConfigurationSchema('Test', {
+        displayMode: { type: 'string', defaultValue: 'semicircles' },
+      }).create()}
+      displayModel={{ selectedFeatureId: 'none' }}
+      onFeatureClick={() => {}}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
+      features={
+        new Map([
+          [
+            'one',
+            new SimpleFeature({
+              refName: 't1',
+              uniqueId: 'one',
+              score: 10,
+              start: 1,
+              end: 3,
+            }),
+          ],
+        ])
+      }
+      bpPerPx={3}
+    />,
+  )
+
+  expect(container).toMatchSnapshot()
 })

@@ -1,11 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import React, { lazy, LazyExoticComponent, Suspense } from 'react'
+import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import PropTypes from 'prop-types'
 
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
@@ -163,27 +164,27 @@ const Entries = {
 }
 
 const LazyMUICore = Object.fromEntries(
-  Object.entries(Entries).map(([key, ReactComponent]) => [
-    key,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (props: any) => (
-      <Suspense fallback={<div />}>
-        <ReactComponent {...props} />
+  Object.entries(Entries).map(([key, ReactComponent]) => {
+    const Component = React.forwardRef((props: any, ref) => (
+      <Suspense fallback={null}>
+        <ReactComponent {...props} ref={ref} />
       </Suspense>
-    ),
-  ]),
+    ))
+    Component.displayName = key
+    return [key, Component]
+  }),
 )
 
 const MaterialPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
-    '@material-ui/core/' + key,
+    `@material-ui/core/${key}`,
     value,
   ]),
 )
 
 const MuiPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
-    '@mui/material/' + key,
+    `@mui/material/${key}`,
     value,
   ]),
 )
@@ -192,7 +193,6 @@ const Attributes = lazy(() => import('./Attributes'))
 const FeatureDetails = lazy(() => import('./FeatureDetails'))
 const BaseCard = lazy(() => import('./BaseCard'))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   DataGrid: lazy(() =>
     import('@mui/x-data-grid').then(module => ({ default: module.DataGrid })),
@@ -215,11 +215,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   GridArrowUpwardIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridArrowUpwardIcon,
-    })),
-  ),
-  GridAutoSizer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridAutoSizer,
     })),
   ),
   GridCellCheckboxForwardRef: lazy(() =>
@@ -366,11 +361,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridPanelWrapper,
     })),
   ),
-  GridPreferencesPanel: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridPreferencesPanel,
-    })),
-  ),
   GridRemoveIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridRemoveIcon,
@@ -387,11 +377,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   GridSaveAltIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridSaveAltIcon,
-    })),
-  ),
-  GridScrollArea: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridScrollArea,
     })),
   ),
   GridSearchIcon: lazy(() =>
@@ -467,42 +452,43 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
 }
 
 const LazyDataGridComponents = Object.fromEntries(
-  Object.entries(DataGridEntries).map(([key, ReactComponent]) => [
-    key,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (props: any) => (
-      <Suspense fallback={<div />}>
-        <ReactComponent {...props} />
+  Object.entries(DataGridEntries).map(([key, ReactComponent]) => {
+    const Component = React.forwardRef((props: any, ref) => (
+      <Suspense fallback={null}>
+        <ReactComponent {...props} ref={ref} />
       </Suspense>
-    ),
-  ]),
+    ))
+    Component.displayName = key
+    return [key, Component]
+  }),
 )
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyAttributes = (props: any) => (
-  <Suspense fallback={<div />}>
-    <Attributes {...props} />
+const LazyAttributes = React.forwardRef((props: any, ref) => (
+  <Suspense fallback={null}>
+    <Attributes {...props} ref={ref} />
   </Suspense>
-)
+))
+LazyAttributes.displayName = 'Attributes'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyFeatureDetails = (props: any) => (
-  <Suspense fallback={<div />}>
-    <FeatureDetails {...props} />
+const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
+  <Suspense fallback={null}>
+    <FeatureDetails {...props} ref={ref} />
   </Suspense>
-)
+))
+LazyFeatureDetails.displayName = 'FeatureDetails'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyBaseCard = (props: any) => (
-  <Suspense fallback={<div />}>
-    <BaseCard {...props} />
+const LazyBaseCard = React.forwardRef((props: any, ref) => (
+  <Suspense fallback={null}>
+    <BaseCard {...props} ref={ref} />
   </Suspense>
-)
+))
+LazyBaseCard.displayName = 'BaseCard'
 
 const libs = {
   mobx,
   'mobx-state-tree': mst,
   react: React,
+  'react/jsx-runtime': ReactJSXRuntime,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
   '@mui/x-data-grid': {
@@ -521,19 +507,36 @@ const libs = {
     ...LazyMUICore,
     useTheme,
     alpha: MUIStyles.alpha,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
       return () => useStyles().classes
     },
   },
-  '@mui/material': LazyMUICore,
-  'prop-types': PropTypes,
+  '@mui/material': {
+    ...LazyMUICore,
+    alpha: MUIStyles.alpha,
+    useTheme: MUIStyles.useTheme,
+  },
 
   // end special case
   // material-ui subcomponents, should get rid of these
-  '@mui/material/styles': MUIStyles,
-  '@material-ui/core/styles': MUIStyles,
+  '@mui/material/styles': {
+    MUIStyles,
+
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+  },
+  '@material-ui/core/styles': {
+    MUIStyles,
+
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+  },
   ...MaterialPrefixMUI,
   ...MuiPrefixMUI,
 
@@ -586,14 +589,14 @@ const libs = {
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
-const libsList = Array.from(Object.keys(libs))
+const libsList = Object.keys(libs)
 
 // make sure that all the items in the ReExports/list array (used by build
 // systems and such) are included here, and vice versa
 const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
-if (inLibsOnly.length) {
+if (inLibsOnly.length > 0) {
   throw new Error(
-    `The following modules are in the re-exports list, but not the modules libs: ${inLibsOnly.join(
+    `The following modules are in the modules libs, but not the re-exports list: ${inLibsOnly.join(
       ', ',
     )}`,
   )
@@ -601,7 +604,7 @@ if (inLibsOnly.length) {
 const inReExportsOnly = reExportsList.filter(mod => !libsList.includes(mod))
 if (inReExportsOnly.length) {
   throw new Error(
-    `The following modules are in the modules libs, but not the re-exports list: ${inReExportsOnly.join(
+    `The following modules are in the re-exports list, but not the modules libs: ${inReExportsOnly.join(
       ', ',
     )}`,
   )

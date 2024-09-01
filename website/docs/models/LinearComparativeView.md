@@ -1,7 +1,6 @@
 ---
 id: linearcomparativeview
 title: LinearComparativeView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[plugins/linear-comparative-view/src/LinearComparativeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### LinearComparativeView - Properties
 
@@ -31,15 +36,6 @@ ISimpleType<"LinearComparativeView">
 type: types.literal('LinearComparativeView')
 ```
 
-#### property: height
-
-```js
-// type signature
-number
-// code
-height: defaultHeight
-```
-
 #### property: trackSelectorType
 
 ```js
@@ -56,15 +52,6 @@ trackSelectorType: 'hierarchical'
 true
 // code
 showIntraviewLinks: true
-```
-
-#### property: linkViews
-
-```js
-// type signature
-false
-// code
-linkViews: false
 ```
 
 #### property: interactToggled
@@ -102,7 +89,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 14 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -156,6 +143,16 @@ any[]
 
 ### LinearComparativeView - Methods
 
+#### method: headerMenuItems
+
+includes a subset of view menu options because the full list is a little
+overwhelming. overridden by subclasses
+
+```js
+// type signature
+headerMenuItems: () => MenuItem[]
+```
+
 #### method: menuItems
 
 ```js
@@ -179,13 +176,6 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 setWidth: (newWidth: number) => void
 ```
 
-#### action: setHeight
-
-```js
-// type signature
-setHeight: (newHeight: number) => void
-```
-
 #### action: setViews
 
 ```js
@@ -197,7 +187,7 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: closeView
@@ -217,13 +207,6 @@ closeView: () => void
 setMiddleComparativeHeight: (n: number) => number
 ```
 
-#### action: toggleLinkViews
-
-```js
-// type signature
-toggleLinkViews: () => void
-```
-
 #### action: activateTrackSelector
 
 ```js
@@ -235,7 +218,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: showTrack

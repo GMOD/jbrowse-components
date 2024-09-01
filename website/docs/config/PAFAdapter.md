@@ -1,13 +1,14 @@
 ---
 id: pafadapter
 title: PAFAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/comparative-adapters/src/PAFAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PAFAdapter/configSchema.ts)
 
 ### PAFAdapter - Slots
 

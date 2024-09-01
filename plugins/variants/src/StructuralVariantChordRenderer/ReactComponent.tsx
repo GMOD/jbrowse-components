@@ -6,11 +6,19 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 // locals
 import Chord, { Block, AnyRegion } from './Chord'
 
-function StructuralVariantChords(props: {
+const StructuralVariantChordsReactComponent = observer(function ({
+  features,
+  config,
+  displayModel,
+  blockDefinitions,
+  radius,
+  bezierRadius,
+  onChordClick,
+}: {
   features: Map<string, Feature>
   radius: number
   config: AnyConfigurationModel
-  displayModel: { id: string; selectedFeatureId: string }
+  displayModel?: { id: string; selectedFeatureId: string }
   blockDefinitions: Block[]
   bezierRadius: number
   onChordClick: (
@@ -20,60 +28,37 @@ function StructuralVariantChords(props: {
     evt: unknown,
   ) => void
 }) {
-  const {
-    features,
-    config,
-    displayModel,
-    blockDefinitions,
-    radius,
-    bezierRadius,
-    displayModel: { selectedFeatureId },
-    onChordClick,
-  } = props
+  const { id, selectedFeatureId } = displayModel || {}
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
-    const blocksForRefs = {} as { [key: string]: Block }
-    blockDefinitions.forEach(block => {
-      ;(block.region.elided ? block.region.regions : [block.region]).forEach(
-        r => (blocksForRefs[r.refName] = block),
-      )
-    })
+    const blocksForRefs = {} as Record<string, Block>
+    for (const block of blockDefinitions) {
+      const regions = block.region.elided
+        ? block.region.regions
+        : [block.region]
+      for (const region of regions) {
+        blocksForRefs[region.refName] = block
+      }
+    }
     return blocksForRefs
   }, [blockDefinitions])
-  const chords = []
-  for (const feature of features.values()) {
-    const id = feature.id()
-    const selected = String(selectedFeatureId) === String(id)
-    chords.push(
-      <Chord
-        key={id}
-        feature={feature}
-        config={config}
-        radius={radius}
-        bezierRadius={bezierRadius}
-        blocksForRefs={blocksForRefsMemo}
-        selected={selected}
-        onClick={onChordClick}
-      />,
-    )
-  }
-  const trackStyleId = `chords-${displayModel.id}`
+
   return (
-    <g id={trackStyleId} data-testid="structuralVariantChordRenderer">
-      <style
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{
-          __html: `
-          #${trackStyleId} > path {
-            cursor: crosshair;
-            fill: none;
-          }
-`,
-        }}
-      />
-      {chords}
+    <g data-testid="structuralVariantChordRenderer">
+      {[...features.values()].map(feature => (
+        <Chord
+          key={feature.id()}
+          feature={feature}
+          config={config}
+          radius={radius}
+          bezierRadius={bezierRadius}
+          blocksForRefs={blocksForRefsMemo}
+          selected={String(selectedFeatureId) === String(id)}
+          onClick={onChordClick}
+        />
+      ))}
     </g>
   )
-}
+})
 
-export default observer(StructuralVariantChords)
+export default StructuralVariantChordsReactComponent

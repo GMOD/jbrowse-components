@@ -1,0 +1,18 @@
+import { Meta, Story } from '@storybook/blocks'
+import { WithErrorHandler } from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Error handling" />
+
+# Error handling
+
+The default code for the embedded views do not have any 'error boundary', so you
+must create your own error handling. Because 'createViewState' can throw an
+error (which can be a complex mobx-state-tree error) we suggest using
+[`@jbrowse/core/ui/ErrorMessage`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/ErrorMessage.tsx)
+component, which is a error message component (not a React error boundary) with
+specialized code for showing JBrowse related error messages.
+
+The example below will have a red box complaining about the BadTrack track type
+not validating
+
+<Story of={WithErrorHandler} />

@@ -1,13 +1,14 @@
 ---
 id: jbrowse1connection
 title: JBrowse1Connection
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts)
 
 ### JBrowse1Connection - Slots
 
@@ -36,7 +37,7 @@ assemblyNames: {
     }
 ```
 
-## JBrowse1Connection - Derives from
+### JBrowse1Connection - Derives from
 
 ```js
 baseConfiguration: baseConnectionConfig

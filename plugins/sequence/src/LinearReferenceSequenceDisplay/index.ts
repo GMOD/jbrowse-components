@@ -5,7 +5,9 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { configSchema } from './configSchema'
 import { modelFactory } from './model'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearReferenceSequenceDisplayF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addDisplayType(() => {
     const stateModel = modelFactory(configSchema)
     return new DisplayType({

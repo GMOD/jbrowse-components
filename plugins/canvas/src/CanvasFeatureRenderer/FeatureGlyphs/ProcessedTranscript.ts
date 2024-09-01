@@ -23,8 +23,8 @@ export default class ProcessedTranscript extends SegmentsGlyph {
   protected makeCDSs(parent: Feature, subparts: Feature[]) {
     // infer CDS parts from exon coordinates
 
-    let codeStart = Infinity,
-      codeEnd = -Infinity
+    let codeStart = Number.POSITIVE_INFINITY
+    let codeEnd = Number.NEGATIVE_INFINITY
 
     // gather exons, find coding start and end
     let type
@@ -62,7 +62,7 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     }
 
     // bail if we don't have exons and cds
-    if (!(exons.length && codeStart < Infinity && codeEnd > -Infinity)) {
+    if (!(exons.length && codeStart < Number.POSITIVE_INFINITY && codeEnd > Number.NEGATIVE_INFINITY)) {
       return subparts
     }
 
@@ -71,8 +71,8 @@ export default class ProcessedTranscript extends SegmentsGlyph {
 
     // iterate thru exons again, and calculate cds parts
     const strand = parent.get('strand')
-    let codePartStart = Infinity
-    let codePartEnd = -Infinity
+    let codePartStart = Number.POSITIVE_INFINITY
+    let codePartEnd = Number.NEGATIVE_INFINITY
     for (let i = 0; i < exons.length; i++) {
       const start = exons[i].get('start')
       const end = exons[i].get('end')
@@ -105,13 +105,13 @@ export default class ProcessedTranscript extends SegmentsGlyph {
         0,
         new SimpleFeature({
           parent: parent,
-          uniqueId: parent.get('uniqueID') + ':CDS:' + i,
+          uniqueId: `${parent.get('uniqueID')}:CDS:${i}`,
           data: {
             start: codePartStart,
             end: codePartEnd,
             strand: strand,
             type: 'CDS',
-            name: parent.get('uniqueID') + ':CDS:' + i,
+            name: `${parent.get('uniqueID')}:CDS:${i}`,
           },
         }),
       )
@@ -125,8 +125,8 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     // based on Lincoln's UTR-making code in
     // Bio::Graphics::Glyph::processed_transcript
 
-    let codeStart = Infinity
-    let codeEnd = -Infinity
+    let codeStart = Number.POSITIVE_INFINITY
+    let codeEnd = Number.NEGATIVE_INFINITY
 
     let haveLeftUTR
     let haveRightUTR
@@ -152,7 +152,7 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     })
 
     // bail if we don't have exons and CDS
-    if (!(exons.length && codeStart < Infinity && codeEnd > -Infinity)) {
+    if (!(exons.length && codeStart < Number.POSITIVE_INFINITY && codeEnd > Number.NEGATIVE_INFINITY)) {
       return subparts
     }
 

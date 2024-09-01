@@ -1,24 +1,25 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 import { CanvasSequence } from 'canvas-sequencer'
 
 // locals
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
-import { blobToDataURL } from './index'
+import { blobToDataURL } from './blobToDataURL'
 
-export type RenderReturn = Record<string, unknown>
+export type RenderReturn = Record<string, unknown> | undefined
+
+type RendererRet = Promise<RenderReturn> | RenderReturn
 
 export async function renderToAbstractCanvas(
   width: number,
   height: number,
   opts: {
-    exportSVG?: { rasterizeLayers?: boolean }
-    highResolutionScaling: number
+    exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+    highResolutionScaling?: number
   },
-  cb: (
-    ctx: CanvasRenderingContext2D,
-  ) => Promise<RenderReturn | void> | RenderReturn | void,
+  cb: (ctx: CanvasRenderingContext2D) => RendererRet,
 ) {
-  const { exportSVG, highResolutionScaling: scaling = 1 } = opts
+  const { exportSVG, highResolutionScaling = 1 } = opts
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
@@ -29,13 +30,13 @@ export async function renderToAbstractCanvas(
         canvasRecordedData: fakeCtx.toJSON(),
       }
     } else {
-      const scale = 4
-      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+      const s = exportSVG.scale || highResolutionScaling
+      const canvas = createCanvas(Math.ceil(width * s), height * s)
       const ctx = canvas.getContext('2d')
       if (!ctx) {
         throw new Error('2d canvas rendering not supported on this platform')
       }
-      ctx.scale(scale, scale)
+      ctx.scale(s, s)
       const result = await cb(ctx)
 
       // two methods needed for converting canvas to PNG, one for webworker
@@ -60,13 +61,47 @@ export async function renderToAbstractCanvas(
       }
     }
   } else {
-    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
+    const s = highResolutionScaling
+    const canvas = createCanvas(Math.ceil(width * s), height * s)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('2d canvas rendering not supported on this platform')
     }
-    ctx.scale(scaling, scaling)
+    ctx.scale(s, s)
     const result = await cb(ctx)
     return { ...result, imageData: await createImageBitmap(canvas) }
   }
+}
+
+export async function getSerializedSvg(results: {
+  width: number
+  height: number
+  canvasRecordedData: unknown
+}) {
+  const { width, height, canvasRecordedData } = results
+
+  // @ts-ignore needs to be ignore not expect error, produces error in build step
+  const C2S = await import('canvas2svg')
+  const ctx = new C2S.default(width, height)
+  const seq = new CanvasSequence(canvasRecordedData)
+  seq.execute(ctx)
+
+  // innerHTML strips the outer <svg> element from returned data, we add
+  // our own <svg> element in the view's SVG export
+  return ctx.getSvg().innerHTML as string
+}
+
+export function ReactRendering({
+  rendering,
+}: {
+  rendering: {
+    reactElement?: React.ReactNode
+    html?: string
+  }
+}) {
+  return React.isValidElement(rendering.reactElement) ? (
+    rendering.reactElement
+  ) : (
+    <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
+  )
 }

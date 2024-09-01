@@ -2,21 +2,22 @@ import React, { lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
-import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { Region as IRegion } from '@jbrowse/core/util/types'
+import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
-  findLastIndex,
-  getContainingView,
+  findLast,
   getSession,
-  isViewContainer,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
   localStorageGetItem,
+  localStorageSetItem,
   measureText,
-  parseLocString,
   springAnimate,
+  sum,
+  ParsedLocString,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -32,6 +33,7 @@ import {
   resolveIdentifier,
   types,
   Instance,
+  getParent,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -49,20 +51,26 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
+import SearchIcon from '@mui/icons-material/Search'
 
-// locals
-import { renderToSvg } from './components/LinearGenomeViewSvg'
-import RefNameAutocomplete from './components/RefNameAutocomplete'
-import SearchBox from './components/SearchBox'
-import ExportSvgDlg from './components/ExportSvgDialog'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
-import ZoomControls from './components/ZoomControls'
-import LinearGenomeView from './components/LinearGenomeView'
+import { generateLocations, parseLocStrings } from './util'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { handleSelectedRegion } from '../searchUtils'
 
 // lazies
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
+)
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
+const SearchResultsDialog = lazy(
+  () => import('./components/SearchResultsDialog'),
 )
 
 export interface BpOffset {
@@ -76,12 +84,25 @@ export interface BpOffset {
   assemblyName?: string
   oob?: boolean
 }
-
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
+  fontSize?: number
+  rulerHeight?: number
+  textHeight?: number
+  paddingHeight?: number
+  headerHeight?: number
+  cytobandHeight?: number
+  trackLabels?: string
+  themeName?: string
+}
+
+export interface HighlightType {
+  start: number
+  end: number
+  assemblyName: string
+  refName: string
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -89,7 +110,7 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     return ''
   }
   const isSingleAssemblyName = contentBlocks.every(
-    b => b.assemblyName === contentBlocks[0].assemblyName,
+    b => b.assemblyName === contentBlocks[0]!.assemblyName,
   )
   const locs = contentBlocks.map(block =>
     assembleLocString({
@@ -119,12 +140,17 @@ export const WIDGET_HEIGHT = 32
 
 /**
  * #stateModel LinearGenomeView
+ * #category view
+ *
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
+      'LinearGenomeView',
       BaseViewModel,
-      types.model('LinearGenomeView', {
+      types.model({
         /**
          * #property
          */
@@ -157,7 +183,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * advised to use the entire set of chromosomes if your assembly is very
          * fragmented
          */
-        displayedRegions: types.array(MUIRegion),
+        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
 
         /**
          * #property
@@ -169,7 +195,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * array of currently displayed tracks state model's
          */
         hideHeader: false,
 
@@ -190,22 +215,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
-
-        /**
-         * #property
-         * how to display the track labels, can be "overlapping", "offset", or "hidden"
-         */
-        trackLabels: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
-        ),
-
         /**
          * #property
          * show the "center line"
          */
         showCenterLine: types.optional(types.boolean, () =>
-          JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+          ),
         ),
 
         /**
@@ -213,7 +230,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "cytobands" in the overview scale bar
          */
         showCytobandsSetting: types.optional(types.boolean, () =>
-          JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+          ),
+        ),
+
+        /**
+         * #property
+         * how to display the track labels, can be "overlapping", "offset", or
+         * "hidden", or empty string "" (which results in conf being used). see
+         * LinearGenomeViewPlugin
+         * https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for
+         * how conf is used
+         */
+        trackLabels: types.optional(
+          types.string,
+          () => localStorageGetItem('lgv-trackLabels') || '',
         ),
 
         /**
@@ -221,29 +253,64 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * highlights on the LGV from the URL parameters
+         */
+        highlight: types.optional(
+          types.array(types.frozen<HighlightType>()),
+          [],
+        ),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        colorByCDS: types.optional(types.boolean, () =>
+          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+        ),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        showTrackOutlines: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
+          ),
+        ),
       }),
     )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
-      volatileError: undefined as undefined | Error,
+      volatileError: undefined as unknown,
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
-      afterDisplayedRegionsSetCallbacks: [] as Function[],
+      afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
       scaleFactor: 1,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      trackRefs: {} as { [key: string]: any },
+      trackRefs: {} as Record<string, HTMLDivElement>,
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      searchResults: undefined as undefined | BaseResult[],
-      searchQuery: undefined as undefined | string,
-      seqDialogDisplayed: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * this is the effective value of the track labels setting, incorporating
+       * both the config and view state. use this instead of view.trackLabels
+       */
+      get trackLabelsSetting() {
+        const sessionSetting = getConf(getSession(self), [
+          'LinearGenomeViewPlugin',
+          'trackLabels',
+        ])
+        return self.trackLabels || sessionSetting
+      },
       /**
        * #getter
        */
@@ -275,7 +342,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      scaleBarDisplayPrefix() {
+        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+          ? self.assemblyNames[0]
+          : ''
+      },
+      /**
+       * #method
+       */
+
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
       },
@@ -283,7 +358,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       HeaderComponent(): React.FC<any> {
         return Header
       },
@@ -293,8 +368,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        const { assemblyNames } = self
-        return assemblyNames
+        return self.assemblyNames
           .map(a => assemblyManager.get(a)?.error)
           .filter(f => !!f)
           .join(', ')
@@ -326,13 +400,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get isSearchDialogDisplayed() {
-        return self.searchResults !== undefined
-      },
-
-      /**
-       * #getter
-       */
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
@@ -354,9 +421,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackHeights() {
-        return self.tracks
-          .map(t => t.displays[0].height)
-          .reduce((a, b) => a + b, 0)
+        return sum(self.tracks.map(t => t.displays[0].height))
       },
 
       /**
@@ -381,7 +446,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get totalBp() {
-        return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
+        return sum(self.displayedRegions.map(r => r.end - r.start))
       },
 
       /**
@@ -401,7 +466,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get error() {
+      get error(): unknown {
         return self.volatileError || this.assemblyErrors
       },
 
@@ -437,10 +502,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
-          highResolutionScaling: getConf(
-            getSession(self),
-            'highResolutionScaling',
-          ),
+          colorByCDS: self.colorByCDS,
         }
       },
 
@@ -467,14 +529,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       rankSearchResults(results: BaseResult[]) {
         // order of rank
-        const openTrackIds = self.tracks.map(
-          track => track.configuration.trackId,
+        const openTrackIds = new Set(
+          self.tracks.map(track => track.configuration.trackId),
         )
-        results.forEach(result => {
-          if (openTrackIds.includes(result.trackId)) {
+        for (const result of results) {
+          if (openTrackIds.has(result.trackId)) {
             result.updateScore(result.getScore() + 1)
           }
-        })
+        }
         return results
       },
 
@@ -504,7 +566,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackTypeActions() {
-        const allActions: Map<string, MenuItem[]> = new Map()
+        const allActions = new Map<string, MenuItem[]>()
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
@@ -521,6 +583,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowTrackOutlines(arg: boolean) {
+        self.showTrackOutlines = arg
+      },
+      /**
+       * #action
+       */
+      setColorByCDS(flag: boolean) {
+        self.colorByCDS = flag
+      },
+      /**
+       * #action
+       */
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
       },
@@ -533,32 +607,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setError(error: Error | undefined) {
+      setError(error: unknown) {
         self.volatileError = error
       },
       /**
        * #action
        */
-      toggleHeader() {
-        self.hideHeader = !self.hideHeader
+      setHideHeader(b: boolean) {
+        self.hideHeader = b
       },
       /**
        * #action
        */
-      toggleHeaderOverview() {
-        self.hideHeaderOverview = !self.hideHeaderOverview
+      setHideHeaderOverview(b: boolean) {
+        self.hideHeaderOverview = b
       },
       /**
        * #action
        */
-      toggleNoTracksActive() {
-        self.hideNoTracksActive = !self.hideNoTracksActive
+      setHideNoTracksActive(b: boolean) {
+        self.hideNoTracksActive = b
       },
       /**
        * #action
        */
-      toggleShowGridlines() {
-        self.showGridlines = !self.showGridlines
+      setShowGridlines(b: boolean) {
+        self.showGridlines = b
+      },
+      /**
+       * #action
+       */
+      addToHighlights(highlight: HighlightType) {
+        self.highlight.push(highlight)
+      },
+      /**
+       * #action
+       */
+      setHighlight(highlight?: HighlightType[]) {
+        self.highlight = cast(highlight)
+      },
+      /**
+       * #action
+       */
+      removeHighlight(highlight: HighlightType) {
+        self.highlight.remove(highlight)
       },
       /**
        * #action
@@ -572,25 +664,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      zoomTo(bpPerPx: number) {
+      zoomTo(bpPerPx: number, offset = self.width / 2, centerAtOffset = false) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         if (newBpPerPx === self.bpPerPx) {
           return newBpPerPx
         }
         const oldBpPerPx = self.bpPerPx
-        self.bpPerPx = newBpPerPx
 
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
           console.warn('zoomTo bpPerPx rounding error')
           return oldBpPerPx
         }
+        self.bpPerPx = newBpPerPx
 
-        // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.width
+        // tweak the offset so that the center of the view remains at the same
+        // coordinate
         this.scrollTo(
           Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
-              viewWidth / 2,
+            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
+              (centerAtOffset ? self.width / 2 : offset),
           ),
         )
         return newBpPerPx
@@ -598,7 +690,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * sets offsets used in the get sequence dialog
+       * sets offsets of rubberband, used in the get sequence dialog can call
+       * view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute
+       * the selected regions from the offsets
        */
       setOffsets(left?: BpOffset, right?: BpOffset) {
         self.leftOffset = left
@@ -608,16 +702,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSearchResults(results?: BaseResult[], query?: string) {
-        self.searchResults = results
-        self.searchQuery = query
-      },
-
-      /**
-       * #action
-       */
-      setGetSequenceDialogOpen(open: boolean) {
-        self.seqDialogDisplayed = open
+      setSearchResults(
+        searchResults: BaseResult[],
+        searchQuery: string,
+        assemblyName?: string,
+      ) {
+        getSession(self).queueDialog(handleClose => [
+          SearchResultsDialog,
+          {
+            model: self as LinearGenomeViewModel,
+            searchResults,
+            searchQuery,
+            handleClose,
+            assemblyName,
+          },
+        ])
       },
 
       /**
@@ -633,8 +732,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       horizontallyFlip() {
         self.displayedRegions = cast(
-          self.displayedRegions
-            .slice()
+          [...self.displayedRegions]
             .reverse()
             .map(region => ({ ...region, reversed: !region.reversed })),
         )
@@ -658,10 +756,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`Unknown track type ${conf.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const viewType = pluginManager.getViewType(self.type)!
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.includes(d.type),
+          supportedDisplays.has(d.type),
         )
         if (!displayConf) {
           throw new Error(
@@ -695,11 +795,55 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      moveTrackDown(id: string) {
+        const idx = self.tracks.findIndex(v => v.id === id)
+        if (idx === -1) {
+          return
+        }
+
+        if (idx !== -1 && idx < self.tracks.length - 1) {
+          self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
+        }
+      },
+      /**
+       * #action
+       */
+      moveTrackUp(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        if (idx > 0) {
+          self.tracks.splice(idx - 1, 2, self.tracks[idx], self.tracks[idx - 1])
+        }
+      },
+      /**
+       * #action
+       */
+      moveTrackToTop(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        self.tracks = cast([
+          self.tracks[idx],
+          ...self.tracks.filter(track => track.id !== id),
+        ])
+      },
+      /**
+       * #action
+       */
+      moveTrackToBottom(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        self.tracks = cast([
+          ...self.tracks.filter(track => track.id !== id),
+          self.tracks[idx],
+        ])
+      },
       /**
        * #action
        */
@@ -712,25 +856,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (newIndex === -1) {
           throw new Error(`Track ID ${targetId} not found`)
         }
-        const track = getSnapshot(self.tracks[oldIndex])
-        self.tracks.splice(oldIndex, 1)
-        self.tracks.splice(newIndex, 0, track)
-      },
 
-      /**
-       * #action
-       */
-      closeView() {
-        const parent = getContainingView(self)
-        if (parent) {
-          // I am embedded in a some other view
-          if (isViewContainer(parent)) {
-            parent.removeView(self)
-          }
-        } else {
-          // I am part of a session
-          getSession(self).removeView(self)
-        }
+        const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
+        tracks.splice(newIndex, 0, self.tracks[oldIndex])
+        self.tracks = cast(tracks)
       },
 
       /**
@@ -742,21 +871,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // if none had that configuration, turn one on
         if (!hiddenCount) {
           self.showTrack(trackId)
+          return true
         }
+        return false
       },
 
       /**
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        localStorage.setItem('lgv-trackLabels', setting)
         self.trackLabels = setting
       },
 
       /**
        * #action
        */
-      toggleCenterLine() {
-        self.showCenterLine = !self.showCenterLine
+      setShowCenterLine(b: boolean) {
+        self.showCenterLine = b
       },
 
       /**
@@ -789,10 +921,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        * Helper method for the fetchSequence.
-       * Retrieves the corresponding regions that were selected by the rubberband
+       * Retrieves the corresponding regions that were selected by the
+       * rubberband
        *
-       * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
-       * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start
+       * of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`,
+       * offset = end of user drag
        * @returns array of Region[]
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
@@ -814,9 +949,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * schedule something to be run after the next time displayedRegions is set
+       * schedule something to be run after the next time displayedRegions is
+       * set
        */
-      afterDisplayedRegionsSet(cb: Function) {
+      afterDisplayedRegionsSet(cb: () => void) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
 
@@ -863,7 +999,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           ;[assemblyName] = [...names]
         }
-        const assembly = assemblyManager.get(assemblyName)
+        const assembly = assemblyManager.get(assemblyName!)
         if (assembly) {
           const { regions } = assembly
           if (regions) {
@@ -903,12 +1039,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #action
+       * #method
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGLinearGenomeView'
+        )
+        const html = await renderToSvg(self as LinearGenomeViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -925,10 +1063,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.offsetPx,
           self.offsetPx + self.width * viewWidths,
           self.scrollTo,
+          undefined,
+          undefined,
+          200,
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        cancelLastAnimation = cancelAnimation!
+        animate!()
       }
 
       return { slide }
@@ -961,8 +1102,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        cancelLastAnimation = cancelAnimation!
+        animate!()
       }
 
       return { zoom }
@@ -991,12 +1132,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the cytoband is displayed to the right of the chromosome name,
-       * and that offset is calculated manually with this method
+       * the cytoband is displayed to the right of the chromosome name, and
+       * that offset is calculated manually with this method
        */
       get cytobandOffset() {
         return this.showCytobands
-          ? measureText(self.displayedRegions[0].refName, 12) + 15
+          ? measureText(self.displayedRegions[0]?.refName || '', 12) + 15
           : 0
       },
     }))
@@ -1023,6 +1164,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? [
                 {
                   label: 'Sequence search',
+                  icon: SearchIcon,
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SequenceSearchDialog,
@@ -1037,7 +1179,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             icon: PhotoCameraIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
+                ExportSvgDialog,
                 { model: self, handleClose },
               ])
             },
@@ -1053,6 +1195,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.horizontallyFlip,
           },
           {
+            label: 'Color by CDS',
+            type: 'checkbox',
+            checked: self.colorByCDS,
+            icon: PaletteIcon,
+            onClick: () => {
+              self.setColorByCDS(!self.colorByCDS)
+            },
+          },
+          {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
@@ -1064,32 +1215,51 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Show center line',
                 type: 'checkbox',
                 checked: self.showCenterLine,
-                onClick: self.toggleCenterLine,
+                onClick: () => {
+                  self.setShowCenterLine(!self.showCenterLine)
+                },
               },
               {
                 label: 'Show header',
                 type: 'checkbox',
                 checked: !self.hideHeader,
-                onClick: self.toggleHeader,
+                onClick: () => {
+                  self.setHideHeader(!self.hideHeader)
+                },
+              },
+
+              {
+                label: 'Show track outlines',
+                type: 'checkbox',
+                checked: self.showTrackOutlines,
+                onClick: () => {
+                  self.setShowTrackOutlines(!self.showTrackOutlines)
+                },
               },
               {
                 label: 'Show header overview',
                 type: 'checkbox',
                 checked: !self.hideHeaderOverview,
-                onClick: self.toggleHeaderOverview,
+                onClick: () => {
+                  self.setHideHeaderOverview(!self.hideHeaderOverview)
+                },
                 disabled: self.hideHeader,
               },
               {
                 label: 'Show no tracks active button',
                 type: 'checkbox',
                 checked: !self.hideNoTracksActive,
-                onClick: self.toggleNoTracksActive,
+                onClick: () => {
+                  self.setHideNoTracksActive(!self.hideNoTracksActive)
+                },
               },
               {
                 label: 'Show guidelines',
                 type: 'checkbox',
                 checked: self.showGridlines,
-                onClick: self.toggleShowGridlines,
+                onClick: () => {
+                  self.setShowGridlines(!self.showGridlines)
+                },
               },
               ...(canShowCytobands
                 ? [
@@ -1097,7 +1267,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
                       label: 'Show ideogram',
                       type: 'checkbox' as const,
                       checked: self.showCytobands,
-                      onClick: () => self.setShowCytobands(!showCytobands),
+                      onClick: () => {
+                        self.setShowCytobands(!showCytobands)
+                      },
                     },
                   ]
                 : []),
@@ -1111,22 +1283,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Overlapping',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'overlapping',
-                onClick: () => self.setTrackLabels('overlapping'),
+                checked: self.trackLabelsSetting === 'overlapping',
+                onClick: () => {
+                  self.setTrackLabels('overlapping')
+                },
               },
               {
                 label: 'Offset',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'offset',
-                onClick: () => self.setTrackLabels('offset'),
+                checked: self.trackLabelsSetting === 'offset',
+                onClick: () => {
+                  self.setTrackLabels('offset')
+                },
               },
               {
                 label: 'Hidden',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'hidden',
-                onClick: () => self.setTrackLabels('hidden'),
+                checked: self.trackLabelsSetting === 'hidden',
+                onClick: () => {
+                  self.setTrackLabels('hidden')
+                },
               },
             ],
           },
@@ -1154,10 +1332,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #getter
          * static blocks are an important concept jbrowse uses to avoid
          * re-rendering when you scroll to the side. when you horizontally
-         * scroll to the right, old blocks to the left may be removed, and
-         * new blocks may be instantiated on the right. tracks may use the
-         * static blocks to render their data for the region represented by
-         * the block
+         * scroll to the right, old blocks to the left may be removed, and new
+         * blocks may be instantiated on the right. tracks may use the static
+         * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
@@ -1166,13 +1343,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             currentlyCalculatedStaticBlocks = ret
             stringifiedCurrentlyCalculatedStaticBlocks = sret
           }
-          return currentlyCalculatedStaticBlocks as BlockSet
+          return currentlyCalculatedStaticBlocks!
         },
         /**
          * #getter
          * dynamic blocks represent the exact coordinates of the currently
          * visible genome regions on the screen. they are similar to static
-         * blocks, but statcic blocks can go offscreen while dynamic blocks
+         * blocks, but static blocks can go offscreen while dynamic blocks
          * represent exactly what is on screen
          */
         get dynamicBlocks() {
@@ -1189,14 +1366,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
-              } as BaseBlock),
+              }) as BaseBlock,
           )
         },
 
         /**
          * #getter
-         * a single "combo-locstring" representing all the regions visible
-         * on the screen
+         * a single "combo-locstring" representing all the regions visible on
+         * the screen
          */
         get visibleLocStrings() {
           return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
@@ -1237,12 +1414,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { trackLabels, showCytobandsSetting, showCenterLine } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('lgv-trackLabels', trackLabels)
-              localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
-              localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
-            }
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
           }),
         )
       },
@@ -1250,8 +1425,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * offset is the base-pair-offset in the displayed region, index is the index of the
-       * displayed region in the linear genome view
+       * offset is the base-pair-offset in the displayed region, index is the
+       * index of the displayed region in the linear genome view
        *
        * @param start - object as `{start, end, offset, index}`
        * @param end - object as `{start, end, offset, index}`
@@ -1262,91 +1437,72 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * navigate to the given locstring
+       * Navigate to the given locstring, will change displayed regions if
+       * needed, and wait for assemblies to be initialized
        *
-       * @param locString - e.g. "chr1:1-100"
-       * @param optAssemblyName - (optional) the assembly name to use when navigating to the locstring
+       * @param input - e.g. "chr1:1-100", "chr1:1-100 chr2:1-100", "chr 1 100"
+       * @param optAssemblyName - (optional) the assembly name to use when
+       * navigating to the locstring
        */
-      async navToLocString(locString: string, optAssemblyName?: string) {
+      async navToLocString(input: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        const { isValidRefName } = assemblyManager
-        await when(() => self.volatileWidth !== undefined)
-        const assemblyName = optAssemblyName || assemblyNames[0]
-        let parsedLocStrings
-        const inputs = locString
-          .split(/(\s+)/)
-          .map(f => f.trim())
-          .filter(f => !!f)
-
+        const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
 
-        // first try interpreting as a whitespace-separated sequence of
-        // multiple locstrings
-        try {
-          parsedLocStrings = inputs.map(loc =>
-            parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
-          )
-        } catch (e) {
-          // if this fails, try interpreting as a whitespace-separated refname,
-          // start, end if start and end are integer inputs
-          const [refName, start, end] = inputs
-          if (
-            `${e}`.match(/Unknown reference sequence/) &&
-            Number.isInteger(+start) &&
-            Number.isInteger(+end)
-          ) {
-            parsedLocStrings = [
-              parseLocString(refName + ':' + start + '..' + end, ref =>
-                isValidRefName(ref, assemblyName),
-              ),
-            ]
-          } else {
-            throw e
-          }
-        }
+        return this.navToLocations(
+          parseLocStrings(input, assemblyName, (ref, asm) =>
+            assemblyManager.isValidRefName(ref, asm),
+          ),
+          assemblyName,
+        )
+      },
 
-        const locations = await Promise.all(
-          parsedLocStrings?.map(async region => {
-            const asmName = region.assemblyName || assemblyName
-            const asm = await assemblyManager.waitForAssembly(asmName)
-            const { refName } = region
-            if (!asm) {
-              throw new Error(`assembly ${asmName} not found`)
-            }
-            const { regions } = asm
-            if (!regions) {
-              throw new Error(`regions not loaded yet for ${asmName}`)
-            }
-            const canonicalRefName = asm.getCanonicalRefName(region.refName)
-            if (!canonicalRefName) {
-              throw new Error(
-                `Could not find refName ${refName} in ${asm.name}`,
-              )
-            }
-            const parentRegion = regions.find(
-              r => r.refName === canonicalRefName,
-            )
-            if (!parentRegion) {
-              throw new Error(`Could not find refName ${refName} in ${asmName}`)
-            }
+      /**
+       * #action
+       * Performs a text index search, and navigates to it immediately if a
+       * single result is returned. Will pop up a search dialog if multiple
+       * results are returned
+       */
+      async navToSearchString({
+        input,
+        assembly,
+      }: {
+        input: string
+        assembly: Assembly
+      }) {
+        await handleSelectedRegion({
+          input,
+          assembly,
+          model: self as LinearGenomeViewModel,
+        })
+      },
 
-            return {
-              ...region,
-              assemblyName: asmName,
-              parentRegion,
-            }
-          }),
+      /**
+       * #action
+       * Similar to `navToLocString`, but accepts parsed location objects
+       * instead of strings. Will try to perform `setDisplayedRegions` if
+       * changing regions
+       */
+      async navToLocations(
+        parsedLocStrings: ParsedLocString[],
+        assemblyName?: string,
+      ) {
+        const { assemblyManager } = getSession(self)
+        await when(() => self.volatileWidth !== undefined)
+
+        const locations = await generateLocations(
+          parsedLocStrings,
+          assemblyManager,
+          assemblyName,
         )
 
         if (locations.length === 1) {
-          const loc = locations[0]
-          self.setDisplayedRegions([
-            { reversed: loc.reversed, ...loc.parentRegion },
-          ])
-          const { start, end, parentRegion } = loc
+          const loc = locations[0]!
+          const { reversed, parentRegion, start, end } = loc
+          self.setDisplayedRegions([{ reversed, ...parentRegion }])
 
           this.navTo({
             ...loc,
@@ -1355,7 +1511,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           })
         } else {
           self.setDisplayedRegions(
-            // @ts-ignore
+            // @ts-expect-error
             locations.map(r => (r.start === undefined ? r.parentRegion : r)),
           )
           self.showAllRegions()
@@ -1365,10 +1521,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Navigate to a location based on its refName and optionally start, end,
-       * and assemblyName. Can handle if there are multiple displayedRegions
-       * from same refName. Only navigates to a location if it is entirely
-       * within a displayedRegion. Navigates to the first matching location
-       * encountered.
+       * and assemblyName. Will not try to change displayed regions, use
+       * `navToLocations` instead. Only navigates to a location if it is
+       * entirely within a displayedRegion. Navigates to the first matching
+       * location encountered.
        *
        * Throws an error if navigation was unsuccessful
        *
@@ -1380,132 +1536,89 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Navigate to a location based on its refName and optionally start, end,
+       * and assemblyName. Will not try to change displayed regions, use
+       * navToLocations instead. Only navigates to a location if it is entirely
+       * within a displayedRegion. Navigates to the first matching location
+       * encountered.
+       *
+       * Throws an error if navigation was unsuccessful
+       *
+       * @param locations - proposed location to navigate to
        */
       navToMultiple(locations: NavLocation[]) {
-        const firstLocation = locations[0]
-        let { refName } = firstLocation
-        const {
-          start,
-          end,
-          assemblyName = self.assemblyNames[0],
-        } = firstLocation
-
-        if (start !== undefined && end !== undefined && start > end) {
-          throw new Error(`start "${start + 1}" is greater than end "${end}"`)
+        if (
+          locations.some(
+            l =>
+              l.start !== undefined && l.end !== undefined && l.start > l.end,
+          )
+        ) {
+          throw new Error('found start greater than end')
         }
-        const session = getSession(self)
-        const { assemblyManager } = session
-        const assembly = assemblyManager.get(assemblyName)
-        if (assembly) {
-          const canonicalRefName = assembly.getCanonicalRefName(refName)
-          if (canonicalRefName) {
-            refName = canonicalRefName
-          }
+        const f1 = locations.at(0)
+        const f2 = locations.at(-1)
+        if (!f1 || !f2) {
+          return
         }
-        let s = start
-        let e = end
-        let refNameMatched = false
-        const predicate = (r: Region) => {
-          if (refName === r.refName) {
-            refNameMatched = true
-            if (s === undefined) {
-              s = r.start
-            }
-            if (e === undefined) {
-              e = r.end
-            }
-            if (s >= r.start && s <= r.end && e <= r.end && e >= r.start) {
-              return true
-            }
-            s = start
-            e = end
-          }
-          return false
+        const a = self.assemblyNames[0]!
+        const { assemblyManager } = getSession(self)
+        const assembly1 = assemblyManager.get(f1.assemblyName || a)
+        const assembly2 = assemblyManager.get(f2.assemblyName || a)
+        const ref1 = assembly1?.getCanonicalRefName(f1.refName) || f1.refName
+        const ref2 = assembly2?.getCanonicalRefName(f2.refName) || f2.refName
+        const r1 = self.displayedRegions.find(r => r.refName === ref1)
+        const r2 = findLast(self.displayedRegions, r => r.refName === ref2)
+        if (!r1) {
+          throw new Error(`could not find a region with refName "${ref1}"`)
+        }
+        if (!r2) {
+          throw new Error(`could not find a region with refName "${ref2}"`)
         }
 
-        const lastIndex = findLastIndex(self.displayedRegions, predicate)
-        let index
-        while (index !== lastIndex) {
-          try {
-            const previousIndex: number | undefined = index
-            index = self.displayedRegions
-              .slice(previousIndex === undefined ? 0 : previousIndex + 1)
-              .findIndex(predicate)
-            if (previousIndex !== undefined) {
-              index += previousIndex + 1
-            }
-            if (!refNameMatched) {
-              throw new Error(
-                `could not find a region with refName "${refName}"`,
-              )
-            }
-            if (s === undefined) {
-              throw new Error(
-                `could not find a region with refName "${refName}" that contained an end position ${e}`,
-              )
-            }
-            if (e === undefined) {
-              throw new Error(
-                `could not find a region with refName "${refName}" that contained a start position ${
-                  s + 1
-                }`,
-              )
-            }
-            if (index === -1) {
-              throw new Error(
-                `could not find a region that completely contained "${assembleLocString(
-                  firstLocation,
-                )}"`,
-              )
-            }
-            if (locations.length === 1) {
-              const f = self.displayedRegions[index]
-              this.moveTo(
-                { index, offset: f.reversed ? f.end - e : s - f.start },
-                { index, offset: f.reversed ? f.end - s : e - f.start },
-              )
-              return
-            }
-            let idx = 0
-            let start = 0
-            let end = 0
-            for (idx; idx < locations.length; idx++) {
-              const location = locations[idx]
-              const region = self.displayedRegions[index + idx]
-              start = location.start || region.start
-              end = location.end || region.end
-              if (location.refName !== region.refName) {
-                throw new Error(
-                  `Entered location ${assembleLocString(
-                    location,
-                  )} does not match with displayed regions`,
-                )
-              }
-            }
-            idx -= 1
-            const startDisplayedRegion = self.displayedRegions[index]
-            const endDisplayedRegion = self.displayedRegions[index + idx]
-            this.moveTo(
-              {
-                index,
-                offset: startDisplayedRegion.reversed
-                  ? startDisplayedRegion.end - e
-                  : s - startDisplayedRegion.start,
-              },
-              {
-                index: index + idx,
-                offset: endDisplayedRegion.reversed
-                  ? endDisplayedRegion.end - start
-                  : end - endDisplayedRegion.start,
-              },
-            )
-            return
-          } catch (error) {
-            if (index === lastIndex) {
-              throw error
-            }
-          }
+        const s1 = f1.start === undefined ? r1.start : f1.start
+        const e1 = f1.end === undefined ? r1.end : f1.end
+        const s2 = f2.start === undefined ? r2.start : f2.start
+        const e2 = f2.end === undefined ? r2.end : f2.end
+
+        const index = self.displayedRegions.findIndex(
+          r =>
+            ref1 === r.refName &&
+            s1 >= r.start &&
+            s1 <= r.end &&
+            e1 <= r.end &&
+            e1 >= r.start,
+        )
+
+        const index2 = self.displayedRegions.findIndex(
+          r =>
+            ref2 === r.refName &&
+            s2 >= r.start &&
+            s2 <= r.end &&
+            e2 <= r.end &&
+            e2 >= r.start,
+        )
+
+        if (index === -1 || index2 === -1) {
+          throw new Error(
+            `could not find a region that contained "${locations.map(l =>
+              assembleLocString(l),
+            )}"`,
+          )
         }
+
+        const sd = self.displayedRegions[index]!
+        const ed = self.displayedRegions[index2]!
+
+        this.moveTo(
+          {
+            index,
+            offset: sd.reversed ? sd.end - e1 : s1 - sd.start,
+          },
+          {
+            index: index2,
+            offset: ed.reversed ? ed.end - s2 : e2 - ed.start,
+          },
+        )
       },
     }))
     .views(self => ({
@@ -1518,14 +1631,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Zoom to region',
             icon: ZoomInIcon,
             onClick: () => {
-              const { leftOffset, rightOffset } = self
-              self.moveTo(leftOffset, rightOffset)
+              self.moveTo(self.leftOffset, self.rightOffset)
             },
           },
           {
             label: 'Get sequence',
             icon: MenuOpenIcon,
-            onClick: () => self.setGetSequenceDialogOpen(true),
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                GetSequenceDialog,
+
+                { model: self as any, handleClose },
+              ])
+            },
           },
         ]
       },
@@ -1547,19 +1665,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * scrolls the view to center on the given bp. if that is not in any
-       * of the displayed regions, does nothing
+       * scrolls the view to center on the given bp. if that is not in any of
+       * the displayed regions, does nothing
+       *
        * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
        * @param regionNumber - index of the displayedRegion
        */
-      centerAt(coord: number, refName: string, regionNumber: number) {
+      centerAt(coord: number, refName: string, regionNumber?: number) {
         const centerPx = this.bpToPx({
           refName,
           coord,
           regionNumber,
         })
-        if (centerPx) {
+        if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
         }
       },
@@ -1575,22 +1694,63 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get centerLineInfo() {
-        return self.displayedRegions.length
+        return self.displayedRegions.length > 0
           ? this.pxToBp(self.width / 2)
           : undefined
       },
     }))
-}
-
-export {
-  renderToSvg,
-  RefNameAutocomplete,
-  SearchBox,
-  ZoomControls,
-  LinearGenomeView,
+    .actions(self => ({
+      afterCreate() {
+        function handler(e: KeyboardEvent) {
+          const session = getSession(self)
+          if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
+            if (e.code === 'ArrowLeft') {
+              e.preventDefault()
+              self.slide(-0.9)
+            } else if (e.code === 'ArrowRight') {
+              e.preventDefault()
+              self.slide(0.9)
+            } else if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
+              e.preventDefault()
+              self.zoom(self.bpPerPx / 2)
+            } else if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
+              e.preventDefault()
+              self.zoom(self.bpPerPx * 2)
+            }
+          }
+        }
+        document.addEventListener('keydown', handler)
+        addDisposer(self, () => {
+          document.removeEventListener('keydown', handler)
+        })
+      },
+    }))
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { highlight, ...rest } = snap
+      return {
+        highlight:
+          Array.isArray(highlight) || highlight === undefined
+            ? highlight
+            : [highlight],
+        ...rest,
+      }
+    })
 }
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 
-export { default as ReactComponent } from './components/LinearGenomeView'
+export {
+  default as ReactComponent,
+  default as LinearGenomeView,
+} from './components/LinearGenomeView'
+
+export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'
+export { default as SearchBox } from './components/SearchBox'
+export { default as ZoomControls } from './components/ZoomControls'
+
+export { renderToSvg } from './svgcomponents/SVGLinearGenomeView'

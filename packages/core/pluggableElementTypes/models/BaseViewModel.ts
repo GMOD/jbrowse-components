@@ -1,9 +1,11 @@
 import { types, Instance } from 'mobx-state-tree'
 import { ElementId } from '../../util/types/mst'
 import { MenuItem } from '../../ui'
+import { Region } from '../../util/types/mst'
 
 /**
  * #stateModel BaseViewModel
+ * #category view
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -69,5 +71,12 @@ const BaseViewModel = types
   }))
 
 export default BaseViewModel
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IBaseViewModel extends Instance<typeof BaseViewModel> {}
+
+export type IBaseViewModel = Instance<typeof BaseViewModel>
+
+export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
+  displayedRegions: types.array(Region),
+})
+export type IBaseViewModelWithDisplayedRegions = Instance<
+  typeof BaseViewModelWithDisplayedRegions
+>

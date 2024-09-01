@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import {
   Button,
@@ -79,7 +79,7 @@ async function fetchSequence(
   }) as Promise<Feature[]>
 }
 
-function SequenceDialog({
+const GetSequenceDialog = observer(function ({
   model,
   handleClose,
 }: {
@@ -87,7 +87,6 @@ function SequenceDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
   const [rev, setReverse] = useState(false)
@@ -96,73 +95,59 @@ function SequenceDialog({
   const { leftOffset, rightOffset } = model
   const loading = Boolean(sequenceChunks === undefined)
 
-  // avoid infinite looping of useEffect
-  // random note: the current selected region can't be a computed because it
-  // uses action on base1dview even though it's on the ephemeral base1dview
-  const regionsSelected = useMemo(
-    () => model.getSelectedRegions(leftOffset, rightOffset),
-    [model, leftOffset, rightOffset],
-  )
-
   useEffect(() => {
-    let active = true
     const controller = new AbortController()
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        if (regionsSelected.length > 0) {
-          const chunks = await fetchSequence(
-            model,
-            regionsSelected,
-            controller.signal,
-          )
-          if (active) {
-            setSequenceChunks(chunks)
-          }
-        } else {
+        // random note: the current selected region can't be a computed because
+        // it uses action on base1dview even though it's on the ephemeral
+        // base1dview
+        const selection = model.getSelectedRegions(leftOffset, rightOffset)
+        if (selection.length === 0) {
           throw new Error('Selected region is out of bounds')
         }
+        const chunks = await fetchSequence(model, selection, controller.signal)
+        setSequenceChunks(chunks)
       } catch (e) {
         console.error(e)
-        if (active) {
-          setError(e)
-        }
+        setError(e)
       }
     })()
 
     return () => {
       controller.abort()
-      active = false
     }
-  }, [model, session, regionsSelected])
+  }, [model, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
-        sequenceChunks
-          .filter(f => !!f)
-          .map(chunk => {
-            let chunkSeq = chunk.get('seq')
-            const chunkRefName = chunk.get('refName')
-            const chunkStart = chunk.get('start') + 1
-            const chunkEnd = chunk.get('end')
-            const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-            if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-              throw new Error(
-                `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                  chunkEnd - chunkStart
-                ).toLocaleString()}`,
-              )
-            }
+        sequenceChunks.map(chunk => {
+          let chunkSeq = chunk.get('seq')
+          const chunkRefName = chunk.get('refName')
+          const chunkStart = chunk.get('start') + 1
+          const chunkEnd = chunk.get('end')
+          const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+            throw new Error(
+              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                chunkEnd - chunkStart
+              ).toLocaleString()}`,
+            )
+          }
 
-            if (rev) {
-              chunkSeq = reverse(chunkSeq)
-            }
-            if (comp) {
-              chunkSeq = complement(chunkSeq)
-            }
-            return { header: chunkLocstring, seq: chunkSeq }
-          }),
+          if (rev) {
+            chunkSeq = reverse(chunkSeq)
+          }
+          if (comp) {
+            chunkSeq = complement(chunkSeq)
+          }
+          return {
+            header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+            seq: chunkSeq,
+          }
+        }),
       )
     : ''
 
@@ -174,7 +159,7 @@ function SequenceDialog({
       open
       onClose={() => {
         handleClose()
-        model.setOffsets(undefined, undefined)
+        model.setOffsets()
       }}
       title="Reference sequence"
     >
@@ -217,7 +202,9 @@ function SequenceDialog({
             control={
               <Checkbox
                 value={rev}
-                onChange={event => setReverse(event.target.checked)}
+                onChange={event => {
+                  setReverse(event.target.checked)
+                }}
               />
             }
             label="Reverse sequence"
@@ -226,14 +213,16 @@ function SequenceDialog({
             control={
               <Checkbox
                 value={comp}
-                onChange={event => setComplement(event.target.checked)}
+                onChange={event => {
+                  setComplement(event.target.checked)
+                }}
               />
             }
             label="Complement sequence"
           />
         </FormGroup>
         <Typography style={{ margin: 10 }}>
-          Note: Check both boxes for the "reverse complement"
+          Note: Check both boxes for the &quot;reverse complement&quot;
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -241,7 +230,9 @@ function SequenceDialog({
           onClick={() => {
             copy(sequence)
             setCopied(true)
-            setTimeout(() => setCopied(false), 500)
+            setTimeout(() => {
+              setCopied(false)
+            }, 500)
           }}
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"
@@ -270,6 +261,6 @@ function SequenceDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(SequenceDialog)
+export default GetSequenceDialog

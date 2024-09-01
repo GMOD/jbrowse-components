@@ -5,20 +5,27 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
-import { AlignmentsDisplayModel } from '../models/model'
+import { LinearAlignmentsDisplayModel } from '../models/model'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   resizeHandle: {
-    height: 2,
+    height: 5,
     position: 'absolute',
     zIndex: 2,
   },
-}))
+})
 
-function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
+const AlignmentsDisplay = observer(function AlignmentsDisplay({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
   const { PileupDisplay, SNPCoverageDisplay } = model
   const { classes } = useStyles()
-  const top = SNPCoverageDisplay.height
+  if (!SNPCoverageDisplay) {
+    return null
+  }
+  const top = SNPCoverageDisplay.height ?? 100
   return (
     <div
       data-testid={`display-${getConf(model, 'displayId')}`}
@@ -33,7 +40,7 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
           return delta
         }}
         className={classes.resizeHandle}
-        style={{ top }}
+        style={{ top: top - 4 }}
       />
 
       <div
@@ -47,6 +54,6 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
       </div>
     </div>
   )
-}
+})
 
-export default observer(AlignmentsDisplay)
+export default AlignmentsDisplay

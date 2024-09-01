@@ -44,7 +44,7 @@ export async function renderBlockEffect(
   props?: ReturnType<typeof renderBlockData>,
 ) {
   if (!props) {
-    throw new Error('cannot render with no props')
+    return
   }
 
   const { rendererType, rpcManager, renderProps } = props

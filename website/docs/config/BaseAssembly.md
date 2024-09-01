@@ -1,13 +1,14 @@
 ---
 id: baseassembly
 title: BaseAssembly
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[packages/core/assemblyManager/assemblyConfigSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assemblyConfigSchema.ts)
 
 This corresponds to the assemblies section of the config
 

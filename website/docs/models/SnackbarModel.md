@@ -1,7 +1,6 @@
 ---
 id: snackbarmodel
 title: SnackbarModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,16 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-### SnackbarModel - Getters
-
-#### getter: snackbarMessages
-
-```js
-// type
-IObservableArray<any>
-```
+[packages/core/ui/SnackbarModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/SnackbarModel.tsx)
 
 ### SnackbarModel - Actions
 
@@ -33,18 +25,14 @@ notify: (message: string, level?: NotificationLevel, action?: SnackAction) => vo
 
 ```js
 // type signature
-pushSnackbarMessage: (
-  message: string,
-  level?: NotificationLevel,
-  action?: SnackAction,
-) => number
+pushSnackbarMessage: (message: string, level?: NotificationLevel, action?: SnackAction) => number
 ```
 
 #### action: popSnackbarMessage
 
 ```js
 // type signature
-popSnackbarMessage: () => any
+popSnackbarMessage: () => SnackbarMessage
 ```
 
 #### action: removeSnackbarMessage

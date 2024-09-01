@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { InputBase, Typography, TypographyProps, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 
 type Variant = TypographyProps['variant']
 
@@ -38,10 +39,10 @@ interface Props {
 
 // using forwardRef so that MUI Tooltip can wrap this component
 const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
-  (props, ref) => {
+  function EditableTypography2(props, ref) {
     const { value, setValue, variant, ...other } = props
+    const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
-    const [sizerNode, setSizerNode] = useState<HTMLSpanElement | null>(null)
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
     const [blur, setBlur] = useState(false)
 
@@ -54,12 +55,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
 
     // possibly tss-react does not understand the passing of props to
     // useStyles, but it appears to work
-    // @ts-ignore
+    // @ts-expect-error
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
-
-    const clientWidth = sizerNode?.clientWidth
-    const width = clientWidth || 0
 
     const val = editedValue === undefined ? value : editedValue
 
@@ -67,7 +65,7 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
       <div {...other} ref={ref}>
         <div style={{ position: 'relative' }}>
           <Typography
-            ref={(node: HTMLSpanElement) => setSizerNode(node)}
+            ref={ref2}
             component="span"
             variant={variant}
             className={classes.typography}
@@ -76,7 +74,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
           </Typography>
         </div>
         <InputBase
-          inputRef={node => setInputNode(node)}
+          inputRef={node => {
+            setInputNode(node)
+          }}
           className={classes.inputBase}
           inputProps={{
             style: {
@@ -92,7 +92,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
             focused: classes.inputFocused,
           }}
           value={val}
-          onChange={event => setEditedValue(event.target.value)}
+          onChange={event => {
+            setEditedValue(event.target.value)
+          }}
           onKeyDown={event => {
             if (event.key === 'Enter') {
               inputNode?.blur()
@@ -102,7 +104,7 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
             }
           }}
           onBlur={() => {
-            setValue(editedValue || '')
+            setValue(editedValue || value || '')
             setEditedValue(undefined)
           }}
         />

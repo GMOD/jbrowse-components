@@ -7,12 +7,17 @@ import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
-import AbortablePromiseCache from 'abortable-promise-cache'
+import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
-type T = { refName: string; start: number; end: number; fasta: IndexedFasta }
+interface T {
+  refName: string
+  start: number
+  end: number
+  fasta: IndexedFasta
+}
 
-export default class extends BaseSequenceAdapter {
+export default class IndexedFastaAdapter extends BaseSequenceAdapter {
   protected setupP?: Promise<{ fasta: IndexedFasta }>
 
   private seqCache = new AbortablePromiseCache<T, string | undefined>({
@@ -34,7 +39,7 @@ export default class extends BaseSequenceAdapter {
     return Object.keys(seqSizes).map(refName => ({
       refName,
       start: 0,
-      end: seqSizes[refName],
+      end: seqSizes[refName]!,
     }))
   }
 
@@ -54,12 +59,12 @@ export default class extends BaseSequenceAdapter {
     const loc = this.getConf('metadataLocation')
     return loc.uri === '' || loc.uri === '/path/to/fa.metadata.yaml'
       ? null
-      : openLocation(loc).readFile('utf8')
+      : openLocation(loc, this.pluginManager).readFile('utf8')
   }
 
   public async setup() {
     if (!this.setupP) {
-      this.setupP = this.setupPre().catch(e => {
+      this.setupP = this.setupPre().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -72,7 +77,7 @@ export default class extends BaseSequenceAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { fasta } = await this.setup()
       const size = await fasta.getSequenceSize(refName, opts)
-      const regionEnd = size !== undefined ? Math.min(size, end) : end
+      const regionEnd = Math.min(size, end)
       const chunks = []
       const chunkSize = 128000
 

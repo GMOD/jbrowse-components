@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
 import PluginManager from '../PluginManager'
 import {
@@ -12,9 +11,10 @@ import {
   hasParent,
   IAnyStateTreeNode,
   IStateTreeNode,
+  Instance,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import SimpleFeature, { Feature, isFeature } from './simpleFeature'
+import { Feature } from './simpleFeature'
 import {
   isSessionModel,
   isDisplayModel,
@@ -24,29 +24,26 @@ import {
   Region,
   TypeTestedByPredicate,
 } from './types'
+import type { Region as MUIRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
 
-export type { Feature }
+// has to be the full path and not the relative path to get the jest mock
+import useMeasure from '@jbrowse/core/util/useMeasure'
+import { colord } from './colord'
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom'
 export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
 export * from './dedupe'
-export { SimpleFeature, isFeature }
-export type { Feature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 
-export const inDevelopment =
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_ENV === 'development'
-export const inProduction = !inDevelopment
-
-export function useDebounce<T>(value: T, delay: number): T {
+export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
@@ -61,30 +58,50 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue
 }
 
-// https://stackoverflow.com/questions/56283920/how-to-debounce-a-callback-in-functional-component-using-hooks
-export function useDebouncedCallback<A extends any[]>(
-  callback: (...args: A) => void,
+// used in ViewContainer files to get the width
+export function useWidthSetter(
+  view: { setWidth: (arg: number) => void },
+  padding: string,
+) {
+  const [ref, { width }] = useMeasure()
+  useEffect(() => {
+    if (width && isAlive(view)) {
+      // sets after a requestAnimationFrame
+      // https://stackoverflow.com/a/58701523/2129219
+      // avoids ResizeObserver loop error being shown during development
+      requestAnimationFrame(() => {
+        view.setWidth(width - Number.parseInt(padding, 10) * 2)
+      })
+    }
+  }, [padding, view, width])
+  return ref
+}
+
+// https://stackoverflow.com/questions/56283920/
+export function useDebouncedCallback<T>(
+  callback: (...args: T[]) => void,
   wait = 400,
 ) {
   // track args & timeout handle between calls
-  const argsRef = useRef<A>()
+  const argsRef = useRef<T[]>()
   const timeout = useRef<ReturnType<typeof setTimeout>>()
 
-  function cleanup() {
+  // make sure our timeout gets cleared if our consuming component gets
+  // unmounted
+  useEffect(() => {
     if (timeout.current) {
       clearTimeout(timeout.current)
     }
-  }
+  }, [])
 
-  // make sure our timeout gets cleared if our consuming component gets unmounted
-  useEffect(() => cleanup, [])
-
-  return function debouncedCallback(...args: A) {
+  return function debouncedCallback(...args: T[]) {
     // capture latest args
     argsRef.current = args
 
     // clear debounce timer
-    cleanup()
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+    }
 
     // start waiting again
     timeout.current = setTimeout(() => {
@@ -95,7 +112,9 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
-/** find the first node in the hierarchy that matches the given predicate */
+/**
+ * find the first node in the hierarchy that matches the given predicate
+ */
 export function findParentThat(
   node: IAnyStateTreeNode,
   predicate: (thing: IAnyStateTreeNode) => boolean,
@@ -130,8 +149,9 @@ export function springAnimate(
   setValue: (value: number) => void,
   onFinish = () => {},
   precision = 0,
-  tension = 170,
-  friction = 26,
+  tension = 400,
+  friction = 20,
+  clamp = true,
 ) {
   const mass = 1
   if (!precision) {
@@ -161,40 +181,53 @@ export function springAnimate(
     const isVelocity = Math.abs(velocity) <= precision
     const isDisplacement =
       tension !== 0 ? Math.abs(toValue - position) <= precision : true
-    const endOfAnimation = isVelocity && isDisplacement
+    const isOvershooting =
+      clamp && tension !== 0
+        ? fromValue < toValue
+          ? position > toValue
+          : position < toValue
+        : false
+    const endOfAnimation = isOvershooting || (isVelocity && isDisplacement)
     if (endOfAnimation) {
       setValue(toValue)
       onFinish()
     } else {
       setValue(position)
-      animationFrameId = requestAnimationFrame(() =>
+      animationFrameId = requestAnimationFrame(() => {
         update({
           lastPosition: position,
           lastTime: time,
           lastVelocity: velocity,
-        }),
-      )
+        })
+      })
     }
   }
 
   return [
-    () => update({ lastPosition: fromValue }),
-    () => cancelAnimationFrame(animationFrameId),
+    () => {
+      update({ lastPosition: fromValue })
+    },
+    () => {
+      cancelAnimationFrame(animationFrameId)
+    },
   ]
 }
 
-/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
-export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
->(
+/**
+ * find the first node in the hierarchy that matches the given 'is' typescript
+ * type guard predicate
+ */
+export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
-  predicate: PREDICATE,
-): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
-    IAnyStateTreeNode
+  predicate: T,
+): TypeTestedByPredicate<T> {
+  return findParentThat(node, predicate)
 }
 
-/** get the current JBrowse session model, starting at any node in the state tree */
+/**
+ * get the current JBrowse session model, starting at any node in the state
+ * tree
+ */
 export function getSession(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isSessionModel)
@@ -203,7 +236,10 @@ export function getSession(node: IAnyStateTreeNode) {
   }
 }
 
-/** get the state model of the view in the state tree that contains the given node */
+/**
+ * get the state model of the view in the state tree that contains the given
+ * node
+ */
 export function getContainingView(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isViewModel)
@@ -212,7 +248,10 @@ export function getContainingView(node: IAnyStateTreeNode) {
   }
 }
 
-/** get the state model of the view in the state tree that contains the given node */
+/**
+ * get the state model of the view in the state tree that contains the given
+ * node
+ */
 export function getContainingTrack(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isTrackModel)
@@ -221,6 +260,10 @@ export function getContainingTrack(node: IAnyStateTreeNode) {
   }
 }
 
+/**
+ * get the state model of the display in the state tree that contains the given
+ * node
+ */
 export function getContainingDisplay(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isDisplayModel)
@@ -263,7 +306,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * // ↳ 'chr1:1'
  * ```
  */
-export function assembleLocString(region: ParsedLocString): string {
+export function assembleLocString(region: ParsedLocString) {
   return assembleLocStringFast(region, toLocale)
 }
 
@@ -273,10 +316,10 @@ export function assembleLocString(region: ParsedLocString): string {
 export function assembleLocStringFast(
   region: ParsedLocString,
   cb = (n: number): string | number => n,
-): string {
+) {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
-  let startString
+  let startString: string
   if (start !== undefined) {
     startString = `:${cb(start + 1)}`
   } else if (end !== undefined) {
@@ -284,7 +327,7 @@ export function assembleLocStringFast(
   } else {
     startString = ''
   }
-  let endString
+  let endString: string
   if (end !== undefined) {
     endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
   } else {
@@ -315,23 +358,30 @@ export function parseLocStringOneBased(
   let reversed = false
   if (locString.endsWith('[rev]')) {
     reversed = true
-    locString = locString.replace(/\[rev\]$/, '')
+    locString = locString.replace(/\[rev]$/, '')
   }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = locString.match(/(\{(.+)\})?(.+)/)
+  // refNames can have colons, refer to
+  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  const assemblyMatch = /({(.+)})?(.+)/.exec(locString)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
   }
-  const [, , assemblyName, location] = assemblyMatch
+  const [, , assemblyName2, location2] = assemblyMatch
+  const assemblyName = assemblyName2!
+  const location = location2!
   if (!assemblyName && location.startsWith('{}')) {
     throw new Error(`no assembly name was provided in location "${location}"`)
   }
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location, reversed }
+      return {
+        assemblyName,
+        refName: location,
+        reversed,
+      }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
@@ -345,19 +395,20 @@ export function parseLocStringOneBased(
   } else if (isValidRefName(prefix, assemblyName)) {
     if (suffix) {
       // see if it's a range
-      const rangeMatch = suffix.match(
-        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/,
-      )
+      const rangeMatch =
+        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/.exec(
+          suffix,
+        )
       // see if it's a single point
-      const singleMatch = suffix.match(/^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/)
+      const singleMatch = /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/.exec(suffix)
       if (rangeMatch) {
         const [, start, , , , end] = rangeMatch
         if (start !== undefined && end !== undefined) {
           return {
             assemblyName,
             refName: prefix,
-            start: +start.replace(/,/g, ''),
-            end: +end.replace(/,/g, ''),
+            start: +start.replaceAll(',', ''),
+            end: +end.replaceAll(',', ''),
             reversed,
           }
         }
@@ -369,15 +420,15 @@ export function parseLocStringOneBased(
             return {
               assemblyName,
               refName: prefix,
-              start: +start.replace(/,/g, ''),
+              start: +start.replaceAll(',', ''),
               reversed,
             }
           }
           return {
             assemblyName,
             refName: prefix,
-            start: +start.replace(/,/g, ''),
-            end: +start.replace(/,/g, ''),
+            start: +start.replaceAll(',', ''),
+            end: +start.replaceAll(',', ''),
             reversed,
           }
         }
@@ -387,10 +438,18 @@ export function parseLocStringOneBased(
         )
       }
     } else {
-      return { assemblyName, refName: prefix, reversed }
+      return {
+        assemblyName,
+        refName: prefix,
+        reversed,
+      }
     }
   } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location, reversed }
+    return {
+      assemblyName,
+      refName: location,
+      reversed,
+    }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
@@ -523,8 +582,8 @@ export function bpToPx(
   return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
-const oneEightyOverPi = 180.0 / Math.PI
-const piOverOneEighty = Math.PI / 180.0
+const oneEightyOverPi = 180 / Math.PI
+const piOverOneEighty = Math.PI / 180
 export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }
@@ -571,40 +630,56 @@ export function bpSpanPx(
 
 // do an array map of an iterable
 export function iterMap<T, U>(
-  iterable: Iterable<T>,
-  func: (item: T) => U,
+  iter: Iterable<T>,
+  func: (arg: T) => U,
   sizeHint?: number,
-): U[] {
-  const results = sizeHint ? new Array(sizeHint) : []
+) {
+  const results = Array.from<U>({ length: sizeHint || 0 })
   let counter = 0
-  for (const item of iterable) {
+  for (const item of iter) {
     results[counter] = func(item)
     counter += 1
   }
   return results
 }
 
-// https://stackoverflow.com/a/53187807
 /**
  * Returns the index of the last element in the array where predicate is true,
  * and -1 otherwise.
+ * Based on https://stackoverflow.com/a/53187807
+ *
  * @param array - The source array to search in
+ *
  * @param predicate - find calls predicate once for each element of the array, in
- * descending order, until it finds one where predicate returns true. If such an
- * element is found, findLastIndex immediately returns that element index.
+ * descending order, until it finds one where predicate returns true.
+ *
+ * @returns findLastIndex returns element index where predicate is true.
  * Otherwise, findLastIndex returns -1.
  */
 export function findLastIndex<T>(
-  array: Array<T>,
+  array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): number {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return l
     }
   }
   return -1
+}
+
+export function findLast<T>(
+  array: T[],
+  predicate: (value: T, index: number, obj: T[]) => boolean,
+): T | undefined {
+  let l = array.length
+  while (l--) {
+    if (predicate(array[l]!, l, array)) {
+      return array[l]
+    }
+  }
+  return undefined
 }
 
 /**
@@ -633,7 +708,7 @@ export function makeAbortableReaction<T, U, V>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
-  // @ts-ignore
+  // @ts-expect-error
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
@@ -679,7 +754,7 @@ export function makeAbortableReaction<T, U, V>(
             data,
             thisInProgress.signal,
             self,
-            // @ts-ignore
+            // @ts-expect-error
             mobxReactionHandle,
           )
           checkAbortSignal(thisInProgress.signal)
@@ -687,7 +762,7 @@ export function makeAbortableReaction<T, U, V>(
             successFunction(result)
           }
         } catch (e) {
-          if (thisInProgress && !thisInProgress.signal.aborted) {
+          if (!thisInProgress.signal.aborted) {
             thisInProgress.abort()
           }
           handleError(e)
@@ -704,21 +779,18 @@ export function makeAbortableReaction<T, U, V>(
 }
 
 export function renameRegionIfNeeded(
-  refNameMap: Record<string, string>,
-  region: Region,
+  refNameMap: Record<string, string> | undefined,
+  region: Region | Instance<typeof MUIRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
 
-  if (region && refNameMap && refNameMap[region.refName]) {
+  if (refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
-    if (isStateTreeNode(region)) {
-      // @ts-ignore
-      region = { ...getSnapshot(region) }
-    } else {
-      region = { ...region }
-    }
+    region = isStateTreeNode(region)
+      ? { ...getSnapshot(region) }
+      : { ...region }
 
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
@@ -734,7 +806,7 @@ export async function renameRegionsIfNeeded<
     assemblyName?: string
     regions?: Region[]
     signal?: AbortSignal
-    adapterConfig: unknown
+    adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
   },
@@ -747,7 +819,7 @@ export async function renameRegionsIfNeeded<
   const assemblyNames = regions.map(region => region.assemblyName)
   const assemblyMaps = Object.fromEntries(
     await Promise.all(
-      assemblyNames.map(async assemblyName => {
+      [...new Set(assemblyNames)].map(async assemblyName => {
         return [
           assemblyName,
           await assemblyManager.getRefNameMapForAdapter(
@@ -764,37 +836,47 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: regions.map((region, i) =>
       // note: uses assemblyNames defined above since region could be dead now
-      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]!], region),
     ),
   }
 }
 
 export function minmax(a: number, b: number) {
-  return [Math.min(a, b), Math.max(a, b)]
+  return [Math.min(a, b), Math.max(a, b)] as const
 }
 
 export function shorten(name: string, max = 70, short = 30) {
   return name.length > max
-    ? name.slice(0, short) + '...' + name.slice(-short)
+    ? `${name.slice(0, short)}...${name.slice(-short)}`
     : name
 }
 
-export function stringify({
-  refName,
-  coord,
-  oob,
-}: {
-  coord: number
-  refName?: string
-  oob?: boolean
-}) {
-  return refName
-    ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
-    : ''
+export function stringify(
+  {
+    refName,
+    coord,
+    assemblyName,
+    oob,
+  }: {
+    assemblyName?: string
+    coord: number
+    refName?: string
+    oob?: boolean
+  },
+  useAssemblyName?: boolean,
+) {
+  return [
+    assemblyName && useAssemblyName ? `{${assemblyName}}` : '',
+    refName
+      ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
+      : '',
+  ].join('')
 }
 
-// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
-// for detecting electron in a renderer process, which is the one that has node enabled for us
+// this is recommended in a later comment in
+// https://github.com/electron/electron/issues/2288 for detecting electron in a
+// renderer process, which is the one that has node enabled for us
+//
 // const isElectron = process.versions.electron
 // const i2 = process.versions.hasOwnProperty('electron')
 export const isElectron = /electron/i.test(
@@ -848,38 +930,28 @@ export const complement = (() => {
     b: 'v',
     R: 'Y',
     G: 'C',
-  } as { [key: string]: string }
+  } as Record<string, string>
 
   return (seqString: string) => {
-    return seqString.replace(complementRegex, m => complementTable[m] || '')
+    return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
   }
 })()
-
-export function blobToDataURL(blob: Blob): Promise<string> {
-  const a = new FileReader()
-  return new Promise((resolve, reject) => {
-    a.onload = e => {
-      if (e.target) {
-        resolve(e.target.result as string)
-      } else {
-        reject(new Error('unknown result reading blob from canvas'))
-      }
-    }
-    a.readAsDataURL(blob)
-  })
-}
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
   typeof jest === 'undefined'
-    ? // @ts-ignore
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       typeof window !== 'undefined' && window.requestIdleCallback
-      ? // @ts-ignore
-        window.requestIdleCallback
-      : (cb: Function) => setTimeout(() => cb(), 1)
-    : (cb: Function) => cb()
+      ? window.requestIdleCallback
+      : (cb: () => void) =>
+          setTimeout(() => {
+            cb()
+          }, 1)
+    : (cb: () => void) => {
+        cb()
+      }
 
 // prettier-ignore
 const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
@@ -894,6 +966,19 @@ export function measureText(str: unknown, fontSize = 10) {
     total += widths[code] ?? avg
   }
   return total * fontSize
+}
+
+export type Frame = 1 | 2 | 3 | -1 | -2 | -3
+
+export function getFrame(
+  start: number,
+  end: number,
+  strand: 1 | -1,
+  phase: 0 | 1 | 2,
+): Frame {
+  return strand === 1
+    ? ((((start + phase) % 3) + 1) as 1 | 2 | 3)
+    : ((-1 * ((end - phase) % 3) - 1) as -1 | -2 | -3)
 }
 
 export const defaultStarts = ['ATG']
@@ -966,26 +1051,26 @@ export const defaultCodonTable = {
 }
 
 /**
- *  take CodonTable above and generate larger codon table that includes
- *  all permutations of upper and lower case nucleotides
+ * take CodonTable above and generate larger codon table that includes all
+ * permutations of upper and lower case nucleotides
  */
 export function generateCodonTable(table: any) {
-  const tempCodonTable: { [key: string]: string } = {}
+  const tempCodonTable: Record<string, string> = {}
   Object.keys(table).forEach(codon => {
     const aa = table[codon]
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
       nucs[i] = []
-      nucs[i][0] = nuc.toUpperCase()
-      nucs[i][1] = nuc.toLowerCase()
+      nucs[i]![0] = nuc.toUpperCase()
+      nucs[i]![1] = nuc.toLowerCase()
     }
     for (let i = 0; i < 2; i++) {
-      const n0 = nucs[0][i]
+      const n0 = nucs[0]![i]!
       for (let j = 0; j < 2; j++) {
-        const n1 = nucs[1][j]
+        const n1 = nucs[1]![j]!
         for (let k = 0; k < 2; k++) {
-          const n2 = nucs[2][k]
+          const n2 = nucs[2]![k]!
           const triplet = n0 + n1 + n2
           tempCodonTable[triplet] = aa
         }
@@ -999,7 +1084,7 @@ export function generateCodonTable(table: any) {
 export async function updateStatus<U>(
   msg: string,
   cb: (arg: string) => void,
-  fn: () => U,
+  fn: () => U | Promise<U>,
 ) {
   cb(msg)
   const res = await fn()
@@ -1055,7 +1140,7 @@ export async function bytesForRegions(
     .reduce((a, b) => a + b.end - b.start, 0)
 }
 
-export type ViewSnap = {
+export interface ViewSnap {
   bpPerPx: number
   interRegionPaddingWidth: number
   minimumBlockWidth: number
@@ -1066,14 +1151,14 @@ export type ViewSnap = {
     start: number
     end: number
     refName: string
-    reversed: boolean
+    reversed?: boolean
     assemblyName: string
   })[]
 }
 
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function supportedIndexingAdapters(type: string) {
+// supported adapter types by text indexer ensure that this matches the method
+// found in @jbrowse/text-indexing/util
+export function isSupportedIndexingAdapter(type = '') {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',
@@ -1083,15 +1168,13 @@ export function supportedIndexingAdapters(type: string) {
 }
 
 export function getBpDisplayStr(totalBp: number) {
-  let str
   if (Math.floor(totalBp / 1_000_000) > 0) {
-    str = `${parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
+    return `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1_000) > 0) {
-    str = `${parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+    return `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
   } else {
-    str = `${toLocale(Math.floor(totalBp))}bp`
+    return `${toLocale(Math.floor(totalBp))}bp`
   }
-  return str
 }
 
 export function toLocale(n: number) {
@@ -1099,17 +1182,13 @@ export function toLocale(n: number) {
 }
 
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
-  let str
-  if (Math.floor(bpPerPx / 1_000) > 0) {
-    str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
-  } else {
-    str = `${toLocale(Math.floor(totalBp))}`
-  }
-  return str
+  return Math.floor(bpPerPx / 1_000) > 0
+    ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
+    : toLocale(Math.floor(totalBp))
 }
 
 export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
-  // @ts-ignore
+  // @ts-expect-error
   const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
   const b = dynamicBlocks?.contentBlocks[0] || {}
   const staticblock = staticBlocks?.contentBlocks[0] || {}
@@ -1117,8 +1196,8 @@ export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
   return {
     offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
     offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
-    start: b.start,
-    end: b.end,
+    start: b.start as number,
+    end: b.end as number,
   }
 }
 
@@ -1129,7 +1208,7 @@ export function getLayoutId({
   sessionId: string
   layoutId: string
 }) {
-  return sessionId + '-' + layoutId
+  return `${sessionId}-${layoutId}`
 }
 
 // Hook from https://usehooks.com/useLocalStorage/
@@ -1163,7 +1242,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
 export function getUriLink(value: { uri: string; baseUri?: string }) {
   const { uri, baseUri = '' } = value
-  let href
+  let href: string
   try {
     href = new URL(uri, baseUri).href
   } catch (e) {
@@ -1180,12 +1259,44 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
-// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
-export function measureGridWidth(elements: string[]) {
-  return Math.max(
-    ...elements.map(element =>
-      Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
-    ),
+// tries to measure grid width without HTML tags included
+export function coarseStripHTML(s: string) {
+  return s.replaceAll(/(<([^>]+)>)/gi, '')
+}
+
+// based on autolink-js, license MIT
+// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
+export function linkify(s: string) {
+  const pattern =
+    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
+  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
+}
+
+// heuristic measurement for a column of a @mui/x-data-grid, pass in
+// values from a column
+export function measureGridWidth(
+  elements: unknown[],
+  args?: {
+    minWidth?: number
+    fontSize?: number
+    maxWidth?: number
+    padding?: number
+    stripHTML?: boolean
+  },
+) {
+  const {
+    padding = 30,
+    minWidth = 80,
+    fontSize = 12,
+    maxWidth = 1000,
+    stripHTML = false,
+  } = args || {}
+  return max(
+    elements
+      .map(element => getStr(element))
+      .map(str => (stripHTML ? coarseStripHTML(str) : str))
+      .map(str => measureText(str, fontSize))
+      .map(n => Math.min(Math.max(n + padding, minWidth), maxWidth)),
   )
 }
 
@@ -1198,3 +1309,169 @@ export function localStorageGetItem(item: string) {
     ? localStorage.getItem(item)
     : undefined
 }
+
+export function localStorageSetItem(str: string, item: string) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(str, item)
+  }
+}
+
+export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
+  let max = init
+  for (const entry of arr) {
+    max = entry > max ? entry : max
+  }
+  return max
+}
+
+export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
+  let min = init
+  for (const entry of arr) {
+    min = entry < min ? entry : min
+  }
+  return min
+}
+
+export function sum(arr: number[]) {
+  let sum = 0
+  for (const entry of arr) {
+    sum += entry
+  }
+  return sum
+}
+
+export function avg(arr: number[]) {
+  return sum(arr) / arr.length
+}
+
+export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
+  const result = {} as Record<string, T[]>
+  for (const value of array) {
+    const t = predicate(value)
+    if (!result[t]) {
+      result[t] = []
+    }
+    result[t].push(value)
+  }
+  return result
+}
+
+export function notEmpty<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined
+}
+
+export function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+  w = 5000,
+) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a, b) => a.start - b.start)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+    top = stack.at(-1)!
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end + w < intervals[i]!.start - w) {
+      stack.push(intervals[i]!)
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i]!.end) {
+      top.end = Math.max(top.end, intervals[i]!.end)
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+}
+
+// hashmap of refName->array of features
+type FeaturesPerRef = Record<string, BasicFeature[]>
+
+export function gatherOverlaps(regions: BasicFeature[]) {
+  const memo = {} as FeaturesPerRef
+  for (const x of regions) {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName]!.push(x)
+  }
+
+  return Object.values(memo).flatMap(group =>
+    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+  )
+}
+
+export function stripAlpha(str: string) {
+  const c = colord(str)
+  return c.alpha(1).toHex()
+}
+
+export function getStrokeProps(str: string) {
+  const c = colord(str)
+  return {
+    strokeOpacity: c.alpha(),
+    stroke: c.alpha(1).toHex(),
+  }
+}
+
+export function getFillProps(str: string) {
+  const c = colord(str)
+  return {
+    fillOpacity: c.alpha(),
+    fill: c.alpha(1).toHex(),
+  }
+}
+
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+export function renderToStaticMarkup(
+  node: React.ReactElement,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
+) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    if (createRootFn) {
+      createRootFn(div).render(node)
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      render(node, div)
+    }
+  })
+  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
+}
+
+export function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
+}
+
+export {
+  default as SimpleFeature,
+  type Feature,
+  type SimpleFeatureSerialized,
+  isFeature,
+} from './simpleFeature'
+
+export { blobToDataURL } from './blobToDataURL'

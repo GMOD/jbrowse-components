@@ -7,27 +7,23 @@ import LinearComparativeDisplayF from './LinearComparativeDisplay'
 import LinearComparativeViewF from './LinearComparativeView'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay'
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay'
-import LinearSyntenyRendererF from './LinearSyntenyRenderer'
 import LinearSyntenyViewF from './LinearSyntenyView'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import SyntenyTrackF from './SyntenyTrack'
-import SyntenyFeatureWidgetF from './SyntenyFeatureDetail'
-import LinearReadVsRefMenuItem from './LinearReadVsRef'
+import LinearReadVsRefMenuItemF from './LinearReadVsRef'
 
-export default class extends Plugin {
+export default class LinearComparativeViewPlugin extends Plugin {
   name = 'LinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
     LinearComparativeViewF(pluginManager)
     LinearSyntenyViewF(pluginManager)
-    LinearSyntenyRendererF(pluginManager)
     LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
-    SyntenyFeatureWidgetF(pluginManager)
-    LinearReadVsRefMenuItem(pluginManager)
+    LinearReadVsRefMenuItemF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

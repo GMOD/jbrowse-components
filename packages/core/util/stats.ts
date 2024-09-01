@@ -1,11 +1,11 @@
-import { Observable } from 'rxjs'
+import { firstValueFrom, Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 
 // locals
 import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
-export interface UnrectifiedFeatureStats {
+export interface UnrectifiedQuantitativeStats {
   scoreMin: number
   scoreMax: number
   scoreSum: number
@@ -13,7 +13,7 @@ export interface UnrectifiedFeatureStats {
   featureCount: number
   basesCovered: number
 }
-export interface FeatureStats extends UnrectifiedFeatureStats {
+export interface QuantitativeStats extends UnrectifiedQuantitativeStats {
   featureDensity: number
   scoreMean: number
   scoreStdDev: number
@@ -38,7 +38,7 @@ export function calcStdFromSums(
   if (n === 0) {
     return 0
   }
-  let variance
+  let variance: number
   if (population) {
     variance = sumSquares / n - (sum * sum) / (n * n)
   } else {
@@ -58,7 +58,7 @@ export function calcStdFromSums(
  * @returns - a summary stats object with
  * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats) {
+export function rectifyStats(s: UnrectifiedQuantitativeStats) {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
@@ -68,7 +68,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
       s.featureCount || s.basesCovered,
     ),
     featureDensity: (s.featureCount || 1) / s.basesCovered,
-  } as FeatureStats
+  } as QuantitativeStats
 }
 
 /**
@@ -90,7 +90,10 @@ export function calcPerBaseStats(
   let i = 0
 
   while (pos < end) {
-    while (currentFeat < feats.length && pos >= feats[currentFeat].get('end')) {
+    while (
+      currentFeat < feats.length &&
+      pos >= feats[currentFeat]!.get('end')
+    ) {
       currentFeat += 1
     }
     const f = feats[currentFeat]
@@ -129,8 +132,8 @@ export async function scoresToStats(
   let found = false
 
   const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
-    await feats
-      .pipe(
+    await firstValueFrom(
+      feats.pipe(
         reduce((acc, f) => {
           const s = f.get('score')
           const summary = f.get('summary')
@@ -144,9 +147,9 @@ export async function scoresToStats(
 
           return acc
         }, seed),
-      )
-      .toPromise()
-
+      ),
+    )
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return found
     ? rectifyStats({
         scoreMax,
@@ -170,5 +173,5 @@ export function blankStats() {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-  } as FeatureStats
+  } as QuantitativeStats
 }

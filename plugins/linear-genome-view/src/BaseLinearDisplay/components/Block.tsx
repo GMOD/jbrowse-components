@@ -20,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
   },
   interRegionPaddingBlock: {
     minHeight: '100%',
-    backgroundColor: theme.palette.text.primary,
+    backgroundColor: theme.palette.text.disabled,
   },
   boundaryPaddingBlock: {
     minHeight: '100%',

@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react'
-import normalizeWheel from 'normalize-wheel'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -53,7 +52,7 @@ export function useSideScroll(model: LGV) {
       }
     }
     return cleanup
-  }, [model, mouseDragging, prevX])
+  }, [model, mouseDragging])
 
   function mouseDown(event: React.MouseEvent) {
     if (event.shiftKey) {
@@ -148,7 +147,7 @@ export function useRangeSelect(
       }
     }
     return () => {}
-  }, [startX, mouseDragging, anchorPosition, model, ref])
+  }, [startX, mouseDragging, model, ref])
 
   useEffect(() => {
     if (
@@ -196,7 +195,7 @@ export function useRangeSelect(
     setCurrentX(undefined)
   }
 
-  function handleMenuItemClick(_: unknown, callback: Function) {
+  function handleMenuItemClick(_: unknown, callback: () => void) {
     callback()
     handleClose()
   }
@@ -211,35 +210,39 @@ export function useRangeSelect(
       mouseOut,
       handleMenuItemClick,
     }
-  } else {
-    const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
-    const left = right < startX ? right : startX
-    const width = Math.abs(right - startX)
-    const leftBpOffset = model.pxToBp(left)
-    const rightBpOffset = model.pxToBp(left + width)
-    const numOfBpSelected = Math.ceil(width * model.bpPerPx)
+  }
+  const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
+  const left = right < startX ? right : startX
+  const width = Math.abs(right - startX)
+  const leftBpOffset = model.pxToBp(left)
+  const rightBpOffset = model.pxToBp(left + width)
+  const numOfBpSelected = Math.ceil(width * model.bpPerPx)
 
-    return {
-      open,
-      rubberbandOn: true,
-      mouseDown,
-      mouseMove,
-      mouseOut,
-      handleClose,
-      handleMenuItemClick,
-      leftBpOffset,
-      rightBpOffset,
-      anchorPosition,
-      numOfBpSelected,
-      width,
-      left,
-    }
+  return {
+    open,
+    rubberbandOn: true,
+    mouseDown,
+    mouseMove,
+    mouseOut,
+    handleClose,
+    handleMenuItemClick,
+    leftBpOffset,
+    rightBpOffset,
+    anchorPosition,
+    numOfBpSelected,
+    width,
+    left,
   }
 }
 
 export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement>,
-  model: LGV,
+  model: {
+    bpPerPx: number
+    zoomTo: (arg: number, arg2?: number) => void
+    setScaleFactor: (arg: number) => void
+    horizontalScroll: (arg: number) => void
+  },
 ) {
   const delta = useRef(0)
   const timeout = useRef<Timer>()
@@ -249,11 +252,10 @@ export function useWheelScroll(
 
     // if ctrl is held down, zoom in with y-scroll
     // else scroll horizontally with x-scroll
-    function onWheel(origEvent: WheelEvent) {
-      const event = normalizeWheel(origEvent)
-      if (origEvent.ctrlKey === true) {
-        origEvent.preventDefault()
-        delta.current += event.pixelY / 500
+    function onWheel(event: WheelEvent) {
+      if (event.ctrlKey) {
+        event.preventDefault()
+        delta.current += event.deltaY / 500
         model.setScaleFactor(
           delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
         )
@@ -266,6 +268,7 @@ export function useWheelScroll(
             delta.current > 0
               ? model.bpPerPx * (1 + delta.current)
               : model.bpPerPx / (1 - delta.current),
+            event.clientX - (curr?.getBoundingClientRect().left || 0),
           )
           delta.current = 0
         }, 300)
@@ -273,10 +276,10 @@ export function useWheelScroll(
         // this is needed to stop the event from triggering "back button
         // action" on MacOSX etc.  but is a heuristic to avoid preventing the
         // inner-track scroll behavior
-        if (Math.abs(event.pixelX) > Math.abs(2 * event.pixelY)) {
-          origEvent.preventDefault()
+        if (Math.abs(event.deltaX) > Math.abs(2 * event.deltaY)) {
+          event.preventDefault()
         }
-        delta.current += event.pixelX
+        delta.current += event.deltaX
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame
           // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/

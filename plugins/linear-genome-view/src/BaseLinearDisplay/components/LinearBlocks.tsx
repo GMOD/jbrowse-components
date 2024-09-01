@@ -2,11 +2,6 @@ import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 import {
@@ -50,18 +45,15 @@ const RenderedBlocks = observer(function ({
   return (
     <>
       {blockDefinitions.map(block => {
-        if (block instanceof ContentBlock) {
+        const key = `${model.id}-${block.key}`
+        if (block.type === 'ContentBlock') {
           const state = blockState.get(block.key)
-
           return (
-            <ContentBlockComponent
-              block={block}
-              key={`${model.id}-${block.key}`}
-            >
-              {state && state.ReactComponent ? (
+            <ContentBlockComponent block={block} key={key}>
+              {state?.ReactComponent ? (
                 <state.ReactComponent model={state} />
               ) : null}
-              {state && state.maxHeightReached ? (
+              {state?.maxHeightReached ? (
                 <div
                   className={classes.heightOverflowed}
                   style={{
@@ -76,30 +68,32 @@ const RenderedBlocks = observer(function ({
             </ContentBlockComponent>
           )
         }
-        if (block instanceof ElidedBlock) {
-          return (
-            <ElidedBlockComponent
-              key={`${model.id}-${block.key}`}
-              width={block.widthPx}
-            />
-          )
+        if (block.type === 'ElidedBlock') {
+          return <ElidedBlockComponent key={key} width={block.widthPx} />
         }
-        if (block instanceof InterRegionPaddingBlock) {
+        if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
-              key={block.key}
+              key={key}
               width={block.widthPx}
               style={{ background: 'none' }}
               boundary={block.variant === 'boundary'}
             />
           )
         }
-        throw new Error(`invalid block type ${typeof block}`)
+        throw new Error(`invalid block type ${JSON.stringify(block)}`)
       })}
     </>
   )
 })
-function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
+
+export { RenderedBlocks }
+
+const LinearBlocks = observer(function ({
+  model,
+}: {
+  model: BaseLinearDisplayModel
+}) {
   const { classes } = useStyles()
   const { blockDefinitions } = model
   const viewModel = getContainingView(model) as LGV
@@ -113,7 +107,6 @@ function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
       <RenderedBlocks model={model} />
     </div>
   )
-}
+})
 
-export { RenderedBlocks, useStyles }
-export default observer(LinearBlocks)
+export default LinearBlocks

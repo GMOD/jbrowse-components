@@ -1,6 +1,5 @@
-import { addDisposer, types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
-import clone from 'clone'
-import { autorun } from 'mobx'
+import { types, cast, getEnv, getSnapshot, isAlive } from 'mobx-state-tree'
+import { observable } from 'mobx'
 
 // jbrowse
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -13,10 +12,13 @@ import {
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { getContainingView } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // locals
 import Tooltip from '../components/Tooltip'
-import { FilterModel, getUniqueModificationValues } from '../../shared'
+import { FilterModel, IFilter, getUniqueModificationValues } from '../../shared'
+import { createAutorun, modificationColors } from '../../util'
+import { randomColor } from '../../util'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -25,7 +27,8 @@ type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearSNPCoverageDisplay
- * extends `LinearWiggleDisplay`
+ * extends
+ * - [LinearWiggleDisplay](../linearwiggledisplay)
  */
 function stateModelFactory(
   pluginManager: PluginManager,
@@ -65,10 +68,15 @@ function stateModelFactory(
             tag: types.maybe(types.string),
           }),
         ),
+        /**
+         * #property
+         */
+        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
-      modificationTagMap: undefined as Record<string, string> | undefined,
+      modificationTagMap: observable.map<string, string>({}),
+      modificationsReady: false,
     }))
     .actions(self => ({
       /**
@@ -80,12 +88,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      setFilterBy(filter: {
-        flagInclude: number
-        flagExclude: number
-        readName?: string
-        tagFilter?: { tag: string; value: string }
-      }) {
+      setFilterBy(filter: IFilter) {
         self.filterBy = cast(filter)
       },
       /**
@@ -94,22 +97,25 @@ function stateModelFactory(
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
       },
+      /**
+       * #action
+       */
+      setJexlFilters(filters: string[]) {
+        self.jexlFilters = cast(filters)
+      },
 
       /**
        * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
-        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
-        let i = 0
-
-        const newMap = clone(self.modificationTagMap) || {}
         uniqueModifications.forEach(value => {
-          if (!newMap[value]) {
-            const newColor = colorPalette[i++]
-            newMap[value] = newColor
+          if (!self.modificationTagMap.has(value)) {
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(),
+            )
           }
         })
-        self.modificationTagMap = newMap
       },
     }))
     .views(self => {
@@ -163,10 +169,23 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get modificationsReady() {
-          return self.colorBy?.type === 'modifications'
-            ? self.modificationTagMap !== undefined
-            : true
+        get autorunReady() {
+          const view = getContainingView(self) as LGV
+          return (
+            view.initialized &&
+            self.featureDensityStatsReady &&
+            !self.regionTooLarge &&
+            !self.error
+          )
+        },
+
+        get renderReady() {
+          const superProps = superRenderProps()
+          return !superProps.notReady && self.modificationsReady
+        },
+
+        get ready() {
+          return this.renderReady
         },
 
         /**
@@ -177,18 +196,25 @@ function stateModelFactory(
           const { colorBy, filterBy, modificationTagMap } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !this.modificationsReady,
-            modificationTagMap: modificationTagMap,
+            notReady: !this.ready,
+            filters: self.filters,
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
 
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: filterBy ? getSnapshot(filterBy) : undefined,
+            filterBy: getSnapshot(filterBy),
           }
         },
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       */
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
+      },
       /**
        * #action
        */
@@ -207,41 +233,35 @@ function stateModelFactory(
       toggleDrawArcs() {
         self.drawArcs = !self.drawArcsSetting
       },
+    }))
+    .actions(self => ({
       afterAttach() {
-        addDisposer(
+        createAutorun(
           self,
-          autorun(
-            async () => {
-              try {
-                const { colorBy } = self
-                const view = getContainingView(self) as LGV
-
-                if (
-                  !view.initialized ||
-                  !self.estimatedStatsReady ||
-                  self.regionTooLarge
-                ) {
-                  return
-                }
-                const { staticBlocks } = view
-                if (colorBy?.type === 'modifications') {
-                  const adapter = getConf(self.parentTrack, 'adapter')
-                  self.updateModificationColorMap(
-                    await getUniqueModificationValues(
-                      self,
-                      adapter,
-                      colorBy,
-                      staticBlocks,
-                    ),
-                  )
-                }
-              } catch (error) {
-                console.error(error)
-                self.setError(error)
+          async () => {
+            self.setModificationsReady(false)
+            if (!self.autorunReady) {
+              return
+            }
+            const view = getContainingView(self) as LGV
+            const { staticBlocks } = view
+            const { colorBy } = self
+            if (colorBy?.type === 'modifications') {
+              const adapter = getConf(self.parentTrack, 'adapter')
+              const vals = await getUniqueModificationValues({
+                self,
+                adapterConfig: adapter,
+                blocks: staticBlocks,
+              })
+              if (isAlive(self)) {
+                self.updateModificationColorMap(vals)
+                self.setModificationsReady(true)
               }
-            },
-            { delay: 1000 },
-          ),
+            } else {
+              self.setModificationsReady(true)
+            }
+          },
+          { delay: 1000 },
         )
       },
     }))
@@ -298,21 +318,34 @@ function stateModelFactory(
               label: 'Draw insertion/clipping indicators',
               type: 'checkbox',
               checked: self.drawIndicatorsSetting,
-              onClick: () => self.toggleDrawIndicators(),
+              onClick: () => {
+                self.toggleDrawIndicators()
+              },
             },
             {
               label: 'Draw insertion/clipping counts',
               type: 'checkbox',
               checked: self.drawInterbaseCountsSetting,
-              onClick: () => self.toggleDrawInterbaseCounts(),
+              onClick: () => {
+                self.toggleDrawInterbaseCounts()
+              },
             },
             {
               label: 'Draw arcs',
               type: 'checkbox',
               checked: self.drawArcsSetting,
-              onClick: () => self.toggleDrawArcs(),
+              onClick: () => {
+                self.toggleDrawArcs()
+              },
             },
           ]
+        },
+
+        /**
+         * #getter
+         */
+        get filters() {
+          return new SerializableFilterChain({ filters: self.jexlFilters })
         },
       }
     })

@@ -1,3 +1,9 @@
+import {
+  AssemblyManager,
+  ParsedLocString,
+  parseLocString,
+} from '@jbrowse/core/util'
+
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
  * gridlines, return an object like `{ majorPitch: bp, minorPitch: bp }` giving
@@ -10,8 +16,8 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
+  const majorMagnitude = Number.parseInt(
+    Number(minMajorPitchBp).toExponential().split(/e/i)[1]!,
     10,
   )
 
@@ -51,9 +57,6 @@ export function makeTicks(
 
   let minBase = start
   let maxBase = end
-  if (minBase === null || maxBase === null) {
-    return []
-  }
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
@@ -68,8 +71,8 @@ export function makeTicks(
   let index = 0
   const ticks = []
   for (
-    let base = Math.ceil(minBase / iterPitch) * iterPitch;
-    base < maxBase;
+    let base = Math.floor(minBase / iterPitch) * iterPitch;
+    base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
     base += iterPitch
   ) {
     if (emitMinor && base % (gridPitch.majorPitch * 2)) {
@@ -81,4 +84,95 @@ export function makeTicks(
     }
   }
   return ticks
+}
+
+/**
+ * Generate location objects for a set of parsed locstrings, which includes
+ * translating the refNames to assembly-canonical refNames and adding the
+ * 'parentRegion'
+ *
+ * Used by navToLocations and navToLocString
+ */
+export async function generateLocations(
+  regions: ParsedLocString[],
+  assemblyManager: AssemblyManager,
+  assemblyName?: string,
+) {
+  return Promise.all(
+    regions.map(async region => {
+      const asmName = region.assemblyName || assemblyName
+      if (!asmName) {
+        throw new Error('no assembly provided')
+      }
+      const asm = await assemblyManager.waitForAssembly(asmName)
+      const { refName } = region
+      if (!asm) {
+        throw new Error(`assembly ${asmName} not found`)
+      }
+      const { regions } = asm
+      if (!regions) {
+        throw new Error(`regions not loaded yet for ${asmName}`)
+      }
+      const canonicalRefName = asm.getCanonicalRefName(region.refName)
+      if (!canonicalRefName) {
+        throw new Error(`Could not find refName ${refName} in ${asm.name}`)
+      }
+      const parentRegion = regions.find(r => r.refName === canonicalRefName)
+      if (!parentRegion) {
+        throw new Error(`Could not find refName ${refName} in ${asmName}`)
+      }
+
+      return {
+        ...(region as Omit<typeof region, symbol>),
+        assemblyName: asmName,
+        parentRegion,
+      }
+    }),
+  )
+}
+
+/**
+ * Parses locString or space separated set of locStrings into location objects
+ * Example inputs:
+ * "chr1"
+ * "chr1:1-100"
+ * "chr1:1..100"
+ * "chr1 chr2"
+ * "chr1:1-100 chr2:1-100"
+ * "chr1 100 200" equivalent to "chr1:1-100"
+ *
+ * Used by navToLocString
+ */
+export function parseLocStrings(
+  input: string,
+  assemblyName: string,
+  isValidRefName: (str: string, assemblyName: string) => boolean,
+) {
+  const inputs = input
+    .split(/(\s+)/)
+    .map(f => f.trim())
+    .filter(f => !!f)
+  // first try interpreting as a whitespace-separated sequence of
+  // multiple locstrings
+  try {
+    return inputs.map(loc =>
+      parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
+    )
+  } catch (e) {
+    // if this fails, try interpreting as a whitespace-separated refname,
+    // start, end if start and end are integer inputs
+    const [refName, start, end] = inputs
+    if (
+      /Unknown reference sequence/.exec(`${e}`) &&
+      Number.isInteger(+start!) &&
+      Number.isInteger(+end!)
+    ) {
+      return [
+        parseLocString(`${refName}:${start}..${end}`, ref =>
+          isValidRefName(ref, assemblyName),
+        ),
+      ]
+    }
+    throw e
+  }
 }

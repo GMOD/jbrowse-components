@@ -1,0 +1,891 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders with the available plugins 1`] = `
+<div>
+  <div>
+    <div
+      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth  MuiTextField-root  css-1naooin-MuiFormControl-root-MuiTextField-root"
+    >
+      <label
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard  MuiFormLabel-colorPrimary  MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard  css-x4cvn-MuiFormLabel-root-MuiInputLabel-root"
+        data-shrink="false"
+        for=":r0:"
+        id=":r0:-label"
+      >
+        Filter plugins
+      </label>
+      <div
+        class="MuiInputBase-root MuiInput-root MuiInput-underline  MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd  css-a9grhw-MuiInputBase-root-MuiInput-root"
+      >
+        <input
+          aria-invalid="false"
+          class="MuiInputBase-input MuiInput-input  MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd  css-15stavw-MuiInputBase-input-MuiInput-input"
+          id=":r0:"
+          type="text"
+          value=""
+        />
+        <div
+          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall  css-1i2hsuj-MuiInputAdornment-root"
+        >
+          <button
+            class="MuiButtonBase-root  MuiIconButton-root MuiIconButton-sizeSmall  css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-l9ansn-MuiSvgIcon-root"
+              data-testid="ClearIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1  MuiAccordion-root MuiAccordion-rounded Mui-expanded  css-fgq1ej-MuiPaper-root-MuiAccordion-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <h3
+        class="MuiAccordion-heading  css-rolk5j-MuiAccordion-heading"
+      >
+        <div
+          aria-expanded="true"
+          class="MuiButtonBase-root  MuiAccordionSummary-root Mui-expanded  css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
+          role="button"
+          tabindex="0"
+        >
+          <div
+            class="MuiAccordionSummary-content Mui-expanded  css-1rhnrrr-MuiAccordionSummary-content"
+          >
+            <h5
+              class="MuiTypography-root MuiTypography-h5  css-1gtmb52-MuiTypography-root"
+            >
+              Installed plugins
+            </h5>
+          </div>
+          <div
+            class="MuiAccordionSummary-expandIconWrapper Mui-expanded  css-yw020d-MuiAccordionSummary-expandIconWrapper"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-tjf6a2-MuiSvgIcon-root-expandIcon"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </div>
+        </div>
+      </h3>
+      <div
+        class="MuiCollapse-root MuiCollapse-vertical  MuiCollapse-entered  css-wz2cs5-MuiCollapse-root"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper MuiCollapse-vertical  css-smkl36-MuiCollapse-wrapper"
+        >
+          <div
+            class="MuiCollapse-wrapperInner MuiCollapse-vertical  css-9l5vo-MuiCollapse-wrapperInner"
+          >
+            <div
+              class="MuiAccordion-region "
+              role="region"
+            >
+              <div
+                style="margin: 1em;"
+              >
+                <ul
+                  class="MuiList-root MuiList-padding  css-1u169s7-MuiList-root"
+                >
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      SVGPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      LinearGenomeViewPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      AlignmentsPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      AuthenticationPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      BedPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      CircularViewPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      ConfigurationPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      DataManagementPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      DotplotPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      GTFPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      GFF3Plugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      JobsManagementPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      LegacyJBrowsePlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      LinearComparativeViewPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      LollipopPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      MenusPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      RdfPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      SequencePlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      VariantsPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      WigglePlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      GCContentPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      SpreadsheetViewPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      SvInspectorViewPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      BreakpointSplitViewPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      HicPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      TrixPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      GridBookmarkPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      ComparativeAdaptersPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding  css-8d0qgc-MuiListItem-root"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-18ivugs-MuiSvgIcon-root-lockedPluginTooltip"
+                      data-mui-internal-clone-element="true"
+                      data-testid="LockIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      ArcRenderer
+                    </p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1  MuiAccordion-root MuiAccordion-rounded Mui-expanded  css-fgq1ej-MuiPaper-root-MuiAccordion-root"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    >
+      <h3
+        class="MuiAccordion-heading  css-rolk5j-MuiAccordion-heading"
+      >
+        <div
+          aria-expanded="true"
+          class="MuiButtonBase-root  MuiAccordionSummary-root Mui-expanded  css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
+          role="button"
+          tabindex="0"
+        >
+          <div
+            class="MuiAccordionSummary-content Mui-expanded  css-1rhnrrr-MuiAccordionSummary-content"
+          >
+            <h5
+              class="MuiTypography-root MuiTypography-h5  css-1gtmb52-MuiTypography-root"
+            >
+              Available plugins
+            </h5>
+          </div>
+          <div
+            class="MuiAccordionSummary-expandIconWrapper Mui-expanded  css-yw020d-MuiAccordionSummary-expandIconWrapper"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-tjf6a2-MuiSvgIcon-root-expandIcon"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </div>
+        </div>
+      </h3>
+      <div
+        class="MuiCollapse-root MuiCollapse-vertical  MuiCollapse-entered  css-wz2cs5-MuiCollapse-root"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper MuiCollapse-vertical  css-smkl36-MuiCollapse-wrapper"
+        >
+          <div
+            class="MuiCollapse-wrapperInner MuiCollapse-vertical  css-9l5vo-MuiCollapse-wrapperInner"
+          >
+            <div
+              class="MuiAccordion-region "
+              role="region"
+            >
+              <div
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded  MuiCard-root  css-80w12y-MuiPaper-root-MuiCard-root-card"
+              >
+                <div
+                  class="MuiCardContent-root  css-46bh2p-MuiCardContent-root"
+                >
+                  <h5
+                    class="MuiTypography-root MuiTypography-h5  css-1gtmb52-MuiTypography-root"
+                  >
+                    <a
+                      class="MuiTypography-root MuiTypography-inherit  MuiLink-root MuiLink-underlineAlways  css-1s04bn-MuiTypography-root-MuiLink-root"
+                      href="https://github.com/GMOD/jbrowse-plugin-msaview#readme"
+                      rel="noopener"
+                      target="_blank"
+                    >
+                      MsaView
+                    </a>
+                  </h5>
+                  <div
+                    class="css-1jqggfz-dataField"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-l9ansn-MuiSvgIcon-root"
+                      data-testid="PersonIcon"
+                      focusable="false"
+                      style="margin-right: 0.5em;"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4m0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4"
+                      />
+                    </svg>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                    >
+                      Colin Diesh
+                    </p>
+                  </div>
+                  <p
+                    class="MuiTypography-root MuiTypography-body1  css-smf2et-MuiTypography-root-bold"
+                  >
+                    Description:
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                  >
+                    multiple sequence alignment browser plugin for JBrowse 2
+                  </p>
+                </div>
+                <div
+                  class="MuiCardActions-root MuiCardActions-spacing  css-xm0xqa-MuiCardActions-root"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary   MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary  css-qy5lo8-MuiButtonBase-root-MuiButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall  css-h0vgxp-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-l9ansn-MuiSvgIcon-root"
+                        data-testid="AddIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                        />
+                      </svg>
+                    </span>
+                    Install
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

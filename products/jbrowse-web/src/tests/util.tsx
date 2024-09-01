@@ -1,71 +1,59 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { render } from '@testing-library/react'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
-
-// eslint-disable-next-line import/no-extraneous-dependencies
 import rangeParser from 'range-parser'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
-
-import JBrowseWithoutQueryParamProvider from '../JBrowse'
-import JBrowseRootModelFactory from '../rootModel'
-import configSnapshot from '../../test_data/volvox/config.json'
-import corePlugins from '../corePlugins'
-
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { Image, createCanvas } from 'canvas'
 
+// jbrowse
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+import { AbstractSessionModel } from '@jbrowse/core/util'
+
+// locals
+import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
+import configSnapshot from '../../test_data/volvox/config.json'
+import corePlugins from '../corePlugins'
+import sessionModelFactory from '../sessionModel'
 
 type LGV = LinearGenomeViewModel
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getPluginManager(initialState?: any, adminMode = true) {
+export function getPluginManager(
+  initialState?: Record<string, unknown>,
+  adminMode = true,
+) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
-  const rootModel = JBrowseRootModel.create(
+  const rootModel = JBrowseRootModelFactory({
+    pluginManager,
+    sessionModelFactory,
+    adminMode,
+  }).create(
     {
       jbrowse: initialState || configSnapshot,
-      assemblyManager: {},
     },
     { pluginManager },
   )
-  // @ts-ignore
-  if (rootModel && rootModel.jbrowse.defaultSession.length) {
-    const { name } = rootModel.jbrowse.defaultSession
-    localStorage.setItem(
-      `localSaved-1`,
-      JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
-    )
-    rootModel.activateSession(name)
-  } else {
-    rootModel.setDefaultSession()
-  }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  rootModel.session!.views.map(view => view.setWidth(800))
+  rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
-
   pluginManager.configure()
-  return pluginManager
+  return { pluginManager, rootModel }
 }
 
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
@@ -79,12 +67,12 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
         if (range === -2 || range === -1) {
           throw new Error(`Error parsing range "${r}"`)
         }
-        const { start, end } = range[0]
+        const { start, end } = range[0]!
         const len = end - start + 1
         const buf = Buffer.alloc(len)
         const { bytesRead } = await file.read(buf, 0, len, start)
         const stat = await file.stat()
-        return new Response(buf.slice(0, bytesRead), {
+        return new Response(buf.subarray(0, bytesRead), {
           status: 206,
           headers: [['content-range', `${start}-${end}/${stat.size}`]],
         })
@@ -99,21 +87,8 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
 }
 
 export function setup() {
-  window.requestIdleCallback = (cb: Function) => cb()
-  window.cancelIdleCallback = () => {}
-  window.requestAnimationFrame = (cb: Function) => setTimeout(cb)
-  window.cancelAnimationFrame = () => {}
-
-  Storage.prototype.getItem = jest.fn(() => null)
-  Storage.prototype.setItem = jest.fn()
-  Storage.prototype.removeItem = jest.fn()
-  Storage.prototype.clear = jest.fn()
-
   expect.extend({ toMatchImageSnapshot })
 }
-
-// eslint-disable-next-line no-global-assign
-window = Object.assign(window, { innerWidth: 800 })
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   return Buffer.from(
@@ -132,7 +107,6 @@ export function expectCanvasMatch(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function JBrowse(props: any) {
   return (
     <QueryParamProvider adapter={WindowHistoryAdapter}>
@@ -141,19 +115,28 @@ export function JBrowse(props: any) {
   )
 }
 
-export const hts = (str: string) => 'htsTrackEntry-' + str
+export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
+export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createView(args?: any, adminMode?: boolean) {
-  const pluginManager = getPluginManager(args, adminMode)
+export async function createView(args?: any, adminMode?: boolean) {
+  const ret = createViewNoWait(args, adminMode)
+  const { view } = ret
+  if ('initialized' in view) {
+    await waitFor(
+      () => {
+        expect(view.initialized).toBe(true)
+      },
+      { timeout: 30000 },
+    )
+  }
+  return ret
+}
+
+export function createViewNoWait(args?: any, adminMode?: boolean) {
+  const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const rootModel = pluginManager.rootModel!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const session = rootModel.session!
-
+  const session = rootModel.session! as AbstractSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }
@@ -164,26 +147,33 @@ export function doBeforeEach(
   clearCache()
   clearAdapterCache()
 
-  // @ts-ignore
+  // @ts-expect-error
   fetch.resetMocks()
-  // @ts-ignore
+  // @ts-expect-error
   fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
 
 export async function doSetupForImportForm(val?: unknown) {
-  const args = createView(val)
+  const args = await createView(val)
   const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
     args
 
   // clear view takes us to the import form
   view.clearView()
 
-  const autocomplete = await findByTestId('autocomplete')
+  const autocomplete = await findByTestId(
+    'autocomplete',
+    {},
+    { timeout: 10000 },
+  )
   const input = (await findByPlaceholderText(
     'Search for location',
+    {},
+    { timeout: 10000 },
   )) as HTMLInputElement
 
-  // this will be the input that is obtained after opening the LGV from the import form
+  // this will be the input that is obtained after opening the LGV from the
+  // import form
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
 
@@ -196,4 +186,29 @@ export async function doSetupForImportForm(val?: unknown) {
     getInputValue,
     ...args,
   }
+}
+
+export async function mockConsole(fn: () => Promise<void>) {
+  const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+  await fn()
+  consoleMock.mockRestore()
+}
+
+export async function mockConsoleWarn(fn: () => Promise<void>) {
+  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
+  await fn()
+  consoleMock.mockRestore()
+}
+
+export function mockFile404(
+  str: string,
+  readBuffer: (request: Request) => Promise<Response>,
+) {
+  // @ts-expect-error
+  fetch.mockResponse(async request => {
+    if (request.url === str) {
+      return { status: 404 }
+    }
+    return readBuffer(request)
+  })
 }

@@ -1,17 +1,21 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
 
-`BaseLinearDisplay` is a "base" config that is extended by classes like
-`LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
-(more stripped down than even the basic display, not commonly used)
+[plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts)
+
+`BaseLinearDisplay` is a "base" config that is extended by other configs
+including
+
+- `LinearBasicDisplay` (used for feature tracks, etc)
+- `LinearBareDisplay` (more stripped down than even the basic display, not
+  commonly used)
 
 ### BaseLinearDisplay - Identifier
 
@@ -38,5 +42,41 @@ fetchSizeLimit: {
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+    }
+```
+
+#### slot: height
+
+```js
+height: {
+      type: 'number',
+      defaultValue: 100,
+      description: 'default height for the track',
+    }
+```
+
+#### slot: mouseover
+
+```js
+mouseover: {
+      type: 'string',
+      description: 'text to display when the cursor hovers over a feature',
+      defaultValue: `jexl:get(feature,'name')`,
+
+      contextVariable: ['feature'],
+    }
+```
+
+#### slot: jexlFilters
+
+config jexlFilters are deferred evaluated so they are prepended with jexl at
+runtime rather than being stored with jexl in the config
+
+```js
+jexlFilters: {
+      type: 'stringArray',
+      description:
+        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
+      defaultValue: [],
     }
 ```

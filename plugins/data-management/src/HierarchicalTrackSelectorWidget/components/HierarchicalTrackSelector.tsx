@@ -1,127 +1,13 @@
-import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react'
-import { Fab, Menu, MenuItem } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import {
-  getSession,
-  isSessionModelWithWidgets,
-  isSessionModelWithConnections,
-  isSessionWithAddTracks,
-} from '@jbrowse/core/util'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { VariableSizeTree } from 'react-vtree'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
-// icons
-import AddIcon from '@mui/icons-material/Add'
-
 // locals
-import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
-import Header from './Header'
-import Node from './Node'
-
-const useStyles = makeStyles()(theme => ({
-  fab: {
-    position: 'absolute',
-    bottom: theme.spacing(6),
-    right: theme.spacing(6),
-  },
-}))
-
-function getNodeData(
-  node: TreeNode,
-  nestingLevel: number,
-  extra: Record<string, unknown>,
-  selection: Record<string, unknown>,
-) {
-  const isLeaf = !!node.conf
-  const selected = !!selection[node.id]
-  return {
-    data: {
-      defaultHeight: isLeaf ? 22 : 40,
-      isLeaf,
-      isOpenByDefault: true,
-      nestingLevel,
-      selected,
-      ...node,
-      ...extra,
-    },
-    nestingLevel,
-    node,
-  }
-}
-
-type NodeData = ReturnType<typeof getNodeData>
-
-// this is the main tree component for the hierarchical track selector in note:
-// in jbrowse-web the toolbar is position="sticky" which means the autosizer
-// includes the height of the toolbar, so we subtract the given offsets
-const HierarchicalTree = observer(
-  ({
-    height,
-    tree,
-    model,
-  }: {
-    height: number
-    tree: TreeNode
-    model: HierarchicalTrackSelectorModel
-  }) => {
-    const { filterText, selection, view } = model
-    const treeRef = useRef<NodeData>(null)
-    const session = getSession(model)
-    const { drawerPosition } = session
-    const obj = useMemo(
-      () => Object.fromEntries(selection.map(s => [s.trackId, s])),
-      [selection],
-    )
-
-    const extra = useMemo(
-      () => ({
-        onChange: (trackId: string) => view.toggleTrack(trackId),
-        toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
-        tree,
-        model,
-        drawerPosition,
-      }),
-      [view, model, drawerPosition, tree],
-    )
-    const treeWalker = useCallback(
-      function* treeWalker() {
-        for (let i = 0; i < tree.children.length; i++) {
-          const r = tree.children[i]
-          yield getNodeData(r, 0, extra, obj)
-        }
-
-        while (true) {
-          // @ts-ignore
-          const parentMeta = yield
-
-          for (let i = 0; i < parentMeta.node.children.length; i++) {
-            const curr = parentMeta.node.children[i]
-            yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
-          }
-        }
-      },
-      [tree, extra, obj],
-    )
-
-    useEffect(() => {
-      // @ts-ignore
-      treeRef.current.recomputeTree({
-        refreshNodes: true,
-        useDefaultHeight: true,
-      })
-    }, [tree, filterText])
-    return (
-      <>
-        {/* @ts-ignore */}
-        <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
-          {/* @ts-ignore */}
-          {Node}
-        </VariableSizeTree>
-      </>
-    )
-  },
-)
+import { HierarchicalTrackSelectorModel } from '../model'
+import { TreeNode } from '../generateHierarchy'
+import HierarchicalFab from './HierarchicalFab'
+import HierarchicalTree from './tree/HierarchicalTree'
+import HierarchicalHeader from './tree/HierarchicalHeader'
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests
@@ -136,15 +22,13 @@ const AutoSizedHierarchicalTree = ({
 }) => {
   return typeof jest === 'undefined' ? (
     <AutoSizer disableWidth>
-      {({ height }) => {
-        return (
-          <HierarchicalTree
-            height={height - offset}
-            model={model}
-            tree={tree}
-          />
-        )
-      }}
+      {args => (
+        <HierarchicalTree
+          height={(args.height || offset) - offset}
+          model={model}
+          tree={tree}
+        />
+      )}
     </AutoSizer>
   ) : (
     <HierarchicalTree height={9000} model={model} tree={tree} />
@@ -161,118 +45,44 @@ const Wrapper = ({
   return overrideDimensions ? (
     <div style={{ ...overrideDimensions }}>{children}</div>
   ) : (
-    <>{children}</>
+    children
   )
 }
-const HierarchicalTrackSelectorContainer = observer(
-  ({
-    model,
-    toolbarHeight,
-    overrideDimensions,
-  }: {
-    model: HierarchicalTrackSelectorModel
-    toolbarHeight: number
-    overrideDimensions?: { width: number; height: number }
-  }) => {
-    const { classes } = useStyles()
-    const session = getSession(model)
-    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+const HierarchicalTrackSelectorContainer = observer(function ({
+  model,
+  toolbarHeight,
+  overrideDimensions,
+}: {
+  model: HierarchicalTrackSelectorModel
+  toolbarHeight: number
+  overrideDimensions?: { width: number; height: number }
+}) {
+  return (
+    <Wrapper overrideDimensions={overrideDimensions}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={toolbarHeight} />
+      <HierarchicalFab model={model} />
+    </Wrapper>
+  )
+})
 
-    function handleFabClose() {
-      setAnchorEl(null)
-    }
-    const hasConnections = isSessionModelWithConnections(session)
-    const hasAddTrack = isSessionWithAddTracks(session)
-    return (
-      <Wrapper overrideDimensions={overrideDimensions}>
-        <HierarchicalTrackSelector
-          model={model}
-          toolbarHeight={toolbarHeight}
-        />
-        {hasAddTrack || hasConnections ? (
-          <>
-            <Fab
-              color="secondary"
-              className={classes.fab}
-              onClick={event => setAnchorEl(event.currentTarget)}
-            >
-              <AddIcon />
-            </Fab>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              {hasConnections ? (
-                <MenuItem
-                  onClick={() => {
-                    handleFabClose()
-                    if (isSessionModelWithWidgets(session)) {
-                      session.showWidget(
-                        session.addWidget(
-                          'AddConnectionWidget',
-                          'addConnectionWidget',
-                        ),
-                      )
-                    }
-                  }}
-                >
-                  Add connection
-                </MenuItem>
-              ) : null}
-              {hasAddTrack ? (
-                <MenuItem
-                  onClick={() => {
-                    handleFabClose()
-                    if (isSessionModelWithWidgets(session)) {
-                      session.showWidget(
-                        session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                          view: model.view.id,
-                        }),
-                      )
-                    }
-                  }}
-                >
-                  Add track
-                </MenuItem>
-              ) : null}
-            </Menu>
-          </>
-        ) : null}
-      </Wrapper>
-    )
-  },
-)
-
-const HierarchicalTrackSelector = observer(
-  ({
-    model,
-    toolbarHeight = 0,
-  }: {
-    model: HierarchicalTrackSelectorModel
-    toolbarHeight?: number
-  }) => {
-    const [assemblyIdx, setAssemblyIdx] = useState(0)
-    const [headerHeight, setHeaderHeight] = useState(0)
-
-    const { assemblyNames } = model
-    const assemblyName = assemblyNames.length ? assemblyNames[assemblyIdx] : ''
-    return assemblyName ? (
-      <>
-        <Header
-          model={model}
-          setHeaderHeight={setHeaderHeight}
-          setAssemblyIdx={setAssemblyIdx}
-          assemblyIdx={assemblyIdx}
-        />
-        <AutoSizedHierarchicalTree
-          tree={model.hierarchy(assemblyName)}
-          model={model}
-          offset={toolbarHeight + headerHeight}
-        />
-      </>
-    ) : null
-  },
-)
+const HierarchicalTrackSelector = observer(function ({
+  model,
+  toolbarHeight = 0,
+}: {
+  model: HierarchicalTrackSelectorModel
+  toolbarHeight?: number
+}) {
+  const [headerHeight, setHeaderHeight] = useState(0)
+  return (
+    <>
+      <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
+      <AutoSizedHierarchicalTree
+        tree={model.hierarchy}
+        model={model}
+        offset={toolbarHeight + headerHeight}
+      />
+    </>
+  )
+})
 
 export default HierarchicalTrackSelectorContainer

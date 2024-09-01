@@ -1,13 +1,14 @@
 ---
 id: hicrenderer
 title: HicRenderer
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/hic/src/HicRenderer/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicRenderer/configSchema.ts)
 
 ### HicRenderer - Slots
 
@@ -27,8 +28,8 @@ baseColor: {
 color: {
       type: 'color',
       description: 'the color of each feature in a hic alignment',
-      defaultValue: `jexl:colorString(hsl(alpha(baseColor,min(1,count/(maxScore/20)))))`,
-      contextVariable: ['count', 'maxScore', 'baseColor'],
+      defaultValue: 'jexl:interpolate(count,scale)',
+      contextVariable: ['count', 'maxScore', 'baseColor', 'scale'],
     }
 ```
 

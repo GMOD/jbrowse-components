@@ -1,7 +1,6 @@
 ---
 id: baseconnectionmodel
 title: BaseConnectionModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[packages/core/pluggableElementTypes/models/BaseConnectionModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseConnectionModelFactory.ts)
 
 ### BaseConnectionModel - Properties
 
@@ -31,31 +32,43 @@ IArrayType<IAnyModelType>
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { type: string; defaultValue: any[]; description: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 ### BaseConnectionModel - Actions
+
+#### action: connect
+
+```js
+// type signature
+connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+```
 
 #### action: addTrackConf
 
 ```js
 // type signature
-addTrackConf: (
-  trackConf: { [x: string]: any } & NonEmptyObject & {
-      setSubschema(slotName: string, data: unknown): any,
-    } & IStateTreeNode<AnyConfigurationSchemaType>,
-) => any
+addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```
 
 #### action: addTrackConfs
 
 ```js
 // type signature
-addTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => any[]
+addTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => any[]
 ```
 
 #### action: setTrackConfs
 
 ```js
 // type signature
-setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => IMSTArray<...> & IStateTreeNode<...>
+setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => IMSTArray<...> & IStateTreeNode<...>
 ```
 
 #### action: clear

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   Feature,
   SimpleFeatureSerialized,
@@ -12,7 +11,10 @@ import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  constructor(private record: CramRecord, private _store: CramAdapter) {}
+  constructor(
+    private record: CramRecord,
+    private _store: CramAdapter,
+  ) {}
 
   _get_name() {
     return this.record.readName
@@ -47,8 +49,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _read_group_id() {
-    const rg = this._store.samHeader.readGroups
-    return rg ? rg[this.record.readGroupId] : undefined
+    return this._store.samHeader.readGroups?.[this.record.readGroupId]
   }
 
   _get_qual() {
@@ -131,9 +132,9 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   get(field: string) {
     const methodName = `_get_${field}`
-    // @ts-ignore
+    // @ts-expect-error
     if (this[methodName]) {
-      // @ts-ignore
+      // @ts-expect-error
       return this[methodName]()
     }
     return undefined
@@ -157,9 +158,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     const mismatches = this.get('mismatches')
     if (mismatches.length) {
       const record =
-        this.get('strand') === -1
-          ? mismatches[mismatches.length - 1]
-          : mismatches[0]
+        this.get('strand') === -1 ? mismatches.at(-1) : mismatches[0]
       const { type, cliplen } = record
       if (type === 'softclip' || type === 'hardclip') {
         return cliplen

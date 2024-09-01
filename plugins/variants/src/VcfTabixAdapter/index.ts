@@ -4,7 +4,7 @@ import configSchema from './configSchema'
 
 export { default as configSchema } from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function VcfTabixAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({

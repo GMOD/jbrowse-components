@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 // locals
 import { indexGff3 } from '../types/gff3Adapter'
@@ -53,66 +53,67 @@ export default class TextIndex extends JBrowseCommand {
   ]
 
   static flags = {
-    help: flags.help({ char: 'h' }),
-    tracks: flags.string({
-      description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
+    help: Flags.help({ char: 'h' }),
+    tracks: Flags.string({
+      description:
+        'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'Path to config file in JB2 installation directory to read from.',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'Synonym for target',
     }),
 
-    attributes: flags.string({
+    attributes: Flags.string({
       description: 'Comma separated list of attributes to index',
       default: 'Name,ID',
     }),
-    assemblies: flags.string({
+    assemblies: Flags.string({
       char: 'a',
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       default: false,
       description: 'Overwrite previously existing indexes',
     }),
-    quiet: flags.boolean({
+    quiet: Flags.boolean({
       char: 'q',
       default: false,
       description: 'Hide the progress bars',
     }),
-    perTrack: flags.boolean({
+    perTrack: Flags.boolean({
       default: false,
       description: 'If set, creates an index per track',
     }),
-    exclude: flags.string({
+    exclude: Flags.string({
       description: 'Adds gene type to list of excluded types',
       default: 'CDS,exon',
     }),
-    prefixSize: flags.integer({
+    prefixSize: Flags.integer({
       description:
         'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
     }),
-    file: flags.string({
+    file: Flags.string({
       description:
         'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
       multiple: true,
     }),
-    fileId: flags.string({
+    fileId: Flags.string({
       description:
         'Set the trackId used for the indexes generated with the --file argument',
       multiple: true,
     }),
-    dryrun: flags.boolean({
+    dryrun: Flags.boolean({
       description:
         'Just print out tracks that will be indexed by the process, without doing any indexing',
     }),
   }
 
   async run() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const { perTrack, file } = flags
 
     if (file) {
@@ -126,7 +127,7 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async aggregateIndex() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const {
       out,
       target,
@@ -156,7 +157,7 @@ export default class TextIndex extends JBrowseCommand {
       config.assemblies?.map(a => a.name) ||
       (config.assembly ? [config.assembly.name] : [])
 
-    if (!asms?.length) {
+    if (!asms.length) {
       throw new Error('No assemblies found')
     }
 
@@ -167,17 +168,17 @@ export default class TextIndex extends JBrowseCommand {
         asm,
       )
       if (!trackConfigs.length) {
-        this.log('Indexing assembly ' + asm + '...(no tracks found)...')
+        this.log(`Indexing assembly ${asm}...(no tracks found)...`)
         continue
       }
-      this.log('Indexing assembly ' + asm + '...')
+      this.log(`Indexing assembly ${asm}...`)
 
       if (dryrun) {
         this.log(
-          trackConfigs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'),
+          trackConfigs.map(e => `${e.trackId}\t${e.adapter?.type}`).join('\n'),
         )
       } else {
-        const id = asm + '-index'
+        const id = `${asm}-index`
         const idx = aggregateTextSearchAdapters.findIndex(
           x => x.textSearchAdapterId === id,
         )
@@ -237,7 +238,7 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async perTrackIndex() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const {
       out,
       target,
@@ -268,7 +269,7 @@ export default class TextIndex extends JBrowseCommand {
     const confs = await this.getTrackConfigs(confFilePath, tracks?.split(','))
     if (!confs.length) {
       throw new Error(
-        `Tracks not found in config.json, please add track configurations before indexing.`,
+        'Tracks not found in config.json, please add track configurations before indexing.',
       )
     }
     for (const trackConfig of confs) {
@@ -279,7 +280,7 @@ export default class TextIndex extends JBrowseCommand {
         )
         continue
       }
-      this.log('Indexing track ' + trackId + '...')
+      this.log(`Indexing track ${trackId}...`)
 
       await this.indexDriver({
         trackConfigs: [trackConfig],
@@ -301,7 +302,7 @@ export default class TextIndex extends JBrowseCommand {
               ...textSearching,
               textSearchAdapter: {
                 type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: trackId + '-index',
+                textSearchAdapterId: `${trackId}-index`,
                 ixFilePath: {
                   uri: `trix/${trackId}.ix`,
                   locationType: 'UriLocation' as const,
@@ -327,7 +328,7 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async indexFileList() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const {
       out,
       target,
@@ -338,6 +339,9 @@ export default class TextIndex extends JBrowseCommand {
       exclude,
       prefixSize,
     } = flags
+    if (!file) {
+      throw new Error('Cannot index file list without files')
+    }
     const outFlag = target || out || '.'
     const trixDir = path.join(outFlag, 'trix')
     if (!fs.existsSync(trixDir)) {
@@ -346,18 +350,18 @@ export default class TextIndex extends JBrowseCommand {
 
     const trackConfigs = file
       .map(file => guessAdapterFromFileName(file))
-      .filter(fileConfig => supported(fileConfig.adapter.type))
+      .filter(fileConfig => supported(fileConfig.adapter?.type))
 
     if (fileId?.length) {
       for (let i = 0; i < fileId.length; i++) {
-        trackConfigs[i].trackId = fileId[i]
+        trackConfigs[i]!.trackId = fileId[i]!
       }
     }
 
     await this.indexDriver({
       trackConfigs,
       outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!),
       quiet,
       attributes: attributes.split(','),
       typesToExclude: exclude.split(','),
@@ -399,7 +403,7 @@ export default class TextIndex extends JBrowseCommand {
       }),
     )
 
-    const ixIxxStream = await this.runIxIxx({
+    await this.runIxIxx({
       readStream,
       outLocation,
       name,
@@ -414,7 +418,6 @@ export default class TextIndex extends JBrowseCommand {
       typesToExclude,
       assemblyNames,
     })
-    return ixIxxStream
   }
 
   async *indexFiles({
@@ -432,25 +435,29 @@ export default class TextIndex extends JBrowseCommand {
   }) {
     for (const config of trackConfigs) {
       const { adapter, textSearching } = config
-      const { type } = adapter
+      const { type } = adapter || {}
       const {
         indexingFeatureTypesToExclude = typesToExclude,
         indexingAttributes = attributes,
       } = textSearching || {}
 
-      let loc
+      let loc: UriLocation | LocalPathLocation
       if (type === 'Gff3TabixAdapter') {
+        // @ts-expect-error
         loc = adapter.gffGzLocation
       } else if (type === 'Gff3Adapter') {
+        // @ts-expect-error
         loc = adapter.gffLocation
       } else if (type === 'VcfAdapter') {
+        // @ts-expect-error
         loc = adapter.vcfLocation
       } else if (type === 'VcfTabixAdapter') {
+        // @ts-expect-error
         loc = adapter.vcfGzLocation
-      }
-      if (!loc) {
+      } else {
         return
       }
+
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
           config,
@@ -460,7 +467,10 @@ export default class TextIndex extends JBrowseCommand {
           typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
-      } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
           config,
           attributesToIndex: indexingAttributes,
@@ -473,7 +483,7 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  runIxIxx({
+  async runIxIxx({
     readStream,
     outLocation,
     name,
@@ -484,7 +494,7 @@ export default class TextIndex extends JBrowseCommand {
     name: string
     prefixSize?: number
   }) {
-    return ixIxxStream(
+    await ixIxxStream(
       readStream,
       path.join(outLocation, 'trix', `${name}.ix`),
       path.join(outLocation, 'trix', `${name}.ixx`),
@@ -501,7 +511,7 @@ export default class TextIndex extends JBrowseCommand {
     if (!tracks) {
       return []
     }
-    const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
+    const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
     return trackIdsToIndex
       .map(trackId => {
         const currentTrack = tracks.find(t => trackId === t.trackId)

@@ -30,7 +30,7 @@ function CanvasRendering(props: {
   const {
     onMouseMove,
     blockKey,
-    displayModel,
+    displayModel = {},
     width,
     height,
     regions,
@@ -70,12 +70,7 @@ function CanvasRendering(props: {
     postDraw({
       ctx,
       layoutRecords: layoutRecords.map(rec => {
-        let glyph
-        if (rec.f.type === 'gene') {
-          glyph = new GeneGlyph()
-        } else {
-          glyph = new BoxGlyph()
-        }
+        const glyph = rec.f.type === 'gene' ? new GeneGlyph() : new BoxGlyph()
         return { ...rec, glyph }
       }),
       offsetPx,
@@ -205,10 +200,10 @@ function CanvasRendering(props: {
 
   function callMouseHandler(handlerName: string, event: React.MouseEvent) {
     // @ts-ignore
-    // eslint-disable-next-line react/destructuring-assignment
+
     const featureHandler = props[`onFeature${handlerName}`]
     // @ts-ignore
-    // eslint-disable-next-line react/destructuring-assignment
+
     const canvasHandler = props[`on${handlerName}`]
     if (featureHandler && featureIdUnderMouse) {
       featureHandler(event, featureIdUnderMouse)
@@ -233,15 +228,33 @@ function CanvasRendering(props: {
         height={height + canvasPadding}
         style={{ position: 'absolute', left: 0, top: 0 }}
         ref={highlightOverlayCanvas}
-        onMouseDown={event => onMouseDown(event)}
-        onMouseEnter={event => onMouseEnter(event)}
-        onMouseOut={event => onMouseOut(event)}
-        onMouseOver={event => onMouseOver(event)}
-        onMouseUp={event => onMouseUp(event)}
-        onMouseLeave={event => onMouseLeave(event)}
-        onMouseMove={event => mouseMove(event)}
-        onClick={event => onClick(event)}
-        onContextMenu={event => onContextMenu(event)}
+        onMouseDown={event => {
+          onMouseDown(event)
+        }}
+        onMouseEnter={event => {
+          onMouseEnter(event)
+        }}
+        onMouseOut={event => {
+          onMouseOut(event)
+        }}
+        onMouseOver={event => {
+          onMouseOver(event)
+        }}
+        onMouseUp={event => {
+          onMouseUp(event)
+        }}
+        onMouseLeave={event => {
+          onMouseLeave(event)
+        }}
+        onMouseMove={event => {
+          mouseMove(event)
+        }}
+        onClick={event => {
+          onClick(event)
+        }}
+        onContextMenu={event => {
+          onContextMenu(event)
+        }}
         onFocus={() => {}}
         onBlur={() => {}}
       />

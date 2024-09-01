@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import React from 'react'
 import {
   isStateTreeNode,
@@ -7,27 +8,27 @@ import {
   IStateTreeNode,
   IType,
 } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
-
-import assemblyManager from '../../assemblyManager'
+import { ThemeOptions } from '@mui/material'
+import { AnyConfigurationModel } from '../../configuration'
 import TextSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
-import {
+import RpcManager from '../../rpc/RpcManager'
+import { Feature } from '../simpleFeature'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+// types
+import type assemblyManager from '../../assemblyManager'
+import type {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
 } from './mst'
-import RpcManager from '../../rpc/RpcManager'
-import { Feature } from '../simpleFeature'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
@@ -49,12 +50,12 @@ export function isViewContainer(
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export interface SnackAction {
-  name: string
+  name: React.ReactElement
   onClick: () => void
 }
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
-export type { TextSearchManager }
+
 export interface BasePlugin {
   version?: string
   name: string
@@ -75,23 +76,34 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.LazyExoticComponent<React.FC<any>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.FC<any>
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
+  jbrowse: IAnyStateTreeNode
   drawerPosition?: string
-  setSelection(feature: Feature): void
-  clearSelection(): void
   configuration: AnyConfigurationModel
   rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
   selection?: unknown
-  duplicateCurrentSession?(): void
-  notify(message: string, level?: NotificationLevel, action?: SnackAction): void
+  focusedViewId?: string
+  themeName?: string
+  hovered: unknown
+  setHovered: (arg: unknown) => void
+  setFocusedViewId?: (id: string) => void
+  allThemes?: () => Record<string, ThemeOptions>
+  setSelection: (feature: Feature) => void
+  setSession?: (arg: { name: string; [key: string]: unknown }) => void
+  clearSelection: () => void
+  duplicateCurrentSession?: () => void
+  notify: (
+    message: string,
+    level?: NotificationLevel,
+    action?: SnackAction,
+  ) => void
+  notifyError: (message: string, error?: unknown, extra?: unknown) => void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
@@ -100,19 +112,26 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   textSearchManager?: TextSearchManager
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
+  temporaryAssemblies?: unknown[]
+  addTemporaryAssembly?: (arg: Record<string, unknown>) => void
+  removeTemporaryAssembly?: (arg: string) => void
   sessionConnections?: AnyConfigurationModel[]
+  sessionTracks?: AnyConfigurationModel[]
   connectionInstances?: {
     name: string
-    connectionId: string
     tracks: AnyConfigurationModel[]
+    configuration: AnyConfigurationModel
   }[]
   makeConnection?: Function
+  breakConnection?: Function
+
+  prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
 
   DialogComponent?: DialogComponentType
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   DialogProps: any
   queueDialog<T extends DialogComponentType>(
     callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
@@ -150,9 +169,19 @@ export function isSessionWithAddTracks(
   thing: unknown,
 ): thing is SessionWithConfigEditing {
   return (
-    // @ts-ignore
+    // @ts-expect-error
     isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
   )
+}
+
+/** abstract interface for a session allows adding tracks */
+export interface SessionWithShareURL extends AbstractSessionModel {
+  shareURL: string
+}
+export function isSessionWithShareURL(
+  thing: unknown,
+): thing is SessionWithShareURL {
+  return isSessionModel(thing) && 'shareURL' in thing && !!thing.shareURL
 }
 
 export interface Widget {
@@ -164,8 +193,9 @@ export interface Widget {
 export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
-  widgets: Map<string, Widget>
-  activeWidgets: Map<string, Widget>
+  widgets: Map<string | number, Widget>
+  hideAllWidgets: () => void
+  activeWidgets: Map<string | number, Widget>
   addWidget(
     typeName: string,
     id: string,
@@ -191,14 +221,22 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-
 interface SessionWithConnections {
-  addConnectionConf: (arg: AnyConfigurationModel) => void
+  makeConnection: (arg: AnyConfigurationModel) => void
 }
-
 export function isSessionModelWithConnections(
   thing: unknown,
 ): thing is SessionWithConnections {
+  return isSessionModel(thing) && 'makeConnection' in thing
+}
+
+interface SessionWithConnectionEditing {
+  addConnectionConf: (arg: AnyConfigurationModel) => void
+}
+
+export function isSessionModelWithConnectionEditing(
+  thing: unknown,
+): thing is SessionWithConnectionEditing {
   return isSessionModel(thing) && 'addConnectionConf' in thing
 }
 
@@ -229,6 +267,13 @@ export function isSelectionContainer(
   )
 }
 
+/** abstract interface for a session allows applying focus to views and widgets */
+export interface SessionWithFocusedViewAndDrawerWidgets
+  extends SessionWithDrawerWidgets {
+  focusedViewId: string | undefined
+  setFocusedViewId(id: string): void
+}
+
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
   id: string
@@ -252,6 +297,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 
 export interface AbstractTrackModel {
   displays: AbstractDisplayModel[]
+  configuration: AnyConfigurationModel
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
@@ -259,7 +305,7 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    // @ts-ignore
+    // @ts-expect-error
     thing.configuration.trackId
   )
 }
@@ -268,7 +314,7 @@ export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
   renderDelay: number
-  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  rendererType: any
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
@@ -276,7 +322,7 @@ export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    // @ts-ignore
+    // @ts-expect-error
     thing.configuration.displayId
   )
 }
@@ -305,10 +351,6 @@ export interface AbstractRootModel {
 
 /** root model with more included for the heavier JBrowse web and desktop app */
 export interface AppRootModel extends AbstractRootModel {
-  isAssemblyEditing: boolean
-  isDefaultSessionEditing: boolean
-  setAssemblyEditing: (arg: boolean) => boolean
-  setDefaultSessionEditing: (arg: boolean) => boolean
   internetAccounts: BaseInternetAccountModel[]
   findAppropriateInternetAccount(
     location: UriLocation,
@@ -319,7 +361,6 @@ export function isAppRootModel(thing: unknown): thing is AppRootModel {
   return (
     typeof thing === 'object' &&
     thing !== null &&
-    'isAssemblyEditing' in thing &&
     'findAppropriateInternetAccount' in thing
   )
 }
@@ -368,20 +409,26 @@ export function isAbstractMenuManager(
 
 // Empty interfaces required by mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoAssemblyRegion
   extends SnapshotIn<typeof MUNoAssemblyRegion> {}
 
+/**
+ * a description of a specific genomic region. assemblyName, refName, start,
+ * end, and reversed
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
@@ -392,8 +439,30 @@ export function isUriLocation(location: unknown): location is UriLocation {
     !!location.uri
   )
 }
+export function isLocalPathLocation(
+  location: unknown,
+): location is LocalPathLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'localPath' in location &&
+    !!location.localPath
+  )
+}
+
+export function isBlobLocation(location: unknown): location is BlobLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'blobId' in location &&
+    !!location.blobId
+  )
+}
 export class AuthNeededError extends Error {
-  constructor(public message: string, public url: string) {
+  constructor(
+    public message: string,
+    public url: string,
+  ) {
     super(message)
     this.name = 'AuthNeededError'
 
@@ -402,7 +471,10 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  constructor(public message: string, public internetAccountId: string) {
+  constructor(
+    public message: string,
+    public internetAccountId: string,
+  ) {
     super(message)
     this.name = 'RetryError'
   }
@@ -415,6 +487,7 @@ export function isAuthNeededException(
     exception instanceof Error &&
     // DOMException
     (exception.name === 'AuthNeededError' ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (exception as AuthNeededError).url !== undefined)
   )
 }
@@ -423,10 +496,12 @@ export function isRetryException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'RetryError' ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (exception as RetryError).internetAccountId !== undefined
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
@@ -434,10 +509,18 @@ export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the
 // pre-processed file location
-export type PreUriLocation = { uri: string }
-export type PreLocalPathLocation = { localPath: string }
-export type PreBlobLocation = { blob: File }
+export interface PreUriLocation {
+  uri: string
+}
+export interface PreLocalPathLocation {
+  localPath: string
+}
+export interface PreBlobLocation {
+  blob: File
+}
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation
   | PreBlobLocation
+
+export { default as TextSearchManager } from '../../TextSearch/TextSearchManager'

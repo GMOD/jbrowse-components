@@ -1,26 +1,37 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, when } from '@jbrowse/core/util'
+import { AbstractSessionModel, when, parseLocString } from '@jbrowse/core/util'
+// locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
+import { handleSelectedRegion } from '../searchUtils'
 
 type LGV = LinearGenomeViewModel
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearGenomeView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       assembly,
       loc,
       tracks = [],
+      tracklist,
+      nav,
+      highlight,
     }: {
       session: AbstractSessionModel
       assembly?: string
       loc: string
       tracks?: string[]
+      tracklist?: boolean
+      nav?: boolean
+      highlight?: string[]
     }) => {
       try {
         const { assemblyManager } = session
+
+        const { isValidRefName } = assemblyManager
+
         const view = session.addView('LinearGenomeView', {}) as LGV
 
         await when(() => !!view.volatileWidth)
@@ -38,19 +49,34 @@ export default (pluginManager: PluginManager) => {
           )
         }
 
-        await view.navToLocString(loc, assembly)
+        if (tracklist) {
+          view.activateTrackSelector()
+        }
+        if (nav !== undefined) {
+          view.setHideHeader(!nav)
+        }
+        if (highlight !== undefined) {
+          highlight.forEach(async h => {
+            const p = parseLocString(h, refName =>
+              isValidRefName(refName, assembly),
+            )
+            const { start, end } = p
+            if (start !== undefined && end !== undefined) {
+              view.addToHighlights({
+                ...p,
+                start,
+                end,
+                assemblyName: assembly,
+              })
+            }
+          })
+        }
+
+        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
         tracks.forEach(track => {
-          try {
-            view.showTrack(track)
-          } catch (e) {
-            if (`${e}`.match('Could not resolve identifier')) {
-              idsNotFound.push(track)
-            } else {
-              throw e
-            }
-          }
+          tryTrack(view, track, idsNotFound)
         })
         if (idsNotFound.length) {
           throw new Error(
@@ -58,9 +84,27 @@ export default (pluginManager: PluginManager) => {
           )
         }
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
         throw e
       }
     },
   )
+}
+
+function tryTrack(
+  model: {
+    showTrack: (arg: string) => void
+  },
+  trackId: string,
+  idsNotFound: string[],
+) {
+  try {
+    model.showTrack(trackId)
+  } catch (e) {
+    if (/Could not resolve identifier/.exec(`${e}`)) {
+      idsNotFound.push(trackId)
+    } else {
+      throw e
+    }
+  }
 }

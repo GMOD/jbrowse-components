@@ -1,21 +1,21 @@
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, Region } from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { parseBreakend } from '@gmod/vcf'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
+import { IStateTreeNode } from 'mobx-state-tree'
 
 export default class BreakpointSplitViewType extends ViewType {
-  snapshotFromBreakendFeature(feature: Feature, view: LGV) {
+  snapshotFromBreakendFeature(
+    feature: Feature,
+    view: { displayedRegions: Region[] } & IStateTreeNode,
+  ) {
     const alt = feature.get('ALT')?.[0]
     const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
-    let endPos
+    let endPos: number
     const bpPerPx = 10
 
     // TODO: Figure this out for multiple assembly names
-    const { assemblyName } = view.displayedRegions[0]
+    const { assemblyName } = view.displayedRegions[0]!
     const { assemblyManager } = getSession(view)
     const assembly = assemblyManager.get(assemblyName)
 
@@ -25,8 +25,7 @@ export default class BreakpointSplitViewType extends ViewType {
     if (!assembly.regions) {
       throw new Error(`assembly ${assemblyName} regions not loaded`)
     }
-    const { getCanonicalRefName } = assembly as Assembly
-    const featureRefName = getCanonicalRefName(feature.get('refName'))
+    const featureRefName = assembly.getCanonicalRefName(feature.get('refName'))
     const topRegion = assembly.regions.find(f => f.refName === featureRefName)
 
     let mateRefName: string | undefined
@@ -37,11 +36,11 @@ export default class BreakpointSplitViewType extends ViewType {
     if (alt === '<TRA>') {
       const INFO = feature.get('INFO')
       endPos = INFO.END[0] - 1
-      mateRefName = getCanonicalRefName(INFO.CHR2[0])
+      mateRefName = assembly.getCanonicalRefName(INFO.CHR2[0])
     } else if (bnd?.MatePosition) {
       const matePosition = bnd.MatePosition.split(':')
-      endPos = +matePosition[1] - 1
-      mateRefName = getCanonicalRefName(matePosition[0])
+      endPos = +matePosition[1]! - 1
+      mateRefName = assembly.getCanonicalRefName(matePosition[0]!)
       if (bnd.Join === 'left') {
         startMod = -1
       }
@@ -51,33 +50,33 @@ export default class BreakpointSplitViewType extends ViewType {
     } else if (feature.get('mate')) {
       // a generic 'mate' feature
       const mate = feature.get('mate')
-      mateRefName = getCanonicalRefName(mate.refName)
+      mateRefName = assembly.getCanonicalRefName(mate.refName)
       endPos = mate.start
+    } else {
+      endPos = startPos + 1
     }
 
     if (!mateRefName) {
-      console.warn(
+      throw new Error(
         `unable to resolve mate refName ${mateRefName} in reference genome`,
       )
-      return {}
     }
 
     const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)
 
     if (!topRegion || !bottomRegion) {
-      console.warn(
-        `unable to find the refName for the top or bottom of the breakpoint view`,
+      throw new Error(
+        'unable to find the refName for the top or bottom of the breakpoint view',
       )
-      return {}
     }
 
     const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
     const bottomMarkedRegion = [{ ...bottomRegion }, { ...bottomRegion }]
-    topMarkedRegion[0].end = startPos + startMod
-    topMarkedRegion[1].start = startPos + startMod
-    bottomMarkedRegion[0].end = endPos + endMod
-    bottomMarkedRegion[1].start = endPos + endMod
-    const snapshot = {
+    topMarkedRegion[0]!.end = startPos + startMod
+    topMarkedRegion[1]!.start = startPos + startMod
+    bottomMarkedRegion[0]!.end = endPos + endMod
+    bottomMarkedRegion[1]!.start = endPos + endMod
+    return {
       type: 'BreakpointSplitView',
       views: [
         {
@@ -98,7 +97,7 @@ export default class BreakpointSplitViewType extends ViewType {
       displayName: `${
         feature.get('name') || feature.get('id') || 'breakend'
       } split detail`,
+      featureData: undefined as unknown,
     }
-    return snapshot
   }
 }

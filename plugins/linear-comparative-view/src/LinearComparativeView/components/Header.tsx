@@ -1,16 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { IconButton, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
+import { Menu } from '@jbrowse/core/ui'
 
 // icons
-import LinkIcon from '@mui/icons-material/Link'
-import LinkOffIcon from '@mui/icons-material/LinkOff'
-import CropFreeIcon from '@mui/icons-material/CropFree'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 
+// locals
 import { LinearComparativeViewModel } from '../model'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 type LCV = LinearComparativeViewModel
 
@@ -21,6 +22,9 @@ const useStyles = makeStyles()(() => ({
   },
   spacer: {
     flexGrow: 1,
+  },
+  iconButton: {
+    margin: 5,
   },
   bp: {
     display: 'flex',
@@ -37,74 +41,76 @@ const useStyles = makeStyles()(() => ({
 
 const TrackSelector = observer(({ model }: { model: LCV }) => {
   return (
-    <IconButton
-      onClick={model.activateTrackSelector}
-      title="Open track selector"
+    <CascadingMenuButton
+      menuItems={[
+        {
+          label: 'Synteny track selector',
+          onClick: () => model.activateTrackSelector(),
+        },
+        ...model.views.map((view, idx) => ({
+          label: `View ${idx + 1} track selector`,
+          onClick: () => view.activateTrackSelector(),
+        })),
+      ]}
     >
-      <TrackSelectorIcon color="primary" />
-    </IconButton>
+      <TrackSelectorIcon />
+    </CascadingMenuButton>
   )
 })
 
-const LinkViews = observer(({ model }: { model: LCV }) => {
+const Header = observer(function ({ model }: { model: LCV }) {
+  const { classes } = useStyles()
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>()
+  const anyShowHeaders = model.views.some(view => !view.hideHeader)
   return (
-    <IconButton
-      onClick={model.toggleLinkViews}
-      title="Toggle linked scrolls and behavior across views"
-    >
-      {model.linkViews ? (
-        <LinkOffIcon color="primary" />
-      ) : (
-        <LinkIcon color="primary" />
-      )}
-    </IconButton>
-  )
-})
+    <div className={classes.headerBar}>
+      <TrackSelector model={model} />
 
-const SquareView = observer(({ model }: { model: LCV }) => {
-  return (
-    <IconButton
-      onClick={model.squareView}
-      title="Square view (make both the same zoom level)"
-    >
-      <CropFreeIcon color="primary" />
-    </IconButton>
-  )
-})
-
-const Header = observer(
-  ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
-    const { classes } = useStyles()
-    const anyShowHeaders = model.views.some(view => !view.hideHeader)
-    return (
-      <div className={classes.headerBar}>
-        <TrackSelector model={model} />
-        <LinkViews model={model} />
-        <SquareView model={model} />
-        {ExtraButtons}
-        {!anyShowHeaders
-          ? model.views.map(view => (
-              <div key={view.id} className={classes.searchBox}>
-                <div className={classes.searchContainer}>
-                  <SearchBox model={view} showHelp={false} />
-                </div>
-                <div className={classes.bp}>
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    className={classes.bp}
-                  >
-                    {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
-                  </Typography>
-                </div>
+      <IconButton
+        onClick={event => {
+          setMenuAnchorEl(event.currentTarget)
+        }}
+        className={classes.iconButton}
+      >
+        <MoreVertIcon />
+      </IconButton>
+      {!anyShowHeaders
+        ? model.views.map(view => (
+            <div key={view.id} className={classes.searchBox}>
+              <div className={classes.searchContainer}>
+                <SearchBox model={view} showHelp={false} />
               </div>
-            ))
-          : null}
+              <div className={classes.bp}>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  className={classes.bp}
+                >
+                  {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
+                </Typography>
+              </div>
+            </div>
+          ))
+        : null}
 
-        <div className={classes.spacer} />
-      </div>
-    )
-  },
-)
+      <div className={classes.spacer} />
+
+      {menuAnchorEl ? (
+        <Menu
+          anchorEl={menuAnchorEl}
+          open
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setMenuAnchorEl(undefined)
+          }}
+          menuItems={model.headerMenuItems()}
+          onClose={() => {
+            setMenuAnchorEl(undefined)
+          }}
+        />
+      ) : null}
+    </div>
+  )
+})
 
 export default Header

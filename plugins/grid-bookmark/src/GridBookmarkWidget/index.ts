@@ -1,3 +1,23 @@
+import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-export { default as stateModelFactory } from './model'
-export const configSchema = ConfigurationSchema('GridBookmarkWidget', {})
+import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
+import stateModelFactory from './model'
+import AddHighlightModelF from './components/Highlight'
+
+const configSchema = ConfigurationSchema('GridBookmarkWidget', {})
+
+export default function GridBookmarkWidgetF(pluginManager: PluginManager) {
+  pluginManager.addWidgetType(() => {
+    return new WidgetType({
+      name: 'GridBookmarkWidget',
+      heading: 'Bookmarked regions',
+      configSchema,
+      stateModel: stateModelFactory(pluginManager),
+      ReactComponent: lazy(() => import('./components/GridBookmarkWidget')),
+    })
+  })
+  AddHighlightModelF(pluginManager)
+}

@@ -1,7 +1,7 @@
-import { parseLocString } from '@jbrowse/core/util'
+import { ParsedLocString, parseLocString } from '@jbrowse/core/util'
 
 export function bufferToString(buffer: Buffer) {
-  return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
+  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
 }
 
 async function parseWith(buffer: Buffer, options = {}) {
@@ -13,11 +13,11 @@ async function parseWith(buffer: Buffer, options = {}) {
 
 export interface Row {
   id: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   extendedData?: any
   cells: {
     text: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     extendedData?: any
   }[]
 }
@@ -31,7 +31,7 @@ export interface ParseOptions {
   hasColumnNameLine?: boolean
   columnNameLineNumber?: number
   selectedAssemblyName?: string
-  isValidRefName: (refName: string, assemblyName?: string) => boolean
+  isValidRefName?: (refName: string, assemblyName?: string) => boolean
 }
 
 export interface Column {
@@ -46,17 +46,17 @@ function guessColumnType(
   columnNumber: number,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ) {
-  const text = rowSet.rows[0].cells[columnNumber].text || ''
+  const text = rowSet.rows[0]!.cells[columnNumber]!.text || ''
 
   let guessedType = 'Text'
 
-  let parsedLoc
+  let parsedLoc: ParsedLocString | undefined
   try {
     parsedLoc = parseLocString(text, isValidRefName)
   } catch (error) {
     //
   }
-  if (parsedLoc && parsedLoc.refName && typeof parsedLoc.start === 'number') {
+  if (parsedLoc?.refName && typeof parsedLoc.start === 'number') {
     guessedType = 'LocString'
   } else if (/^\d+(\.\d+)?$/.test(text)) {
     guessedType = 'Number'
@@ -70,19 +70,21 @@ function guessColumnType(
 
 function dataToSpreadsheetSnapshot(
   rows: string[][],
-  options: ParseOptions = {
-    hasColumnNameLine: false,
-    columnNameLineNumber: 1,
-    isValidRefName: () => false,
-  },
+  options: ParseOptions = {},
 ) {
+  const {
+    hasColumnNameLine = false,
+    columnNameLineNumber = 1,
+    isValidRefName = () => false,
+    selectedAssemblyName,
+  } = options
   // rows is an array of row objects and columnNames
   // is an array of column names (in import order)
   let maxCols = 0
   const rowSet: RowSet = {
     isLoaded: true,
     rows: rows.map((row, rowNumber) => {
-      const id = rowNumber + (options.hasColumnNameLine ? 0 : 1)
+      const id = rowNumber + (hasColumnNameLine ? 0 : 1)
       if (row.length > maxCols) {
         maxCols = row.length
       }
@@ -97,11 +99,9 @@ function dataToSpreadsheetSnapshot(
 
   // process the column names row if present
   const columnNames: Record<string, string> = {}
-  if (options.hasColumnNameLine && options.columnNameLineNumber !== undefined) {
-    const [colNamesRow] = rowSet.rows.splice(
-      options.columnNameLineNumber - 1,
-      1,
-    )
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (hasColumnNameLine && columnNameLineNumber !== undefined) {
+    const [colNamesRow] = rowSet.rows.splice(columnNameLineNumber - 1, 1)
 
     if (colNamesRow) {
       colNamesRow.cells.forEach((cell, columnNumber) => {
@@ -115,22 +115,18 @@ function dataToSpreadsheetSnapshot(
   const columnDisplayOrder = []
   for (let columnNumber = 0; columnNumber < maxCols; columnNumber += 1) {
     columnDisplayOrder.push(columnNumber)
-    const guessedType = guessColumnType(
-      rowSet,
-      columnNumber,
-      options.isValidRefName,
-    )
+    const guessedType = guessColumnType(rowSet, columnNumber, isValidRefName)
 
     // store extendeddata for LocString column
     if (guessedType === 'LocString') {
-      rowSet.rows.forEach(row => {
-        const cell = row.cells[columnNumber]
-        cell.extendedData = parseLocString(cell.text, options.isValidRefName)
-      })
+      for (const row of rowSet.rows) {
+        const cell = row.cells[columnNumber]!
+        cell.extendedData = parseLocString(cell.text, isValidRefName)
+      }
     }
 
     columns[columnNumber] = {
-      name: columnNames[columnNumber],
+      name: columnNames[columnNumber]!,
       dataType: {
         type: guessedType,
       },
@@ -140,32 +136,18 @@ function dataToSpreadsheetSnapshot(
   return {
     rowSet,
     columnDisplayOrder,
-    hasColumnNames: !!options.hasColumnNameLine,
+    hasColumnNames: !!hasColumnNameLine,
     columns,
-    assemblyName: options.selectedAssemblyName,
+    assemblyName: selectedAssemblyName,
   }
 }
 
-export async function parseCsvBuffer(
-  buffer: Buffer,
-  options: ParseOptions = {
-    hasColumnNameLine: false,
-    columnNameLineNumber: 1,
-    isValidRefName: () => false,
-  },
-) {
+export async function parseCsvBuffer(buffer: Buffer, options?: ParseOptions) {
   const rows = await parseWith(buffer)
   return dataToSpreadsheetSnapshot(rows, options)
 }
 
-export async function parseTsvBuffer(
-  buffer: Buffer,
-  options: ParseOptions = {
-    hasColumnNameLine: false,
-    columnNameLineNumber: 1,
-    isValidRefName: () => false,
-  },
-) {
+export async function parseTsvBuffer(buffer: Buffer, options?: ParseOptions) {
   const rows = await parseWith(buffer, { delimiter: '\t' })
   return dataToSpreadsheetSnapshot(rows, options)
 }

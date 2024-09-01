@@ -73,14 +73,12 @@ export function convertTrackConfig(
     jb2TrackConfig.description = description
   }
 
-  const category =
-    jb1TrackConfig.category ||
-    (jb1TrackConfig.metadata && jb1TrackConfig.metadata.category)
+  const category = jb1TrackConfig.category || jb1TrackConfig.metadata?.category
   jb2TrackConfig.category = category ? category.split(/\s*\/\s*/) : []
 
   const { storeClass } = jb1TrackConfig
   if (!jb1TrackConfig.urlTemplate) {
-    if (!(storeClass && storeClass.endsWith('FromConfig'))) {
+    if (!storeClass?.endsWith('FromConfig')) {
       const trackIdentifier = jb1TrackConfig.key || jb1TrackConfig.label
       console.warn(
         `Could not import JBrowse1 track "${trackIdentifier}" because it does not have a "urlTemplate" or is not a "FromConfig" track`,
@@ -96,8 +94,8 @@ export function convertTrackConfig(
 
   const resolveUrlTemplate = (urlTemplate: string) => {
     return new URL(urlTemplate, `${dataRoot}/`).href
-      .replace(/%7B/gi, '{')
-      .replace(/%7D/gi, '}')
+      .replaceAll(/%7B/gi, '{')
+      .replaceAll(/%7D/gi, '}')
   }
   const urlTemplate = resolveUrlTemplate(jb1TrackConfig.urlTemplate)
 
@@ -139,17 +137,15 @@ export function convertTrackConfig(
         cramLocation: { uri: urlTemplate, locationType: 'UriLocation' },
         sequenceAdapter,
       }
-      if (jb1TrackConfig.craiUrlTemplate) {
-        adapter.craiLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.craiLocation = {
-          uri: `${urlTemplate}.crai`,
-          locationType: 'UriLocation',
-        }
-      }
+      adapter.craiLocation = jb1TrackConfig.craiUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.crai`,
+            locationType: 'UriLocation',
+          }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -170,12 +166,9 @@ export function convertTrackConfig(
       storeClass === 'JBrowse/Store/SeqFeature/BigWig' ||
       storeClass === 'JBrowse/Store/BigWig'
     ) {
-      if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+      if (jb1TrackConfig.type?.endsWith('XYPlot')) {
         jb2TrackConfig.defaultRendering = 'xyplot'
-      } else if (
-        jb1TrackConfig.type &&
-        jb1TrackConfig.type.endsWith('Density')
-      ) {
+      } else if (jb1TrackConfig.type?.endsWith('Density')) {
         jb2TrackConfig.defaultRendering = 'density'
       }
       return {
@@ -346,17 +339,15 @@ export function convertTrackConfig(
         type: 'IndexedFastaAdapter',
         fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
-      if (jb1TrackConfig.faiUrlTemplate) {
-        adapter.faiLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.faiLocation = {
-          uri: `${urlTemplate}.fai`,
-          locationType: 'UriLocation',
-        }
-      }
+      adapter.faiLocation = jb1TrackConfig.faiUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.fai`,
+            locationType: 'UriLocation',
+          }
       return {
         ...jb2TrackConfig,
         type: 'SequenceTrack',
@@ -368,28 +359,24 @@ export function convertTrackConfig(
         type: 'BgzipFastaAdapter',
         fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
-      if (jb1TrackConfig.faiUrlTemplate) {
-        adapter.faiLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.faiLocation = {
-          uri: `${urlTemplate}.fai`,
-          locationType: 'UriLocation',
-        }
-      }
-      if (jb1TrackConfig.gziUrlTemplate) {
-        adapter.gziLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.gziLocation = {
-          uri: `${urlTemplate}.gzi`,
-          locationType: 'UriLocation',
-        }
-      }
+      adapter.faiLocation = jb1TrackConfig.faiUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.fai`,
+            locationType: 'UriLocation',
+          }
+      adapter.gziLocation = jb1TrackConfig.gziUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.gzi`,
+            locationType: 'UriLocation',
+          }
       return {
         ...jb2TrackConfig,
         type: 'ReferenceSequenceTrack',
@@ -408,15 +395,13 @@ export function convertTrackConfig(
     }
   }
 
-  // If we don't recognize the store class, make a best effort to guess by file type
+  // If we don't recognize the store class, make a best effort to guess by file
+  // type
   jb2TrackConfig.adapter = guessAdapter(
     { uri: urlTemplate, locationType: 'UriLocation' },
     undefined,
     urlTemplate,
   )
-  if (!jb2TrackConfig.adapter) {
-    throw new Error('Could not determine adapter')
-  }
 
   if (jb2TrackConfig.adapter.type === UNSUPPORTED) {
     return generateUnsupportedTrackConf(
@@ -436,9 +421,9 @@ export function convertTrackConfig(
   jb2TrackConfig.type = guessTrackType(jb2TrackConfig.adapter.type)
 
   if (jb2TrackConfig.type === 'QuantitativeTrack') {
-    if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+    if (jb1TrackConfig.type?.endsWith('XYPlot')) {
       jb2TrackConfig.defaultRendering = 'xyplot'
-    } else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density')) {
+    } else if (jb1TrackConfig.type?.endsWith('Density')) {
       jb2TrackConfig.defaultRendering = 'density'
     }
   }
@@ -479,7 +464,7 @@ export async function createRefSeqsAdapter(
 
   // check refseq urls
   if (refSeqs.url) {
-    if (refSeqs.url.match(/.fai$/)) {
+    if (/.fai$/.exec(refSeqs.url)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: {
@@ -492,16 +477,16 @@ export async function createRefSeqsAdapter(
         },
       }
     }
-    if (refSeqs.url.match(/.2bit$/)) {
+    if (/.2bit$/.exec(refSeqs.url)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: refSeqs.url, locationType: 'UriLocation' },
       }
     }
-    if (refSeqs.url.match(/.fa$/)) {
+    if (/.fa$/.exec(refSeqs.url)) {
       throw new Error('Unindexed FASTA adapter not available')
     }
-    if (refSeqs.url.match(/.sizes/)) {
+    if (/.sizes/.exec(refSeqs.url)) {
       throw new Error('chromosome SIZES adapter not available')
     }
     const refSeqsJson = await openLocation({

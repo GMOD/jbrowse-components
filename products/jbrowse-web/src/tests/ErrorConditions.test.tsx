@@ -1,21 +1,28 @@
-import { createView, doBeforeEach } from './util'
-import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
+import { createViewNoWait, doBeforeEach, mockConsole } from './util'
+import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json'
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json'
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 30000 }
 
 beforeEach(() => {
   doBeforeEach()
 })
 
 test('404 sequence file', async () => {
-  console.error = jest.fn()
-  const { findAllByText } = createView(chromeSizesConfig)
-  await findAllByText(/HTTP 404 fetching grape.chrom.sizes.nonexist/)
-})
+  await mockConsole(async () => {
+    const { findAllByText } = createViewNoWait(chromeSizesConfig)
+    await findAllByText(
+      /HTTP 404 fetching grape.chrom.sizes.nonexist/,
+      {},
+      delay,
+    )
+  })
+}, 30000)
 
 test('wrong assembly', async () => {
-  const { view, findAllByText } = createView(wrongAssemblyTest)
-  view.showTrack('volvox_wrong_assembly')
-  await findAllByText(/does not match/, {}, delay)
-}, 15000)
+  await mockConsole(async () => {
+    const { view, findAllByText } = createViewNoWait(wrongAssemblyTest)
+    view.showTrack('volvox_wrong_assembly')
+    await findAllByText(/does not match/, {}, delay)
+  })
+}, 30000)

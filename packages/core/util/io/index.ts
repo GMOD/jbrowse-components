@@ -22,8 +22,6 @@ import { getBlob } from '../tracks'
 import PluginManager from '../../PluginManager'
 import { isElectron } from '../'
 
-export { RemoteFileWithRangeCache }
-
 function isLocalPathLocation(
   location: FileLocation,
 ): location is LocalPathLocation {
@@ -34,13 +32,17 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
+/** if a UriLocation has a baseUri, resolves its uri with respect to that base */
+export function resolveUriLocation(location: UriLocation) {
+  return location.baseUri
+    ? { ...location, uri: new URL(location.uri, location.baseUri).href }
+    : location
+}
+
 export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (!location) {
-    throw new Error('must provide a location to openLocation')
-  }
   if (isLocalPathLocation(location)) {
     if (!location.localPath) {
       throw new Error('No local path provided')
@@ -67,10 +69,10 @@ export function openLocation(
     if (!location.uri) {
       throw new Error('No URI provided')
     }
+
     // Resolve any relative URLs to absolute URLs
-    const absoluteLocation = location.baseUri
-      ? { ...location, uri: new URL(location.uri, location.baseUri).href }
-      : location
+    const absoluteLocation = resolveUriLocation(location)
+
     // If there is a plugin manager, we can try internet accounts
     if (pluginManager) {
       const internetAccount = getInternetAccount(location, pluginManager)
@@ -120,16 +122,17 @@ function getInternetAccount(
         'Failed to obtain token from internet account. Try reloading the page',
       )
     }
-    const internetAccountType = pluginManager.getInternetAccountType(
-      location.internetAccountPreAuthorization.internetAccountType,
-    )
-    return internetAccountType.stateModel.create({
-      type: location.internetAccountPreAuthorization.internetAccountType,
-      configuration:
-        location.internetAccountPreAuthorization.authInfo.configuration,
-    })
+    return pluginManager
+      .getInternetAccountType(
+        location.internetAccountPreAuthorization.internetAccountType,
+      )!
+      .stateModel.create({
+        type: location.internetAccountPreAuthorization.internetAccountType,
+        configuration:
+          location.internetAccountPreAuthorization.authInfo.configuration,
+      })
   }
-  return
+  return undefined
 }
 
 // This fetch throws a special error if the response is "401" and includes a
@@ -137,13 +140,16 @@ function getInternetAccount(
 // needed with HTTP Basic authentication included
 async function checkAuthNeededFetch(url: RequestInfo, opts?: RequestInit) {
   const response = await fetch(url, opts)
-  if (response.status === 401) {
-    if (response.headers.get('WWW-Authenticate')?.includes('Basic')) {
-      throw new AuthNeededError(
-        'Accessing HTTPBasic resource without authentication',
-        url.toString(),
-      )
-    }
+  if (
+    response.status === 401 &&
+    response.headers.get('WWW-Authenticate')?.includes('Basic')
+  ) {
+    throw new AuthNeededError(
+      'Accessing HTTPBasic resource without authentication',
+      url.toString(),
+    )
   }
   return response
 }
+
+export { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'

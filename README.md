@@ -11,10 +11,15 @@ Homepage https://jbrowse.org/jb2
 
 Docs http://jbrowse.org/jb2/docs/
 
+Fall 2023: New outreach! We created an "office hours" Google Calendar for anyone
+to schedule 1-on-1 meetings with the development team. Details below:
+
+- [Schedule 1-on-1 appointment](https://calendar.app.google/1AYZkNCQNmwdY2R26)
+
 ## Pre-requisites
 
 - [git](https://git-scm.com/downloads)
-- [nodejs](https://nodejs.org/en/download/) (node 14 or greater)
+- [nodejs](https://nodejs.org/en/download/) (node 18 or greater)
 - [yarn](https://yarnpkg.com/en/docs/install)
 
 You may need additional pre-requisites on certain versions of nodejs.

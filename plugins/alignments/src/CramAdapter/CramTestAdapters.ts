@@ -2,7 +2,7 @@ import { GenericFilehandle } from 'generic-filehandle'
 import { Observable } from 'rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSchema'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 // setup for Cram Adapter Testing
 export function parseSmallFasta(text: string) {
@@ -11,10 +11,14 @@ export function parseSmallFasta(text: string) {
     .filter(t => /\S/.test(t))
     .map(entryText => {
       const [defLine, ...seqLines] = entryText.split(/\n|\r\n|\r/)
-      const [id, ...descriptionLines] = defLine.split(' ')
+      const [id, ...descriptionLines] = defLine!.split(' ')
       const description = descriptionLines.join(' ')
-      const sequence = seqLines.join('').replace(/\s/g, '')
-      return { id, description, sequence }
+      const sequence = seqLines.join('').replaceAll(/\s/g, '')
+      return {
+        id: id!,
+        description,
+        sequence,
+      }
     })
 }
 
@@ -82,6 +86,7 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
           observer.next(
             new SimpleFeature({
               uniqueId: `${refName}-${start}-${end}`,
+              refName,
               seq: ret,
               start,
               end,
@@ -89,7 +94,9 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
           )
           observer.complete()
         })
-        .catch(e => observer.error(e))
+        .catch((e: unknown) => {
+          observer.error(e)
+        })
       return { unsubscribe: () => {} }
     })
   }

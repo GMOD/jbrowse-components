@@ -4,11 +4,14 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import Arrow from './Arrow'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
-import { Region, Feature } from '@jbrowse/core/util'
+import { Region, Feature, stripAlpha } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 
-function Segments(props: {
+// locals
+import Arrow from './Arrow'
+
+const Segments = observer(function Segments(props: {
   region: Region
   feature: Feature
   featureLayout: SceneGraph
@@ -28,7 +31,9 @@ function Segments(props: {
     subfeatures = feature.get('subfeatures'),
   } = props
 
-  const color2 = readConfObject(config, 'color2', { feature })
+  const theme = useTheme()
+  const c = readConfObject(config, 'color2', { feature })
+  const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
 
@@ -65,6 +70,6 @@ function Segments(props: {
       <Arrow {...props} />
     </>
   )
-}
+})
 
-export default observer(Segments)
+export default Segments

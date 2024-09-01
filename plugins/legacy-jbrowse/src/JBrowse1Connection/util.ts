@@ -1,20 +1,18 @@
 import getValue from 'get-value'
 import { Track, Source } from './types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {
-  return arg && arg.label && typeof arg.label === 'string'
+  return arg?.label && typeof arg.label === 'string'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isSource(arg: any): arg is Source {
-  return arg && arg.url && typeof arg.url === 'string'
+  return arg?.url && typeof arg.url === 'string'
 }
 
 /**
  * updates a with values from b, recursively
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type Obj = Record<string, any>
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
@@ -24,10 +22,7 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
       typeof a[prop] === 'object'
     ) {
       deepUpdate(a[prop], b[prop])
-    } else if (
-      typeof a[prop] === 'undefined' ||
-      typeof b[prop] !== 'undefined'
-    ) {
+    } else if (a[prop] === undefined || b[prop] !== undefined) {
       a[prop] = b[prop]
     }
   }
@@ -36,6 +31,7 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
 
 /**
  * replace variables in a template string with values
+ *
  * @param template - String with variable names in curly brackets
  * e.g., `http://foo/{bar}?arg={baz.foo}`
  * @param fillWith - object with attribute-value mappings
@@ -44,27 +40,21 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
  * e.g., 'htp://foo/someurl?arg=valueforbaz'
  */
 export function fillTemplate(template: string, fillWith: Obj): string {
-  return template.replace(
-    /\{([\w\s.]+)\}/g,
-    (match, varName: string): string => {
-      varName = varName.replace(/\s+/g, '') // remove all whitespace
-      const fill = getValue(fillWith, varName)
-      if (fill !== undefined) {
-        if (typeof fill === 'function') {
-          return fill(varName)
-        }
-        return fill
+  return template.replaceAll(/{([\s\w.]+)}/g, (match, varName) => {
+    varName = varName.replaceAll(/\s+/g, '')
+    const fill = getValue(fillWith, varName)
+    if (fill !== undefined) {
+      return typeof fill === 'function' ? fill(varName) : fill
+    }
+    if (fillWith.callback) {
+      // @ts-expect-error
+      const v = fillWith.callback.call(this, varName)
+      if (v !== undefined) {
+        return v
       }
-      if (fillWith.callback) {
-        // @ts-ignore
-        const v = fillWith.callback.call(this, varName)
-        if (v !== undefined) {
-          return v
-        }
-      }
-      return match
-    },
-  )
+    }
+    return match
+  })
 }
 
 /**
@@ -73,7 +63,7 @@ export function fillTemplate(template: string, fillWith: Obj): string {
  * (Lifted from dojo https://github.com/dojo/dojo/blob/master/_base/lang.js)
  * @param src - The object to clone
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function clone(src: any): any {
   if (
     !src ||
@@ -95,13 +85,11 @@ export function clone(src: any): any {
     // RegExp
     return new RegExp(src) // RegExp
   }
-  let r
-  let i
-  let l
+  let r: unknown[]
   if (Array.isArray(src)) {
     // array
     r = []
-    for (i = 0, l = src.length; i < l; ++i) {
+    for (let i = 0, l = src.length; i < l; ++i) {
       if (i in src) {
         r[i] = clone(src[i])
       }
@@ -134,19 +122,21 @@ export function clone(src: any): any {
  * to the Javascript assignment operator.
  * @returns dest, as modified
  */
-function mixin(dest: Obj, source: Obj, copyFunc: Function): Obj {
-  let name
-  let s
+function mixin(
+  dest: Obj,
+  source: Obj,
+  copyFunc?: (arg: unknown) => unknown,
+): Obj {
   const empty = {}
-  for (name in source) {
+  for (const name in source) {
     // the (!(name in empty) || empty[name] !== s) condition avoids copying
     // properties in "source" inherited from Object.prototype.	 For example,
     // if dest has a custom toString() method, don't overwrite it with the
     // toString() method that source inherited from Object.prototype
-    s = source[name]
+    const s = source[name]
     if (
       !(name in dest) ||
-      // @ts-ignore
+      // @ts-expect-error
       (dest[name] !== s && (!(name in empty) || empty[name] !== s))
     ) {
       dest[name] = copyFunc ? copyFunc(s) : s

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gtf",
-  "version": "2.3.2",
+  "version": "2.14.0",
   "description": "JBrowse 2 gtf feature adapter",
   "keywords": [
     "jbrowse",
@@ -20,12 +20,11 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
     "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/gtf --passWithNoTests",
+    "test": "cd ../..; jest --passWithNoTests plugins/gtf --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -33,23 +32,23 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/gtf": "^0.0.6"
+    "@gmod/gtf": "^0.0.9"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0",
-    "rxjs": "^6.0.0"
+    "rxjs": "^7.0.0"
   },
   "publishConfig": {
     "access": "public"

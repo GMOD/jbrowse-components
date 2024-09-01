@@ -23,16 +23,34 @@ const fileTypeParsers = {
 // regexp used to guess the type of a file or URL from its file extension
 const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
 
+/**
+ * #stateModel SpreadsheetImportWizard
+ * #category view
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const ImportWizard = types
   .model('SpreadsheetImportWizard', {
+    /**
+     * #property
+     */
     fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
+    /**
+     * #property
+     */
     hasColumnNameLine: true,
+    /**
+     * #property
+     */
     columnNameLineNumber: 1,
+    /**
+     * #property
+     */
     selectedAssemblyName: types.maybe(types.string),
   })
   .volatile(() => ({
     fileTypes,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     fileSource: undefined as any,
     error: undefined as unknown,
     loading: false,
@@ -48,7 +66,6 @@ const ImportWizard = types
       )
     },
     get canCancel() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).readyToDisplay
     },
 
@@ -85,13 +102,12 @@ const ImportWizard = types
         const name = self.fileName
 
         if (name) {
-          const match = fileTypesRegexp.exec(name)
-          if (match && match[1]) {
-            if (match[1] === 'tsv' && name.includes('star-fusion')) {
-              self.fileType = 'STAR-Fusion'
-            } else {
-              self.fileType = match[1].toUpperCase()
-            }
+          const firstMatch = fileTypesRegexp.exec(name)?.[1]
+          if (firstMatch) {
+            self.fileType =
+              firstMatch === 'tsv' && name.includes('star-fusion')
+                ? 'STAR-Fusion'
+                : firstMatch.toUpperCase()
           }
         }
       }
@@ -124,7 +140,7 @@ const ImportWizard = types
 
     cancelButton() {
       self.error = undefined
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       getParent<any>(self).setDisplayMode()
     },
 
@@ -143,9 +159,6 @@ const ImportWizard = types
       self.loading = true
       const type = self.fileType as keyof typeof fileTypeParsers
       const typeParser = await fileTypeParsers[type]()
-      if (!typeParser) {
-        throw new Error(`cannot open files of type '${self.fileType}'`)
-      }
 
       const { unzip } = await import('@gmod/bgzf-filehandle')
       const { pluginManager } = getEnv(self)
@@ -171,7 +184,7 @@ const ImportWizard = types
           .then(buffer => typeParser(buffer, self))
           .then(spreadsheet => {
             this.setLoaded()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             getParent<any>(self).displaySpreadsheet(spreadsheet)
           })
       } catch (e) {

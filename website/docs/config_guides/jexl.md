@@ -1,7 +1,6 @@
 ---
 id: jexl
 title: Using jexl callbacks
-toplevel: true
 ---
 
 We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
@@ -120,7 +119,7 @@ For example, create a file named "myplugin.js" (see also Footnote 1)
   // the plugin will be included in both the main thread and web worker, so
   // install plugin to either window or self (webworker global scope)
   ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
-    default: Plugin,
+    default: MyPlugin,
   }
 })()
 ```

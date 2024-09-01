@@ -1,13 +1,14 @@
 ---
 id: httpbasicinternetaccount
 title: HTTPBasicInternetAccount
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/authentication/src/HTTPBasicModel/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts)
 
 ### HTTPBasicInternetAccount - Slots
 
@@ -31,7 +32,7 @@ validateWithHEAD: {
     }
 ```
 
-## HTTPBasicInternetAccount - Derives from
+### HTTPBasicInternetAccount - Derives from
 
 ```js
 baseConfiguration: BaseInternetAccountConfig

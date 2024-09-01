@@ -18,10 +18,12 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
 import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 const { parseCigar } = MismatchParser
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
+  adapterConfig: AnyConfigurationModel
   height: number
   width: number
   highResolutionScaling: number
@@ -50,7 +52,10 @@ function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
   ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
   ctx.fill()
 }
+
 export default class DotplotRenderer extends ComparativeRenderer {
+  supportsSVG = true
+
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
     const pm = this.pluginManager
     const assemblyManager = pm.rootModel?.session?.assemblyManager
@@ -79,16 +84,17 @@ export default class DotplotRenderer extends ComparativeRenderer {
     ctx: CanvasRenderingContext2D,
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
-    const { config, views, height, drawCigar } = props
+    const { config, views, height, drawCigar, theme } = props
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
     const thresholds = readConfObject(config, 'thresholds')
-    const palette = readConfObject(config, 'thresholdsPalette')
+    const palette = readConfObject(config, 'thresholdsPalette') as string[]
     const isCallback = config.color.isCallback
-    const [hview, vview] = views
+    const hview = views[0]!
+    const vview = views[1]!
     const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
     const warnings = [] as { message: string; effect: string }[]
@@ -176,7 +182,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
       staticBlocks: vview.staticBlocks,
       width: vview.width,
     }
-    hview.features?.forEach(feature => {
+    const t = createJBrowseTheme(theme)
+    for (const feature of hview.features || []) {
       const strand = feature.get('strand') || 1
       const start = strand === 1 ? feature.get('start') : feature.get('end')
       const end = strand === 1 ? feature.get('end') : feature.get('start')
@@ -184,12 +191,12 @@ export default class DotplotRenderer extends ComparativeRenderer {
       const mate = feature.get('mate')
       const mateRef = mate.refName
 
-      let r
+      let r = 'black'
       if (colorBy === 'identity') {
         const identity = feature.get('identity')
         for (let i = 0; i < thresholds.length; i++) {
           if (identity > +thresholds[i]) {
-            r = palette[i]
+            r = palette[i] || 'black'
             break
           }
         }
@@ -200,7 +207,11 @@ export default class DotplotRenderer extends ComparativeRenderer {
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
-        r = isCallback ? readConfObject(config, 'color', { feature }) : color
+        r = isCallback
+          ? readConfObject(config, 'color', { feature })
+          : color === '#f0f'
+            ? t.palette.text.primary
+            : color
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
@@ -215,10 +226,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
         e10 !== undefined &&
         e20 !== undefined
       ) {
-        const b1 = b10.offsetPx - db1
-        const b2 = b20.offsetPx - db1
-        const e1 = e10.offsetPx - db2
-        const e2 = e20.offsetPx - db2
+        const b1 = b10.offsetPx - db1!
+        const b2 = b20.offsetPx - db1!
+        const e1 = e10.offsetPx - db2!
+        const e2 = e20.offsetPx - db2!
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
           drawCir(ctx, b1, height - e1, lineWidth)
         } else {
@@ -231,9 +242,11 @@ export default class DotplotRenderer extends ComparativeRenderer {
             ctx.beginPath()
             ctx.moveTo(currX, height - currY)
 
+            let lastDrawnX = currX
+            let lastDrawnY = currX
             for (let i = 0; i < cigarOps.length; i += 2) {
-              const val = +cigarOps[i]
-              const op = cigarOps[i + 1]
+              const val = +cigarOps[i]!
+              const op = cigarOps[i + 1]!
               if (op === 'M' || op === '=' || op === 'X') {
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
@@ -244,7 +257,16 @@ export default class DotplotRenderer extends ComparativeRenderer {
               }
               currX = clampWithWarnX(currX, b1, b2, feature)
               currY = clampWithWarnY(currY, e1, e2, feature)
-              ctx.lineTo(currX, height - currY)
+
+              // only draw a line segment if it is bigger than 0.5px
+              if (
+                Math.abs(currX - lastDrawnX) > 0.5 ||
+                Math.abs(currY - lastDrawnY) > 0.5
+              ) {
+                ctx.lineTo(currX, height - currY)
+                lastDrawnX = currX
+                lastDrawnY = currY
+              }
             }
 
             ctx.stroke()
@@ -270,7 +292,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
           }
         }
       }
-    })
+    }
 
     return { warnings }
   }
@@ -284,10 +306,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const dimensions = [width, height]
     const views = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
-      view.setVolatileWidth(dimensions[idx])
+      view.setVolatileWidth(dimensions[idx]!)
       return view
     })
-    const target = views[0]
+    const target = views[0]!
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
@@ -310,8 +332,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
       ...ret,
       height,
       width,
-      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
-      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
+      offsetX: views[0]!.dynamicBlocks.blocks[0]?.offsetPx || 0,
+      offsetY: views[1]!.dynamicBlocks.blocks[0]?.offsetPx || 0,
+      bpPerPxX: views[0]!.bpPerPx,
+      bpPerPxY: views[1]!.bpPerPx,
     }
   }
 }

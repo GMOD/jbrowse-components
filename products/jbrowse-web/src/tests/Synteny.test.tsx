@@ -1,43 +1,42 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
 // local
 import { App } from './loaderUtil'
-import { expectCanvasMatch } from './util'
+import { setup, expectCanvasMatch } from './util'
+setup()
 
 const getFile = (url: string) =>
   new LocalFile(
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-const readBuffer = async (url: string, args: RequestInit) => {
+jest.mock('../makeWorkerInstance', () => () => {})
+
+const delay = { timeout: 20000 }
+
+jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   // this is the analytics
-  if (url.match(/jb2=true/)) {
-    return {
-      ok: true,
-      async json() {
-        return {}
-      },
-    }
+  if (/jb2=true/.exec(`${url}`)) {
+    return new Response('{}')
   }
   try {
-    const file = getFile(url)
+    const file = getFile(`${url}`)
     const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers && 'range' in args.headers) {
+    if (args?.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
         throw new Error(`Error parsing range "${args.headers.range}"`)
       }
-      const { start, end } = range[0]
+      const { start, end } = range[0]!
       const len = end - start + 1
       const buf = Buffer.alloc(len)
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
-      return new Response(buf.slice(0, bytesRead), {
+      return new Response(buf.subarray(0, bytesRead), {
         status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
       })
@@ -48,24 +47,17 @@ const readBuffer = async (url: string, args: RequestInit) => {
     console.error(e)
     return new Response(undefined, { status: 404 })
   }
-}
-
-jest.mock('../makeWorkerInstance', () => () => {})
-
-expect.extend({ toMatchImageSnapshot })
-
-const delay = { timeout: 20000 }
-
-// @ts-ignore
-jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+})
 
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
 })
 
+// onAction listener warning
+console.warn = jest.fn()
+
 test('horizontally flipped inverted alignment', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -85,7 +77,6 @@ test('horizontally flipped inverted alignment', async () => {
 }, 40000)
 
 test('regular orientation inverted alignment', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -105,7 +96,6 @@ test('regular orientation inverted alignment', async () => {
 }, 40000)
 
 test('regular orientation inverted alignment bottom', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -125,7 +115,6 @@ test('regular orientation inverted alignment bottom', async () => {
 }, 40000)
 
 test('regular orientation both horizontally flipped', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -145,7 +134,6 @@ test('regular orientation both horizontally flipped', async () => {
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -165,7 +153,6 @@ test('switch rows regular orientation both horizontally flipped', async () => {
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped rev 1', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -185,7 +172,6 @@ test('switch rows regular orientation both horizontally flipped rev 1', async ()
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped rev2', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -205,7 +191,6 @@ test('switch rows regular orientation both horizontally flipped rev2', async () 
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped both rev', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [

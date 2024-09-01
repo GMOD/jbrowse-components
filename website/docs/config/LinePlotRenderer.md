@@ -1,13 +1,14 @@
 ---
 id: lineplotrenderer
 title: LinePlotRenderer
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/wiggle/src/LinePlotRenderer/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinePlotRenderer/configSchema.ts)
 
 ### LinePlotRenderer - Slots
 
@@ -21,7 +22,7 @@ displayCrossHatches: {
     }
 ```
 
-## LinePlotRenderer - Derives from
+### LinePlotRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

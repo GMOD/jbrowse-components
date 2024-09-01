@@ -2,14 +2,14 @@
  * Helper class allows reading names index generated in JBrowse1
  * Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
  */
-import crc32 from 'buffer-crc32'
+import crc32 from 'crc/crc32'
 
 export default class HttpMap {
   url: string
 
   constructor(args: { url: string }) {
     // make sure url has a trailing slash
-    this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
+    this.url = args.url.endsWith('/') ? args.url : `${args.url}/`
   }
 
   /**
@@ -81,10 +81,10 @@ export default class HttpMap {
       while (hex.length < 8) {
         hex = `0${hex}`
       }
-      hex = hex.substr(8 - hashHexCharacters)
+      hex = hex.slice(8 - hashHexCharacters)
       const dirpath = []
       for (let i = 0; i < hex.length; i += 3) {
-        dirpath.push(hex.substring(i, i + 3))
+        dirpath.push(hex.slice(i, i + 3))
       }
       return `${dirpath.join('/')}.json${compress ? 'z' : ''}`
     }
@@ -92,9 +92,6 @@ export default class HttpMap {
   }
 
   hash(data: string) {
-    return crc32(Buffer.from(data))
-      .toString('hex')
-      .toLowerCase()
-      .replace('-', 'n')
+    return crc32(Buffer.from(data)).toString(16).toLowerCase().replace('-', 'n')
   }
 }

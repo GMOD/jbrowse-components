@@ -7,15 +7,20 @@ import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { updateStatus, Feature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
+import {
+  rectifyStats,
+  UnrectifiedQuantitativeStats,
+} from '@jbrowse/core/util/stats'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private setupP?: Promise<{ bigwig: BigWig; header: any }>
+  private setupP?: Promise<{
+    bigwig: BigWig
+    header: Awaited<ReturnType<BigWig['getHeader']>>
+  }>
 
   public static capabilities = [
     'hasResolution',
@@ -25,11 +30,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
+    const pm = this.pluginManager
     const bigwig = new BigWig({
-      filehandle: openLocation(
-        this.getConf('bigWigLocation'),
-        this.pluginManager,
-      ),
+      filehandle: openLocation(this.getConf('bigWigLocation'), pm),
     })
     const header = await updateStatus(
       'Downloading bigwig header',
@@ -41,7 +44,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -61,7 +64,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
+    return rectifyStats(header.totalSummary as UnrectifiedQuantitativeStats)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
@@ -81,21 +84,20 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         basesPerSpan: bpPerPx / resolution,
       })
 
-      for (let i = 0; i < feats.length; i++) {
-        const data = feats[i]
+      for (const data of feats) {
         if (source) {
-          // @ts-ignore
+          // @ts-expect-error
           data.source = source
         }
         const uniqueId = `${source}:${region.refName}:${data.start}-${data.end}`
-        // @ts-ignore
+        // @ts-expect-error
         data.refName = refName
         data.uniqueId = uniqueId
         observer.next({
-          // @ts-ignore
+          // @ts-expect-error
           get: (str: string) => (data as Record<string, unknown>)[str],
           id: () => uniqueId,
-          // @ts-ignore
+          // @ts-expect-error
           toJSON: () => data,
         })
       }
@@ -104,7 +106,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   // always render bigwig instead of calculating a feature density for it
-  async estimateRegionsStats(_regions: Region[]) {
+  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return { featureDensity: 0 }
   }
 

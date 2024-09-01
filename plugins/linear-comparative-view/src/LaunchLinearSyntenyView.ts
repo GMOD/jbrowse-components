@@ -1,21 +1,29 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 import { when } from 'mobx'
 
+// locals
+import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
+
 type LSV = LinearSyntenyViewModel
+
+interface ViewData {
+  loc: string
+  assembly: string
+  tracks?: string[]
+}
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearSyntenyView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       views,
       tracks = [],
     }: {
       session: AbstractSessionModel
-      views: { loc: string; assembly: string; tracks?: string[] }[]
+      views: ViewData[]
       tracks?: string[]
     }) => {
       try {
@@ -47,14 +55,22 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         const idsNotFound = [] as string[]
         await Promise.all(
           views.map(async (data, idx) => {
-            const view = model.views[idx]
-            const { loc, tracks = [] } = data
-            await view.navToLocString(loc)
-            tracks.forEach(track => tryTrack(view, track, idsNotFound))
+            const view = model.views[idx]!
+            const { assembly, loc, tracks = [] } = data
+            const asm = await assemblyManager.waitForAssembly(assembly)
+            if (!asm) {
+              throw new Error(`Assembly ${data.assembly} failed to load`)
+            }
+            await view.navToSearchString({ input: loc, assembly: asm })
+            tracks.forEach(track => {
+              tryTrack(view, track, idsNotFound)
+            })
           }),
         )
 
-        tracks.forEach(track => tryTrack(model, track, idsNotFound))
+        tracks.forEach(track => {
+          tryTrack(model, track, idsNotFound)
+        })
 
         if (idsNotFound.length) {
           throw new Error(
@@ -62,7 +78,7 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
           )
         }
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
         throw e
       }
     },
@@ -77,7 +93,7 @@ function tryTrack(
   try {
     model.showTrack(trackId)
   } catch (e) {
-    if (`${e}`.match('Could not resolve identifier')) {
+    if (/Could not resolve identifier/.exec(`${e}`)) {
       idsNotFound.push(trackId)
     } else {
       throw e

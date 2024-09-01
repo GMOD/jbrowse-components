@@ -47,8 +47,8 @@ JBrowse web will by default spin up on http://localhost:3000.
 You can select one of the sample configs to poke around with or to immediately
 start seeing changes you make in the codebase, or you can run JBrowse against a
 config with the plugin you're developing. See
-[the plugin tutorial](../simple_plugin_tutorial/01_introduction) if you need
-help starting with plugin development.
+[the plugin tutorial](/docs/tutorials/simple_plugin) if you need help starting
+with plugin development.
 
 If you have a plugin running on port 9000 from the plugin tutorial, navigate to
 
@@ -67,27 +67,26 @@ Open two tabs in your terminal at `~/jbrowse-components`; in one tab, run:
 
 ```bash
 cd products/jbrowse-desktop
-yarn serve
+yarn start
 ```
 
 And in the other tab, run:
 
 ```bash
 cd products/jbrowse-desktop
-yarn develop
+yarn electron
 ```
 
 Doing this, you can quickly restart the "react app" part of JBrowse (the tab
-where you ran `yarn develop`) during your development without having to wait for
-the electron app (`yarn serve` tab) to restart, as you would if you simply ran
-`yarn start` in one tab.
+where you ran `yarn electron`) during your development without having to wait
+for the electron app (`yarn start` tab) to restart.
 
 A new window running JBrowse desktop will open.
 
 ### Running JBrowse desktop with a plugin in development
 
 The following assumes your plugin is running on port `9000`, as shown in the
-[the plugin tutorial](../simple_plugin_tutorial/02_installation_and_setup).
+[the plugin tutorial](/docs/tutorials/simple_plugin).
 
 JBrowse will open on the splash screen when first spun up. The easiest way to
 see your local plugin running on JBrowse desktop is to select a quickstart
@@ -102,8 +101,8 @@ Plugin Store widget "Add Custom Plugin."
 <Figure caption="The 'Add Custom Plugin' button is at the top of the Plugin Store in JBrowse desktop." src="/img/desktop_add_cstm_plgn.png" />
 
 It's important to fill these fields in correctly, if you've followed the
-[the plugin tutorial](../simple_plugin_tutorial/01_introduction), the
-information you need will be in the `jbrowse_config.json` file.
+[the plugin tutorial](/docs/tutorials/simple_plugin), the information you need
+will be in the `jbrowse_config.json` file.
 
 You might see something like the following in your `jbrowse_config.json` file:
 
@@ -132,16 +131,16 @@ For easy access to this session, navigate `File` -> `Save as..` to save the
 not automatically reload when you make changes to your plugin code. To see these
 changes applied, **press `F5` to refresh the desktop react application**.
 
-You can also abort the running process under the "yarn develop" tab we set up
+You can also abort the running process under the "yarn electron" tab we set up
 earlier, and start it again. :::
 
 :::info If you would like to see your `console.log` output under the "yarn
-develop" tab of your desktop development environment, follow these steps:
+electron" tab of your desktop development environment, follow these steps:
 
 1. Create or edit the `.bash_profile` file typically found in the root directory
    of your profile
 2. Add `export ELECTRON_ENABLE_LOGGING=1` on a new line to the file
-3. Restart your terminal and JBrowse `yarn develop` process
+3. Restart your terminal and JBrowse `yarn electron` process
 
 You should now be able to see console log statements in your terminal when
 developing on JBrowse desktop (denoted by a message prefixed with something like
@@ -153,7 +152,7 @@ Now that you have your environments and your plugin running, you can start
 developing for JBrowse 2.
 
 If you took a detour from the plugin tutorial,
-[head back to where you left off](../simple_plugin_tutorial/03_adding_pluggable_element).
+[head back to where you left off](/docs/tutorials/simple_plugin).
 
 If you'd like some general development information, checkout the series of
-[developer guides](../../developer_guide) available.
+[developer guides](/docs/developer_guide) available.

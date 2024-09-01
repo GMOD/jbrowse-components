@@ -1,7 +1,6 @@
 ---
 id: desktop_spec_plugin_tutorial
 title: Writing a desktop specific plugin
-toplevel: true
 ---
 
 import Figure from '../figure'
@@ -192,9 +191,8 @@ you run your template plugin on the app to test.
 
 We'll need some way to accept the file from the user through the JBrowse UI.
 Adding a new widget here is the same as doing it for a typical JBrowse plugin
-(see the
-[simple JBrowse 2 plugin guide](../simple_plugin_tutorial/01_introduction) if
-you haven't already).
+(see the [simple JBrowse 2 plugin guide](/docs/tutorials/simple_plugin) if you
+haven't already).
 
 1. Create a basic component and add it through the plugin manager
 
@@ -393,7 +391,7 @@ function LocalFileChooser(props: {
                 if (file) {
                   if (isElectron) {
                     // here we are setting the location information for the file selected
-                    // these features are necessary for the vcftabixadapter
+                    // these features are necessary for the VcfTabixAdapter
                     setLocation({
                       localPath: (file as File & { path: string }).path,
                       locationType: 'LocalPathLocation',
@@ -471,7 +469,7 @@ onClick={() => {
     return 'localPath' in location
   }
   // we can determine the localpath from the data provided from the user submitting a file through the file selector
-  // @ts-ignore
+  // @ts-expect-error
   const localPath = isLocalPathLocation(model.trackData)
     ? model.trackData.localPath
     : ''
@@ -488,7 +486,7 @@ onClick={() => {
 ```
 
 You can see how easy the execute function is to use now. Where we currently have
-"echo ${localPath}" is where we're going to write our CLI commands.
+`"echo ${localPath}"` is where we're going to write our CLI commands.
 
 If relevant when writing your own plugin, you can put any string of valid CLI
 commands here and your child process will execute them to the best of its
@@ -503,9 +501,9 @@ For this plugin, the script we will run against the plain .vcf files provided
 through the JBrowse desktop UI will look like the following:
 
 ```bash
-bcftools sort "myfile.vcf" > "myfile.vcf.sorted.vcf"
-bgzip "myfile.vcf.sorted.vcf"
-tabix "myfile.vcf.sorted.vcf.gz
+bcftools sort myfile.vcf > myfile.vcf.sorted.vcf
+bgzip myfile.vcf.sorted.vcf
+tabix myfile.vcf.sorted.vcf.gz
 ```
 
 Remember to install these libraries (detailed in the
@@ -535,7 +533,7 @@ onClick={() => {
       })
 
       // after setting the relevant features in our model, we can add a new track
-      // @ts-ignore
+      // @ts-expect-error
       session.addTrackConf({
         trackId,
         type: 'VariantTrack',
@@ -551,7 +549,7 @@ onClick={() => {
       model.view?.showTrack(trackId)
 
       model.clearData()
-      // @ts-ignore
+      // @ts-expect-error
       session.hideWidget(model)
     },
 }}
@@ -591,7 +589,7 @@ Your final product should look something like the following:
 ## Distributing the plugin
 
 Distributing a desktop plugin is very similar to the
-[publishing steps outlined in the simple plugin tutorial](../simple_plugin_tutorial/04_publishing).
+[publishing steps outlined in the simple plugin tutorial](/docs/tutorials/simple_plugin).
 
 As stated before, we encourage you to clearly indicate when a plugin is intended
 for desktop use only, as desktop-only operations are likely to crash when used

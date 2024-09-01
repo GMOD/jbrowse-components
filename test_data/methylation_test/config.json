@@ -1,0 +1,132 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38_clip",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38_clip-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "hg38_clip.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "hg38_clip.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "id": "Mx1HRX2pW",
+    "name": "Sess",
+    "margin": 0,
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "952Gt6UH6",
+        "minimized": false,
+        "type": "LinearGenomeView",
+        "offsetPx": 117804,
+        "bpPerPx": 0.11375642592213243,
+        "displayedRegions": [
+          {
+            "refName": "20",
+            "start": 0,
+            "end": 29565,
+            "reversed": false,
+            "assemblyName": "hg38_clip"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "AV7S3J5wi",
+            "type": "AlignmentsTrack",
+            "configuration": "methylation_clip",
+            "minimized": false,
+            "displays": [
+              {
+                "id": "A5CESIgpSu",
+                "type": "LinearAlignmentsDisplay",
+                "PileupDisplay": {
+                  "id": "5kM9mT-Z47",
+                  "type": "LinearPileupDisplay",
+                  "heightPreConfig": 205,
+                  "configuration": {
+                    "type": "LinearPileupDisplay",
+                    "displayId": "methylation_clip-LinearAlignmentsDisplay_LinearPileupDisplay_xyz"
+                  },
+                  "showSoftClipping": false,
+                  "colorBy": {
+                    "type": "methylation"
+                  },
+                  "filterBy": {
+                    "flagInclude": 0,
+                    "flagExclude": 1540
+                  }
+                },
+                "SNPCoverageDisplay": {
+                  "id": "jheuExHPg_",
+                  "type": "LinearSNPCoverageDisplay",
+                  "heightPreConfig": 45,
+                  "configuration": {
+                    "type": "LinearSNPCoverageDisplay",
+                    "displayId": "methylation_clip-LinearAlignmentsDisplay_snpcoverage_xyz"
+                  },
+                  "selectedRendering": "",
+                  "resolution": 1,
+                  "constraints": {},
+                  "filterBy": {
+                    "flagInclude": 0,
+                    "flagExclude": 1540
+                  },
+                  "colorBy": {
+                    "type": "methylation"
+                  }
+                },
+                "snpCovHeight": 45,
+                "configuration": "methylation_clip-LinearAlignmentsDisplay",
+                "lowerPanelType": "LinearPileupDisplay"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "methylation_clip",
+      "name": "methylation_clip",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "methylation_clip.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "methylation_clip.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "hg38_clip.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "hg38_clip.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38_clip"]
+    }
+  ]
+}

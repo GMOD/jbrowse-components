@@ -5,13 +5,13 @@ import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   centerLineContainer: {
     background: 'transparent',
     height: '100%',
     zIndex: 5, // above the track but under menu
     position: 'absolute',
-    border: '1px black dashed',
+    border: `1px ${theme.palette.action.active} dashed`,
     borderTop: 'none',
     borderBottom: 'none',
     pointerEvents: 'none',
@@ -24,7 +24,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function CenterLine({ model }: { model: LGV }) {
+const CenterLine = observer(function ({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
@@ -60,6 +60,6 @@ function CenterLine({ model }: { model: LGV }) {
       )}
     </div>
   ) : null
-}
+})
 
-export default observer(CenterLine)
+export default CenterLine

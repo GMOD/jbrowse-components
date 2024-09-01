@@ -1,0 +1,67 @@
+import { Meta, Story } from '@storybook/blocks'
+import {
+  WithAggregateTextSearching,
+  WithPerTrackTextSearching,
+} from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Text Searching" />
+
+# Text searching
+
+## Aggregate search index
+
+An aggregate search index contains info for multiple tracks. This can be
+configured by passing the "aggregateTextSearchAdapters" (which would normally
+just be a single entry but could be multiple)
+
+<Story of={WithAggregateTextSearching} />
+
+## Per-track search index
+
+Per-track search indexes contain information for a single track.
+
+<Story of={WithPerTrackTextSearching} />
+
+# Preparing indexes
+
+In embedded mode, preparing search indexes is a little more awkward because the
+`jbrowse test-index` command normally looks for a config.json but embedded use
+cases don't generally use the config.json. Therefore, you can supply the --file
+argument to the `jbrowse text-index` command
+
+### Preparing aggregate search indexes
+
+If you use the `jbrowse text-index` command with the --files argument, you can
+create an aggregate index. E.g.
+
+```sh
+jbrowse text-index --file file1.gff.gz --fileId trackid_of_file1 --file file2.vcf.gz --fileId track_id_of_file2
+```
+
+This will output a directory "trix" with aggregate.ix, aggregate.ixx, and
+aggregate_meta.json which you can put into your embedded jbrowse config. The
+`--file` argument is helpful since you may not have an actual config. The
+argument to --fileId should ideally match the trackId you use at runtime.
+Supplying the correct trackId to --fileId will allow the track to automatically
+be opened when a user selects a search result
+
+### Preparing per-track search indexes
+
+Similar to the aggregate use case above, you can use `jbrowse-text-index` with
+the --files argument, but if it is just a single file supplied e.g.
+
+```
+jbrowse text-index --file myfile.gff3.gz --fileId track_id_of_myfile
+```
+
+then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and
+myfile.gff3.gz_meta.json. The --file argument is helpful since you may not have
+an actual config, and the --fileId is used to match the trackId you use for the
+file at runtime
+
+### Using a config file
+
+You can also use jbrowse text-index on a config.json file that is used for e.g.
+jbrowse-web in the embedded application, just copy the portions of the relevant
+config e.g. the `aggregateTextSearchAdapters` section into the arguments to
+`createViewState`

@@ -3,15 +3,17 @@ import { observer } from 'mobx-react'
 import { Menu, MenuItem } from '@jbrowse/core/ui'
 import { Instance } from 'mobx-state-tree'
 
-import SpreadsheetModel from '../models/Spreadsheet'
-import ViewModel from '../models/SpreadsheetView'
+// locals
+import type SpreadsheetModel from '../models/Spreadsheet'
+import type ViewModel from '../models/SpreadsheetView'
 
-export interface Props {
+const RowMenu = observer(function ({
+  viewModel,
+  spreadsheetModel,
+}: {
   viewModel: Instance<typeof ViewModel>
   spreadsheetModel: Instance<typeof SpreadsheetModel>
-}
-
-const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
+}) {
   const currentRowMenu = spreadsheetModel.rowMenuPosition
   const { setRowMenuPosition } = spreadsheetModel
 
@@ -25,7 +27,7 @@ const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
   }
 
   const row = spreadsheetModel.rowSet.rows[+rowNumber - 1]
-
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   function handleMenuItemClick(_event: unknown, callback: Function) {
     callback(viewModel, spreadsheetModel, rowNumber, row)
     rowMenuClose()
@@ -38,7 +40,7 @@ const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
         viewModel,
         spreadsheetModel,
         +rowNumber,
-        row,
+        row!,
       )
       return { ...item, disabled }
     }
@@ -47,7 +49,7 @@ const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
 
   return (
     <Menu
-      anchorEl={currentRowMenu && currentRowMenu.anchorEl}
+      anchorEl={currentRowMenu?.anchorEl}
       open={Boolean(currentRowMenu)}
       onMenuItemClick={handleMenuItemClick}
       onClose={rowMenuClose}

@@ -1,7 +1,6 @@
 ---
 id: linearreadarcsdisplay
 title: LinearReadArcsDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,9 +8,16 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends `BaseLinearDisplay`
+[plugins/alignments/src/LinearReadArcsDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
+
+the arc display is a non-block-based track, so draws to a single canvas and can
+connect multiple regions extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearReadArcsDisplay - Properties
 
@@ -28,7 +34,7 @@ type: types.literal('LinearReadArcsDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -95,6 +101,13 @@ drawLongRange: true
 
 ### LinearReadArcsDisplay - Getters
 
+#### getter: drawn
+
+```js
+// type
+boolean
+```
+
 #### getter: lineWidthSetting
 
 ```js
@@ -109,14 +122,16 @@ any
 number
 ```
 
-#### getter: ready
+### LinearReadArcsDisplay - Methods
+
+#### method: renderProps
+
+only used to tell system it's ready for export
 
 ```js
-// type
-boolean
+// type signature
+renderProps: () => any
 ```
-
-### LinearReadArcsDisplay - Methods
 
 #### method: trackMenuItems
 
@@ -129,15 +144,33 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions) => Promise<Element>
+renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
 
-#### action: reload
+#### action: setLastDrawnOffsetPx
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLastDrawnBpPerPx
+
+```js
+// type signature
+setLastDrawnBpPerPx: (n: number) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (f: boolean) => void
+```
+
+#### action: reload
 
 ```js
 // type signature
@@ -182,37 +215,11 @@ setDrawInter: (f: boolean) => void
 setDrawLongRange: (f: boolean) => void
 ```
 
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
-#### action: setDrawn
-
-used during tests to detect when we can complete a snapshot test
-
-```js
-// type signature
-setDrawn: (f: boolean) => void
-```
-
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: Filter) => void
-```
-
-#### action: setLastDrawnOffsetPx
-
-allows the drawing to slide around a little bit if it takes a long time to
-refresh
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setLineWidth

@@ -32,6 +32,7 @@ const useStyles = makeStyles()(theme => {
         stroke: primary.light,
       },
     },
+
     '@keyframes dash': {
       '0%': {
         strokeDashoffset: offset,
@@ -60,8 +61,12 @@ const Loading = observer(function ({
   // only show the loading message after 400ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 400)
-    return () => clearTimeout(timeout)
+    const timeout = setTimeout(() => {
+      setShown(true)
+    }, 400)
+    return () => {
+      clearTimeout(timeout)
+    }
   })
 
   return !shown ? null : (

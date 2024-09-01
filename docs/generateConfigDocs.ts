@@ -7,25 +7,82 @@ import {
   getAllFiles,
 } from './util'
 import fs from 'fs'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const contents = {} as { [key: string]: any }
 
-async function generateConfigDocs(files: string[]) {
+interface Derives {
+  name: string
+  docs: string
+  code: string
+}
+interface Id {
+  name: string
+  docs: string
+  code: string
+}
+interface Conf {
+  name: string
+  docs: string
+  category?: string
+  id: string
+}
+interface Slot {
+  name: string
+  docs: string
+  code: string
+}
+interface Config {
+  derives?: Derives
+  id?: Id
+  slots: Slot[]
+  config?: Conf
+  filename: string
+}
+
+function generateConfigDocs(files: string[]) {
+  const cwd = `${process.cwd()}/`
+  const contents = {} as Record<string, Config>
   extractWithComment(files, obj => {
     const fn = obj.filename
+    const fn2 = fn.replace(cwd, '')
     if (!contents[fn]) {
       contents[fn] = {
         derives: undefined,
         id: undefined,
         slots: [],
         config: undefined,
+        filename: fn2,
       }
     }
     const current = contents[fn]
-    const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(obj.comment, '#' + obj.type)
+    const name = rm(obj.comment, `#${obj.type}`) || obj.name
+    const docs = filter(filter(obj.comment, `#${obj.type}`), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
+
+    // category currently unused, but can organize sidebar
+    let category = rm(obj.comment, '#category')
+
+    if (!category) {
+      if (name.endsWith('Adapter')) {
+        category = 'adapter'
+      } else if (name.endsWith('Display')) {
+        category = 'display'
+      } else if (name.endsWith('View')) {
+        category = 'view'
+      } else if (name.endsWith('Renderer')) {
+        category = 'renderer'
+      } else if (name.includes('Root')) {
+        category = 'root'
+      } else if (name.endsWith('Track')) {
+        category = 'track'
+      } else if (name.endsWith('InternetAccount')) {
+        category = 'internetAccount'
+      } else if (name.endsWith('Connection')) {
+        category = 'connection'
+      } else if (name.endsWith('RpcDriver')) {
+        category = 'rpcDriver'
+      }
+    }
+
     if (obj.type === 'baseConfiguration') {
       current.derives = { ...obj, name, docs, code }
     } else if (obj.type === 'identifier') {
@@ -33,24 +90,26 @@ async function generateConfigDocs(files: string[]) {
     } else if (obj.type === 'slot') {
       current.slots.push({ ...obj, name, docs, code })
     } else if (obj.type === 'config') {
-      current.config = { ...obj, name, docs, id }
+      current.config = { ...obj, name, docs, id, category }
     }
   })
+  return contents
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
-  await generateConfigDocs(await getAllFiles())
+  const contents = generateConfigDocs(await getAllFiles())
 
-  Object.values(contents).forEach(({ config, slots, id, derives }) => {
-    if (config) {
-      const idstr = id
-        ? `### ${config.name} - Identifier
+  Object.values(contents).forEach(
+    ({ config, slots, id, derives, filename }) => {
+      if (config) {
+        const idstr = id
+          ? `### ${config.name} - Identifier
 
 #### slot: ${id.name}`
-        : ''
-      const derivesstr = derives
-        ? `## ${config.name} - Derives from
+          : ''
+        const derivesstr = derives
+          ? `### ${config.name} - Derives from
 
 
 ${derives.docs}
@@ -59,11 +118,9 @@ ${derives.docs}
 ${derives.code}
 \`\`\`
 `
-        : ''
-      const slotstr =
-        `${slots.length ? `### ${config.name} - Slots` : ''}\n` +
-        slots
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          : ''
+        const slotstr = `${slots.length ? `### ${config.name} - Slots` : ''}\n${slots
+
           .map(({ name, docs, code }: any) => {
             return `#### slot: ${name}
 
@@ -74,32 +131,35 @@ ${code}
 \`\`\`
 `
           })
-          .join('\n')
+          .join('\n')}`
 
-      fs.writeFileSync(
-        `website/docs/config/${config.name}.md`,
-        `---
+        const dir = 'website/docs/config'
+        try {
+          fs.mkdirSync(dir)
+        } catch (e) {}
+        fs.writeFileSync(
+          `${dir}/${config.name}.md`,
+          `---
 id: ${config.id}
 title: ${config.name}
-toplevel: true
 ---
 Note: this document is automatically generated from configuration objects in
 our source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[${filename}](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
 
 ${config.docs}
 
 ${idstr}
 
-
-
 ${slotstr}
 
 ${derivesstr}
-
 `,
-      )
-    }
-  })
+        )
+      }
+    },
+  )
 })()

@@ -20,7 +20,6 @@ const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'FORMAT', type: 'Text' }, // 8
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   const vcfVariant = vcfParser.parseLine(line)
   const vcfFeature = new VcfFeature({
@@ -47,14 +46,8 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   return row
 }
 
-export function parseVcfBuffer(
-  buffer: Buffer,
-  options: ParseOptions = {
-    hasColumnNameLine: false,
-    columnNameLineNumber: 0,
-    isValidRefName: () => false,
-  },
-) {
+export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
+  const { selectedAssemblyName } = options
   let { header, body } = splitVcfFileHeaderAndBody(bufferToString(buffer))
   const rows: Row[] = []
   const vcfParser = new VCF({ header })
@@ -76,14 +69,17 @@ export function parseVcfBuffer(
   for (let i = 0; i < vcfCoreColumns.length; i += 1) {
     columnDisplayOrder.push(i)
     columns[i] = {
-      name: vcfCoreColumns[i].name,
-      dataType: { type: vcfCoreColumns[i].type },
+      name: vcfCoreColumns[i]!.name,
+      dataType: { type: vcfCoreColumns[i]!.type },
     }
   }
   for (let i = 0; i < vcfParser.samples.length; i += 1) {
     const oi = vcfCoreColumns.length + i
     columnDisplayOrder.push(oi)
-    columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
+    columns[oi] = {
+      name: vcfParser.samples[i]!,
+      dataType: { type: 'Text' },
+    }
   }
 
   columnDisplayOrder.push(columnDisplayOrder.length)
@@ -101,14 +97,14 @@ export function parseVcfBuffer(
     columnDisplayOrder,
     hasColumnNames: true,
     columns,
-    assemblyName: options.selectedAssemblyName,
+    assemblyName: selectedAssemblyName,
   }
 }
 
 export function splitVcfFileHeaderAndBody(wholeFile: string) {
   // split into header and the rest of the file
   let headerEndIndex = 0
-  let prevChar
+  let prevChar: string | undefined
   for (; headerEndIndex < wholeFile.length; headerEndIndex += 1) {
     const c = wholeFile[headerEndIndex]
     if (prevChar === '\n' && c !== '#') {
@@ -118,7 +114,7 @@ export function splitVcfFileHeaderAndBody(wholeFile: string) {
   }
 
   return {
-    header: wholeFile.substr(0, headerEndIndex),
-    body: wholeFile.substr(headerEndIndex),
+    header: wholeFile.slice(0, Math.max(0, headerEndIndex)),
+    body: wholeFile.slice(headerEndIndex),
   }
 }

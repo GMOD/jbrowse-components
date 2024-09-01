@@ -120,12 +120,12 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz",
+          "uri": "https://github.com/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi",
+            "uri": "https://github.com/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz.tbi",
             "locationType": "UriLocation"
           }
         }

@@ -1,7 +1,6 @@
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
-import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 import {
   SnapshotOrInstance,
@@ -11,11 +10,11 @@ import {
 } from 'mobx-state-tree'
 
 // locals
-import { checkAbortSignal, updateStatus } from '../../util'
+import { checkAbortSignal, getSerializedSvg, updateStatus } from '../../util'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration'
 import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 
@@ -28,25 +27,25 @@ interface BaseRenderArgs extends RenderProps {
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
   theme: ThemeOptions
-  exportSVG: { rasterizeLayers?: boolean }
+  exportSVG?: {
+    rasterizeLayers?: boolean
+  }
 }
 
 export interface RenderArgs extends BaseRenderArgs {
   config: SnapshotOrInstance<AnyConfigurationModel>
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
   statusCallback?: (arg: string) => void
   config: SnapshotIn<AnyConfigurationModel>
-  filters: SerializedFilterChain
+  filters?: SerializedFilterChain
 }
 export interface RenderArgsDeserialized extends BaseRenderArgs {
   config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
-
-export type { RenderResults }
 
 export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
   html: string
@@ -108,7 +107,7 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
 
-    // hydrate res using ServerSideRenderedContent
+    // get res using ServerSideRenderedContent
     return {
       ...res,
       reactElement: (
@@ -132,9 +131,11 @@ export default class ServerSideRenderer extends RendererType {
     deserialized.config = this.configSchema.create(args.config || {}, {
       pluginManager: this.pluginManager,
     })
-    deserialized.filters = new SerializableFilterChain({
-      filters: args.filters,
-    })
+    deserialized.filters = args.filters
+      ? new SerializableFilterChain({
+          filters: args.filters,
+        })
+      : undefined
 
     return deserialized
   }
@@ -156,7 +157,7 @@ export default class ServerSideRenderer extends RendererType {
         {results.reactElement}
       </ThemeProvider>,
     )
-    delete results.reactElement
+    results.reactElement = undefined
     return { ...results, html }
   }
 
@@ -175,17 +176,8 @@ export default class ServerSideRenderer extends RendererType {
     )) as ResultsSerialized
 
     if (isSvgExport(results)) {
-      const { width, height, canvasRecordedData } = results
-
-      const C2S = await import('canvas2svg')
-      const ctx = new C2S.default(width, height)
-      const seq = new CanvasSequence(canvasRecordedData)
-      seq.execute(ctx)
-      const str = ctx.getSvg()
-      // innerHTML strips the outer <svg> element from returned data, we add
-      // our own <svg> element in the view's SVG export
-      results.html = str.innerHTML
-      delete results.reactElement
+      results.html = await getSerializedSvg(results)
+      results.reactElement = undefined
     }
     return results
   }
@@ -225,3 +217,5 @@ export default class ServerSideRenderer extends RendererType {
     return freed + freedRpc
   }
 }
+
+export { type RenderResults } from './RendererType'

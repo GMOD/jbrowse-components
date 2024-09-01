@@ -1,13 +1,14 @@
 ---
 id: dotplotdisplay
 title: DotplotDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/dotplot-view/src/DotplotDisplay/index.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/index.ts)
 
 ### DotplotDisplay - Identifier
 

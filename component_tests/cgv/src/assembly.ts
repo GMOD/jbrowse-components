@@ -1,32 +1,40 @@
 const assembly = {
-  name: 'hg19',
-  aliases: ['GRCh37'],
+  name: 'volvox',
+  aliases: ['vvx'],
   sequence: {
     type: 'ReferenceSequenceTrack',
-    trackId: 'Pd8Wh30ei9R',
+    trackId: 'volvox_refseq',
+    metadata: {
+      date: '2020-08-20',
+    },
+    formatAbout: {
+      hideUris: true,
+      config: "jexl:{extraField:'important data'}",
+    },
     adapter: {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-        locationType: 'UriLocation',
-      },
-      faiLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
-        locationType: 'UriLocation',
-      },
-      gziLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'test_data/volvox.2bit',
         locationType: 'UriLocation',
       },
     },
   },
   refNameAliases: {
     adapter: {
-      type: 'RefNameAliasAdapter',
-      location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
-        locationType: 'UriLocation',
-      },
+      type: 'FromConfigAdapter',
+      adapterId: 'W6DyPGJ0UU',
+      features: [
+        {
+          refName: 'ctgA',
+          uniqueId: 'alias1',
+          aliases: ['A', 'contigA'],
+        },
+        {
+          refName: 'ctgB',
+          uniqueId: 'alias2',
+          aliases: ['B', 'contigB'],
+        },
+      ],
     },
   },
 }

@@ -1,12 +1,15 @@
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
-import { alpha, Portal } from '@mui/material'
+import { alpha, Portal, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { Feature } from '@jbrowse/core/util'
-
+import {
+  useClientPoint,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react'
 // locals
 import { YSCALEBAR_LABEL_OFFSET, round } from './util'
-import { usePopper } from 'react-popper'
 
 const useStyles = makeStyles()(theme => ({
   // these styles come from
@@ -42,11 +45,10 @@ type Coord = [number, number]
 // React.forwardRef component for the tooltip, the ref is used for measuring
 // the size of the tooltip
 export type TooltipContentsComponent = React.ForwardRefExoticComponent<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >
 
-function Tooltip({
+const Tooltip = observer(function Tooltip({
   model,
   height,
   clientMouseCoord,
@@ -55,7 +57,7 @@ function Tooltip({
   TooltipContents,
   useClientY,
 }: {
-  model: { featureUnderMouse: Feature }
+  model: { featureUnderMouse?: Feature }
   useClientY?: boolean
   height: number
   clientMouseCoord: Coord
@@ -63,49 +65,35 @@ function Tooltip({
   clientRect?: DOMRect
   TooltipContents: TooltipContentsComponent
 }) {
+  const theme = useTheme()
   const { featureUnderMouse } = model
-  const [width, setWidth] = useState(0)
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
   const { classes } = useStyles()
+  const { refs, floatingStyles, context } = useFloating({
+    placement: 'right',
+    strategy: 'fixed',
+  })
 
-  // must be memoized a la https://github.com/popperjs/react-popper/issues/391
-  const virtElement = useMemo(
-    () => ({
-      getBoundingClientRect: () => {
-        const x = clientMouseCoord[0] + width / 2 + 20
-        const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
-        return {
-          top: y,
-          left: x,
-          bottom: y,
-          right: x,
-          width: 0,
-          height: 0,
-          x,
-          y,
-          toJSON() {},
-        }
-      },
-    }),
-    [clientRect?.top, clientMouseCoord, width, useClientY],
-  )
-  const { styles, attributes } = usePopper(virtElement, anchorEl)
+  const x = clientMouseCoord[0] + 5
+  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
+  const clientPoint = useClientPoint(context, { x, y })
+  const { getFloatingProps } = useInteractions([clientPoint])
+
+  const popperTheme = theme.components?.MuiPopper
 
   return featureUnderMouse ? (
     <>
-      <Portal>
+      <Portal container={popperTheme?.defaultProps?.container}>
         <div
-          ref={setAnchorEl}
           className={classes.tooltip}
-          // zIndex needed to go over widget drawer
-          style={{ ...styles.popper, zIndex: 100000 }}
-          {...attributes.popper}
+          ref={refs.setFloating}
+          style={{
+            ...floatingStyles,
+            zIndex: 100000,
+            pointerEvents: 'none',
+          }}
+          {...getFloatingProps()}
         >
-          <TooltipContents
-            ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
-            model={model}
-            feature={featureUnderMouse}
-          />
+          <TooltipContents model={model} feature={featureUnderMouse} />
         </div>
       </Portal>
 
@@ -118,6 +106,6 @@ function Tooltip({
       />
     </>
   ) : null
-}
+})
 
-export default observer(Tooltip)
+export default Tooltip

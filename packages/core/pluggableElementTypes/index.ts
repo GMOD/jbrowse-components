@@ -13,20 +13,6 @@ import AddTrackWorkflowType from './AddTrackWorkflowType'
 export * from './renderers'
 export * from './models'
 
-export {
-  AdapterType,
-  ConnectionType,
-  RendererType,
-  WidgetType,
-  TrackType,
-  DisplayType,
-  ViewType,
-  RpcMethodType,
-  InternetAccountType,
-  TextSearchAdapterType,
-  AddTrackWorkflowType,
-}
-
 export type PluggableElementType =
   | AdapterType
   | ConnectionType
@@ -52,3 +38,16 @@ export type PluggableElementMember =
   | keyof InternetAccountType
   | keyof TextSearchAdapterType
   | keyof AddTrackWorkflowType
+
+export { default as AdapterType } from './AdapterType'
+export { default as RendererType } from './renderers/RendererType'
+export { default as ConnectionType } from './ConnectionType'
+export { default as TrackType } from './TrackType'
+export { default as WidgetType } from './WidgetType'
+export { default as ViewType } from './ViewType'
+export { default as DisplayType } from './DisplayType'
+export { default as InternetAccountType } from './InternetAccountType'
+
+export { default as RpcMethodType } from './RpcMethodType'
+export { default as AddTrackWorkflowType } from './AddTrackWorkflowType'
+export { default as TextSearchAdapterType } from './TextSearchAdapterType'

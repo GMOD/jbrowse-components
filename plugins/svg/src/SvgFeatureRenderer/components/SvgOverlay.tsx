@@ -1,64 +1,8 @@
-import React from 'react'
-import { bpSpanPx } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { Region } from '@jbrowse/core/util/types'
+import React, { useEffect, useState } from 'react'
+import { bpSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 type LayoutRecord = [number, number, number, number]
-
-interface SvgOverlayProps {
-  region: Region
-  displayModel?: {
-    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
-    selectedFeatureId?: string
-    featureIdUnderMouse?: string
-    contextMenuFeature?: Feature
-  }
-  bpPerPx: number
-  blockKey: string
-  movedDuringLastMouseDown?: boolean
-  onFeatureMouseDown?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-  onFeatureMouseEnter?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-  onFeatureMouseOut?(
-    event:
-      | React.MouseEvent<SVGRectElement, MouseEvent>
-      | React.FocusEvent<SVGRectElement>,
-    featureId: string,
-  ): {}
-  onFeatureMouseOver?(
-    event:
-      | React.MouseEvent<SVGRectElement, MouseEvent>
-      | React.FocusEvent<SVGRectElement>,
-    featureId: string,
-  ): {}
-  onFeatureMouseUp?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-  onFeatureMouseLeave?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-  onFeatureMouseMove?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-  // synthesized from mouseup and mousedown
-  onFeatureClick?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-  onFeatureContextMenu?(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-    featureId: string,
-  ): {}
-}
 
 interface OverlayRectProps extends React.SVGProps<SVGRectElement> {
   rect?: LayoutRecord
@@ -100,94 +44,104 @@ function OverlayRect({
   )
 }
 
-function SvgOverlay({
+type ME = React.MouseEvent<SVGRectElement>
+type MEFE = ME | React.FocusEvent<SVGRectElement>
+
+const SvgOverlay = observer(function ({
   displayModel = {},
   blockKey,
   region,
   bpPerPx,
   movedDuringLastMouseDown,
   ...handlers
-}: SvgOverlayProps) {
+}: {
+  region: Region
+  displayModel?: {
+    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
+    selectedFeatureId?: string
+    featureIdUnderMouse?: string
+    contextMenuFeature?: Feature
+  }
+  bpPerPx: number
+  blockKey: string
+  movedDuringLastMouseDown?: boolean
+  onFeatureMouseDown?(event: ME, featureId: string): void
+  onFeatureMouseEnter?(event: ME, featureId: string): void
+  onFeatureMouseOut?(event: MEFE, featureId: string): void
+  onFeatureMouseOver?(event: MEFE, featureId: string): void
+  onFeatureMouseUp?(event: ME, featureId: string): void
+  onFeatureMouseLeave?(event: ME, featureId: string): void
+  onFeatureMouseMove?(event: ME, featureId: string): void
+  // synthesized from mouseup and mousedown
+  onFeatureClick?(event: ME, featureId: string): void
+  onFeatureContextMenu?(event: ME, featureId: string): void
+}) {
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
 
   const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
+  const [renderOverlay, setRenderOverlay] = useState(false)
+  useEffect(() => {
+    setRenderOverlay(true)
+  }, [])
 
-  function onFeatureMouseDown(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-  ) {
+  function onFeatureMouseDown(event: ME) {
     const { onFeatureMouseDown: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureMouseEnter(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-  ) {
+  function onFeatureMouseEnter(event: ME) {
     const { onFeatureMouseEnter: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureMouseOut(
-    event:
-      | React.MouseEvent<SVGRectElement, MouseEvent>
-      | React.FocusEvent<SVGRectElement>,
-  ) {
+  function onFeatureMouseOut(event: ME | React.FocusEvent<SVGRectElement>) {
     const { onFeatureMouseOut: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureMouseOver(
-    event:
-      | React.MouseEvent<SVGRectElement, MouseEvent>
-      | React.FocusEvent<SVGRectElement>,
-  ) {
+  function onFeatureMouseOver(event: ME | React.FocusEvent<SVGRectElement>) {
     const { onFeatureMouseOver: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureMouseUp(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-  ) {
+  function onFeatureMouseUp(event: ME) {
     const { onFeatureMouseUp: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureMouseLeave(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-  ) {
+  function onFeatureMouseLeave(event: ME) {
     const { onFeatureMouseLeave: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureMouseMove(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-  ) {
+  function onFeatureMouseMove(event: ME) {
     const { onFeatureMouseMove: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureClick(event: React.MouseEvent<SVGRectElement, MouseEvent>) {
+  function onFeatureClick(event: ME) {
     if (movedDuringLastMouseDown) {
       return undefined
     }
@@ -196,20 +150,18 @@ function SvgOverlay({
       return undefined
     }
     event.stopPropagation()
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  function onFeatureContextMenu(
-    event: React.MouseEvent<SVGRectElement, MouseEvent>,
-  ) {
+  function onFeatureContextMenu(event: ME) {
     const { onFeatureContextMenu: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
-  return (
+  return renderOverlay ? (
     <>
       {mouseoverFeatureId ? (
         <OverlayRect
@@ -242,7 +194,7 @@ function SvgOverlay({
         />
       ) : null}
     </>
-  )
-}
+  ) : null
+})
 
-export default observer(SvgOverlay)
+export default SvgOverlay

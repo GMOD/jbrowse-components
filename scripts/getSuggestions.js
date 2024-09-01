@@ -39,9 +39,7 @@ async function getFiles(dir) {
     }),
   )
 
-  return files
-    .filter(Boolean)
-    .reduce((all, folderContents) => all.concat(folderContents), [])
+  return files.filter(Boolean).flat()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -80,7 +78,7 @@ async function getFiles(dir) {
       } catch (error) {
         console.error(data.toString())
       }
-      if (response.request_seq && response.body && response.body.length) {
+      if (response.request_seq && response.body?.length) {
         const warnings = []
         response.body.forEach(contents => {
           warnings.push(
@@ -88,13 +86,11 @@ async function getFiles(dir) {
           )
         })
         if (warnings.length) {
-          /* eslint-disable no-console */
           console.log(files[(response.request_seq - 1) / 2])
           warnings.forEach(warning => {
             console.log(warning)
           })
           console.log()
-          /* eslint-enable no-console */
         }
       }
     })

@@ -1,6 +1,7 @@
 import React from 'react'
 import escapeHTML from 'escape-html'
 import dompurify from 'dompurify'
+import { linkify } from '../util'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
 // with some random uncommon ones removed. note: we just use this to run the content
@@ -30,6 +31,8 @@ const htmlTags = [
   'strong',
   'table',
   'tbody',
+  'sup',
+  'sub',
   'td',
   'tfoot',
   'th',
@@ -44,11 +47,25 @@ let added = false
 // adapted from is-html
 // https://github.com/sindresorhus/is-html/blob/master/index.js
 const full = new RegExp(htmlTags.map(tag => `<${tag}\\b[^>]*>`).join('|'), 'i')
-export function isHTML(str: string) {
+function isHTML(str: string) {
   return full.test(str)
 }
 
-export default function SanitizedHTML({ html }: { html: string }) {
+// note this is mocked during testing, see
+// packages/__mocks__/@jbrowse/core/ui/SanitizedHTML something about dompurify
+// behavior causes errors during tests, was seen in
+// products/jbrowse-web/src/tests/Connection.test.tsx test (can delete mock to
+// see)
+//
+export default function SanitizedHTML({
+  html: pre,
+  className,
+}: {
+  className?: string
+  html: string
+}) {
+  // try to add links to the text first
+  const html = linkify(pre)
   const value = isHTML(html) ? html : escapeHTML(html)
   if (!added) {
     added = true
@@ -70,8 +87,8 @@ export default function SanitizedHTML({ html }: { html: string }) {
   }
 
   return (
-    <div
-      // eslint-disable-next-line react/no-danger
+    <span
+      className={className}
       dangerouslySetInnerHTML={{
         __html: dompurify.sanitize(value),
       }}

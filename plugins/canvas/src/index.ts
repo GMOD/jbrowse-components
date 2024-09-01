@@ -21,7 +21,6 @@ export default class CanvasPlugin extends Plugin {
   }
 }
 
-export {
-  canvasFeatureRendererConfigSchema,
-  CanvasFeatureRendererReactComponent,
-}
+
+
+export {configSchema as canvasFeatureRendererConfigSchema, ReactComponent as CanvasFeatureRendererReactComponent} from './CanvasFeatureRenderer'

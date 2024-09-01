@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
@@ -15,7 +15,7 @@ function isValidJSON(string: string) {
 }
 
 export default class AddAssembly extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   target: string
 
   static description = 'Add an assembly to a JBrowse 2 configuration'
@@ -46,9 +46,8 @@ export default class AddAssembly extends JBrowseCommand {
     '$ jbrowse add-assembly myfile.fa.gz --load copy',
   ]
 
-  static args = [
-    {
-      name: 'sequence',
+  static args = {
+    sequence: Args.string({
       required: true,
       description: `sequence file or URL
 
@@ -56,11 +55,11 @@ If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai
 and can be optionally specified with --faiLocation
 If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
 optionally specified with --gziLocation`,
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    type: flags.string({
+    type: Flags.string({
       char: 't',
       description: `type of sequence, by default inferred from sequence file
 
@@ -79,65 +78,65 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description:
         'Name of the assembly; if not specified, will be guessed using the sequence file name',
     }),
-    alias: flags.string({
+    alias: Flags.string({
       char: 'a',
       description:
         'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
       multiple: true,
     }),
-    displayName: flags.string({
+    displayName: Flags.string({
       description:
         'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
     }),
-    faiLocation: flags.string({
+    faiLocation: Flags.string({
       description: '[default: <fastaLocation>.fai] FASTA index file or URL',
     }),
-    gziLocation: flags.string({
+    gziLocation: Flags.string({
       description:
         '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
     }),
-    refNameAliases: flags.string({
+    refNameAliases: Flags.string({
       description:
         'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
     }),
-    refNameAliasesType: flags.string({
+    refNameAliasesType: Flags.string({
       description:
         'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
       options: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     }),
-    refNameColors: flags.string({
+    refNameColors: Flags.string({
       description:
         'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
-    help: flags.help({ char: 'h' }),
-    load: flags.string({
+    help: Flags.help({ char: 'h' }),
+    load: Flags.string({
       char: 'l',
       description:
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
       options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
-    skipCheck: flags.boolean({
+    skipCheck: Flags.boolean({
       description:
         "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
     }),
-    overwrite: flags.boolean({
+    overwrite: Flags.boolean({
       description:
         'Overwrite existing assembly if one with the same name exists',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
@@ -145,17 +144,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
   async getAssembly(): Promise<Assembly> {
     let sequence: Sequence
-    const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
-        `Please specify the loading operation for this file with --load copy|symlink|move|inPlace`,
+        'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
         { exit: 110 },
       )
     } else if (!this.needLoadData(argsSequence) && runFlags.load) {
       this.error(
-        `URL detected with --load flag. Please rerun the function without the --load flag`,
+        'URL detected with --load flag. Please rerun the function without the --load flag',
         { exit: 120 },
       )
     }
@@ -181,31 +180,28 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
     switch (type) {
       case 'indexedFasta': {
+        const { skipCheck, force, load, faiLocation } = runFlags
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
+          !(skipCheck || force),
+          load === 'inPlace',
         )
         this.debug(`FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
-          runFlags.faiLocation || `${argsSequence}.fai`,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
+          faiLocation || `${argsSequence}.fai`,
+          !(skipCheck || force),
+          load === 'inPlace',
         )
         this.debug(`FASTA index location resolved to: ${indexLocation}`)
         if (!name) {
-          if (sequenceLocation.endsWith('.fasta')) {
-            name = path.basename(sequenceLocation, '.fasta')
-          } else {
-            name = path.basename(sequenceLocation, '.fa')
-          }
+          name = path.basename(
+            sequenceLocation,
+            sequenceLocation.endsWith('.fasta') ? '.fasta' : '.fa',
+          )
           this.debug(`Guessing name: ${name}`)
         }
-        const loaded = runFlags.load
-          ? await this.loadData(runFlags.load, [
-              sequenceLocation,
-              indexLocation,
-            ])
+        const loaded = load
+          ? await this.loadData(load, [sequenceLocation, indexLocation])
           : false
         if (loaded) {
           sequenceLocation = path.basename(sequenceLocation)
@@ -247,11 +243,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         )
         this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
         if (!name) {
-          if (sequenceLocation.endsWith('.fasta.gz')) {
-            name = path.basename(sequenceLocation, '.fasta.gz')
-          } else {
-            name = path.basename(sequenceLocation, '.fa.gz')
-          }
+          name = path.basename(
+            sequenceLocation,
+            sequenceLocation.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
+          )
           this.debug(`Guessing name: ${name}`)
         }
         const loaded = runFlags.load
@@ -345,7 +340,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'custom': {
-        const adapter = await this.readInlineOrFileJson(argsSequence)
+        const adapter = await this.readInlineOrFileJson<{ type: string }>(
+          argsSequence,
+        )
         this.debug(`Custom adapter: ${JSON.stringify(adapter)}`)
         if (!name) {
           if (isValidJSON(argsSequence)) {
@@ -381,9 +378,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
   async run() {
     // https://stackoverflow.com/a/35008327/2129219
     const exists = (s: string) =>
-      new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
+      new Promise(r => {
+        fs.access(s, fs.constants.F_OK, e => {
+          r(!e)
+        })
+      })
 
-    const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddAssembly)
 
     const output = runFlags.target || runFlags.out || '.'
 
@@ -402,7 +403,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const { name } = runFlags
 
     const assembly = await this.getAssembly()
-    if (runFlags.alias && runFlags.alias.length) {
+    if (runFlags.alias?.length) {
       this.debug(`Adding assembly aliases: ${runFlags.alias}`)
       assembly.aliases = runFlags.alias
     }
@@ -420,9 +421,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         runFlags.refNameAliasesType &&
         runFlags.refNameAliasesType === 'custom'
       ) {
-        const refNameAliasesConfig = await this.readInlineOrFileJson(
-          runFlags.refNameAliases,
-        )
+        const refNameAliasesConfig = await this.readInlineOrFileJson<{
+          type: string
+        }>(runFlags.refNameAliases)
         if (!refNameAliasesConfig.type) {
           this.error(
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
@@ -568,7 +569,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     let locationUrl: URL | undefined
     const destination = this.target
     try {
-      locationUrl = new URL(filePaths[0])
+      locationUrl = new URL(filePaths[0]!)
     } catch (error) {
       // ignore
     }

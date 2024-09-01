@@ -22,7 +22,7 @@ export interface ReducedLinearGenomeView {
   }[]
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3]
+const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
 
 export function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
@@ -37,11 +37,12 @@ function heightFromSpecificLevel(
     .map(v => v.height + 7)
     .reduce((a, b) => a + b, 0)
 
+  const v = views[level]!
   return (
     heightUpUntilThisPoint +
-    views[level].headerHeight +
-    views[level].scaleBarHeight +
-    getTrackPos(views[level], trackConfigId) +
+    v.headerHeight +
+    v.scaleBarHeight +
+    getTrackPos(v, trackConfigId) +
     1
   )
 }
@@ -53,7 +54,7 @@ export function getTrackPos(
   const idx = view.tracks.findIndex(t => t.configuration === trackConfigId)
   let accum = 0
   for (let i = 0; i < idx; i += 1) {
-    accum += view.tracks[i].height + 3 // +1px for trackresizehandle
+    accum += view.tracks[i]!.height + 3 // +1px for trackresizehandle
   }
   return accum
 }
@@ -65,9 +66,7 @@ export function getPxFromCoordinate(
   refName: string,
   coord: number,
 ) {
-  return (
-    ((bpToPx(view, { refName, coord }) || {}).offsetPx || 0) - view.offsetPx
-  )
+  return (bpToPx(view, { refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
 // Retrieves the y-position of a layout record in a track
@@ -79,7 +78,9 @@ export function overlayYPos(
   c: LayoutRecord,
   cond: boolean,
 ) {
-  const track = views[level].tracks.find(t => t.configuration === trackConfigId)
+  const track = views[level]!.tracks.find(
+    t => t.configuration === trackConfigId,
+  )
   const ypos = track
     ? clamp(c[TOP] - (track.scrollTop || 0), 0, track.height) +
       heightFromSpecificLevel(views, trackConfigId, level) +
@@ -121,26 +122,4 @@ function bpToPx(
 // Returns either 0 or height depending on condition
 export function interstitialYPos(cond: boolean, height: number) {
   return cond ? 0 : height
-}
-
-export function* generateMatches(
-  l1: Feature[] = [],
-  l2: Feature[] = [],
-  cb: (arg0: Feature) => number,
-) {
-  let i = 0
-  let j = 0
-  while (i < l1.length && j < l2.length) {
-    const a = cb(l1[i])
-    const b = cb(l2[j])
-    if (a < b) {
-      i++
-    } else if (b < a) {
-      j++
-    } else {
-      yield [l1[i], l2[j]]
-      i++
-      j++
-    }
-  }
 }

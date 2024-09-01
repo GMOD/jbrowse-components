@@ -1,8 +1,8 @@
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
-export type AdapterMetadata = {
+export interface AdapterMetadata {
   category?: string
   hiddenFromGUI?: boolean
   description?: string

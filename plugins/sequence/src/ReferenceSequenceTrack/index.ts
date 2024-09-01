@@ -4,7 +4,7 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { createReferenceSeqTrackConfig } from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function ReferenceSequenceTrackF(pluginManager: PluginManager) {
   pluginManager.addTrackType(() => {
     const configSchema = createReferenceSeqTrackConfig(pluginManager)
 

@@ -1,7 +1,6 @@
 ---
 id: dotplotdisplay
 title: DotplotDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx)
 
 ### DotplotDisplay - Properties
 
@@ -26,7 +27,7 @@ type: types.literal('DotplotDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -47,6 +48,13 @@ any
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderSvg
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
 ```
 
 ### DotplotDisplay - Actions

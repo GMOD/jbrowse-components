@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
 import { FileLocation } from '@jbrowse/core/util/types'
 
-export default (pluginManager: PluginManager) => {
+export default function GuessNCListF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
     (adapterGuesser: AdapterGuesser) => {

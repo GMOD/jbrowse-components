@@ -1,7 +1,6 @@
 ---
 id: hic_track
 title: Hi-C track configuration
-toplevel: true
 ---
 
 Example Hi-C track config:

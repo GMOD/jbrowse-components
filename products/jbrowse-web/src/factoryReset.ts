@@ -1,4 +1,4 @@
 export default async function factoryReset() {
-  // @ts-ignore
+  // @ts-expect-error
   window.location = window.location.pathname
 }

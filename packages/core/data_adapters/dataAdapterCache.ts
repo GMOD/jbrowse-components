@@ -1,14 +1,13 @@
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 import { AnyDataAdapter } from './BaseAdapter'
-import { Region } from '../util/types'
 import idMaker from '../util/idMaker'
 
-function adapterConfigCacheKey(
-  adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,
-) {
-  return `${idMaker(adapterConfig)}`
+type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
+
+export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
+  return `${idMaker(conf)}`
 }
 
 interface AdapterCacheEntry {
@@ -19,26 +18,32 @@ interface AdapterCacheEntry {
 let adapterCache: Record<string, AdapterCacheEntry> = {}
 
 /**
- * instantiate a data adapter, or return an already-instantiated one if we have one with the same
- * configuration
+ * instantiate a data adapter, or return an already-instantiated one if we have
+ * one with the same configuration
  *
- * @param pluginManager -
- * @param sessionId - session ID of the associated worker session.
- *   used for reference counting
- * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
+ * @param pluginManager
+ *
+ * @param sessionId - session ID of the associated worker session. used for
+ * reference counting
+ *
+ * @param adapterConfigSnapshot - plain-JS configuration snapshot for the
+ * adapter
  */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
-) {
+): Promise<AdapterCacheEntry> {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
-    const adapterType = (adapterConfigSnapshot || {}).type
+    const adapterType = adapterConfigSnapshot?.type
+
     if (!adapterType) {
       throw new Error(
-        'could not determine adapter type from adapter config snapshot',
+        `could not determine adapter type from adapter config snapshot ${JSON.stringify(
+          adapterConfigSnapshot,
+        )}`,
       )
     }
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
@@ -61,12 +66,7 @@ export async function getAdapter(
     //
     const { AdapterClass, getAdapterClass } = dataAdapterType
 
-    // @ts-ignore
     const CLASS = AdapterClass || (await getAdapterClass())
-    if (!CLASS) {
-      throw new Error('Failed to get adapter')
-    }
-
     const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
     // store it in our cache
@@ -88,17 +88,15 @@ export async function getAdapter(
  * internally, staying with the same worker session ID
  */
 export type getSubAdapterType = (
-  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function freeAdapterResources(specification: Record<string, any>) {
   let deleteCount = 0
-
   const specKeys = Object.keys(specification)
 
-  // if we don't specify a range, delete any adapters that are
-  // only associated with that session
+  // if we don't specify a range, delete any adapters that are only associated
+  // with that session
   if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
     const { sessionId } = specification
     Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
@@ -111,17 +109,13 @@ export function freeAdapterResources(specification: Record<string, any>) {
   } else {
     // otherwise call freeResources on all the cached data adapters
     Object.values(adapterCache).forEach(cacheEntry => {
-      if (!cacheEntry.dataAdapter.freeResources) {
-        console.warn(cacheEntry.dataAdapter, 'does not implement freeResources')
-      } else {
-        const regions =
-          specification.regions ||
-          (specification.region ? [specification.region] : [])
-        regions.forEach((region: Region) => {
-          if (region.refName !== undefined) {
-            cacheEntry.dataAdapter.freeResources(region)
-          }
-        })
+      const regions =
+        specification.regions ||
+        (specification.region ? [specification.region] : [])
+      for (const region of regions) {
+        if (region.refName !== undefined) {
+          cacheEntry.dataAdapter.freeResources(region)
+        }
       }
     })
   }

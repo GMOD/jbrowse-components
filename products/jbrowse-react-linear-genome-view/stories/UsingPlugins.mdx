@@ -1,0 +1,59 @@
+import { Meta, Story } from '@storybook/blocks'
+import {
+  WithInlinePlugins,
+  WithExternalPlugin,
+} from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Using Plugins" />
+
+# Using plugins
+
+## Plugins defined in your code
+
+This example loads a plugin that is defined in your own source code. The plugin
+adds an extra action from clicking and dragging a region with the mouse that
+console.log's the region that was selected
+
+<Story of={WithInlinePlugins} />
+
+## Plugins loaded from external URL
+
+This example loads a plugin from an external URL
+
+<Story of={WithExternalPlugin} />
+
+## Plugins loaded from NPM
+
+This example is similar to defining an inline plugin. This is not a live example
+as we are not actually installing `jbrowse-plugin-gwas` into our monorepo, but
+you can do this in your own code
+
+```
+import React from 'react'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
+import GWASPlugin from 'jbrowse-plugin-gwas'
+import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
+import { getVolvoxConfig } from './util'
+
+
+
+export const Example = () => {
+  const { assembly, tracks } = getVolvoxConfig()
+  const state = createViewState({
+    assembly,
+    plugins: [GWASPlugin],
+    tracks,
+    location: 'ctgA:1105..1221',
+  })
+
+  return (
+    <div>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
+
+```

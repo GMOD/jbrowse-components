@@ -36,7 +36,7 @@ export default class Box extends FeatureGlyph {
 
   makeSideLabel(text: string, fRect: FeatureRect) {
     if (text.length > 100) {
-      text = text.slice(0, 100) + '…'
+      text = `${text.slice(0, 100)}…`
     }
 
     return {
@@ -49,9 +49,9 @@ export default class Box extends FeatureGlyph {
     }
   }
 
-  makeBottomOrTopLabel(text = '', fRect: FeatureRect) {
+  makeBottomOrTopLabel(text, fRect: FeatureRect) {
     if (text.length > 100) {
-      text = text.slice(0, 100) + '…'
+      text = `${text.slice(0, 100)}…`
     }
     return {
       text: text,

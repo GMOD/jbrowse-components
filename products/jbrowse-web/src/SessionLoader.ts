@@ -1,82 +1,21 @@
-import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, {
   PluginDefinition,
   PluginRecord,
-  isUMDPluginDefinition,
-  isCJSPluginDefinition,
-  isESMPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
-import { fromUrlSafeB64 } from './util'
-import { readSessionFromDynamo } from './sessionSharing'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { openLocation } from '@jbrowse/core/util/io'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import shortid from 'shortid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 
-type Config = SnapshotOut<AnyConfigurationModel>
+// locals
+import { readSessionFromDynamo } from './sessionSharing'
+import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
-function addRelativeUris(config: Config, base: URL) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativeUris(config[key], base)
-      } else if (key === 'uri') {
-        config.baseUri = base.href
-      }
-    }
-  }
-}
-
-// raw readConf alternative for before conf is initialized
-function readConf(
-  { configuration = {} }: { configuration?: Config },
-  attr: string,
-  def: string,
-) {
-  return configuration[attr] || def
-}
-
-async function fetchPlugins() {
-  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} fetching plugins`,
-    )
-  }
-  return response.json() as Promise<{ plugins: PluginDefinition[] }>
-}
-
-async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  const storePlugins = await fetchPlugins()
-  return pluginsToCheck.every(p => {
-    if (isUMDPluginDefinition(p)) {
-      return Boolean(
-        storePlugins.plugins.find(
-          pp =>
-            isUMDPluginDefinition(p) &&
-            (('url' in pp && 'url' in p && p.url === pp.url) ||
-              ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
-        ),
-      )
-    }
-    if (isESMPluginDefinition(p)) {
-      return Boolean(
-        storePlugins.plugins.find(
-          pp =>
-            isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
-        ),
-      )
-    }
-    if (isCJSPluginDefinition(p)) {
-      return Boolean(
-        storePlugins.plugins.find(
-          pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
-        ),
-      )
-    }
-    return false
-  })
+export interface SessionTriagedInfo {
+  snap: unknown
+  origin: string
+  reason: PluginDefinition[]
 }
 
 const SessionLoader = types
@@ -89,30 +28,31 @@ const SessionLoader = types
     sessionTracks: types.maybe(types.string),
     assembly: types.maybe(types.string),
     tracks: types.maybe(types.string),
+    tracklist: types.maybe(types.boolean),
+    highlight: types.maybe(types.string),
+    nav: types.maybe(types.boolean),
+    initialTimestamp: types.number,
   })
   .volatile(() => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    blankSession: false as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionTriaged: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    shareWarningOpen: false as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    configSnapshot: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionSnapshot: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionSpec: undefined as any,
+    sessionTriaged: undefined as SessionTriagedInfo | undefined,
+    configSnapshot: undefined as Record<string, unknown> | undefined,
+    sessionSnapshot: undefined as Record<string, unknown> | undefined,
+    sessionSpec: undefined as Record<string, unknown> | undefined,
+    blankSession: false,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
     sessionError: undefined as unknown,
     configError: undefined as unknown,
     bc1:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_request_session'),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.BroadcastChannel
+        ? new window.BroadcastChannel('jb_request_session')
+        : undefined,
     bc2:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_respond_session'),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.BroadcastChannel
+        ? new window.BroadcastChannel('jb_respond_session')
+        : undefined,
   }))
   .views(self => ({
     get isSharedSession() {
@@ -164,7 +104,6 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
@@ -180,21 +119,17 @@ const SessionLoader = types
     setSessionPlugins(plugins: PluginRecord[]) {
       self.sessionPlugins = plugins
     },
-    setConfigSnapshot(snap: unknown) {
+    setConfigSnapshot(snap: Record<string, unknown>) {
       self.configSnapshot = snap
     },
 
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
-    setSessionTriaged(args?: {
-      snap: unknown
-      origin: string
-      reason: { url?: string }[]
-    }) {
+    setSessionTriaged(args?: SessionTriagedInfo) {
       self.sessionTriaged = args
     },
-    setSessionSnapshotSuccess(snap: unknown) {
+    setSessionSnapshotSuccess(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
     },
   }))
@@ -251,10 +186,12 @@ const SessionLoader = types
     },
 
     async fetchConfig() {
-      let { configPath = 'config.json' } = self
+      // @ts-expect-error
 
-      // @ts-ignore
-      // eslint-disable-next-line no-underscore-dangle
+      let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
+
+      // @ts-expect-error
+
       if (window.__jbrowseCacheBuster) {
         configPath += `?rand=${Math.random()}`
       }
@@ -272,11 +209,12 @@ const SessionLoader = types
         const configPlugins = config.plugins || []
         const configPluginsAllowed = await checkPlugins(configPlugins)
         if (!configPluginsAllowed) {
-          return self.setSessionTriaged({
+          self.setSessionTriaged({
             snap: config,
             origin: 'config',
             reason: configPlugins,
           })
+          return
         }
       }
       await this.fetchPlugins(config)
@@ -285,7 +223,7 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
-      const query = (self.sessionQuery as string).replace('local-', '')
+      const query = self.sessionQuery!.replace('local-', '')
 
       // check if
       if (sessionStr) {
@@ -305,10 +243,12 @@ const SessionLoader = types
                   resolve(msg.data)
                 }
               }
-              setTimeout(() => reject(), 1000)
+              setTimeout(() => {
+                reject(new Error('timeout'))
+              }, 1000)
             },
           )
-          return this.setSessionSnapshot({ ...result, id: shortid() })
+          await this.setSessionSnapshot({ ...result, id: nanoid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
@@ -320,21 +260,22 @@ const SessionLoader = types
     async fetchSharedSession() {
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
+        // @ts-expect-error
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
         self.password || '',
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: nanoid() })
     },
 
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
-        // @ts-ignore
+        // @ts-expect-error
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      await this.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: nanoid() })
     },
 
     decodeSessionSpec() {
@@ -345,7 +286,15 @@ const SessionLoader = types
     },
 
     decodeJb1StyleSession() {
-      const { loc, tracks, assembly, sessionTracksParsed: sessionTracks } = self
+      const {
+        loc,
+        tracks,
+        assembly,
+        tracklist,
+        nav,
+        highlight,
+        sessionTracksParsed: sessionTracks,
+      } = self
       if (loc) {
         self.sessionSpec = {
           sessionTracks,
@@ -356,6 +305,9 @@ const SessionLoader = types
               sessionTracks,
               loc,
               assembly,
+              tracklist,
+              nav,
+              highlight: highlight?.split(' '),
             },
           ],
         }
@@ -363,9 +315,9 @@ const SessionLoader = types
     },
 
     async decodeJsonUrlSession() {
-      // @ts-ignore
+      // @ts-expect-error
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      await this.setSessionSnapshot({ ...session.session, id: shortid() })
+      await this.setSessionSnapshot({ ...session.session, id: nanoid() })
     },
 
     async afterCreate() {
@@ -476,17 +428,17 @@ export function loadSessionSpec(
       throw new Error('rootModel not initialized')
     }
     try {
-      // @ts-ignore
+      // @ts-expect-error
       rootModel.setSession({
         name: `New session ${new Date().toLocaleString()}`,
       })
 
-      // @ts-ignore
+      // @ts-expect-error
       sessionTracks.forEach(track => rootModel.session.addTrackConf(track))
 
       await Promise.all(
         views.map(view =>
-          pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + view.type, {
+          pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {
             ...view,
             session: rootModel.session,
           }),

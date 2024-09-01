@@ -3,11 +3,13 @@ id: 01_introduction
 title: Introduction
 ---
 
+import Figure from '../../figure'
+
 ## Welcome!
 
 This tutorial will show you how to get a JBrowse 2 linear genome view embedded
 in a website. It is similar to a
-[tutorial given a BCC2020](../../archive/bcc2020_embedding_jbrowse_01_getting_started),
+[tutorial given a BCC2020](/docs/archive/bcc2020_embedding/bcc2020_embedding_jbrowse_01_getting_started/),
 but has been updated to reflect the final, released version of the interface.
 
 ## What is JBrowse 2
@@ -41,7 +43,7 @@ JBrowse Linear Genome View is designed to work within an existing web page. You
 can easily add one or several of these views to a page without the use of
 iframes, and control and react to each instance individually.
 
-![JBrowse Linear Genome View in a web page](./img/final.png)
+<Figure caption="JBrowse Linear Genome View in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
 ## Who this tutorial is for
 

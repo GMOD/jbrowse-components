@@ -5,7 +5,7 @@ import {
   rectifyStats,
   scoresToStats,
   calcPerBaseStats,
-  UnrectifiedFeatureStats,
+  UnrectifiedQuantitativeStats,
 } from './stats'
 
 test('calc std', () => {
@@ -21,12 +21,12 @@ test('calc std', () => {
 test('test rectify', () => {
   // mean of 0 bases covered = 0
   expect(
-    rectifyStats({ basesCovered: 0 } as UnrectifiedFeatureStats).scoreMean,
+    rectifyStats({ basesCovered: 0 } as UnrectifiedQuantitativeStats).scoreMean,
   ).toEqual(0)
   const s = rectifyStats({
     featureCount: 10,
     scoreSum: 1000,
-  } as UnrectifiedFeatureStats)
+  } as UnrectifiedQuantitativeStats)
 
   expect(s.scoreMean).toEqual(100)
   expect(s.featureCount).toEqual(10)
@@ -36,7 +36,7 @@ test('test rectify', () => {
       featureCount: 3,
       scoreSum: 6,
       scoreSumSquares: 14,
-    } as UnrectifiedFeatureStats).scoreStdDev,
+    } as UnrectifiedQuantitativeStats).scoreStdDev,
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 

@@ -57,7 +57,7 @@ export function makeAbortError() {
 
 export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
   if (!signal) {
-    return Observable.create()
+    return new Observable()
   }
   return fromEvent(signal, 'abort')
 }
@@ -78,6 +78,6 @@ export function isAbortException(exception: unknown): boolean {
       // Error: aborted
       // AbortError: aborted
       // AbortError: The user aborted a request.
-      !!exception.message.match(/\b(aborted|AbortError)\b/i))
+      !!/\b(aborted|aborterror)\b/i.test(exception.message))
   )
 }

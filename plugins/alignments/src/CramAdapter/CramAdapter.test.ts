@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import { LocalFile } from 'generic-filehandle'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -28,6 +29,7 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
         locationType: 'LocalPathLocation',
       },
+      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
@@ -40,8 +42,8 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
     end: 20000,
   })
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray[0].get('refName')).toBe('ctgA')
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  expect(featuresArray[0]!.get('refName')).toBe('ctgA')
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(3809)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
@@ -63,6 +65,7 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
         locationType: 'LocalPathLocation',
       },
+      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
@@ -74,8 +77,8 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
     start: 0,
     end: 100,
   })
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  const f = featuresArray[0].toJSON()
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  const f = featuresArray[0]!.toJSON()
   expect(f.refName).toBe('ctgA')
   expect(f.start).toBe(2)
   expect(f.end).toBe(102)

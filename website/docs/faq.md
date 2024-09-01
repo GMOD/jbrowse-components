@@ -152,7 +152,8 @@ also because you can manually edit in advanced configs after your tracks are
 loaded; however be careful:s corrupt configs can produce hard to understand
 errors, because our config system is strongly typed.
 
-Reach out to the team [on gitter](https://gitter.im/GMOD/jbrowse2) or in the
+Reach out to the team
+[on gitter](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im) or in the
 [discussions](https://github.com/GMOD/jbrowse-components/discussions) if you
 have any complex configuration issues.
 
@@ -233,6 +234,72 @@ While adding the track to the `config.json`, you're adding additional
 configurations using the --config option. This additional configuration is a
 "renderer" on the display that your track will be using. In this case, this .vcf
 will be using the `LinearBasicDisplay`.
+
+### How do I get (more) categories to filter on in the faceted track selector?
+
+The faceted track selector displays all the different adapters, categories, and
+all the metadata. Categories are also used to group tracks in the track
+selector. New categories can be added with the `--category` option from
+`jbrowse add-track`.
+
+Alternatively, you can add a metadata key to a track, which will be used in the
+faceted track selector:
+
+```
+{
+  "name": "mytrack",
+  ...
+  "metadata": {
+    "origin": "public",
+    "data_added": "2024-02-20"
+  }
+}
+```
+
+### Can I compress the config.json, it's large and users have to download it?
+
+You can set up your server to serve zipped files. Most cloud-based services,
+like AWS Amplify and AWS CloudFront, already do this automatically. However, for
+Apache and Nginx, you need to configure them manually.
+
+For Nginx, you can enable gzip compression by editing the config.template. See
+for instance for a set of reasonable nginx defaults:
+https://gist.github.com/sydcanem/3e00c09b3361927b2fd1#file-nginx-gzip-conf
+
+```
+server {
+    ...
+    # Enable gzip compression.
+    # Default: off
+    gzip on;
+
+    # make sure to **at least** allow json to be compressed, multiple
+    gzip_types
+      application/json
+}
+```
+
+To enable compression in Apache, you can use the mod_deflate module.
+
+```
+sudo a2enmod deflate
+sudo systemctl restart apache2
+```
+
+Add the following configuration to your Apache configuration file (e.g.,
+/etc/apache2/sites-available/000-default.conf):
+
+```
+<IfModule mod_deflate.c>
+    # Compress output
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+```
+
+By enabling gzip compression, your config.json and other specified files will be
+served in a compressed format, reducing the file size and improving download
+times for your users.
 
 ## Curiosities
 

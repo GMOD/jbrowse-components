@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import Ruler from './Ruler'
 import Controls from './Controls'
 import ImportForm from './ImportForm'
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 
 const dragHandleHeight = 3
 
@@ -17,16 +17,9 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
-    background: 'white',
   },
   scroller: {
     overflow: 'auto',
-  },
-  sliceRoot: {
-    background: 'none',
-    // background: theme.palette.background.paper,
-    boxSizing: 'content-box',
-    display: 'block',
   },
 }))
 
@@ -36,8 +29,7 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
       {model.staticSlices.map(slice => (
         <Ruler
           key={assembleLocString(
-            // @ts-ignore
-            slice.region.elided ? slice.region.regions[0] : slice.region,
+            slice.region.elided ? slice.region.regions[0]! : slice.region,
           )}
           model={model}
           slice={slice}
@@ -67,15 +59,11 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
   const showImportForm = !initialized && !model.disableImportForm
   const showFigure = initialized && !showImportForm
 
-  return (
-    <>
-      {showImportForm || model.error ? (
-        <ImportForm model={model} />
-      ) : showFigure ? (
-        <CircularViewLoaded model={model} />
-      ) : null}
-    </>
-  )
+  return showImportForm || model.error ? (
+    <ImportForm model={model} />
+  ) : showFigure ? (
+    <CircularViewLoaded model={model} />
+  ) : null
 })
 
 const CircularViewLoaded = observer(function ({
@@ -97,29 +85,22 @@ const CircularViewLoaded = observer(function ({
   return (
     <div className={classes.root} style={{ width, height }} data-testid={id}>
       <div className={classes.scroller} style={{ width, height }}>
-        <div
+        <svg
           style={{
-            transform: [`rotate(${offsetRadians}rad)`].join(' '),
+            transform: `rotate(${offsetRadians}rad)`,
             transition: 'transform 0.5s',
             transformOrigin: centerXY.map(x => `${x}px`).join(' '),
+            position: 'absolute',
+            left: 0,
+            top: 0,
           }}
+          width={figureWidth}
+          height={figureHeight}
         >
-          <svg
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-            }}
-            className={classes.sliceRoot}
-            width={figureWidth + 'px'}
-            height={figureHeight + 'px'}
-            version="1.1"
-          >
-            <g transform={`translate(${centerXY})`}>
-              <Slices model={model} />
-            </g>
-          </svg>
-        </div>
+          <g transform={`translate(${centerXY})`}>
+            <Slices model={model} />
+          </g>
+        </svg>
       </div>
       <Controls model={model} />
       {hideVerticalResizeHandle ? null : (

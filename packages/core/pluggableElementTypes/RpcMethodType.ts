@@ -1,7 +1,7 @@
+import mapObject from '../util/map-obj'
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
-import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import {
   isAppRootModel,
   isUriLocation,
@@ -16,22 +16,30 @@ import {
   RemoteAbortSignal,
 } from '../rpc/remoteAbortSignals'
 
+interface SerializedArgs {
+  signal?: RemoteAbortSignal
+  blobMap?: Record<string, File>
+}
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  name = 'UNKNOWN'
-
   constructor(public pluginManager: PluginManager) {
-    super({ name: '' })
+    super({})
   }
 
-  async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
+  async serializeArguments(
+    args: Record<string, unknown>,
+    rpcDriverClassName: string,
+  ): Promise<Record<string, unknown>> {
     const blobMap = getBlobMap()
-    await this.augmentLocationObjects(args)
+    await this.augmentLocationObjects(args, rpcDriverClassName)
     return { ...args, blobMap }
   }
 
-  async serializeNewAuthArguments(loc: UriLocation) {
+  async serializeNewAuthArguments(
+    loc: UriLocation,
+    rpcDriverClassName: string,
+  ) {
     const rootModel = this.pluginManager.rootModel
 
     // args dont need auth or already have auth
@@ -39,30 +47,32 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       return loc
     }
 
-    const account = rootModel?.findAppropriateInternetAccount(loc)
+    const account = rootModel.findAppropriateInternetAccount(loc)
 
-    if (account) {
+    // mutating loc object is not allowed in MainThreadRpcDriver, and is only
+    // needed for web worker RPC
+    if (account && rpcDriverClassName !== 'MainThreadRpcDriver') {
       loc.internetAccountPreAuthorization =
         await account.getPreAuthorizationInformation(loc)
     }
     return loc
   }
 
-  async deserializeArguments<
-    SERIALIZED extends {
-      signal?: RemoteAbortSignal
-      blobMap?: Record<string, File>
-    },
-  >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
+  async deserializeArguments<T extends SerializedArgs>(
+    serializedArgs: T,
+    _rpcDriverClassName: string,
+  ) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
     const { signal } = serializedArgs
-    if (signal && isRemoteAbortSignal(signal)) {
-      return { ...serializedArgs, signal: deserializeAbortSignal(signal) }
-    }
 
-    return { ...serializedArgs, signal: undefined }
+    return {
+      ...serializedArgs,
+      signal: isRemoteAbortSignal(signal)
+        ? deserializeAbortSignal(signal)
+        : undefined,
+    }
   }
 
   abstract execute(
@@ -82,19 +92,18 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     serializedReturn: unknown,
     _args: unknown,
     _rpcDriverClassName: string,
-  ): Promise<unknown> {
-    let r
-    const { rootModel } = this.pluginManager
+  ) {
+    let r: unknown
     try {
       r = await serializedReturn
     } catch (error) {
       if (isAuthNeededException(error)) {
-        // @ts-ignore
-        const retryAccount = rootModel?.createEphemeralInternetAccount(
-          `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
-          {},
-          error.url,
-        )
+        const retryAccount = // @ts-expect-error
+          this.pluginManager.rootModel?.createEphemeralInternetAccount(
+            `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
+            {},
+            error.url,
+          )
         throw new RetryError(
           'Retrying with created internet account',
           retryAccount.internetAccountId,
@@ -105,30 +114,21 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async augmentLocationObjects(thing: any): Promise<any> {
-    if (isStateTreeNode(thing) && !isAlive(thing)) {
-      return thing
-    }
+  private async augmentLocationObjects(
+    thing: Record<string, unknown>,
+    rpcDriverClassName: string,
+  ) {
+    const uris = [] as UriLocation[]
 
-    if (isUriLocation(thing)) {
-      await this.serializeNewAuthArguments(thing)
-    }
-    if (Array.isArray(thing)) {
-      for (const val of thing) {
-        await this.augmentLocationObjects(val)
+    // using map-obj avoids cycles, seen in circular view svg export
+    mapObject(thing, val => {
+      if (isUriLocation(val)) {
+        uris.push(val)
       }
+    })
+    for (const uri of uris) {
+      await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }
-    if (typeof thing === 'object' && thing !== null) {
-      for (const value of Object.values(thing)) {
-        if (Array.isArray(value)) {
-          for (const val of value) {
-            await this.augmentLocationObjects(val)
-          }
-        } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(value)
-        }
-      }
-    }
+    return thing
   }
 }

@@ -1,17 +1,24 @@
 import React from 'react'
 import {
-  Dialog,
+  Dialog as MUIDialog,
   DialogTitle,
-  IconButton,
-  Divider,
   DialogProps,
+  Divider,
+  IconButton,
   ScopedCssBaseline,
+  ThemeProvider,
+  createTheme,
+  useTheme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+import { ErrorBoundary } from 'react-error-boundary'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
+// locals
+import ErrorMessage from './ErrorMessage'
+import SanitizedHTML from './SanitizedHTML'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -22,31 +29,67 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function JBrowseDialog(props: DialogProps & { title: string }) {
-  const { classes } = useStyles()
-  const { title, children, onClose } = props
-
+function DialogError({ error }: { error: unknown }) {
   return (
-    <Dialog {...props}>
-      <ScopedCssBaseline>
-        <DialogTitle>
-          {title}
-          {onClose ? (
-            <IconButton
-              className={classes.closeButton}
-              onClick={() => {
-                // @ts-ignore
-                onClose()
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
-        <Divider />
-        {children}
-      </ScopedCssBaseline>
-    </Dialog>
+    <div style={{ width: 800, margin: 40 }}>
+      <ErrorMessage error={error} />
+    </div>
   )
 }
-export default observer(JBrowseDialog)
+
+interface Props extends DialogProps {
+  header?: React.ReactNode
+}
+
+const Dialog = observer(function (props: Props) {
+  const { classes } = useStyles()
+  const { title, header, children, onClose } = props
+  const theme = useTheme()
+
+  return (
+    <MUIDialog {...props}>
+      <ScopedCssBaseline>
+        {React.isValidElement(header) ? (
+          header
+        ) : (
+          <DialogTitle>
+            <SanitizedHTML html={title || ''} />
+            {onClose ? (
+              <IconButton
+                className={classes.closeButton}
+                onClick={() => {
+                  // @ts-expect-error
+                  onClose()
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            ) : null}
+          </DialogTitle>
+        )}
+        <Divider />
+
+        <ErrorBoundary FallbackComponent={DialogError}>
+          <ThemeProvider
+            theme={createTheme(theme, {
+              components: {
+                MuiInputBase: {
+                  styleOverrides: {
+                    input: {
+                      // xref https://github.com/GMOD/jbrowse-components/pull/3666
+                      boxSizing: 'content-box!important' as 'content-box',
+                    },
+                  },
+                },
+              },
+            })}
+          >
+            {children}
+          </ThemeProvider>
+        </ErrorBoundary>
+      </ScopedCssBaseline>
+    </MUIDialog>
+  )
+})
+
+export default Dialog

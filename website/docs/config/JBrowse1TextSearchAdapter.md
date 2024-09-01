@@ -1,13 +1,14 @@
 ---
 id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts)
 
 note: metadata about tracks and assemblies covered by text search adapter
 

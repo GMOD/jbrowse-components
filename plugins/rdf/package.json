@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-rdf",
-  "version": "2.3.2",
+  "version": "2.14.0",
   "description": "JBrowse 2 RDF resources",
   "keywords": [
     "jbrowse",
@@ -20,12 +20,11 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
     "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/rdf",
+    "test": "cd ../..; jest --passWithNoTests plugins/rdf",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -33,7 +32,7 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
@@ -42,12 +41,14 @@
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "rxjs": "^6.0.0"
+    "rxjs": "^7.0.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": ""
+  "module": "",
+  "publishConfig": {
+    "access": "public"
+  }
 }

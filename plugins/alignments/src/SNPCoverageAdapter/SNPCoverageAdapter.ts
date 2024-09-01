@@ -6,6 +6,9 @@ import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+
+// locals
 import generateCoverageBins from './generateCoverageBins'
 import { fetchSequence } from '../util'
 
@@ -43,10 +46,9 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { subadapter } = await this.configure()
-      const feats = await subadapter
-        .getFeatures(region, opts)
-        .pipe(toArray())
-        .toPromise()
+      const feats = await firstValueFrom(
+        subadapter.getFeatures(region, opts).pipe(toArray()),
+      )
 
       const { bins, skipmap } = await generateCoverageBins(
         feats,
@@ -92,9 +94,12 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const { subadapter } = await this.configure()
-    return subadapter.estimateRegionsStats(regions, opts)
+    return subadapter.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -104,6 +109,3 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   freeResources(/* { region } */): void {}
 }
-
-const { capabilities } = SNPCoverageAdapter
-export { capabilities }

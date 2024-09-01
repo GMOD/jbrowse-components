@@ -60,6 +60,60 @@
         },
       )
 
+      pluginManager.addToExtensionPoint('Core-extendSession', session => {
+        return session.extend(self => {
+          const superThemes = self.allThemes
+          return {
+            views: {
+              allThemes() {
+                return {
+                  ...superThemes(),
+                  custom: {
+                    name: 'Custom theme from plugin',
+                    palette: {
+                      primary: { main: '#0f0' },
+                      secondary: { main: '#f00' },
+                    },
+                  },
+                }
+              },
+            },
+          }
+        })
+      })
+
+      // extend session twice, just to ensure both work
+      pluginManager.addToExtensionPoint('Core-extendSession', session => {
+        return session.extend(self => {
+          const superThemes = self.allThemes
+          return {
+            views: {
+              allThemes() {
+                const s = superThemes()
+                return {
+                  ...s,
+                  // modify the default theme
+                  default: {
+                    ...s.default,
+                    palette: {
+                      ...s.default.palette,
+                      quaternary: { main: '#090' },
+                    },
+                  },
+                  custom2: {
+                    name: 'Custom theme from plugin 2',
+                    palette: {
+                      primary: { main: '#00f' },
+                      secondary: { main: '#0ff' },
+                    },
+                  },
+                }
+              },
+            },
+          }
+        })
+      })
+
       pluginManager.addToExtensionPoint(
         'Core-replaceWidget',
         (DefaultWidget, { model }) => {
@@ -68,6 +122,14 @@
             : DefaultWidget
         },
       )
+      pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+        snap.metadata = {
+          ...snap.metadata,
+          'metadata from plugin':
+            'added by umd_plugin.js using Core-preProcessTrackConfig',
+        }
+        return snap
+      })
     }
 
     configure(/* pluginManager */) {}

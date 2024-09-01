@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function Rubberband({
+const Rubberband = observer(function ({
   model,
   ControlComponent = <div />,
 }: {
@@ -84,6 +84,6 @@ function Rubberband({
       </div>
     </>
   )
-}
+})
 
-export default observer(Rubberband)
+export default Rubberband

@@ -1,10 +1,9 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { autorun } from 'mobx'
+import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
-import createModel, {
-  createSessionModel,
-  createConfigModel,
-} from './createModel'
+import createModel from './createModel'
+import type { createSessionModel, createConfigModel } from './createModel'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -28,10 +27,18 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   location?: string | Location
+  highlight?: string[]
   defaultSession?: SessionSnapshot
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+  ) => any
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  }
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -43,13 +50,18 @@ export default function createViewState(opts: ViewStateOptions) {
     aggregateTextSearchAdapters,
     plugins,
     location,
+    highlight,
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
+    hydrateFn,
+    createRootFn,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
+    hydrateFn,
+    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {
@@ -90,23 +102,38 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
-    autorun(async reaction => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       const { session } = stateTree
-      try {
-        if (!session.view.initialized) {
-          return
-        }
+      const { isValidRefName } = session.assemblyManager
 
-        if (typeof location === 'string') {
-          await session.view.navToLocString(location, assembly.name)
-        } else {
-          session.view.navTo(location)
+      try {
+        await session.view.navToLocString(
+          typeof location === 'string' ? location : assembleLocString(location),
+          assembly.name,
+        )
+        if (highlight) {
+          highlight.forEach(h => {
+            if (h) {
+              const p = parseLocString(h, refName =>
+                isValidRefName(refName, assembly.name),
+              )
+              const { start, end } = p
+              if (start !== undefined && end !== undefined) {
+                session.view.addToHighlights({
+                  ...p,
+                  start,
+                  end,
+                  assemblyName: assembly,
+                })
+              }
+            }
+          })
         }
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
       }
-      reaction.dispose()
-    })
+    })()
   }
   if (onChange) {
     onPatch(stateTree, onChange)

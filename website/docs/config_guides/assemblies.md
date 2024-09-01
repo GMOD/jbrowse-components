@@ -1,7 +1,6 @@
 ---
 id: assemblies
 title: Configuring assemblies
-toplevel: true
 ---
 
 An assembly configuration includes the "name" of your assembly, any "aliases"
@@ -54,7 +53,7 @@ Here is a complete config.json file containing only an hg19 assembly:
 }
 ```
 
-## Configuring reference name aliasing
+### Configuring reference name aliasing
 
 Reference name aliasing is a process to make chromosomes that are named slightly
 differently but which refer to the same thing render properly.
@@ -113,7 +112,7 @@ match this format.
 
 :::
 
-## Adding an assembly with the CLI
+### Adding an assembly with the CLI
 
 Generally we add a new assembly with the CLI using something like:
 
@@ -130,7 +129,7 @@ jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
 See our
-[configure JBrowse using the cli](/docs/tutorials/config_cli/#adding-a-genome-assembly)
+[configure JBrowse using the cli](/docs/quickstart_web/#adding-a-genome-assembly-in-fasta-format)
 tutorial for more in-depth instructions, or more information on the
 `add-assembly` command through our
 [CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
@@ -143,8 +142,6 @@ using the `admin-server`. See how to
 for more details.
 
 :::
-
-## Assembly config
 
 Because JBrowse 2 can potentially have multiple assemblies loaded at once, it
 needs to make sure each track is associated with an assembly.

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-svg",
-  "version": "2.3.2",
+  "version": "2.14.0",
   "description": "JBrowse 2 plugin for svg features",
   "keywords": [
     "jbrowse",
@@ -20,12 +20,11 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "esm",
-    "src"
+    "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/svg",
+    "test": "cd ../..; jest --passWithNoTests plugins/svg",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -33,13 +32,14 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0"
   },

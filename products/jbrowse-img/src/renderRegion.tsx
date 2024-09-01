@@ -1,11 +1,9 @@
-import React from 'react'
+import { createRoot } from 'react-dom/client'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import {
   LinearGenomeViewModel,
   renderToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import createCache from '@emotion/cache'
-import { CacheProvider } from '@emotion/react'
 import path from 'path'
 import fs from 'fs'
 
@@ -24,17 +22,18 @@ export interface Opts {
   aliases?: string
   cytobands?: string
   defaultSession?: string
-  trackList: Entry[]
+  trackList?: Entry[]
   tracks?: string
 }
 
-function read(file: string) {
-  let res
+function read(file: string): unknown {
+  let res: unknown
   try {
     res = JSON.parse(fs.readFileSync(file, 'utf8'))
   } catch (e) {
     throw new Error(
       `Failed to parse ${file} as JSON, use --fasta if you mean to pass a FASTA file`,
+      { cause: e },
     )
   }
   return res
@@ -84,10 +83,14 @@ export function readData({
   tracks,
   trackList = [],
 }: Opts) {
-  const assemblyData = asm && fs.existsSync(asm) ? read(asm) : undefined
-  const tracksData = tracks ? read(tracks) : undefined
-  const configData = (config ? read(config) : {}) as Config
-  let sessionData = session ? read(session) : undefined
+  const assemblyData =
+    asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
+  const tracksData = tracks ? (read(tracks) as Track[]) : undefined
+  const configData = config ? (read(config) as Config) : ({} as Config)
+
+  let sessionData = session
+    ? (read(session) as Record<string, unknown>)
+    : undefined
 
   if (config) {
     addRelativePaths(configData, path.dirname(path.resolve(config)))
@@ -97,12 +100,12 @@ export function readData({
   // attribute, which is what is exported via the "File->Export session" in
   // jbrowse-web
   if (sessionData?.session) {
-    sessionData = sessionData.session
+    sessionData = sessionData.session as Record<string, unknown>
   }
 
   // only export first view
   if (sessionData?.views) {
-    sessionData.view = sessionData.views[0]
+    sessionData.view = (sessionData.views as Record<string, unknown>[])[0]
   }
 
   // use assembly from file if a file existed
@@ -110,6 +113,7 @@ export function readData({
     configData.assembly = assemblyData
   }
   // else check if it was an assembly name in a config file
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   else if (configData.assemblies?.length) {
     configData.assemblies.find(entry => entry.name === asm)
     if (asm) {
@@ -119,7 +123,7 @@ export function readData({
       }
       configData.assembly = assembly
     } else {
-      configData.assembly = configData.assemblies[0]
+      configData.assembly = configData.assemblies[0]!
     }
   }
   // else load fasta from command line
@@ -134,8 +138,8 @@ export function readData({
         adapter: {
           type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
           fastaLocation: makeLocation(fasta),
-          faiLocation: makeLocation(fasta + '.fai'),
-          gziLocation: bgzip ? makeLocation(fasta + '.gzi') : undefined,
+          faiLocation: makeLocation(`${fasta}.fai`),
+          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
         },
       },
     }
@@ -158,6 +162,7 @@ export function readData({
   }
 
   // throw if still no assembly
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!configData.assembly) {
     throw new Error(
       'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
@@ -166,12 +171,20 @@ export function readData({
 
   if (tracksData) {
     configData.tracks = tracksData
-  } else if (!configData.tracks) {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  else if (!configData.tracks) {
     configData.tracks = []
   }
 
   trackList.forEach(track => {
-    const [type, [file]] = track
+    const [type, opts] = track
+    const [file, ...rest] = opts
+    const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
+    if (!file) {
+      throw new Error('no file specified')
+    }
 
     if (type === 'bam') {
       configData.tracks = [
@@ -184,9 +197,22 @@ export function readData({
           adapter: {
             type: 'BamAdapter',
             bamLocation: makeLocation(file),
-            index: { location: makeLocation(file + '.bai') },
+            index: {
+              location: makeLocation(index || `${file}.bai`),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
+            },
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
+          ...(opts.includes('snpcov')
+            ? {
+                displays: [
+                  {
+                    type: 'LinearSNPCoverageDisplay',
+                    displayId: `${path.basename(file)}-${Math.random()}`,
+                  },
+                ],
+              }
+            : {}),
         },
       ]
     }
@@ -201,9 +227,19 @@ export function readData({
           adapter: {
             type: 'CramAdapter',
             cramLocation: makeLocation(file),
-            craiLocation: makeLocation(file + '.crai'),
+            craiLocation: makeLocation(index || `${file}.crai`),
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
+          ...(opts.includes('snpcov')
+            ? {
+                displays: [
+                  {
+                    type: 'LinearSNPCoverageDisplay',
+                    displayId: `${path.basename(file)}-${Math.random()}`,
+                  },
+                ],
+              }
+            : {}),
         },
       ]
     }
@@ -235,7 +271,8 @@ export function readData({
             type: 'VcfTabixAdapter',
             vcfGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(file + '.tbi'),
+              location: makeLocation(index || `${file}.tbi`),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
         },
@@ -254,7 +291,8 @@ export function readData({
             type: 'Gff3TabixAdapter',
             gffGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(file + '.tbi'),
+              location: makeLocation(index || `${file}.tbi`),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
         },
@@ -303,7 +341,8 @@ export function readData({
             type: 'BedTabixAdapter',
             bedGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(file + '.tbi'),
+              location: makeLocation(index || `${file}.tbi`),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
         },
@@ -314,7 +353,7 @@ export function readData({
   if (!defaultSession) {
     // don't use defaultSession from config.json file, can result in assembly
     // name confusion
-    delete configData.defaultSession
+    configData.defaultSession = undefined
   }
 
   // only allow an external manually specified session
@@ -325,26 +364,24 @@ export function readData({
   return configData
 }
 
-// without this, the styles can become messed up especially in lgv header
-// xref https://github.com/garronej/tss-react/issues/25
-export const muiCache = createCache({
-  key: 'mui',
-  prepend: true,
-})
-
 function process(
   trackEntry: Entry,
   view: LinearGenomeViewModel,
   extra: (arg: string) => string = c => c,
 ) {
   const [, [track, ...opts]] = trackEntry
+  if (!track) {
+    throw new Error('invalid command line args')
+  }
   const currentTrack = view.showTrack(extra(track))
   const display = currentTrack.displays[0]
   opts.forEach(opt => {
     // apply height to any track
     if (opt.startsWith('height:')) {
       const [, height] = opt.split(':')
-      display.setHeight(+height)
+      if (height) {
+        display.setHeight(+height)
+      }
     }
 
     // apply sort to pileup
@@ -367,7 +404,7 @@ function process(
     else if (opt.startsWith('force:')) {
       const [, force] = opt.split(':')
       if (force) {
-        display.updateStatsLimit({ bytes: Number.MAX_VALUE })
+        display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
       }
     }
 
@@ -380,8 +417,12 @@ function process(
     // apply min and max score to wiggle
     else if (opt.startsWith('minmax:')) {
       const [, min, max] = opt.split(':')
-      display.setMinScore(+min)
-      display.setMaxScore(+max)
+      if (min) {
+        display.setMinScore(+min)
+      }
+      if (max) {
+        display.setMaxScore(+max)
+      }
     }
 
     // apply linear or log scale to wiggle
@@ -392,19 +433,19 @@ function process(
 
     // draw crosshatches on wiggle
     else if (opt.startsWith('crosshatch:')) {
-      const [, val] = opt.split(':')
+      const [, val = 'false'] = opt.split(':')
       display.setCrossHatches(booleanize(val))
     }
 
     // turn off fill on bigwig with fill:false
     else if (opt.startsWith('fill:')) {
-      const [, val] = opt.split(':')
+      const [, val = 'true'] = opt.split(':')
       display.setFill(booleanize(val))
     }
 
     // set resolution:superfine to use finer bigwig bin size
     else if (opt.startsWith('resolution:')) {
-      let [, val] = opt.split(':')
+      let [, val = 1] = opt.split(':')
       if (val === 'fine') {
         val = '10'
       } else if (val === 'superfine') {
@@ -416,7 +457,10 @@ function process(
 }
 
 export async function renderRegion(opts: Opts) {
-  const model = createViewState(readData(opts))
+  const model = createViewState({
+    ...readData(opts),
+    createRootFn: createRoot,
+  })
   const {
     loc,
     width = 1500,
@@ -432,11 +476,11 @@ export async function renderRegion(opts: Opts) {
   view.setWidth(width)
 
   if (loc) {
-    const [assembly] = assemblyManager.assemblies
+    const { name } = assemblyManager.assemblies[0]!
     if (loc === 'all') {
-      view.showAllRegionsInAssembly(assembly.name)
+      view.showAllRegionsInAssembly(name)
     } else {
-      await view.navToLocString(loc, assembly.name)
+      await view.navToLocString(loc, name)
     }
   } else if (!sessionParam && !defaultSession) {
     console.warn('No loc specified')
@@ -449,8 +493,5 @@ export async function renderRegion(opts: Opts) {
   return renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
     ...opts,
-    Wrapper: ({ children }) => (
-      <CacheProvider value={muiCache}>{children}</CacheProvider>
-    ),
   })
 }

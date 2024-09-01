@@ -6,20 +6,26 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import { types, getEnv, Instance } from 'mobx-state-tree'
+import { types, getEnv, Instance, cast } from 'mobx-state-tree'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
-const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
 
 /**
  * #stateModel LinearBasicDisplay
+ * #category display
  * used by `FeatureTrack`, has simple settings like "show/hide feature labels",
  * etc.
+ *
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -51,9 +57,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
+      get activeFilters() {
+        // config jexlFilters are deferred evaluated so they are prepended with
+        // jexl at runtime rather than being stored with jexl in the config
+        return (
+          self.jexlFilters ??
+          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+        )
+      },
       /**
        * #getter
        */
@@ -119,6 +140,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setJexlFilters(f?: string[]) {
+        self.jexlFilters = cast(f)
+      },
+      /**
+       * #action
+       */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
@@ -137,7 +164,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setMaxHeight(val: number) {
+      setMaxHeight(val?: number) {
         self.trackMaxHeight = val
       },
     }))
@@ -151,12 +178,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const config = self.rendererConfig
           const superProps = superRenderProps()
-          const superPropsOmit = superProps as Omit<typeof superProps, symbol>
           return {
-            ...superPropsOmit,
-            config,
+            ...(superProps as Omit<typeof superProps, symbol>),
+            config: self.rendererConfig,
+            filters: new SerializableFilterChain({
+              filters: self.activeFilters,
+            }),
           }
         },
 
@@ -171,14 +199,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showLabels,
-              onClick: () => self.toggleShowLabels(),
+              onClick: () => {
+                self.toggleShowLabels()
+              },
             },
             {
               label: 'Show descriptions',
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showDescriptions,
-              onClick: () => self.toggleShowDescriptions(),
+              onClick: () => {
+                self.toggleShowDescriptions()
+              },
             },
             {
               label: 'Display mode',
@@ -190,14 +222,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 'collapse',
               ].map(val => ({
                 label: val,
-                onClick: () => self.setDisplayMode(val),
+                onClick: () => {
+                  self.setDisplayMode(val)
+                },
               })),
             },
             {
               label: 'Set max height',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  SetMaxHeightDlg,
+                  SetMaxHeightDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Edit filters',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddFiltersDialog,
                   { model: self, handleClose },
                 ])
               },

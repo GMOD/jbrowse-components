@@ -1,7 +1,6 @@
 ---
 id: linearbasicdisplay
 title: LinearBasicDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,10 +8,16 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[plugins/linear-genome-view/src/LinearBasicDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearBasicDisplay/model.ts)
 
 used by `FeatureTrack`, has simple settings like "show/hide feature labels",
 etc.
+
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
 
 ### LinearBasicDisplay - Properties
 
@@ -65,12 +70,28 @@ trackMaxHeight: types.maybe(types.number)
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: jexlFilters
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFilters: types.maybe(types.array(types.string))
+```
+
 ### LinearBasicDisplay - Getters
+
+#### getter: activeFilters
+
+```js
+// type
+any
+```
 
 #### getter: rendererTypeName
 
@@ -111,7 +132,7 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 ### LinearBasicDisplay - Methods
@@ -120,7 +141,7 @@ any
 
 ```js
 // type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; }
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; }
 ```
 
 #### method: trackMenuItems
@@ -131,6 +152,13 @@ trackMenuItems: () => MenuItem[]
 ```
 
 ### LinearBasicDisplay - Actions
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (f?: string[]) => void
+```
 
 #### action: toggleShowLabels
 
@@ -157,5 +185,5 @@ setDisplayMode: (val: string) => void
 
 ```js
 // type signature
-setMaxHeight: (val: number) => void
+setMaxHeight: (val?: number) => void
 ```

@@ -5,6 +5,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearHicDisplay
+ * #category display
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -15,7 +16,7 @@ const HicTrackConfigFactory = (pluginManager: PluginManager) => {
       /**
        * #slot
        */
-      renderer: pluginManager.getRendererType('HicRenderer').configSchema,
+      renderer: pluginManager.getRendererType('HicRenderer')!.configSchema,
     },
     {
       /**

@@ -13,15 +13,17 @@ const useStyles = makeStyles()({
   },
 })
 
-function WarningDialog({
-  tracksWithWarnings,
+interface TrackWarning {
+  configuration: AnyConfigurationModel
+  displays: { warnings: { message: string; effect: string }[] }[]
+}
+
+const WarningDialog = observer(function WarningDialog({
+  trackWarnings,
   handleClose,
 }: {
   handleClose: () => void
-  tracksWithWarnings: {
-    configuration: AnyConfigurationModel
-    displays: { warnings: { message: string; effect: string }[] }[]
-  }[]
+  trackWarnings: TrackWarning[]
 }) {
   const { classes } = useStyles()
   const rows = [] as {
@@ -30,12 +32,13 @@ function WarningDialog({
     effect: string
     id: string
   }[]
-  for (let i = 0; i < tracksWithWarnings.length; i++) {
-    const track = tracksWithWarnings[i]
+  for (let i = 0; i < trackWarnings.length; i++) {
+    const track = trackWarnings[i]!
     const name = getConf(track, 'name')
-    for (let j = 0; j < track.displays[0].warnings.length; j++) {
-      const warning = track.displays[0].warnings[j]
-      rows.push({ name, ...warning, id: i + '_' + j })
+    const d = track.displays[0]!
+    for (let j = 0; j < d.warnings.length; j++) {
+      const warning = d.warnings[j]!
+      rows.push({ name, ...warning, id: `${i}_${j}` })
     }
   }
   const columns = [
@@ -61,7 +64,7 @@ function WarningDialog({
           <DataGrid
             rows={rows}
             columns={columns}
-            disableSelectionOnClick
+            disableRowSelectionOnClick
             rowHeight={25}
             disableColumnMenu
           />
@@ -69,6 +72,6 @@ function WarningDialog({
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(WarningDialog)
+export default WarningDialog

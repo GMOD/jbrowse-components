@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import Adapter from './VcfAdapter'
 import configSchema from './configSchema'
 
@@ -12,7 +13,7 @@ test('adapter can fetch variants from volvox.vcf', async () => {
     }),
   )
 
-  const features = adapter.getFeatures({
+  const feat = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -22,6 +23,6 @@ test('adapter can fetch variants from volvox.vcf', async () => {
   const names = await adapter.getRefNames()
   expect(names).toMatchSnapshot()
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray.slice(0, 5)).toMatchSnapshot()
+  const featArray = await firstValueFrom(feat.pipe(toArray()))
+  expect(featArray.slice(0, 5)).toMatchSnapshot()
 })

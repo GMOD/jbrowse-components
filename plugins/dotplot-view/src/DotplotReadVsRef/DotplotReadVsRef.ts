@@ -1,12 +1,12 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, gatherOverlaps } from '@jbrowse/core/util'
 import {
   LinearPileupDisplayModel,
   MismatchParser,
 } from '@jbrowse/plugin-alignments'
 
 // locals
-import { gatherOverlaps, ReducedFeature } from '../util'
+import { ReducedFeature } from '../util'
 
 const { featurizeSA, getClip, getTag, getLength, getLengthSansClipping } =
   MismatchParser
@@ -39,7 +39,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     // if secondary alignment or supplementary, calculate length from SA[0]'s
     // CIGAR which is the primary alignments. otherwise it is the primary
     // alignment just use seq.length if primary alignment
-    const totalLength = getLength(flags & 2048 ? SA2[0].CIGAR : cigar)
+    const totalLength = getLength(flags & 2048 ? SA2[0]!.CIGAR : cigar)
 
     const features = [feat, ...SA2] as ReducedFeature[]
 
@@ -110,6 +110,6 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     })
   } catch (e) {
     console.error(e)
-    session.notify(`${e}`, 'error')
+    session.notifyError(`${e}`, e)
   }
 }

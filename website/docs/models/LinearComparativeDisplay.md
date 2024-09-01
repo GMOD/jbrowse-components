@@ -1,7 +1,6 @@
 ---
 id: linearcomparativedisplay
 title: LinearComparativeDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[plugins/linear-comparative-view/src/LinearComparativeDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeDisplay/stateModelFactory.ts)
+
+extends
+
+- [BaseDisplay](../basedisplay)
 
 ### LinearComparativeDisplay - Properties
 
@@ -26,7 +31,7 @@ type: types.literal('LinearComparativeDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -42,18 +47,11 @@ height: 100
 
 ### LinearComparativeDisplay - Getters
 
-#### getter: rendererTypeName
-
-```js
-// type
-any
-```
-
 #### getter: renderProps
 
 ```js
 // type
-() => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: any; height: number; } & NonEmptyObject & ... 4 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
+() => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: { [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; height: number; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
 ```
 
 ### LinearComparativeDisplay - Actions
@@ -82,7 +80,7 @@ controlled by a reaction
 
 ```js
 // type signature
-setRendered: (args?: { data: unknown; reactElement: React.ReactElement; renderingComponent: React.Component; }) => void
+setRendered: (args?: { features: Feature[]; }) => void
 ```
 
 #### action: setError

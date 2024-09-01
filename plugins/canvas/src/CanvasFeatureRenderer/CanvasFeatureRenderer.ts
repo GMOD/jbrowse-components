@@ -1,10 +1,10 @@
 import BoxRendererType, {
-  RenderArgs,
-  RenderArgsSerialized,
+  
+  
   RenderArgsDeserialized as BoxRenderArgsDeserialized,
-  RenderResults,
-  ResultsSerialized,
-  ResultsDeserialized,
+  
+  
+  
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { Region } from '@jbrowse/core/util/types'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
@@ -24,13 +24,7 @@ export interface LaidOutFeatureRectWithGlyph extends LaidOutFeatureRect {
   glyph: BoxGlyph
 }
 
-export type {
-  RenderArgs,
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsSerialized,
-  ResultsDeserialized,
-}
+
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   highResolutionScaling: number
@@ -55,11 +49,7 @@ export default class CanvasRenderer extends BoxRendererType {
   ): LaidOutFeatureRectWithGlyph | null {
     const [region] = props.regions
     let glyph
-    if (feature.get('type') === 'gene') {
-      glyph = new GeneGlyph()
-    } else {
-      glyph = new BoxGlyph()
-    }
+    glyph = feature.get('type') === 'gene' ? new GeneGlyph() : new BoxGlyph()
     const fRect = glyph.layoutFeature({ region, ...props }, layout, feature)
     return fRect ? { ...fRect, glyph } : null
   }
@@ -168,10 +158,12 @@ export function postDraw({
   layoutRecords
     .filter(f => !!f)
     .forEach(record =>
-      record.glyph.postDraw(ctx, {
+      { record.glyph.postDraw(ctx, {
         record,
         regions,
         offsetPx,
-      }),
+      }) },
     )
 }
+
+export {type RenderArgs, type RenderArgsSerialized, type RenderResults, type ResultsSerialized, type ResultsDeserialized} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

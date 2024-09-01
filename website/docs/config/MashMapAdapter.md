@@ -1,13 +1,14 @@
 ---
 id: mashmapadapter
 title: MashMapAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/comparative-adapters/src/MashMapAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MashMapAdapter/configSchema.ts)
 
 ### MashMapAdapter - Slots
 

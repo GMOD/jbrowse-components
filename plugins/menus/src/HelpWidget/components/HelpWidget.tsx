@@ -8,29 +8,32 @@ import { Link, Typography } from '@mui/material'
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(2),
-    fontSize: '1.2em',
   },
   subtitle: {
     margin: theme.spacing(1),
   },
 }))
 
-function Help({ model }: { model?: IAnyStateTreeNode }) {
+const HelpWidget = observer(function Help({
+  model,
+}: {
+  model?: IAnyStateTreeNode
+}) {
   const { classes } = useStyles()
   const root = model ? getSession(model) : { version: '' }
   return (
     <div className={classes.root}>
-      <Typography variant="h4" align="center" color="primary">
+      <Typography variant="h4" align="center">
         JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
         {root.version}
       </Typography>
 
-      <p>
+      <Typography>
         Here are some resources to get help. Please report the version number
         above when asking questions. Thanks!
-      </p>
+      </Typography>
       <ul>
         <li>
           <Link
@@ -71,6 +74,6 @@ function Help({ model }: { model?: IAnyStateTreeNode }) {
       </ul>
     </div>
   )
-}
+})
 
-export default observer(Help)
+export default HelpWidget

@@ -1,11 +1,15 @@
-import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
+import {
+  scaleLinear,
+  scaleLog,
+  scaleQuantize,
+} from '@mui/x-charts-vendor/d3-scale'
 import { autorun } from 'mobx'
 import {
   isAbortException,
   getSession,
   getContainingView,
 } from '@jbrowse/core/util'
-import { FeatureStats } from '@jbrowse/core/util/stats'
+import { QuantitativeStats } from '@jbrowse/core/util/stats'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 
@@ -21,10 +25,11 @@ export interface ScaleOpts {
   range: number[]
   scaleType: string
   pivotValue?: number
-  inverted: boolean
+  inverted?: boolean
 }
 
 export interface Source {
+  baseUri?: string
   name: string
   color?: string
   group?: string
@@ -48,7 +53,10 @@ export function getScale({
   pivotValue,
   inverted,
 }: ScaleOpts) {
-  let scale
+  let scale:
+    | ReturnType<typeof scaleLinear<number>>
+    | ReturnType<typeof scaleLog<number>>
+    | ReturnType<typeof scaleQuantize<number>>
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -56,8 +64,7 @@ export function getScale({
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
-    scale = scaleLog()
-    scale.base(2)
+    scale = scaleLog().base(2)
   } else if (scaleType === 'quantize') {
     scale = scaleQuantize()
   } else {
@@ -114,8 +121,8 @@ export function getNiceDomain({
   bounds,
 }: {
   scaleType: string
-  domain: number[]
-  bounds: number[]
+  domain: readonly [number, number]
+  bounds: readonly [number | undefined, number | undefined]
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain
@@ -129,17 +136,14 @@ export function getNiceDomain({
     }
   }
   if (scaleType === 'log') {
-    // if the min is 0, assume that it's just something
-    // with no read coverage and that we should ignore it in calculations
-    // if it's greater than 1 pin to 1 for the full range also
-    // otherwise, we may see bigwigs with fractional values
-    if (min === 0 || min > 1) {
+    // for min>0 and max>1, set log min to 1, which works for most coverage
+    // types tracks. if max is not >1, might be like raw p-values so then it'll
+    // display negative values
+    if (min >= 0 && max > 1) {
       min = 1
     }
   }
-  if (min === undefined || max === undefined) {
-    throw new Error('invalid domain supplied to stats function')
-  }
+
   if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore
   }
@@ -167,28 +171,21 @@ export function getNiceDomain({
   return scale.domain() as [number, number]
 }
 
-export function groupBy<T>(array: T[], predicate: (v: T) => string) {
-  return array.reduce((acc, value) => {
-    const entry = (acc[predicate(value)] ||= [])
-    entry.push(value)
-    return acc
-  }, {} as { [key: string]: T[] })
-}
-
-export async function getStats(
+export async function getQuantitativeStats(
   self: {
     adapterConfig: AnyConfigurationModel
+    configuration: AnyConfigurationModel
     autoscaleType: string
     setMessage: (str: string) => void
   },
   opts: {
     headers?: Record<string, string>
     signal?: AbortSignal
-    filters?: string[]
+    filters: string[]
   },
-): Promise<FeatureStats> {
+): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
-  const nd = getConf(self, 'numStdDev') || 3
+  const numStdDev = getConf(self, 'numStdDev') || 3
   const { adapterConfig, autoscaleType } = self
   const sessionId = getRpcSessionId(self)
   const params = {
@@ -203,11 +200,11 @@ export async function getStats(
   }
 
   if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-    const results: FeatureStats = (await rpcManager.call(
+    const results = (await rpcManager.call(
       sessionId,
-      'WiggleGetGlobalStats',
+      'WiggleGetGlobalQuantitativeStats',
       params,
-    )) as FeatureStats
+    )) as QuantitativeStats
     const { scoreMin, scoreMean, scoreStdDev } = results
     // globalsd uses heuristic to avoid unnecessary scoreMin<0
     // if the scoreMin is never less than 0
@@ -215,8 +212,8 @@ export async function getStats(
     return autoscaleType === 'globalsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+          scoreMax: scoreMean + numStdDev * scoreStdDev,
         }
       : results
   }
@@ -224,7 +221,7 @@ export async function getStats(
     const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
     const results = (await rpcManager.call(
       sessionId,
-      'WiggleGetMultiRegionStats',
+      'WiggleGetMultiRegionQuantitativeStats',
       {
         ...params,
         regions: dynamicBlocks.contentBlocks.map(region => {
@@ -237,7 +234,7 @@ export async function getStats(
         }),
         bpPerPx,
       },
-    )) as FeatureStats
+    )) as QuantitativeStats
     const { scoreMin, scoreMean, scoreStdDev } = results
 
     // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
@@ -246,28 +243,33 @@ export async function getStats(
     return autoscaleType === 'localsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+          scoreMax: scoreMean + numStdDev * scoreStdDev,
         }
       : results
   }
   if (autoscaleType === 'zscale') {
     return rpcManager.call(
       sessionId,
-      'WiggleGetGlobalStats',
+      'WiggleGetGlobalQuantitativeStats',
       params,
-    ) as Promise<FeatureStats>
+    ) as Promise<QuantitativeStats>
   }
   throw new Error(`invalid autoscaleType '${autoscaleType}'`)
 }
 
-export function statsAutorun(self: {
-  estimatedStatsReady: boolean
+export function quantitativeStatsAutorun(self: {
+  featureDensityStatsReady: boolean
   regionTooLarge: boolean
+  error: unknown
   setLoading: (aborter: AbortController) => void
   setError: (error: unknown) => void
-  updateStats: (stats: FeatureStats, statsRegion: string) => void
+  updateQuantitativeStats: (
+    stats: QuantitativeStats,
+    statsRegion: string,
+  ) => void
   renderProps: () => Record<string, unknown>
+  configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
   setMessage: (str: string) => void
@@ -283,20 +285,22 @@ export function statsAutorun(self: {
 
           if (
             !view.initialized ||
-            !self.estimatedStatsReady ||
-            self.regionTooLarge
+            !self.featureDensityStatsReady ||
+            self.regionTooLarge ||
+            self.error
           ) {
             return
           }
           const statsRegion = JSON.stringify(view.dynamicBlocks)
 
-          const wiggleStats = await getStats(self, {
+          const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
+            filters: [],
             ...self.renderProps(),
           })
 
           if (isAlive(self)) {
-            self.updateStats(wiggleStats, statsRegion)
+            self.updateQuantitativeStats(wiggleStats, statsRegion)
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
@@ -316,4 +320,28 @@ export function toP(s = 0) {
 
 export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
+}
+
+// avoid drawing negative width features for SVG exports
+export function fillRectCtx(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D,
+  color?: string,
+) {
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+
+  if (color) {
+    ctx.fillStyle = color
+  }
+  ctx.fillRect(x, y, width, height)
 }

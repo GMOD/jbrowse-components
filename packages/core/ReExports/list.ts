@@ -7,6 +7,7 @@ export default [
   'mobx',
   'mobx-state-tree',
   'react',
+  'react/jsx-runtime',
   'react-dom',
   'mobx-react',
   '@mui/x-data-grid',
@@ -15,7 +16,6 @@ export default [
   'tss-react/mui',
   '@material-ui/core',
   '@mui/material',
-  'prop-types',
 
   '@mui/material/styles',
   '@material-ui/core/styles',

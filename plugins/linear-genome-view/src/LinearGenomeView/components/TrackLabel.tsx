@@ -3,25 +3,24 @@ import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-
-import {
-  bindTrigger,
-  bindPopover,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
+import { SanitizedHTML } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import DragIcon from '@mui/icons-material/DragIndicator'
 import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 
 import { LinearGenomeViewModel } from '..'
+import TrackLabelDragHandle from './TrackLabelDragHandle'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -29,24 +28,9 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       background: theme.palette.background.paper,
     },
-    transition: theme.transitions.create(['background'], {
-      duration: theme.transitions.duration.shortest,
-    }),
   },
   trackName: {
-    margin: '0 auto',
-    width: '90%',
     fontSize: '0.8rem',
-    pointerEvents: 'none',
-  },
-  dragHandle: {
-    cursor: 'grab',
-    color: '#135560',
-  },
-  dragHandleIcon: {
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    pointerEvents: 'none',
   },
   iconButton: {
     padding: theme.spacing(1),
@@ -60,8 +44,11 @@ interface Props {
   className?: string
 }
 
-const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
-  ({ track, className }, ref) => {
+const TrackLabel = observer(
+  React.forwardRef<HTMLDivElement, Props>(function TrackLabel2(
+    { track, className },
+    ref,
+  ) {
     const { classes, cx } = useStyles()
     const view = getContainingView(track) as LGV
     const session = getSession(track)
@@ -69,45 +56,60 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
     const minimized = track.minimized
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
-
-    const popupState = usePopupState({
-      popupId: 'trackLabelMenu',
-      variant: 'popover',
-    })
-
     const items = [
       {
-        label: minimized ? 'Restore track' : 'Minimize track',
-        icon: minimized ? AddIcon : MinimizeIcon,
-        onClick: () => track.setMinimized(!minimized),
+        label: 'Track order',
+        type: 'subMenu',
+        subMenu: [
+          {
+            label: minimized ? 'Restore track' : 'Minimize track',
+            icon: minimized ? AddIcon : MinimizeIcon,
+            onClick: () => {
+              track.setMinimized(!minimized)
+            },
+          },
+          {
+            label: 'Move track to top',
+            icon: KeyboardDoubleArrowUpIcon,
+            onClick: () => {
+              view.moveTrackToTop(track.id)
+            },
+          },
+
+          {
+            label: 'Move track up',
+            icon: KeyboardArrowUpIcon,
+            onClick: () => {
+              view.moveTrackUp(track.id)
+            },
+          },
+          {
+            label: 'Move track down',
+            icon: KeyboardArrowDownIcon,
+            onClick: () => {
+              view.moveTrackDown(track.id)
+            },
+          },
+          {
+            label: 'Move track to bottom',
+            icon: KeyboardDoubleArrowDownIcon,
+            onClick: () => {
+              view.moveTrackToBottom(track.id)
+            },
+          },
+        ],
       },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
       ...track.trackMenuItems(),
-    ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
+    ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
 
     return (
       <Paper ref={ref} className={cx(className, classes.root)}>
-        <span
-          draggable
-          className={classes.dragHandle}
-          onDragStart={event => {
-            const target = event.currentTarget
-            if (target.parentNode) {
-              const parent = target.parentNode as HTMLElement
-              event.dataTransfer.setDragImage(parent, 20, 20)
-              view.setDraggingTrackId(track.id)
-            }
-          }}
-          onDragEnd={() => view.setDraggingTrackId(undefined)}
-          data-testid={`dragHandle-${view.id}-${trackId}`}
-        >
-          <DragIcon className={classes.dragHandleIcon} fontSize="small" />
-        </span>
+        <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
         <IconButton
           onClick={() => view.hideTrack(trackId)}
           className={classes.iconButton}
           title="close this track"
-          color="secondary"
         >
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -116,27 +118,24 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           variant="body1"
           component="span"
           className={classes.trackName}
+          onMouseDown={event => {
+            // avoid becoming a click-and-drag action on the lgv
+            event.stopPropagation()
+          }}
         >
-          {trackName + (minimized ? ' (minimized)' : '')}
+          <SanitizedHTML
+            html={[trackName, minimized ? '(minimized)' : '']
+              .filter(f => !!f)
+              .join(' ')}
+          />
         </Typography>
-        <IconButton
-          {...bindTrigger(popupState)}
-          className={classes.iconButton}
-          color="secondary"
-          data-testid="track_menu_icon"
-          disabled={!items.length}
-        >
+
+        <CascadingMenuButton menuItems={items} data-testid="track_menu_icon">
           <MoreVertIcon fontSize="small" />
-        </IconButton>
-        <CascadingMenu
-          {...bindPopover(popupState)}
-          onMenuItemClick={(_: unknown, callback: Function) => callback()}
-          menuItems={items}
-          popupState={popupState}
-        />
+        </CascadingMenuButton>
       </Paper>
     )
-  },
+  }),
 )
 
-export default observer(TrackLabel)
+export default TrackLabel

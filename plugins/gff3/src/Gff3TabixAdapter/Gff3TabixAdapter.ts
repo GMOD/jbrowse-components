@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -9,7 +8,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
+import gff, { GFF3Feature } from '@gmod/gff'
 import { Observer } from 'rxjs'
 import {
   readConfObject,
@@ -17,6 +16,7 @@ import {
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { featureData } from '../featureData'
 
 interface LineFeature {
   start: number
@@ -25,7 +25,7 @@ interface LineFeature {
   fields: string[]
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   protected gff: TabixIndexedFile
 
   protected dontRedispatch: string[]
@@ -74,7 +74,7 @@ export default class extends BaseFeatureDataAdapter {
 
   private async getFeaturesHelper(
     query: Region,
-    opts: BaseOptions = {},
+    opts: BaseOptions,
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
     allowRedispatch: boolean,
@@ -92,12 +92,12 @@ export default class extends BaseFeatureDataAdapter {
         },
       )
       if (allowRedispatch && lines.length) {
-        let minStart = Infinity
-        let maxEnd = -Infinity
+        let minStart = Number.POSITIVE_INFINITY
+        let maxEnd = Number.NEGATIVE_INFINITY
         lines.forEach(line => {
-          const featureType = line.fields[2]
-          // only expand redispatch range if feature is not a "dontRedispatch" type
-          // skips large regions like chromosome,region
+          const featureType = line.fields[2]!
+          // only expand redispatch range if feature is not a "dontRedispatch"
+          // type skips large regions like chromosome,region
           if (!this.dontRedispatch.includes(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
@@ -144,7 +144,7 @@ export default class extends BaseFeatureDataAdapter {
         disableDerivesFromReferences: true,
       })
 
-      features.forEach(featureLocs =>
+      features.forEach(featureLocs => {
         this.formatFeatures(featureLocs).forEach(f => {
           if (
             doesIntersect2(
@@ -156,8 +156,8 @@ export default class extends BaseFeatureDataAdapter {
           ) {
             observer.next(f)
           }
-        }),
-      )
+        })
+      })
       observer.complete()
     } catch (e) {
       observer.error(e)
@@ -173,8 +173,8 @@ export default class extends BaseFeatureDataAdapter {
 
     // note: index column numbers are 1-based
     return {
-      start: +fields[columnNumbers.start - 1],
-      end: +fields[columnNumbers.end - 1],
+      start: +fields[columnNumbers.start - 1]!,
+      end: +fields[columnNumbers.end - 1]!,
       lineHash: fileOffset,
       fields,
     }
@@ -184,76 +184,10 @@ export default class extends BaseFeatureDataAdapter {
     return featureLocs.map(
       featureLoc =>
         new SimpleFeature({
-          data: this.featureData(featureLoc),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          id: `${this.id}-offset-${featureLoc.attributes!._lineHash![0]}`,
+          data: featureData(featureLoc),
+          id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
         }),
     )
-  }
-
-  private featureData(data: GFF3FeatureLineWithRefs) {
-    const f: Record<string, unknown> = { ...data }
-    ;(f.start as number) -= 1 // convert to interbase
-    if (data.strand === '+') {
-      f.strand = 1
-    } else if (data.strand === '-') {
-      f.strand = -1
-    } else if (data.strand === '.') {
-      f.strand = 0
-    } else {
-      f.strand = undefined
-    }
-    f.phase = Number(data.phase)
-    f.refName = data.seq_id
-    if (data.score === null) {
-      delete f.score
-    }
-    if (data.phase === null) {
-      delete f.score
-    }
-    const defaultFields = [
-      'start',
-      'end',
-      'seq_id',
-      'score',
-      'type',
-      'source',
-      'phase',
-      'strand',
-    ]
-    const dataAttributes = data.attributes || {}
-    Object.keys(dataAttributes).forEach(a => {
-      let b = a.toLowerCase()
-      if (defaultFields.includes(b)) {
-        // add "suffix" to tag name if it already exists
-        // reproduces behavior of NCList
-        b += '2'
-      }
-      if (dataAttributes[a] !== null) {
-        let attr: string | string[] | undefined = dataAttributes[a]
-        if (Array.isArray(attr) && attr.length === 1) {
-          ;[attr] = attr
-        }
-        f[b] = attr
-      }
-    })
-    f.refName = f.seq_id
-
-    // the SimpleFeature constructor takes care of recursively inflating subfeatures
-    if (data.child_features && data.child_features.length) {
-      f.subfeatures = data.child_features
-        .map(childLocs => childLocs.map(childLoc => this.featureData(childLoc)))
-        .flat()
-    }
-
-    delete f.child_features
-    delete f.data
-    // delete f.derived_features
-    delete f._linehash
-    delete f.attributes
-    delete f.seq_id
-
-    return f
   }
 
   public freeResources(/* { region } */) {}

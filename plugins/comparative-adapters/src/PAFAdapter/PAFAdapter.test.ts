@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import Adapter from './PAFAdapter'
 import MyConfigSchema from './configSchema'
 
@@ -27,10 +28,10 @@ test('adapter can fetch features from peach_grape.paf', async () => {
     assemblyName: 'grape',
   })
 
-  const fa1 = await features1.pipe(toArray()).toPromise()
-  const fa2 = await features2.pipe(toArray()).toPromise()
+  const fa1 = await firstValueFrom(features1.pipe(toArray()))
+  const fa2 = await firstValueFrom(features2.pipe(toArray()))
   expect(fa1.length).toBe(11)
   expect(fa2.length).toBe(5)
-  expect(fa1[0].get('refName')).toBe('Pp01')
-  expect(fa2[0].get('refName')).toBe('chr1')
+  expect(fa1[0]!.get('refName')).toBe('Pp01')
+  expect(fa2[0]!.get('refName')).toBe('chr1')
 })

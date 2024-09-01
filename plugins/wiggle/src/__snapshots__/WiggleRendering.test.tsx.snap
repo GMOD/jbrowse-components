@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`one 1`] = `
+<div>
+  <div
+    data-testid="wiggle-rendering-test"
+    style="overflow: visible; position: relative; height: 500px;"
+  >
+    <canvas
+      data-testid="prerendered_canvas_test"
+      height="500"
+      style="width: 500px; height: 500px;"
+      width="500"
+    />
+  </div>
+</div>
+`;

@@ -1,7 +1,6 @@
 ---
 id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,9 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends `LinearWiggleDisplay`
+[plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts)
+
+extends
+
+- [LinearWiggleDisplay](../linearwiggledisplay)
 
 ### LinearSNPCoverageDisplay - Properties
 
@@ -74,13 +77,22 @@ colorBy: types.maybe(
         )
 ```
 
+#### property: jexlFilters
+
+```js
+// type signature
+IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
+// code
+jexlFilters: types.optional(types.array(types.string), [])
+```
+
 ### LinearSNPCoverageDisplay - Getters
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: drawArcsSetting
@@ -104,7 +116,7 @@ any
 any
 ```
 
-#### getter: modificationsReady
+#### getter: autorunReady
 
 ```js
 // type
@@ -115,13 +127,7 @@ boolean
 
 ```js
 // type
-;(props: {
-  model: { featureUnderMouse: Feature },
-  height: number,
-  offsetMouseCoord: Coord,
-  clientMouseCoord: Coord,
-  clientRect?: DOMRect,
-}) => Element
+(props: { model: { featureUnderMouse: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element
 ```
 
 #### getter: adapterConfig
@@ -146,6 +152,13 @@ string
 ```js
 // type
 boolean
+```
+
+#### getter: filters
+
+```js
+// type
+SerializableFilterChain
 ```
 
 ### LinearSNPCoverageDisplay - Methods
@@ -177,14 +190,14 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: string; tagFilter?: { tag: string; value: string; }; }) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setColorBy
@@ -194,11 +207,25 @@ setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: str
 setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 ```
 
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (filters: string[]) => void
+```
+
 #### action: updateModificationColorMap
 
 ```js
 // type signature
 updateModificationColorMap: (uniqueModifications: string[]) => void
+```
+
+#### action: setModificationsReady
+
+```js
+// type signature
+setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: toggleDrawIndicators

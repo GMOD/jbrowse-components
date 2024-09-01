@@ -7,9 +7,6 @@ import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import Menu, { MenuItem } from './Menu'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    display: 'flex',
-  },
   buttonRoot: {
     '&:hover': {
       backgroundColor: alpha(
@@ -23,13 +20,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function DropDownMenu({
+const DropDownMenu = observer(function ({
   menuTitle,
   session,
   menuItems,
 }: {
   menuTitle: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   session: any
   menuItems: MenuItem[]
 }) {
@@ -37,24 +34,17 @@ function DropDownMenu({
   const anchorEl = useRef(null)
   const { classes } = useStyles()
 
-  function handleToggle() {
-    setOpen(!open)
-  }
-
-  function handleMenuItemClick(_event: unknown, callback: Function) {
-    callback(session)
-    handleClose()
-  }
-
   function handleClose() {
     setOpen(false)
   }
 
   return (
-    <div className={classes.root}>
+    <>
       <Button
         ref={anchorEl}
-        onClick={handleToggle}
+        onClick={() => {
+          setOpen(!open)
+        }}
         color="inherit"
         data-testid="dropDownMenuButton"
         classes={{ root: classes.buttonRoot }}
@@ -65,13 +55,16 @@ function DropDownMenu({
       <Menu
         anchorEl={anchorEl.current}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        onMenuItemClick={handleMenuItemClick}
+        onMenuItemClick={(_event, callback) => {
+          callback(session)
+          handleClose()
+        }}
         open={open}
         onClose={handleClose}
         menuItems={menuItems}
       />
-    </div>
+    </>
   )
-}
+})
 
-export default observer(DropDownMenu)
+export default DropDownMenu

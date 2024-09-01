@@ -1,15 +1,19 @@
-import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
+import {
+  BaseChordDisplayModel,
+  CircularViewModel,
+} from '@jbrowse/plugin-circular-view'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
-import { getContainingView } from '@jbrowse/core/util'
+import { Feature, getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 
 /**
  * #stateModel ChordVariantDisplay
- * extends `BaseChordDisplay`
+ * extends
+ * - [BaseChordDisplay](../basechorddisplay)
  */
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
   return types
@@ -39,7 +43,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #method
        */
       renderProps(): Record<string, unknown> {
-        const view = getContainingView(self)
+        const view = getContainingView(self) as CircularViewModel
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
@@ -48,7 +52,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           radius: view.radiusPx,
           blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
-          onChordClick: self.onChordClick,
+          onChordClick: (arg: Feature) => {
+            self.onChordClick(arg)
+          },
         }
       },
     }))

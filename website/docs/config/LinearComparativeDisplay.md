@@ -1,24 +1,15 @@
 ---
 id: linearcomparativedisplay
 title: LinearComparativeDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
 
-### LinearComparativeDisplay - Slots
+[plugins/linear-comparative-view/src/LinearComparativeDisplay/configSchemaF.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeDisplay/configSchemaF.ts)
 
-#### slot: renderer
+### LinearComparativeDisplay - Identifier
 
-```js
-renderer: pluginManager.pluggableConfigSchemaType('renderer')
-```
-
-## LinearComparativeDisplay - Derives from
-
-```js
-baseConfiguration: baseLinearDisplayConfigSchema
-```
+#### slot: explicitIdentifier

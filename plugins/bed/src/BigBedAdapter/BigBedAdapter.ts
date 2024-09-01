@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 import {
@@ -8,24 +7,34 @@ import {
 import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { map, mergeAll } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { ucscProcessedTranscript } from '../util'
+import {
+  doesIntersect2,
+  max,
+  min,
+  Feature,
+  SimpleFeature,
+} from '@jbrowse/core/util'
+import { Observer } from 'rxjs'
+import { SimpleFeatureSerializedNoId } from '@jbrowse/core/util/simpleFeature'
 
-function isUCSC(f: Feature) {
-  return f.get('thickStart') && f.get('blockCount') && f.get('strand') !== 0
-}
+// locals
+import {
+  isUcscProcessedTranscript,
+  makeBlocks,
+  ucscProcessedTranscript,
+} from '../util'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
-  private cached?: Promise<{ bigbed: BigBed; header: any; parser: BED }>
+  private cached?: Promise<{
+    bigbed: BigBed
+    header: Awaited<ReturnType<BigBed['getHeader']>>
+    parser: BED
+  }>
 
   public async configurePre(opts?: BaseOptions) {
+    const pm = this.pluginManager
     const bigbed = new BigBed({
-      filehandle: openLocation(
-        readConfObject(this.config, 'bigBedLocation'),
-        this.pluginManager,
-      ),
+      filehandle: openLocation(this.getConf('bigBedLocation'), pm),
     })
     const header = await bigbed.getHeader(opts)
     const parser = new BED({ autoSql: header.autoSql })
@@ -34,7 +43,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   public async configure(opts?: BaseOptions) {
     if (!this.cached) {
-      this.cached = this.configurePre(opts).catch(e => {
+      this.cached = this.configurePre(opts).catch((e: unknown) => {
         this.cached = undefined
         throw e
       })
@@ -61,65 +70,182 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  public getFeatures(region: Region, opts: BaseOptions = {}) {
-    const { refName, start, end } = region
+  public async getFeaturesHelper(
+    query: Region,
+    opts: BaseOptions,
+    observer: Observer<Feature>,
+    allowRedispatch: boolean,
+    originalQuery = query,
+  ) {
     const { signal } = opts
-    return ObservableCreate<Feature>(async observer => {
-      try {
-        const { parser, bigbed } = await this.configure(opts)
-        const ob = await bigbed.getFeatureStream(refName, start, end, {
-          signal,
-          basesPerSpan: end - start,
+    const scoreColumn = this.getConf('scoreColumn')
+    const aggregateField = this.getConf('aggregateField')
+    const { parser, bigbed } = await this.configure(opts)
+    const feats = await bigbed.getFeatures(
+      query.refName,
+      query.start,
+      query.end,
+      {
+        signal,
+        basesPerSpan: query.end - query.start,
+      },
+    )
+    if (allowRedispatch && feats.length) {
+      let minStart = Number.POSITIVE_INFINITY
+      let maxEnd = Number.NEGATIVE_INFINITY
+      for (const feat of feats) {
+        if (feat.start < minStart) {
+          minStart = feat.start
+        }
+        if (feat.end > maxEnd) {
+          maxEnd = feat.end
+        }
+      }
+      if (maxEnd > query.end || minStart < query.start) {
+        await this.getFeaturesHelper(
+          { ...query, start: minStart, end: maxEnd },
+          opts,
+          observer,
+          false,
+          query,
+        )
+        return
+      }
+    }
+
+    const parentAggregation = {} as Record<
+      string,
+      SimpleFeatureSerializedNoId[]
+    >
+
+    if (feats.some(f => f.uniqueId === undefined)) {
+      throw new Error('found uniqueId undefined')
+    }
+    for (const feat of feats) {
+      const data = parser.parseLine(
+        `${query.refName}\t${feat.start}\t${feat.end}\t${feat.rest}`,
+        { uniqueId: feat.uniqueId! },
+      )
+
+      const aggr = data[aggregateField]
+      if (!parentAggregation[aggr]) {
+        parentAggregation[aggr] = []
+      }
+      const {
+        uniqueId,
+        type,
+        chromStart,
+        chromStarts,
+        blockStarts,
+        blockCount,
+        blockSizes,
+        chromEnd,
+        thickStart,
+        thickEnd,
+        chrom,
+        score,
+        ...rest
+      } = data
+
+      const subfeatures = blockCount
+        ? makeBlocks({
+            chromStarts,
+            blockStarts,
+            blockCount,
+            blockSizes,
+            uniqueId,
+            refName: query.refName,
+            start: feat.start,
+          })
+        : []
+
+      if (isUcscProcessedTranscript(data)) {
+        const f = ucscProcessedTranscript({
+          ...rest,
+          uniqueId,
+          type,
+          start: feat.start,
+          end: feat.end,
+          refName: query.refName,
+          score: scoreColumn ? +data[scoreColumn] : score,
+          chromStarts,
+          blockCount,
+          blockSizes,
+          thickStart,
+          thickEnd,
+          subfeatures,
         })
-        ob.pipe(
-          mergeAll(),
-          map(r => {
-            const data = parser.parseLine(
-              `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
-              {
-                uniqueId: r.uniqueId as string,
-              },
+        if (aggr) {
+          parentAggregation[aggr].push(f)
+        } else {
+          if (
+            doesIntersect2(
+              f.start,
+              f.end,
+              originalQuery.start,
+              originalQuery.end,
             )
-
-            const { blockCount, blockSizes, blockStarts, chromStarts } = data
-            if (blockCount) {
-              const starts = chromStarts || blockStarts || []
-              const sizes = blockSizes
-              const blocksOffset = r.start
-              data.subfeatures = []
-
-              for (let b = 0; b < blockCount; b += 1) {
-                const bmin = (starts[b] || 0) + blocksOffset
-                const bmax = bmin + (sizes[b] || 0)
-                data.subfeatures.push({
-                  uniqueId: `${r.uniqueId}-${b}`,
-                  start: bmin,
-                  end: bmax,
-                  type: 'block',
-                })
-              }
-            }
-            if (r.uniqueId === undefined) {
-              throw new Error('invalid bbi feature')
-            }
-            const { chromStart, chromEnd, chrom, ...rest } = data
-
-            const f = new SimpleFeature({
-              id: `${this.id}-${r.uniqueId}`,
+          ) {
+            observer.next(
+              new SimpleFeature({ id: `${this.id}-${uniqueId}`, data: f }),
+            )
+          }
+        }
+      } else {
+        if (
+          doesIntersect2(
+            feat.start,
+            feat.end,
+            originalQuery.start,
+            originalQuery.end,
+          )
+        ) {
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${uniqueId}`,
               data: {
                 ...rest,
-                start: r.start,
-                end: r.end,
-                refName,
+                uniqueId,
+                type,
+                start: feat.start,
+                score: scoreColumn ? +data[scoreColumn] : score,
+                end: feat.end,
+                refName: query.refName,
+                subfeatures,
               },
-            })
+            }),
+          )
+        }
+      }
+    }
 
-            // collection of heuristics for suggesting that this feature
-            // should be converted to a gene, CNV bigbed has many gene like
-            // features including thickStart and blockCount but no strand
-            return isUCSC(f) ? ucscProcessedTranscript(f) : f
+    Object.entries(parentAggregation).map(([name, subfeatures]) => {
+      const s = min(subfeatures.map(f => f.start))
+      const e = max(subfeatures.map(f => f.end))
+      if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
+        const { uniqueId, strand } = subfeatures[0]!
+        observer.next(
+          new SimpleFeature({
+            id: `${this.id}-${uniqueId}-parent`,
+            data: {
+              type: 'gene',
+              subfeatures,
+              strand,
+              name,
+              start: s,
+              end: e,
+              refName: query.refName,
+            },
           }),
-        ).subscribe(observer)
+        )
+      }
+    })
+    observer.complete()
+  }
+  public getFeatures(query: Region, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      try {
+        await this.getFeaturesHelper(query, opts, observer, true)
       } catch (e) {
         observer.error(e)
       }

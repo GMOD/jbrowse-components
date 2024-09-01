@@ -12,7 +12,7 @@ import {
 // locals
 import { ColumnTypes, AnyColumnType } from './ColumnDataTypes'
 import StaticRowSetModel from './StaticRowSet'
-import RowModel from './Row'
+import type RowModel from './Row'
 
 type Row = Instance<typeof RowModel>
 
@@ -45,13 +45,33 @@ const ColumnDefinition = types
 
 type RowMenuPosition = { anchorEl: Element; rowNumber: string } | null
 
+/**
+ * #stateModel SpreadsheetViewSpreadsheet
+ * #category view
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const Spreadsheet = types
   .model('Spreadsheet', {
+    /**
+     * #property
+     */
     rowSet: types.optional(StaticRowSetModel, () => StaticRowSetModel.create()),
+    /**
+     * #property
+     */
     columns: types.array(ColumnDefinition),
+    /**
+     * #property
+     */
     columnDisplayOrder: types.array(types.number),
+    /**
+     * #property
+     */
     hasColumnNames: false,
-
+    /**
+     * #property
+     */
     sortColumns: types.array(
       types
         .model('SortColumns', {
@@ -73,19 +93,28 @@ const Spreadsheet = types
     isLoaded: false,
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
     get initialized() {
       const session = getSession(self)
       const name = self.assemblyName
       return name ? session.assemblyManager.get(name)?.initialized : false
     },
+    /**
+     * #getter
+     */
     get hideRowSelection() {
       // just delegates to parent
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return getParent<any>(self).hideRowSelection
     },
 
-    // list of data type names to be made available in the column
-    // dropdown menu
+    /**
+     * #getter
+     * list of data type names to be made available in the column
+     * dropdown menu
+     */
     get dataTypeChoices() {
       const typeNames = Object.keys(ColumnTypes) as (keyof typeof ColumnTypes)[]
       return typeNames.map(typeName => {
@@ -95,10 +124,12 @@ const Spreadsheet = types
       })
     },
 
+    /**
+     * #method
+     */
     rowSortingComparisonFunction(rowA: Row, rowB: Row) {
-      for (let i = 0; i < self.sortColumns.length; i += 1) {
-        const { columnNumber, descending } = self.sortColumns[i]
-        const { dataType } = self.columns[columnNumber]
+      for (const { columnNumber, descending } of self.sortColumns) {
+        const { dataType } = self.columns[columnNumber]!
         const result = dataType.compare(
           rowA.cellsWithDerived[columnNumber],
           rowB.cellsWithDerived[columnNumber],
@@ -132,25 +163,43 @@ const Spreadsheet = types
       )
     },
 
+    /**
+     * #action
+     */
     setLoaded(flag: boolean) {
       self.isLoaded = flag
     },
 
+    /**
+     * #action
+     */
     setRowMenuPosition(newPosition: RowMenuPosition) {
       self.rowMenuPosition = newPosition
     },
 
+    /**
+     * #action
+     */
     setSortColumns(newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (newSort) {
-        // @ts-ignore
+        // @ts-expect-error
         self.sortColumns = newSort
       }
     },
+
+    /**
+     * #action
+     */
     setColumnType(columnNumber: number, newTypeName: string) {
-      self.columns[columnNumber].dataType = { type: newTypeName }
+      self.columns[columnNumber]!.dataType = { type: newTypeName }
     },
+
+    /**
+     * #action
+     */
     unselectAll() {
-      return self.rowSet.unselectAll()
+      self.rowSet.unselectAll()
     },
   }))
 

@@ -5,6 +5,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearSNPCoverageDisplay
+ *
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -68,7 +71,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
       renderers: ConfigurationSchema('RenderersConfiguration', {
         SNPCoverageRenderer: pluginManager.getRendererType(
           'SNPCoverageRenderer',
-        ).configSchema,
+        )!.configSchema,
       }),
     },
     {

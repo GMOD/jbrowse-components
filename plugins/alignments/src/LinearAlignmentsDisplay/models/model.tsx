@@ -12,7 +12,6 @@ import deepEqual from 'fast-deep-equal'
 
 // jbrowse
 import {
-  ConfigurationReference,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   getConf,
@@ -20,23 +19,18 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
+import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+// locals
+import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
+import { getLowerPanelDisplays } from './util'
+import { IFilter } from '../../shared'
 
 const minDisplayHeight = 20
 
-function getLowerPanelDisplays(pluginManager: PluginManager) {
-  return (
-    pluginManager
-      .getDisplayElements()
-      // @ts-ignore
-      .filter(f => f.subDisplay?.type === 'LinearAlignmentsDisplay')
-      // @ts-ignore
-      .filter(f => f.subDisplay?.lowerPanel)
-  )
-}
-
 function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
-  x1: T,
-  x2: U,
+  x1?: T,
+  x2?: U,
 ) {
   return deepEqual(
     x1 ? getSnapshot(x1) : undefined,
@@ -44,7 +38,7 @@ function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
   )
 }
 
-function preCheck(self: AlignmentsDisplayModel) {
+function preCheck(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   return (
     PileupDisplay ||
@@ -54,7 +48,7 @@ function preCheck(self: AlignmentsDisplayModel) {
   )
 }
 
-function propagateColorBy(self: AlignmentsDisplayModel) {
+function propagateColorBy(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   if (!preCheck(self) || !PileupDisplay.colorBy) {
     return
@@ -64,7 +58,7 @@ function propagateColorBy(self: AlignmentsDisplayModel) {
   }
 }
 
-function propagateFilterBy(self: AlignmentsDisplayModel) {
+function propagateFilterBy(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   if (!preCheck(self) || !PileupDisplay.filterBy) {
     return
@@ -74,58 +68,11 @@ function propagateFilterBy(self: AlignmentsDisplayModel) {
   }
 }
 
-function AlignmentsModel(
-  pluginManager: PluginManager,
-  configSchema: AnyConfigurationSchemaType,
-) {
-  const lowerPanelDisplays = getLowerPanelDisplays(pluginManager).map(
-    f => f.stateModel,
-  )
-
-  return types.model({
-    /**
-     * #property
-     * refers to LinearPileupDisplay sub-display model
-     */
-    // @ts-ignore
-    PileupDisplay: types.maybe(types.union(...lowerPanelDisplays)),
-    /**
-     * #property
-     * refers to LinearSNPCoverageDisplay sub-display model
-     */
-    SNPCoverageDisplay: types.maybe(
-      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-    ),
-    /**
-     * #property
-     */
-    snpCovHeight: 45,
-    /**
-     * #property
-     */
-    type: types.literal('LinearAlignmentsDisplay'),
-    /**
-     * #property
-     */
-    configuration: ConfigurationReference(configSchema),
-    /**
-     * #property
-     */
-    height: 250,
-    /**
-     * #property
-     */
-    userFeatureScreenDensity: types.maybe(types.number),
-    /**
-     * #property
-     */
-    lowerPanelType: 'LinearPileupDisplay',
-  })
-}
-
 /**
  * #stateModel LinearAlignmentsDisplay
- * extends `BaseDisplay`
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [LinearAlignmentsDisplayMixin](../linearalignmentsdisplaymixin)
  */
 function stateModelFactory(
   pluginManager: PluginManager,
@@ -135,7 +82,7 @@ function stateModelFactory(
     .compose(
       'LinearAlignmentsDisplay',
       BaseDisplay,
-      AlignmentsModel(pluginManager, configSchema),
+      LinearAlignmentsDisplayMixin(pluginManager, configSchema),
     )
     .volatile(() => ({
       scrollTop: 0,
@@ -153,6 +100,24 @@ function stateModelFactory(
        */
       setSNPCoverageHeight(n: number) {
         self.snpCovHeight = n
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get height() {
+        return self.heightPreConfig ?? getConf(self, 'height')
+      },
+
+      /**
+       * #getter
+       */
+      get featureIdUnderMouse() {
+        return (
+          self.PileupDisplay.featureIdUnderMouse ||
+          self.SNPCoverageDisplay.featureIdUnderMouse
+        )
       },
     }))
     .views(self => ({
@@ -178,7 +143,7 @@ function stateModelFactory(
        * #method
        */
       searchFeatureByID(id: string) {
-        return self.PileupDisplay.searchFeatureByID(id)
+        return self.PileupDisplay.searchFeatureByID?.(id)
       },
 
       /**
@@ -189,7 +154,7 @@ function stateModelFactory(
       },
 
       /**
-       * #getter
+       * #getteralignmentsdisplaymodel
        */
       get DisplayBlurb() {
         return self.PileupDisplay?.DisplayBlurb
@@ -227,9 +192,9 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateStatsLimit(stats: unknown) {
-        self.PileupDisplay.updateStatsLimit(stats)
-        self.SNPCoverageDisplay.updateStatsLimit(stats)
+      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
+        self.PileupDisplay.setFeatureDensityStatsLimit(stats)
+        self.SNPCoverageDisplay.setFeatureDensityStatsLimit(stats)
       },
 
       /**
@@ -245,8 +210,15 @@ function stateModelFactory(
        * #action
        */
       setHeight(n: number) {
-        self.height = Math.max(n, minDisplayHeight)
-        return self.height
+        self.heightPreConfig = Math.max(n, minDisplayHeight)
+        return self.heightPreConfig
+      },
+      /**
+       * #action
+       */
+      setFilterBy(filter: IFilter) {
+        self.PileupDisplay.setFilterBy(filter)
+        self.SNPCoverageDisplay.setFilterBy(filter)
       },
       /**
        * #action
@@ -295,8 +267,8 @@ function stateModelFactory(
               PileupDisplay.setConfig(self.pileupConf)
             }
 
-            propagateColorBy(self as AlignmentsDisplayModel)
-            propagateFilterBy(self as AlignmentsDisplayModel)
+            propagateColorBy(self as LinearAlignmentsDisplayModel)
+            propagateFilterBy(self as LinearAlignmentsDisplayModel)
           }),
         )
 
@@ -321,7 +293,11 @@ function stateModelFactory(
        */
       async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => self.PileupDisplay.ready)
+        await when(
+          () =>
+            !self.PileupDisplay.renderProps().notReady &&
+            !self.SNPCoverageDisplay.renderProps().notReady,
+        )
         return (
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
@@ -342,11 +318,16 @@ function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
+          if (!self.PileupDisplay) {
+            return []
+          }
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
             type: 'radio',
             label: d.displayName,
             checked: d.name === self.PileupDisplay.type,
-            onClick: () => self.setLowerPanelType(d.name),
+            onClick: () => {
+              self.setLowerPanelType(d.name)
+            },
           }))
           return [
             ...superTrackMenuItems(),
@@ -362,15 +343,28 @@ function stateModelFactory(
             },
             {
               type: 'subMenu',
-              label: `Replace lower panel with...`,
+              label: 'Replace lower panel with...',
               subMenu: extra,
             },
           ]
         },
       }
     })
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      // @ts-expect-error
+      const { height, ...rest } = snap
+      return { heightPreConfig: height, ...rest }
+    })
 }
 
 export default stateModelFactory
-export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type AlignmentsDisplayModel = Instance<AlignmentsDisplayStateModel>
+
+export type LinearAlignmentsDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearAlignmentsDisplayModel =
+  Instance<LinearAlignmentsDisplayStateModel>

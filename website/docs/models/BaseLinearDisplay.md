@@ -1,7 +1,6 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,27 +8,20 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends `BaseDisplay`
+[plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
+
+BaseLinearDisplay is used as the basis for many linear genome view tracks. It is
+block based, and can use 'static blocks' or 'dynamic blocks'
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### BaseLinearDisplay - Properties
-
-#### property: height
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-height: types.optional(
-          types.refinement(
-            'displayHeight',
-            types.number,
-            n => n >= minDisplayHeight,
-          ),
-          defaultDisplayHeight,
-        )
-```
 
 #### property: blockState
 
@@ -42,22 +34,13 @@ IMapType<IModelType<{ key: ISimpleType<string>; region: IModelType<{ refName: IS
 blockState: types.map(BlockState)
 ```
 
-#### property: userBpPerPxLimit
+#### property: configuration
 
 ```js
 // type signature
-IMaybe<ISimpleType<number>>
+ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; jexlFilters: { ...; }; }, Configura...
 // code
-userBpPerPxLimit: types.maybe(types.number)
-```
-
-#### property: userByteSizeLimit
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-userByteSizeLimit: types.maybe(types.number)
+configuration: ConfigurationReference(configSchema)
 ```
 
 ### BaseLinearDisplay - Getters
@@ -134,98 +117,24 @@ any
 
 ```js
 // type
-;(blockKey: string, x: number, y: number) => any
+(blockKey: string, x: number, y: number) => string
 ```
 
 #### getter: getFeatureByID
 
 ```js
 // type
-;(blockKey: string, id: string) => LayoutRecord
+(blockKey: string, id: string) => LayoutRecord
 ```
 
 #### getter: searchFeatureByID
 
 ```js
 // type
-;(id: string) => LayoutRecord
-```
-
-#### getter: currentBytesRequested
-
-```js
-// type
-number
-```
-
-#### getter: currentFeatureScreenDensity
-
-```js
-// type
-number
-```
-
-#### getter: maxFeatureScreenDensity
-
-```js
-// type
-any
-```
-
-#### getter: estimatedStatsReady
-
-```js
-// type
-boolean
-```
-
-#### getter: maxAllowableBytes
-
-```js
-// type
-number
-```
-
-#### getter: regionTooLarge
-
-region is too large if:
-
-- stats are ready
-- region is greater than 20kb (don't warn when zoomed in less than that)
-- and bytes is greater than max allowed bytes or density greater than max
-  density
-
-```js
-// type
-boolean
-```
-
-#### getter: regionTooLargeReason
-
-only shows a message of bytes requested is defined, the feature density based
-stats don't produce any helpful message besides to zoom in
-
-```js
-// type
-string
+(id: string) => LayoutRecord
 ```
 
 ### BaseLinearDisplay - Methods
-
-#### method: regionCannotBeRenderedText
-
-```js
-// type signature
-regionCannotBeRenderedText: (_region: Region) =>
-  '' | 'Force load to see features'
-```
-
-#### method: regionCannotBeRendered
-
-```js
-// type signature
-regionCannotBeRendered: (_region: Region) => Element
-```
 
 #### method: trackMenuItems
 
@@ -238,7 +147,7 @@ trackMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+contextMenuItems: () => MenuItem[]
 ```
 
 #### method: renderProps
@@ -252,86 +161,16 @@ renderProps: () => any
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; }) => Promise<Element>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 ```
 
 ### BaseLinearDisplay - Actions
-
-#### action: setMessage
-
-```js
-// type signature
-setMessage: (message: string) => void
-```
-
-#### action: estimateRegionsStats
-
-```js
-// type signature
-estimateRegionsStats: (regions: Region[], opts: { headers?: Record<string, string>; signal?: AbortSignal; filters?: string[]; }) => Promise<{}>
-```
-
-#### action: setRegionStatsP
-
-```js
-// type signature
-setRegionStatsP: (p?: Promise<Stats>) => void
-```
-
-#### action: setRegionStats
-
-```js
-// type signature
-setRegionStats: (estimatedRegionStats?: Stats) => void
-```
-
-#### action: clearRegionStats
-
-```js
-// type signature
-clearRegionStats: () => void
-```
-
-#### action: setHeight
-
-```js
-// type signature
-setHeight: (displayHeight: number) => number
-```
-
-#### action: resizeHeight
-
-```js
-// type signature
-resizeHeight: (distance: number) => number
-```
-
-#### action: setScrollTop
-
-```js
-// type signature
-setScrollTop: (scrollTop: number) => void
-```
-
-#### action: updateStatsLimit
-
-```js
-// type signature
-updateStatsLimit: (stats: Stats) => void
-```
 
 #### action: addBlock
 
 ```js
 // type signature
 addBlock: (key: string, block: BaseBlock) => void
-```
-
-#### action: setCurrBpPerPx
-
-```js
-// type signature
-setCurrBpPerPx: (n: number) => void
 ```
 
 #### action: deleteBlock
@@ -348,6 +187,13 @@ deleteBlock: (key: string) => void
 selectFeature: (feature: Feature) => void
 ```
 
+#### action: navToFeature
+
+```js
+// type signature
+navToFeature: (feature: Feature) => void
+```
+
 #### action: clearFeatureSelection
 
 ```js
@@ -359,14 +205,7 @@ clearFeatureSelection: () => void
 
 ```js
 // type signature
-setFeatureIdUnderMouse: (feature: string) => void
-```
-
-#### action: reload
-
-```js
-// type signature
-reload: () => void
+setFeatureIdUnderMouse: (feature?: string) => void
 ```
 
 #### action: setContextMenuFeature

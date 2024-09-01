@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
 import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
@@ -8,7 +7,7 @@ function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
   return true
 }
-const typeModels: { [typeName: string]: any } = {
+const typeModels: Record<string, any> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
@@ -23,7 +22,7 @@ const typeModels: { [typeName: string]: any } = {
 }
 
 // default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults: { [typeName: string]: any } = {
+const fallbackDefaults: Record<string, any> = {
   stringArray: [],
   stringArrayMap: {},
   numberMap: {},
@@ -54,7 +53,7 @@ const objectJSON = (self: { value: any }) => ({
 })
 
 // custom actions for modifying the value models
-const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
+const typeModelExtensions: Record<string, (self: any) => any> = {
   fileLocation: objectJSON,
   number: literalJSON,
   integer: literalJSON,
@@ -141,8 +140,11 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
 const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
-
+function json(value: any) {
+  return value?.toJSON ? value.toJSON() : `"${value}"`
+}
 export interface ConfigSlotDefinition {
+  /** human-readable description of the slot's meaning */
   description?: string
   /** custom base MST model for the slot's value */
   model?: IAnyModelType | IAnyComplexType
@@ -211,11 +213,13 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile as jexl function
           const { pluginManager } = getEnv(self)
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (!pluginManager && typeof jest === 'undefined') {
             console.warn(
               'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
             )
           }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           return stringToJexlExpression(String(self.value), pluginManager?.jexl)
         }
         return { evalSync: () => self.value }
@@ -228,12 +232,7 @@ export default function ConfigSlot(
         if (self.isCallback) {
           return undefined
         }
-        function json(value: { toJSON: Function } | any) {
-          if (value && value.toJSON) {
-            return value.toJSON()
-          }
-          return `"${value}"`
-        }
+
         return json(self.value)
       },
     }))
@@ -283,16 +282,13 @@ export default function ConfigSlot(
           /* ignore */
         }
         self.value = defaultValue
-        // if it is still a callback (happens if the defaultValue is a callback),
-        // then use the last-resort fallback default
-
+        // if it is still a callback (happens if the defaultValue is a
+        // callback), then use the last-resort fallback default
         // if defaultValue has jexl: string, run this part
-        if (self.isCallback) {
-          if (!(type in fallbackDefaults)) {
-            throw new Error(`no fallbackDefault defined for type ${type}`)
-          }
-          self.value = fallbackDefaults[type]
+        if (!(type in fallbackDefaults)) {
+          throw new Error(`no fallbackDefault defined for type ${type}`)
         }
+        self.value = fallbackDefaults[type]
       },
     }))
 

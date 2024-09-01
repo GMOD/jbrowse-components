@@ -1,13 +1,14 @@
 ---
 id: gff3tabixadapter
 title: Gff3TabixAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/gff3/src/Gff3TabixAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts)
 
 ### Gff3TabixAdapter - Slots
 
@@ -51,6 +52,6 @@ this for certain feature types to avoid fetching e.g. the entire chromosome
 ```js
 dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
+      defaultValue: ['chromosome', 'region', 'contig'],
     }
 ```

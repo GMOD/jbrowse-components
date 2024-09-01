@@ -1,24 +1,23 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { Popover, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// locals
 import { LinearComparativeViewModel } from '../model'
+import VerticalGuide from './VerticalGuide'
 
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => {
-  const { tertiary, primary } = theme.palette
-  const background = tertiary
-    ? alpha(tertiary.main, 0.7)
-    : alpha(primary.main, 0.7)
   return {
     rubberband: {
       height: '100%',
-      background,
+      background: alpha(theme.palette.tertiary.main, 0.7),
       position: 'absolute',
       zIndex: 10,
       textAlign: 'center',
@@ -30,7 +29,7 @@ const useStyles = makeStyles()(theme => {
       minHeight: 8,
     },
     rubberbandText: {
-      color: tertiary ? tertiary.contrastText : primary.contrastText,
+      color: theme.palette.tertiary.contrastText,
     },
     popover: {
       mouseEvents: 'none',
@@ -40,48 +39,10 @@ const useStyles = makeStyles()(theme => {
       paddingLeft: theme.spacing(1),
       paddingRight: theme.spacing(1),
     },
-    guide: {
-      pointerEvents: 'none',
-      height: '100%',
-      width: 1,
-      position: 'absolute',
-      zIndex: 10,
-    },
-    sm: {
-      fontSize: 10,
-    },
   }
 })
 
-const VerticalGuide = observer(
-  ({ model, coordX }: { model: LCV; coordX: number }) => {
-    const { classes } = useStyles()
-    return (
-      <Tooltip
-        open
-        placement="top"
-        title={model.views
-          .map(view => view.pxToBp(coordX))
-          .map(elt => (
-            <Typography className={classes.sm} key={JSON.stringify(elt)}>
-              {stringify(elt)}
-            </Typography>
-          ))}
-        arrow
-      >
-        <div
-          className={classes.guide}
-          style={{
-            left: coordX,
-            background: 'red',
-          }}
-        />
-      </Tooltip>
-    )
-  },
-)
-
-function Rubberband({
+const LinearComparativeRubberband = observer(function Rubberband({
   model,
   ControlComponent = <div />,
 }: {
@@ -100,7 +61,7 @@ function Rubberband({
   }>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberbandRef = useRef(null)
+  const rubberbandRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
@@ -160,7 +121,7 @@ function Rubberband({
       }
     }
     return () => {}
-  }, [startX, mouseDragging, anchorPosition, model])
+  }, [startX, mouseDragging, model])
 
   useEffect(() => {
     if (
@@ -190,7 +151,9 @@ function Rubberband({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.views.forEach(view => view.setOffsets(undefined, undefined))
+    model.views.forEach(view => {
+      view.setOffsets(undefined, undefined)
+    })
   }
 
   function handleClose() {
@@ -201,7 +164,7 @@ function Rubberband({
 
   const open = Boolean(anchorPosition)
 
-  function handleMenuItemClick(_: unknown, callback: Function) {
+  function handleMenuItemClick(_: unknown, callback: () => void) {
     callback()
     handleClose()
   }
@@ -213,10 +176,8 @@ function Rubberband({
           <VerticalGuide model={model} coordX={guideX} />
         ) : null}
         <div
-          data-testid="rubberband_controls"
-          className={classes.rubberbandControl}
-          role="presentation"
           ref={controlsRef}
+          className={classes.rubberbandControl}
           onMouseDown={mouseDown}
           onMouseOut={mouseOut}
           onMouseMove={mouseMove}
@@ -227,7 +188,6 @@ function Rubberband({
     )
   }
 
-  /* Calculating Pixels for Mouse Dragging */
   const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
   const left = right < startX ? right : startX
   const width = Math.abs(right - startX)
@@ -241,9 +201,7 @@ function Rubberband({
         <>
           <Popover
             className={classes.popover}
-            classes={{
-              paper: classes.paper,
-            }}
+            classes={{ paper: classes.paper }}
             open
             anchorEl={rubberbandRef.current}
             anchorOrigin={{
@@ -257,15 +215,15 @@ function Rubberband({
             keepMounted
             disableRestoreFocus
           >
-            {leftBpOffset.map(l => (
-              <Typography key={JSON.stringify(l)}>{stringify(l)}</Typography>
+            {leftBpOffset.map((l, idx) => (
+              <Typography key={[JSON.stringify(l), idx, 'left'].join('-')}>
+                {stringify(l, true)}
+              </Typography>
             ))}
           </Popover>
           <Popover
             className={classes.popover}
-            classes={{
-              paper: classes.paper,
-            }}
+            classes={{ paper: classes.paper }}
             open
             anchorEl={rubberbandRef.current}
             anchorOrigin={{
@@ -279,8 +237,10 @@ function Rubberband({
             keepMounted
             disableRestoreFocus
           >
-            {rightBpOffset.map(l => (
-              <Typography key={JSON.stringify(l)}>{stringify(l)}</Typography>
+            {rightBpOffset.map((l, idx) => (
+              <Typography key={[JSON.stringify(l), idx, 'right'].join('-')}>
+                {stringify(l, true)}
+              </Typography>
             ))}
           </Popover>
         </>
@@ -292,16 +252,15 @@ function Rubberband({
       >
         <Typography variant="h6" className={classes.rubberbandText}>
           {numOfBpSelected.map((n, i) => (
-            <Typography key={`${n}_${i}`}>{`${n.toLocaleString(
-              'en-US',
-            )}bp`}</Typography>
+            /* biome-ignore lint/suspicious/noArrayIndexKey: */
+            <Typography key={`${n}_${i}`}>
+              {`${n.toLocaleString('en-US')}bp`}
+            </Typography>
           ))}
         </Typography>
       </div>
       <div
-        data-testid="rubberband_controls"
         className={classes.rubberbandControl}
-        role="presentation"
         ref={controlsRef}
         onMouseDown={mouseDown}
         onMouseOut={mouseOut}
@@ -324,6 +283,6 @@ function Rubberband({
       ) : null}
     </>
   )
-}
+})
 
-export default observer(Rubberband)
+export default LinearComparativeRubberband

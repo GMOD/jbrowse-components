@@ -28,7 +28,11 @@ export function when(
           reject(new Error(`timed out waiting for ${name || 'whenPresent'}`))
         }
       }, timeout)
-      finishTimeout = () => timeoutId && clearTimeout(timeoutId)
+      finishTimeout = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+      }
     }
 
     // set up aborting
@@ -55,11 +59,11 @@ export function when(
           resolve(true)
         }
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         if (!finished) {
           finished = true
           finishTimeout()
-
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           reject(err)
         }
       })
