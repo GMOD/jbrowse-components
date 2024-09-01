@@ -32,8 +32,8 @@
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "build:webpack": "npm-run-all build:webpack:*",
-    "build:webpack:dev": "cross-env NODE_ENV=development webpack",
-    "build:webpack:prod": "cross-env NODE_ENV=production webpack",
+    "build:webpack:dev": "cross-env NODE_ENV=development rspack build",
+    "build:webpack:prod": "cross-env NODE_ENV=production rspack build",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
@@ -94,8 +94,7 @@
     "react-error-boundary": "^4.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.4.1",
-    "use-query-params": "^2.0.0",
-    "webpack": "^5.72.0"
+    "use-query-params": "^2.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

@@ -1,6 +1,0 @@
-{
-  "include": ["src/tests/oauthServer"],
-  "compilerOptions": {
-    "module": "nodenext"
-  }
-}

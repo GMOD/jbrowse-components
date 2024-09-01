@@ -200,6 +200,9 @@ const SessionLoader = types
         uri: configPath,
         locationType: 'UriLocation',
       }).readFile('utf8')
+      // if (text.startsWith('<')) {
+      //   throw new Error('HTTP 404 fetching config.json')
+      // }
       const config = JSON.parse(text)
       const configUri = new URL(configPath, window.location.href)
       addRelativeUris(config, configUri)
