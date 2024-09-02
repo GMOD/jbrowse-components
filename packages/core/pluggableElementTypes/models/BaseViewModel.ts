@@ -26,7 +26,22 @@ const BaseViewModel = types
     /**
      * #property
      */
-    minimized: false,
+    minimized: types.optional(types.boolean, false),
+
+    /**
+     * #property
+     */
+    isFloating: types.optional(types.boolean, false),
+
+    /**
+     * #property
+     */
+    floatingX: 100,
+
+    /**
+     * #property
+     */
+    floatingY: 100,
   })
   .volatile(() => ({
     width: 800,
@@ -43,17 +58,24 @@ const BaseViewModel = types
     /**
      * #action
      */
+    setIsFloating(b: boolean) {
+      self.isFloating = b
+    },
+
+    /**
+     * #action
+     */
     setDisplayName(name: string) {
       self.displayName = name
     },
 
     /**
      * #action
-     * width is an important attribute of the view model, when it becomes set, it
-     * often indicates when the app can start drawing to it. certain views like
-     * lgv are strict about this because if it tries to draw before it knows the
-     * width it should draw to, it may start fetching data for regions it doesn't
-     * need to
+     * width is an important attribute of the view model, when it becomes set,
+     * it often indicates when the app can start drawing to it. certain views
+     * like lgv are strict about this because if it tries to draw before it
+     * knows the width it should draw to, it may start fetching data for
+     * regions it doesn't need to
      *
      * setWidth is updated by a ResizeObserver generally, the views often need
      * to know how wide they are to properly draw genomic regions
@@ -67,6 +89,10 @@ const BaseViewModel = types
      */
     setMinimized(flag: boolean) {
       self.minimized = flag
+    },
+    setFloatingPosition(arg: { x: number; y: number }) {
+      self.floatingX = arg.x
+      self.floatingY = arg.y
     },
   }))
 

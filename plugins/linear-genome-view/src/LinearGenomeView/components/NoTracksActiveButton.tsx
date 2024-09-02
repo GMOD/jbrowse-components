@@ -16,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
     paddingBottom: theme.spacing(1),
   },
   top: {
-    zIndex: 1000,
+    zIndex: 100,
   },
 }))
 

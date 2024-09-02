@@ -31,6 +31,7 @@ export * from './util'
 export interface AbstractViewContainer
   extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
+  floating?: boolean
   removeView(view: AbstractViewModel): void
   addView(
     typeName: string,
@@ -276,14 +277,20 @@ export interface SessionWithFocusedViewAndDrawerWidgets
 
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
+  floatingX: number
+  floatingY: number
   id: string
   type: string
   width: number
+  isFloating: boolean
   minimized: boolean
-  setWidth(width: number): void
-  setMinimized(flag: boolean): void
   displayName: string | undefined
+
+  setWidth(width: number): void
+  setFloatingPosition: (arg: { x: number; y: number }) => void
+  setMinimized(flag: boolean): void
   setDisplayName: (arg: string) => void
+  setIsFloating: (arg: boolean) => void
   menuItems: () => MenuItem[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
