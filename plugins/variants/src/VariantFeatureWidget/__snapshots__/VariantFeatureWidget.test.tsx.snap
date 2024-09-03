@@ -3,38 +3,38 @@
 exports[`renders with just the required model elements 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1  css-1dtoofl-MuiPaper-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1dtoofl-MuiPaper-root"
     data-testid="variant-side-drawer"
     style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1  MuiAccordion-root MuiAccordion-rounded Mui-expanded  css-fgq1ej-MuiPaper-root-MuiAccordion-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-fgq1ej-MuiPaper-root-MuiAccordion-root"
       style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
     >
       <h3
-        class="MuiAccordion-heading  css-rolk5j-MuiAccordion-heading"
+        class="MuiAccordion-heading css-rolk5j-MuiAccordion-heading"
       >
         <div
           aria-expanded="true"
-          class="MuiButtonBase-root  MuiAccordionSummary-root Mui-expanded  css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
           role="button"
           tabindex="0"
         >
           <div
-            class="MuiAccordionSummary-content Mui-expanded  css-1rhnrrr-MuiAccordionSummary-content"
+            class="MuiAccordionSummary-content Mui-expanded css-1rhnrrr-MuiAccordionSummary-content"
           >
             <span
-              class="MuiTypography-root MuiTypography-button  css-xin9dq-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-button css-xin9dq-MuiTypography-root"
             >
               rs123
             </span>
           </div>
           <div
-            class="MuiAccordionSummary-expandIconWrapper Mui-expanded  css-yw020d-MuiAccordionSummary-expandIconWrapper"
+            class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-yw020d-MuiAccordionSummary-expandIconWrapper"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-1u842hp-MuiSvgIcon-root-icon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1u842hp-MuiSvgIcon-root-icon"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -47,24 +47,24 @@ exports[`renders with just the required model elements 1`] = `
         </div>
       </h3>
       <div
-        class="MuiCollapse-root MuiCollapse-vertical  MuiCollapse-entered  css-wz2cs5-MuiCollapse-root"
+        class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-wz2cs5-MuiCollapse-root"
         style="min-height: 0px;"
       >
         <div
-          class="MuiCollapse-wrapper MuiCollapse-vertical  css-smkl36-MuiCollapse-wrapper"
+          class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
         >
           <div
-            class="MuiCollapse-wrapperInner MuiCollapse-vertical  css-9l5vo-MuiCollapse-wrapperInner"
+            class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiAccordion-region "
+              class="MuiAccordion-region"
               role="region"
             >
               <div
-                class="MuiAccordionDetails-root  css-mz6w4y-MuiAccordionDetails-root-expansionPanelDetails"
+                class="MuiAccordionDetails-root css-mz6w4y-MuiAccordionDetails-root-expansionPanelDetails"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-1ptewxf-MuiTypography-root"
                 >
                   Core details
                 </p>
@@ -115,10 +115,10 @@ exports[`renders with just the required model elements 1`] = `
                   </div>
                 </div>
                 <hr
-                  class="MuiDivider-root MuiDivider-fullWidth  css-9mgopn-MuiDivider-root"
+                  class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
                 />
                 <p
-                  class="MuiTypography-root MuiTypography-body1  css-1ptewxf-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-1ptewxf-MuiTypography-root"
                 >
                   Attributes
                 </p>
@@ -197,10 +197,10 @@ exports[`renders with just the required model elements 1`] = `
                   class="css-57ilie-container"
                 >
                   <div
-                    class="MuiFormControl-root MuiFormControl-marginDense  css-1pquc22-MuiFormControl-root-formControl"
+                    class="MuiFormControl-root MuiFormControl-marginDense css-1pquc22-MuiFormControl-root-formControl"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary   MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary  css-qy5lo8-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-qy5lo8-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -208,13 +208,13 @@ exports[`renders with just the required model elements 1`] = `
                     </button>
                   </div>
                   <button
-                    class="MuiButtonBase-root  MuiIconButton-root MuiIconButton-sizeSmall  css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-16y463b-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium  css-l9ansn-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
                       data-testid="HelpIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
