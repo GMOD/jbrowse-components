@@ -1,4 +1,4 @@
-import { HttpRangeFetcher } from 'http-range-fetcher'
+import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
 import { Buffer } from 'buffer'
 import { RemoteFile, PolyfilledResponse } from 'generic-filehandle'
 

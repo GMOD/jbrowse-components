@@ -38,7 +38,11 @@ export function layoutFeature({
     if (seq) {
       for (const { type, start, cliplen = 0 } of mismatches) {
         if (type === 'softclip') {
-          start === 0 ? (expansionBefore = cliplen) : (expansionAfter = cliplen)
+          if (start === 0) {
+            expansionBefore = cliplen
+          } else {
+            expansionAfter = cliplen
+          }
         }
       }
     }

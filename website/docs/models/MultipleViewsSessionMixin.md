@@ -12,6 +12,11 @@ info
 
 [packages/product-core/src/Session/MultipleViews.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts)
 
+composed of
+
+- [BaseSessionModel](../basesessionmodel)
+- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+
 ### MultipleViewsSessionMixin - Properties
 
 #### property: views
@@ -25,6 +30,13 @@ views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 
 ### MultipleViewsSessionMixin - Actions
 
+#### action: moveViewDown
+
+```js
+// type signature
+moveViewDown: (id: string) => void
+```
+
 #### action: moveViewUp
 
 ```js
@@ -32,11 +44,18 @@ views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 moveViewUp: (id: string) => void
 ```
 
-#### action: moveViewDown
+#### action: moveViewToTop
 
 ```js
 // type signature
-moveViewDown: (id: string) => void
+moveViewToTop: (id: string) => void
+```
+
+#### action: moveViewToBottom
+
+```js
+// type signature
+moveViewToBottom: (id: string) => void
 ```
 
 #### action: addView

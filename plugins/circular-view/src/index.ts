@@ -40,4 +40,4 @@ export {
 export {
   type CircularViewModel,
   type CircularViewStateModel,
-} from './CircularView/models/CircularView'
+} from './CircularView/models/model'

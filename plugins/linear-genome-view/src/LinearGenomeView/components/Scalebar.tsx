@@ -1,12 +1,11 @@
 import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
+import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import React from 'react'
+import { getTickDisplayStr } from '@jbrowse/core/util'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 import {
   ContentBlock as ContentBlockComponent,
@@ -14,7 +13,6 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
-import { getTickDisplayStr } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -59,33 +57,44 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
+const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
+  const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
 
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
-  model.staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - model.offsetPx < 0) {
+  staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - offsetPx < 0) {
       lastLeftBlock = i
     }
   })
+  const val = scaleBarDisplayPrefix()
   return (
     <>
-      {model.staticBlocks.map((block, index) => {
-        return block instanceof ContentBlock &&
+      {staticBlocks.blocks[0]?.type !== 'ContentBlock' && val ? (
+        <Typography
+          style={{ left: 0, zIndex: 100 }}
+          className={classes.refLabel}
+        >
+          {val}
+        </Typography>
+      ) : null}
+      {staticBlocks.map((block, index) => {
+        return block.type === 'ContentBlock' &&
           (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) ? (
           <Typography
             key={`refLabel-${block.key}-${index}`}
             style={{
               left:
                 index === lastLeftBlock
-                  ? Math.max(0, -model.offsetPx)
-                  : block.offsetPx - model.offsetPx - 1,
+                  ? Math.max(0, -offsetPx)
+                  : block.offsetPx - offsetPx - 1,
               paddingLeft: index === lastLeftBlock ? 0 : 1,
             }}
             className={classes.refLabel}
             data-testid={`refLabel-${block.refName}`}
           >
+            {index === lastLeftBlock && val ? `${val}:` : ''}
             {block.refName}
           </Typography>
         ) : null
@@ -127,7 +136,7 @@ const RenderedBlockTicks = function ({
   )
 }
 
-const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
+const RenderedScalebarLabels = observer(function ({ model }: { model: LGV }) {
   const { staticBlocks, bpPerPx } = model
 
   return (
@@ -135,11 +144,11 @@ const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
       {staticBlocks.map((block, idx) => {
         const { key, widthPx } = block
         const k = `${key}-${idx}`
-        if (block instanceof ContentBlock) {
+        if (block.type === 'ContentBlock') {
           return <RenderedBlockTicks key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block instanceof ElidedBlock) {
+        } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={widthPx} />
-        } else if (block instanceof InterRegionPaddingBlock) {
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
               key={k}

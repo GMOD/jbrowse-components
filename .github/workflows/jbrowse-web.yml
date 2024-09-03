@@ -22,9 +22,9 @@ jobs:
           # This allows us to manually edit the release body text before publishing
           draft: true
           prerelease: false
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Set env

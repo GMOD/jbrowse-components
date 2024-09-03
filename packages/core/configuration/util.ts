@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   isStateTreeNode,
   getSnapshot,
@@ -42,9 +41,6 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     | string[],
   args: Record<string, unknown> = {},
 ): any {
-  if (!confObject) {
-    throw new TypeError('must provide conf object to read')
-  }
   if (!slotPath) {
     return JSON.parse(JSON.stringify(getSnapshot(confObject)))
   }
@@ -72,21 +68,14 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       // )
     }
 
-    if (slot.expr) {
-      const appliedFunc = slot.expr.evalSync(args)
-      if (isStateTreeNode(appliedFunc)) {
-        return JSON.parse(JSON.stringify(getSnapshot(appliedFunc)))
-      }
-      return appliedFunc
-    }
-    if (isStateTreeNode(slot)) {
-      return JSON.parse(JSON.stringify(getSnapshot(slot)))
-    }
-    return slot
+    const val = slot.expr ? slot.expr.evalSync(args) : slot
+    return isStateTreeNode(val)
+      ? JSON.parse(JSON.stringify(getSnapshot(val)))
+      : val
   }
 
   if (Array.isArray(slotPath)) {
-    const slotName = slotPath[0]
+    const slotName = slotPath[0]!
     if (slotPath.length > 1) {
       const newPath = slotPath.slice(1)
       let subConf = confObject[slotName]
@@ -122,9 +111,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  if (!model) {
-    throw new TypeError('must provide a model object')
-  }
   const { configuration } = model
   if (isConfigurationModel(configuration)) {
     return readConfObject<CONFMODEL>(configuration, slotPath, args)

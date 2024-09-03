@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Typography } from '@mui/material'
 import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { getSession } from '@jbrowse/core/util'
 import {
   BaseCard,
   Attributes,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 
 type FileInfo = Record<string, unknown> | string
 
@@ -24,32 +23,19 @@ export default function FileInfoPanel({
   const { rpcManager } = session
 
   useEffect(() => {
-    const aborter = new AbortController()
-    const { signal } = aborter
-    let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const adapterConfig = readConfObject(config, 'adapter')
         const result = await rpcManager.call(config.trackId, 'CoreGetInfo', {
           adapterConfig,
-          signal,
         })
-        if (!cancelled) {
-          setInfo(result as FileInfo)
-        }
+        setInfo(result as FileInfo)
       } catch (e) {
-        if (!cancelled) {
-          console.error(e)
-          setError(e)
-        }
+        console.error(e)
+        setError(e)
       }
     })()
-
-    return () => {
-      aborter.abort()
-      cancelled = true
-    }
   }, [config, rpcManager])
 
   const details =
@@ -61,15 +47,15 @@ export default function FileInfoPanel({
         }
       : info || {}
 
-  return info !== null ? (
+  return (
     <BaseCard title="File info">
       {error ? (
-        <Typography color="error">{`${error}`}</Typography>
+        <ErrorMessage error={error} />
       ) : info === undefined ? (
         <LoadingEllipses message="Loading file data" />
       ) : (
         <Attributes attributes={details} />
       )}
     </BaseCard>
-  ) : null
+  )
 }

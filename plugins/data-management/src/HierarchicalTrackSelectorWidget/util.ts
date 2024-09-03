@@ -39,12 +39,13 @@ interface Node {
   id: string
 }
 
-export function findSubCategories(obj: Node[], paths: string[]) {
+export function findSubCategories(obj: Node[], paths: string[], depth = 0) {
   let hasSubs = false
   for (const elt of obj) {
     if (elt.children.length) {
-      const hasSubCategories = findSubCategories(elt.children, paths)
-      if (hasSubCategories) {
+      const hasSubCategories = findSubCategories(elt.children, paths, depth + 1)
+      // avoid pushing the root "Tracks" node by checking depth>0
+      if (hasSubCategories && depth > 0) {
         paths.push(elt.id)
       }
     } else {

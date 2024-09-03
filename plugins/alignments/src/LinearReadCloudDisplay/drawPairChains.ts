@@ -45,8 +45,8 @@ export function drawPairChains({
     // two reads (some small cases may defy this assumption such as
     // secondary alignments but this may be uncommon)
     if (chain.length > 1) {
-      const v0 = chain[0]
-      const v1 = chain[1]
+      const v0 = chain[0]!
+      const v1 = chain[1]!
       const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const ra2 = asm.getCanonicalRefName(v1.refName) || v1.refName
       const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
@@ -78,7 +78,7 @@ export function drawPairChains({
         })
       }
     } else if (self.drawSingletons) {
-      const v0 = chain[0]
+      const v0 = chain[0]!
 
       const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
@@ -122,11 +122,14 @@ export function getPairedColor({
 }): readonly [string, string] | undefined {
   if (type === 'insertSizeAndOrientation') {
     return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
-  } else if (type === 'orientation') {
+  }
+  if (type === 'orientation') {
     return getPairedOrientationColor(v0)
-  } else if (type === 'insertSize') {
+  }
+  if (type === 'insertSize') {
     return getPairedInsertSizeColor(v0, v1, stats)
-  } else if (type === 'gradient') {
+  }
+  if (type === 'gradient') {
     const s = Math.min(v0.start, v1.start)
     const e = Math.max(v0.end, v1.end)
     return [

@@ -1,17 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
-
-type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
+import type { SpreadsheetModel } from '../models/Spreadsheet'
 
 const RowCountMessage = observer(function ({
   spreadsheet,
 }: {
   spreadsheet: SpreadsheetModel
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (spreadsheet.rowSet.isLoaded) {
     const {
       passingFiltersCount,
@@ -20,7 +18,7 @@ const RowCountMessage = observer(function ({
       selectedAndPassingFiltersCount,
     } = spreadsheet.rowSet
 
-    let rowMessage
+    let rowMessage: string
     if (passingFiltersCount !== count) {
       rowMessage = `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
       if (selectedCount) {

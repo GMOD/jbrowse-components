@@ -87,4 +87,5 @@ export function makeImageData({
       })
     }
   }
+  return undefined
 }

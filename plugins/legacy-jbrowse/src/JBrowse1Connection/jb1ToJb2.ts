@@ -78,7 +78,7 @@ export function convertTrackConfig(
 
   const { storeClass } = jb1TrackConfig
   if (!jb1TrackConfig.urlTemplate) {
-    if (!(storeClass && storeClass.endsWith('FromConfig'))) {
+    if (!storeClass?.endsWith('FromConfig')) {
       const trackIdentifier = jb1TrackConfig.key || jb1TrackConfig.label
       console.warn(
         `Could not import JBrowse1 track "${trackIdentifier}" because it does not have a "urlTemplate" or is not a "FromConfig" track`,
@@ -166,12 +166,9 @@ export function convertTrackConfig(
       storeClass === 'JBrowse/Store/SeqFeature/BigWig' ||
       storeClass === 'JBrowse/Store/BigWig'
     ) {
-      if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+      if (jb1TrackConfig.type?.endsWith('XYPlot')) {
         jb2TrackConfig.defaultRendering = 'xyplot'
-      } else if (
-        jb1TrackConfig.type &&
-        jb1TrackConfig.type.endsWith('Density')
-      ) {
+      } else if (jb1TrackConfig.type?.endsWith('Density')) {
         jb2TrackConfig.defaultRendering = 'density'
       }
       return {
@@ -398,15 +395,13 @@ export function convertTrackConfig(
     }
   }
 
-  // If we don't recognize the store class, make a best effort to guess by file type
+  // If we don't recognize the store class, make a best effort to guess by file
+  // type
   jb2TrackConfig.adapter = guessAdapter(
     { uri: urlTemplate, locationType: 'UriLocation' },
     undefined,
     urlTemplate,
   )
-  if (!jb2TrackConfig.adapter) {
-    throw new Error('Could not determine adapter')
-  }
 
   if (jb2TrackConfig.adapter.type === UNSUPPORTED) {
     return generateUnsupportedTrackConf(
@@ -426,9 +421,9 @@ export function convertTrackConfig(
   jb2TrackConfig.type = guessTrackType(jb2TrackConfig.adapter.type)
 
   if (jb2TrackConfig.type === 'QuantitativeTrack') {
-    if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+    if (jb1TrackConfig.type?.endsWith('XYPlot')) {
       jb2TrackConfig.defaultRendering = 'xyplot'
-    } else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density')) {
+    } else if (jb1TrackConfig.type?.endsWith('Density')) {
       jb2TrackConfig.defaultRendering = 'density'
     }
   }
@@ -469,7 +464,7 @@ export async function createRefSeqsAdapter(
 
   // check refseq urls
   if (refSeqs.url) {
-    if (refSeqs.url.match(/.fai$/)) {
+    if (/.fai$/.exec(refSeqs.url)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: {
@@ -482,16 +477,16 @@ export async function createRefSeqsAdapter(
         },
       }
     }
-    if (refSeqs.url.match(/.2bit$/)) {
+    if (/.2bit$/.exec(refSeqs.url)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: refSeqs.url, locationType: 'UriLocation' },
       }
     }
-    if (refSeqs.url.match(/.fa$/)) {
+    if (/.fa$/.exec(refSeqs.url)) {
       throw new Error('Unindexed FASTA adapter not available')
     }
-    if (refSeqs.url.match(/.sizes/)) {
+    if (/.sizes/.exec(refSeqs.url)) {
       throw new Error('chromosome SIZES adapter not available')
     }
     const refSeqsJson = await openLocation({

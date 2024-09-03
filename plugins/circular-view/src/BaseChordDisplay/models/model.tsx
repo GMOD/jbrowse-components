@@ -28,13 +28,14 @@ import { renderReactionData, renderReactionEffect } from './renderReaction'
 import {
   CircularViewModel,
   ExportSvgOptions,
-} from '../../CircularView/models/CircularView'
+} from '../../CircularView/models/model'
 import { ThemeOptions } from '@mui/material'
 import { baseChordDisplayConfig } from './configSchema'
 
 /**
  * #stateModel BaseChordDisplay
- * extends `BaseDisplay`
+ * extends
+ * - [BaseDisplay](../basedisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -115,7 +116,6 @@ export const BaseChordDisplayModel = types
       return {
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
-        displayModel: self,
         bezierRadius: view.radiusPx * self.bezierRadiusRatio,
         radius: view.radiusPx,
         blockDefinitions: this.blockDefinitions,
@@ -125,24 +125,10 @@ export const BaseChordDisplayModel = types
 
     /**
      * #getter
-     * the pluggable element type object for this display's
-     * renderer
+     * the pluggable element type object for this display's renderer
      */
     get rendererType() {
-      const display = self
-      const { pluginManager } = getEnv(self)
-      const ThisRendererType = pluginManager.getRendererType(
-        self.rendererTypeName,
-      )
-      if (!ThisRendererType) {
-        throw new Error(`renderer "${display.rendererTypeName}" not found`)
-      }
-      if (!ThisRendererType.ReactComponent) {
-        throw new Error(
-          `renderer ${display.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
-        )
-      }
-      return ThisRendererType
+      return getEnv(self).pluginManager.getRendererType(self.rendererTypeName)
     },
 
     /**
@@ -162,9 +148,6 @@ export const BaseChordDisplayModel = types
         return undefined
       }
       const session = getSession(self)
-      if (!session) {
-        return undefined
-      }
       const { selection } = session
       // does it quack like a feature?
       if (isFeature(selection)) {
@@ -197,7 +180,6 @@ export const BaseChordDisplayModel = types
       renderingComponent,
     }: {
       message: string
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: any
       html: string
       reactElement: React.ReactElement
@@ -265,11 +247,11 @@ export const BaseChordDisplayModel = types
         self,
         () => ({
           assemblyNames: getTrackAssemblyNames(self.parentTrack),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           adapter: getConf(getParent<any>(self, 2), 'adapter'),
           assemblyManager: getSession(self).assemblyManager,
         }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         async ({ assemblyNames, adapter, assemblyManager }: any, signal) => {
           return assemblyManager.getRefNameMapForAdapter(
             adapter,
@@ -282,7 +264,9 @@ export const BaseChordDisplayModel = types
           fireImmediately: true,
         },
         () => {},
-        refNameMap => self.setRefNameMap(refNameMap),
+        refNameMap => {
+          self.setRefNameMap(refNameMap)
+        },
         error => {
           console.error(error)
           self.setError(error)
@@ -296,7 +280,7 @@ export const BaseChordDisplayModel = types
      */
     async renderSvg(
       opts: ExportSvgOptions & {
-        theme: ThemeOptions
+        theme?: ThemeOptions
       },
     ) {
       const data = renderReactionData(self)

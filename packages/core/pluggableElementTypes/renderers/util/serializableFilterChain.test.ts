@@ -2,7 +2,7 @@ import SerializableFilterChain from './serializableFilterChain'
 
 test('one', () => {
   const c = new SerializableFilterChain({
-    filters: [`jexl:feature.y == 2`],
+    filters: ['jexl:feature.y == 2'],
   })
 
   expect(c.passes({ y: 1 })).toBe(false)

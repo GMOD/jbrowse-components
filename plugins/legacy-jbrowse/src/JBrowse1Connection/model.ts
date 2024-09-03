@@ -11,7 +11,7 @@ import { types } from 'mobx-state-tree'
 // locals
 import configSchema from './configSchema'
 
-export default function (pluginManager: PluginManager) {
+export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       'JBrowse1Connection',
@@ -55,9 +55,9 @@ export default function (pluginManager: PluginManager) {
           self.setTrackConfs(jb2Tracks)
         } catch (error) {
           console.error(error)
-          session.notify(
+          session.notifyError(
             `There was a problem connecting to the JBrowse 1 data directory "${self.name}". Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
-            'error',
+            error,
           )
           session.breakConnection?.(self.configuration)
         }

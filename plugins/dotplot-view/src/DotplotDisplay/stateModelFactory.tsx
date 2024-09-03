@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { types, Instance } from 'mobx-state-tree'
@@ -82,7 +81,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
+      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
         const props = renderBlockData(self)
         if (!props) {
           return null

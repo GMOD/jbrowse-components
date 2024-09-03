@@ -3,7 +3,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import configSchema from './configSchema'
 import ReactComponent from './ReactComponent'
 
-export default (pluginManager: PluginManager) => {
+export default function StructuralVariantChordRendererF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addRendererType(
     () =>
       new ChordRendererType({

@@ -10,6 +10,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 [plugins/linear-comparative-view/src/SyntenyTrack/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/SyntenyTrack/configSchema.ts)
 
+extends
+
+- [BaseTrack](../basetrack)
+
 ### SyntenyTrack - Derives from
 
 ```js

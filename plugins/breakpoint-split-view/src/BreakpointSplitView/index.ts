@@ -5,7 +5,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import BreakpointSplitView from './BreakpointSplitView'
 import stateModelFactory from './model'
 
-export default (pluginManager: PluginManager) => {
+export default function BreakpointSplitViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new BreakpointSplitView({
       name: 'BreakpointSplitView',

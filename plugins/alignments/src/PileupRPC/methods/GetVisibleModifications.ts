@@ -15,7 +15,7 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
       headers?: Record<string, string>
       regions: Region[]

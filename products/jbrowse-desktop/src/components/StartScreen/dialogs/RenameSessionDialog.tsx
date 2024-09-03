@@ -21,7 +21,13 @@ const RenameSessionDialog = ({
   const [error, setError] = useState<unknown>()
 
   return (
-    <Dialog open onClose={() => onClose(false)} title="Rename session">
+    <Dialog
+      open
+      onClose={() => {
+        onClose(false)
+      }}
+      title="Rename session"
+    >
       <DialogContent>
         <DialogContentText>
           Please enter a new name for the session:
@@ -29,14 +35,21 @@ const RenameSessionDialog = ({
         <Input
           autoFocus
           defaultValue={sessionToRename?.name}
-          onChange={event => setNewSessionName(event.target.value)}
+          onChange={event => {
+            setNewSessionName(event.target.value)
+          }}
         />
         {error ? (
           <Typography color="error" variant="h6">{`${error}`}</Typography>
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
+        <Button
+          onClick={() => {
+            onClose(false)
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button

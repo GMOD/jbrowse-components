@@ -4,7 +4,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import stateModelFactory from './model'
 import configSchemaF from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearVariantDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({

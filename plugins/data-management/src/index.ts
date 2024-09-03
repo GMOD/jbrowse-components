@@ -10,7 +10,7 @@ import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
 
 const AssemblyManager = lazy(() => import('./AssemblyManager'))
 
-export default class extends Plugin {
+export default class DataManagementPlugin extends Plugin {
   name = 'DataManagementPlugin'
 
   exports = {

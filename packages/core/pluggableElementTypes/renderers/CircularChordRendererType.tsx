@@ -10,8 +10,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
   deserializeResultsInClient(
     res: { features: SimpleFeatureSerialized[]; html: string },
     args: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      displayModel: any
+      displayModel?: any
       theme: ThemeOptions
       exportSVG?: { rasterizeLayers?: boolean }
     },

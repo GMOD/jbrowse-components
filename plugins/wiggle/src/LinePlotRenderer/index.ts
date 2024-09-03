@@ -3,7 +3,7 @@ import configSchema from './configSchema'
 import ReactComponent from '../WiggleRendering'
 import LinePlotRenderer from './LinePlotRenderer'
 
-export default (pluginManager: PluginManager) => {
+export default function LinePlotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new LinePlotRenderer({

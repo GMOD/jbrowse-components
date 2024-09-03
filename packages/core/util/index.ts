@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
 import PluginManager from '../PluginManager'
 import {
@@ -25,7 +24,7 @@ import {
   Region,
   TypeTestedByPredicate,
 } from './types'
-import { Region as MUIRegion } from './types/mst'
+import type { Region as MUIRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
@@ -33,6 +32,8 @@ import { isUriLocation } from './types'
 // has to be the full path and not the relative path to get the jest mock
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom'
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -68,9 +69,9 @@ export function useWidthSetter(
       // sets after a requestAnimationFrame
       // https://stackoverflow.com/a/58701523/2129219
       // avoids ResizeObserver loop error being shown during development
-      requestAnimationFrame(() =>
-        view.setWidth(width - Number.parseInt(padding, 10) * 2),
-      )
+      requestAnimationFrame(() => {
+        view.setWidth(width - Number.parseInt(padding, 10) * 2)
+      })
     }
   }, [padding, view, width])
   return ref
@@ -85,22 +86,22 @@ export function useDebouncedCallback<T>(
   const argsRef = useRef<T[]>()
   const timeout = useRef<ReturnType<typeof setTimeout>>()
 
-  function cleanup() {
+  // make sure our timeout gets cleared if our consuming component gets
+  // unmounted
+  useEffect(() => {
     if (timeout.current) {
       clearTimeout(timeout.current)
     }
-  }
-
-  // make sure our timeout gets cleared if our consuming component gets
-  // unmounted
-  useEffect(() => cleanup, [])
+  }, [])
 
   return function debouncedCallback(...args: T[]) {
     // capture latest args
     argsRef.current = args
 
     // clear debounce timer
-    cleanup()
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+    }
 
     // start waiting again
     timeout.current = setTimeout(() => {
@@ -148,8 +149,9 @@ export function springAnimate(
   setValue: (value: number) => void,
   onFinish = () => {},
   precision = 0,
-  tension = 170,
-  friction = 26,
+  tension = 400,
+  friction = 20,
+  clamp = true,
 ) {
   const mass = 1
   if (!precision) {
@@ -179,25 +181,35 @@ export function springAnimate(
     const isVelocity = Math.abs(velocity) <= precision
     const isDisplacement =
       tension !== 0 ? Math.abs(toValue - position) <= precision : true
-    const endOfAnimation = isVelocity && isDisplacement
+    const isOvershooting =
+      clamp && tension !== 0
+        ? fromValue < toValue
+          ? position > toValue
+          : position < toValue
+        : false
+    const endOfAnimation = isOvershooting || (isVelocity && isDisplacement)
     if (endOfAnimation) {
       setValue(toValue)
       onFinish()
     } else {
       setValue(position)
-      animationFrameId = requestAnimationFrame(() =>
+      animationFrameId = requestAnimationFrame(() => {
         update({
           lastPosition: position,
           lastTime: time,
           lastVelocity: velocity,
-        }),
-      )
+        })
+      })
     }
   }
 
   return [
-    () => update({ lastPosition: fromValue }),
-    () => cancelAnimationFrame(animationFrameId),
+    () => {
+      update({ lastPosition: fromValue })
+    },
+    () => {
+      cancelAnimationFrame(animationFrameId)
+    },
   ]
 }
 
@@ -307,7 +319,7 @@ export function assembleLocStringFast(
 ) {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
-  let startString
+  let startString: string
   if (start !== undefined) {
     startString = `:${cb(start + 1)}`
   } else if (end !== undefined) {
@@ -315,7 +327,7 @@ export function assembleLocStringFast(
   } else {
     startString = ''
   }
-  let endString
+  let endString: string
   if (end !== undefined) {
     endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
   } else {
@@ -350,19 +362,26 @@ export function parseLocStringOneBased(
   }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = locString.match(/({(.+)})?(.+)/)
+  // refNames can have colons, refer to
+  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  const assemblyMatch = /({(.+)})?(.+)/.exec(locString)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
   }
-  const [, , assemblyName, location] = assemblyMatch
+  const [, , assemblyName2, location2] = assemblyMatch
+  const assemblyName = assemblyName2!
+  const location = location2!
   if (!assemblyName && location.startsWith('{}')) {
     throw new Error(`no assembly name was provided in location "${location}"`)
   }
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location, reversed }
+      return {
+        assemblyName,
+        refName: location,
+        reversed,
+      }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
@@ -376,11 +395,12 @@ export function parseLocStringOneBased(
   } else if (isValidRefName(prefix, assemblyName)) {
     if (suffix) {
       // see if it's a range
-      const rangeMatch = suffix.match(
-        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/,
-      )
+      const rangeMatch =
+        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/.exec(
+          suffix,
+        )
       // see if it's a single point
-      const singleMatch = suffix.match(/^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/)
+      const singleMatch = /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/.exec(suffix)
       if (rangeMatch) {
         const [, start, , , , end] = rangeMatch
         if (start !== undefined && end !== undefined) {
@@ -418,10 +438,18 @@ export function parseLocStringOneBased(
         )
       }
     } else {
-      return { assemblyName, refName: prefix, reversed }
+      return {
+        assemblyName,
+        refName: prefix,
+        reversed,
+      }
     }
   } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location, reversed }
+    return {
+      assemblyName,
+      refName: location,
+      reversed,
+    }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
@@ -634,7 +662,7 @@ export function findLastIndex<T>(
 ): number {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return l
     }
   }
@@ -647,7 +675,7 @@ export function findLast<T>(
 ): T | undefined {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return array[l]
     }
   }
@@ -734,7 +762,7 @@ export function makeAbortableReaction<T, U, V>(
             successFunction(result)
           }
         } catch (e) {
-          if (thisInProgress && !thisInProgress.signal.aborted) {
+          if (!thisInProgress.signal.aborted) {
             thisInProgress.abort()
           }
           handleError(e)
@@ -751,14 +779,14 @@ export function makeAbortableReaction<T, U, V>(
 }
 
 export function renameRegionIfNeeded(
-  refNameMap: Record<string, string>,
+  refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
 
-  if (region && refNameMap?.[region.refName]) {
+  if (refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
       ? { ...getSnapshot(region) }
@@ -778,7 +806,7 @@ export async function renameRegionsIfNeeded<
     assemblyName?: string
     regions?: Region[]
     signal?: AbortSignal
-    adapterConfig: unknown
+    adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
   },
@@ -808,18 +836,18 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: regions.map((region, i) =>
       // note: uses assemblyNames defined above since region could be dead now
-      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]!], region),
     ),
   }
 }
 
 export function minmax(a: number, b: number) {
-  return [Math.min(a, b), Math.max(a, b)]
+  return [Math.min(a, b), Math.max(a, b)] as const
 }
 
 export function shorten(name: string, max = 70, short = 30) {
   return name.length > max
-    ? name.slice(0, short) + '...' + name.slice(-short)
+    ? `${name.slice(0, short)}...${name.slice(-short)}`
     : name
 }
 
@@ -914,10 +942,16 @@ export const complement = (() => {
 // get the contents of the canvas
 export const rIC =
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined' && window.requestIdleCallback
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      typeof window !== 'undefined' && window.requestIdleCallback
       ? window.requestIdleCallback
-      : (cb: Function) => setTimeout(() => cb(), 1)
-    : (cb: Function) => cb()
+      : (cb: () => void) =>
+          setTimeout(() => {
+            cb()
+          }, 1)
+    : (cb: () => void) => {
+        cb()
+      }
 
 // prettier-ignore
 const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
@@ -932,6 +966,19 @@ export function measureText(str: unknown, fontSize = 10) {
     total += widths[code] ?? avg
   }
   return total * fontSize
+}
+
+export type Frame = 1 | 2 | 3 | -1 | -2 | -3
+
+export function getFrame(
+  start: number,
+  end: number,
+  strand: 1 | -1,
+  phase: 0 | 1 | 2,
+): Frame {
+  return strand === 1
+    ? ((((start + phase) % 3) + 1) as 1 | 2 | 3)
+    : ((-1 * ((end - phase) % 3) - 1) as -1 | -2 | -3)
 }
 
 export const defaultStarts = ['ATG']
@@ -1015,15 +1062,15 @@ export function generateCodonTable(table: any) {
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
       nucs[i] = []
-      nucs[i][0] = nuc.toUpperCase()
-      nucs[i][1] = nuc.toLowerCase()
+      nucs[i]![0] = nuc.toUpperCase()
+      nucs[i]![1] = nuc.toLowerCase()
     }
     for (let i = 0; i < 2; i++) {
-      const n0 = nucs[0][i]
+      const n0 = nucs[0]![i]!
       for (let j = 0; j < 2; j++) {
-        const n1 = nucs[1][j]
+        const n1 = nucs[1]![j]!
         for (let k = 0; k < 2; k++) {
-          const n2 = nucs[2][k]
+          const n2 = nucs[2]![k]!
           const triplet = n0 + n1 + n2
           tempCodonTable[triplet] = aa
         }
@@ -1104,14 +1151,14 @@ export interface ViewSnap {
     start: number
     end: number
     refName: string
-    reversed: boolean
+    reversed?: boolean
     assemblyName: string
   })[]
 }
 
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function isSupportedIndexingAdapter(type: string) {
+// supported adapter types by text indexer ensure that this matches the method
+// found in @jbrowse/text-indexing/util
+export function isSupportedIndexingAdapter(type = '') {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',
@@ -1121,15 +1168,13 @@ export function isSupportedIndexingAdapter(type: string) {
 }
 
 export function getBpDisplayStr(totalBp: number) {
-  let str
   if (Math.floor(totalBp / 1_000_000) > 0) {
-    str = `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
+    return `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1_000) > 0) {
-    str = `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+    return `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
   } else {
-    str = `${toLocale(Math.floor(totalBp))}bp`
+    return `${toLocale(Math.floor(totalBp))}bp`
   }
-  return str
 }
 
 export function toLocale(n: number) {
@@ -1139,7 +1184,7 @@ export function toLocale(n: number) {
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
-    : `${toLocale(Math.floor(totalBp))}`
+    : toLocale(Math.floor(totalBp))
 }
 
 export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
@@ -1163,7 +1208,7 @@ export function getLayoutId({
   sessionId: string
   layoutId: string
 }) {
-  return sessionId + '-' + layoutId
+  return `${sessionId}-${layoutId}`
 }
 
 // Hook from https://usehooks.com/useLocalStorage/
@@ -1197,7 +1242,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
 export function getUriLink(value: { uri: string; baseUri?: string }) {
   const { uri, baseUri = '' } = value
-  let href
+  let href: string
   try {
     href = new URL(uri, baseUri).href
   } catch (e) {
@@ -1220,13 +1265,15 @@ export function coarseStripHTML(s: string) {
 }
 
 // based on autolink-js, license MIT
+// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
 export function linkify(s: string) {
   const pattern =
-    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[\-A-Z0-9+\u0026\u2019@#\/%?=()~_|!:,.;]*[\-A-Z0-9+\u0026@#\/%=~()_|])/gi
+    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
   return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 
-// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
+// heuristic measurement for a column of a @mui/x-data-grid, pass in
+// values from a column
 export function measureGridWidth(
   elements: unknown[],
   args?: {
@@ -1264,12 +1311,12 @@ export function localStorageGetItem(item: string) {
 }
 
 export function localStorageSetItem(str: string, item: string) {
-  return typeof localStorage !== 'undefined'
-    ? localStorage.setItem(str, item)
-    : undefined
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(str, item)
+  }
 }
 
-export function max(arr: number[], init = -Infinity) {
+export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
     max = entry > max ? entry : max
@@ -1277,7 +1324,7 @@ export function max(arr: number[], init = -Infinity) {
   return max
 }
 
-export function min(arr: number[], init = Infinity) {
+export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
     min = entry < min ? entry : min
@@ -1298,10 +1345,13 @@ export function avg(arr: number[]) {
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
-  const result = {} as Record<string, T[] | undefined>
+  const result = {} as Record<string, T[]>
   for (const value of array) {
-    const entry = (result[predicate(value)] ||= [])
-    entry.push(value)
+    const t = predicate(value)
+    if (!result[t]) {
+      result[t] = []
+    }
+    result[t].push(value)
   }
   return result
 }
@@ -1331,18 +1381,17 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
     // get the top element
-
     top = stack.at(-1)!
 
     // if the current interval doesn't overlap with the
     // stack top element, push it to the stack
-    if (top.end + w < intervals[i].start - w) {
-      stack.push(intervals[i])
+    if (top.end + w < intervals[i]!.start - w) {
+      stack.push(intervals[i]!)
     }
     // otherwise update the end value of the top element
     // if end of current interval is higher
-    else if (top.end < intervals[i].end) {
-      top.end = Math.max(top.end, intervals[i].end)
+    else if (top.end < intervals[i]!.end) {
+      top.end = Math.max(top.end, intervals[i]!.end)
       stack.pop()
       stack.push(top)
     }
@@ -1366,12 +1415,56 @@ export function gatherOverlaps(regions: BasicFeature[]) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
     }
-    memo[x.refName].push(x)
+    memo[x.refName]!.push(x)
   }
 
   return Object.values(memo).flatMap(group =>
     mergeIntervals(group.sort((a, b) => a.start - b.start)),
   )
+}
+
+export function stripAlpha(str: string) {
+  const c = colord(str)
+  return c.alpha(1).toHex()
+}
+
+export function getStrokeProps(str: string) {
+  const c = colord(str)
+  return {
+    strokeOpacity: c.alpha(),
+    stroke: c.alpha(1).toHex(),
+  }
+}
+
+export function getFillProps(str: string) {
+  const c = colord(str)
+  return {
+    fillOpacity: c.alpha(),
+    fill: c.alpha(1).toHex(),
+  }
+}
+
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+export function renderToStaticMarkup(
+  node: React.ReactElement,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
+) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    if (createRootFn) {
+      createRootFn(div).render(node)
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      render(node, div)
+    }
+  })
+  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
+}
+
+export function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
 export {
@@ -1380,10 +1473,5 @@ export {
   type SimpleFeatureSerialized,
   isFeature,
 } from './simpleFeature'
-
-export function stripAlpha(str: string) {
-  const c = colord(str)
-  return c.alpha(1).toHex()
-}
 
 export { blobToDataURL } from './blobToDataURL'

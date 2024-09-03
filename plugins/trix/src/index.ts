@@ -6,7 +6,7 @@ import {
   configSchema as trixAdapterConfigSchema,
 } from './TrixTextSearchAdapter'
 
-export default class extends Plugin {
+export default class TrixPlugin extends Plugin {
   name = 'TrixPlugin'
 
   install(pluginManager: PluginManager) {

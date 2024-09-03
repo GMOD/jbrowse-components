@@ -12,7 +12,14 @@ info
 
 [plugins/sv-inspector/src/SvInspectorView/models/SvInspectorView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/models/SvInspectorView.ts)
 
-combination of a spreadsheetview and a circularview
+does not extend, but is a combination of a
+
+- [SpreadsheetView](../spreadsheetview)
+- [CircularView](../circularview)
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### SvInspectorView - Properties
 
@@ -110,7 +117,7 @@ circularView: types.optional(CircularModel, () =>
 
 ```js
 // type
-any
+({ id: string; cells: IMSTArray<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; extendedData: any; isSelected: boolean; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblyName

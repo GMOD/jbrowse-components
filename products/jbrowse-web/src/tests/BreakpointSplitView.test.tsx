@@ -16,17 +16,23 @@ test(
   'breakpoint split view',
   () =>
     mockConsoleWarn(async () => {
-      const { findByTestId, queryAllByTestId } =
+      const { getByTestId, queryAllByTestId } =
         await createView(breakpointConfig)
 
       // the breakpoint could be partially loaded so explicitly wait for two items
-      await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), delay)
+      await waitFor(() => {
+        expect(queryAllByTestId('r1').length).toBe(2)
+      }, delay)
+      await waitFor(() => {
+        expect(queryAllByTestId('r2').length).toBe(1)
+      }, delay)
 
-      expect(
-        await findByTestId('pacbio_hg002_breakpoints-loaded'),
-      ).toMatchSnapshot()
-
-      expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
+      await waitFor(() => {
+        expect(getByTestId('pacbio_hg002_breakpoints-loaded')).toMatchSnapshot()
+      }, delay)
+      await waitFor(() => {
+        expect(getByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
+      }, delay)
     }),
   40000,
 )

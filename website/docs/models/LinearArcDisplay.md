@@ -12,7 +12,9 @@ info
 
 [plugins/arc/src/LinearArcDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/model.ts)
 
-extends BaseLinearDisplay
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
 
 ### LinearArcDisplay - Properties
 
@@ -77,7 +79,7 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 ### LinearArcDisplay - Methods

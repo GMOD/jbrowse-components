@@ -5,7 +5,7 @@ import Gff3TabixAdapterF from './Gff3TabixAdapter'
 import Gff3AdapterF from './Gff3Adapter'
 import GuessGff3F from './GuessGff3'
 
-export default class extends Plugin {
+export default class GFF3Plugin extends Plugin {
   name = 'GFF3Plugin'
 
   install(pluginManager: PluginManager) {

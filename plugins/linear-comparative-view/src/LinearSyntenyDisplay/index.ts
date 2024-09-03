@@ -6,7 +6,7 @@ import configSchemaF from './configSchemaF'
 import stateModelFactory from './model'
 import { lazy } from 'react'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({

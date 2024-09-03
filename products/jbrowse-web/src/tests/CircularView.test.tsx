@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import configSnapshot from '../../test_data/volvox/config.json'
-import { doBeforeEach, createView, setup } from './util'
+import { doBeforeEach, createView, setup, hts } from './util'
 
 setup()
 
@@ -25,19 +25,17 @@ test('open a circular view', async () => {
   fireEvent.click(await findByText(/Open track/, ...opts))
   fireEvent.click(await findByText('Open', ...opts))
   fireEvent.click(await findByTestId('circular_track_select'))
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test', {}, delay))
+  fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
   await findByTestId('structuralVariantChordRenderer', {}, delay)
   await findByTestId('chord-test-vcf-66511')
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test', {}, delay))
+  fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
   await waitFor(() => {
     expect(
       queryByTestId('structuralVariantChordRenderer'),
     ).not.toBeInTheDocument()
   })
 
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_sv_test_renamed', {}, delay),
-  )
+  fireEvent.click(await findByTestId(hts('volvox_sv_test_renamed'), {}, delay))
 
   // make sure a chord is rendered
   await findByTestId('chord-test-vcf-63101', {}, delay)

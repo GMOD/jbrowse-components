@@ -5,6 +5,7 @@ import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'
 
 import configSchema from './configSchema'
+import { firstValueFrom } from 'rxjs'
 
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
@@ -54,7 +55,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     start: 0,
     end: 20000,
   })
-  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray).toMatchSnapshot()
   expect(spy).toHaveBeenLastCalledWith(
     'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr1&format=json',
@@ -69,9 +70,9 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     start: 0,
     end: 20000,
   })
-  const featuresArrayNonExist = await featuresNonExist
-    .pipe(toArray())
-    .toPromise()
+  const featuresArrayNonExist = await firstValueFrom(
+    featuresNonExist.pipe(toArray()),
+  )
   expect(featuresArrayNonExist).toEqual([])
   expect(spy).toHaveBeenLastCalledWith(
     'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr80&format=json',

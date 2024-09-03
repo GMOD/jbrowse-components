@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import Ruler from './Ruler'
 import Controls from './Controls'
 import ImportForm from './ImportForm'
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 
 const dragHandleHeight = 3
 
@@ -29,7 +29,7 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
       {model.staticSlices.map(slice => (
         <Ruler
           key={assembleLocString(
-            slice.region.elided ? slice.region.regions[0] : slice.region,
+            slice.region.elided ? slice.region.regions[0]! : slice.region,
           )}
           model={model}
           slice={slice}
@@ -59,15 +59,11 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
   const showImportForm = !initialized && !model.disableImportForm
   const showFigure = initialized && !showImportForm
 
-  return (
-    <>
-      {showImportForm || model.error ? (
-        <ImportForm model={model} />
-      ) : showFigure ? (
-        <CircularViewLoaded model={model} />
-      ) : null}
-    </>
-  )
+  return showImportForm || model.error ? (
+    <ImportForm model={model} />
+  ) : showFigure ? (
+    <CircularViewLoaded model={model} />
+  ) : null
 })
 
 const CircularViewLoaded = observer(function ({

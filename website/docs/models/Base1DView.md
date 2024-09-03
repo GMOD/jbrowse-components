@@ -30,9 +30,9 @@ id: ElementId
 
 ```js
 // type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.array(Region)
+displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
 #### property: bpPerPx
@@ -133,7 +133,7 @@ BlockSet
 
 ```js
 // type
-any
+number
 ```
 
 ### Base1DView - Methods
@@ -142,7 +142,7 @@ any
 
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
 ```
 
 #### method: bpToPx

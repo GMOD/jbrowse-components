@@ -14,6 +14,9 @@ export function AppFocusMixin() {
       focusedViewId: types.maybe(types.string),
     })
     .actions(self => ({
+      /**
+       * #action
+       */
       setFocusedViewId(viewId: string) {
         self.focusedViewId = viewId
       },

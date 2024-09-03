@@ -10,9 +10,12 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 [plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts)
 
-`BaseLinearDisplay` is a "base" config that is extended by classes like
-`LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
-(more stripped down than even the basic display, not commonly used)
+`BaseLinearDisplay` is a "base" config that is extended by other configs
+including
+
+- `LinearBasicDisplay` (used for feature tracks, etc)
+- `LinearBareDisplay` (more stripped down than even the basic display, not
+  commonly used)
 
 ### BaseLinearDisplay - Identifier
 
@@ -61,5 +64,19 @@ mouseover: {
       defaultValue: `jexl:get(feature,'name')`,
 
       contextVariable: ['feature'],
+    }
+```
+
+#### slot: jexlFilters
+
+config jexlFilters are deferred evaluated so they are prepended with jexl at
+runtime rather than being stored with jexl in the config
+
+```js
+jexlFilters: {
+      type: 'stringArray',
+      description:
+        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
+      defaultValue: [],
     }
 ```

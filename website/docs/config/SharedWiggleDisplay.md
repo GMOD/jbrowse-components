@@ -10,6 +10,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 [plugins/wiggle/src/shared/configShared.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/configShared.ts)
 
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
+
 ### SharedWiggleDisplay - Slots
 
 #### slot: autoscale

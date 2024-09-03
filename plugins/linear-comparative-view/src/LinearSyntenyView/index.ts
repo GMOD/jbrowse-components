@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import modelFactory from './model'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearSyntenyViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
       name: 'LinearSyntenyView',

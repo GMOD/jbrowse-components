@@ -20,7 +20,7 @@ const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   // this is the analytics
-  if (`${url}`.match(/jb2=true/)) {
+  if (/jb2=true/.exec(`${url}`)) {
     return new Response('{}')
   }
   try {
@@ -31,12 +31,12 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
       if (range === -2 || range === -1) {
         throw new Error(`Error parsing range "${args.headers.range}"`)
       }
-      const { start, end } = range[0]
+      const { start, end } = range[0]!
       const len = end - start + 1
       const buf = Buffer.alloc(len)
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
-      return new Response(buf.slice(0, bytesRead), {
+      return new Response(buf.subarray(0, bytesRead), {
         status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
       })

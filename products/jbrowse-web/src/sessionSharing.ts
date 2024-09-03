@@ -71,7 +71,7 @@ export async function readSessionFromDynamo(
   password: string,
   signal?: AbortSignal,
 ) {
-  const sessionId = sessionQueryParam.split('share-')[1]
+  const sessionId = sessionQueryParam.split('share-')[1]!
   const url = `${baseUrl}?sessionId=${encodeURIComponent(sessionId)}`
   const response = await fetch(url, {
     signal,

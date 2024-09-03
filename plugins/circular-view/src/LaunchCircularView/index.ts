@@ -3,11 +3,11 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import { CircularViewModel } from '../CircularView/models/CircularView'
+import { CircularViewModel } from '../CircularView/models/model'
 
 type CGV = CircularViewModel
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchCircularViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-CircularView',
     // @ts-expect-error
@@ -41,7 +41,9 @@ export default (pluginManager: PluginManager) => {
 
       view.setDisplayedRegions(asm.regions || [])
 
-      tracks.forEach(track => view.showTrack(track))
+      tracks.forEach(track => {
+        view.showTrack(track)
+      })
     },
   )
 }

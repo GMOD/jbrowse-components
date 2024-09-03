@@ -16,6 +16,6 @@ initializeWorker(corePlugins, {
   fetchCJS,
 })
 
-export default () => {
+export default function doNothing() {
   /* do nothing */
 }

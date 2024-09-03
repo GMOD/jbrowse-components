@@ -49,26 +49,25 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
        */
       createEphemeralInternetAccount(
         internetAccountId: string,
-        initialSnapshot = {},
+        initialSnapshot: Record<string, unknown>,
         url: string,
       ) {
-        let hostUri
+        let hostUri: string | undefined
 
         try {
           hostUri = new URL(url).origin
         } catch (e) {
           // ignore
         }
-        // id of a custom new internaccount is `${type}-${name}`
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
-          type: internetAccountSplit[0],
+          type: internetAccountSplit[0]!,
           internetAccountId: internetAccountId,
           name: internetAccountSplit.slice(1).join('-'),
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const type = pluginManager.getInternetAccountType(configuration.type)
+        const type = pluginManager.getInternetAccountType(configuration.type)!
         const internetAccount = type.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,

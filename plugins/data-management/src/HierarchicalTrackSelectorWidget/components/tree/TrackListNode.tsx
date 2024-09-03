@@ -58,6 +58,7 @@ export default function Node({
     <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
       {new Array(nestingLevel).fill(0).map((_, idx) => (
         <div
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
           key={`mark-${idx}`}
           style={{ left: idx * width + 4, height: style?.height }}
           className={classes.nestingLevelMarker}

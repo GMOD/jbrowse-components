@@ -25,17 +25,17 @@ test(
       fireEvent.change(await findByTestId('urlInput', {}, delay), {
         target: { value: 'volvox.dup.renamed.vcf.gz' },
       })
-      await waitFor(() =>
+      await waitFor(() => {
         expect(
           getByTestId('open_spreadsheet').closest('button'),
-        ).not.toBeDisabled(),
-      )
+        ).not.toBeDisabled()
+      })
       fireEvent.click(await findByTestId('open_spreadsheet'))
       fireEvent.click(await findByTestId('chord-vcf-0', {}, delay))
 
       // confirm breakpoint split view opened
       expect(session.views.length).toBe(3)
-      expect(session.views[2].displayName).toBe('bnd_A split detail')
+      expect(session.views[2]!.displayName).toBe('bnd_A split detail')
 
       consoleMock.mockRestore()
     }),

@@ -12,91 +12,21 @@ info
 
 [plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx)
 
-extends `BaseDisplay`
+extends
 
-### LinearAlignmentsDisplay - Properties
-
-#### property: PileupDisplay
-
-refers to LinearPileupDisplay sub-display model
-
-```js
-// type signature
-IMaybe<IAnyType>
-// code
-PileupDisplay: types.maybe(types.union(...lowerPanelDisplays))
-```
-
-#### property: SNPCoverageDisplay
-
-refers to LinearSNPCoverageDisplay sub-display model
-
-```js
-// type signature
-IMaybe<IAnyModelType>
-// code
-SNPCoverageDisplay: types.maybe(
-      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-    )
-```
-
-#### property: snpCovHeight
-
-```js
-// type signature
-number
-// code
-snpCovHeight: 45
-```
-
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearAlignmentsDisplay">
-// code
-type: types.literal('LinearAlignmentsDisplay')
-```
-
-#### property: configuration
-
-```js
-// type signature
-AnyConfigurationSchemaType
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: heightPreConfig
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-heightPreConfig: types.maybe(types.number)
-```
-
-#### property: userFeatureScreenDensity
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-userFeatureScreenDensity: types.maybe(types.number)
-```
-
-#### property: lowerPanelType
-
-```js
-// type signature
-string
-// code
-lowerPanelType: 'LinearPileupDisplay'
-```
+- [BaseDisplay](../basedisplay)
+- [LinearAlignmentsDisplayMixin](../linearalignmentsdisplaymixin)
 
 ### LinearAlignmentsDisplay - Getters
 
 #### getter: height
+
+```js
+// type
+any
+```
+
+#### getter: featureIdUnderMouse
 
 ```js
 // type
@@ -181,7 +111,7 @@ setSNPCoverageHeight: (n: number) => void
 
 ```js
 // type signature
-setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
@@ -195,7 +125,7 @@ setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 
 ```js
 // type signature
-setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setHeight

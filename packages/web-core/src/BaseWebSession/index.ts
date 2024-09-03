@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -9,7 +8,6 @@ import {
   AnyConfiguration,
 } from '@jbrowse/core/configuration'
 import { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import {
@@ -22,15 +20,6 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import DeleteIcon from '@mui/icons-material/Delete'
-import InfoIcon from '@mui/icons-material/Info'
-
-// locals
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   DialogQueueSessionMixin,
@@ -45,13 +34,38 @@ import {
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
+import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+
+// icons
+import SettingsIcon from '@mui/icons-material/Settings'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import DeleteIcon from '@mui/icons-material/Delete'
+import InfoIcon from '@mui/icons-material/Info'
+
 // locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
+// lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
+/**
+ * #stateModel BaseWebSession
+ * used for "web based" products, including jbrowse-web and react-app
+ * composed of
+ * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+ * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+ * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+ * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
+ * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+ * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+ * - [SessionAssembliesMixin](../sessionassembliesmixin)
+ * - [TemporaryAssembliesMixin](../temporaryassembliesmixin)
+ * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+ * - [AppFocusMixin](../appfocusmixin)
+ */
 export function BaseWebSession({
   pluginManager,
   assemblyConfigSchema,
@@ -77,6 +91,7 @@ export function BaseWebSession({
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
         AppFocusMixin(),
+        SnackbarModel(),
       ),
     )
     .props({
@@ -211,6 +226,7 @@ export function BaseWebSession({
       renderProps() {
         return {
           theme: self.theme,
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
         }
       },
     }))
@@ -239,9 +255,13 @@ export function BaseWebSession({
         self.sessionPlugins = cast(
           self.sessionPlugins.filter(
             plugin =>
+              // @ts-expect-error
               plugin.url !== pluginDefinition.url ||
+              // @ts-expect-error
               plugin.umdUrl !== pluginDefinition.umdUrl ||
+              // @ts-expect-error
               plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              // @ts-expect-error
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
@@ -347,7 +367,9 @@ export function BaseWebSession({
           {
             label: 'Settings',
             disabled: !canEdit,
-            onClick: () => self.editTrackConfiguration(config),
+            onClick: () => {
+              self.editTrackConfiguration(config)
+            },
             icon: SettingsIcon,
           },
           {
@@ -404,20 +426,16 @@ export function BaseWebSession({
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+  return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
-      if (snapshot) {
-        // @ts-expect-error
-        const { connectionInstances, ...rest } = snapshot || {}
-        // connectionInstances schema changed from object to an array, so any
-        // old connectionInstances as object is in snapshot, filter it out
-        // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (!Array.isArray(connectionInstances)) {
-          return rest
-        }
-      }
-      return snapshot
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const { connectionInstances, ...rest } = snapshot || {}
+      // connectionInstances schema changed from object to an array, so any
+      // old connectionInstances as object is in snapshot, filter it out
+      // https://github.com/GMOD/jbrowse-components/issues/1903
+      return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })
 }

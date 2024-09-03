@@ -20,11 +20,15 @@ import { FilterModel, IFilter } from '../shared'
 import { ChainData } from '../shared/fetchChains'
 
 // async
-const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
+const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
 
 /**
  * #stateModel LinearReadCloudDisplay
- * extends `BaseDisplay`, it is not a block based track, hence not BaseLinearDisplay
+ * it is not a block based track, hence not BaseLinearDisplay
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -162,14 +166,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Draw singletons',
               type: 'checkbox',
               checked: self.drawSingletons,
-              onClick: () => self.setDrawSingletons(!self.drawSingletons),
+              onClick: () => {
+                self.setDrawSingletons(!self.drawSingletons)
+              },
             },
             {
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  FilterByTagDlg,
+                  FilterByTagDialog,
                   { model: self, handleClose },
                 ])
               },
@@ -181,20 +187,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Insert size ± 3σ and orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                  },
                 },
                 {
                   label: 'Insert size ± 3σ',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
                 },
                 {
                   label: 'Orientation',
-                  onClick: () => self.setColorScheme({ type: 'orientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'orientation' })
+                  },
                 },
                 {
                   label: 'Insert size gradient',
-                  onClick: () => self.setColorScheme({ type: 'gradient' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'gradient' })
+                  },
                 },
               ],
             },

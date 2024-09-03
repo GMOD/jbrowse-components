@@ -2,7 +2,11 @@ import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { getTickDisplayStr } from '@jbrowse/core/util'
+import {
+  getFillProps,
+  getStrokeProps,
+  getTickDisplayStr,
+} from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { useTheme } from '@mui/material'
 
@@ -84,17 +88,17 @@ export const HorizontalAxisRaw = observer(function ({
               key={JSON.stringify(region)}
               x={xoff}
               y={y + 1}
-              fill={theme.palette.text.primary}
               fontSize={11}
               dominantBaseline="hanging"
               textAnchor="end"
+              {...getFillProps(theme.palette.text.primary)}
             >
               {region.refName}
             </text>
           )
         })}
-      {ticks.map(([tick, x]) => {
-        return (
+      {ticks.map(([tick, x]) =>
+        x > 0 && x < width ? (
           <line
             key={`line-${JSON.stringify(tick)}`}
             x1={x}
@@ -102,36 +106,35 @@ export const HorizontalAxisRaw = observer(function ({
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            stroke={theme.palette.grey[400]}
+            {...getFillProps(theme.palette.text.primary)}
           />
-        )
-      })}
+        ) : null,
+      )}
       {ticks
         .filter(t => t[0].type === 'major')
-        .map(([tick, x]) => {
-          const y = 0
-          return x > 10 ? (
+        .map(([tick, x]) =>
+          x > 10 && x < width ? (
             <text
               x={x - 7}
-              y={y}
-              transform={`rotate(${htextRotation},${x},${y})`}
+              y={0}
+              transform={`rotate(${htextRotation},${x},0)`}
               key={`text-${JSON.stringify(tick)}`}
-              fill={theme.palette.text.primary}
               fontSize={11}
               dominantBaseline="middle"
               textAnchor="end"
+              {...getFillProps(theme.palette.text.primary)}
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          ) : null
-        })}
+          ) : null,
+        )}
       <text
         y={borderY - 12}
         x={(viewWidth - borderX) / 2}
-        fill={theme.palette.text.primary}
         textAnchor="middle"
         fontSize={11}
         dominantBaseline="hanging"
+        {...getFillProps(theme.palette.text.primary)}
       >
         {hview.assemblyNames.join(',')}
       </text>
@@ -197,49 +200,51 @@ export const VerticalAxisRaw = observer(function ({
               key={JSON.stringify(region)}
               x={x}
               y={yoff}
-              fill={theme.palette.text.primary}
               fontSize={11}
               textAnchor="end"
+              {...getFillProps(theme.palette.text.primary)}
             >
               {region.refName}
             </text>
           )
         })}
-      {ticks.map(([tick, y]) => (
-        <line
-          key={`line-${JSON.stringify(tick)}`}
-          y1={viewHeight - y}
-          y2={viewHeight - y}
-          x1={borderX}
-          x2={borderX - (tick.type === 'major' ? 6 : 4)}
-          strokeWidth={1}
-          stroke={theme.palette.grey[400]}
-        />
-      ))}
+      {ticks.map(([tick, y]) =>
+        y > 0 ? (
+          <line
+            key={`line-${JSON.stringify(tick)}`}
+            y1={viewHeight - y}
+            y2={viewHeight - y}
+            x1={borderX}
+            x2={borderX - (tick.type === 'major' ? 6 : 4)}
+            strokeWidth={1}
+            {...getStrokeProps(theme.palette.grey[400])}
+          />
+        ) : null,
+      )}
       {ticks
         .filter(t => t[0].type === 'major')
-        .map(([tick, y]) => {
-          return y > 10 ? (
+        .map(([tick, y]) =>
+          y > 10 && y < viewHeight ? (
             <text
               y={viewHeight - y - 3}
               x={borderX - 7}
               key={`text-${JSON.stringify(tick)}`}
               textAnchor="end"
-              fill={theme.palette.text.primary}
               dominantBaseline="hanging"
               fontSize={11}
+              {...getFillProps(theme.palette.text.primary)}
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          ) : null
-        })}
+          ) : null,
+        )}
       <text
         y={(viewHeight - borderY) / 2}
         x={12}
-        fill={theme.palette.text.primary}
         transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
         textAnchor="middle"
         fontSize={11}
+        {...getFillProps(theme.palette.text.primary)}
       >
         {vview.assemblyNames.join(',')}
       </text>

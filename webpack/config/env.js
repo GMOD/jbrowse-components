@@ -1,11 +1,9 @@
-/* eslint-disable unicorn/no-array-reduce */
-'use strict'
-
 const fs = require('fs')
 const path = require('path')
 const paths = require('./paths')
 
 // Make sure that including paths.js after env.js will read .env variables.
+
 delete require.cache[require.resolve('./paths')]
 
 const NODE_ENV = process.env.NODE_ENV
@@ -64,6 +62,7 @@ const REACT_APP = /^REACT_APP_/i
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
     .filter(key => REACT_APP.test(key))
+
     .reduce(
       (env, key) => {
         env[key] = process.env[key]

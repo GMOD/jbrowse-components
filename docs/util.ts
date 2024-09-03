@@ -28,16 +28,20 @@ export function extractWithComment(
   }
 
   function visit(node: ts.Node) {
-    const count = node.getChildCount()
+    try {
+      const count = node.getChildCount()
 
-    // @ts-expect-error
-    const symbol = checker.getSymbolAtLocation(node.name)
-    if (symbol) {
-      serializeSymbol(symbol, node, cb)
-    }
+      // @ts-expect-error
+      const symbol = checker.getSymbolAtLocation(node.name)
+      if (symbol) {
+        serializeSymbol(symbol, node, cb)
+      }
 
-    if (count > 0) {
-      ts.forEachChild(node, visit)
+      if (count > 0) {
+        ts.forEachChild(node, visit)
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -74,7 +78,7 @@ export function extractWithComment(
       'method',
     ]
     for (const entry of list) {
-      const type = '#' + entry
+      const type = `#${entry}`
       if (fulltext.includes(type) && r.comment.includes(type)) {
         cb({ type: entry, ...r })
       }
@@ -103,7 +107,7 @@ export function filter(str1: string, str2: string) {
 
 export async function getAllFiles() {
   const files = await exec2(
-    'git ls-files | grep "\\(plugins\\|products\\|packages\\).*.\\(t\\|j\\)sx\\?$"',
+    String.raw`git ls-files | grep "\(plugins\|products\|packages\).*.\(t\|j\)sx\?$"`,
   )
   return files.stdout.split('\n').filter(f => !!f)
 }

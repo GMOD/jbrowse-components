@@ -12,7 +12,8 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 
 /**
  * #stateModel ChordVariantDisplay
- * extends `BaseChordDisplay`
+ * extends
+ * - [BaseChordDisplay](../basechorddisplay)
  */
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
   return types
@@ -51,7 +52,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           radius: view.radiusPx,
           blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
-          onChordClick: (arg: Feature) => self.onChordClick(arg),
+          onChordClick: (arg: Feature) => {
+            self.onChordClick(arg)
+          },
         }
       },
     }))

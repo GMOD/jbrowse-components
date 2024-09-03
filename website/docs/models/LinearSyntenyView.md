@@ -12,7 +12,9 @@ info
 
 [plugins/linear-comparative-view/src/LinearSyntenyView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts)
 
-extends the `LinearComparativeView` base model
+extends
+
+- [LinearComparativeView](../linearcomparativeview)
 
 ### LinearSyntenyView - Properties
 
@@ -55,6 +57,13 @@ overwhelming
 headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
+#### method: menuItems
+
+```js
+// type signature
+menuItems: () => MenuItem[]
+```
+
 ### LinearSyntenyView - Actions
 
 #### action: toggleCurves
@@ -76,4 +85,11 @@ toggleCIGAR: () => void
 ```js
 // type signature
 showAllRegions: () => void
+```
+
+#### action: exportSvg
+
+```js
+// type signature
+exportSvg: (opts: ExportSvgOptions) => Promise<void>
 ```

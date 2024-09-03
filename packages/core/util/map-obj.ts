@@ -8,6 +8,7 @@ const isObjectCustom = (value: unknown) =>
   !(value instanceof RegExp) &&
   !(value instanceof Error) &&
   !(value instanceof Date) &&
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   !(globalThis.Blob && value instanceof globalThis.Blob)
 
 type Obj = Record<string, unknown>
@@ -23,13 +24,14 @@ export default function map(
 
   isSeen.add(object)
 
-  const mapArray = (array: unknown[]) =>
+  const mapArray = (array: unknown[]) => {
     array.forEach(element => {
       mapper(element)
       if (isObject(element)) {
         map(element as Record<string, unknown>, mapper, isSeen)
       }
     })
+  }
 
   if (Array.isArray(object)) {
     mapArray(object)
@@ -39,7 +41,11 @@ export default function map(
     mapper(value)
 
     if (isObjectCustom(value)) {
-      Array.isArray(value) ? mapArray(value) : map(value as Obj, mapper, isSeen)
+      if (Array.isArray(value)) {
+        mapArray(value)
+      } else {
+        map(value as Obj, mapper, isSeen)
+      }
     }
   }
 }

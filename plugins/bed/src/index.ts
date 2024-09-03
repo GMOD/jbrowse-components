@@ -39,7 +39,8 @@ export default class BedPlugin extends Plugin {
 
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj
-          } else if (adapterHint === adapterName) {
+          }
+          if (adapterHint === adapterName) {
             return obj
           }
           return adapterGuesser(file, index, adapterHint)
@@ -55,7 +56,7 @@ export default class BedPlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\.bedpe\.gz$/i
+          const regexGuess = /\.bedpe(\.gz)?$/i
           const adapterName = 'BedpeAdapter'
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
@@ -120,14 +121,10 @@ export default class BedPlugin extends Plugin {
 
     pluginManager.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
-      (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          if (adapterName === 'BedpeAdapter') {
-            return 'VariantTrack'
-          }
-          return trackTypeGuesser(adapterName)
-        }
-      },
+      (trackTypeGuesser: TrackTypeGuesser) => (adapterName: string) =>
+        adapterName === 'BedpeAdapter'
+          ? 'VariantTrack'
+          : trackTypeGuesser(adapterName),
     )
   }
 }

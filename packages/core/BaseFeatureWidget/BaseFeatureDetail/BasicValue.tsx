@@ -18,7 +18,7 @@ const useStyles = makeStyles()(theme => ({
 
 export default function BasicValue({ value }: { value: unknown }) {
   const { classes } = useStyles()
-  const isLink = `${value}`.match(/^https?:\/\//)
+  const isLink = /^https?:\/\//.exec(`${value}`)
   return (
     <div className={classes.fieldValue}>
       {React.isValidElement(value) ? (

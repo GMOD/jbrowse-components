@@ -4,7 +4,7 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 // locals
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function CramAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'CramAdapter',

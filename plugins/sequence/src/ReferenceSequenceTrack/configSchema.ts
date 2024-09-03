@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -42,6 +41,24 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      sequenceType: {
+        type: 'string',
+        description: 'either dna or pep',
+        defaultValue: 'dna',
+      },
+
+      /**
+       * #slot
+       */
+      description: {
+        description: 'a description of the track',
+        type: 'string',
+        defaultValue: '',
+      },
+
+      /**
+       * #slot
+       */
       metadata: {
         type: 'frozen',
         description: 'anything to add about this track',
@@ -79,7 +96,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
           // snapshot
           displays.forEach((d: any) => d && displayTypes.add(d.type))
           const trackType = pluginManager.getTrackType(snap.type)
-          trackType.displayTypes.forEach(displayType => {
+          trackType?.displayTypes.forEach(displayType => {
             if (!displayTypes.has(displayType.name)) {
               displays.push({
                 displayId: `${snap.trackId}-${displayType.name}`,

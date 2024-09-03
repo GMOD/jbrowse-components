@@ -14,14 +14,14 @@ info
 
 composed of
 
-- BaseSessionModel
-- DrawerWidgetsSessionMixin
-- ConnectionManagementSessionMixin
-- DialogQueueSessionMixin
-- TracksManagerSessionMixin
-- ReferenceManagementSessionMixin
-- SessionTracksManagerSessionMixin
-- SnackbarModel
+- [BaseSessionModel](../basesessionmodel)
+- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+- [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+- [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+- [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+- [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+- [SnackbarModel](../snackbarmodel)
 
 ### JBrowseReactLinearGenomeViewSessionModel - Properties
 
@@ -29,7 +29,7 @@ composed of
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>
 // code
 view: pluginManager.getViewType('LinearGenomeView')
         .stateModel as LinearGenomeViewStateModel
@@ -94,7 +94,7 @@ any
 
 ```js
 // type
-({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & ...
+({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>)[]
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Methods
@@ -105,6 +105,7 @@ any
 // type signature
 renderProps: () => {
   theme: any
+  highResolutionScaling: any
 }
 ```
 
@@ -121,5 +122,5 @@ getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; 
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<...>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }...
+addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<...>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>
 ```

@@ -64,6 +64,8 @@ const model: MyModel = {
   },
   async revokeToken(token) {
     /* Delete the token from the database */
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!token) {
       return false
     }
@@ -91,7 +93,7 @@ const model: MyModel = {
   },
   async revokeAuthorizationCode(_authorizationCode) {
     /* This is where we delete codes */
-    delete db.authorizationCode
+    db.authorizationCode = undefined
     const codeWasFoundAndDeleted = true // Return true if code found and deleted, false otherwise
     return codeWasFoundAndDeleted
   },

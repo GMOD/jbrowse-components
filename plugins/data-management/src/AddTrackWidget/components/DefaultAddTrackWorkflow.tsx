@@ -55,7 +55,6 @@ const DefaultAddTrackWorkflow = observer(function ({
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { jobsManager } = getRoot<any>(model)
   const session = getSession(model)
   const {
@@ -88,7 +87,7 @@ const DefaultAddTrackWorkflow = observer(function ({
 
     const trackId = [
       `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-      `${session.adminMode ? '' : '-sessionTrack'}`,
+      session.adminMode ? '' : '-sessionTrack',
     ].join('')
 
     const assemblyInstance = session.assemblyManager.get(assembly)
@@ -117,7 +116,7 @@ const DefaultAddTrackWorkflow = observer(function ({
           attributes: ['Name', 'ID'],
           exclude: ['CDS', 'exon'],
         }
-        const indexName = trackName + '-index'
+        const indexName = `${trackName}-index`
         const newEntry = {
           indexingParams: {
             ...attr,
@@ -131,11 +130,6 @@ const DefaultAddTrackWorkflow = observer(function ({
           cancelCallback: () => jobsManager.abortJob(),
         }
         jobsManager.queueJob(newEntry)
-      } else {
-        session.notify(
-          'Open a new view, or use the track selector in an existing view, to view this track',
-          'info',
-        )
       }
       model.clearData()
       if (isSessionModelWithWidgets(session)) {
@@ -146,11 +140,6 @@ const DefaultAddTrackWorkflow = observer(function ({
         'Failed to add track.\nThe configuration of this file is not currently supported.',
       )
     }
-  }
-
-  function handleBack() {
-    setTrackErrorMessage(undefined)
-    setActiveStep(activeStep - 1)
   }
 
   function isNextDisabled() {
@@ -179,7 +168,10 @@ const DefaultAddTrackWorkflow = observer(function ({
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
-                  onClick={handleBack}
+                  onClick={() => {
+                    setTrackErrorMessage(undefined)
+                    setActiveStep(activeStep - 1)
+                  }}
                   className={classes.button}
                 >
                   Back

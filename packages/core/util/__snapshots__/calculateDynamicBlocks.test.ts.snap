@@ -20,6 +20,7 @@ exports[`five 1`] = `
     "regionNumber": 0,
     "reversed": false,
     "start": 26.05,
+    "type": "ContentBlock",
     "widthPx": 927.0000000000001,
   },
 ]
@@ -34,6 +35,7 @@ exports[`four 1`] = `
     "offsetPx": -100,
     "refName": undefined,
     "start": undefined,
+    "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": 100,
   },
@@ -54,6 +56,7 @@ exports[`four 1`] = `
     "regionNumber": 0,
     "reversed": undefined,
     "start": 0,
+    "type": "ContentBlock",
     "widthPx": 250,
   },
 ]
@@ -68,6 +71,7 @@ exports[`one 1`] = `
     "offsetPx": 0,
     "refName": undefined,
     "start": undefined,
+    "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": -0,
   },
@@ -88,6 +92,7 @@ exports[`one 1`] = `
     "regionNumber": 0,
     "reversed": undefined,
     "start": 0,
+    "type": "ContentBlock",
     "widthPx": 200,
   },
 ]
@@ -102,6 +107,7 @@ exports[`three 1`] = `
     "offsetPx": -100,
     "refName": undefined,
     "start": undefined,
+    "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": 100,
   },
@@ -123,6 +129,7 @@ exports[`three 1`] = `
     "regionNumber": 0,
     "reversed": true,
     "start": 49900,
+    "type": "ContentBlock",
     "widthPx": 100,
   },
 ]
@@ -137,6 +144,7 @@ exports[`two 1`] = `
     "offsetPx": 0,
     "refName": undefined,
     "start": undefined,
+    "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": -0,
   },
@@ -158,6 +166,7 @@ exports[`two 1`] = `
     "regionNumber": 0,
     "reversed": true,
     "start": 49800,
+    "type": "ContentBlock",
     "widthPx": 200,
   },
 ]

@@ -20,3 +20,23 @@ bigBedLocation: {
       defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
     }
 ```
+
+#### slot: scoreColumn
+
+```js
+scoreColumn: {
+      type: 'string',
+      description: 'The column to use as a "score" attribute',
+      defaultValue: '',
+    }
+```
+
+#### slot: aggregateField
+
+```js
+aggregateField: {
+      type: 'string',
+      description: 'An attribute to aggregate features with',
+      defaultValue: 'geneName',
+    }
+```

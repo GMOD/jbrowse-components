@@ -14,7 +14,7 @@ import Subfeatures from './Subfeatures'
 
 export interface Glyph
   extends React.FC<{
-    children: React.ReactNode
+    colorByCDS: boolean
     feature: Feature
     featureLayout: SceneGraph
     selected?: boolean
@@ -24,7 +24,7 @@ export interface Glyph
     topLevel?: boolean
     [key: string]: unknown
   }> {
-  layOut?: Function
+  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 
 type LayoutRecord = [number, number, number, number]
@@ -53,19 +53,19 @@ export function chooseGlyphComponent(
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
 
-  if (subfeatures && type !== 'CDS') {
+  if (subfeatures?.length && type !== 'CDS') {
     const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
     if (
       ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
       subfeatures.some(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
-    } else if (!feature.parent() && hasSubSub) {
+    }
+    if (!feature.parent() && hasSubSub) {
       // only do sub-sub on parent level features like gene
       return Subfeatures
-    } else {
-      return Segments
     }
+    return Segments
   }
 
   return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
@@ -74,18 +74,18 @@ export function chooseGlyphComponent(
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  reversed: boolean
+  reversed?: boolean
   config: AnyConfigurationModel
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
   feature: Feature
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 export function layOut({
@@ -118,7 +118,7 @@ export function layOut({
   return subLayout
 }
 
-export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
+export function layOutFeature(args: FeatureLayOutArgs) {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =

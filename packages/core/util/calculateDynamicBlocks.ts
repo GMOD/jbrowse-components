@@ -61,24 +61,21 @@ export default function calculateDynamicBlocks(
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = region
+    } = region!
     const displayedRegionRightPx =
       displayedRegionLeftPx + (regionEnd - regionStart) / bpPerPx
 
     const regionWidthPx = (regionEnd - regionStart) / bpPerPx
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
-    if (
-      displayedRegionLeftPx < windowRightPx &&
-      displayedRegionRightPx > windowLeftPx
-    ) {
+    const [leftPx, rightPx] = intersection2(
+      windowLeftPx,
+      windowRightPx,
+      displayedRegionLeftPx,
+      displayedRegionRightPx,
+    )
+    if (leftPx !== undefined && rightPx !== undefined) {
       // this displayed region overlaps the view, so make a record for it
-      const [leftPx, rightPx] = intersection2(
-        windowLeftPx,
-        windowRightPx,
-        displayedRegionLeftPx,
-        displayedRegionRightPx,
-      )
       let start: number
       let end: number
       let isLeftEndOfDisplayedRegion: boolean

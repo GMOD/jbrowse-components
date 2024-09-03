@@ -12,7 +12,9 @@ info
 
 [plugins/alignments/src/LinearPileupDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/model.ts)
 
-extends `BaseLinearDisplay`
+extends
+
+- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
 
 ### LinearPileupDisplay - Properties
 
@@ -75,7 +77,7 @@ sortedBy: types.maybe(
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: mismatchAlphaSetting
@@ -85,14 +87,14 @@ sortedBy: types.maybe(
 any
 ```
 
-#### getter: renderReady
+### LinearPileupDisplay - Methods
+
+#### method: renderReady
 
 ```js
-// type
-;() => boolean
+// type signature
+renderReady: () => boolean
 ```
-
-### LinearPileupDisplay - Methods
 
 #### method: renderPropsPre
 
@@ -171,6 +173,16 @@ toggleMismatchAlpha: () => void
 ```js
 // type signature
 setSortedBy: (type: string, tag?: string) => void
+```
+
+#### action: setFeatureHeight
+
+overrides base from SharedLinearPileupDisplay to make sortReady false since
+changing feature height destroys the sort-induced layout
+
+```js
+// type signature
+setFeatureHeight: (n?: number) => void
 ```
 
 #### action: reload

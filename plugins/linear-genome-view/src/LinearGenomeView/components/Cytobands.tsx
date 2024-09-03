@@ -9,29 +9,27 @@ import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 // locals
 import { HEADER_OVERVIEW_HEIGHT } from '..'
 import { getCytobands } from './util'
+import { getFillProps } from '@jbrowse/core/util'
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
-// prettier-ignore
-function rightRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
-  return "M" + x + "," + y
-       + "h" + (width - radius)
-       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
-       + "v" + (height - 2 * radius)
-       + "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
-       + "h" + (radius - width)
-       + "z";
+function rightRoundedRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  return `M${x},${y}h${width - radius}a${radius},${radius} 0 0 1 ${radius},${radius}v${height - 2 * radius}a${radius},${radius} 0 0 1 ${-radius},${radius}h${radius - width}z`
 }
 
-// prettier-ignore
-function leftRoundedRect(x: number, y: number, width: number, height: number, radius: number ) {
-  return "M" + (x + radius) + "," + y
-       + "h" + (width - radius)
-       + "v" + height
-       + "h" + (radius - width)
-       + "a" + radius + "," + radius + " 0 0 1 " + (-radius) + "," + (-radius)
-       + "v" + (2 * radius - height)
-       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + (-radius)
-       + "z";
+function leftRoundedRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  return `M${x + radius},${y}h${width - radius}v${height}h${radius - width}a${radius},${radius} 0 0 1 ${-radius},${-radius}v${2 * radius - height}a${radius},${radius} 0 0 1 ${radius},${-radius}z`
 }
 
 function leftTriangle(x: number, y: number, width: number, height: number) {
@@ -50,7 +48,7 @@ function rightTriangle(x: number, y: number, width: number, height: number) {
   ].toString()
 }
 
-const colorMap: Record<string, string | undefined> = {
+const colorMap: Record<string, string> = {
   gneg: 'rgb(227,227,227)',
   gpos25: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
@@ -86,19 +84,55 @@ const Cytobands = observer(function ({
         const e = overview.bpToPx({ refName, coord: end }) || 0
         const l = Math.min(s, e)
         const w = Math.abs(e - s)
-        const c = colorMap[type]
+        const c = colorMap[type] || 'black'
         if (type === 'acen' && !centromereSeen) {
           centromereSeen = true // the next acen entry is drawn with different right triangle
-          return <polygon key={k} points={leftTriangle(s, 0, w, h)} fill={c} />
-        } else if (type === 'acen' && centromereSeen) {
-          return <polygon key={k} points={rightTriangle(s, 0, w, h)} fill={c} />
-        } else if (lcap === index) {
-          return <path key={k} d={leftRoundedRect(l, 0, w, h, 8)} fill={c} />
-        } else if (rcap === index) {
-          return <path key={k} d={rightRoundedRect(l, 0, w, h, 8)} fill={c} />
-        } else {
-          return <rect key={k} x={l} y={0} width={w} height={h} fill={c} />
+          return (
+            <polygon
+              key={k}
+              points={
+                reversed
+                  ? rightTriangle(s - w, 0, w, h)
+                  : leftTriangle(s, 0, w, h)
+              }
+              {...getFillProps(c)}
+            />
+          )
         }
+        if (type === 'acen' && centromereSeen) {
+          return (
+            <polygon
+              key={k}
+              points={
+                reversed
+                  ? leftTriangle(s - w, 0, w, h)
+                  : rightTriangle(s, 0, w, h)
+              }
+              {...getFillProps(c)}
+            />
+          )
+        }
+        if (lcap === index) {
+          return (
+            <path
+              key={k}
+              d={leftRoundedRect(l, 0, w, h, 8)}
+              {...getFillProps(c)}
+            />
+          )
+        }
+        if (rcap === index) {
+          return (
+            <path
+              key={k}
+              d={rightRoundedRect(l, 0, w, h, 8)}
+              {...getFillProps(c)}
+            />
+          )
+        }
+        return (
+          <rect key={k} x={l} y={0} width={w} height={h} {...getFillProps(c)} />
+        )
       })}
     </g>
   )

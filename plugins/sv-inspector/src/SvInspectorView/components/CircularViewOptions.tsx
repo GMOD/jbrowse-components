@@ -30,11 +30,11 @@ const CircularViewOptions = observer(function ({
           control={
             <Checkbox
               checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
-              onChange={e =>
+              onChange={e => {
                 svInspector.setOnlyDisplayRelevantRegionsInCircularView(
                   e.target.checked,
                 )
-              }
+              }}
             />
           }
           label="show only regions with data"

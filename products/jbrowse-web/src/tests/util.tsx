@@ -14,6 +14,7 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // locals
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
@@ -31,8 +32,10 @@ global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getPluginManager(initialState?: any, adminMode = true) {
+export function getPluginManager(
+  initialState?: Record<string, unknown>,
+  adminMode = true,
+) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -50,7 +53,7 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
-  return pluginManager
+  return { pluginManager, rootModel }
 }
 
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
@@ -64,12 +67,12 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
         if (range === -2 || range === -1) {
           throw new Error(`Error parsing range "${r}"`)
         }
-        const { start, end } = range[0]
+        const { start, end } = range[0]!
         const len = end - start + 1
         const buf = Buffer.alloc(len)
         const { bytesRead } = await file.read(buf, 0, len, start)
         const stat = await file.stat()
-        return new Response(buf.slice(0, bytesRead), {
+        return new Response(buf.subarray(0, bytesRead), {
           status: 206,
           headers: [['content-range', `${start}-${end}/${stat.size}`]],
         })
@@ -104,7 +107,6 @@ export function expectCanvasMatch(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function JBrowse(props: any) {
   return (
     <QueryParamProvider adapter={WindowHistoryAdapter}>
@@ -113,26 +115,28 @@ export function JBrowse(props: any) {
   )
 }
 
-export const hts = (str: string) => 'htsTrackEntry-' + str
+export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
-  if (view && 'initialized' in view) {
-    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 30000 })
+  if ('initialized' in view) {
+    await waitFor(
+      () => {
+        expect(view.initialized).toBe(true)
+      },
+      { timeout: 30000 },
+    )
   }
   return ret
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createViewNoWait(args?: any, adminMode?: boolean) {
-  const pluginManager = getPluginManager(args, adminMode)
+  const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-  const rootModel = pluginManager.rootModel!
-  const session = rootModel.session!
+  const session = rootModel.session! as AbstractSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }

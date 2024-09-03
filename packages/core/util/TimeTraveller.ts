@@ -16,7 +16,9 @@ function debounce(func: (...args: unknown[]) => void, timeout = 300) {
   let timer: ReturnType<typeof setTimeout>
   return (...args: unknown[]) => {
     clearTimeout(timer)
-    timer = setTimeout(() => func(...args), timeout)
+    timer = setTimeout(() => {
+      func(...args)
+    }, timeout)
   }
 }
 
@@ -38,7 +40,7 @@ const TimeTraveller = types
     },
   }))
   .actions(self => {
-    let targetStore: IAnyStateTreeNode
+    let targetStore: IAnyStateTreeNode | undefined
     let snapshotDisposer: IDisposer
     let skipNextUndoState = false
 
@@ -84,7 +86,9 @@ const TimeTraveller = types
 
         snapshotDisposer = onSnapshot(
           targetStore,
-          debounce((snapshot: unknown) => this.addUndoState(snapshot), 300),
+          debounce((snapshot: unknown) => {
+            this.addUndoState(snapshot)
+          }, 300),
         )
         if (self.history.length === 0) {
           this.addUndoState(getSnapshot(targetStore))
@@ -93,12 +97,16 @@ const TimeTraveller = types
       undo() {
         self.undoIdx--
         skipNextUndoState = true
-        applySnapshot(targetStore, self.history[self.undoIdx])
+        if (targetStore) {
+          applySnapshot(targetStore, self.history[self.undoIdx])
+        }
       },
       redo() {
         self.undoIdx++
         skipNextUndoState = true
-        applySnapshot(targetStore, self.history[self.undoIdx])
+        if (targetStore) {
+          applySnapshot(targetStore, self.history[self.undoIdx])
+        }
       },
     }
   })

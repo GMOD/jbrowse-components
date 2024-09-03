@@ -18,7 +18,7 @@ class DivSequenceRenderer extends FeatureRendererType {
   }
 }
 
-export default (pluginManager: PluginManager) => {
+export default function DivSequenceRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new DivSequenceRenderer({

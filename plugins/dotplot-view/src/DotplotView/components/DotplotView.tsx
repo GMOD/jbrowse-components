@@ -3,7 +3,6 @@ import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
-import normalizeWheel from 'normalize-wheel'
 
 // locals
 import { DotplotViewModel } from '../model'
@@ -105,13 +104,14 @@ const DotplotViewInternal = observer(function ({
   const distanceY = useRef(0)
   const scheduled = useRef(false)
   const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
+  const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   const svg = ref.current?.getBoundingClientRect() || blank
   const rootRect = ref.current?.getBoundingClientRect() || blank
   const mousedown = getOffset(mousedownClient, svg)
   const mousecurr = getOffset(mousecurrClient, svg)
   const mouseup = getOffset(mouseupClient, svg)
-  const mouserectClient = mouseupClient || mousecurrClient
   const mouserect = mouseup || mousecurr
+  const mouserectClient = mouseupClient || mousecurrClient
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
   const { hview, vview, wheelMode, cursorMode } = model
@@ -126,12 +126,11 @@ const DotplotViewInternal = observer(function ({
 
   // use non-React wheel handler to properly prevent body scrolling
   useEffect(() => {
-    function onWheel(origEvent: WheelEvent) {
-      const event = normalizeWheel(origEvent)
-      origEvent.preventDefault()
+    function onWheel(event: WheelEvent) {
+      event.preventDefault()
 
-      distanceX.current += event.pixelX
-      distanceY.current -= event.pixelY
+      distanceX.current += event.deltaX
+      distanceY.current -= event.deltaY
       if (!scheduled.current) {
         scheduled.current = true
 
@@ -163,7 +162,9 @@ const DotplotViewInternal = observer(function ({
     if (ref.current) {
       const curr = ref.current
       curr.addEventListener('wheel', onWheel)
-      return () => curr.removeEventListener('wheel', onWheel)
+      return () => {
+        curr.removeEventListener('wheel', onWheel)
+      }
     }
     return () => {}
   }, [hview, vview, wheelMode, mousecurr, rootRect.height])
@@ -179,20 +180,32 @@ const DotplotViewInternal = observer(function ({
     }
 
     window.addEventListener('mousemove', globalMouseMove)
-    return () => window.removeEventListener('mousemove', globalMouseMove)
-  }, [
-    validPan,
-    mousecurrClient,
-    mousedownClient,
-    cursorMode,
-    ctrlKeyWasUsed,
-    mouseupClient,
-    hview,
-    vview,
-  ])
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+    }
+  }, [validPan, mousecurrClient, mousedownClient, mouseupClient, hview, vview])
 
-  // detect a mouseup after a mousedown was submitted, autoremoves mouseup
-  // once that single mouseup is set
+  useEffect(() => {
+    function globalCtrlKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey) {
+        setCtrlKeyDown(true)
+      }
+    }
+    function globalCtrlKeyUp(event: KeyboardEvent) {
+      if (!event.metaKey && !event.ctrlKey) {
+        setCtrlKeyDown(false)
+      }
+    }
+    window.addEventListener('keydown', globalCtrlKeyDown)
+    window.addEventListener('keyup', globalCtrlKeyUp)
+    return () => {
+      window.removeEventListener('keydown', globalCtrlKeyDown)
+      window.addEventListener('keyup', globalCtrlKeyUp)
+    }
+  }, [])
+
+  // detect a mouseup after a mousedown was submitted, autoremoves mouseup once
+  // that single mouseup is set
   useEffect(() => {
     function globalMouseUp(event: MouseEvent) {
       if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
@@ -201,22 +214,14 @@ const DotplotViewInternal = observer(function ({
         setMouseDownClient(undefined)
       }
     }
-
     if (mousedown && !mouseup) {
       window.addEventListener('mouseup', globalMouseUp, true)
-      return () => window.removeEventListener('mouseup', globalMouseUp, true)
+      return () => {
+        window.removeEventListener('mouseup', globalMouseUp, true)
+      }
     }
     return () => {}
-  }, [
-    validSelect,
-    mousedown,
-    mousecurr,
-    mouseup,
-    xdistance,
-    ydistance,
-    ctrlKeyWasUsed,
-    cursorMode,
-  ])
+  }, [validSelect, mousedown, mouseup, xdistance, ydistance])
 
   return (
     <div>
@@ -234,8 +239,12 @@ const DotplotViewInternal = observer(function ({
       <div
         ref={root}
         className={classes.root}
-        onMouseLeave={() => setMouseOvered(false)}
-        onMouseEnter={() => setMouseOvered(true)}
+        onMouseLeave={() => {
+          setMouseOvered(false)
+        }}
+        onMouseEnter={() => {
+          setMouseOvered(true)
+        }}
       >
         <div className={classes.container}>
           <VerticalAxis model={model} />
@@ -247,7 +256,6 @@ const DotplotViewInternal = observer(function ({
                 mouserect={mouserect}
                 mouserectClient={mouserectClient}
                 xdistance={xdistance}
-                ydistance={ydistance}
               />
             ) : null}
             {validSelect ? (
@@ -260,13 +268,13 @@ const DotplotViewInternal = observer(function ({
               />
             ) : null}
             <div
-              style={{ cursor: ctrlKeyWasUsed ? 'pointer' : cursorMode }}
+              style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}
               onMouseDown={event => {
                 if (event.button === 0) {
                   const { clientX, clientY } = event
                   setMouseDownClient([clientX, clientY])
                   setMouseCurrClient([clientX, clientY])
-                  setCtrlKeyWasUsed(event.ctrlKey)
+                  setCtrlKeyWasUsed(ctrlKeyDown)
                 }
               }}
             >
@@ -338,7 +346,7 @@ const DotplotViewInternal = observer(function ({
     </div>
   )
 })
-const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
   const { initialized, loading, error } = model
 
   if ((!initialized && !loading) || error) {

@@ -1,0 +1,120 @@
+{
+  "assemblies": [
+    {
+      "name": "sequence",
+      "name": "Wuhan-Hu-1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sequence-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "sequence.fasta.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "sequence.fasta.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "sequence.fasta.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "sequence",
+      "name": "NCBI genes",
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "ncbi_modified.gff3",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["Wuhan-Hu-1"]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "Protein3d",
+      "umdLoc": {
+        "uri": "http://localhost:9001/dist/out.js"
+      }
+    },
+    {
+      "name": "MafViewer",
+      "url": "https://unpkg.com/jbrowse-plugin-mafviewer/dist/jbrowse-plugin-mafviewer.umd.production.min.js"
+    }
+  ],
+  "defaultSession": {
+    "drawerPosition": "right",
+    "drawerWidth": 384,
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "view": "KuG0VrUuyw_ZKY-TK_Oig",
+        "faceted": {
+          "filterText": "",
+          "showSparse": false,
+          "showFilters": true,
+          "showOptions": false,
+          "panelWidth": 400
+        }
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    },
+    "minimized": false,
+    "id": "yQuw4sDTrLqxWMTWTmrLS",
+    "name": "New session 7/13/2024, 7:05:44 PM",
+    "margin": 0,
+    "views": [
+      {
+        "id": "KuG0VrUuyw_ZKY-TK_Oig",
+        "minimized": false,
+        "type": "LinearGenomeView",
+        "offsetPx": -42.0703125,
+        "bpPerPx": 35.112872449728464,
+        "displayedRegions": [
+          {
+            "reversed": false,
+            "refName": "NC_045512.2",
+            "start": 0,
+            "end": 29903,
+            "assemblyName": "Wuhan-Hu-1"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "EoPsIpNVb04ohGu8elor0",
+            "type": "FeatureTrack",
+            "configuration": "sequence",
+            "minimized": false,
+            "displays": [
+              {
+                "id": "muum41iFNmp6WSBj8oPNm",
+                "type": "LinearBasicDisplay",
+                "heightPreConfig": 280,
+                "configuration": "sequence-LinearBasicDisplay",
+                "jexlFilters": ["jexl:get(feature,'type')=='gene'"]
+              }
+            ]
+          }
+        ],
+        "colorByCDS": true
+      }
+    ]
+  }
+}

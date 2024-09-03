@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adds JBrowse1 connection from a url 1`] = `
+[
+  {
+    "connectionId": "JBrowse1Connection-1",
+    "dataDirLocation": {
+      "locationType": "UriLocation",
+      "uri": "https://mysite.com/jbrowse/data",
+    },
+    "name": "JBrowse1Connection-1",
+    "type": "JBrowse1Connection",
+  },
+]
+`;
+
+exports[`adds a custom connection with user set fields 1`] = `
+[
+  {
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "connectionId": "newConnectionId",
+    "locationType": "UriLocation",
+    "name": "newName",
+    "type": "newType",
+    "url": {
+      "uri": "https://mysite.com/custom",
+    },
+  },
+]
+`;
+
+exports[`adds an UCSCTrackHubConnection connection from a url 1`] = `
+[
+  {
+    "connectionId": "UCSCTrackHubConnection-1",
+    "hubTxtLocation": {
+      "locationType": "UriLocation",
+      "uri": "https://mysite.com/data/hub.txt",
+    },
+    "name": "UCSCTrackHubConnection-1",
+    "type": "UCSCTrackHubConnection",
+  },
+]
+`;
+
+exports[`fails if data directory is not an url 1`] = `"The location provided is not a valid URL"`;
+
+exports[`fails if no config file 1`] = `"Error: ENOENT: no such file or directory, open './config.json'"`;
+
+exports[`fails to add a duplicate connection 1`] = `
+"Cannot add connection with id newConnectionId, a connection with that id already exists.
+Use --overwrite if you would like to replace the existing connection"
+`;
+
+exports[`fails when fetching from url fails 1`] = `"Unable to fetch from URL, Error: Response returned with code 500"`;
+
+exports[`overwrites an existing custom connection and does not check URL 1`] = `
+[
+  {
+    "connectionId": "newConnectionId",
+    "locationType": "UriLocation",
+    "name": "newConnectionId",
+    "type": "custom",
+    "url": {
+      "uri": "https://mysite.com/custom",
+    },
+  },
+]
+`;

@@ -4,7 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import DensityRenderer from './DensityRenderer'
 import ReactComponent from '../WiggleRendering'
 
-export default (pluginManager: PluginManager) => {
+export default function DensityRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new DensityRenderer({

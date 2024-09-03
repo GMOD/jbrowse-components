@@ -35,15 +35,18 @@ async function getPluginManager(
 ) {
   // Load runtime plugins
   const config = await receiveConfiguration()
-  const pluginLoader = new PluginLoader(config.plugins, opts)
-  pluginLoader.installGlobalReExports(self)
-  const runtimePlugins = await pluginLoader.load(config.windowHref)
-  const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
-  const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  return pluginManager
+  const pluginLoader = new PluginLoader(
+    config.plugins,
+    opts,
+  ).installGlobalReExports(self)
+  return new PluginManager(
+    [
+      ...corePlugins.map(p => ({ plugin: p })),
+      ...(await pluginLoader.load(config.windowHref)),
+    ].map(P => new P.plugin()),
+  )
+    .createPluggableElements()
+    .configure()
 }
 
 interface WrappedFuncArgs {
@@ -89,7 +92,7 @@ export async function initializeWorker(
     self.rpcServer = new RpcServer.Server({
       ...rpcConfig,
       ...remoteAbortRpcHandler(),
-      ping: () => {
+      ping: async () => {
         // the ping method is required by the worker driver for checking the
         // health of the worker
       },

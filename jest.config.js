@@ -9,8 +9,8 @@ module.exports = {
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
   },
   transformIgnorePatterns: [
-    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
-    '^.+\\.module\\.(css|sass|scss)$',
+    String.raw`[/\\]node_modules[/\\].+\.(js|jsx)$`,
+    String.raw`^.+\.module\.(css|sass|scss)$`,
   ],
   testMatch: [
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',

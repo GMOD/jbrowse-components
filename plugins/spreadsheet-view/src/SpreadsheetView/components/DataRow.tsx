@@ -9,8 +9,9 @@ import { makeStyles } from 'tss-react/mui'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
-import RowStateModel from '../models/Row'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type RowStateModel from '../models/Row'
+
 import CellData from './CellData'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
@@ -71,7 +72,7 @@ const DataRow = observer(function ({
   const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
   let rowClass = ''
   if (rowModel.isSelected) {
-    rowClass += `${classes.dataRowSelected}`
+    rowClass += classes.dataRowSelected
   }
 
   function labelClick(evt: React.MouseEvent) {

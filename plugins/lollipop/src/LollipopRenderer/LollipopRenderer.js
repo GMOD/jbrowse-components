@@ -18,7 +18,7 @@ class FloatingLayoutSession extends LayoutSession {
   }
 }
 
-export default class extends BoxRendererType {
+export default class LollipopRenderer extends BoxRendererType {
   createSession(args) {
     return new FloatingLayoutSession(args)
   }

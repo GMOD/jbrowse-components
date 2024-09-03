@@ -67,7 +67,9 @@ const Header = observer(function ({ model }: { model: LCV }) {
       <TrackSelector model={model} />
 
       <IconButton
-        onClick={event => setMenuAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setMenuAnchorEl(event.currentTarget)
+        }}
         className={classes.iconButton}
       >
         <MoreVertIcon />
@@ -102,7 +104,9 @@ const Header = observer(function ({ model }: { model: LCV }) {
             setMenuAnchorEl(undefined)
           }}
           menuItems={model.headerMenuItems()}
-          onClose={() => setMenuAnchorEl(undefined)}
+          onClose={() => {
+            setMenuAnchorEl(undefined)
+          }}
         />
       ) : null}
     </div>

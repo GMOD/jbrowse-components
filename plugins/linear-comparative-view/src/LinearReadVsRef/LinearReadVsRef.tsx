@@ -54,7 +54,7 @@ export default function ReadVsRefDialog({
 }: {
   feature: Feature
   handleClose: () => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   track: any
 }) {
   const { classes } = useStyles()
@@ -75,7 +75,7 @@ export default function ReadVsRefDialog({
       try {
         if (preFeature.get('flags') & 2048) {
           const SA: string = getTag(preFeature, 'SA') || ''
-          const primaryAln = SA.split(';')[0]
+          const primaryAln = SA.split(';')[0]!
           const [saRef, saStart] = primaryAln.split(',')
           const { rpcManager } = getSession(track)
           const adapterConfig = getConf(track, 'adapter')
@@ -87,8 +87,8 @@ export default function ReadVsRefDialog({
             regions: [
               {
                 refName: saRef,
-                start: +saStart - 1,
-                end: +saStart,
+                start: +saStart! - 1,
+                end: +saStart!,
               },
             ],
           })) as Feature[]
@@ -160,12 +160,12 @@ export default function ReadVsRefDialog({
       // CIGAR which is the primary alignments. otherwise it is the primary
       // alignment just use seq.length if primary alignment
       const totalLength =
-        flags & 2048 ? getLength(suppAlns[0].CIGAR) : getLength(cigar)
+        flags & 2048 ? getLength(suppAlns[0]!.CIGAR) : getLength(cigar)
 
       const features = [feat, ...suppAlns] as ReducedFeature[]
 
       features.forEach((f, idx) => {
-        f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
+        f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
         f.syntenyId = idx
         f.mate.syntenyId = idx
         f.mate.uniqueId = `${f.uniqueId}_mate`
@@ -192,10 +192,10 @@ export default function ReadVsRefDialog({
       )
 
       session.addTemporaryAssembly?.({
-        name: `${readAssembly}`,
+        name: readAssembly,
         sequence: {
           type: 'ReferenceSequenceTrack',
-          name: `Read sequence`,
+          name: 'Read sequence',
           trackId: seqTrackId,
           assemblyNames: [readAssembly],
           adapter: {
@@ -336,7 +336,9 @@ export default function ReadVsRefDialog({
 
             <TextField
               value={windowSize}
-              onChange={event => setWindowSize(event.target.value)}
+              onChange={event => {
+                setWindowSize(event.target.value)
+              }}
               label="Set window size"
             />
           </div>

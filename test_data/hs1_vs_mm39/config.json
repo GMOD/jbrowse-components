@@ -1,0 +1,130 @@
+{
+  "assemblies": [
+    {
+      "name": "hs1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
+          },
+          "chromSizesLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chrom.sizes.txt"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "mm39",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm39-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit"
+          },
+          "chromSizesLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.chrom.sizes"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "liftoff_genes",
+      "name": "liftOff genes",
+      "assemblyNames": ["hs1"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "GtfAdapter",
+        "gtfLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/genes/catLiftOffGenesV1.gtf.gz",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "refgene",
+      "name": "refGene",
+      "assemblyNames": ["mm39"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "GtfAdapter",
+        "gtfLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/genes/refGene.gtf.gz",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbiRefSeq",
+      "category": ["Annotation"],
+      "name": "ncbiRefSeq",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/bbi/ncbiRefSeq.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hs1ToMm39.over.chain",
+      "name": "hs1ToMm39.over.chain",
+      "adapter": {
+        "type": "ChainAdapter",
+        "chainLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/liftOver/hs1ToMm39.over.chain.gz",
+          "locationType": "UriLocation"
+        },
+        "targetAssembly": "hs1",
+        "queryAssembly": "mm39"
+      },
+      "assemblyNames": ["hs1", "mm39"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hs1ToMm39.over.chain.pif",
+      "name": "hs1ToMm39.over.chain.pif",
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.ppaf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.ppaf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["mm39", "hs1"]
+      },
+      "assemblyNames": ["mm39", "hs1"]
+    }
+  ]
+}

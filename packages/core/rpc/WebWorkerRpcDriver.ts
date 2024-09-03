@@ -1,5 +1,5 @@
-import Rpc from 'librpc-web-mod'
 import { deserializeError } from 'serialize-error'
+import Rpc from 'librpc-web-mod'
 
 // locals
 import { nanoid } from '../util/nanoid'
@@ -11,19 +11,19 @@ interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
 }
 
 interface Options {
-  statusCallback?: (arg0: string) => void
+  statusCallback?: (arg0: unknown) => void
   rpcDriverClassName: string
 }
 
 class WebWorkerHandle extends Rpc.Client {
   destroy(): void {
-    this.workers[0].terminate()
+    this.workers[0]!.terminate()
   }
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${nanoid()}`
-    const listener = (message: string) => {
+    const listener = (message: unknown) => {
       statusCallback?.(message)
     }
     this.on(channel, listener)
@@ -79,11 +79,11 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
         switch (e.data.message) {
           case 'ready': {
             resolve(worker)
-            worker.workers[0].removeEventListener('message', listener)
+            worker.workers[0]!.removeEventListener('message', listener)
             break
           }
           case 'readyForConfig': {
-            worker.workers[0].postMessage({
+            worker.workers[0]!.postMessage({
               message: 'config',
               config: this.workerBootConfiguration,
             })
@@ -96,7 +96,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
           // No default
         }
       }
-      worker.workers[0].addEventListener('message', listener)
+      worker.workers[0]!.addEventListener('message', listener)
     })
   }
 }

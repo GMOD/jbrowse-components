@@ -29,15 +29,22 @@ export function isUMDPluginDefinition(
   def: PluginDefinition,
 ): def is UMDPluginDefinition | LegacyUMDPluginDefinition {
   return (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     ((def as UMDUrlPluginDefinition).umdUrl !== undefined ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (def as LegacyUMDPluginDefinition).url !== undefined ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (def as UMDLocPluginDefinition).umdLoc !== undefined) &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (def as LegacyUMDPluginDefinition | UMDPluginDefinition).name !== undefined
   )
 }
 
 export interface ESMLocPluginDefinition {
-  esmLoc: { uri: string; baseUri?: string }
+  esmLoc: {
+    uri: string
+    baseUri?: string
+  }
 }
 export interface ESMUrlPluginDefinition {
   esmUrl: string
@@ -51,7 +58,9 @@ export function isESMPluginDefinition(
   def: PluginDefinition,
 ): def is ESMPluginDefinition {
   return (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (def as ESMUrlPluginDefinition).esmUrl !== undefined ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (def as ESMLocPluginDefinition).esmLoc !== undefined
   )
 }
@@ -103,16 +112,17 @@ async function loadScript(scriptUrl: string) {
 export function isCJSPluginDefinition(
   def: PluginDefinition,
 ): def is CJSPluginDefinition {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (def as CJSPluginDefinition).cjsUrl !== undefined
 }
 
-export interface PluginDefinition
-  extends Partial<UMDUrlPluginDefinition>,
-    Partial<UMDLocPluginDefinition>,
-    Partial<LegacyUMDPluginDefinition>,
-    Partial<ESMLocPluginDefinition>,
-    Partial<ESMUrlPluginDefinition>,
-    Partial<CJSPluginDefinition> {}
+export type PluginDefinition =
+  | UMDUrlPluginDefinition
+  | UMDLocPluginDefinition
+  | LegacyUMDPluginDefinition
+  | ESMLocPluginDefinition
+  | ESMUrlPluginDefinition
+  | CJSPluginDefinition
 
 export interface PluginRecord {
   plugin: PluginConstructor
@@ -130,7 +140,7 @@ export function pluginDescriptionString(pluginDefinition: PluginDefinition) {
   if (isESMPluginDefinition(pluginDefinition)) {
     return `ESM plugin ${
       (pluginDefinition as ESMUrlPluginDefinition).esmUrl ||
-      (pluginDefinition as ESMLocPluginDefinition).esmLoc?.uri
+      (pluginDefinition as ESMLocPluginDefinition).esmLoc.uri
     }`
   }
   if (isCJSPluginDefinition(pluginDefinition)) {
@@ -188,10 +198,11 @@ export default class PluginLoader {
     }
 
     if (!this.fetchESM) {
-      throw new Error(`No ESM fetcher installed`)
+      throw new Error('No ESM fetcher installed')
     }
     const plugin = await this.fetchESM(parsedUrl.href)
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!plugin) {
       throw new Error(`Could not load ESM plugin: ${parsedUrl}`)
     }
@@ -206,8 +217,8 @@ export default class PluginLoader {
       'url' in def
         ? new URL(def.url, baseUri)
         : 'umdUrl' in def
-        ? new URL(def.umdUrl, baseUri)
-        : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
+          ? new URL(def.umdUrl, baseUri)
+          : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
 
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
@@ -252,6 +263,7 @@ export default class PluginLoader {
     } else {
       throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!plugin.default) {
       throw new Error(
         `${pluginDescriptionString(
@@ -269,6 +281,7 @@ export default class PluginLoader {
         return [moduleName, module]
       }),
     )
+    return this
   }
 
   async load(baseUri?: string) {

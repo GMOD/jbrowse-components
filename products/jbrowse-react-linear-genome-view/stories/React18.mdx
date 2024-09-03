@@ -11,12 +11,13 @@ If you are using:
 - AND React 18+
 - AND the createRoot API
 
-then you will also want to pass a hydrateFn to createViewState that corresponds
-to react-dom/client::hydrateRoot. JBrowse will fallback to normal
-react-dom::hydrate if it is not specified, but you will likely get more
-consistent react 18 behavior by specifying this.
+then you will also want to pass a hydrateFn and createRootFn to createViewState
+that corresponds to react-dom/client::hydrateRoot.
 
-the reason for all this is that JBrowse uses the hydrate function, but cannot
+JBrowse will fallback to normal react-dom::hydrate if it is not specified, but
+you will likely get more consistent react 18 behavior by specifying this.
+
+The reason for all this is that JBrowse uses the hydrate function, but cannot
 internally try to import 'react-dom/client' without causing chaos for users who
 still use e.g. React v17
 

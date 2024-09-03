@@ -1,22 +1,18 @@
 import React from 'react'
 import pluginStyles from './styles.module.css'
-import {
-  Link,
-  Typography,
-  Card,
-  CardActions,
-  CardContent,
-  CardMedia,
-  Button,
-} from '@mui/material'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardMedia from '@mui/material/CardMedia'
+import CardContent from '@mui/material/CardContent'
+import Button from '@mui/material/Button'
 
-import {
-  Person,
-  AccountBalance,
-  GitHub,
-  Book,
-  Outbound,
-} from '@mui/icons-material'
+import Person from '@mui/icons-material/Person'
+import AccountBalance from '@mui/icons-material/AccountBalance'
+import GitHub from '@mui/icons-material/GitHub'
+import Book from '@mui/icons-material/Book'
+import Outbound from '@mui/icons-material/Outbound'
 
 const plugins = [
   {
@@ -116,11 +112,11 @@ export const PluginCard = ({ plugin }) => {
         <div className={pluginStyles.dataField}>
           <GitHub style={{ marginRight: '0.5em' }} />
           <Link href={plugin.location} target="_blank" rel="noopener">
-            <Typography>{plugin.repoName}</Typography>
+            {plugin.repoName}
           </Link>
           <Outbound className={pluginStyles.icon} />
           <Link href={plugin.resourceURL} target="_blank" rel="noopener">
-            <Typography>{plugin.name} website</Typography>
+            {plugin.name} website
           </Link>
         </div>
         <Typography variant="h6">Description:</Typography>

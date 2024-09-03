@@ -1,12 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
-// icons
-import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { DesktopRootModel } from '../rootModel'
 import {
   ConnectionManagementSessionMixin,
   DialogQueueSessionMixin,
@@ -16,7 +11,6 @@ import {
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import { DesktopSessionFactory } from './DesktopSession'
 import {
   AppFocusMixin,
   SessionAssembliesMixin,
@@ -24,6 +18,14 @@ import {
 } from '@jbrowse/app-core'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+
+// icons
+import { DesktopSessionTrackMenuMixin } from './TrackMenu'
+
+// locals
+import { DesktopRootModel } from '../rootModel'
+import { DesktopSessionFactory } from './DesktopSession'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -67,6 +69,7 @@ export default function sessionModelFactory({
       TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
       AppFocusMixin(),
+      SnackbarModel(),
     )
     .views(self => ({
       /**
@@ -87,7 +90,7 @@ export default function sessionModelFactory({
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        return self.root.renameCurrentSession(sessionName)
+        self.root.renameCurrentSession(sessionName)
       },
       /**
        * #action
@@ -138,7 +141,10 @@ export default function sessionModelFactory({
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
+        return {
+          theme: self.theme,
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
+        }
       },
     }))
 
@@ -147,14 +153,15 @@ export default function sessionModelFactory({
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+  return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snapshot) {
         // @ts-expect-error
-        const { connectionInstances, ...rest } = snapshot || {}
-        // connectionInstances schema changed from object to an array, so any
-        // old connectionInstances as object is in snapshot, filter it out
+        const { connectionInstances, ...rest } = snapshot
+        // connectionInstances schema changed from object to an array, so any old
+        // connectionInstances as object is in snapshot, filter it out
         // https://github.com/GMOD/jbrowse-components/issues/1903
         if (!Array.isArray(connectionInstances)) {
           return rest

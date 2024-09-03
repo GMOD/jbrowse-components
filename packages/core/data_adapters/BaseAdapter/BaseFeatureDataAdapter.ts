@@ -176,9 +176,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * Derived classes can override this to return alternative calculations for
    * featureDensity, or they can also return an object containing a byte size
    * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
-   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too much
-   * data' (e.g. CRAM and
-   * BAM may vary on what they think too much data is)
+   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too
+   * much data' (e.g. CRAM and BAM may vary on what they think too much data
+   * is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
     let lastTime = +Date.now()
@@ -240,9 +240,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * Derived classes can override this to return alternative calculations for
    * featureDensity, or they can also return an object containing a byte size
    * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
-   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too much
-   * data' (e.g. CRAM and
-   * BAM may vary on what they think too much data is)
+   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too
+   * much data' (e.g. CRAM and BAM may vary on what they think too much data
+   * is)
    */
   public async getMultiRegionFeatureDensityStats(
     regions: Region[],
@@ -251,6 +251,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       throw new Error('No regions supplied')
     }
-    return this.getRegionFeatureDensityStats(regions[0], opts)
+    return this.getRegionFeatureDensityStats(regions[0]!, opts)
   }
 }

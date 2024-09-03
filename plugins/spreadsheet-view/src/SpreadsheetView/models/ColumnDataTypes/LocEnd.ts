@@ -13,7 +13,7 @@ const LocEnd = MakeSpreadsheetColumnType('LocEnd', {
   categoryName: 'Location',
   displayName: 'End',
   compare(cellA: { text: string }, cellB: { text: string }) {
-    return parseFloat(cellA.text) - parseFloat(cellB.text)
+    return Number.parseFloat(cellA.text) - Number.parseFloat(cellB.text)
   },
   FilterModelType,
 })

@@ -19,7 +19,6 @@ function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
@@ -59,7 +58,8 @@ export default async function generateCoverageBins(
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
-    const mismatches = (feature.get('mismatches') as Mismatch[]) || []
+    const mismatches =
+      (feature.get('mismatches') as Mismatch[] | undefined) || []
 
     for (let j = fstart; j < fend + 1; j++) {
       const i = j - region.start
@@ -114,13 +114,7 @@ export default async function generateCoverageBins(
                 }
               }
               const bin = bins[epos]
-              if (bin) {
-                inc(bin, fstrand, 'cov', mod)
-              } else {
-                console.warn(
-                  'Undefined position in modifications snpcoverage encountered',
-                )
-              }
+              inc(bin, fstrand, 'cov', mod)
             }
           }
         }
@@ -172,7 +166,7 @@ export default async function generateCoverageBins(
           } else {
             if (bin0) {
               if (
-                !dels?.some(d =>
+                !dels.some(d =>
                   doesIntersect2(
                     j,
                     j + 1,
@@ -183,12 +177,12 @@ export default async function generateCoverageBins(
               ) {
                 inc(bin0, fstrand, 'cov', 'unmeth')
                 bin0.ref--
-                bin0[fstrand]
+                bin0[fstrand]--
               }
             }
             if (bin1) {
               if (
-                !dels?.some(d =>
+                !dels.some(d =>
                   doesIntersect2(
                     j + 1,
                     j + 2,
@@ -218,7 +212,7 @@ export default async function generateCoverageBins(
       for (let j = mstart; j < mstart + mlen; j++) {
         const epos = j - region.start
         if (epos >= 0 && epos < bins.length) {
-          const bin = bins[epos]
+          const bin = bins[epos]!
           const { base, type } = mismatch
           const interbase = isInterbase(type)
           if (!interbase) {

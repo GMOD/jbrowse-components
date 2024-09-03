@@ -26,25 +26,25 @@ The view types available by default with JBrowse 2 web include
 
 ## Feature comparison
 
-| Feature                                                                   | JBrowse 2                        | JBrowse 1          |
-| ------------------------------------------------------------------------- | -------------------------------- | ------------------ |
-| Status updates during track loading (e.g. Downloading BAM index...)       | :heavy_check_mark:               | :x:                |
-| Sort, color, and filter by BAM/CRAM tags and other advanced options       | :heavy_check_mark:               | :x:                |
-| Uses webworkers for parsing and rendering tracks                          | :heavy_check_mark:               | :x:                |
-| Supports interactive editing of configuration in the app                  | :heavy_check_mark:               | :x:                |
-| Can "flip" or reverse complement the linear view                          | :heavy_check_mark:               | :x:                |
-| Hi-C data rendering                                                       | :heavy_check_mark:               | :x:                |
-| Can display multiple chromosomes in a single view                         | :heavy_check_mark:               | :x:                |
-| Sort read pileup in alignments tracks                                     | :heavy_check_mark:               | :x:                |
-| Show soft clipping in alignments tracks                                   | :heavy_check_mark:               | :x:                |
-| Built-in tabular view for datasets                                        | :heavy_check_mark:               | :x:                |
-| Can open UCSC track hubs                                                  | :heavy_check_mark: [#footnote-1] | :x:                |
-| Add and remove plugins without running scripts                            | :heavy_check_mark:               | :x:                |
-| Non-administrator users can open tracks and share them with others        | :heavy_check_mark:               | :x:                |
-| Embeddable in JavaScript projects using NPM                               | :heavy_check_mark: [#footnote-2] | :x:                |
-| Embeddable directly in React applications                                 | :heavy_check_mark: [#footnote-2] | :x:                |
-| Ability to search by gene name/ID (added in 1.4.0)                        | :heavy_check_mark:               | :heavy_check_mark: |
-| URL query API e.g. specifying ?loc=chr1:1-100 in URL bar (added in 1.6.4) | :heavy_check_mark:               | :heavy_check_mark: |
+| Feature                                                             | JBrowse 2                        | JBrowse 1          |
+| ------------------------------------------------------------------- | -------------------------------- | ------------------ |
+| Status updates during track loading (e.g. Downloading BAM index...) | :heavy_check_mark:               | :x:                |
+| Sort, color, and filter by BAM/CRAM tags and other advanced options | :heavy_check_mark:               | :x:                |
+| Uses webworkers for parsing and rendering tracks                    | :heavy_check_mark:               | :x:                |
+| Supports interactive editing of configuration in the app            | :heavy_check_mark:               | :x:                |
+| Can "flip" or reverse complement the linear view                    | :heavy_check_mark:               | :x:                |
+| Hi-C data rendering                                                 | :heavy_check_mark:               | :x:                |
+| Can display multiple chromosomes in a single view                   | :heavy_check_mark:               | :x:                |
+| Sort read pileup in alignments tracks                               | :heavy_check_mark:               | :x:                |
+| Show soft clipping in alignments tracks                             | :heavy_check_mark:               | :x:                |
+| Built-in tabular view for datasets                                  | :heavy_check_mark:               | :x:                |
+| Can open UCSC track hubs                                            | :heavy_check_mark: [#footnote-1] | :x:                |
+| Add and remove plugins without running scripts                      | :heavy_check_mark:               | :x:                |
+| Non-administrator users can open tracks and share them with others  | :heavy_check_mark:               | :x:                |
+| Embeddable in JavaScript projects using NPM                         | :heavy_check_mark: [#footnote-2] | :x:                |
+| Embeddable directly in React applications                           | :heavy_check_mark: [#footnote-2] | :x:                |
+| Ability to search by gene name/ID (added in 1.4.0)                  | :heavy_check_mark:               | :heavy_check_mark: |
+| URL query API e.g. specifying ?loc=chr1:1-100 in URL bar            | :heavy_check_mark:               | :heavy_check_mark: |
 
 ## Supported data formats
 
@@ -86,13 +86,11 @@ decide to run an instance of JBrowse on one's hosting website instead. Detailed
 below are the core differences between embedded components and the full JBrowse
 app:
 
-| Embedded components [#footnote-3]                       | JBrowse Web                                                                            |
+| Embedded components [^3]                                | JBrowse Web                                                                            |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Only has access to one view type                        | Access to all view types loaded into the JBrowse session, including those from plugins |
-| Feature details open as a dialogue                      | Feature details open as a left/right oriented drawer                                   |
-| Only has access to plugin display types and adapters    | Access to all plugin extensions (displays, views, adapters, widgets, etc.)             |
+| Feature details and track selector open as a dialog     | Feature details open as a left/right oriented drawer                                   |
 | No built-in concept of local session, saving or loading | Save / import / export session options for any user                                    |
-| Only configured tracks available to view                | Various options to populate new tracks from local or remote sources                    |
 
 **Both can:**
 

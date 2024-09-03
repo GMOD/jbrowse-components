@@ -24,6 +24,7 @@ import {
   measureText,
   max,
   localStorageGetItem,
+  getTickDisplayStr,
 } from '@jbrowse/core/util'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -37,7 +38,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 // locals
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
-import { BaseBlock } from './blockTypes'
+import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -49,25 +50,32 @@ type Coord = [number, number]
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
 }
 
-const len = (a: string) => measureText(a.slice(0, 30))
-const pxWidthForBlocks = (blocks: BaseBlock[], hide: Set<string>) => {
+function stringLenPx(a: string) {
+  return measureText(a.slice(0, 30))
+}
+
+function pxWidthForBlocks(
+  blocks: BaseBlock[],
+  bpPerPx: number,
+  hide: Set<string>,
+) {
   return max([
-    ...blocks.filter(b => !hide.has(b.key)).map(b => len(b.refName)),
+    ...blocks.filter(b => !hide.has(b.key)).map(b => stringLenPx(b.refName)),
     ...blocks
       .filter(b => !hide.has(b.key))
-      .map(b => len(b.end.toLocaleString('en-us'))),
+      .map(b => stringLenPx(getTickDisplayStr(b.end, bpPerPx))),
   ])
 }
 
 /**
  * #stateModel DotplotView
  * #category view
- * extends  `BaseViewModel`
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pm: PluginManager) {
   return types
@@ -330,16 +338,6 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
        */
       zoomOutButton() {
         self.hview.zoomOut()
@@ -381,7 +379,7 @@ export default function stateModelFactory(pm: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${conf.type}`)
         }
-        const viewType = pm.getViewType(self.type)
+        const viewType = pm.getViewType(self.type)!
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
           viewType.displayTypes.find(type => type.name === d.type),
         )
@@ -406,7 +404,9 @@ export default function stateModelFactory(pm: PluginManager) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
       /**
@@ -416,7 +416,9 @@ export default function stateModelFactory(pm: PluginManager) {
         const hiddenCount = this.hideTrack(trackId)
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
       /**
        * #action
@@ -601,7 +603,7 @@ export default function stateModelFactory(pm: PluginManager) {
               transaction(() => {
                 self.assemblyNames.forEach((name, index) => {
                   const assembly = session.assemblyManager.get(name)
-                  const view = views[index]
+                  const view = views[index]!
                   view.setDisplayedRegions(assembly?.regions || [])
                 })
                 self.showAllRegions()
@@ -626,8 +628,8 @@ export default function stateModelFactory(pm: PluginManager) {
 
             const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
             const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
-            const by = pxWidthForBlocks(hblocks, hhide)
-            const bx = pxWidthForBlocks(vblocks, vhide)
+            const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
+            const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
 
             // these are set via autorun to avoid dependency cycle
             self.setBorderY(Math.max(by + padding, 50))
@@ -682,15 +684,21 @@ export default function stateModelFactory(pm: PluginManager) {
           },
           {
             label: 'Square view - same bp per pixel',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Rectangular view - same total bp',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Show all regions',
-            onClick: () => self.showAllRegions(),
+            onClick: () => {
+              self.showAllRegions()
+            },
           },
           {
             label: 'Export SVG',
@@ -716,7 +724,7 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
-      get error() {
+      get error(): unknown {
         return self.volatileError || self.assemblyErrors
       },
     }))

@@ -36,7 +36,9 @@ export default class AlignmentsPlugin extends Plugin {
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
-    ].map(f => f(pluginManager))
+    ].map(f => {
+      f(pluginManager)
+    })
   }
 }
 

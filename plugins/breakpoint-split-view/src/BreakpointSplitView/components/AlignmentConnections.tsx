@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { useTheme } from '@mui/material'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getStrokeProps } from '@jbrowse/core/util'
 
 // locals
 import {
@@ -13,7 +13,7 @@ import {
 import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
 import { BreakpointViewModel } from '../model'
 
-const [LEFT, , RIGHT] = [0, 1, 2, 3]
+const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 
 const AlignmentConnections = observer(function ({
   model,
@@ -31,11 +31,10 @@ const AlignmentConnections = observer(function ({
   const session = getSession(model)
   const snap = getSnapshot(model)
   const { assemblyManager } = session
-  const assembly = assemblyManager.get(views[0].assemblyNames[0])
+  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
-
   const layoutMatches = useMemo(() => {
     const layoutMatches = model.getMatchedFeaturesInLayout(
       trackId,
@@ -59,14 +58,10 @@ const AlignmentConnections = observer(function ({
     yOffset = rect.top
   }
 
-  if (!assembly) {
-    return null
-  }
-
-  return (
+  return assembly ? (
     <g
-      stroke={theme.palette.text.disabled}
       fill="none"
+      {...getStrokeProps(theme.palette.text.disabled)}
       data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
     >
       {layoutMatches.map(chunk => {
@@ -74,8 +69,8 @@ const AlignmentConnections = observer(function ({
         // we follow a path in the list of chunks, not from top to bottom, just in series
         // following x1,y1 -> x2,y2
         for (let i = 0; i < chunk.length - 1; i++) {
-          const { layout: c1, feature: f1, level: level1 } = chunk[i]
-          const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
+          const { layout: c1, feature: f1, level: level1 } = chunk[i]!
+          const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
 
           if (!c1 || !c2) {
             console.warn('received null layout for a overlay feature')
@@ -98,10 +93,10 @@ const AlignmentConnections = observer(function ({
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn1 = s2 === -1
           const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
-          const x1 = getPxFromCoordinate(views[level1], f1ref, p1)
-          const x2 = getPxFromCoordinate(views[level2], f2ref, p2)
-          const reversed1 = views[level1].pxToBp(x1).reversed
-          const reversed2 = views[level2].pxToBp(x2).reversed
+          const x1 = getPxFromCoordinate(views[level1]!, f1ref, p1)
+          const x2 = getPxFromCoordinate(views[level2]!, f2ref, p2)
+          const reversed1 = views[level1]!.pxToBp(x1).reversed
+          const reversed2 = views[level2]!.pxToBp(x2).reversed
           const tracks = views.map(v => v.getTrack(trackId))
           const y1 =
             yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
@@ -152,15 +147,19 @@ const AlignmentConnections = observer(function ({
                 )
                 session.showWidget?.(featureWidget)
               }}
-              onMouseOver={() => setMouseoverElt(id)}
-              onMouseOut={() => setMouseoverElt(undefined)}
+              onMouseOver={() => {
+                setMouseoverElt(id)
+              }}
+              onMouseOut={() => {
+                setMouseoverElt(undefined)
+              }}
             />,
           )
         }
         return ret
       })}
     </g>
-  )
+  ) : null
 })
 
 export default AlignmentConnections

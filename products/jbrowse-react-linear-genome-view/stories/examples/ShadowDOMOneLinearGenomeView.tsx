@@ -1,21 +1,22 @@
-/* eslint-disable no-console */
 // @ts-nocheck
-import React, { Fragment, useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { CacheProvider } from '@emotion/react'
-import createCache from '@emotion/cache'
+import createCache, { EmotionCache } from '@emotion/cache'
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 import r2wc from '@r2wc/react-to-web-component'
 
+type ViewState = ReturnType<typeof createViewState>
+
 const ShadowComponent = () => {
-  const node = useRef(null)
+  const node = useRef<HTMLDivElement>(null)
   const nodeForPin = useRef(null)
-  const [rootNode, setRootNode] = useState(null)
-  const [cacheNode, setCacheNode] = useState(null)
-  const [config, setConfig] = useState(null)
+  const [rootNode, setRootNode] = useState<ShadowRoot>()
+  const [cacheNode, setCacheNode] = useState<EmotionCache>()
+  const [config, setConfig] = useState<ViewState>()
   useEffect(() => {
     if (!node.current) {
       return
@@ -38,10 +39,6 @@ const ShadowComponent = () => {
         assembly: assembly,
         tracks: tracks,
         location: 'ctgA:1105..1221',
-        onChange: patch => {
-          console.log('patch', patch)
-        },
-
         configuration: {
           theme: {
             palette: {
@@ -87,18 +84,16 @@ const ShadowComponent = () => {
     )
   }, [])
   return (
-    <Fragment>
-      <div ref={node}>
-        {rootNode &&
-          createPortal(
-            <CacheProvider value={cacheNode}>
-              <JBrowseLinearGenomeView viewState={config} />
-              <div ref={nodeForPin} />
-            </CacheProvider>,
-            rootNode,
-          )}
-      </div>
-    </Fragment>
+    <div ref={node}>
+      {rootNode &&
+        createPortal(
+          <CacheProvider value={cacheNode}>
+            <JBrowseLinearGenomeView viewState={config} />
+            <div ref={nodeForPin} />
+          </CacheProvider>,
+          rootNode,
+        )}
+    </div>
   )
 }
 
@@ -111,11 +106,11 @@ export const ShadowDOMOneLinearGenomeView = () => {
     customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
   }
   return (
-    <Fragment>
-      <jbrowse-linear-view></jbrowse-linear-view>
+    <div>
+      <jbrowse-linear-view />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/ShadowDOMOneLinearGenomeView.tsx">
         Source code
       </a>
-    </Fragment>
+    </div>
   )
 }

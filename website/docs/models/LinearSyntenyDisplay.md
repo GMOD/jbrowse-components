@@ -12,7 +12,9 @@ info
 
 [plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts)
 
-extends `LinearComparativeDisplay` model
+extends
+
+- [LinearComparativeDisplay](../linearcomparativedisplay)
 
 ### LinearSyntenyDisplay - Properties
 

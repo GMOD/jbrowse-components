@@ -21,9 +21,9 @@ const StringArrayEditor = observer(function ({
   slot: {
     name: string
     value: string[]
-    setAtIndex: Function
-    removeAtIndex: Function
-    add: Function
+    setAtIndex: (arg: number, arg2: string) => void
+    removeAtIndex: (arg: number) => void
+    add: (arg: string) => void
     description: string
   }
 }) {
@@ -34,14 +34,20 @@ const StringArrayEditor = observer(function ({
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
       <List disablePadding>
         {slot.value.map((val, idx) => (
-          <ListItem key={idx} disableGutters>
+          <ListItem key={`${JSON.stringify(val)}-${idx}`} disableGutters>
             <TextField
               value={val}
-              onChange={evt => slot.setAtIndex(idx, evt.target.value)}
+              onChange={evt => {
+                slot.setAtIndex(idx, evt.target.value)
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => slot.removeAtIndex(idx)}>
+                    <IconButton
+                      onClick={() => {
+                        slot.removeAtIndex(idx)
+                      }}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </InputAdornment>
@@ -56,7 +62,9 @@ const StringArrayEditor = observer(function ({
             <TextField
               value={value}
               placeholder="add new"
-              onChange={event => setValue(event.target.value)}
+              onChange={event => {
+                setValue(event.target.value)
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -97,7 +105,9 @@ const StringArrayEditor = observer(function ({
           variant="contained"
           style={{ margin: 4 }}
           disabled={addNew}
-          onClick={() => setAddNew(true)}
+          onClick={() => {
+            setAddNew(true)
+          }}
         >
           Add item
         </Button>

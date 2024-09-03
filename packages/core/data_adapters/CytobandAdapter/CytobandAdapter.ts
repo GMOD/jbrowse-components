@@ -1,13 +1,9 @@
 import { unzip } from '@gmod/bgzf-filehandle'
 
 // locals
-import { SimpleFeature } from '../../util'
+import { isGzip, SimpleFeature } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
-
-export function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
 
 export default class CytobandAdapter extends BaseAdapter {
   async getData() {
@@ -26,11 +22,11 @@ export default class CytobandAdapter extends BaseAdapter {
         const [refName, start, end, name, type] = line.split('\t')
         return new SimpleFeature({
           uniqueId: `${i}`,
-          refName,
-          start: +start,
-          end: +end,
-          name,
-          type,
+          refName: refName!,
+          start: +start!,
+          end: +end!,
+          name: name!,
+          type: type!,
         })
       })
   }

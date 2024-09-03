@@ -5,7 +5,7 @@ export interface FeatureLoc {
   end: number
   strand: Strand
   seq_name: string
-  child_features: FeatureLoc[][]
+  child_features?: FeatureLoc[][]
   data: unknown
   derived_features: unknown
   attributes: Record<string, unknown[]>
@@ -18,10 +18,10 @@ export function featureData(data: FeatureLoc) {
   f.phase = Number(data.frame)
   f.refName = data.seq_name
   if (data.score === null) {
-    delete f.score
+    f.score = undefined
   }
   if (data.frame === null) {
-    delete f.score
+    f.score = undefined
   }
   const defaultFields = new Set([
     'start',
@@ -40,12 +40,12 @@ export function featureData(data: FeatureLoc) {
       // reproduces behavior of NCList
       b += '2'
     }
-    if (data.attributes[a] !== null) {
+    if (data.attributes[a]) {
       let attr = data.attributes[a] as string[] | string
       if (Array.isArray(attr) && attr.length === 1) {
         // gtf uses double quotes for text values in the attributes column,
         // remove them
-        attr = `${attr[0]}`.replaceAll(/^"|"$/g, '')
+        attr = attr[0]!.replaceAll(/^"|"$/g, '')
       }
       f[b] = attr
     }
@@ -60,15 +60,14 @@ export function featureData(data: FeatureLoc) {
     )
   }
 
-  delete f.child_features
-  delete f.data
-  delete f.derived_features
-  // eslint-disable-next-line no-underscore-dangle
-  delete f._linehash
-  delete f.attributes
-  delete f.seq_name
-  delete f.featureType
-  delete f.frame
+  f.child_features = undefined
+  f.data = undefined
+  f.derived_features = undefined
+  f._linehash = undefined
+  f.attributes = undefined
+  f.seq_name = undefined
+  f.featureType = undefined
+  f.frame = undefined
 
   if (f.transcript_id) {
     f.name = f.transcript_id

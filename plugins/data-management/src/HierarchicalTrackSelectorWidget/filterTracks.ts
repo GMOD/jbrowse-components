@@ -27,7 +27,9 @@ export function filterTracks(
     .filter(notEmpty)
   return tracks
     .filter(c => {
-      const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
+      const trackAssemblyNames = readConfObject(c, 'assemblyNames') as
+        | string[]
+        | undefined
       const trackAssemblies = trackAssemblyNames
         ?.map(name => assemblyManager.get(name))
         .filter(notEmpty)
@@ -36,7 +38,7 @@ export function filterTracks(
         : hasAllOverlap(trackAssemblies, trackListAssemblies)
     })
     .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(view.type)
+      const { displayTypes } = pluginManager.getViewType(view.type)!
       const compatDisplays = displayTypes.map(d => d.name)
       const trackDisplays = c.displays.map((d: { type: string }) => d.type)
       return hasAnyOverlap(compatDisplays, trackDisplays)

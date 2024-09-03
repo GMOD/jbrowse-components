@@ -27,21 +27,20 @@ const ModalWidget = observer(function ({
   const { ReactComponent, HeadingComponent, heading } =
     pluginManager.getWidgetType(visibleWidget.type)
 
-  const Component = visibleWidget
-    ? (pluginManager.evaluateExtensionPoint(
-        'Core-replaceWidget',
-        ReactComponent,
-        {
-          session,
-          model: visibleWidget,
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as React.FC<any>)
-    : null
+  const Component = pluginManager.evaluateExtensionPoint(
+    'Core-replaceWidget',
+    ReactComponent,
+    {
+      session,
+      model: visibleWidget,
+    },
+  ) as React.FC<any>
   return (
     <Dialog
       open
-      onClose={() => session.hideAllWidgets()}
+      onClose={() => {
+        session.hideAllWidgets()
+      }}
       maxWidth="xl"
       header={
         <AppBar position="static">
@@ -55,20 +54,18 @@ const ModalWidget = observer(function ({
         </AppBar>
       }
     >
-      {Component ? (
-        <Suspense fallback={<div>Loading...</div>}>
-          <Paper className={classes.paper}>
-            <Component
-              model={visibleWidget}
-              session={session}
-              overrideDimensions={{
-                height: (window.innerHeight * 5) / 8,
-                width: 800,
-              }}
-            />
-          </Paper>
-        </Suspense>
-      ) : null}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Paper className={classes.paper}>
+          <Component
+            model={visibleWidget}
+            session={session}
+            overrideDimensions={{
+              height: (window.innerHeight * 5) / 8,
+              width: 800,
+            }}
+          />
+        </Paper>
+      </Suspense>
     </Dialog>
   )
 })

@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Create a bookmark using the click and drag rubberband 1`] = `
+[
+  {
+    "assemblyName": "volvox",
+    "end": 113,
+    "highlight": "rgba(247, 129, 192, 0.35)",
+    "label": "",
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 105,
+  },
+]
+`;
+
+exports[`Create a bookmark using the hotkey to bookmark the current region 1`] = `
+[
+  {
+    "assemblyName": "volvox",
+    "end": 140,
+    "highlight": "rgba(247, 129, 192, 0.35)",
+    "label": "",
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 100,
+  },
+]
+`;
+
+exports[`Create a bookmark using the menu button to bookmark the current region 1`] = `
+[
+  {
+    "assemblyName": "volvox",
+    "end": 140,
+    "highlight": "rgba(247, 129, 192, 0.35)",
+    "label": "",
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 100,
+  },
+]
+`;

@@ -1,7 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config FormatDetails
- * generally exists on the config.json or root config as configuration.formatDetails
+ * generally exists on the tracks in the config.json or as a 'session' config as
+ * configuration.formatDetails
  */
 export function FormatDetailsConfigSchemaFactory() {
   return ConfigurationSchema('FormatDetails', {
@@ -29,7 +30,16 @@ export function FormatDetailsConfigSchemaFactory() {
     depth: {
       type: 'number',
       defaultValue: 2,
-      description: 'depth to iterate on subfeatures',
+      description:
+        'depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures)',
+    },
+    /**
+     * #slot configuration.formatDetails.maxDepth
+     */
+    maxDepth: {
+      type: 'number',
+      defaultValue: 10000,
+      description: 'hide subfeatures greater than a certain depth',
     },
   })
 }

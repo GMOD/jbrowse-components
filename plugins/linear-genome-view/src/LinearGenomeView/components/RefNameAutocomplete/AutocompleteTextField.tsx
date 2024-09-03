@@ -23,31 +23,36 @@ export default function AutocompleteTextField({
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { helperText, InputProps = {} } = TextFieldProps
   return (
     <TextField
-      onBlur={() =>
+      onBlur={() => {
         // this is used to restore a refName or the non-user-typed input
         // to the box on blurring
         setInputValue(inputBoxVal)
-      }
+      }}
       {...params}
       {...TextFieldProps}
       size="small"
       helperText={helperText}
-      InputProps={{
-        ...params.InputProps,
-        ...InputProps,
+      slotProps={{
+        input: {
+          ...params.InputProps,
+          ...InputProps,
 
-        endAdornment: (
-          <EndAdornment
-            showHelp={showHelp}
-            endAdornment={params.InputProps.endAdornment}
-          />
-        ),
+          endAdornment: (
+            <EndAdornment
+              showHelp={showHelp}
+              endAdornment={params.InputProps.endAdornment}
+            />
+          ),
+        },
       }}
       placeholder="Search for location"
-      onChange={e => setCurrentSearch(e.target.value)}
+      onChange={e => {
+        setCurrentSearch(e.target.value)
+      }}
     />
   )
 }

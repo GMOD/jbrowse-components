@@ -14,13 +14,13 @@ info
 
 composed of
 
-- BaseSessionModel
-- DrawerWidgetSessionMixin
-- ConnectionManagementSessionMixin
-- DialogQueueSessionMixin
-- TracksManagerSessionMixin
-- ReferenceManagementSessionMixin
-- SnackbarModel
+- [BaseSessionModel](../basesessionmodel)
+- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+- [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+- [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+- [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+- [SnackbarModel](../snackbarmodel)
 
 ### JBrowseReactCircularGenomeViewSessionModel - Properties
 
@@ -85,6 +85,7 @@ any[]
 // type signature
 renderProps: () => {
   theme: any
+  highResolutionScaling: any
 }
 ```
 

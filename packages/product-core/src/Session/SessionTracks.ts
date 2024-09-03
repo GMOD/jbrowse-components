@@ -29,7 +29,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * #getter
        */
       get tracks(): AnyConfigurationModel[] {
-        return self.jbrowse.tracks
+        return [...self.sessionTracks, ...self.jbrowse.tracks]
       },
     }))
     .actions(self => {
@@ -45,6 +45,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (self.adminMode) {
             return superAddTrackConf(trackConf)
           }
+
           const { trackId, type } = trackConf as {
             type: string
             trackId: string

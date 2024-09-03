@@ -1,7 +1,7 @@
 import { types, cast, Instance } from 'mobx-state-tree'
-import { clamp } from './index'
+import { clamp, sum } from './index'
 import { Feature } from './simpleFeature'
-import { Region, ElementId } from './types/mst'
+import { ElementId } from './types/mst'
 import { Region as IRegion } from './types'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
@@ -23,7 +23,7 @@ const Base1DView = types
     /**
      * #property
      */
-    displayedRegions: types.array(Region),
+    displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
     /**
      * #property
      */
@@ -76,9 +76,7 @@ const Base1DView = types
      * #getter
      */
     get assemblyNames() {
-      return [
-        ...new Set(self.displayedRegions.map(region => region.assemblyName)),
-      ]
+      return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
     },
     /**
      * #getter
@@ -109,9 +107,7 @@ const Base1DView = types
      * #getter
      */
     get totalBp() {
-      return self.displayedRegions
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
+      return sum(self.displayedRegions.map(a => a.end - a.start))
     },
   }))
   .views(self => ({
@@ -133,9 +129,7 @@ const Base1DView = types
      * #getter
      */
     get currBp() {
-      return this.dynamicBlocks
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
+      return sum(this.dynamicBlocks.map(a => a.end - a.start))
     },
   }))
   .views(self => ({
@@ -200,7 +194,9 @@ const Base1DView = types
       const newBpPerPx = clamp(
         bpPerPx,
         'minBpPerPx' in self ? (self.minBpPerPx as number) : 0,
-        'maxBpPerPx' in self ? (self.maxBpPerPx as number) : Infinity,
+        'maxBpPerPx' in self
+          ? (self.maxBpPerPx as number)
+          : Number.POSITIVE_INFINITY,
       )
 
       const oldBpPerPx = self.bpPerPx
@@ -265,8 +261,8 @@ const Base1DView = types
   .actions(self => ({
     /**
      * #action
-     * offset is the base-pair-offset in the displayed region, index is the index of the
-     * displayed region in the linear genome view
+     * offset is the base-pair-offset in the displayed region, index is the
+     * index of the displayed region in the linear genome view
      *
      * @param start - object as `{start, end, offset, index}`
      * @param end - object as `{start, end, offset, index}`

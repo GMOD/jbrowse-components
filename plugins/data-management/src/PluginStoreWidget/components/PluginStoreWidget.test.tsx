@@ -40,9 +40,9 @@ jest.spyOn(global, 'fetch').mockImplementation(async () => {
   return new Response(JSON.stringify(plugins))
 })
 
-function setup(snapshot?: {}, adminMode?: boolean) {
+function setup(sessionSnapshot?: Record<string, unknown>, adminMode?: boolean) {
   const user = userEvent.setup()
-  const session = createTestSession(snapshot, adminMode)
+  const session = createTestSession({ sessionSnapshot, adminMode })
   const model = session.addWidget(
     'PluginStoreWidget',
     'pluginStoreWidget',
@@ -69,7 +69,9 @@ test('Installs a session plugin', async () => {
     </ThemeProvider>,
   )
   await user.click(await findByText('Install'))
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(window.location.reload).toHaveBeenCalled()
+  })
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
 })
 
@@ -85,7 +87,9 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
   await user.type(await findByLabelText('Plugin name'), 'MsaView')
   await user.click(await findByText('Submit'))
 
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(window.location.reload).toHaveBeenCalled()
+  })
 
   expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
     {
@@ -105,5 +109,7 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
   )
   await user.click(await findByTestId('removePlugin-SVGPlugin'))
   await user.click(await findByText('Confirm'))
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(window.location.reload).toHaveBeenCalled()
+  })
 })

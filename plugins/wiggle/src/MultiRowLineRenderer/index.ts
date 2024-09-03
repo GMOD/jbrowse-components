@@ -3,7 +3,7 @@ import ReactComponent from '../MultiWiggleRendering'
 import MultiRowLineRenderer from './MultiRowLineRenderer'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function MultiRowLineRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new MultiRowLineRenderer({

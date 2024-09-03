@@ -8,6 +8,7 @@ import {
   FormControlLabel,
   MenuItem,
   TextField,
+  TextFieldProps,
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
@@ -23,11 +24,18 @@ function LoadingMessage() {
   )
 }
 
+function TextField2({ children, ...rest }: TextFieldProps) {
+  return (
+    <div>
+      <TextField {...rest}>{children}</TextField>
+    </div>
+  )
+}
 function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage('svg-' + key, val)
+  return useLocalStorage(`svg-${key}`, val)
 }
 
-export default function ExportSvgDlg({
+export default function ExportSvgDialog({
   model,
   handleClose,
 }: {
@@ -52,18 +60,21 @@ export default function ExportSvgDlg({
         ) : loading ? (
           <LoadingMessage />
         ) : null}
-        <TextField
+        <TextField2
           helperText="filename"
           value={filename}
-          onChange={event => setFilename(event.target.value)}
+          onChange={event => {
+            setFilename(event.target.value)
+          }}
         />
-        <br />
         {session.allThemes ? (
-          <TextField
+          <TextField2
             select
             label="Theme"
             value={themeName}
-            onChange={event => setThemeName(event.target.value)}
+            onChange={event => {
+              setThemeName(event.target.value)
+            }}
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
@@ -73,14 +84,16 @@ export default function ExportSvgDlg({
                 }
               </MenuItem>
             ))}
-          </TextField>
+          </TextField2>
         ) : null}
         {offscreenCanvas ? (
           <FormControlLabel
             control={
               <Checkbox
                 checked={rasterizeLayers}
-                onChange={() => setRasterizeLayers(val => !val)}
+                onChange={() => {
+                  setRasterizeLayers(val => !val)
+                }}
               />
             }
             label="Rasterize canvas based tracks? File may be much larger if this is turned off"
@@ -96,7 +109,9 @@ export default function ExportSvgDlg({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>
@@ -117,6 +132,7 @@ export default function ExportSvgDlg({
             } catch (e) {
               console.error(e)
               setError(e)
+            } finally {
               setLoading(false)
             }
           }}

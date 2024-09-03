@@ -1,9 +1,9 @@
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getRoot } from 'mobx-state-tree'
 
 // locals
 import { DotplotViewModel, ExportSvgOptions } from '../model'
@@ -17,8 +17,9 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => <>{children}</> } =
-    opts
+  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
+
+  const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
@@ -54,6 +55,7 @@ export async function renderToSvg(
             </defs>
             <g clipPath="url(#clip-ruler)">
               {displayResults.map(({ result }, i) => (
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <g key={i}>{result}</g>
               ))}
             </g>
@@ -64,5 +66,6 @@ export async function renderToSvg(
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }

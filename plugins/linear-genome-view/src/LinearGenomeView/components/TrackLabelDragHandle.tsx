@@ -40,7 +40,9 @@ function TrackLabelDragHandle({
           view.setDraggingTrackId(track.id)
         }
       }}
-      onDragEnd={() => view.setDraggingTrackId(undefined)}
+      onDragEnd={() => {
+        view.setDraggingTrackId(undefined)
+      }}
       data-testid={`dragHandle-${view.id}-${trackId}`}
     >
       <DragIcon className={classes.dragHandleIcon} fontSize="small" />

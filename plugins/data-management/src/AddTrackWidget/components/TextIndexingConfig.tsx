@@ -64,8 +64,9 @@ const TextIndexingConfig = observer(function ({
           <CardContent>
             <InputLabel>{section.label}</InputLabel>
             <List disablePadding>
-              {section.values.map((val: string, idx: number) => (
-                <ListItem key={idx} disableGutters>
+              {section.values.map((val, idx) => (
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
+                <ListItem key={`${val}-${idx}`} disableGutters>
                   <TextField
                     value={val}
                     InputProps={{
@@ -76,9 +77,11 @@ const TextIndexingConfig = observer(function ({
                               const newAttr = section.values.filter(
                                 (_, i) => i !== idx,
                               )
-                              index === 0
-                                ? setAttributes(newAttr)
-                                : setExclude(newAttr)
+                              if (index === 0) {
+                                setAttributes(newAttr)
+                              } else {
+                                setExclude(newAttr)
+                              }
                             }}
                           >
                             <DeleteIcon />
@@ -94,9 +97,11 @@ const TextIndexingConfig = observer(function ({
                   value={index === 0 ? value1 : value2}
                   placeholder="add new"
                   onChange={event => {
-                    index === 0
-                      ? setValue1(event.target.value)
-                      : setValue2(event.target.value)
+                    if (index === 0) {
+                      setValue1(event.target.value)
+                    } else {
+                      setValue2(event.target.value)
+                    }
                   }}
                   InputProps={{
                     endAdornment: (
@@ -112,7 +117,7 @@ const TextIndexingConfig = observer(function ({
                             }
                           }}
                           disabled={index === 0 ? value1 === '' : value2 === ''}
-                          data-testid={`stringArrayAdd-Feat`}
+                          data-testid="stringArrayAdd-Feat"
                         >
                           <AddIcon />
                         </IconButton>

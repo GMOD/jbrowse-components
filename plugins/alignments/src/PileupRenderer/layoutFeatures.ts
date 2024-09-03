@@ -12,14 +12,7 @@ export function layoutFeats(
 ) {
   const { layout, features, sortedBy, config, bpPerPx, showSoftClip, regions } =
     props
-  const [region] = regions
-  if (!layout) {
-    throw new Error(`layout required`)
-  }
-  if (!layout.addRect) {
-    throw new Error('invalid layout object')
-  }
-
+  const region = regions[0]!
   const featureMap =
     sortedBy?.type && region.start === sortedBy.pos
       ? sortFeature(features, sortedBy)

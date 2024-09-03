@@ -50,7 +50,7 @@ const ImportWizard = types
   })
   .volatile(() => ({
     fileTypes,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     fileSource: undefined as any,
     error: undefined as unknown,
     loading: false,
@@ -66,7 +66,6 @@ const ImportWizard = types
       )
     },
     get canCancel() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).readyToDisplay
     },
 
@@ -141,7 +140,7 @@ const ImportWizard = types
 
     cancelButton() {
       self.error = undefined
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       getParent<any>(self).setDisplayMode()
     },
 
@@ -160,9 +159,6 @@ const ImportWizard = types
       self.loading = true
       const type = self.fileType as keyof typeof fileTypeParsers
       const typeParser = await fileTypeParsers[type]()
-      if (!typeParser) {
-        throw new Error(`cannot open files of type '${self.fileType}'`)
-      }
 
       const { unzip } = await import('@gmod/bgzf-filehandle')
       const { pluginManager } = getEnv(self)
@@ -188,7 +184,7 @@ const ImportWizard = types
           .then(buffer => typeParser(buffer, self))
           .then(spreadsheet => {
             this.setLoaded()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             getParent<any>(self).displaySpreadsheet(spreadsheet)
           })
       } catch (e) {

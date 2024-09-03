@@ -4,7 +4,7 @@ import ReactComponent from '../MultiWiggleRendering'
 import MultiLineRenderer from './MultiLineRenderer'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function MultiLineRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new MultiLineRenderer({

@@ -28,8 +28,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     sequenceAdapter?: BaseFeatureDataAdapter
   }>
 
-  // derived classes may not use the same configuration so a custom
-  // configure method allows derived classes to override this behavior
+  // derived classes may not use the same configuration so a custom configure
+  // method allows derived classes to override this behavior
   protected async configurePre() {
     const bamLocation = this.getConf('bamLocation')
     const location = this.getConf(['index', 'location'])
@@ -40,11 +40,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       bamFilehandle: openLocation(bamLocation, pm),
       csiFilehandle: csi ? openLocation(location, pm) : undefined,
       baiFilehandle: !csi ? openLocation(location, pm) : undefined,
-
-      // chunkSizeLimit and fetchSizeLimit are more troublesome than
-      // helpful, and have given overly large values on the ultra long
-      // nanopore reads even with 500MB limits, so disabled with infinity
-      yieldThreadTime: Infinity,
+      yieldThreadTime: Number.POSITIVE_INFINITY,
     })
 
     const adapterConfig = this.getConf('sequenceAdapter')
@@ -54,14 +50,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         bam,
         sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
       }
-    } else {
-      return { bam }
     }
+    return { bam }
   }
 
   protected async configure() {
     if (!this.configureP) {
-      this.configureP = this.configurePre().catch(e => {
+      this.configureP = this.configurePre().catch((e: unknown) => {
         this.configureP = undefined
         throw e
       })
@@ -90,14 +85,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         samHeader
           ?.filter(l => l.tag === 'SQ')
           .forEach((sqLine, refId) => {
-            sqLine.data.forEach(item => {
-              if (item.tag === 'SN') {
-                // this is the ref name
-                const refName = item.value
-                nameToId[refName] = refId
-                idToName[refId] = refName
-              }
-            })
+            const SN = sqLine.data.find(item => item.tag === 'SN')
+            if (SN) {
+              // this is the ref name
+              const refName = SN.value
+              nameToId[refName] = refId
+              idToName[refId] = refName
+            }
           })
 
         return { idToName, nameToId }
@@ -108,7 +102,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -206,8 +200,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const v = record.get(tagFilter.tag)
-            if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+            const readVal = record.get(tagFilter.tag)
+            const filterVal = tagFilter.value
+            if (
+              filterVal === '*'
+                ? readVal !== undefined
+                : `${readVal}` !== `${filterVal}`
+            ) {
               continue
             }
           }
@@ -233,9 +232,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
-    } else {
-      return super.getMultiRegionFeatureDensityStats(regions, opts)
     }
+    return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
   freeResources(/* { region } */): void {}

@@ -25,7 +25,9 @@ const BooleanEditor = observer(function ({
         control={
           <Checkbox
             checked={slot.value}
-            onChange={evt => slot.set(evt.target.checked)}
+            onChange={evt => {
+              slot.set(evt.target.checked)
+            }}
           />
         }
       />

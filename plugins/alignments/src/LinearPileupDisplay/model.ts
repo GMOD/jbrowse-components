@@ -16,21 +16,27 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import SortIcon from '@mui/icons-material/Sort'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
+import ColorLensIcon from '@mui/icons-material/ColorLens'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { observable } from 'mobx'
 
-// async
-const SortByTagDlg = lazy(() => import('./components/SortByTag'))
-const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
+// lazies
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
+const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
+const ModificationsDialog = lazy(
+  () => import('./components/ColorByModificationsDialog'),
+)
 
 type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearPileupDisplay
  * #category display
- * extends `BaseLinearDisplay`
+ * extends
+ * - [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -149,6 +155,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           tag,
         }
       },
+      /**
+       * #action
+       * overrides base from SharedLinearPileupDisplay to make sortReady false
+       * since changing feature height destroys the sort-induced layout
+       */
+      setFeatureHeight(n?: number) {
+        self.sortReady = false
+        self.featureHeight = n
+      },
     }))
     .actions(self => {
       // resets the sort object and refresh whole display on reload
@@ -202,7 +217,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return readConfObject(self.rendererConfig, 'mismatchAlpha')
         },
         /**
-         * #getter
+         * #method
          */
         renderReady() {
           const view = getContainingView(self) as LGV
@@ -255,6 +270,75 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Color by...',
+              icon: ColorLensIcon,
+              subMenu: [
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'pairOrientation' })
+                  },
+                },
+                {
+                  label: 'Modifications or methylation',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      ModificationsDialog,
+                      { model: self, handleClose: doneCallback },
+                    ])
+                  },
+                },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
+                },
+                ...superColorSchemeSubMenuItems(),
+              ],
+            },
+
+            {
+              label: 'Sort by...',
+              icon: SortIcon,
+              disabled: self.showSoftClipping,
+              subMenu: [
+                ...['Start location', 'Read strand', 'Base pair'].map(
+                  option => ({
+                    label: option,
+                    onClick: () => {
+                      self.setSortedBy(option)
+                    },
+                  }),
+                ),
+                {
+                  label: 'Sort by tag...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SortByTagDialog,
+                      { model: self, handleClose },
+                    ])
+                  },
+                },
+                {
+                  label: 'Clear sort',
+                  onClick: () => {
+                    self.clearSelected()
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Group by...',
+              icon: WorkspacesIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  GroupByDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
               label: 'Show soft clipping',
               icon: VisibilityIcon,
               type: 'checkbox',
@@ -269,62 +353,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Sort by',
-              icon: SortIcon,
-              disabled: self.showSoftClipping,
-              subMenu: [
-                ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => ({
-                    label: option,
-                    onClick: () => self.setSortedBy(option),
-                  }),
-                ),
-                {
-                  label: 'Sort by tag...',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      SortByTagDlg,
-                      { model: self, handleClose },
-                    ])
-                  },
-                },
-                {
-                  label: 'Clear sort',
-                  onClick: () => self.clearSelected(),
-                },
-              ],
-            },
-            {
-              label: 'Color scheme',
-              subMenu: [
-                {
-                  label: 'Pair orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'pairOrientation' }),
-                },
-                {
-                  label: 'Modifications or methylation',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ModificationsDlg,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
-                },
-                ...superColorSchemeSubMenuItems(),
-              ],
-            },
-            {
               label: 'Fade mismatches by quality',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
-              onClick: () => self.toggleMismatchAlpha(),
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
             },
-          ]
+          ] as const
         },
       }
     })
@@ -395,12 +431,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const { staticBlocks } = getContainingView(self) as LGV
           if (colorBy?.type === 'modifications') {
             const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
+            const vals = await getUniqueModificationValues({
               self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
+              adapterConfig: adapter,
+              blocks: staticBlocks,
+            })
             self.updateModificationColorMap(vals)
           }
           self.setModificationsReady(true)

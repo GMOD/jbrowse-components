@@ -1,12 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { IconButton, Link, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { format } from 'timeago.js'
-
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
-import ResizeBar from '@jbrowse/core/ui/ResizeBar'
+import { formatDistance } from 'date-fns'
 
 // icons
 import EditIcon from '@mui/icons-material/Edit'
@@ -16,9 +13,6 @@ import { loadPluginManager, RecentSessionData } from './util'
 import { measureGridWidth } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
-  pointer: {
-    cursor: 'pointer',
-  },
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -56,8 +50,7 @@ export default function RecentSessionsList({
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
 }) {
-  const { classes, cx } = useStyles()
-  const { ref, scrollLeft } = useResizeBar()
+  const { classes } = useStyles()
 
   const now = Date.now()
   const oneDayLength = 24 * 60 * 60 * 1000
@@ -65,13 +58,14 @@ export default function RecentSessionsList({
     const { updated = 0 } = session
     const date = new Date(updated)
     const showDateTooltip = now - date.getTime() < oneDayLength
+
     return {
       id: session.path,
       name: session.name,
       rename: session.name,
       showDateTooltip,
       lastModified: showDateTooltip
-        ? format(updated)
+        ? formatDistance(date, now, { addSuffix: true })
         : date.toLocaleString('en-US'),
       updated: session.updated,
       path: session.path,
@@ -79,42 +73,29 @@ export default function RecentSessionsList({
   })
   const arr = ['name', 'path', 'lastModified']
 
-  const [widths, setWidths] = useState({
+  const widths = {
     rename: 40,
     ...Object.fromEntries(
       arr.map(e => [
         e,
-        measureGridWidth(
-          rows.map(r => r[e as keyof (typeof rows)[0]]),
-          { stripHTML: true },
-        ) + 20,
+        e === 'path'
+          ? 200
+          : measureGridWidth(
+              rows.map(r => r[e as keyof (typeof rows)[0]]),
+              { stripHTML: true },
+            ) + 20,
       ]),
     ),
-  } as Record<string, number | undefined>)
+  } as Record<string, number>
 
   return (
-    <div ref={ref} style={{ height: 400, width: '100%' }}>
-      <ResizeBar
-        checkbox
-        widths={Object.values(widths).map(f => f ?? 100)}
-        setWidths={newWidths =>
-          setWidths(
-            Object.fromEntries(
-              Object.entries(widths).map((entry, idx) => [
-                entry[0],
-                newWidths[idx],
-              ]),
-            ),
-          )
-        }
-        scrollLeft={scrollLeft}
-      />
+    <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
         disableRowSelectionOnClick
-        onRowSelectionModelChange={args =>
+        onRowSelectionModelChange={args => {
           setSelectedSessions(sessions.filter(s => args.includes(s.path)))
-        }
+        }}
         rows={rows}
         rowHeight={25}
         columnHeaderHeight={33}
@@ -151,8 +132,10 @@ export default function RecentSessionsList({
               const { value } = params
               return (
                 <Link
-                  className={cx(classes.pointer, classes.cell)}
-                  onClick={async () => {
+                  href="#"
+                  className={classes.cell}
+                  onClick={async event => {
+                    event.preventDefault()
                     try {
                       setPluginManager(await loadPluginManager(params.row.path))
                     } catch (e) {

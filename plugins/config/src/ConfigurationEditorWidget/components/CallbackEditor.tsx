@@ -83,7 +83,9 @@ const CallbackEditor = observer(function ({
           multiline
           className={classes.callbackEditor}
           value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-          onChange={event => setCode(event.target.value)}
+          onChange={event => {
+            setCode(event.target.value)
+          }}
           style={{ background: error ? '#fdd' : undefined }}
           InputProps={{
             classes: {

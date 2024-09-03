@@ -7,7 +7,6 @@ import { saveAs } from 'file-saver'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { Curves } from './components/Icons'
@@ -22,8 +21,7 @@ export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   scale?: number
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
   rulerHeight?: number
   textHeight?: number
@@ -36,7 +34,8 @@ export interface ExportSvgOptions {
 
 /**
  * #stateModel LinearSyntenyView
- * extends the `LinearComparativeView` base model
+ * extends
+ * - [LinearComparativeView](../linearcomparativeview)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -76,11 +75,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       showAllRegions() {
         transaction(() => {
-          self.views.forEach(view => view.showAllRegionsInAssembly())
+          self.views.forEach(view => {
+            view.showAllRegionsInAssembly()
+          })
         })
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       async exportSvg(opts: ExportSvgOptions) {
         const { renderToSvg } = await import(
           './svgcomponents/SVGLinearSyntenyView'
@@ -123,13 +127,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               description: 'Draws per-base CIGAR level alignments',
             },
             {
-              label: 'Link views',
-              type: 'checkbox',
-              checked: self.linkViews,
-              onClick: self.toggleLinkViews,
-              icon: LinkIcon,
-            },
-            {
               label: 'Use curved lines',
               type: 'checkbox',
               checked: self.drawCurves,
@@ -148,6 +145,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
           ]
         },
+        /**
+         * #method
+         */
         menuItems() {
           return [
             ...superMenuItems(),

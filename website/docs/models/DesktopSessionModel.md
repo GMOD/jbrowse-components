@@ -12,6 +12,8 @@ info
 
 [products/jbrowse-desktop/src/sessionModel/DesktopSession.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/DesktopSession.ts)
 
+extends [BaseSessionModel](../basesessionmodel)
+
 ### DesktopSessionModel - Properties
 
 #### property: margin

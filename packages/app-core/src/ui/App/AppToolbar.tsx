@@ -28,10 +28,14 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type AppSession = SessionWithDrawerWidgets & {
-  savedSessionNames: string[]
-  menus: { label: string; menuItems: JBMenuItem[] }[]
-  renameCurrentSession: (arg: string) => void
+  menus: {
+    label: string
+    menuItems: JBMenuItem[]
+  }[]
+  savedSessionNames?: string[]
   snackbarMessages: SnackbarMessage[]
+
+  renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
 }
 

@@ -16,7 +16,6 @@ export default class NCListFeature implements Feature {
   private uniqueId: string
 
   constructor(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ncFeature: any,
     parent?: Feature,
     id?: string,
@@ -41,11 +40,9 @@ export default class NCListFeature implements Feature {
     return jb1ToJb2[t] || t
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(attrName: string): any {
     const attr = this.ncFeature.get(this.jb2TagToJb1Tag(attrName))
     if (attr && attrName === 'subfeatures') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return attr.map((subfeature: any) => new NCListFeature(subfeature, this))
     }
     return attr
@@ -80,7 +77,9 @@ export default class NCListFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
+    // @ts-expect-error
     const data: SimpleFeatureSerialized = { uniqueId: this.id() }
+
     this.ncFeature.tags().forEach((tag: string) => {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)

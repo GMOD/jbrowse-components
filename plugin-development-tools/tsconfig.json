@@ -4,7 +4,6 @@
     "noEmit": false,
     "declaration": true,
     "outDir": "dist/",
-    // node 14 target: https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-14
     "lib": ["ES2020"],
     "module": "commonjs",
     "target": "ES2020"

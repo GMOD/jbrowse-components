@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ncbi config 1`] = `
+<svg
+  data-testid="svgfeatures"
+  height="122"
+  style="display: block;"
+  width="800.0241275715338"
+>
+  <g>
+    <line
+      data-testid="test-offset-272549-0"
+      stroke="#000000"
+      x1="705.4"
+      x2="1910.0234856667703"
+      y1="2.5"
+      y2="2.5"
+    />
+    <rect
+      data-testid="box-test-offset-272549-0_three_prime_UTR_0"
+      fill="#357089"
+      height="3.25"
+      stroke=""
+      width="90.71374496976537"
+      x="705.4"
+      y="0.875"
+    />
+    <rect
+      data-testid="box-test-offset-272549-0-1"
+      fill="goldenrod"
+      height="5"
+      stroke=""
+      width="8.142447399308901"
+      x="796.1137449697653"
+      y="0"
+    />
+    <rect
+      data-testid="box-test-offset-272549-0-2"
+      fill="goldenrod"
+      height="5"
+      stroke=""
+      width="177.52828977648142"
+      x="804.4855570845477"
+      y="0"
+    />
+    <rect
+      data-testid="box-test-offset-272549-0-3"
+      fill="goldenrod"
+      height="5"
+      stroke=""
+      width="27.867812930029057"
+      x="1085.4573335395733"
+      y="0"
+    />
+    <rect
+      data-testid="box-test-offset-272549-0-4"
+      fill="goldenrod"
+      height="5"
+      stroke=""
+      width="15.252753578987097"
+      x="1249.4531051031186"
+      y="0"
+    />
+    <rect
+      data-testid="box-test-offset-272549-0-5"
+      fill="goldenrod"
+      height="5"
+      stroke=""
+      width="30.276142442500703"
+      x="1879.7473432242696"
+      y="0"
+    />
+    <line
+      stroke="#000000"
+      x1="705.4"
+      x2="698.4"
+      y1="2.5"
+      y2="2.5"
+    />
+    <polygon
+      fill="#000000"
+      points="701.9,0,701.9,5,698.4,2.5"
+      stroke="#000000"
+    />
+    <text
+      fill="#000000"
+      font-size="12"
+      x="705.4"
+      y="17"
+    >
+      DACT2
+    </text>
+  </g>
+</svg>
+`;

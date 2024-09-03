@@ -6,12 +6,13 @@ import FromConfigRegionsAdapterF from './FromConfigRegionsAdapter'
 import FromConfigSequenceAdapterF from './FromConfigSequenceAdapter'
 import RefNameAliasAdapterF from './RefNameAliasAdapter'
 import ConfigurationEditorWidgetF from './ConfigurationEditorWidget'
+import NcbiSequenceReportAliasAdapterF from './NcbiSequenceReportAliasAdapter'
 
 const LazyConfigurationEditorComponent = lazy(
   () => import('./ConfigurationEditorWidget/components/ConfigurationEditor'),
 )
 
-export default class extends Plugin {
+export default class ConfigurationPlugin extends Plugin {
   name = 'ConfigurationPlugin'
 
   install(pluginManager: PluginManager) {
@@ -20,6 +21,7 @@ export default class extends Plugin {
     FromConfigSequenceAdapterF(pluginManager)
     RefNameAliasAdapterF(pluginManager)
     ConfigurationEditorWidgetF(pluginManager)
+    NcbiSequenceReportAliasAdapterF(pluginManager)
   }
 }
 

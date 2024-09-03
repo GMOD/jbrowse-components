@@ -163,9 +163,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         }
 
         const data = await response.json()
-        return processTokenResponse(data, token =>
-          this.storeRefreshToken(token),
-        )
+        return processTokenResponse(data, token => {
+          this.storeRefreshToken(token)
+        })
       },
       /**
        * #action
@@ -191,18 +191,20 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           throw new Error(
             await getResponseError({
               response,
-              statusText: processError(text, () => this.removeRefreshToken()),
+              statusText: processError(text, () => {
+                this.removeRefreshToken()
+              }),
             }),
           )
         }
         const data = await response.json()
-        return processTokenResponse(data, token =>
-          this.storeRefreshToken(token),
-        )
+        return processTokenResponse(data, token => {
+          this.storeRefreshToken(token)
+        })
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => void | undefined
+      let listener: (event: MessageEvent) => undefined
       let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
         /**
@@ -237,7 +239,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (
             event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            return this.deleteMessageChannel()
+            this.deleteMessageChannel()
+            return
           }
           const redirectUriWithInfo = event.data.redirectUri
           const fixedQueryString = redirectUriWithInfo.replace('#', '?')
@@ -247,15 +250,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (urlParams.has('access_token')) {
             const token = urlParams.get('access_token')
             if (!token) {
-              return reject(new Error('Error with token endpoint'))
+              reject(new Error('Error with token endpoint'))
+              return
             }
             self.storeToken(token)
-            return resolve(token)
+            resolve(token)
+            return
           }
           if (urlParams.has('code')) {
             const code = urlParams.get('code')
             if (!code) {
-              return reject(new Error('Error with authorization endpoint'))
+              reject(new Error('Error with authorization endpoint'))
+              return
             }
             try {
               const token = await self.exchangeAuthorizationForAccessToken(
@@ -263,18 +269,24 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 redirectUrl.origin + redirectUrl.pathname,
               )
               self.storeToken(token)
-              return resolve(token)
+              resolve(token)
+              return
             } catch (e) {
-              return e instanceof Error
-                ? reject(e)
-                : reject(new Error(String(e)))
+              if (e instanceof Error) {
+                reject(e)
+              } else {
+                reject(new Error(String(e)))
+              }
+              return
             }
           }
           if (redirectUriWithInfo.includes('access_denied')) {
-            return reject(new Error('OAuth flow was cancelled'))
+            reject(new Error('OAuth flow was cancelled'))
+            return
           }
           if (redirectUriWithInfo.includes('error')) {
-            return reject(new Error('OAuth flow error: ' + queryStringSearch))
+            reject(new Error(`OAuth flow error: ${queryStringSearch}`))
+            return
           }
           this.deleteMessageChannel()
         },
@@ -293,7 +305,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const data: OAuthData = {
             client_id: self.clientId,
             redirect_uri: redirectUri,
-            response_type: self.responseType || 'code',
+            response_type: self.responseType,
             token_access_type: 'offline',
           }
 
@@ -331,7 +343,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
-            window.open(url, eventName, `width=500,height=600,left=0,top=0`)
+            window.open(url, eventName, 'width=500,height=600,left=0,top=0')
           }
         },
         /**
@@ -404,9 +416,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       return {
         /**
          * #action
-         * Get a fetch method that will add any needed authentication headers to
-         * the request before sending it. If location is provided, it will be
-         * checked to see if it includes a token in it's pre-auth information.
+         * Get a fetch method that will add any needed authentication headers
+         * to the request before sending it. If location is provided, it will
+         * be checked to see if it includes a token in it's pre-auth
+         * information.
          *
          * @param loc - UriLocation of the resource
          * @returns A function that can be used to fetch

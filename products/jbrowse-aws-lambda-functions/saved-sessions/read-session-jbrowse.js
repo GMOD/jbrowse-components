@@ -36,7 +36,7 @@ exports.handler = async event => {
   if (!sessionObj) {
     return {
       statusCode: 404,
-      body: JSON.stringify({ message: `Session not found` }),
+      body: JSON.stringify({ message: 'Session not found' }),
     }
   }
 

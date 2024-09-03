@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-variants",
-  "version": "2.7.2",
+  "version": "2.14.0",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/variants",
+    "test": "cd ../..; jest --passWithNoTests plugins/variants",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -40,16 +40,15 @@
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/tabix": "^1.5.6",
     "@gmod/vcf": "^5.0.9",
-    "@mui/icons-material": "^5.0.2",
-    "@mui/x-data-grid": "^6.0.1",
+    "@mui/icons-material": "^6.0.0",
+    "@mui/x-data-grid": "^7.0.0",
     "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
-    "@jbrowse/plugin-alignments": "^2.0.0",
     "@jbrowse/plugin-circular-view": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

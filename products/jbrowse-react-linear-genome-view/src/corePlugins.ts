@@ -12,6 +12,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 import GCContent from '@jbrowse/plugin-gccontent'
 import Trix from '@jbrowse/plugin-trix'
+import Arc from '@jbrowse/plugin-arc'
 
 const corePlugins = [
   SVG,
@@ -28,6 +29,7 @@ const corePlugins = [
   Wiggle,
   GCContent,
   Trix,
+  Arc,
 ]
 
 export default corePlugins

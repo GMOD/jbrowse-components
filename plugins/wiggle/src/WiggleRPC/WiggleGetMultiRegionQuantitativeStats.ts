@@ -4,12 +4,10 @@ import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { Region, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionQuantitativeStats'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
@@ -45,7 +43,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
       sessionId: string
       headers?: Record<string, string>
@@ -62,12 +60,10 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getMultiRegionQuantitativeStats(
-        regions,
-        deserializedArgs,
-      )
-    }
-    throw new Error('Data adapter not found')
+    // @ts-expect-error
+    return dataAdapter.getMultiRegionQuantitativeStats(
+      regions,
+      deserializedArgs,
+    )
   }
 }

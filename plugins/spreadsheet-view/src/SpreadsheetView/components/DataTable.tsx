@@ -4,8 +4,8 @@ import { getParent, Instance } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
-import RowStateModel from '../models/Row'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type RowStateModel from '../models/Row'
 import RowMenu from './RowMenu'
 import DataRow from './DataRow'
 import DataTableHeader from './DataTableHeader'

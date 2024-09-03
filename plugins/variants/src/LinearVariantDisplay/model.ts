@@ -14,8 +14,10 @@ import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearVariantDisplay
- * extends `LinearBasicDisplay`
- * very similar to basic display, but provides custom widget on feature click
+ * similar to basic display, but provides custom widget on feature click
+ * extends
+ *
+ * - [LinearBasicDisplay](../linearbasicdisplay)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,

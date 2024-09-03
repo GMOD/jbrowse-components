@@ -12,8 +12,8 @@ import {
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
 import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import path from 'path'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Track = Record<string, any>
 
 interface TrackTextIndexing {
@@ -33,11 +33,7 @@ interface JobsEntry {
   statusMessage?: string
 }
 export interface TextJobsEntry extends JobsEntry {
-  name: string
   indexingParams: TrackTextIndexing
-  cancelCallback?: () => void
-  progressPct?: number
-  statusMessage?: string
 }
 
 export default function jobsModelFactory(_pluginManager: PluginManager) {
@@ -54,29 +50,22 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.rpcManager
       },
       get tracks() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.tracks
       },
       get sessionPath() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).sessionPath
       },
       get session() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).session
       },
       get aggregateTextSearchAdapters() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.aggregateTextSearchAdapters
       },
       get location() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const path = getParent<any>(self).sessionPath
-        return path.slice(0, Math.max(0, path.lastIndexOf('/')))
+        return path.dirname(getParent<any>(self).sessionPath)
       },
     }))
     .actions(self => ({
@@ -164,9 +153,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          conf => {
-            return JSON.parse(JSON.stringify(getSnapshot(conf)))
-          },
+          // @ts-expect-error
+          c => JSON.parse(JSON.stringify(getSnapshot(c))),
         )
         try {
           this.setRunning(true)
@@ -219,21 +207,24 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           }
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
-          current && this.addFinishedJob(current)
-          if (isSessionModelWithWidgets(session)) {
-            const jobStatusWidget = self.getJobStatusWidget()
-            session.showWidget(jobStatusWidget)
-            const { name, statusMessage, progressPct, cancelCallback } = current
-            jobStatusWidget.addFinishedJob({
-              name,
-              statusMessage: statusMessage || 'done',
-              progressPct: progressPct || 100,
-              cancelCallback,
-            })
+          if (current) {
+            this.addFinishedJob(current)
+            if (isSessionModelWithWidgets(session)) {
+              const jobStatusWidget = self.getJobStatusWidget()
+              session.showWidget(jobStatusWidget)
+              const { name, statusMessage, progressPct, cancelCallback } =
+                current
+              jobStatusWidget.addFinishedJob({
+                name,
+                statusMessage: statusMessage || 'done',
+                progressPct: progressPct || 100,
+                cancelCallback,
+              })
+            }
           }
         } catch (e) {
           if (isAbortException(e)) {
-            self.session?.notify(`Cancelled job`, 'info')
+            self.session?.notify('Cancelled job', 'info')
           } else {
             self.session?.notify(
               `An error occurred while indexing: ${e}`,
@@ -256,7 +247,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       async runJob() {
         const { session } = self
         if (self.jobsQueue.length) {
-          const firstIndexingJob = self.jobsQueue[0]
+          const firstIndexingJob = self.jobsQueue[0]!
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)
@@ -283,7 +274,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           t => trackId === t.trackId,
         )
         // name of index
-        const id = trackId + '-index'
+        const id = `${trackId}-index`
         const adapterConf = createTextSearchConf(
           id,
           [trackId],
@@ -303,9 +294,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       },
       addAggregateTextSearchConf(trackIds: string[], asm: string) {
         // name of index
-        const id = asm + '-index'
+        const id = `${asm}-index`
         const foundIdx = self.aggregateTextSearchAdapters.findIndex(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (x: any) => x.textSearchAdapterId === id,
         )
         const trixConf = createTextSearchConf(
@@ -325,7 +315,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           self,
           autorun(
             async () => {
-              if (self.jobsQueue?.length > 0 && self.running === false) {
+              if (self.jobsQueue.length > 0 && !self.running) {
                 await this.runJob()
               }
             },

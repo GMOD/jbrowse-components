@@ -2,15 +2,17 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { colord, Colord } from '@jbrowse/core/util/colord'
+import {
+  getFileName,
+  AdapterGuesser,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
+
+// locals
 import HicRendererF from './HicRenderer'
 import HicTrackF from './HicTrack'
 import LinearHicDisplayF from './LinearHicDisplay'
 import HicAdapterF from './HicAdapter'
-import {
-  AdapterGuesser,
-  getFileName,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
@@ -41,20 +43,19 @@ export default class HicPlugin extends Plugin {
             return obj
           } else if (adapterHint === adapterName) {
             return obj
+          } else {
+            return adapterGuesser(file, index, adapterHint)
           }
-          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
     pluginManager.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          if (adapterName === 'HicAdapter') {
-            return 'HicTrack'
-          }
-          return trackTypeGuesser(adapterName)
-        }
+        return (adapterName: string) =>
+          adapterName === 'HicAdapter'
+            ? 'HicTrack'
+            : trackTypeGuesser(adapterName)
       },
     )
   }
@@ -64,5 +65,9 @@ export default class HicPlugin extends Plugin {
     jexl.addFunction('alpha', (color: Colord, n: number) => color.alpha(n))
     jexl.addFunction('hsl', (color: Colord) => colord(color.toHsl()))
     jexl.addFunction('colorString', (color: Colord) => color.toHex())
+    jexl.addFunction(
+      'interpolate',
+      (count: number, scale: (n: number) => string) => scale(count),
+    )
   }
 }

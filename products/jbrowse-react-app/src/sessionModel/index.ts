@@ -7,15 +7,7 @@ import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 /**
  * #stateModel JBrowseWebSessionModel
  * composed of
- * - SnackbarModel
- * - JBrowseWebSessionConnectionsModel
- * - JBrowseWebSessionAssembliesModel
- * - ReferenceManagementSessionMixin
- * - DrawerWidgetSessionMixin
- * - DialogQueueSessionMixin
- * - ThemeManagerSessionMixin
- * - MultipleViewsSessionMixin
- * - SessionTracksManagerSessionMixin
+ * - [BaseWebSession](../basewebsession)
  */
 export default function sessionModelFactory({
   pluginManager,

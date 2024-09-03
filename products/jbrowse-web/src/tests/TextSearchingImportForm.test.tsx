@@ -17,7 +17,9 @@ test('search eden.1 and hit open', async () => {
 
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.click(await findByText('Open'))
-  await waitFor(() => expect(getInputValue()).toBe('ctgA:1,055..9,005'), delay)
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+  }, delay)
 }, 30000)
 
 test('dialog with multiple results, searching seg02', async () => {
@@ -36,7 +38,9 @@ test('search eden.1 and hit enter', async () => {
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
-  await waitFor(() => expect(getInputValue()).toBe('ctgA:1,055..9,005'), delay)
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+  }, delay)
 }, 30000)
 
 test('lower case refname, searching: contigb', async () => {
@@ -47,7 +51,9 @@ test('lower case refname, searching: contigb', async () => {
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
 
-  await waitFor(() => expect(getInputValue()).toBe('ctgB:1..6,079'), delay)
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgB:1..6,079')
+  }, delay)
 }, 30000)
 
 test('description of gene, searching: kinase', async () => {
@@ -59,7 +65,9 @@ test('description of gene, searching: kinase', async () => {
 
   fireEvent.click(await findByText('EDEN (protein kinase)', ...opts))
   fireEvent.click(await findByText('Open'))
-  await waitFor(() => expect(getInputValue()).toBe('ctgA:1,055..9,005'), delay)
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+  }, delay)
 }, 30000)
 
 test('search matches description for feature in two places', async () => {

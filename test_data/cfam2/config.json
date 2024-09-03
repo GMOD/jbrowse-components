@@ -1,0 +1,94 @@
+{
+  "assemblies": [
+    {
+      "name": "UU_Cfam_GSD_1.0",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "UU_Cfam_GSD_1.0-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "UU_Cfam_GSD_1.0.fa.fai"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "sequence_report.tsv"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "genes.gff",
+      "name": "genes.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "out.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "out.gff.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["UU_Cfam_GSD_1.0"]
+    }
+  ],
+  "defaultSession": {
+    "drawerPosition": "right",
+    "drawerWidth": 384,
+    "minimized": false,
+    "id": "L8KeaXooiPgvQ-AKa6tjw",
+    "name": "New session 8/14/2024, 10:24:26 AM",
+    "margin": 0,
+    "views": [
+      {
+        "id": "GlOuM8KmbT6UN-5WzqlBG",
+        "minimized": false,
+        "type": "LinearGenomeView",
+        "offsetPx": 6454285,
+        "bpPerPx": 8.719737017401696,
+        "displayedRegions": [
+          {
+            "reversed": false,
+            "refName": "chr1",
+            "start": 0,
+            "end": 123556469,
+            "assemblyName": "UU_Cfam_GSD_1.0"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "eaCG0GL9x9r1E4NFeWUri",
+            "type": "FeatureTrack",
+            "configuration": "genes.gff",
+            "minimized": false,
+            "displays": [
+              {
+                "id": "sQ_OGf5MaHOn9X6f62mO7",
+                "type": "LinearBasicDisplay",
+                "heightPreConfig": 190,
+                "configuration": "genes.gff-LinearBasicDisplay",
+                "trackDisplayMode": "compact",
+                "jexlFilters": ["jexl:get(feature,'type')=='gene'"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

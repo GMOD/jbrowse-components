@@ -13,8 +13,8 @@ function getNodeData(
   extra: Record<string, unknown>,
   selection: Record<string, unknown>,
 ) {
-  const isLeaf = !!node.conf
-  const selected = !!selection[node.id]
+  const isLeaf = node.type === 'track'
+  const selected = isLeaf ? selection[node.trackId] : false
   return {
     data: {
       defaultHeight: isLeaf ? 22 : 40,
@@ -55,24 +55,37 @@ const HierarchicalTree = observer(function HierarchicalTree({
 
   const extra = useMemo(
     () => ({
-      onChange: (trackId: string) => view.toggleTrack(trackId),
-      toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
+      onChange: (trackId: string) => {
+        const trackTurnedOn = view.toggleTrack(trackId)
+        if (trackTurnedOn) {
+          model.addToRecentlyUsed(trackId)
+        }
+      },
+      toggleCollapse: (pathName: string) => {
+        model.toggleCategory(pathName)
+      },
       tree,
       model,
       drawerPosition,
     }),
     [view, model, drawerPosition, tree],
   )
+
+  // doing this properly without ts-expect-error is tricky, react-vtree has
+  // some typescript examples that could help
   const treeWalker = useCallback(
+    // @ts-expect-error
     function* treeWalker() {
       for (const child of tree.children) {
         yield getNodeData(child, 0, extra, obj)
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       while (true) {
         // @ts-expect-error
         const parentMeta = yield
 
+        // @ts-expect-error
         for (const curr of parentMeta.node.children) {
           yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
         }
@@ -81,6 +94,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
     [tree, extra, obj],
   )
 
+  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   useEffect(() => {
     // @ts-expect-error
     treeRef.current.recomputeTree({

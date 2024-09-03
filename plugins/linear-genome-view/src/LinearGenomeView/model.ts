@@ -2,18 +2,18 @@ import React, { lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
-import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { Region as IRegion } from '@jbrowse/core/util/types'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
   findLast,
-  getContainingView,
   getSession,
-  isViewContainer,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
   localStorageGetItem,
+  localStorageSetItem,
   measureText,
   springAnimate,
   sum,
@@ -33,6 +33,7 @@ import {
   resolveIdentifier,
   types,
   Instance,
+  getParent,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -50,10 +51,15 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
+import SearchIcon from '@mui/icons-material/Search'
 
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { handleSelectedRegion } from '../searchUtils'
+
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -81,8 +87,7 @@ export interface BpOffset {
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
   rulerHeight?: number
   textHeight?: number
@@ -93,12 +98,19 @@ export interface ExportSvgOptions {
   themeName?: string
 }
 
+export interface HighlightType {
+  start: number
+  end: number
+  assemblyName: string
+  refName: string
+}
+
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
   }
   const isSingleAssemblyName = contentBlocks.every(
-    b => b.assemblyName === contentBlocks[0].assemblyName,
+    b => b.assemblyName === contentBlocks[0]!.assemblyName,
   )
   const locs = contentBlocks.map(block =>
     assembleLocString({
@@ -129,6 +141,9 @@ export const WIDGET_HEIGHT = 32
 /**
  * #stateModel LinearGenomeView
  * #category view
+ *
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -168,7 +183,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * advised to use the entire set of chromosomes if your assembly is very
          * fragmented
          */
-        displayedRegions: types.array(MUIRegion),
+        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
 
         /**
          * #property
@@ -180,7 +195,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * array of currently displayed tracks state model's
          */
         hideHeader: false,
 
@@ -239,6 +253,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * highlights on the LGV from the URL parameters
+         */
+        highlight: types.optional(
+          types.array(types.frozen<HighlightType>()),
+          [],
+        ),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        colorByCDS: types.optional(types.boolean, () =>
+          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+        ),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        showTrackOutlines: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
+          ),
+        ),
       }),
     )
     .volatile(() => ({
@@ -249,7 +290,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
-      afterDisplayedRegionsSetCallbacks: [] as Function[],
+      afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
       scaleFactor: 1,
       trackRefs: {} as Record<string, HTMLDivElement>,
       coarseDynamicBlocks: [] as BaseBlock[],
@@ -301,7 +342,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      scaleBarDisplayPrefix() {
+        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+          ? self.assemblyNames[0]
+          : ''
+      },
+      /**
+       * #method
+       */
+
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
       },
@@ -309,7 +358,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       HeaderComponent(): React.FC<any> {
         return Header
       },
@@ -319,8 +368,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        const { assemblyNames } = self
-        return assemblyNames
+        return self.assemblyNames
           .map(a => assemblyManager.get(a)?.error)
           .filter(f => !!f)
           .join(', ')
@@ -398,7 +446,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get totalBp() {
-        return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
+        return sum(self.displayedRegions.map(r => r.end - r.start))
       },
 
       /**
@@ -418,7 +466,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get error() {
+      get error(): unknown {
         return self.volatileError || this.assemblyErrors
       },
 
@@ -454,10 +502,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
-          highResolutionScaling: getConf(
-            getSession(self),
-            'highResolutionScaling',
-          ),
+          colorByCDS: self.colorByCDS,
         }
       },
 
@@ -538,6 +583,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowTrackOutlines(arg: boolean) {
+        self.showTrackOutlines = arg
+      },
+      /**
+       * #action
+       */
+      setColorByCDS(flag: boolean) {
+        self.colorByCDS = flag
+      },
+      /**
+       * #action
+       */
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
       },
@@ -556,26 +613,44 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleHeader() {
-        self.hideHeader = !self.hideHeader
+      setHideHeader(b: boolean) {
+        self.hideHeader = b
       },
       /**
        * #action
        */
-      toggleHeaderOverview() {
-        self.hideHeaderOverview = !self.hideHeaderOverview
+      setHideHeaderOverview(b: boolean) {
+        self.hideHeaderOverview = b
       },
       /**
        * #action
        */
-      toggleNoTracksActive() {
-        self.hideNoTracksActive = !self.hideNoTracksActive
+      setHideNoTracksActive(b: boolean) {
+        self.hideNoTracksActive = b
       },
       /**
        * #action
        */
-      toggleShowGridlines() {
-        self.showGridlines = !self.showGridlines
+      setShowGridlines(b: boolean) {
+        self.showGridlines = b
+      },
+      /**
+       * #action
+       */
+      addToHighlights(highlight: HighlightType) {
+        self.highlight.push(highlight)
+      },
+      /**
+       * #action
+       */
+      setHighlight(highlight?: HighlightType[]) {
+        self.highlight = cast(highlight)
+      },
+      /**
+       * #action
+       */
+      removeHighlight(highlight: HighlightType) {
+        self.highlight.remove(highlight)
       },
       /**
        * #action
@@ -681,7 +756,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`Unknown track type ${conf.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pluginManager.getViewType(self.type)!
         const supportedDisplays = new Set(
           viewType.displayTypes.map(d => d.name),
         )
@@ -720,11 +795,55 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      moveTrackDown(id: string) {
+        const idx = self.tracks.findIndex(v => v.id === id)
+        if (idx === -1) {
+          return
+        }
+
+        if (idx !== -1 && idx < self.tracks.length - 1) {
+          self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
+        }
+      },
+      /**
+       * #action
+       */
+      moveTrackUp(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        if (idx > 0) {
+          self.tracks.splice(idx - 1, 2, self.tracks[idx], self.tracks[idx - 1])
+        }
+      },
+      /**
+       * #action
+       */
+      moveTrackToTop(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        self.tracks = cast([
+          self.tracks[idx],
+          ...self.tracks.filter(track => track.id !== id),
+        ])
+      },
+      /**
+       * #action
+       */
+      moveTrackToBottom(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        self.tracks = cast([
+          ...self.tracks.filter(track => track.id !== id),
+          self.tracks[idx],
+        ])
+      },
       /**
        * #action
        */
@@ -737,25 +856,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (newIndex === -1) {
           throw new Error(`Track ID ${targetId} not found`)
         }
-        const track = getSnapshot(self.tracks[oldIndex])
-        self.tracks.splice(oldIndex, 1)
-        self.tracks.splice(newIndex, 0, track)
-      },
 
-      /**
-       * #action
-       */
-      closeView() {
-        const parent = getContainingView(self)
-        if (parent) {
-          // I am embedded in a some other view
-          if (isViewContainer(parent)) {
-            parent.removeView(self)
-          }
-        } else {
-          // I am part of a session
-          getSession(self).removeView(self)
-        }
+        const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
+        tracks.splice(newIndex, 0, self.tracks[oldIndex])
+        self.tracks = cast(tracks)
       },
 
       /**
@@ -767,7 +871,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // if none had that configuration, turn one on
         if (!hiddenCount) {
           self.showTrack(trackId)
+          return true
         }
+        return false
       },
 
       /**
@@ -781,8 +887,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleCenterLine() {
-        self.showCenterLine = !self.showCenterLine
+      setShowCenterLine(b: boolean) {
+        self.showCenterLine = b
       },
 
       /**
@@ -846,7 +952,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * schedule something to be run after the next time displayedRegions is
        * set
        */
-      afterDisplayedRegionsSet(cb: Function) {
+      afterDisplayedRegionsSet(cb: () => void) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
 
@@ -893,7 +999,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           ;[assemblyName] = [...names]
         }
-        const assembly = assemblyManager.get(assemblyName)
+        const assembly = assemblyManager.get(assemblyName!)
         if (assembly) {
           const { regions } = assembly
           if (regions) {
@@ -957,10 +1063,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.offsetPx,
           self.offsetPx + self.width * viewWidths,
           self.scrollTo,
+          undefined,
+          undefined,
+          200,
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        cancelLastAnimation = cancelAnimation!
+        animate!()
       }
 
       return { slide }
@@ -993,8 +1102,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        cancelLastAnimation = cancelAnimation!
+        animate!()
       }
 
       return { zoom }
@@ -1028,7 +1137,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get cytobandOffset() {
         return this.showCytobands
-          ? measureText(self.displayedRegions[0].refName, 12) + 15
+          ? measureText(self.displayedRegions[0]?.refName || '', 12) + 15
           : 0
       },
     }))
@@ -1055,6 +1164,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? [
                 {
                   label: 'Sequence search',
+                  icon: SearchIcon,
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SequenceSearchDialog,
@@ -1085,6 +1195,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.horizontallyFlip,
           },
           {
+            label: 'Color by CDS',
+            type: 'checkbox',
+            checked: self.colorByCDS,
+            icon: PaletteIcon,
+            onClick: () => {
+              self.setColorByCDS(!self.colorByCDS)
+            },
+          },
+          {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
@@ -1096,32 +1215,51 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Show center line',
                 type: 'checkbox',
                 checked: self.showCenterLine,
-                onClick: self.toggleCenterLine,
+                onClick: () => {
+                  self.setShowCenterLine(!self.showCenterLine)
+                },
               },
               {
                 label: 'Show header',
                 type: 'checkbox',
                 checked: !self.hideHeader,
-                onClick: self.toggleHeader,
+                onClick: () => {
+                  self.setHideHeader(!self.hideHeader)
+                },
+              },
+
+              {
+                label: 'Show track outlines',
+                type: 'checkbox',
+                checked: self.showTrackOutlines,
+                onClick: () => {
+                  self.setShowTrackOutlines(!self.showTrackOutlines)
+                },
               },
               {
                 label: 'Show header overview',
                 type: 'checkbox',
                 checked: !self.hideHeaderOverview,
-                onClick: self.toggleHeaderOverview,
+                onClick: () => {
+                  self.setHideHeaderOverview(!self.hideHeaderOverview)
+                },
                 disabled: self.hideHeader,
               },
               {
                 label: 'Show no tracks active button',
                 type: 'checkbox',
                 checked: !self.hideNoTracksActive,
-                onClick: self.toggleNoTracksActive,
+                onClick: () => {
+                  self.setHideNoTracksActive(!self.hideNoTracksActive)
+                },
               },
               {
                 label: 'Show guidelines',
                 type: 'checkbox',
                 checked: self.showGridlines,
-                onClick: self.toggleShowGridlines,
+                onClick: () => {
+                  self.setShowGridlines(!self.showGridlines)
+                },
               },
               ...(canShowCytobands
                 ? [
@@ -1129,7 +1267,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
                       label: 'Show ideogram',
                       type: 'checkbox' as const,
                       checked: self.showCytobands,
-                      onClick: () => self.setShowCytobands(!showCytobands),
+                      onClick: () => {
+                        self.setShowCytobands(!showCytobands)
+                      },
                     },
                   ]
                 : []),
@@ -1144,21 +1284,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 icon: VisibilityIcon,
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'overlapping',
-                onClick: () => self.setTrackLabels('overlapping'),
+                onClick: () => {
+                  self.setTrackLabels('overlapping')
+                },
               },
               {
                 label: 'Offset',
                 icon: VisibilityIcon,
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'offset',
-                onClick: () => self.setTrackLabels('offset'),
+                onClick: () => {
+                  self.setTrackLabels('offset')
+                },
               },
               {
                 label: 'Hidden',
                 icon: VisibilityIcon,
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'hidden',
-                onClick: () => self.setTrackLabels('hidden'),
+                onClick: () => {
+                  self.setTrackLabels('hidden')
+                },
               },
             ],
           },
@@ -1268,11 +1414,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
-              localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
-            }
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
           }),
         )
       },
@@ -1302,17 +1447,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async navToLocString(input: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        const { isValidRefName } = assemblyManager
-        const assemblyName = optAssemblyName || assemblyNames[0]
+        const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
-          // wait before isValidRefName can be called
           await assemblyManager.waitForAssembly(assemblyName)
         }
 
         return this.navToLocations(
-          parseLocStrings(input, assemblyName, isValidRefName),
+          parseLocStrings(input, assemblyName, (ref, asm) =>
+            assemblyManager.isValidRefName(ref, asm),
+          ),
           assemblyName,
         )
+      },
+
+      /**
+       * #action
+       * Performs a text index search, and navigates to it immediately if a
+       * single result is returned. Will pop up a search dialog if multiple
+       * results are returned
+       */
+      async navToSearchString({
+        input,
+        assembly,
+      }: {
+        input: string
+        assembly: Assembly
+      }) {
+        await handleSelectedRegion({
+          input,
+          assembly,
+          model: self as LinearGenomeViewModel,
+        })
       },
 
       /**
@@ -1335,7 +1500,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
 
         if (locations.length === 1) {
-          const loc = locations[0]
+          const loc = locations[0]!
           const { reversed, parentRegion, start, end } = loc
           self.setDisplayedRegions([{ reversed, ...parentRegion }])
 
@@ -1395,7 +1560,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!f1 || !f2) {
           return
         }
-        const a = self.assemblyNames[0]
+        const a = self.assemblyNames[0]!
         const { assemblyManager } = getSession(self)
         const assembly1 = assemblyManager.get(f1.assemblyName || a)
         const assembly2 = assemblyManager.get(f2.assemblyName || a)
@@ -1441,8 +1606,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           )
         }
 
-        const sd = self.displayedRegions[index]
-        const ed = self.displayedRegions[index2]
+        const sd = self.displayedRegions[index]!
+        const ed = self.displayedRegions[index2]!
 
         this.moveTo(
           {
@@ -1465,17 +1630,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Zoom to region',
             icon: ZoomInIcon,
-            onClick: () => self.moveTo(self.leftOffset, self.rightOffset),
+            onClick: () => {
+              self.moveTo(self.leftOffset, self.rightOffset)
+            },
           },
           {
             label: 'Get sequence',
             icon: MenuOpenIcon,
-            onClick: () =>
+            onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 GetSequenceDialog,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 { model: self as any, handleClose },
-              ]),
+              ])
+            },
           },
         ]
       },
@@ -1497,13 +1665,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * scrolls the view to center on the given bp. if that is not in any
-       * of the displayed regions, does nothing
+       * scrolls the view to center on the given bp. if that is not in any of
+       * the displayed regions, does nothing
+       *
        * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
        * @param regionNumber - index of the displayedRegion
        */
-      centerAt(coord: number, refName: string, regionNumber: number) {
+      centerAt(coord: number, refName: string, regionNumber?: number) {
         const centerPx = this.bpToPx({
           refName,
           coord,
@@ -1556,6 +1725,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
       },
     }))
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { highlight, ...rest } = snap
+      return {
+        highlight:
+          Array.isArray(highlight) || highlight === undefined
+            ? highlight
+            : [highlight],
+        ...rest,
+      }
+    })
 }
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>

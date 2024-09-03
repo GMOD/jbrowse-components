@@ -45,7 +45,7 @@ const Wrapper = ({
   return overrideDimensions ? (
     <div style={{ ...overrideDimensions }}>{children}</div>
   ) : (
-    <>{children}</>
+    children
   )
 }
 const HierarchicalTrackSelectorContainer = observer(function ({

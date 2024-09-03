@@ -12,8 +12,9 @@ info
 
 [plugins/variants/src/LinearVariantDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts)
 
-extends `LinearBasicDisplay` very similar to basic display, but provides custom
-widget on feature click
+similar to basic display, but provides custom widget on feature click extends
+
+- [LinearBasicDisplay](../linearbasicdisplay)
 
 ### LinearVariantDisplay - Properties
 

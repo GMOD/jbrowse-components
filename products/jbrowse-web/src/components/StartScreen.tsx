@@ -1,14 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React, { lazy, useEffect, useState } from 'react'
 import {
-  Button,
-  CircularProgress,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Grid,
   IconButton,
   List,
@@ -19,7 +11,8 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { LogoFull, FactoryResetDialog, ErrorMessage } from '@jbrowse/core/ui'
+import { LogoFull, ErrorMessage } from '@jbrowse/core/ui'
+import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
 
 // icons
 import WarningIcon from '@mui/icons-material/Warning'
@@ -32,10 +25,17 @@ import {
   NewSVInspectorSession,
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
+import type { WebRootModel } from '../rootModel/rootModel'
+
+// lazies
+const DeleteSessionDialog = lazy(() => import('./DeleteSessionDialog'))
+const FactoryResetDialog = lazy(
+  () => import('@jbrowse/core/ui/FactoryResetDialog'),
+)
 
 const useStyles = makeStyles()(theme => ({
   newSession: {
-    backgroundColor: theme.palette?.grey['300'],
+    backgroundColor: theme.palette.grey['300'],
     padding: 8,
     marginTop: 8,
   },
@@ -45,68 +45,18 @@ const useStyles = makeStyles()(theme => ({
   settings: {
     float: 'right',
   },
+  list: {
+    overflow: 'auto',
+    maxHeight: 200,
+  },
 }))
-
-const DeleteSessionDialog = ({
-  sessionToDelete,
-  onClose,
-  rootModel,
-}: {
-  sessionToDelete?: string
-  onClose: (_arg0: boolean) => void
-  rootModel: any
-}) => {
-  const [deleteSession, setDeleteSession] = useState(false)
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        if (deleteSession) {
-          setDeleteSession(false)
-          rootModel.removeSavedSession({ name: sessionToDelete })
-          onClose(true)
-        }
-      } catch (e) {
-        setDeleteSession(() => {
-          throw e
-        })
-      }
-    })()
-  }, [deleteSession, onClose, rootModel, sessionToDelete])
-
-  return (
-    <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
-      <DialogTitle id="alert-dialog-title">
-        {`Delete session "${sessionToDelete}"?`}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          This action cannot be undone
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => setDeleteSession(true)}
-          color="primary"
-          variant="contained"
-          autoFocus
-        >
-          Delete
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
 
 export default function StartScreen({
   rootModel,
   onFactoryReset,
 }: {
-  rootModel: any
-  onFactoryReset: Function
+  rootModel: WebRootModel
+  onFactoryReset: () => void
 }) {
   const { classes } = useStyles()
 
@@ -137,7 +87,10 @@ export default function StartScreen({
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-          setSessionNames(rootModel.savedSessions.map((s: any) => s?.name))
+
+          setSessionNames(
+            rootModel.savedSessions.map(s => s.name).filter(notEmpty),
+          )
         }
       } catch (e) {
         setError(e)
@@ -145,34 +98,35 @@ export default function StartScreen({
     })()
   }, [rootModel.savedSessions, updateSessionsList])
 
-  return !sessionNames ? (
-    <CircularProgress
-      style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
-      }}
-      size={50}
-    />
-  ) : (
+  const lastAutosavedSession = JSON.parse(
+    localStorageGetItem(rootModel.previousAutosaveId) || '{}',
+  ).session
+
+  return (
     <>
-      <FactoryResetDialog
-        open={reset}
-        onFactoryReset={onFactoryReset}
-        onClose={() => {
-          setReset(false)
-        }}
-      />
-      <DeleteSessionDialog
-        rootModel={rootModel}
-        sessionToDelete={sessionToDelete}
-        onClose={update => {
-          setSessionToDelete(undefined)
-          setUpdateSessionsList(update)
-        }}
-      />
+      {reset ? (
+        <React.Suspense fallback={null}>
+          <FactoryResetDialog
+            open={reset}
+            onFactoryReset={onFactoryReset}
+            onClose={() => {
+              setReset(false)
+            }}
+          />
+        </React.Suspense>
+      ) : null}
+      {sessionToDelete ? (
+        <React.Suspense fallback={null}>
+          <DeleteSessionDialog
+            rootModel={rootModel}
+            sessionToDelete={sessionToDelete}
+            onClose={update => {
+              setSessionToDelete(undefined)
+              setUpdateSessionsList(update)
+            }}
+          />
+        </React.Suspense>
+      ) : null}
       <IconButton
         className={classes.settings}
         onClick={event => {
@@ -204,21 +158,35 @@ export default function StartScreen({
           <Typography variant="h5" className={classes.header}>
             Recent sessions
           </Typography>
-          <List
-            style={{
-              overflow: 'auto',
-              maxHeight: 200,
-            }}
-          >
-            {sessionNames?.map((name: string) => (
+          <List className={classes.list}>
+            {sessionNames.map(name => (
               <RecentSessionCard
                 key={name}
                 sessionName={name}
-                onClick={() => setSessionToLoad(name)}
-                onDelete={() => setSessionToDelete(name)}
+                onClick={() => {
+                  setSessionToLoad(name)
+                }}
+                onDelete={() => {
+                  setSessionToDelete(name)
+                }}
               />
             ))}
           </List>
+          {lastAutosavedSession ? (
+            <>
+              <Typography variant="h5" className={classes.header}>
+                Last autosave session
+              </Typography>
+              <List className={classes.list}>
+                <RecentSessionCard
+                  sessionName={lastAutosavedSession.name}
+                  onClick={() => {
+                    rootModel.loadAutosaveSession()
+                  }}
+                />
+              </List>
+            </>
+          ) : null}
           {error ? <ErrorMessage error={error} /> : null}
         </div>
       </Container>
@@ -227,7 +195,9 @@ export default function StartScreen({
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={() => setMenuAnchorEl(null)}
+        onClose={() => {
+          setMenuAnchorEl(null)
+        }}
       >
         <ListSubheader>Advanced Settings</ListSubheader>
         <MenuItem

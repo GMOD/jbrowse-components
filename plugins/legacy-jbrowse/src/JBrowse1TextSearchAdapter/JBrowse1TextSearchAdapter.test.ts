@@ -45,9 +45,9 @@ test('search upper case', async () => {
   // check results are of type BaseResult for prefix search
   expect(results.length).toBeGreaterThan(0)
   expect(results[0] instanceof BaseResult).toBeTruthy()
-  expect(results[0].getLabel()).toEqual('Apple1')
-  expect(results[1].getLabel()).toEqual('Apple2')
-  expect(results[2].getLabel()).toEqual('Apple3')
+  expect(results[0]!.getLabel()).toEqual('Apple1')
+  expect(results[1]!.getLabel()).toEqual('Apple2')
+  expect(results[2]!.getLabel()).toEqual('Apple3')
 
   // exact search
   const results2 = await adapter.searchIndex({
@@ -58,8 +58,8 @@ test('search upper case', async () => {
   expect(results2.length).toEqual(5)
   expect(results2.length).toBeGreaterThan(0)
   expect(results2[0] instanceof BaseResult).toBeTruthy()
-  expect(results2[0].getLabel()).toEqual('Apple3')
-  expect(results2[0].getLocation()).toEqual('ctgA:17399-23000')
+  expect(results2[0]!.getLabel()).toEqual('Apple3')
+  expect(results2[0]!.getLocation()).toEqual('ctgA:17399-23000')
 })
 
 test('search lower case', async () => {
@@ -83,9 +83,9 @@ test('search lower case', async () => {
   // check results are of type BaseResult for prefix search
   expect(results.length).toBeGreaterThan(0)
   expect(results[0] instanceof BaseResult).toBeTruthy()
-  expect(results[0].getLabel()).toEqual('Apple1')
-  expect(results[1].getLabel()).toEqual('Apple2')
-  expect(results[2].getLabel()).toEqual('Apple3')
+  expect(results[0]!.getLabel()).toEqual('Apple1')
+  expect(results[1]!.getLabel()).toEqual('Apple2')
+  expect(results[2]!.getLabel()).toEqual('Apple3')
 
   // exact search
   const results2 = await adapter.searchIndex({
@@ -96,6 +96,6 @@ test('search lower case', async () => {
   expect(results2.length).toEqual(5)
   expect(results2.length).toBeGreaterThan(0)
   expect(results2[0] instanceof BaseResult).toBeTruthy()
-  expect(results2[0].getLabel()).toEqual('Apple3')
-  expect(results2[0].getLocation()).toEqual('ctgA:17399-23000')
+  expect(results2[0]!.getLabel()).toEqual('Apple3')
+  expect(results2[0]!.getLocation()).toEqual('ctgA:17399-23000')
 })

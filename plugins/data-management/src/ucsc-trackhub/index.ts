@@ -4,7 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import stateModelFactory from './model'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function UCSCTrackHubConnectionF(pluginManager: PluginManager) {
   pluginManager.addConnectionType(
     () =>
       new ConnectionType({

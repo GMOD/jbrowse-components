@@ -16,4 +16,6 @@ yarn-debug.log*
 yarn-error.log*
 coverage/
 public/electron.js
+public/electron.d.ts
 public/generateFastaIndex.js
+public/generateFastaIndex.d.ts

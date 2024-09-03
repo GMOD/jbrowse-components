@@ -27,7 +27,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       regions: Region[]
       signal?: RemoteAbortSignal
       headers?: Record<string, string>

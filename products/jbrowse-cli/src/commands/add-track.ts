@@ -2,7 +2,7 @@ import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
-import JBrowseCommand from '../base'
+import JBrowseCommand, { Config, Track } from '../base'
 
 const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
@@ -25,16 +25,51 @@ function makeLocationProtocol(protocol: string) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Track = Record<string, any>
+function fileOperation({
+  srcFilename,
+  destFilename,
+  mode,
+}: {
+  srcFilename: string
+  destFilename: string
+  mode: string
+}) {
+  if (mode === 'copy') {
+    return copyFile(srcFilename, destFilename, COPYFILE_EXCL)
+  } else if (mode === 'move') {
+    return rename(srcFilename, destFilename)
+  } else if (mode === 'symlink') {
+    return symlink(path.resolve(srcFilename), destFilename)
+  }
+  return undefined
+}
 
-interface Config {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: Record<string, any> }[]
-  configuration?: {}
-  connections?: unknown[]
-  defaultSession?: {}
-  tracks?: Track[]
+// get path of destination, and remove file at that path if it exists and force
+// is set
+function destinationFn({
+  destinationDir,
+  srcFilename,
+  subDir,
+  force,
+}: {
+  destinationDir: string
+  srcFilename: string
+  subDir: string
+  force: boolean
+}) {
+  const dest = path.resolve(
+    path.join(destinationDir, subDir, path.basename(srcFilename)),
+  )
+  if (force) {
+    try {
+      fs.unlinkSync(dest)
+    } catch (e) {
+      /* unconditionally unlinkSync, due to
+       * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
+       * and https://github.com/GMOD/jbrowse-components/issues/2768 */
+    }
+  }
+  return dest
 }
 
 interface UriLocation {
@@ -64,7 +99,7 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track my.bam --load copy --out /path/to/jb2 --subDir bam',
     '',
 
-    `# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai`,
+    '# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai',
     '$ jbrowse add-track my.bam --indexFile my.bai --load copy',
     '',
 
@@ -83,14 +118,14 @@ export default class AddTrack extends JBrowseCommand {
   static args = {
     track: Args.string({
       required: true,
-      description: `Track file or URL`,
+      description: 'Track file or URL',
     }),
   }
 
   static flags = {
     trackType: Flags.string({
       char: 't',
-      description: `Type of track, by default inferred from track file`,
+      description: 'Type of track, by default inferred from track file',
     }),
     name: Flags.string({
       char: 'n',
@@ -188,7 +223,7 @@ export default class AddTrack extends JBrowseCommand {
 
     let { trackType, trackId, name, assemblyNames } = runFlags
 
-    const configDirectory = path.dirname(this.target)
+    const configDir = path.dirname(this.target)
     if (!argsTrack) {
       this.error(
         'No track provided. Example usage: jbrowse add-track yourfile.bam',
@@ -197,7 +232,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     if (subDir) {
-      const dir = path.join(configDirectory, subDir)
+      const dir = path.join(configDir, subDir)
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir)
       }
@@ -221,6 +256,7 @@ export default class AddTrack extends JBrowseCommand {
     if (
       [
         'PAFAdapter',
+        'PairwiseIndexedPAFAdapter',
         'DeltaAdapter',
         'ChainAdapter',
         'MashMapAdapter',
@@ -229,6 +265,7 @@ export default class AddTrack extends JBrowseCommand {
       ].includes(adapter.type)
     ) {
       // @ts-expect-error
+      // this is for the adapter's assembly names
       adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
     }
 
@@ -270,7 +307,7 @@ export default class AddTrack extends JBrowseCommand {
     trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
-    assemblyNames = assemblyNames || configContents.assemblies[0].name
+    assemblyNames = assemblyNames || configContents.assemblies[0]?.name || ''
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
@@ -290,6 +327,7 @@ export default class AddTrack extends JBrowseCommand {
         asm => asm.name === assemblyNames,
       )
       if (assembly) {
+        // @ts-expect-error
         trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
       } else if (!skipCheck) {
         this.error(`Failed to find assemblyName ${assemblyNames}`)
@@ -300,9 +338,7 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks = []
     }
 
-    const idx = configContents.tracks.findIndex(
-      configTrack => configTrack.trackId === trackId,
-    )
+    const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
@@ -319,40 +355,24 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks.push(trackConfig)
     }
 
-    // get path of destination, and remove file at that path if it exists and
-    // force is set
-    const destinationFn = (dir: string, file: string) => {
-      const dest = path.resolve(path.join(dir, subDir, path.basename(file)))
-      if (force) {
-        try {
-          fs.unlinkSync(dest)
-        } catch (e) {
-          /* unconditionally unlinkSync, due to
-           * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
-           * and https://github.com/GMOD/jbrowse-components/issues/2768 */
-        }
-      }
-      return dest
+    if (load && load !== 'inPlace') {
+      await Promise.all(
+        Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
+          .filter(f => !!f)
+          .map(srcFilename =>
+            fileOperation({
+              mode: load,
+              srcFilename,
+              destFilename: destinationFn({
+                destinationDir: configDir,
+                srcFilename,
+                force,
+                subDir,
+              }),
+            }),
+          ),
+      )
     }
-
-    const loadType =
-      (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
-
-    const callbacks = {
-      copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
-      move: (src: string, dest: string) => rename(src, dest),
-      symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
-      inPlace: () => {
-        /* do nothing */
-      },
-    }
-    await Promise.all(
-      Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
-        .filter(f => !!f)
-        .map(src =>
-          callbacks[loadType](src, destinationFn(configDirectory, src)),
-        ),
-    )
 
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
@@ -396,7 +416,8 @@ export default class AddTrack extends JBrowseCommand {
     } else if (
       /\.gff3?\.b?gz$/i.test(location) ||
       /\.vcf\.b?gz$/i.test(location) ||
-      /\.bed\.b?gz$/i.test(location)
+      /\.bed\.b?gz$/i.test(location) ||
+      /\.pif\.b?gz$/i.test(location)
     ) {
       return {
         file: location,
@@ -415,18 +436,20 @@ export default class AddTrack extends JBrowseCommand {
       }
     } else if (
       /\.2bit$/i.test(location) ||
+      /\.bedpe(\.gz)?$/i.test(location) ||
       /\/trackData.jsonz?$/i.test(location) ||
       /\/sparql$/i.test(location) ||
-      /\.out(.gz)?$/i.test(location) ||
-      /\.paf(.gz)?$/i.test(location) ||
-      /\.delta(.gz)?$/i.test(location) ||
+      /\.out(\.gz)?$/i.test(location) ||
+      /\.paf(\.gz)?$/i.test(location) ||
+      /\.delta(\.gz)?$/i.test(location) ||
       /\.bed?$/i.test(location) ||
       /\.(bw|bigwig)$/i.test(location) ||
       /\.(bb|bigbed)$/i.test(location) ||
       /\.vcf$/i.test(location) ||
       /\.gtf?$/i.test(location) ||
       /\.gff3?$/i.test(location) ||
-      /\.chain(.gz)?$/i.test(location)
+      /\.chain(\.gz)?$/i.test(location) ||
+      /\.hic$/i.test(location)
     ) {
       return {
         file: location,
@@ -503,10 +526,24 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'UNSUPPORTED',
       }
+    } else if (/\.bedpe(.gz)?$/i.test(location)) {
+      return {
+        type: 'BedpeAdapter',
+        bedpeLocation: makeLocation(location),
+      }
     } else if (/\.bed$/i.test(location)) {
       return {
         type: 'BedAdapter',
         bedLocation: makeLocation(location),
+      }
+    } else if (/\.pif\.b?gz$/i.test(location)) {
+      return {
+        type: 'PairwiseIndexedPAFAdapter',
+        pifGzLocation: makeLocation(location),
+        index: {
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     } else if (/\.bed\.b?gz$/i.test(location)) {
       return {
@@ -606,24 +643,27 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessTrackType(adapterType: string): string {
-    const known: Record<string, string | undefined> = {
-      BamAdapter: 'AlignmentsTrack',
-      CramAdapter: 'AlignmentsTrack',
-      BgzipFastaAdapter: 'ReferenceSequenceTrack',
-      BigWigAdapter: 'QuantitativeTrack',
-      IndexedFastaAdapter: 'ReferenceSequenceTrack',
-      TwoBitAdapter: 'ReferenceSequenceTrack',
-      VcfTabixAdapter: 'VariantTrack',
-      VcfAdapter: 'VariantTrack',
-      BedAdapter: 'FeatureTrack',
-      HicAdapter: 'HicTrack',
-      PAFAdapter: 'SyntenyTrack',
-      DeltaAdapter: 'SyntenyTrack',
-      ChainAdapter: 'SyntenyTrack',
-      MashMapAdapter: 'SyntenyTrack',
-      MCScanAnchorsAdapter: 'SyntenyTrack',
-      MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-    }
-    return known[adapterType] || 'FeatureTrack'
+    return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
   }
+}
+
+const adapterTypesToTrackTypeMap: Record<string, string> = {
+  BamAdapter: 'AlignmentsTrack',
+  CramAdapter: 'AlignmentsTrack',
+  BgzipFastaAdapter: 'ReferenceSequenceTrack',
+  BigWigAdapter: 'QuantitativeTrack',
+  IndexedFastaAdapter: 'ReferenceSequenceTrack',
+  TwoBitAdapter: 'ReferenceSequenceTrack',
+  VcfTabixAdapter: 'VariantTrack',
+  VcfAdapter: 'VariantTrack',
+  BedpeAdapter: 'VariantTrack',
+  BedAdapter: 'FeatureTrack',
+  HicAdapter: 'HicTrack',
+  PAFAdapter: 'SyntenyTrack',
+  DeltaAdapter: 'SyntenyTrack',
+  ChainAdapter: 'SyntenyTrack',
+  MashMapAdapter: 'SyntenyTrack',
+  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
+  MCScanAnchorsAdapter: 'SyntenyTrack',
+  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
 }

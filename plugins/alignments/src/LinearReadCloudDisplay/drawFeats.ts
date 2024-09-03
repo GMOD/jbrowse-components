@@ -19,7 +19,7 @@ export function drawFeats(
   }
   const { assemblyManager } = getSession(self)
   const view = getContainingView(self) as LGV
-  const assemblyName = view.assemblyNames[0]
+  const assemblyName = view.assemblyNames[0]!
   const asm = assemblyManager.get(assemblyName)
   if (!asm) {
     return

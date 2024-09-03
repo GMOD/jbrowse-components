@@ -3,7 +3,7 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function ChromSizesAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({

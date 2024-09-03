@@ -12,7 +12,6 @@ global.nodeImage = Image
 global.nodeCreateCanvas = createCanvas
 
 test('several features', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pluginManager = {} as any
   const renderer = new XYPlotRenderer({
     name: 'XYPlotRenderer',

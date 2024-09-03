@@ -14,6 +14,6 @@ initializeWorker(corePlugins, {
   fetchESM: url => import(/* @vite-ignore */ url),
 })
 
-export default () => {
+export default function doNothing() {
   /* do nothing */
 }

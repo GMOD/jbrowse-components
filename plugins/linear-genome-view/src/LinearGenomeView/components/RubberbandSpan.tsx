@@ -4,10 +4,8 @@ import { Popover, Typography, alpha } from '@mui/material'
 import { stringify, toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => {
-  const { primary, tertiary } = theme.palette
-  const background = tertiary
-    ? alpha(tertiary.light, 0.7)
-    : alpha(primary.light, 0.7)
+  const { tertiary } = theme.palette
+  const background = alpha(tertiary.light, 0.7)
   return {
     rubberband: {
       height: '100%',
@@ -23,7 +21,7 @@ const useStyles = makeStyles()(theme => {
       minHeight: 8,
     },
     rubberbandText: {
-      color: tertiary ? tertiary.contrastText : primary.contrastText,
+      color: tertiary.contrastText,
     },
     popover: {
       mouseEvents: 'none',
@@ -55,7 +53,7 @@ export default function RubberbandSpan({
   left: number
   width: number
 }) {
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   return (
     <>

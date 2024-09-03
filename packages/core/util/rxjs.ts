@@ -11,15 +11,15 @@ export function ObservableCreate<T>(
   func: (arg: Observer<T>) => void | Promise<void>,
   signal?: AbortSignal,
 ): Observable<T> {
-  return Observable.create((observer: Observer<T>) => {
+  return new Observable((observer: Observer<T>) => {
     try {
       const ret = func(observer)
-      // catch async errors
-      if (ret && ret.catch) {
-        ret.catch(error => observer.error(error))
+      if (ret?.catch) {
+        ret.catch((error: unknown) => {
+          observer.error(error)
+        })
       }
     } catch (error) {
-      // catch sync errors
       observer.error(error)
     }
   }).pipe(takeUntil(observeAbortSignal(signal)))

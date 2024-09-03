@@ -4,7 +4,7 @@ import configSchemaF from './configSchemaF'
 import stateModelF from './model'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
-export default (pluginManager: PluginManager) => {
+export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     const stateModel = stateModelF(configSchema)

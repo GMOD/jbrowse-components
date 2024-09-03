@@ -4,10 +4,11 @@
 
 import fs, { mkdirSync } from 'fs'
 import path from 'path'
-import { Scope } from 'nock'
-import { setup } from '../testUtil'
+import { runInTmpDir } from '../testUtil'
+import { runCommand } from '@oclif/test'
+import nock from 'nock'
 
-const { stat, readdir } = fs.promises
+const { stat, readdir, writeFile } = fs.promises
 
 const releaseArray = [
   {
@@ -32,97 +33,97 @@ const releaseArray = [
   },
 ]
 
-function mockTagFail(gitHubApi: Scope) {
-  return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
-    .reply(404, {})
-}
-
-function mockTagSuccess(gitHubApi: Scope) {
-  return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
-    .reply(200, releaseArray[1])
-}
-
-function mockReleases(gitHubApi: Scope) {
-  return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases?page=1')
-    .reply(200, releaseArray)
-}
-
-function mockWrongSite(exampleSite: Scope) {
-  return exampleSite
-    .get('/JBrowse2-0.0.1.json')
-    .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
-}
-
-function mockV1Zip(exampleSite: Scope) {
-  return exampleSite
-    .get('/JBrowse2-0.0.1.zip')
-    .replyWithFile(
-      200,
-      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-      { 'Content-Type': 'application/zip' },
-    )
-}
-
-function mockV2Zip(exampleSite: Scope) {
-  return exampleSite
-    .get('/JBrowse2-0.0.2.zip')
-    .replyWithFile(
-      200,
-      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-    )
-}
-
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+// Cleaning up exitCode in Node.js 20, xref
+// https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
 
-describe('upgrade', () => {
-  setup
-    .do(() => {
-      mkdirSync('jbrowse')
-    })
-    .command(['upgrade', 'jbrowse'])
-    .exit(10)
-    .it(
-      'fails if user selects a directory that does not have a JBrowse installation',
-    )
-  setup
-    .command(['upgrade', 'jbrowse'])
-    .exit(10)
-    .it('fails if user selects a directory that does not exist')
-  setup
-    .nock('https://api.github.com', mockReleases)
-    .nock('https://example.com', mockV2Zip)
-    .add('prevStat', ctx => stat(path.join(ctx.dir, 'manifest.json')))
-    .command(['upgrade'])
-    .it('upgrades a directory', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('manifest.json')
-      // upgrade successful if it updates stats of manifest json
-      expect(await stat('manifest.json')).not.toEqual(ctx.prevStat)
-    })
-  setup
-    .nock('https://api.github.com', mockTagSuccess)
-    .nock('https://example.com', mockV1Zip)
-    .command(['upgrade', '--tag', 'v0.0.1'])
-    .it('upgrades a directory with a specific version', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('manifest.json')
-    })
-  setup
-    .nock('https://example.com', mockV1Zip)
-    .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.zip'])
-    .it('upgrades a directory from a url', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('manifest.json')
-    })
-  setup
-    .nock('https://api.github.com', mockTagFail)
-    .command(['upgrade', '--tag', 'v999.999.999'])
-    .catch(/Could not find version/)
-    .it('fails to upgrade if version does not exist')
-  setup
-    .nock('https://example.com', mockWrongSite)
-    .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.json'])
-    .exit(2)
-    .it('fails if the fetch does not return the right file')
+test('fails if user selects a directory that does not have a installation', async () => {
+  await runInTmpDir(async () => {
+    mkdirSync('jbrowse')
+    const { error } = await runCommand(['upgrade', 'jbrowse'])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+
+test('fails if user selects a directory that does not exist', async () => {
+  const { error } = await runCommand(['upgrade', 'jbrowse'])
+  expect(error?.message).toMatchSnapshot()
+})
+
+test('upgrades a directory', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases?page=1')
+      .reply(200, releaseArray)
+    nock('https://example.com')
+      .get('/JBrowse2-0.0.2.zip')
+      .replyWithFile(
+        200,
+        path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+      )
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    const prevStat = await stat(path.join(ctx.dir, 'manifest.json'))
+    await runCommand(['upgrade'])
+    expect(await readdir(ctx.dir)).toContain('manifest.json')
+    // upgrade successful if it updates stats of manifest json
+    expect(await stat('manifest.json')).not.toEqual(prevStat)
+  })
+})
+
+test('upgrades a directory with a specific version', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
+      .reply(200, releaseArray[1])
+    nock('https://example.com')
+      .get('/JBrowse2-0.0.1.zip')
+      .replyWithFile(
+        200,
+        path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+        { 'Content-Type': 'application/zip' },
+      )
+
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    await runCommand(['upgrade', '--tag', 'v0.0.1'])
+    expect(await readdir(ctx.dir)).toContain('manifest.json')
+  })
+})
+
+test('upgrades a directory from a url', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://example.com')
+      .get('/JBrowse2-0.0.1.zip')
+      .replyWithFile(
+        200,
+        path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+        { 'Content-Type': 'application/zip' },
+      )
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+    await runCommand([
+      'upgrade',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.zip',
+    ])
+    expect(await readdir(ctx.dir)).toContain('manifest.json')
+  })
+})
+
+test('fails to upgrade if version does not exist', async () => {
+  nock('https://api.github.com')
+    .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
+    .reply(404, {})
+
+  const { error } = await runCommand(['upgrade', '--tag', 'v999.999.999'])
+  expect(error?.message).toMatchSnapshot()
+})
+test('fails if the fetch does not return the right file', async () => {
+  nock('https://example.com')
+    .get('/JBrowse2-0.0.1.json')
+    .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
+  const { error } = await runCommand([
+    'upgrade',
+    '--url',
+    'https://example.com/JBrowse2-0.0.1.json',
+  ])
+  expect(error?.message).toMatchSnapshot()
 })

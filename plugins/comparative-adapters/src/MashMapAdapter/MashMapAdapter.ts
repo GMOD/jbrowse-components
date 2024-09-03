@@ -1,12 +1,10 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { unzip } from '@gmod/bgzf-filehandle'
+import { isGzip } from '@jbrowse/core/util'
+
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 import { parseLineByLine } from '../util'
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
 
 export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
@@ -21,20 +19,20 @@ function parseMashMapLine(line: string) {
   const fields = line.split(' ')
   if (fields.length < 9) {
     // xref https://github.com/marbl/MashMap/issues/38
-    throw new Error('improperly formatted line: ' + line)
+    throw new Error(`improperly formatted line: ${line}`)
   }
   const [qname, , qstart, qend, strand, tname, , tstart, tend, mq] = fields
 
   return {
-    tname,
-    tstart: +tstart,
-    tend: +tend,
-    qname,
-    qstart: +qstart,
-    qend: +qend,
+    tname: tname!,
+    tstart: +tstart!,
+    tend: +tend!,
+    qname: qname!,
+    qstart: +qstart!,
+    qend: +qend!,
     strand: strand === '-' ? -1 : 1,
     extra: {
-      mappingQual: +mq,
+      mappingQual: +mq!,
     },
   }
 }

@@ -6,28 +6,26 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { getContainingView } from '@jbrowse/core/util'
+import { Button, Tooltip } from '@mui/material'
 
 // local
 import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
-import { getContainingView } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => {
-  const bg = theme.palette.action.disabledBackground
-  return {
-    loading: {
-      backgroundColor: theme.palette.background.default,
-      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
-      position: 'absolute',
-      bottom: 0,
-      height: 50,
-      width: 300,
-      right: 0,
-      pointerEvents: 'none',
-      textAlign: 'center',
-    },
-  }
-})
+const useStyles = makeStyles()(theme => ({
+  loading: {
+    backgroundColor: theme.palette.background.default,
+    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${theme.palette.action.disabledBackground} 5px, ${theme.palette.action.disabledBackground} 10px)`,
+    position: 'absolute',
+    bottom: 0,
+    height: 50,
+    width: 300,
+    right: 0,
+    pointerEvents: 'none',
+    textAlign: 'center',
+  },
+}))
 
 const BaseDisplayComponent = observer(function ({
   model,
@@ -41,8 +39,18 @@ const BaseDisplayComponent = observer(function ({
     <BlockMsg
       message={`${error}`}
       severity="error"
-      buttonText="Reload"
-      action={model.reload}
+      action={
+        <Tooltip title="Reload">
+          <Button
+            data-testid="reload_button"
+            onClick={() => {
+              model.reload()
+            }}
+          >
+            Reload
+          </Button>
+        </Tooltip>
+      }
     />
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()

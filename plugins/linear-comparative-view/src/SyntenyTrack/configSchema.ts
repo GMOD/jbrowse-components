@@ -5,6 +5,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config SyntenyTrack
+ * extends
+ * - [BaseTrack](../basetrack)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTheme } from '@mui/material'
-import { coarseStripHTML } from '@jbrowse/core/util'
+import { coarseStripHTML, stripAlpha } from '@jbrowse/core/util'
 
 export default function SVGTrackLabel({
   trackLabels,
@@ -16,7 +16,7 @@ export default function SVGTrackLabel({
   x: number
 }) {
   const theme = useTheme()
-  const fill = theme.palette.text.primary
+  const fill = stripAlpha(theme.palette.text.primary)
   const xoff = trackLabels === 'overlay' ? 5 : 0
   const yoff = trackLabels === 'offset' ? 5 : 0
   const name = coarseStripHTML(trackName)

@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function BamAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'BamAdapter',

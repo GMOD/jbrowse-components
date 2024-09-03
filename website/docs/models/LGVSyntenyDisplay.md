@@ -12,8 +12,12 @@ info
 
 [plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts)
 
-extends `LinearPileupDisplay`, displays location of "synteny" feature in a plain
-LGV, allowing linking out to external synteny views
+displays location of "synteny" feature in a plain LGV, allowing linking out to
+external synteny views
+
+extends
+
+- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
 
 ### LGVSyntenyDisplay - Properties
 
@@ -33,4 +37,20 @@ type: types.literal('LGVSyntenyDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(schema)
+```
+
+### LGVSyntenyDisplay - Methods
+
+#### method: contextMenuItems
+
+```js
+// type signature
+contextMenuItems: () => MenuItem[]
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```

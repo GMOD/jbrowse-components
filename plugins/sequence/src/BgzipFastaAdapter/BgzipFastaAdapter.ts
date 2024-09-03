@@ -3,7 +3,7 @@ import { FileLocation } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
 
-export default class extends IndexedFasta {
+export default class BgzipFastaAdapter extends IndexedFasta {
   public async setupPre() {
     const fastaLocation = this.getConf('fastaLocation')
     const faiLocation = this.getConf('faiLocation')

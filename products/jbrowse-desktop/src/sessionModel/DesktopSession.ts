@@ -5,6 +5,7 @@ import { BaseSessionModel } from '@jbrowse/product-core'
 /**
  * #stateModel DesktopSessionModel
  * #category session
+ * extends [BaseSessionModel](../basesessionmodel)
  */
 export function DesktopSessionFactory(pluginManager: PluginManager) {
   return BaseSessionModel(pluginManager)

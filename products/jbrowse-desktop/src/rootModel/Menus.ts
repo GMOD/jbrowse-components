@@ -16,12 +16,13 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { SessionWithDialogs } from '@jbrowse/product-core'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
 import { getSaveSession } from './Sessions'
 import { DesktopRootModel } from '.'
 import OpenSequenceDialog from '../components/OpenSequenceDialog'
-
+import { AbstractSessionModel } from '@jbrowse/core/util'
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 const { ipcRenderer } = window.require('electron')
 
@@ -53,7 +54,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                   }
                 } catch (e) {
                   console.error(e)
-                  self.session?.notify(`${e}`, 'error')
+                  self.session?.notifyError(`${e}`, e)
                 }
               },
             },
@@ -66,7 +67,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                     await self.saveSession(getSaveSession(self))
                   } catch (e) {
                     console.error(e)
-                    self.session?.notify(`${e}`, 'error')
+                    self.session?.notifyError(`${e}`, e)
                   }
                 }
               },
@@ -83,7 +84,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                   await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
-                  self.session?.notify(`${e}`, 'error')
+                  self.session?.notifyError(`${e}`, e)
                 }
               },
             },
@@ -109,7 +110,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                         })
                       } catch (e) {
                         console.error(e)
-                        self.session?.notify(`${e}`)
+                        self.session?.notifyError(`${e}`, e)
                       }
                       doneCallback()
                     },
@@ -120,7 +121,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
             {
               label: 'Open track...',
               icon: StorageIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
               onClick: (session: any) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
@@ -133,7 +134,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                   session.showWidget(widget)
                   if (session.views.length > 1) {
                     session.notify(
-                      `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+                      'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
                     )
                   }
                 }
@@ -230,7 +231,12 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               label: 'Open assembly manager',
               icon: SettingsIcon,
               onClick: () => {
-                self.setAssemblyEditing(true)
+                ;(self.session as AbstractSessionModel).queueDialog(
+                  handleClose => [
+                    AssemblyManager,
+                    { rootModel: self, onClose: handleClose },
+                  ],
+                )
               },
             },
           ],

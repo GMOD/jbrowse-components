@@ -28,7 +28,7 @@ export default class TextSearchManager {
       if (r) {
         return r
       } else {
-        const { AdapterClass } = pm.getTextSearchAdapterType(conf.type)
+        const { AdapterClass } = pm.getTextSearchAdapterType(conf.type)!
         const a = new AdapterClass(conf, undefined, pm) as BaseTextSearchAdapter
         this.adapterCache.set(adapterId, a)
         return a
@@ -60,8 +60,8 @@ export default class TextSearchManager {
     assemblyName: string,
     confs: AnyConfigurationModel[],
   ): AnyConfigurationModel[] {
-    return confs.filter(
-      c => readConfObject(c, 'assemblyNames')?.includes(assemblyName),
+    return confs.filter(c =>
+      readConfObject(c, 'assemblyNames')?.includes(assemblyName),
     )
   }
 
@@ -70,13 +70,12 @@ export default class TextSearchManager {
     confs: AnyConfigurationModel[],
   ) {
     return confs
-      .filter(
-        conf =>
-          readConfObject(conf, [
-            'textSearching',
-            'textSearchAdapter',
-            'assemblyNames',
-          ])?.includes(assemblyName),
+      .filter(conf =>
+        readConfObject(conf, [
+          'textSearching',
+          'textSearchAdapter',
+          'assemblyNames',
+        ])?.includes(assemblyName),
       )
       .map(
         conf => conf.textSearching.textSearchAdapter as AnyConfigurationModel,

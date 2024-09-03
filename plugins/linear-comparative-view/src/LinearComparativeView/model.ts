@@ -2,10 +2,8 @@ import { lazy } from 'react'
 import {
   addDisposer,
   cast,
-  getParent,
   getPath,
   getRoot,
-  onAction,
   resolveIdentifier,
   types,
   Instance,
@@ -36,6 +34,8 @@ const ReturnToImportFormDialog = lazy(
 
 /**
  * #stateModel LinearComparativeView
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -62,10 +62,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        linkViews: false,
-        /**
-         * #property
-         */
         interactToggled: false,
         /**
          * #property
@@ -82,14 +78,14 @@ function stateModelFactory(pluginManager: PluginManager) {
          * currently this is limited to an array of two
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
 
         /**
          * #property
-         * this represents tracks specific to this view specifically used
-         * for read vs ref dotplots where this track would not really apply
+         * this represents tracks specific to this view specifically used for
+         * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
         viewTrackConfigs: types.array(
@@ -98,6 +94,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: undefined as number | undefined,
     }))
     .views(self => ({
@@ -112,6 +111,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get initialized() {
         return (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
@@ -135,24 +135,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          onAction(self, param => {
-            if (self.linkViews) {
-              const { name, path, args } = param
-
-              // doesn't link showTrack/hideTrack, doesn't make sense in
-              // synteny views most time
-              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
-              if (actions.includes(name) && path) {
-                this.onSubviewAction(name, path, args)
-              }
-            }
-          }),
-        )
-      },
-
       // automatically removes session assemblies associated with this view
       // e.g. read vs ref
       beforeDestroy() {
@@ -195,27 +177,10 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
        */
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
         return self.middleComparativeHeight
-      },
-
-      /**
-       * #action
-       */
-      toggleLinkViews() {
-        self.linkViews = !self.linkViews
       },
 
       /**
@@ -242,13 +207,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
-
-        // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
 
       /**
@@ -264,7 +228,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pluginManager.getViewType(self.type)!
         const supportedDisplays = new Set(
           viewType.displayTypes.map(d => d.name),
         )
@@ -293,7 +257,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const config = resolveIdentifier(schema, getRoot(self), trackId)
         const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          shownTracks.forEach(t => self.tracks.remove(t))
+        })
         return shownTracks.length
       },
       /**
@@ -335,8 +301,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       menuItems(): MenuItem[] {
         return [
           ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()] as const)
-            .filter(f => !!f[1])
+            .map((view, idx) => [idx, view.menuItems()] as const)
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
           {
             label: 'Return to import form',
@@ -380,7 +345,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             if (self.width) {
-              self.views.forEach(v => v.setWidth(self.width))
+              self.views.forEach(v => {
+                v.setWidth(self.width)
+              })
             }
           }),
         )

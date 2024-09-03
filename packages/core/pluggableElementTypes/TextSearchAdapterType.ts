@@ -20,8 +20,5 @@ export default class TextSearchAdapterType extends PluggableElementBase {
     this.description = stuff.description
     this.configSchema = stuff.configSchema
     this.AdapterClass = stuff.AdapterClass
-    if (!this.AdapterClass) {
-      throw new Error(`no AdapterClass defined for adapter type ${this.name}`)
-    }
   }
 }

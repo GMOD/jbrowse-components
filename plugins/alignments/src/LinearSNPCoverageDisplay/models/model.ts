@@ -27,7 +27,8 @@ type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearSNPCoverageDisplay
- * extends `LinearWiggleDisplay`
+ * extends
+ * - [LinearWiggleDisplay](../linearwiggledisplay)
  */
 function stateModelFactory(
   pluginManager: PluginManager,
@@ -202,7 +203,7 @@ function stateModelFactory(
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: filterBy ? getSnapshot(filterBy) : undefined,
+            filterBy: getSnapshot(filterBy),
           }
         },
       }
@@ -247,12 +248,11 @@ function stateModelFactory(
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
               const adapter = getConf(self.parentTrack, 'adapter')
-              const vals = await getUniqueModificationValues(
+              const vals = await getUniqueModificationValues({
                 self,
-                adapter,
-                colorBy,
-                staticBlocks,
-              )
+                adapterConfig: adapter,
+                blocks: staticBlocks,
+              })
               if (isAlive(self)) {
                 self.updateModificationColorMap(vals)
                 self.setModificationsReady(true)
@@ -318,19 +318,25 @@ function stateModelFactory(
               label: 'Draw insertion/clipping indicators',
               type: 'checkbox',
               checked: self.drawIndicatorsSetting,
-              onClick: () => self.toggleDrawIndicators(),
+              onClick: () => {
+                self.toggleDrawIndicators()
+              },
             },
             {
               label: 'Draw insertion/clipping counts',
               type: 'checkbox',
               checked: self.drawInterbaseCountsSetting,
-              onClick: () => self.toggleDrawInterbaseCounts(),
+              onClick: () => {
+                self.toggleDrawInterbaseCounts()
+              },
             },
             {
               label: 'Draw arcs',
               type: 'checkbox',
               checked: self.drawArcsSetting,
-              onClick: () => self.toggleDrawArcs(),
+              onClick: () => {
+                self.toggleDrawArcs()
+              },
             },
           ]
         },

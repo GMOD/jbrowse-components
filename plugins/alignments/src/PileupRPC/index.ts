@@ -5,7 +5,7 @@ import {
   PileupGetReducedFeatures,
 } from './rpcMethods'
 
-export default (pm: PluginManager) => {
+export default function PileupRPCMethodsF(pm: PluginManager) {
   pm.addRpcMethod(() => new PileupGetGlobalValueForTag(pm))
   pm.addRpcMethod(() => new PileupGetVisibleModifications(pm))
   pm.addRpcMethod(() => new PileupGetReducedFeatures(pm))

@@ -12,7 +12,9 @@ info
 
 [plugins/linear-genome-view/src/LinearBareDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearBareDisplay/model.ts)
 
-extends `BaseLinearDisplay`
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
 
 ### LinearBareDisplay - Properties
 

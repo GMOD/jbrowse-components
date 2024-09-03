@@ -9,6 +9,7 @@ import {
   Region,
   Feature,
   updateStatus,
+  toLocale,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -48,12 +49,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   public async configurePre() {
     const cramLocation = this.getConf('cramLocation')
     const craiLocation = this.getConf('craiLocation')
-    if (!cramLocation) {
-      throw new Error('missing cramLocation argument')
-    }
-    if (!craiLocation) {
-      throw new Error('missing craiLocation argument')
-    }
     const pm = this.pluginManager
 
     const cram = new IndexedCramFile({
@@ -61,7 +56,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
       seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
-      fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
     })
 
     if (!this.getSubAdapter) {
@@ -69,6 +63,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     }
 
     const seqConf = this.getConf('sequenceAdapter')
+    if (!seqConf) {
+      throw new Error('no sequenceAdapter supplied to CramAdapter config')
+    }
     const subadapter = await this.getSubAdapter(seqConf)
 
     return {
@@ -79,7 +76,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   public async configure() {
     if (!this.configureP) {
-      this.configureP = this.configurePre().catch(e => {
+      this.configureP = this.configurePre().catch((e: unknown) => {
         this.configureP = undefined
         throw e
       })
@@ -129,13 +126,14 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       })
       .join('')
 
-    if (sequence.length !== end - start) {
+    const qlen = end - start
+    if (sequence.length !== qlen) {
       throw new Error(
-        `sequence fetch failed: fetching ${refName}:${(
-          start - 1
-        ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
-          end - start
-        ).toLocaleString()}`,
+        `fetching ${refName}:${toLocale(
+          start - 1,
+        )}-${toLocale(end)} returned ${toLocale(sequence.length)} bases, should have returned ${toLocale(
+          qlen,
+        )}`,
       )
     }
     return sequence
@@ -155,14 +153,12 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       samHeader
         .filter(l => l.tag === 'SQ')
         .forEach((sqLine, refId) => {
-          sqLine.data.forEach(item => {
-            if (item.tag === 'SN') {
-              // this is the ref name
-              const refName = item.value
-              nameToId[refName] = refId
-              idToName[refId] = refName
-            }
-          })
+          const SN = sqLine.data.find(item => item.tag === 'SN')
+          if (SN) {
+            const refName = SN.value
+            nameToId[refName] = refId
+            idToName[refId] = refName
+          }
         })
 
       const readGroups = samHeader
@@ -177,7 +173,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -225,7 +221,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
-      const { cram } = await this.setup(opts)
+      const { cram, samHeader } = await this.setup(opts)
 
       const refId = this.refNameToId(refName)
       if (refId === undefined) {
@@ -258,11 +254,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const v =
+            const readVal =
               tagFilter.tag === 'RG'
-                ? this.samHeader.readGroups?.[record.readGroupId]
+                ? samHeader.readGroups?.[record.readGroupId]
                 : record.tags[tagFilter.tag]
-            if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+            const filterVal = tagFilter.value
+            if (
+              filterVal === '*'
+                ? readVal !== undefined
+                : `${readVal}` !== `${filterVal}`
+            ) {
               continue
             }
           }

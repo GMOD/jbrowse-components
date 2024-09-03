@@ -1,6 +1,6 @@
 import React from 'react'
 import { ThemeProvider } from '@mui/material'
-import { renderToStaticMarkup } from 'react-dom/server'
+import { getRoot } from 'mobx-state-tree'
 import { when } from 'mobx'
 import {
   getSession,
@@ -9,7 +9,9 @@ import {
   measureText,
   ReactRendering,
   renderToAbstractCanvas,
+  renderToStaticMarkup,
   sum,
+  getFillProps,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -35,16 +37,16 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Wrapper = ({ children }: any) => <>{children}</>,
+    Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const themeVar = session.allThemes?.()[themeName]
   const { width, views, middleComparativeHeight: synH, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
 
+  const { createRootFn } = getRoot<any>(model)
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
   )
@@ -58,7 +60,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             view.tracks.map(async track => {
               const d = track.displays[0]
               await when(() => (d.ready !== undefined ? d.ready : true))
-              return { track, result: await d.renderSvg({ ...opts, theme }) }
+              return {
+                track,
+                result: await d.renderSvg({ ...opts, theme: themeVar }),
+              }
             }),
           ),
         }) as const,
@@ -73,12 +78,16 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
         width,
         synH,
         { exportSVG: opts },
-        ctx => drawRef(d, ctx),
+        ctx => {
+          drawRef(d, ctx)
+          return undefined
+        },
       )
 
       if ('imageData' in r) {
         throw new Error('found a canvas in svg export, probably a bug')
-      } else if ('canvasRecordedData' in r) {
+      }
+      if ('canvasRecordedData' in r) {
         return {
           html: await getSerializedSvg({
             ...r,
@@ -86,9 +95,8 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             height: synH,
           }),
         }
-      } else {
-        return r
       }
+      return r
     }),
   )
 
@@ -103,12 +111,11 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
-
-  const t = createJBrowseTheme(theme)
+  const theme = createJBrowseTheme(themeVar)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
+    <ThemeProvider theme={theme}>
       <Wrapper>
         <svg
           width={width}
@@ -120,18 +127,22 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
           <g transform={`translate(${shift} ${fontSize})`}>
             <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                {views[0].assemblyNames.join(', ')}
+              <text
+                x={0}
+                fontSize={fontSize}
+                {...getFillProps(theme.palette.text.primary)}
+              >
+                {views[0]!.assemblyNames.join(', ')}
               </text>
 
-              <SVGRuler model={displayResults[0].view} fontSize={fontSize} />
+              <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
               trackLabels={trackLabels}
               fontSize={fontSize}
-              model={displayResults[0].view}
-              displayResults={displayResults[0].data}
+              model={displayResults[0]!.view}
+              displayResults={displayResults[0]!.data}
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />
@@ -144,27 +155,32 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           </defs>
           <g
             transform={`translate(${shift + trackLabelOffset} ${
-              fontSize + heights[0]
+              fontSize + heights[0]!
             })`}
-            clipPath={`url(#synclip)`}
+            clipPath={'url(#synclip)'}
           >
             {renderings.map((r, i) => (
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <ReactRendering key={i} rendering={r} />
             ))}
           </g>
-          <g transform={`translate(${shift} ${fontSize + heights[0] + synH})`}>
+          <g transform={`translate(${shift} ${fontSize + heights[0]! + synH})`}>
             <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                {views[1].assemblyNames.join(', ')}
+              <text
+                x={0}
+                fontSize={fontSize}
+                {...getFillProps(theme.palette.text.primary)}
+              >
+                {views[1]!.assemblyNames.join(', ')}
               </text>
-              <SVGRuler model={displayResults[1].view} fontSize={fontSize} />
+              <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
               trackLabels={trackLabels}
               fontSize={fontSize}
-              model={displayResults[1].view}
-              displayResults={displayResults[1].data}
+              model={displayResults[1]!.view}
+              displayResults={displayResults[1]!.data}
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />
@@ -172,5 +188,6 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }

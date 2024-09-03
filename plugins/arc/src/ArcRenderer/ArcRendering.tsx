@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { Feature, Region, bpSpanPx, measureText } from '@jbrowse/core/util'
+import { Feature, Region, bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { Tooltip } from 'react-svg-tooltip'
+
+// locals
+import ArcTooltip from '../ArcTooltip'
 
 function Arc({
   selectedFeatureId,
@@ -15,20 +17,20 @@ function Arc({
   onFeatureClick,
   feature,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
   feature: Feature
 }) {
+  const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
     feature.get('start'),
     feature.get('end'),
     region,
     bpPerPx,
   )
-
   const featureId = feature.id()
   let stroke = readConfObject(config, 'color', { feature })
   let textStroke = 'black'
@@ -40,59 +42,44 @@ function Arc({
   const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
   const height = readConfObject(config, 'height', { feature }) || 100
   const ref = React.createRef<SVGPathElement>()
-  const tooltipWidth = 20 + measureText(caption?.toString())
 
-  const t = 0.5
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
-  const textYCoord =
-    (1 - t) * (1 - t) * (1 - t) * 0 +
-    3 * ((1 - t) * (1 - t)) * (t * height) +
-    3 * (1 - t) * (t * t) * height +
-    t * t * t * 0
+  const t = 0.5
+  const t1 = 1 - t
+  const textYCoord = 3 * (t1 * t1) * (t * height) + 3 * t1 * (t * t) * height
 
   return (
     <g>
       <path
+        ref={ref}
+        {...getStrokeProps(stroke)}
         d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
-        stroke={stroke}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        ref={ref}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         pointerEvents="stroke"
       />
-      <Tooltip triggerRef={ref}>
-        <rect
-          x={12}
-          y={0}
-          width={tooltipWidth}
-          height={20}
-          rx={5}
-          ry={5}
-          fill="black"
-          fillOpacity="50%"
-        />
-        <text
-          x={22}
-          y={14}
-          fontSize={10}
-          fill="white"
-          textLength={tooltipWidth - 20}
-        >
-          {caption}
-        </text>
-      </Tooltip>
+      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: 'white', strokeWidth: '0.6em' }}
+        stroke="white"
+        strokeWidth="0.6em"
       >
         {label}
       </text>
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: textStroke }}
+        stroke={textStroke}
       >
         {label}
       </text>
@@ -149,13 +136,14 @@ function SemiCircles({
   onFeatureClick,
   feature,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
   feature: Feature
 }) {
+  const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
     feature.get('start'),
     feature.get('end'),
@@ -173,7 +161,6 @@ function SemiCircles({
   const caption = readConfObject(config, 'caption', { feature })
   const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
   const ref = React.createRef<SVGPathElement>()
-  const tooltipWidth = 20 + measureText(caption?.toString())
   const textYCoord = (right - left) / 2
 
   return (
@@ -186,45 +173,34 @@ function SemiCircles({
           90,
           270,
         )}
-        stroke={stroke}
+        {...getStrokeProps(stroke)}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         ref={ref}
         pointerEvents="stroke"
       />
-      <Tooltip triggerRef={ref}>
-        <rect
-          x={12}
-          y={0}
-          width={tooltipWidth}
-          height={20}
-          rx={5}
-          ry={5}
-          fill="black"
-          fillOpacity="50%"
-        />
-        <text
-          x={22}
-          y={14}
-          fontSize={10}
-          fill="white"
-          textLength={tooltipWidth - 20}
-        >
-          {caption}
-        </text>
-      </Tooltip>
+      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: 'white', strokeWidth: '0.6em' }}
+        stroke="white"
+        strokeWidth="0.6em"
       >
         {label}
       </text>
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: textStroke }}
+        stroke={textStroke}
       >
         {label}
       </text>
@@ -238,19 +214,22 @@ const ArcRendering = observer(function ({
   bpPerPx,
   height,
   exportSVG,
-  displayModel: { selectedFeatureId },
+  displayModel,
+  onFeatureClick,
 }: {
   features: Map<string, Feature>
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
   height: number
-  displayModel: { selectedFeatureId: string }
+  displayModel?: { selectedFeatureId: string }
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
+  const { selectedFeatureId } = displayModel || {}
 
   return (
     <Wrapper exportSVG={exportSVG} width={width} height={height}>
@@ -262,6 +241,7 @@ const ArcRendering = observer(function ({
             region={region}
             bpPerPx={bpPerPx}
             selectedFeatureId={selectedFeatureId}
+            onFeatureClick={onFeatureClick}
             feature={f}
           />
         ) : (
@@ -271,6 +251,7 @@ const ArcRendering = observer(function ({
             region={region}
             bpPerPx={bpPerPx}
             selectedFeatureId={selectedFeatureId}
+            onFeatureClick={onFeatureClick}
             feature={f}
           />
         ),
@@ -291,7 +272,7 @@ function Wrapper({
   children: React.ReactNode
 }) {
   return exportSVG ? (
-    <>{children}</>
+    children
   ) : (
     <svg width={width} height={height}>
       {children}

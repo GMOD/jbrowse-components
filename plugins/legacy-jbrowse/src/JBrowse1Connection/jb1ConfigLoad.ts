@@ -11,12 +11,14 @@ import {
 } from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as UriLocation).uri !== undefined
 }
 
 function isLocalPathLocation(
   location: JBLocation,
 ): location is LocalPathLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as LocalPathLocation).localPath !== undefined
 }
 
@@ -130,8 +132,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     if (prop === 'tracks' && prop in a) {
       const aTracks = a[prop] || []
       const bTracks = b[prop] || []
+
       if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
-        a[prop] = mergeTrackConfigs(aTracks || [], bTracks || [])
+        a[prop] = mergeTrackConfigs(aTracks, bTracks)
       } else {
         throw new Error(
           `Track config has not been properly regularized: ${aTracks} ${bTracks}`,
@@ -216,7 +219,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       regularizeIncludes(config.include || []),
       newUpstreamConf,
     )
-    delete config.include
+    config.include = undefined
 
     const loads = includes.map(async (include): Promise<Config> => {
       include.cacheBuster = inputConfig.cacheBuster
@@ -265,8 +268,7 @@ function regularizeIncludes(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unnecessary-type-constraint
-function fillTemplates<T extends any>(subconfig: T, config: Config): T {
+function fillTemplates<T>(subconfig: T, config: Config): T {
   if (!subconfig) {
     return subconfig
   }
@@ -275,7 +277,6 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
       subconfig[i] = fillTemplates(subconfig[i], config)
     }
   } else if (typeof subconfig === 'object') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sub = subconfig as Record<string, any>
     for (const name of Object.keys(sub)) {
       sub[name] = fillTemplates(sub[name], config)

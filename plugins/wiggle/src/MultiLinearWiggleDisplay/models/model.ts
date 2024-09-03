@@ -16,11 +16,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import {
-  getScale,
-  quantitativeStatsAutorun,
-  YSCALEBAR_LABEL_OFFSET,
-} from '../../util'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
@@ -29,7 +25,7 @@ const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
-const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
+const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -48,7 +44,8 @@ interface Source {
 
 /**
  * #stateModel MultiLinearWiggleDisplay
- * extends `SharedWiggleMixin`
+ * extends
+ * - [SharedWiggleMixin](../sharedwigglemixin)
  */
 export function stateModelFactory(
   pluginManager: PluginManager,
@@ -318,9 +315,12 @@ export function stateModelFactory(
             scaleOpts,
             sources,
             ticks,
-            onMouseMove: (_: unknown, f: Feature) =>
-              self.setFeatureUnderMouse(f),
-            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
+            onMouseMove: (_: unknown, f: Feature) => {
+              self.setFeatureUnderMouse(f)
+            },
+            onMouseLeave: () => {
+              self.setFeatureUnderMouse(undefined)
+            },
           }
         },
 
@@ -344,7 +344,7 @@ export function stateModelFactory(
         get fillSetting() {
           if (self.filled) {
             return 0
-          } else if (!self.filled && self.minSize === 1) {
+          } else if (self.minSize === 1) {
             return 1
           } else {
             return 2
@@ -376,7 +376,9 @@ export function stateModelFactory(
                         label: elt,
                         type: 'radio',
                         checked: self.fillSetting === idx,
-                        onClick: () => self.setFill(idx),
+                        onClick: () => {
+                          self.setFill(idx)
+                        },
                       }),
                     ),
                   },
@@ -389,7 +391,9 @@ export function stateModelFactory(
                     type: 'checkbox',
                     label: 'Draw cross hatches',
                     checked: self.displayCrossHatchesSetting,
-                    onClick: () => self.toggleCrossHatches(),
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
                   },
                 ]
               : []),
@@ -407,7 +411,9 @@ export function stateModelFactory(
                       label: key,
                       type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
-                      onClick: () => self.setRendererType(key),
+                      onClick: () => {
+                        self.setRendererType(key)
+                      },
                     })),
                   },
                 ]
@@ -417,7 +423,7 @@ export function stateModelFactory(
               label: 'Edit colors/arrangement...',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  SetColorDlg,
+                  SetColorDialog,
                   { model: self, handleClose },
                 ])
               },
@@ -430,26 +436,30 @@ export function stateModelFactory(
       const { renderSvg: superRenderSvg } = self
       return {
         afterAttach() {
-          quantitativeStatsAutorun(self)
-          addDisposer(
-            self,
-            autorun(async () => {
-              const { rpcManager } = getSession(self)
-              const { adapterConfig } = self
-              const sessionId = getRpcSessionId(self)
-              const sources = (await rpcManager.call(
-                sessionId,
-                'MultiWiggleGetSources',
-                {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            const { quantitativeStatsAutorun } = await import('../../util')
+            quantitativeStatsAutorun(self)
+            addDisposer(
+              self,
+              autorun(async () => {
+                const { rpcManager } = getSession(self)
+                const { adapterConfig } = self
+                const sessionId = getRpcSessionId(self)
+                const sources = (await rpcManager.call(
                   sessionId,
-                  adapterConfig,
-                },
-              )) as Source[]
-              if (isAlive(self)) {
-                self.setSources(sources)
-              }
-            }),
-          )
+                  'MultiWiggleGetSources',
+                  {
+                    sessionId,
+                    adapterConfig,
+                  },
+                )) as Source[]
+                if (isAlive(self)) {
+                  self.setSources(sources)
+                }
+              }),
+            )
+          })()
         },
 
         /**

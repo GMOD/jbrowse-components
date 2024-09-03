@@ -1,4 +1,8 @@
-import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
+import {
+  scaleLinear,
+  scaleLog,
+  scaleQuantize,
+} from '@mui/x-charts-vendor/d3-scale'
 import { autorun } from 'mobx'
 import {
   isAbortException,
@@ -25,6 +29,7 @@ export interface ScaleOpts {
 }
 
 export interface Source {
+  baseUri?: string
   name: string
   color?: string
   group?: string
@@ -48,7 +53,10 @@ export function getScale({
   pivotValue,
   inverted,
 }: ScaleOpts) {
-  let scale
+  let scale:
+    | ReturnType<typeof scaleLinear<number>>
+    | ReturnType<typeof scaleLog<number>>
+    | ReturnType<typeof scaleQuantize<number>>
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -56,8 +64,7 @@ export function getScale({
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
-    scale = scaleLog()
-    scale.base(2)
+    scale = scaleLog().base(2)
   } else if (scaleType === 'quantize') {
     scale = scaleQuantize()
   } else {
@@ -129,17 +136,14 @@ export function getNiceDomain({
     }
   }
   if (scaleType === 'log') {
-    // if the min is 0, assume that it's just something
-    // with no read coverage and that we should ignore it in calculations
-    // if it's greater than 1 pin to 1 for the full range also
-    // otherwise, we may see bigwigs with fractional values
-    if (min === 0 || min > 1) {
+    // for min>0 and max>1, set log min to 1, which works for most coverage
+    // types tracks. if max is not >1, might be like raw p-values so then it'll
+    // display negative values
+    if (min >= 0 && max > 1) {
       min = 1
     }
   }
-  if (min === undefined || max === undefined) {
-    throw new Error('invalid domain supplied to stats function')
-  }
+
   if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore
   }
@@ -177,11 +181,11 @@ export async function getQuantitativeStats(
   opts: {
     headers?: Record<string, string>
     signal?: AbortSignal
-    filters?: string[]
+    filters: string[]
   },
 ): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
-  const nd = getConf(self, 'numStdDev') || 3
+  const numStdDev = getConf(self, 'numStdDev') || 3
   const { adapterConfig, autoscaleType } = self
   const sessionId = getRpcSessionId(self)
   const params = {
@@ -208,8 +212,8 @@ export async function getQuantitativeStats(
     return autoscaleType === 'globalsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+          scoreMax: scoreMean + numStdDev * scoreStdDev,
         }
       : results
   }
@@ -239,8 +243,8 @@ export async function getQuantitativeStats(
     return autoscaleType === 'localsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+          scoreMax: scoreMean + numStdDev * scoreStdDev,
         }
       : results
   }
@@ -291,6 +295,7 @@ export function quantitativeStatsAutorun(self: {
 
           const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
+            filters: [],
             ...self.renderProps(),
           })
 

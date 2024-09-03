@@ -24,7 +24,7 @@ export function drawDensity(
   },
 ) {
   const { features, regions, bpPerPx, scaleOpts, height, config } = props
-  const [region] = regions
+  const region = regions[0]!
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const negColor = readConfObject(config, 'negColor')
@@ -44,9 +44,11 @@ export function drawDensity(
       ? (_: Feature, score: number) => scale(score)
       : (feature: Feature, score: number) =>
           readConfObject(config, 'color', { feature, score })
-  const [niceMin, niceMax] = scale2.domain()
+  const domain = scale2.domain()
+  const niceMin = domain[0]!
+  const niceMax = domain[1]!
 
-  let prevLeftPx = -Infinity
+  let prevLeftPx = Number.NEGATIVE_INFINITY
   let hasClipping = false
   const reducedFeatures = []
   for (const feature of features.values()) {

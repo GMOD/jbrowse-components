@@ -4,7 +4,7 @@ import readline from 'readline'
 
 // locals
 import { Track } from '../base'
-import { getLocalOrRemoteStream } from '../util'
+import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'
 
 export async function* indexGff3({
   config,
@@ -27,7 +27,7 @@ export async function* indexGff3({
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
   const progressBar = new SingleBar(
     {
-      format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      format: `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
       etaBuffer: 2000,
     },
     Presets.shades_classic,
@@ -43,13 +43,15 @@ export async function* indexGff3({
     progressBar.start(totalBytes, 0)
   }
 
+  // @ts-expect-error
   stream.on('data', chunk => {
     receivedBytes += chunk.length
     progressBar.update(receivedBytes)
   })
 
   const rl = readline.createInterface({
-    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    // @ts-expect-error
+    input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {
@@ -64,18 +66,20 @@ export async function* indexGff3({
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
     const locStr = `${seq_id}:${start}..${end}`
 
-    if (!typesToExclude.includes(type)) {
+    if (!typesToExclude.includes(type!)) {
       // turns gff3 attrs into a map, and converts the arrays into space
       // separated strings
       const col9attrs = Object.fromEntries(
-        col9
+        col9!
           .split(';')
           .map(f => f.trim())
           .filter(f => !!f)
           .map(f => f.split('='))
           .map(([key, val]) => [
-            key.trim(),
-            decodeURIComponent(val).trim().split(',').join(' '),
+            key!.trim(),
+            val
+              ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
+              : undefined,
           ]),
       )
       const attrs = attributesToIndex

@@ -10,17 +10,13 @@ import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import {
-  getScale,
-  quantitativeStatsAutorun,
-  YSCALEBAR_LABEL_OFFSET,
-} from '../../util'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
 
 // lazies
-const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
+const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -31,7 +27,8 @@ const rendererTypes = new Map([
 
 /**
  * #stateModel LinearWiggleDisplay
- * extends `SharedWiggleMixin`
+ * extends
+ * - [SharedWiggleMixin](../sharedwigglemixin)
  */
 function stateModelFactory(
   pluginManager: PluginManager,
@@ -131,7 +128,7 @@ function stateModelFactory(
         get fillSetting() {
           if (self.filled) {
             return 0
-          } else if (!self.filled && self.minSize === 1) {
+          } else if (self.minSize === 1) {
             return 1
           } else {
             return 2
@@ -163,7 +160,9 @@ function stateModelFactory(
                         label: elt,
                         type: 'radio',
                         checked: self.fillSetting === idx,
-                        onClick: () => self.setFill(idx),
+                        onClick: () => {
+                          self.setFill(idx)
+                        },
                       }),
                     ),
                   },
@@ -176,7 +175,9 @@ function stateModelFactory(
                     type: 'checkbox',
                     label: 'Draw cross hatches',
                     checked: self.displayCrossHatchesSetting,
-                    onClick: () => self.toggleCrossHatches(),
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
                   },
                 ]
               : []),
@@ -189,7 +190,9 @@ function stateModelFactory(
                       label: key,
                       type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
-                      onClick: () => self.setRendererType(key),
+                      onClick: () => {
+                        self.setRendererType(key)
+                      },
                     })),
                   },
                 ]
@@ -199,7 +202,7 @@ function stateModelFactory(
               label: 'Set color',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  SetColorDlg,
+                  SetColorDialog,
                   { model: self, handleClose },
                 ])
               },
@@ -213,7 +216,11 @@ function stateModelFactory(
 
       return {
         afterAttach() {
-          quantitativeStatsAutorun(self)
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            const { quantitativeStatsAutorun } = await import('../../util')
+            quantitativeStatsAutorun(self)
+          })()
         },
         /**
          * #action

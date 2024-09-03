@@ -16,9 +16,9 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 import { getSession } from '@jbrowse/core/util'
-import ExportSvgDlg from './ExportSvgDialog'
+import ExportSvgDialog from './ExportSvgDialog'
 
 const useStyles = makeStyles()(theme => ({
   controls: {
@@ -77,7 +77,11 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
-      <IconButton onClick={event => setAnchorEl(event.currentTarget)}>
+      <IconButton
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
+      >
         <MoreVert />
       </IconButton>
 
@@ -100,7 +104,7 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
               icon: PhotoCamera,
               onClick: () => {
                 getSession(model).queueDialog(handleClose => [
-                  ExportSvgDlg,
+                  ExportSvgDialog,
                   { model, handleClose },
                 ])
               },
@@ -111,7 +115,9 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
             setAnchorEl(null)
           }}
           open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
         />
       ) : null}
     </div>

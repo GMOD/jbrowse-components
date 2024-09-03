@@ -17,7 +17,7 @@ export function chooseGridPitch(
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
   const majorMagnitude = Number.parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
+    Number(minMajorPitchBp).toExponential().split(/e/i)[1]!,
     10,
   )
 
@@ -57,9 +57,6 @@ export function makeTicks(
 
   let minBase = start
   let maxBase = end
-  if (minBase === null || maxBase === null) {
-    return []
-  }
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
@@ -97,7 +94,7 @@ export function makeTicks(
  * Used by navToLocations and navToLocString
  */
 export async function generateLocations(
-  regions: ParsedLocString[] = [],
+  regions: ParsedLocString[],
   assemblyManager: AssemblyManager,
   assemblyName?: string,
 ) {
@@ -166,17 +163,16 @@ export function parseLocStrings(
     // start, end if start and end are integer inputs
     const [refName, start, end] = inputs
     if (
-      `${e}`.match(/Unknown reference sequence/) &&
-      Number.isInteger(+start) &&
-      Number.isInteger(+end)
+      /Unknown reference sequence/.exec(`${e}`) &&
+      Number.isInteger(+start!) &&
+      Number.isInteger(+end!)
     ) {
       return [
-        parseLocString(refName + ':' + start + '..' + end, ref =>
+        parseLocString(`${refName}:${start}..${end}`, ref =>
           isValidRefName(ref, assemblyName),
         ),
       ]
-    } else {
-      throw e
     }
+    throw e
   }
 }

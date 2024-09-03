@@ -4,7 +4,7 @@ import ReactComponent from './ArcRendering'
 import configSchema from './configSchema'
 import ArcRenderer from './ArcRenderer'
 
-export default (pluginManager: PluginManager) => {
+export default function ArcRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new ArcRenderer({

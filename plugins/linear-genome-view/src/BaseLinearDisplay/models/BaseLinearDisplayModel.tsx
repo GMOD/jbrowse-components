@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -21,13 +20,13 @@ import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 
 // icons
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
-import renderBaseLinearDisplaySvg from './renderSvg'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
 
@@ -51,7 +50,14 @@ export interface ExportSvgDisplayOptions extends ExportSvgOptions {
 /**
  * #stateModel BaseLinearDisplay
  * #category display
- * extends `BaseDisplay`
+ *
+ * BaseLinearDisplay is used as the basis for many linear genome view tracks.
+ * It is block based, and can use 'static blocks' or 'dynamic blocks'
+ *
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function stateModelFactory() {
   return types
@@ -144,7 +150,7 @@ function stateModelFactory() {
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block?.features) {
+          if (block.features) {
             featureMaps.push(block.features)
           }
         }
@@ -181,9 +187,9 @@ function stateModelFactory() {
        * #getter
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret
+        let ret: LayoutRecord | undefined
         self.blockState.forEach(block => {
-          const val = block?.layout?.getByID(id)
+          const val = block.layout?.getByID(id)
           if (val) {
             ret = val
           }
@@ -237,6 +243,17 @@ function stateModelFactory() {
       /**
        * #action
        */
+      navToFeature(feature: Feature) {
+        const view = getContainingView(self) as LGV
+        view.navTo({
+          refName: feature.get('refName'),
+          start: feature.get('start'),
+          end: feature.get('end'),
+        })
+      },
+      /**
+       * #action
+       */
       clearFeatureSelection() {
         getSession(self).clearSelection()
       },
@@ -266,7 +283,9 @@ function stateModelFactory() {
           self.setError()
           self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
-          ;[...self.blockState.values()].map(val => val.doReload())
+          ;[...self.blockState.values()].forEach(val => {
+            val.doReload()
+          })
           superReload()
         },
       }
@@ -296,6 +315,15 @@ function stateModelFactory() {
                     }
                   },
                 },
+                {
+                  label: 'Zoom to feature',
+                  icon: CenterFocusStrongIcon,
+                  onClick: () => {
+                    if (self.contextMenuFeature) {
+                      self.navToFeature(self.contextMenuFeature)
+                    }
+                  },
+                },
               ]
             : []),
         ]
@@ -308,6 +336,7 @@ function stateModelFactory() {
           ...getParentRenderProps(self),
           notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
+
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
@@ -354,6 +383,7 @@ function stateModelFactory() {
        * #method
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {
@@ -384,6 +414,7 @@ function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -393,9 +424,9 @@ function stateModelFactory() {
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })
-    .postProcessSnapshot(self => {
+    .postProcessSnapshot(snap => {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-      const r = self as Omit<typeof self, symbol>
+      const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest
     })

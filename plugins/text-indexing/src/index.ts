@@ -1,7 +1,8 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TextIndexRpcMethod } from './TextIndexRpcMethod/TextIndexRpcMethod'
-export default class extends Plugin {
+
+export default class TextIndexingPlugin extends Plugin {
   name = 'TextIndexingPlugin'
 
   install(pluginManager: PluginManager) {

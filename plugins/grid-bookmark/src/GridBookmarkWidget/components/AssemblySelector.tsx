@@ -20,7 +20,7 @@ const AssemblySelector = observer(function ({
   model: GridBookmarkModel
 }) {
   const { validAssemblies, selectedAssemblies } = model
-  const noAssemblies = validAssemblies.size === 0 ? true : false
+  const noAssemblies = validAssemblies.size === 0
   const label = 'Select assemblies'
   const id = 'select-assemblies-label'
   const selectedSet = new Set(selectedAssemblies)
@@ -33,7 +33,9 @@ const AssemblySelector = observer(function ({
         labelId={id}
         multiple
         value={selectedAssemblies}
-        onChange={event => model.setSelectedAssemblies([...event.target.value])}
+        onChange={event => {
+          model.setSelectedAssemblies([...event.target.value])
+        }}
         input={<OutlinedInput label={label} />}
         renderValue={selected => selected.join(', ')}
       >

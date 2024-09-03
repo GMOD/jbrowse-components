@@ -44,7 +44,7 @@ describe('Root MST model', () => {
 
   it('activates a session snapshot', () => {
     const session = { name: 'testSession' }
-    localStorage.setItem(`localSaved-123`, JSON.stringify({ session }))
+    localStorage.setItem('localSaved-123', JSON.stringify({ session }))
     Storage.prototype.getItem = jest.fn(
       () => `{"session": {"name": "testSession"}}`,
     )
@@ -120,7 +120,9 @@ describe('Root MST model', () => {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
     })
-    expect(() => root.setSession({})).toThrow()
+    expect(() => {
+      root.setSession({})
+    }).toThrow()
   })
 
   it('adds menus', () => {

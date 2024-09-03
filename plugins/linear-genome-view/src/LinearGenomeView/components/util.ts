@@ -55,9 +55,10 @@ export function splitLast(str: string, split: string): [string, string] {
   }
 }
 
-export function getRelativeX<
-  T extends { clientX: number; target: EventTarget | null },
->(event: T, element: HTMLElement | null) {
+export function getRelativeX(
+  event: { clientX: number; target: EventTarget | null },
+  element: HTMLElement | null,
+) {
   return event.clientX - (element?.getBoundingClientRect().left || 0)
 }
 

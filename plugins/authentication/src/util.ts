@@ -18,7 +18,7 @@ export async function getResponseError({
 
 export async function getError(response: Response) {
   try {
-    return response.text()
+    return await response.text()
   } catch (e) {
     return response.statusText
   }

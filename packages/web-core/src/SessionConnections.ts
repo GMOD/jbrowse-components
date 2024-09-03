@@ -52,7 +52,7 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
         },
 
         deleteConnection(configuration: AnyConfigurationModel) {
-          let deletedConn
+          let deletedConn: unknown
           if (self.adminMode) {
             deletedConn = superDeleteConnection(configuration)
           }

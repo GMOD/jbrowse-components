@@ -12,6 +12,10 @@ info
 
 [plugins/linear-comparative-view/src/LinearComparativeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
 
+extends
+
+- [BaseViewModel](../baseviewmodel)
+
 ### LinearComparativeView - Properties
 
 #### property: id
@@ -50,15 +54,6 @@ true
 showIntraviewLinks: true
 ```
 
-#### property: linkViews
-
-```js
-// type signature
-false
-// code
-linkViews: false
-```
-
 #### property: interactToggled
 
 ```js
@@ -94,7 +89,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -192,7 +187,7 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: closeView
@@ -212,13 +207,6 @@ closeView: () => void
 setMiddleComparativeHeight: (n: number) => number
 ```
 
-#### action: toggleLinkViews
-
-```js
-// type signature
-toggleLinkViews: () => void
-```
-
 #### action: activateTrackSelector
 
 ```js
@@ -230,7 +218,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: showTrack

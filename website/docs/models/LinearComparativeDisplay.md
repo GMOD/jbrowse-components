@@ -12,6 +12,10 @@ info
 
 [plugins/linear-comparative-view/src/LinearComparativeDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeDisplay/stateModelFactory.ts)
 
+extends
+
+- [BaseDisplay](../basedisplay)
+
 ### LinearComparativeDisplay - Properties
 
 #### property: type

@@ -13,7 +13,7 @@ interface Pos {
   offsetPx: number
 }
 
-interface FeatPos {
+export interface FeatPos {
   p11: Pos
   p12: Pos
   p21: Pos
@@ -24,7 +24,8 @@ interface FeatPos {
 
 /**
  * #stateModel LinearSyntenyDisplay
- * extends `LinearComparativeDisplay` model
+ * extends
+ * - [LinearComparativeDisplay](../linearcomparativedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

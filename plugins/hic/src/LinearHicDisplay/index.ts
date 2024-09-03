@@ -5,7 +5,7 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import configSchemaFactory from './configSchema'
 import stateModelFactory from './model'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearHicDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({

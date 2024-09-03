@@ -47,7 +47,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
      */
     dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
+      defaultValue: ['chromosome', 'region', 'contig'],
     },
   },
   { explicitlyTyped: true },

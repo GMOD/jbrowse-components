@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react'
+import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -20,15 +19,15 @@ import {
   getEnv,
   getSession,
   assembleLocString,
-  ParsedLocString,
+  toLocale,
+  SimpleFeatureSerialized,
 } from '../../util'
 import { ErrorMessage } from '../../ui'
 import SequenceFeatureDetails from '../SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from '../types'
-import { SimpleFeatureSerialized } from '../../util'
 import SimpleField from './SimpleField'
 import Attributes from './Attributes'
-import { generateTitle, isEmpty, toLocale } from './util'
+import { generateTitle, isEmpty } from './util'
 
 // coreDetails are omitted in some circumstances
 const coreDetails = [
@@ -46,8 +45,8 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
-  expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
+  icon: {
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
 }))
 
@@ -57,17 +56,10 @@ export function BaseCard({
   defaultExpanded = true,
 }: BaseCardProps) {
   const { classes } = useStyles()
-  const [expanded, setExpanded] = useState(defaultExpanded)
   return (
-    <Accordion
-      expanded={expanded}
-      onChange={() => setExpanded(s => !s)}
-      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
-    >
-      <AccordionSummary
-        expandIcon={<ExpandMore className={classes.expandIcon} />}
-      >
-        <Typography variant="button"> {title}</Typography>
+    <Accordion defaultExpanded={defaultExpanded}>
+      <AccordionSummary expandIcon={<ExpandMore className={classes.icon} />}>
+        <Typography variant="button">{title}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.expansionPanelDetails}>
         {children}
@@ -85,8 +77,7 @@ function Position(props: BaseProps) {
     '1': '+',
   }
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
-  // @ts-expect-error
-  const loc = assembleLocString(feature as ParsedLocString)
+  const loc = assembleLocString(feature)
   return <>{`${loc} ${str}`}</>
 }
 
@@ -107,7 +98,6 @@ function CoreDetails(props: BaseProps) {
     }
   }
 
-  // eslint-disable-next-line no-underscore-dangle
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
   const { start, end } = formattedFeat
 
@@ -139,8 +129,9 @@ function CoreDetails(props: BaseProps) {
 }
 
 export const BaseCoreDetails = (props: BaseProps) => {
+  const { title = 'Primary data' } = props
   return (
-    <BaseCard {...props} title="Primary data">
+    <BaseCard {...props} title={title}>
       <CoreDetails {...props} />
     </BaseCard>
   )
@@ -176,6 +167,7 @@ export function FeatureDetails(props: {
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
+  const { maxDepth } = model
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
@@ -185,17 +177,24 @@ export function FeatureDetails(props: {
     feature,
     model,
   }) as PanelDescriptor | undefined
+  const m = mate as { start: number; end: number; refName: string } | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
-      {mate ? (
+      {m ? (
         <>
           <Divider />
           <Typography>Mate details</Typography>
           <CoreDetails
             {...props}
-            feature={{ ...mate, uniqueId: uniqueId + '-mate' }}
+            feature={{
+              ...m,
+              start: m.start,
+              end: m.end,
+              refName: m.refName,
+              uniqueId: `${uniqueId}-mate`,
+            }}
           />
         </>
       ) : null}
@@ -222,12 +221,15 @@ export function FeatureDetails(props: {
         </>
       ) : null}
 
-      {subfeatures?.length ? (
+      {depth < maxDepth && subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
               key={JSON.stringify(sub)}
-              feature={{ ...sub, uniqueId: `${uniqueId}_${idx}` }}
+              feature={{
+                ...sub,
+                uniqueId: `${uniqueId}_${idx}`,
+              }}
               model={model}
               depth={depth + 1}
             />

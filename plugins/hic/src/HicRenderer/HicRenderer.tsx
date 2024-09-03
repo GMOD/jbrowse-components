@@ -13,6 +13,13 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { colord } from '@jbrowse/core/util/colord'
+import { firstValueFrom } from 'rxjs'
+import {
+  scaleSequential,
+  scaleSequentialLog,
+} from '@mui/x-charts-vendor/d3-scale'
+import interpolateViridis from './viridis'
+import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 
 interface HicFeature {
   bin1: number
@@ -62,9 +69,11 @@ export default class HicRenderer extends ServerSideRendererType {
       resolution,
       sessionId,
       adapterConfig,
+      useLogScale,
+      colorScheme,
       regions,
     } = props
-    const [region] = regions
+    const region = regions[0]!
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -74,10 +83,11 @@ export default class HicRenderer extends ServerSideRendererType {
       bpPerPx / resolution,
     )
 
+    const width = (region.end - region.start) / bpPerPx
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = colord(readConfObject(config, 'baseColor'))
+    const offset = Math.floor(region.start / res)
     if (features.length) {
-      const offset = features[0].bin1
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
@@ -88,13 +98,35 @@ export default class HicRenderer extends ServerSideRendererType {
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
       await abortBreakPoint(signal)
-      function horizontallyFlip() {
-        ctx.scale(-1, 1)
-        const width = (region.end - region.start) / bpPerPx
-        ctx.translate(-width, 0)
+      const colorSchemes = {
+        juicebox: ['rgba(0,0,0,0)', 'red'],
+        fall: interpolateRgbBasis([
+          'rgb(255, 255, 255)',
+          'rgb(255, 255, 204)',
+          'rgb(255, 237, 160)',
+          'rgb(254, 217, 118)',
+          'rgb(254, 178, 76)',
+          'rgb(253, 141, 60)',
+          'rgb(252, 78, 42)',
+          'rgb(227, 26, 28)',
+          'rgb(189, 0, 38)',
+          'rgb(128, 0, 38)',
+          'rgb(0, 0, 0)',
+        ]),
+        viridis: interpolateViridis,
       }
+      const m = useLogScale ? maxScore : maxScore / 20
+
+      // @ts-expect-error
+      const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox
+      const scale = useLogScale
+        ? scaleSequentialLog(x1).domain([1, m])
+        : scaleSequential(x1).domain([0, m])
+      ctx.save()
+
       if (region.reversed === true) {
-        horizontallyFlip()
+        ctx.scale(-1, 1)
+        ctx.translate(-width, 0)
       }
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
@@ -103,6 +135,8 @@ export default class HicRenderer extends ServerSideRendererType {
           count: counts,
           maxScore,
           baseColor,
+          scale,
+          useLogScale,
         })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
         if (+Date.now() - start > 400) {
@@ -110,12 +144,14 @@ export default class HicRenderer extends ServerSideRendererType {
           start = +Date.now()
         }
       }
+      ctx.restore()
     }
+    return undefined
   }
 
   async render(renderProps: RenderArgsDeserialized) {
     const { config, regions, bpPerPx } = renderProps
-    const [region] = regions
+    const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
     const features = await this.getFeatures(renderProps)
@@ -150,14 +186,15 @@ export default class HicRenderer extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
-    const features = await (dataAdapter as BaseFeatureDataAdapter)
-      .getFeatures(regions[0], args)
-      .pipe(toArray())
-      .toPromise()
+    const features = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeatures(regions[0]!, args)
+        .pipe(toArray()),
+    )
     // cast to any to avoid return-type conflict, because the
     // types of features returned by our getFeatures are quite
     // different from the base interface
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return features as any
   }
 }

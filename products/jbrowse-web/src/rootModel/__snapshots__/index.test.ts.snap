@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Root MST model adds menus 1`] = `
+exports[`adds menus 1`] = `
 [
   {
     "label": "File",
@@ -177,7 +177,7 @@ exports[`Root MST model adds menus 1`] = `
 ]
 `;
 
-exports[`Root MST model adds menus 2`] = `
+exports[`adds menus 2`] = `
 [
   {
     "label": "File",
@@ -384,7 +384,7 @@ exports[`Root MST model adds menus 2`] = `
 ]
 `;
 
-exports[`Root MST model adds track and connection configs to an assembly 1`] = `
+exports[`adds track and connection configs to an assembly 1`] = `
 {
   "aliases": [
     "assemblyA",
@@ -420,7 +420,7 @@ exports[`Root MST model adds track and connection configs to an assembly 1`] = `
 }
 `;
 
-exports[`Root MST model adds track and connection configs to an assembly 2`] = `
+exports[`adds track and connection configs to an assembly 2`] = `
 {
   "displays": [
     {
@@ -437,7 +437,7 @@ exports[`Root MST model adds track and connection configs to an assembly 2`] = `
 }
 `;
 
-exports[`Root MST model adds track and connection configs to an assembly 3`] = `
+exports[`adds track and connection configs to an assembly 3`] = `
 {
   "connectionId": "connectionId0",
   "dataDirLocation": {
@@ -450,4 +450,4 @@ exports[`Root MST model adds track and connection configs to an assembly 3`] = `
 }
 `;
 
-exports[`Root MST model creates with defaults 1`] = `{}`;
+exports[`creates with defaults 1`] = `{}`;

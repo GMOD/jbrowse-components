@@ -8,7 +8,6 @@ import { ErrorBoundary } from 'react-error-boundary'
 // jbrowse core
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
-import { useDebouncedCallback } from '@jbrowse/core/util'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -25,14 +24,6 @@ const useStyles = makeStyles()({
     position: 'relative',
     zIndex: 2,
   },
-  overlay: {
-    pointerEvents: 'none',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    zIndex: 3,
-  },
 })
 
 type LGV = LinearGenomeViewModel
@@ -46,23 +37,18 @@ const TrackContainer = observer(function ({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId } = model
-  const ref2 = useRef<HTMLDivElement>(null)
-  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
-  const debouncedOnDragEnter = useDebouncedCallback(() => {
-    if (isAlive(display) && dimmed) {
-      model.moveTrack(draggingTrackId, track.id)
-    }
-  }, 100)
+  const { draggingTrackId, showTrackOutlines } = model
+  const ref = useRef<HTMLDivElement>(null)
 
   return (
     <Paper
-      ref={ref2}
+      ref={ref}
       className={classes.root}
-      variant="outlined"
+      variant={showTrackOutlines ? 'outlined' : undefined}
+      elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
         if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
-          const left = ref2.current?.getBoundingClientRect().left || 0
+          const left = ref.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
       }}
@@ -72,17 +58,17 @@ const TrackContainer = observer(function ({
         <TrackRenderingContainer
           model={model}
           track={track}
-          onDragEnter={debouncedOnDragEnter}
+          onDragEnter={() => {
+            if (
+              isAlive(display) &&
+              draggingTrackId !== undefined &&
+              draggingTrackId !== display.id
+            ) {
+              model.moveTrack(draggingTrackId, track.id)
+            }
+          }}
         />
       </ErrorBoundary>
-      <div
-        className={classes.overlay}
-        style={{
-          height: display.height,
-          background: dimmed ? 'rgba(0, 0, 0, 0.4)' : undefined,
-        }}
-        onDragEnter={debouncedOnDragEnter}
-      />
       <ResizeHandle
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}

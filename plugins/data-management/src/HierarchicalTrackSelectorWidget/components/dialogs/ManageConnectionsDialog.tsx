@@ -26,6 +26,16 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function DisabledButton() {
+  return (
+    <Tooltip title="Unable to delete connection in config file as non-admin user">
+      <IconButton>
+        <CloseIcon color="disabled" />
+      </IconButton>
+    </Tooltip>
+  )
+}
+
 const ManageConnectionsDialog = observer(function ({
   session,
   handleClose,
@@ -49,15 +59,15 @@ const ManageConnectionsDialog = observer(function ({
             return (
               <Typography key={`conn-${name}`}>
                 {adminMode || sessionConnections?.includes(conf) ? (
-                  <IconButton onClick={() => breakConnection(conf, true)}>
+                  <IconButton
+                    onClick={() => {
+                      breakConnection(conf, true)
+                    }}
+                  >
                     <CloseIcon color="error" />
                   </IconButton>
                 ) : (
-                  <Tooltip title="Unable to delete connection in config file as non-admin user">
-                    <IconButton>
-                      <CloseIcon color="disabled" />
-                    </IconButton>
-                  </Tooltip>
+                  <DisabledButton />
                 )}
                 {name}
               </Typography>
@@ -70,7 +80,9 @@ const ManageConnectionsDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="primary"
         >

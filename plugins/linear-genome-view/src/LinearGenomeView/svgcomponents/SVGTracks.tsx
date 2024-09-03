@@ -43,7 +43,7 @@ export default function SVGTracks({
         const current = offset
         const conf = track.configuration
         const trackName = getTrackName(conf, session)
-        const display = track.displays[0]
+        const display = track.displays[0]!
         const x = Math.max(-model.offsetPx, 0)
         offset += display.height + textOffset
         return (

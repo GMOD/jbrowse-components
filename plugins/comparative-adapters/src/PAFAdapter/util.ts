@@ -60,7 +60,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     if (!scoreMap[key]) {
       scoreMap[key] = { quals: [], len: [] }
     }
@@ -77,7 +77,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     entry.extra.meanScore = meanScoreMap[key]
   }
 
@@ -97,7 +97,6 @@ export function getWeightedMeans(ret: PAFRecord[]) {
 
 // https://gist.github.com/stekhn/a12ed417e91f90ecec14bcfa4c2ae16a
 function weightedMean(tuples: [number, number][]) {
-  // eslint-disable-next-line unicorn/no-array-reduce
   const [valueSum, weightSum] = tuples.reduce(
     ([valueSum, weightSum], [value, weight]) => [
       valueSum + value * weight,
@@ -106,67 +105,4 @@ function weightedMean(tuples: [number, number][]) {
     [0, 0],
   )
   return valueSum / weightSum
-}
-
-export function parsePAFLine(line: string) {
-  const [
-    qname,
-    ,
-    qstart,
-    qend,
-    strand,
-    tname,
-    ,
-    tstart,
-    tend,
-    numMatches,
-    blockLen,
-    mappingQual,
-    ...fields
-  ] = line.split('\t')
-
-  const rest = Object.fromEntries(
-    fields.map(field => {
-      const r = field.indexOf(':')
-      const fieldName = field.slice(0, r)
-      const fieldValue = field.slice(r + 3)
-      return [fieldName, fieldValue]
-    }),
-  )
-
-  return {
-    tname,
-    tstart: +tstart,
-    tend: +tend,
-    qname,
-    qstart: +qstart,
-    qend: +qend,
-    strand: strand === '-' ? -1 : 1,
-    extra: {
-      numMatches: +numMatches,
-      blockLen: +blockLen,
-      mappingQual: +mappingQual,
-      ...rest,
-    },
-  } as PAFRecord
-}
-
-export function flipCigar(cigar: string[]) {
-  const arr = []
-  for (let i = cigar.length - 2; i >= 0; i -= 2) {
-    arr.push(cigar[i])
-    const op = cigar[i + 1]
-    if (op === 'D') {
-      arr.push('I')
-    } else if (op === 'I') {
-      arr.push('D')
-    } else {
-      arr.push(op)
-    }
-  }
-  return arr
-}
-
-export function swapIndelCigar(cigar: string) {
-  return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }

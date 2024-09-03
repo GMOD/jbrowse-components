@@ -82,7 +82,7 @@ You can make a small plugin file "myplugin.js"
   // the plugin will be included in both the main thread and web worker, so
   // install plugin to either window or self (webworker global scope)
   ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
-    default: Plugin,
+    default: MyPlugin,
   }
 })()
 ```
@@ -155,30 +155,44 @@ of your data file, you could make a jexl function such as the following
   // the plugin will be included in both the main thread and web worker, so
   // install plugin to either window or self (webworker global scope)
   ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
-    default: Plugin,
+    default: MyPlugin,
   }
 })()
 ```
 
-And then in your config
+And then in your config.json
 
 ```json
 {
-  ...
-  "formatDetails": {
-    "feature": "jexl:{dbxref:linkout(feature)}",
-    "subfeatures": "jexl:{dbxref:linkout(feature)}"
-  }
+  "plugins": [
+    {
+      "name": "MyPlugin",
+      "umdLoc": { "uri": "myplugin.js" }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "mytrack",
+      "name":"My track",
+      "adapter": {...},
+      "formatDetails": {
+        "feature": "jexl:{dbxref:linkout(feature)}",
+        "subfeatures": "jexl:{dbxref:linkout(feature)}"
+      }
+    }
+  ]
 }
 ```
 
-#### Footnote 1
+#### Footnote 1 - the feature details are serialized to plain JSON objects
 
 Note that the feature for feature detail panels is different from that in the
 color callback: it is a plain JS object. So instead of `feature.get('start')`,
 you can say just `feature.start`. The reason it is different for the feature
 details callbacks (compared with e.g. the color callbacks) is that the feature
 is serialized into the session.
+
+#### Footnote 2 - why are feature details plain JSON objects when other usages aren't?
 
 You might also ask why aren't all features serialized or plain JSON objects
 normally? Well, some feature types like alignments features benefit from only

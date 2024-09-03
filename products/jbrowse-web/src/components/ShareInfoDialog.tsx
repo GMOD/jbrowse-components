@@ -11,7 +11,9 @@ export default function InfoDialog({
 }) {
   return (
     <Dialog
-      onClose={() => onClose()}
+      onClose={() => {
+        onClose()
+      }}
       open={open}
       title="Info about session URLs"
     >

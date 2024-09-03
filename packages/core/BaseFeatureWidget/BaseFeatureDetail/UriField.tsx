@@ -21,7 +21,7 @@ export default function UriField({
 }) {
   const { classes } = useStyles()
   const { uri, baseUri = '' } = value
-  let href
+  let href: string
   try {
     href = new URL(uri, baseUri).href
   } catch (e) {

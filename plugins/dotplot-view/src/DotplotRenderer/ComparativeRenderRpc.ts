@@ -9,12 +9,12 @@ import ComparativeRenderer, {
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 
 interface RenderArgs extends ComparativeRenderArgs {
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
 interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 

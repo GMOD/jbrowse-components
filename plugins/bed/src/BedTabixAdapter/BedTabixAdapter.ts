@@ -7,10 +7,12 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { FileLocation, Region, Feature } from '@jbrowse/core/util'
 import { TabixIndexedFile } from '@gmod/tabix'
-import { featureData } from '../util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+// locals
+import { featureData } from '../util'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: BED

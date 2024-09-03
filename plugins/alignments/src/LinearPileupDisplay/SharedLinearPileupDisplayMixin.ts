@@ -17,7 +17,9 @@ import {
   isSessionModelWithWidgets,
   getContainingView,
   SimpleFeature,
+  SimpleFeatureSerialized,
   Feature,
+  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import {
@@ -33,15 +35,16 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTagValues, FilterModel, IFilter } from '../shared'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import { createAutorun } from '../util'
 import { ColorByModel, ExtraColorBy } from '../shared/color'
 
-// async
-const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
-const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
-const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
-const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
+// lazies
+const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog'),
+)
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -123,7 +126,7 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setMaxHeight(n: number) {
+      setMaxHeight(n?: number) {
         self.trackMaxHeight = n
       },
 
@@ -179,7 +182,7 @@ export function SharedLinearPileupDisplayMixin(
         uniqueTag.forEach(value => {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
-            self.colorTagMap.set(value, colorPalette[totalKeys])
+            self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
         })
       },
@@ -200,7 +203,11 @@ export function SharedLinearPileupDisplayMixin(
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
             'alignmentFeature',
-            { featureData: feature.toJSON(), view: getContainingView(self) },
+            {
+              featureData: feature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
           )
           session.showWidget(featureWidget)
         }
@@ -325,18 +332,14 @@ export function SharedLinearPileupDisplayMixin(
                   icon: MenuOpenIcon,
                   onClick: (): void => {
                     self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
+                    self.selectFeature(feat)
                   },
                 },
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: (): void => {
-                    if (feat) {
-                      self.copyFeatureToClipboard(feat)
-                    }
+                    self.copyFeatureToClipboard(feat)
                   },
                 },
               ]
@@ -418,7 +421,7 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -439,33 +442,45 @@ export function SharedLinearPileupDisplayMixin(
           return [
             {
               label: 'Normal',
-              onClick: () => self.setColorScheme({ type: 'normal' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'normal' })
+              },
             },
             {
               label: 'Mapping quality',
-              onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'mappingQuality' })
+              },
             },
             {
               label: 'Strand',
-              onClick: () => self.setColorScheme({ type: 'strand' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'strand' })
+              },
             },
             {
               label: 'Per-base quality',
-              onClick: () => self.setColorScheme({ type: 'perBaseQuality' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseQuality' })
+              },
             },
             {
               label: 'Per-base lettering',
-              onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseLettering' })
+              },
             },
             {
               label: 'First-of-pair strand',
-              onClick: () => self.setColorScheme({ type: 'stranded' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'stranded' })
+              },
             },
             {
               label: 'Color by tag...',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
-                  ColorByTagDlg,
+                  ColorByTagDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },
@@ -480,17 +495,19 @@ export function SharedLinearPileupDisplayMixin(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Filter by',
+              label: 'Filter by...',
               icon: FilterListIcon,
+              priority: -1,
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
-                  FilterByTagDlg,
+                  FilterByTagDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },
             },
             {
-              label: 'Set feature height',
+              label: 'Set feature height...',
+              priority: -1,
               subMenu: [
                 {
                   label: 'Normal',
@@ -510,7 +527,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Manually set height',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
-                      SetFeatureHeightDlg,
+                      SetFeatureHeightDialog,
                       { model: self, handleClose: doneCallback },
                     ])
                   },
@@ -521,7 +538,7 @@ export function SharedLinearPileupDisplayMixin(
               label: 'Set max height...',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
-                  SetMaxHeightDlg,
+                  SetMaxHeightDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },
@@ -548,7 +565,11 @@ export function SharedLinearPileupDisplayMixin(
             const { colorBy, tagsReady } = self
             const { staticBlocks } = view
             if (colorBy?.tag && !tagsReady) {
-              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
+              const vals = await getUniqueTagValues({
+                self,
+                tag: colorBy.tag,
+                blocks: staticBlocks,
+              })
               self.updateColorTagMap(vals)
             }
             self.setTagsReady(true)
@@ -580,20 +601,23 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: view.id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   // check featureIdUnderMouse is still the same as the
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature?.uniqueId) {
+                  if (
+                    feature &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }
               }
             } catch (e) {
               console.error(e)
-              session.notify(`${e}`, 'error')
+              session.notifyError(`${e}`, e)
             }
           }),
         )

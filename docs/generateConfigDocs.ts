@@ -38,7 +38,7 @@ interface Config {
 }
 
 function generateConfigDocs(files: string[]) {
-  const cwd = process.cwd() + '/'
+  const cwd = `${process.cwd()}/`
   const contents = {} as Record<string, Config>
   extractWithComment(files, obj => {
     const fn = obj.filename
@@ -53,8 +53,8 @@ function generateConfigDocs(files: string[]) {
       }
     }
     const current = contents[fn]
-    const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(filter(obj.comment, '#' + obj.type), '#category')
+    const name = rm(obj.comment, `#${obj.type}`) || obj.name
+    const docs = filter(filter(obj.comment, `#${obj.type}`), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
 
@@ -119,12 +119,10 @@ ${derives.code}
 \`\`\`
 `
           : ''
-        const slotstr =
-          `${slots.length ? `### ${config.name} - Slots` : ''}\n` +
-          slots
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code }: any) => {
-              return `#### slot: ${name}
+        const slotstr = `${slots.length ? `### ${config.name} - Slots` : ''}\n${slots
+
+          .map(({ name, docs, code }: any) => {
+            return `#### slot: ${name}
 
 ${docs}
 
@@ -132,10 +130,10 @@ ${docs}
 ${code}
 \`\`\`
 `
-            })
-            .join('\n')
+          })
+          .join('\n')}`
 
-        const dir = `website/docs/config`
+        const dir = 'website/docs/config'
         try {
           fs.mkdirSync(dir)
         } catch (e) {}

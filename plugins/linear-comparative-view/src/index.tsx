@@ -10,10 +10,9 @@ import LGVSyntenyDisplayF from './LGVSyntenyDisplay'
 import LinearSyntenyViewF from './LinearSyntenyView'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import SyntenyTrackF from './SyntenyTrack'
-import SyntenyFeatureWidgetF from './SyntenyFeatureDetail'
-import LinearReadVsRefMenuItem from './LinearReadVsRef'
+import LinearReadVsRefMenuItemF from './LinearReadVsRef'
 
-export default class extends Plugin {
+export default class LinearComparativeViewPlugin extends Plugin {
   name = 'LinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
@@ -24,8 +23,7 @@ export default class extends Plugin {
     LGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
-    SyntenyFeatureWidgetF(pluginManager)
-    LinearReadVsRefMenuItem(pluginManager)
+    LinearReadVsRefMenuItemF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

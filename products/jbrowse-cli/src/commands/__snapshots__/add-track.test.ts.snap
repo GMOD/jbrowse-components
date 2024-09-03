@@ -1,0 +1,672 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adds a bam track from a url 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "https://mysite.com/data/simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "https://mysite.com/data/simple.bam.bai",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam track with all the custom fields 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "simple.bam.bai",
+        },
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "customAssemblyName",
+    ],
+    "category": [
+      "newcategory",
+    ],
+    "defaultRendering": "test",
+    "description": "new description",
+    "name": "customName",
+    "trackId": "customTrackId",
+    "type": "CustomTrackType",
+  },
+]
+`;
+
+exports[`adds a bam track with bai 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "simple.bam.bai",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam track with csi 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.bam",
+      },
+      "index": {
+        "indexType": "CSI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "simple.bam.csi",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam track with indexFile for bai 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "simple.bai",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam track with load inPlace 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "/testing/in/place.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "/testing/in/place.bam.bai",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "place",
+    "trackId": "place",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam track with subDir 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "bam/simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "bam/simple.bam.bai",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam track with subDir and localPath protocol 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "localPath": "bam/simple.bam",
+        "locationType": "LocalPathLocation",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "localPath": "bam/simple.bam.bai",
+          "locationType": "LocalPathLocation",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a bam+bai track with load inPlace 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "/testing/in/place.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "/something/else/random.bai",
+        },
+      },
+      "sequenceAdapter": {
+        "twoBitLocation": {
+          "locationType": "UriLocation",
+          "uri": "test.2bit",
+        },
+        "type": "testSeqAdapter",
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "place",
+    "trackId": "place",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds a chain file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "chainLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.chain",
+      },
+      "type": "ChainAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels",
+    "trackId": "volvox_inv_indels",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a delta file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "deltaLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.delta",
+      },
+      "type": "DeltaAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels",
+    "trackId": "volvox_inv_indels",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a mashmap file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "outLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.out",
+      },
+      "type": "MashMapAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels",
+    "trackId": "volvox_inv_indels",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a mcscan anchors file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "bed1Location": {
+        "locationType": "UriLocation",
+        "uri": "grape.bed",
+      },
+      "bed2Location": {
+        "locationType": "UriLocation",
+        "uri": "peach.bed",
+      },
+      "mcscanAnchorsLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.anchors",
+      },
+      "type": "MCScanAnchorsAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels",
+    "trackId": "volvox_inv_indels",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a mcscan simple anchors file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "bed1Location": {
+        "locationType": "UriLocation",
+        "uri": "grape.bed",
+      },
+      "bed2Location": {
+        "locationType": "UriLocation",
+        "uri": "peach.bed",
+      },
+      "mcscanSimpleAnchorsLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.anchors.simple",
+      },
+      "type": "MCScanSimpleAnchorsAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels.anchors",
+    "trackId": "volvox_inv_indels.anchors",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a paf file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "pafLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.paf",
+      },
+      "type": "PAFAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels",
+    "trackId": "volvox_inv_indels",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a paf.gz file 1`] = `
+[
+  {
+    "adapter": {
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "pafLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox_inv_indels.paf.gz",
+      },
+      "type": "PAFAdapter",
+    },
+    "assemblyNames": [
+      "volvox_random_inv",
+      "volvox",
+    ],
+    "name": "volvox_inv_indels.paf",
+    "trackId": "volvox_inv_indels.paf",
+    "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds a plaintext bed 1`] = `
+[
+  {
+    "adapter": {
+      "bedLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.bed",
+      },
+      "type": "BedAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox",
+    "trackId": "volvox",
+    "type": "FeatureTrack",
+  },
+]
+`;
+
+exports[`adds a plaintext bedpe 1`] = `
+[
+  {
+    "adapter": {
+      "bedpeLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.bedpe",
+      },
+      "type": "BedpeAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox",
+    "trackId": "volvox",
+    "type": "VariantTrack",
+  },
+]
+`;
+
+exports[`adds a plaintext gff 1`] = `
+[
+  {
+    "adapter": {
+      "gffLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.sort.gff3",
+      },
+      "type": "Gff3Adapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox.sort",
+    "trackId": "volvox.sort",
+    "type": "FeatureTrack",
+  },
+]
+`;
+
+exports[`adds a plaintext gtf 1`] = `
+[
+  {
+    "adapter": {
+      "gtfLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.sorted.gtf",
+      },
+      "type": "GtfAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox.sorted",
+    "trackId": "volvox.sorted",
+    "type": "FeatureTrack",
+  },
+]
+`;
+
+exports[`adds a plaintext vcf 1`] = `
+[
+  {
+    "adapter": {
+      "type": "VcfAdapter",
+      "vcfLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.filtered.vcf",
+      },
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox.filtered",
+    "trackId": "volvox.filtered",
+    "type": "VariantTrack",
+  },
+]
+`;
+
+exports[`adds a tabix gff with csi 1`] = `
+[
+  {
+    "adapter": {
+      "gffGzLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.sort.gff3.gz",
+      },
+      "index": {
+        "indexType": "CSI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz.csi",
+        },
+      },
+      "type": "Gff3TabixAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox.sort.gff3",
+    "trackId": "volvox.sort.gff3",
+    "type": "FeatureTrack",
+  },
+]
+`;
+
+exports[`adds a tabix gff with tbi 1`] = `
+[
+  {
+    "adapter": {
+      "gffGzLocation": {
+        "locationType": "UriLocation",
+        "uri": "volvox.sort.gff3.gz",
+      },
+      "index": {
+        "indexType": "TBI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz.tbi",
+        },
+      },
+      "type": "Gff3TabixAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "volvox.sort.gff3",
+    "trackId": "volvox.sort.gff3",
+    "type": "FeatureTrack",
+  },
+]
+`;
+
+exports[`cannot add a track if there is no config file 1`] = `"Error: ENOENT: no such file or directory, open './config.json'"`;
+
+exports[`cannot add a track with the same track id 1`] = `"Cannot add track with id simple, a track with that id already exists (use --force to override)"`;
+
+exports[`fails if URL with load flag is passed 1`] = `"The --load flag is used for local files only, but a URL was provided"`;
+
+exports[`fails if it cannot assume the assemblyname 1`] = `"No assemblies found. Please add one before adding tracks"`;
+
+exports[`fails if load flag is not passed in for a localFile 1`] = `
+"The --load flag should be used if a local file is used, example --load
+        copy to copy the file into the config directory. Options for load are
+        copy/move/symlink/inPlace (inPlace for no file operations)"
+`;
+
+exports[`fails if no track is specified 1`] = `
+"Missing 1 required arg:
+track  Track file or URL
+See more help with --help"
+`;
+
+exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `"Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag"`;

@@ -6,9 +6,9 @@ import { useTheme } from '@mui/material'
 // locals
 import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 import Cytobands from '../components/Cytobands'
-import { Polygon } from '../components/OverviewScalebar'
 import SVGRuler from './SVGRuler'
 import SVGScalebar from './SVGScalebar'
+import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon'
 
 export default function SVGHeader({
   model,
@@ -23,7 +23,7 @@ export default function SVGHeader({
 }) {
   const { width, assemblyNames, showCytobands, displayedRegions } = model
   const { assemblyManager } = getSession(model)
-  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
+  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.primary)
@@ -39,7 +39,7 @@ export default function SVGHeader({
 
   overview.setVolatileWidth(width)
   overview.showAllRegions()
-  const block = overview.dynamicBlocks.contentBlocks[0]
+  const block = overview.dynamicBlocks.contentBlocks[0]!
   const first = visibleRegions.at(0)!
   const last = visibleRegions.at(-1)!
   const firstOverviewPx =
@@ -65,14 +65,19 @@ export default function SVGHeader({
           <Cytobands overview={overview} assembly={assembly} block={block} />
           <rect
             stroke="red"
-            fill="rgb(255,0,0,0.1)"
+            fill="rgb(255,0,0)"
+            fillOpacity={0.1}
             width={Math.max(lastOverviewPx - firstOverviewPx, 0.5)}
             height={HEADER_OVERVIEW_HEIGHT - 1}
             x={firstOverviewPx}
             y={0.5}
           />
           <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-            <Polygon overview={overview} model={model} useOffset={false} />
+            <OverviewScalebarPolygon
+              overview={overview}
+              model={model}
+              useOffset={false}
+            />
           </g>
         </g>
       ) : null}

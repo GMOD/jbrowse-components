@@ -4,7 +4,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 import { lazy } from 'react'
 
-export default (pluginManager: PluginManager) => {
+export default function HierarchicalTrackSelectorWidgetF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'HierarchicalTrackSelectorWidget',

@@ -61,7 +61,23 @@ true
 showTranslation: true
 ```
 
+#### property: rowHeight
+
+```js
+// type signature
+number
+// code
+rowHeight: 15
+```
+
 ### LinearReferenceSequenceDisplay - Getters
+
+#### getter: sequenceHeight
+
+```js
+// type
+number
+```
 
 #### getter: rendererTypeName
 

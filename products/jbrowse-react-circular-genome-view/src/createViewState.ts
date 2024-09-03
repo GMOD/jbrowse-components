@@ -2,10 +2,8 @@ import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { autorun } from 'mobx'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
-import createModel, {
-  createSessionModel,
-  createConfigModel,
-} from './createModel'
+import createModel from './createModel'
+import type { createSessionModel, createConfigModel } from './createModel'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -25,8 +23,10 @@ interface ViewStateOptions {
   hydrateFn?: (
     container: Element | Document,
     initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  }
   defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
@@ -40,6 +40,7 @@ export default function createViewState(opts: ViewStateOptions) {
     aggregateTextSearchAdapters,
     plugins,
     hydrateFn,
+    createRootFn,
     makeWorkerInstance,
     onChange,
   } = opts
@@ -47,6 +48,7 @@ export default function createViewState(opts: ViewStateOptions) {
     plugins || [],
     makeWorkerInstance,
     hydrateFn,
+    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {

@@ -3,7 +3,7 @@ import ReactComponent from '../MultiWiggleRendering'
 import MultiRowXYPlotRenderer from './MultiRowXYPlotRenderer'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function MultiRowXYPlotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new MultiRowXYPlotRenderer({

@@ -42,8 +42,12 @@ const ViewPanel = observer(function ({
   return (
     <ViewContainer
       view={view}
-      onClose={() => session.removeView(view)}
-      onMinimize={() => view.setMinimized(!view.minimized)}
+      onClose={() => {
+        session.removeView(view)
+      }}
+      onMinimize={() => {
+        view.setMinimized(!view.minimized)
+      }}
     >
       {!view.minimized ? (
         <ErrorBoundary

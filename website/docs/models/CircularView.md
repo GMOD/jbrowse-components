@@ -10,9 +10,11 @@ info
 
 ### Source file
 
-[plugins/circular-view/src/CircularView/models/CircularView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/CircularView.ts)
+[plugins/circular-view/src/CircularView/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/model.ts)
 
-extends `BaseViewModel`
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### CircularView - Properties
 
@@ -478,7 +480,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setError
@@ -499,7 +501,7 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 ```js
 // type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
+addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack

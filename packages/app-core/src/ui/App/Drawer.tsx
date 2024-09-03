@@ -9,6 +9,7 @@ const useStyles = makeStyles()(theme => ({
   paper: {
     overflowY: 'auto',
     height: '100%',
+    position: 'relative',
     zIndex: theme.zIndex.drawer,
     outline: 'none',
     background: theme.palette.background.default,
@@ -34,13 +35,11 @@ const Drawer = observer(function ({
 
   useEffect(() => {
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element) {
-        if (ref?.current && ref.current.contains(e.target)) {
-          // @ts-ignore
-          const visibleWidgetId = session.visibleWidget?.view?.id
-          if (visibleWidgetId) {
-            session.setFocusedViewId(visibleWidgetId)
-          }
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
+        // @ts-ignore
+        const visibleWidgetId = session.visibleWidget?.view?.id
+        if (visibleWidgetId) {
+          session.setFocusedViewId(visibleWidgetId)
         }
       }
     }
@@ -51,7 +50,7 @@ const Drawer = observer(function ({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, session])
+  }, [session])
 
   return (
     <Paper ref={ref} className={classes.paper} elevation={16} square>

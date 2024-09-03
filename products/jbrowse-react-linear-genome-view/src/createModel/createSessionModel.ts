@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { readConfObject } from '@jbrowse/core/configuration'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { getConf } from '@jbrowse/core/configuration'
 import { cast, getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import InfoIcon from '@mui/icons-material/Info'
@@ -22,17 +21,19 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
  * composed of
- * - BaseSessionModel
- * - DrawerWidgetsSessionMixin
- * - ConnectionManagementSessionMixin
- * - DialogQueueSessionMixin
- * - TracksManagerSessionMixin
- * - ReferenceManagementSessionMixin
- * - SessionTracksManagerSessionMixin
- * - SnackbarModel
+ * - [BaseSessionModel](../basesessionmodel)
+ * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+ * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+ * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+ * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+ * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+ * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+ * - [SnackbarModel](../snackbarmodel)
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default function sessionModelFactory(pluginManager: PluginManager) {
-  const model = types
+  return types
     .compose(
       'ReactLinearGenomeViewSession',
       BaseSessionModel(pluginManager),
@@ -42,12 +43,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
+      SnackbarModel(),
     )
     .props({
       /**
        * #property
        */
-      view: pluginManager.getViewType('LinearGenomeView')
+      view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel,
       /**
        * #property
@@ -103,7 +105,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
+        return {
+          theme: getConf(self, 'theme'),
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
+        }
       },
     }))
     .actions(self => ({
@@ -144,8 +149,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-
-  return addSnackbarToModel(model)
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

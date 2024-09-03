@@ -5,7 +5,7 @@ import configSchemaFactory from './models/configSchema'
 import modelFactory from './models/model'
 import { lazy } from 'react'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     const stateModel = modelFactory(pluginManager, configSchema)

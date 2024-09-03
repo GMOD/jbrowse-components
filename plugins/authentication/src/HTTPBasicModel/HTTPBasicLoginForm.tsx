@@ -2,13 +2,13 @@ import React, { useState } from 'react'
 import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-export const HTTPBasicLoginForm = ({
+export function HTTPBasicLoginForm({
   internetAccountId,
   handleClose,
 }: {
   internetAccountId: string
   handleClose: (arg?: string) => void
-}) => {
+}) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -17,7 +17,7 @@ export const HTTPBasicLoginForm = ({
       open
       maxWidth="xl"
       data-testid="login-httpbasic"
-      title={`Log In for ${internetAccountId}`}
+      title={`Log in for ${internetAccountId}`}
     >
       <form
         onSubmit={event => {
@@ -35,7 +35,9 @@ export const HTTPBasicLoginForm = ({
             label="Username"
             variant="outlined"
             inputProps={{ 'data-testid': 'login-httpbasic-username' }}
-            onChange={event => setUsername(event.target.value)}
+            onChange={event => {
+              setUsername(event.target.value)
+            }}
             margin="dense"
           />
           <TextField
@@ -45,7 +47,9 @@ export const HTTPBasicLoginForm = ({
             autoComplete="current-password"
             variant="outlined"
             inputProps={{ 'data-testid': 'login-httpbasic-password' }}
-            onChange={event => setPassword(event.target.value)}
+            onChange={event => {
+              setPassword(event.target.value)
+            }}
             margin="dense"
           />
         </DialogContent>
@@ -57,7 +61,9 @@ export const HTTPBasicLoginForm = ({
             variant="contained"
             color="secondary"
             type="submit"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>
