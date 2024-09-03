@@ -8551,9 +8551,9 @@ eslint-plugin-react-refresh@^0.4.3:
   integrity sha512-wrAKxMbVr8qhXTtIKfXqAn5SAtRZt0aXxe5P23Fh4pUAdC6XEsybGLB8P0PI4j1yYqOgUEUlzKAGDfo7rJOjcw==
 
 eslint-plugin-react@^7.33.2:
-  version "7.35.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.35.1.tgz#afc80387031aa99dd6e0a14437c77d02e5700b47"
-  integrity sha512-B5ok2JgbaaWn/zXbKCGgKDNL2tsID3Pd/c/yvjcpsd9HQDwyYc/TQv3AZMmOvrJgCs3AnYNUHRCQEMMQAYJ7Yg==
+  version "7.35.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.35.2.tgz#d32500d3ec268656d5071918bfec78cfd8b070ed"
+  integrity sha512-Rbj2R9zwP2GYNcIak4xoAMV57hrBh3hTaR0k7hVjwCQgryE/pw5px4b13EYjduOI0hfXyZhwBxaGpOTbWSGzKQ==
   dependencies:
     array-includes "^3.1.8"
     array.prototype.findlast "^1.2.5"
@@ -9147,9 +9147,9 @@ flow-parser@0.*:
   integrity sha512-xUBkkpIDfDZHAebnDEX65FCVitJUctab82KFmtP5SY4cGly1vbuYNe6Muyp0NLXrgmBChVdoC2T+3/RUHi4Mww==
 
 follow-redirects@^1.0.0, follow-redirects@^1.15.6:
-  version "1.15.6"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.6.tgz#7f815c0cda4249c74ff09e95ef97c23b5fd0399b"
-  integrity sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==
+  version "1.15.7"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.7.tgz#87248a048fc4eeebfb2389d6aef79028da179690"
+  integrity sha512-aAW9al/NMw4COcZnwgUaG8kAjBUXq/El+1R11e9RDHAIlxa1fb1b5SP0K6BbMoNgWdmJ/kXAwoTlVDlUN3OTDw==
 
 for-each@^0.3.3:
   version "0.3.3"
