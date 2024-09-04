@@ -8,7 +8,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { unzip } from '@gmod/bgzf-filehandle'
-import gff from '@gmod/gff'
+import { parseStringSync } from 'gff-nostream'
 import { isGzip, updateStatus } from '@jbrowse/core/util'
 
 import { featureData } from '../featureData'
@@ -76,14 +76,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GFF data')
             const intervalTree = new IntervalTree()
-            gff
-              .parseStringSync(lines, {
-                parseFeatures: true,
-                parseComments: false,
-                parseDirectives: false,
-                parseSequences: false,
-                disableDerivesFromReferences: true,
-              })
+            parseStringSync(lines)
               .flat()
               .map(
                 (f, i) =>

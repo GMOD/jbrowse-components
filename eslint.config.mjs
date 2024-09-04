@@ -13,6 +13,7 @@ export default tseslint.config(
       '**/dist/**/*',
       '**/esm/**/*',
       '**/public/**/*',
+      '**/storybook-static/**',
       'website/*',
       'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',

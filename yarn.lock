@@ -2333,20 +2333,6 @@
     pump "^3.0.0"
     split2 "^4.2.0"
 
-"@gmod/gff@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.3.0.tgz#d231a6f807cfb8f191c26c6410021c17155e4093"
-  integrity sha512-OjEnQLR6iIcrau603blFfUkmnWGDVfOu/LQoJNa7TsvKnjWlHYPlvqb5h2IV7wI+zElDY648mQ9zrElt2uR80A==
-  dependencies:
-    stream-browserify "^3.0.0"
-
-"@gmod/gtf@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@gmod/gtf/-/gtf-0.0.9.tgz#87ef1e753ab2e9903affdd97454e6f948da38cd4"
-  integrity sha512-IPqKOg8e9nUvxI+8mJznKXdWMrErseJx/w+HnrU+ePTWzr2uCa8iHcbVzfSlPgqxWKkQ15/lK4BnUJSnQHfVow==
-  dependencies:
-    stream-browserify "^3.0.0"
-
 "@gmod/http-range-fetcher@^3.0.4":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-3.0.4.tgz#7ab2fdc96703b9f977d9c517e8028fb68765e118"
@@ -9439,6 +9425,11 @@ get-value@^3.0.1:
   dependencies:
     isobject "^3.0.1"
 
+gff-nostream@^1.3.3:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-1.3.4.tgz#a919630f18cc8e2992b3dac41ed59530fbcc5757"
+  integrity sha512-+UmB/NcaXAIj+V/jjZWW9NWGAL2cDkcTIIfia/LqAYWURBIWxwVkzC744q2WXB62IVb8DaF+8CWXGLm9EnQqNg==
+
 giget@^1.0.0:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/giget/-/giget-1.2.3.tgz#ef6845d1140e89adad595f7f3bb60aa31c672cb6"
@@ -9704,6 +9695,11 @@ graphemer@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
   integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
+
+gtf-nostream@^1.0.0:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/gtf-nostream/-/gtf-nostream-1.3.3.tgz#88b7a432e1ecf4a4e58769df14984c033ebf9ef0"
+  integrity sha512-YES7cIyH992zV35kgn80E294/SFzGgLbchvYYAMo+F7gXZB/oXZ1piagkGIYNgLAeg/jIN7zFZhVZ1bB6SuGmQ==
 
 gzip-size@^6.0.0:
   version "6.0.0"
@@ -10177,7 +10173,7 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-inherits@2, inherits@2.0.4, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.3, inherits@~2.0.4:
+inherits@2, inherits@2.0.4, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
@@ -14135,7 +14131,7 @@ readable-stream@^2.0.1, readable-stream@^2.3.0, readable-stream@^2.3.5, readable
     string_decoder "~1.1.1"
     util-deprecate "~1.0.1"
 
-readable-stream@^3.0.0, readable-stream@^3.0.2, readable-stream@^3.0.6, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.5.0, readable-stream@^3.6.0:
+readable-stream@^3.0.0, readable-stream@^3.0.2, readable-stream@^3.0.6, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.6.0:
   version "3.6.2"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.6.2.tgz#56a9b36ea965c00c5a93ef31eb111a0f11056967"
   integrity sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==
@@ -15157,14 +15153,6 @@ storybook@^8.0.0:
     tempy "^3.1.0"
     tiny-invariant "^1.3.1"
     ts-dedent "^2.0.0"
-
-stream-browserify@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/stream-browserify/-/stream-browserify-3.0.0.tgz#22b0a2850cdf6503e73085da1fc7b7d0c2122f2f"
-  integrity sha512-H73RAHsVBapbim0tU2JwwOiXUj+fikfiaoYAKHF3VJfA0pe2BCzkhAHBlLG6REzE+2WNZcxOXjK7lkso+9euLA==
-  dependencies:
-    inherits "~2.0.4"
-    readable-stream "^3.5.0"
 
 string-length@^4.0.1:
   version "4.0.2"
