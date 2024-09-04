@@ -5,7 +5,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 
 // local utils
-import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 import { useSideScroll, useRangeSelect, useWheelScroll } from './hooks'
 
 // local components
@@ -16,6 +16,7 @@ import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
 import HighlightGroup from './Highlight'
+import { SCALE_BAR_HEIGHT } from '../consts'
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -104,7 +105,10 @@ const TracksContainer = observer(function TracksContainer({
         ControlComponent={
           <Scalebar
             model={model}
-            style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+            style={{
+              height: SCALE_BAR_HEIGHT,
+              boxSizing: 'border-box',
+            }}
           />
         }
       />

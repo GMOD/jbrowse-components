@@ -770,12 +770,12 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 data-testid="rubberband_controls"
               >
                 <div
-                  class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1k1l9ys-MuiPaper-root-scalebarContainer"
+                  class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-f42wkc-MuiPaper-root-container"
                   data-resizer="true"
                   style="height: 17px; box-sizing: border-box;"
                 >
                   <div
-                    class="css-khofof-scalebarZoomContainer"
+                    class="css-d7j7i0-zoomContainer"
                   >
                     <div
                       class="css-y3821b-scalebar"
@@ -892,7 +892,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-uj8p3p-MuiTypography-root-refLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-1dc3p9s-MuiTypography-root-refLabel"
                     data-testid="refLabel-ctgA"
                     style="left: -1px; padding-left: 1px;"
                   >

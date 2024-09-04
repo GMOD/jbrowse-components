@@ -5,11 +5,11 @@ import { observer } from 'mobx-react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { getFillProps } from '@jbrowse/core/util'
 
 // locals
-import { HEADER_OVERVIEW_HEIGHT } from '..'
 import { getCytobands } from './util'
-import { getFillProps } from '@jbrowse/core/util'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts'
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
 function rightRoundedRect(

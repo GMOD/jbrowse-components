@@ -4,11 +4,12 @@ import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
 
 // locals
-import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 import Cytobands from '../components/Cytobands'
 import SVGRuler from './SVGRuler'
 import SVGScalebar from './SVGScalebar'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts'
 
 export default function SVGHeader({
   model,
