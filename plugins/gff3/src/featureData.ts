@@ -1,4 +1,4 @@
-import { GFF3FeatureLineWithRefs } from '@gmod/gff'
+import { GFF3FeatureLineWithRefs } from 'gff-nostream'
 
 export function featureData(data: GFF3FeatureLineWithRefs) {
   const f: Record<string, unknown> = { ...data }

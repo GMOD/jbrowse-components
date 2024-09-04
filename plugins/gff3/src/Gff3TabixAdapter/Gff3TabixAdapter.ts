@@ -8,7 +8,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import gff, { GFF3Feature } from '@gmod/gff'
+import { parseStringSync } from 'gff-nostream'
 import { Observer } from 'rxjs'
 import {
   readConfObject,
@@ -87,14 +87,14 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         query.refName,
         query.start,
         query.end,
-        (line: string, fileOffset: number) => {
+        (line, fileOffset) => {
           lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
         },
       )
       if (allowRedispatch && lines.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
-        lines.forEach(line => {
+        for (const line of lines) {
           const featureType = line.fields[2]!
           // only expand redispatch range if feature is not a "dontRedispatch"
           // type skips large regions like chromosome,region
@@ -107,7 +107,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
               maxEnd = line.end
             }
           }
-        })
+        }
         if (maxEnd > query.end || minStart < query.start) {
           // make a new feature callback to only return top-level features
           // in the original query range
@@ -124,7 +124,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       }
 
       const gff3 = lines
-        .map((lineRecord: LineFeature) => {
+        .map(lineRecord => {
           if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
             if (!lineRecord.fields[8].includes('_lineHash')) {
               lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
@@ -136,16 +136,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         })
         .join('\n')
 
-      const features = gff.parseStringSync(gff3, {
-        parseFeatures: true,
-        parseComments: false,
-        parseDirectives: false,
-        parseSequences: false,
-        disableDerivesFromReferences: true,
-      })
-
-      features.forEach(featureLocs => {
-        this.formatFeatures(featureLocs).forEach(f => {
+      for (const featureLocs of parseStringSync(gff3)) {
+        for (const featureLoc of featureLocs) {
+          const f = new SimpleFeature({
+            data: featureData(featureLoc),
+            id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
+          })
           if (
             doesIntersect2(
               f.get('start'),
@@ -156,8 +152,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           ) {
             observer.next(f)
           }
-        })
-      })
+        }
+      }
       observer.complete()
     } catch (e) {
       observer.error(e)
@@ -178,16 +174,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       lineHash: fileOffset,
       fields,
     }
-  }
-
-  private formatFeatures(featureLocs: GFF3Feature) {
-    return featureLocs.map(
-      featureLoc =>
-        new SimpleFeature({
-          data: featureData(featureLoc),
-          id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
-        }),
-    )
   }
 
   public freeResources(/* { region } */) {}

@@ -13,7 +13,7 @@ import {
   isGzip,
 } from '@jbrowse/core/util'
 import { unzip } from '@gmod/bgzf-filehandle'
-import gtf from '@gmod/gtf'
+import { parseStringSync } from 'gtf-nostream'
 
 // locals
 import { FeatureLoc, featureData } from '../util'
@@ -82,14 +82,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GTF data')
             const intervalTree = new IntervalTree()
-            ;(
-              gtf.parseStringSync(lines, {
-                parseFeatures: true,
-                parseComments: false,
-                parseDirectives: false,
-                parseSequences: false,
-              }) as FeatureLoc[][]
-            )
+            ;(parseStringSync(lines) as FeatureLoc[][])
               .flat()
               .map(
                 (f, i) =>

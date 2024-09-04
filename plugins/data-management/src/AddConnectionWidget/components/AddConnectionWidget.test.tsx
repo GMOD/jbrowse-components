@@ -56,30 +56,32 @@ test('renders', () => {
 }, 20000)
 
 test('can handle a custom UCSC trackHub URL', async () => {
-  jest.spyOn(global, 'fetch').mockImplementation(async url => {
-    const urlText = `${url}`
-    if (urlText.endsWith('hub.txt')) {
-      return new Response(`hub TestHub
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async (url: string | Request | URL) => {
+      const urlText = `${url}`
+      if (urlText.endsWith('hub.txt')) {
+        return new Response(`hub TestHub
 shortLabel Test Hub
 longLabel Test Genome Informatics Hub for human DNase and RNAseq data
 genomesFile genomes.txt
 email genome@test.com
 descriptionUrl test.html
 `)
-    } else if (urlText.endsWith('genomes.txt')) {
-      return new Response(`genome volMyt1
+      } else if (urlText.endsWith('genomes.txt')) {
+        return new Response(`genome volMyt1
 trackDb hg19/trackDb.txt
 `)
-    } else if (urlText.endsWith('trackDb.txt')) {
-      return new Response(`track dnaseSignal
+      } else if (urlText.endsWith('trackDb.txt')) {
+        return new Response(`track dnaseSignal
 bigDataUrl dnaseSignal.bigWig
 shortLabel DNAse Signal
 longLabel Depth of alignments of DNAse reads
 type bigWig
 `)
-    }
-    throw new Error('unknown')
-  })
+      }
+      throw new Error('unknown')
+    })
 
   const {
     session,
