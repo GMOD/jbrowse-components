@@ -3,6 +3,7 @@ const { defineConfig } = require('@rsbuild/core')
 module.exports = defineConfig({
   output: {
     assetPrefix: 'auto',
+    sourceMap: 'source-map',
   },
   html: {
     title: 'JBrowse',
