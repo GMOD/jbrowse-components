@@ -85,9 +85,9 @@ async function loadRefNameMap(
   const refNameMap = Object.fromEntries(
     refNames.map(name => {
       checkRefName(name)
-      return [assembly.getCanonicalRefName(name), name]
+      return [assembly.getCanonicalRefName(name), name] as const
     }),
-  )
+  ) as Record<string, string>
 
   return {
     forwardMap: refNameMap,
@@ -109,13 +109,6 @@ function checkRefName(refName: string) {
 
 type RefNameAliases = Record<string, string>
 
-interface CacheData {
-  adapterConf: unknown
-  self: Assembly
-  sessionId: string
-  options: BaseOptions
-}
-
 export interface RefNameMap {
   forwardMap: RefNameAliases
   reverseMap: RefNameAliases
@@ -128,6 +121,13 @@ export interface BasicRegion {
   assemblyName: string
 }
 
+interface Context {
+  adapterConf: AnyConfigurationModel
+  self: Assembly
+  options: Record<string, unknown>
+  statusCallback: () => void
+}
+
 /**
  * #stateModel Assembly
  */
@@ -135,16 +135,18 @@ export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
 ) {
-  const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
-    cache: new QuickLRU({ maxSize: 1000 }),
-
-    // @ts-expect-error
-    async fill(
-      args: CacheData,
-      signal?: AbortSignal,
-      statusCallback?: (arg: string) => void,
+  const adapterLoads = new AbortablePromiseCache<
+    string,
+    Awaited<ReturnType<typeof loadRefNameMap>>,
+    Context
+  >({
+    max: 20,
+    async fetchMethod(
+      _key,
+      _old,
+      { signal, context }: { signal?: AbortSignal; context: Context },
     ) {
-      const { adapterConf, self, options } = args
+      const { adapterConf, self, options, statusCallback } = context
       return loadRefNameMap(
         self,
         adapterConf,
@@ -458,19 +460,15 @@ export default function assemblyFactory(
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
-        return adapterLoads.get(
-          adapterConfigCacheKey(adapterConf),
-          {
+        // @ts-expect-error
+        return adapterLoads.fetch(adapterConfigCacheKey(adapterConf), {
+          context: {
             adapterConf,
-            self,
-            options: rest,
-          } as CacheData,
-
-          // signal intentionally not passed here, fixes issues like #2221.
-          // alternative fix #2540 was proposed but non-working currently
-          undefined,
-          statusCallback,
-        )
+            self: self as Assembly,
+            options: rest as Record<string, unknown>,
+            statusCallback,
+          },
+        })!
       },
 
       /**
@@ -485,7 +483,7 @@ export default function assemblyFactory(
           throw new Error('sessionId is required')
         }
         const map = await this.getAdapterMapEntry(adapterConf, opts)
-        return map.forwardMap
+        return map?.forwardMap
       },
 
       /**
@@ -497,7 +495,7 @@ export default function assemblyFactory(
         opts: BaseOptions,
       ) {
         const map = await this.getAdapterMapEntry(adapterConf, opts)
-        return map.reverseMap
+        return map?.reverseMap
       },
     }))
 }
