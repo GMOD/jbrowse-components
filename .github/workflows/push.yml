@@ -3,24 +3,6 @@ name: Push
 on: push
 
 jobs:
-  test:
-    name: Test and typecheck
-    runs-on: ubuntu-latest
-    steps:
-      - run: sudo apt-get -y install tabix
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Test codebase
-        run: yarn test-ci
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-      - name: Typecheck codebase
-        run: yarn typecheck
-
   buildwebsite:
     name: Build website
     runs-on: ubuntu-latest
@@ -78,7 +60,7 @@ jobs:
         working-directory: component_tests/react-app
 
   buildjbrowseweb:
-    name: Build only jbrowse-web and upload to s3
+    name: Deploy jbrowse-web and storybooks to S3
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -104,17 +86,9 @@ jobs:
           cd products/jbrowse-web/dist && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
           cp products/jbrowse-web/dist/test_data/config.json products/jbrowse-web/dist/config.json
           aws s3 sync --delete products/jbrowse-web/dist s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
-  storybook_lgv:
-    name: Build and deploy static linear genome view Storybook site to AWS S3
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Build Storybook static site
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+
+      - name: Build LGV
         run: |
           yarn storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
@@ -124,23 +98,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Deploy Storybook for branch to S3
+
+      - name: Deploy LGV
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-linear-genome-view
-  storybook_app:
-    name: Build and deploy static react app Storybook site to AWS S3
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Build Storybook static site
+
+      - name: Build React App
         run: |
           yarn storybook:build
         working-directory: products/jbrowse-react-app
@@ -150,24 +116,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Deploy Storybook for branch to S3
+      - name: Deploy React App
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-app
 
-  storybook_cgv:
-    name: Build and deploy static circular genome view Storybook site to AWS S3
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Build Storybook static site
+      - name: Build CGV
         run: |
           yarn storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
@@ -177,27 +133,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Deploy Storybook for branch to S3
+      - name: Deploy CGV
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-circular-genome-view
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Lint codebase
-        run: yarn lint
 
   formatchecks:
-    name: Format/spellcheck/docs
+    name: Prettier, typos, lint, typecheck, test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -212,3 +156,11 @@ jobs:
         run: yarn statedocs && yarn configdocs
       - name: Spellcheck
         uses: crate-ci/typos@master
+      - name: Lint codebase
+        run: yarn lint
+      - name: Test codebase
+        run: yarn test-ci
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+      - name: Typecheck codebase
+        run: yarn typecheck
