@@ -14,15 +14,17 @@ function Arc({
   region,
   bpPerPx,
   config,
-  onFeatureClick,
+  height: displayHeight,
   feature,
+  onFeatureClick,
 }: {
   selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
+  height: number
   feature: Feature
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
 }) {
   const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
@@ -32,15 +34,17 @@ function Arc({
     bpPerPx,
   )
   const featureId = feature.id()
-  let stroke = readConfObject(config, 'color', { feature })
-  let textStroke = 'black'
-  if (selectedFeatureId && String(selectedFeatureId) === String(feature.id())) {
-    stroke = textStroke = 'red'
-  }
+  const selected =
+    selectedFeatureId && String(selectedFeatureId) === String(feature.id())
+  const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
+  const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
-  const height = readConfObject(config, 'height', { feature }) || 100
+  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
+  const height = Math.min(
+    readConfObject(config, 'height', { feature }) || 100,
+    displayHeight,
+  )
   const ref = React.createRef<SVGPathElement>()
 
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
@@ -110,7 +114,6 @@ function describeArc(
 ) {
   const start = polarToCartesian(x, y, radius, endAngle)
   const end = polarToCartesian(x, y, radius, startAngle)
-
   const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
 
   return [
@@ -152,14 +155,13 @@ function SemiCircles({
   )
 
   const featureId = feature.id()
-  let stroke = readConfObject(config, 'color', { feature })
-  let textStroke = 'black'
-  if (selectedFeatureId && String(selectedFeatureId) === String(feature.id())) {
-    stroke = textStroke = 'red'
-  }
+  const selected =
+    selectedFeatureId && String(selectedFeatureId) === String(feature.id())
+  const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
+  const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
+  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
   const ref = React.createRef<SVGPathElement>()
   const textYCoord = (right - left) / 2
 
@@ -247,6 +249,7 @@ const ArcRendering = observer(function ({
         ) : (
           <Arc
             key={f.id()}
+            height={height}
             config={config}
             region={region}
             bpPerPx={bpPerPx}
