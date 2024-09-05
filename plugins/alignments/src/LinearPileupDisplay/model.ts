@@ -269,34 +269,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Color by...',
-              icon: ColorLensIcon,
-              subMenu: [
-                {
-                  label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
-                  },
-                },
-                {
-                  label: 'Modifications or methylation',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ModificationsDialog,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                ...superColorSchemeSubMenuItems(),
-              ],
-            },
 
             {
               label: 'Sort by...',
@@ -316,7 +288,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SortByTagDialog,
-                      { model: self, handleClose },
+                      {
+                        model: self,
+                        handleClose,
+                      },
                     ])
                   },
                 },
@@ -326,6 +301,37 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     self.clearSelected()
                   },
                 },
+              ],
+            },
+            {
+              label: 'Color by...',
+              icon: ColorLensIcon,
+              subMenu: [
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'pairOrientation' })
+                  },
+                },
+                {
+                  label: 'Modifications or methylation',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      ModificationsDialog,
+                      {
+                        model: self,
+                        handleClose: doneCallback,
+                      },
+                    ])
+                  },
+                },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
+                },
+                ...superColorSchemeSubMenuItems(),
               ],
             },
             {
@@ -374,9 +380,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               return
             }
 
-            const { bpPerPx } = view
-
-            self.setCurrSortBpPerPx(bpPerPx)
+            self.setCurrSortBpPerPx(view.bpPerPx)
           },
           { delay: 1000 },
         )
