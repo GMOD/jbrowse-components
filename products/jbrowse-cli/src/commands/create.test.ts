@@ -149,6 +149,6 @@ test('lists versions', async () => {
       .get('/repos/GMOD/jbrowse-components/releases?page=2')
       .reply(200, [])
     const { stdout } = await runCommand(['create', '--listVersions'])
-    expect(stdout).toBe('All JBrowse versions:\nv0.0.1\n')
+    expect(stdout).toMatchSnapshot()
   })
 })
