@@ -213,15 +213,3 @@ particular notes include
    subpaths like '@jbrowse/core/util'
 2. The use of tsconfig.build.json to generate types in the final release
 3. The use of referring to the src directory at development time
-
-## Notes about yarn
-
-Using `yarn upgrade` or `yarn upgrade-interactive --latest` can produce errors
-with the latest version of yarn. This is commonly cited around the web, but
-using npx to one-off run an older version of yarn can fix this issues
-
-Example:
-
-```
-npx yarn@1.19.1 upgrade-interactive --latest
-```
