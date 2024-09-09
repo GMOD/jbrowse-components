@@ -153,19 +153,31 @@ type ViewModel = ReturnType<typeof createViewState>
 
 export const WithLaunchLinearGenomeView = () => {
   const [viewState, setViewState] = useState<ViewModel>()
+  const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    const state = createViewState({
-      config,
-    })
-    const { pluginManager } = getEnv(state)
-    pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
-      tracks: ['hg38.100way.phyloP100way'],
-      loc: 'chr10:1-100000',
-      assembly: 'hg38',
-      session: state.session,
-    })
-    setViewState(state)
+    ;(async () => {
+      try {
+        const state = createViewState({
+          config,
+        })
+        const { pluginManager } = getEnv(state)
+
+        setViewState(state)
+        await pluginManager.evaluateAsyncExtensionPoint(
+          'LaunchView-LinearGenomeView',
+          {
+            tracks: ['hg38.100way.phyloP100way'],
+            loc: 'chr10:1-100000',
+            assembly: 'hg38',
+            session: state.session,
+          },
+        )
+      } catch (e) {
+        console.error(e)
+        setError(e)
+      }
+    })()
   }, [])
 
   if (!viewState) {
@@ -177,6 +189,7 @@ export const WithLaunchLinearGenomeView = () => {
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithLaunchLinearGenomeView.tsx">
         Source code
       </a>
+      {error ? <div style={{ color: 'red' }}>{`${error}`}</div> : null}
       <JBrowseApp viewState={viewState} />
     </>
   )
