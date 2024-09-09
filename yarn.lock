@@ -2395,10 +2395,12 @@
     long "^4.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/trix@^2.0.4":
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.6.tgz#00f97eef28a13c688be3c4c0773916ecf68765f8"
-  integrity sha512-J12/c8kRHw8mxoVpHTeG6B7w9aGOmFdOGRxhljjaUmcMiFB7CFinPtApsoOSO/e6TYI40E5zd5n3+Q2ZC89Qww==
+"@gmod/trix@^2.0.7":
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.7.tgz#999a1d91f844a80ba87e5f2c1ccaf46d1e384fbb"
+  integrity sha512-HyKYu6hDoEIQfzzjCgkTEVArCENKWM1PErR7S2tUdQIxTmBURJbd/o8Oyv2jAEBk6s7rLZcWFzXHxGrbvBsXOg==
+  dependencies:
+    buffer "^6.0.3"
 
 "@gmod/twobit@^2.0.1":
   version "2.0.1"
@@ -15659,7 +15661,7 @@ typescript-eslint@^8.0.1:
     "@typescript-eslint/parser" "8.4.0"
     "@typescript-eslint/utils" "8.4.0"
 
-"typescript@>=3 < 6", typescript@^5.1.3, typescript@^5.4.3:
+"typescript@>=3 < 6", typescript@^5.1.3, typescript@^5.4.3, typescript@~5.5.0:
   version "5.5.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.5.4.tgz#d9852d6c82bad2d2eda4fd74a5762a8f5909e9ba"
   integrity sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==
