@@ -165,22 +165,8 @@ export default function assemblyFactory(
       loadingP: undefined as Promise<void> | undefined,
       volatileRegions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as RefNameAliases | undefined,
+      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
       cytobands: undefined as Feature[] | undefined,
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get lowerCaseRefNameAliases() {
-        return self.refNameAliases
-          ? Object.fromEntries(
-              Object.entries(self.refNameAliases).map(([key, val]) => [
-                key.toLowerCase(),
-                val,
-              ]),
-            )
-          : undefined
-      },
     }))
     .views(self => ({
       /**
@@ -339,14 +325,16 @@ export default function assemblyFactory(
       setLoaded({
         regions,
         refNameAliases,
+        lowerCaseRefNameAliases,
         cytobands,
       }: {
         regions: Region[]
         refNameAliases: RefNameAliases
+        lowerCaseRefNameAliases: RefNameAliases
         cytobands: Feature[]
       }) {
         this.setRegions(regions)
-        this.setRefNameAliases(refNameAliases)
+        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
         this.setCytobands(cytobands)
       },
       /**
@@ -364,8 +352,12 @@ export default function assemblyFactory(
       /**
        * #action
        */
-      setRefNameAliases(aliases: RefNameAliases) {
+      setRefNameAliases(
+        aliases: RefNameAliases,
+        lowerCaseAliases: RefNameAliases,
+      ) {
         self.refNameAliases = aliases
+        self.lowerCaseRefNameAliases = lowerCaseAliases
       },
       /**
        * #action
@@ -435,6 +427,12 @@ export default function assemblyFactory(
           // mapping for the primary region to be an alias
           refNameAliases[region.refName] ||= region.refName
         }
+        const lowerCaseRefNameAliases = Object.fromEntries(
+          Object.entries(refNameAliases).map(([key, val]) => [
+            key.toLowerCase(),
+            val,
+          ]),
+        )
 
         this.setLoaded({
           refNameAliases,
@@ -442,6 +440,7 @@ export default function assemblyFactory(
             ...r,
             refName: refNameAliases[r.refName] || r.refName,
           })),
+          lowerCaseRefNameAliases,
           cytobands: await getCytobands({
             config: cytobandAdapterConf,
             pluginManager,
