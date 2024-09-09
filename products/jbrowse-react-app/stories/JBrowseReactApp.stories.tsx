@@ -1,5 +1,6 @@
 export {
   BasicExample,
+  HumanDemo,
   WithWebWorker,
   WithFetchConfigJson,
   WithImportConfigJson,

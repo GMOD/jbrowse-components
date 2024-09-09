@@ -1,4 +1,5 @@
 export * from './BasicExample'
+export * from './HumanDemo'
 export * from './WithWebWorker'
 export * from './WithImportConfigJson'
 export * from './WithFetchConfigJson'
