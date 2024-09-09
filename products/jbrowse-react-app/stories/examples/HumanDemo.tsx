@@ -298,10 +298,10 @@ export const HumanDemo = () => {
 
   return (
     <>
-      <JBrowseApp viewState={viewState} />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/HumanDemo.tsx">
         Source code
       </a>
+      <JBrowseApp viewState={viewState} />
     </>
   )
 }
