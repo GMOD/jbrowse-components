@@ -90,7 +90,7 @@
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "pako": "^2.1.0",
+    "pako": "^1.0.0",
     "react-error-boundary": "^4.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.4.1",
