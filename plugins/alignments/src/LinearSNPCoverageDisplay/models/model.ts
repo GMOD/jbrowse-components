@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { types, cast, getEnv, getSnapshot, isAlive } from 'mobx-state-tree'
 import { observable } from 'mobx'
 
@@ -15,10 +16,12 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // locals
-import Tooltip from '../components/Tooltip'
 import { FilterModel, IFilter, getUniqueModificationValues } from '../../shared'
 import { createAutorun, modificationColors } from '../../util'
 import { randomColor } from '../../util'
+
+// lazies
+const Tooltip = lazy(() => import('../components/Tooltip'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])

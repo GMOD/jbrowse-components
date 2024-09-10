@@ -59,14 +59,7 @@ export async function getAdapter(
     )
 
     const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
-
-    // instantiate the adapter itself with its config schema, and a bound
-    // func that it can use to get any inner adapters
-    // (such as sequence adapters or wrapped subadapters) that it needs
-    //
-    const { AdapterClass, getAdapterClass } = dataAdapterType
-
-    const CLASS = AdapterClass || (await getAdapterClass())
+    const CLASS = await dataAdapterType.getAdapterClass()
     const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
     // store it in our cache

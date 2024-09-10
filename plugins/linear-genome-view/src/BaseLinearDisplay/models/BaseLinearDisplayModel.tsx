@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
@@ -11,6 +11,7 @@ import {
   isSessionModelWithWidgets,
   isFeature,
   Feature,
+  AnyReactComponentType,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -24,11 +25,13 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
-import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
+
+// lazies
+const Tooltip = lazy(() => import('../components/Tooltip'))
 
 type LGV = LinearGenomeViewModel
 
@@ -121,8 +124,8 @@ function stateModelFactory() {
       /**
        * #getter
        */
-      get TooltipComponent(): React.FC<any> {
-        return Tooltip as unknown as React.FC
+      get TooltipComponent(): AnyReactComponentType {
+        return Tooltip as AnyReactComponentType
       },
 
       /**

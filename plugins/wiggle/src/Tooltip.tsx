@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { Feature } from '@jbrowse/core/util'
@@ -51,9 +51,11 @@ const Tooltip = observer(function Tooltip({
   const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
   return featureUnderMouse ? (
     <>
-      <BaseTooltip clientPoint={{ x, y }}>
-        <TooltipContents model={model} feature={featureUnderMouse} />
-      </BaseTooltip>
+      <Suspense fallback={null}>
+        <BaseTooltip clientPoint={{ x, y }}>
+          <TooltipContents model={model} feature={featureUnderMouse} />
+        </BaseTooltip>
+      </Suspense>
 
       <div
         className={classes.hoverVertical}

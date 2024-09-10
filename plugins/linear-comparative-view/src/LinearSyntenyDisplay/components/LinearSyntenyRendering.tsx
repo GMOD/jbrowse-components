@@ -1,16 +1,17 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, lazy } from 'react'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import SyntenyTooltip from './SyntenyTooltip'
 import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { ClickCoord, getTooltip, onSynClick, onSynContextClick } from './util'
+
+const SyntenyTooltip = lazy(() => import('./SyntenyTooltip'))
 
 type Timer = ReturnType<typeof setTimeout>
 

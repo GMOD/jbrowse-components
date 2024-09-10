@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -68,14 +68,16 @@ const BaseLinearDisplay = observer(function (props: {
       )}
       {children}
 
-      <TooltipComponent
-        model={model}
-        height={height}
-        offsetMouseCoord={offsetMouseCoord}
-        clientMouseCoord={clientMouseCoord}
-        clientRect={clientRect}
-        mouseCoord={offsetMouseCoord}
-      />
+      <Suspense fallback={null}>
+        <TooltipComponent
+          model={model}
+          height={height}
+          offsetMouseCoord={offsetMouseCoord}
+          clientMouseCoord={clientMouseCoord}
+          clientRect={clientRect}
+          mouseCoord={offsetMouseCoord}
+        />
+      </Suspense>
 
       <Menu
         open={Boolean(contextCoord) && items.length > 0}

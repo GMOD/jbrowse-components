@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 
 interface Props {
   message: React.ReactNode | string
@@ -22,9 +22,11 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 
 const ArcTooltip = observer(function ({ contents }: { contents?: string }) {
   return contents ? (
-    <BaseTooltip>
-      <TooltipContents message={contents} />
-    </BaseTooltip>
+    <Suspense fallback={null}>
+      <BaseTooltip>
+        <TooltipContents message={contents} />
+      </BaseTooltip>
+    </Suspense>
   ) : null
 })
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { lazy, Suspense, useState } from 'react'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -7,7 +7,7 @@ import { Feature, Region, bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
-import ArcTooltip from '../ArcTooltip'
+const ArcTooltip = lazy(() => import('../ArcTooltip'))
 
 function Arc({
   selectedFeatureId,
@@ -71,7 +71,12 @@ function Arc({
         }}
         pointerEvents="stroke"
       />
-      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
+
+      {isMouseOvered ? (
+        <Suspense fallback={null}>
+          <ArcTooltip contents={caption} />
+        </Suspense>
+      ) : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
