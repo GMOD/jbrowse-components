@@ -36,10 +36,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
 
   useEffect(() => {
     if (!bookmarkWidget) {
-      session.addWidget(
-        'GridBookmarkWidget',
-        'GridBookmark',
-      ) as GridBookmarkModel
+      session.addWidget('GridBookmarkWidget', 'GridBookmark')
     }
   }, [session, bookmarkWidget])
 

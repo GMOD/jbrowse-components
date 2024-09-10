@@ -34,10 +34,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   useEffect(() => {
     if (!bookmarkWidget) {
-      session.addWidget(
-        'GridBookmarkWidget',
-        'GridBookmark',
-      ) as GridBookmarkModel
+      session.addWidget('GridBookmarkWidget', 'GridBookmark')
     }
   }, [session, bookmarkWidget])
 

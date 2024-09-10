@@ -141,7 +141,10 @@ export default function createModel(
         return self.config
       },
     }))
-  return { model: rootModel, pluginManager }
+  return {
+    model: rootModel,
+    pluginManager,
+  }
 }
 
 export type ViewStateModel = ReturnType<typeof createModel>['model']

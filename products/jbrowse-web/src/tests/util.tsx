@@ -14,7 +14,7 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 
 // locals
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
@@ -132,8 +132,12 @@ export async function createView(args?: any, adminMode?: boolean) {
   }
   return ret
 }
-
-export function createViewNoWait(args?: any, adminMode?: boolean) {
+interface Results extends ReturnType<typeof render> {
+  view: LGV
+  session: AbstractSessionModel
+  rootModel: AppRootModel
+}
+export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
   const session = rootModel.session! as AbstractSessionModel
@@ -152,8 +156,12 @@ export function doBeforeEach(
   // @ts-expect-error
   fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
-
-export async function doSetupForImportForm(val?: unknown) {
+interface Results2 extends Results {
+  autocomplete: HTMLElement
+  input: HTMLElement
+  getInputValue: () => string
+}
+export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
   const args = await createView(val)
   const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
     args

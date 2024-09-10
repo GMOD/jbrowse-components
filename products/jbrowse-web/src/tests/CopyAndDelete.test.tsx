@@ -68,16 +68,10 @@ test(
   'copy and delete reference sequence track disabled',
   () =>
     mockConsoleWarn(async () => {
-      const {
-        view,
-        rootModel,
-        session,
-        queryByText,
-        findByTestId,
-        findByText,
-      } = await createView(undefined, true)
+      const { view, session, queryByText, findByTestId, findByText } =
+        await createView(undefined, true)
 
-      const { assemblyManager } = rootModel
+      const { assemblyManager } = session
 
       view.setNewView(0.05, 5000)
       const trackConf = getConf(assemblyManager.get('volvox')!, 'sequence')
