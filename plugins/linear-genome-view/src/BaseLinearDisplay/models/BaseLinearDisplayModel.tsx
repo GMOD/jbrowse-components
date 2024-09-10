@@ -85,6 +85,14 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
+       * if a display-level message should be displayed instead of the blocks,
+       * make this return a react component
+       */
+      get DisplayMessageComponent(): undefined | React.FC<any> {
+        return undefined
+      },
+      /**
+       * #getter
        */
       get blockType(): 'staticBlocks' | 'dynamicBlocks' {
         return 'staticBlocks'
@@ -131,14 +139,6 @@ function stateModelFactory() {
           }
         }
         return undefined
-      },
-      /**
-       * #getter
-       * if a display-level message should be displayed instead of the blocks,
-       * make this return a react component
-       */
-      get DisplayMessageComponent() {
-        return undefined as undefined | React.FC<any>
       },
     }))
     .views(self => ({
