@@ -85,7 +85,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             <g transform={`translate(${shift} ${fontSize})`}>
               <g transform={`translate(${trackLabelOffset})`}>
                 <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                  {views[0]!.assemblyNames.join(', ')}
+                  {views[0].assemblyNames.join(', ')}
                 </text>
 
                 <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
@@ -106,7 +106,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             <g transform={`translate(${shift} ${fontSize + heights[0]!})`}>
               <g transform={`translate(${trackLabelOffset})`}>
                 <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                  {views[1]!.assemblyNames.join(', ')}
+                  {views[1].assemblyNames.join(', ')}
                 </text>
                 <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
               </g>

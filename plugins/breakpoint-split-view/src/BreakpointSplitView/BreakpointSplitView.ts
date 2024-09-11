@@ -19,8 +19,6 @@ export default class BreakpointSplitViewType extends ViewType {
     let endPos: number
 
     let mateRefName: string | undefined
-    let startMod = 0
-    let endMod = 0
 
     // a VCF breakend feature
     if (alt === '<TRA>') {
@@ -31,12 +29,6 @@ export default class BreakpointSplitViewType extends ViewType {
       const matePosition = bnd.MatePosition.split(':')
       endPos = +matePosition[1]! - 1
       mateRefName = matePosition[0]!
-      if (bnd.Join === 'left') {
-        startMod = -1
-      }
-      if (bnd.MateDirection === 'left') {
-        endMod = -1
-      }
     } else if (feature.get('mate')) {
       // a generic 'mate' feature
       const mate = feature.get('mate')

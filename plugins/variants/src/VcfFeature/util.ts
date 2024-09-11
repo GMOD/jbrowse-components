@@ -112,6 +112,12 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   if (alt === '<DEL>') {
     return ['deletion', alt]
   }
+  if (alt === '<DUP>') {
+    return ['duplication', alt]
+  }
+  if (alt === '<CNV>') {
+    return ['cnv', alt]
+  }
   if (alt === '<INV>') {
     return ['inversion', alt]
   }

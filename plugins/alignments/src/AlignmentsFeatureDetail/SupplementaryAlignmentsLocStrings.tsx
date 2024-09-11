@@ -5,7 +5,7 @@ import { getLengthOnRef } from '../MismatchParser'
 import { navToLoc } from './util'
 import { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
-export default function SuppAlignmentsLocStrings({
+export default function SupplementaryAlignmentsLocStrings({
   tag,
   model,
 }: {

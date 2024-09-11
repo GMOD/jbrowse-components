@@ -43,13 +43,6 @@ export * from './dedupe'
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 
-export function getRegionWidth(
-  region: { start: number; end: number },
-  bpPerPx: number,
-) {
-  return (region.end - Math.max(region.start, 0)) / bpPerPx
-}
-
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
 

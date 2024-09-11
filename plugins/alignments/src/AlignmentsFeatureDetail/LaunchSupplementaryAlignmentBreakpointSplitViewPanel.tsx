@@ -1,5 +1,5 @@
 import React, { lazy, useEffect, useState } from 'react'
-import { Typography, Link, Tooltip } from '@mui/material'
+import { Typography, Link } from '@mui/material'
 import {
   SimpleFeature,
   SimpleFeatureSerialized,
@@ -105,7 +105,7 @@ export default function LaunchBreakpointSplitViewPanel({
                   ])
                 }}
               >
-                (top/bottom)
+                (single row)
               </Link>
             </li>
           )

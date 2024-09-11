@@ -100,7 +100,7 @@ const BreakendMultiLevelOptionDialog = observer(function ({
                     assembly: asm,
                   })
 
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                 
                 const viewTracks = getSnapshot(view.tracks) as Track[]
                 const breakpointSplitView = session.addView(
                   'BreakpointSplitView',

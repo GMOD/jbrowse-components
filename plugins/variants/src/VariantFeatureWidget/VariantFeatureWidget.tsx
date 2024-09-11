@@ -104,7 +104,11 @@ const VariantFeatureWidget = observer(function (props: {
             locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
           />
         ) : null}
-        {feat.type === 'inversion' || feat.type === 'deletion' ? (
+        {feat.type.includes('inversion') ||
+        feat.type.includes('deletion') ||
+        feat.type.includes('duplication') ||
+        feat.type.includes('cnv') ||
+        feat.type.includes('sv') ? (
           <LaunchBreakendPanel
             feature={{
               uniqueId: 'random',

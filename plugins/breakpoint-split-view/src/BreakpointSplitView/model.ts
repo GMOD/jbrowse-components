@@ -175,7 +175,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.views.length === 1
           ? self.views[0]!.tracks
           : intersect(
-              elt => elt.configuration.trackId as string,
+              elt => elt.configuration.trackId,
               ...self.views.map(
                 view => view.tracks as { configuration: { trackId: string } }[],
               ),

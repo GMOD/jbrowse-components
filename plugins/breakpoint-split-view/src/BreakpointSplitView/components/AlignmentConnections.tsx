@@ -12,6 +12,13 @@ import {
 } from './util'
 import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
 import { BreakpointViewModel } from '../model'
+import {
+  getLongReadOrientationAbnormal,
+  getLongReadOrientationColorAbnormal,
+  getLongReadOrientationColorOrDefault,
+  getPairedOrientationColor,
+  isAbnormalOrientation,
+} from './getOrientationColor'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 
@@ -61,7 +68,6 @@ const AlignmentConnections = observer(function ({
   return assembly ? (
     <g
       fill="none"
-      {...getStrokeProps(theme.palette.text.disabled)}
       data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
     >
       {layoutMatches.map(chunk => {
@@ -77,7 +83,7 @@ const AlignmentConnections = observer(function ({
             return null
           }
 
-          // disable rendering connections in a single level
+          // disable rendering connections in a single row
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
@@ -87,9 +93,25 @@ const AlignmentConnections = observer(function ({
           if (!f1ref || !f2ref) {
             throw new Error(`unable to find ref for ${f1ref || f2ref}`)
           }
+          const r = {
+            pair_orientation: f1.get('pair_orientation'),
+          }
 
           const s1 = f1.get('strand')
           const s2 = f2.get('strand')
+          const sameRef = f1ref === f2ref
+          const checkOrientation = sameRef
+          let orientationColor = ''
+          let isAbnormal = false
+          if (checkOrientation) {
+            if (hasPaired) {
+              orientationColor = getPairedOrientationColor(r)
+              isAbnormal = isAbnormalOrientation(r)
+            } else {
+              orientationColor = getLongReadOrientationColorOrDefault(s1, s2)
+              isAbnormal = getLongReadOrientationAbnormal(s1, s2)
+            }
+          }
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn1 = s2 === -1
           const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
@@ -105,7 +127,8 @@ const AlignmentConnections = observer(function ({
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
             yOffset
           const sameLevel = level1 === level2
-          const trackHeight = 0 //sameLevel ? tracks[level1].displays[0].height : 0
+          const trackHeight =
+            sameLevel && isAbnormal ? tracks[level1].displays[0].height / 2 : 0
 
           // possible todo: use totalCurveHeight to possibly make alternative
           // squiggle if the S is too small
@@ -115,13 +138,13 @@ const AlignmentConnections = observer(function ({
             y1,
             'C',
             x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
-            y1 + trackHeight,
+            Math.max(y1 + trackHeight, trackHeight),
             x2 -
               200 *
                 f2.get('strand') *
                 (reversed2 ? -1 : 1) *
                 (hasPaired ? -1 : 1),
-            y2 + trackHeight,
+            Math.max(trackHeight, y2 + trackHeight),
             x2,
             y2,
           ].join(' ')
@@ -132,6 +155,9 @@ const AlignmentConnections = observer(function ({
               key={id}
               data-testid="r1"
               strokeWidth={mouseoverElt === id ? 5 : 1}
+              {...getStrokeProps(
+                orientationColor || theme.palette.text.disabled,
+              )}
               onClick={() => {
                 const featureWidget = session.addWidget?.(
                   'BreakpointAlignmentsWidget',
