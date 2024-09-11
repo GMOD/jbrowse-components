@@ -69,7 +69,16 @@ export default function LaunchBreakpointSplitViewPanel({
                     event.preventDefault()
                     session.queueDialog(handleClose => [
                       BreakendOptionDialog,
-                      { handleClose, f1, f2, model, viewType },
+                      {
+                        handleClose,
+                        model,
+                        feature: new SimpleFeature({ ...f1, mate: f2 }),
+                        // @ts-expect-error
+                        viewType,
+                        view: model.view,
+                        assemblyName:
+                          model.view.displayedRegions[0].assemblyName,
+                      },
                     ])
                   }}
                 >

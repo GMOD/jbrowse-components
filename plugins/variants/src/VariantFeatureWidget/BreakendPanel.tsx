@@ -85,7 +85,15 @@ function LaunchBreakpointSplitViewPanel({
                 event.preventDefault()
                 session.queueDialog(handleClose => [
                   BreakendOptionDialog,
-                  { handleClose, model, feature: simpleFeature, viewType },
+                  {
+                    handleClose,
+                    model,
+                    feature: simpleFeature,
+                    // @ts-expect-error
+                    viewType,
+                    view: model.view,
+                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                  },
                 ])
               }}
             >

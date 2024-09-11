@@ -190,12 +190,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        *
-       * Translocation features are handled differently
-       * since they do not have a mate e.g. they are one sided
+       * Translocation features are handled differently since they do not have
+       * a mate e.g. they are one sided
        */
       hasTranslocations(trackConfigId: string) {
         return [...this.getTrackFeatures(trackConfigId).values()].find(
           f => f.get('type') === 'translocation',
+        )
+      },
+
+      /**
+       * #method
+       *
+       * Paired features similar to breakends, but simpler, like BEDPE
+       */
+      hasPairedFeatures(trackConfigId: string) {
+        return [...this.getTrackFeatures(trackConfigId).values()].find(
+          f => f.get('type') === 'paired_feature',
         )
       },
 
@@ -339,7 +350,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-
                       await getBlockFeatures(self as any, track),
                     ]),
                   ),
@@ -360,7 +370,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...self.views
             .map((view, idx) => [idx, view.menuItems()] as const)
-            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+            .map(f => ({
+              label: `View ${f[0] + 1} Menu`,
+              subMenu: f[1],
+            })),
 
           {
             label: 'Show intra-view links',
