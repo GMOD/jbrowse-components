@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
 import { when } from 'mobx'
-import { getSession, Feature, useLocalStorage } from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
@@ -85,6 +85,7 @@ const BreakendMultiLevelOptionDialog = observer(function ({
       <DialogActions>
         <Button
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
               const session = getSession(model)
               try {
@@ -100,7 +101,6 @@ const BreakendMultiLevelOptionDialog = observer(function ({
                     assembly: asm,
                   })
 
-                 
                 const viewTracks = getSnapshot(view.tracks) as Track[]
                 const breakpointSplitView = session.addView(
                   'BreakpointSplitView',

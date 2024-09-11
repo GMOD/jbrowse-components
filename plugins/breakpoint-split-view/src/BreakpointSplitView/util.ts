@@ -23,7 +23,7 @@ function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
 
-function heightFromSpecificLevel(
+export function heightFromSpecificLevel(
   views: LGV[],
   trackId: string,
   level: number,

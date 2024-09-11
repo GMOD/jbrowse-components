@@ -90,56 +90,58 @@ const BreakendSingleLevelOptionDialog = observer(function ({
         <Button
           onClick={() => {
             const session = getSession(model)
-            try {
-              console.log({ assemblyName })
-              const assembly = session.assemblyManager.get(assemblyName)
-              const w = +windowSize
-              if (Number.isNaN(w)) {
-                throw new Error('windowSize not a number')
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            ;(async () => {
+              try {
+                const assembly = session.assemblyManager.get(assemblyName)
+                const w = +windowSize
+                if (Number.isNaN(w)) {
+                  throw new Error('windowSize not a number')
+                }
+                const { refName, pos, mateRefName, matePos } =
+                  // @ts-expect-error
+                  viewType.getBreakendCoveringRegions({ feature, assembly })
+
+                const breakpointSplitView = session.addView(
+                  'BreakpointSplitView',
+                  {
+                    type: 'BreakpointSplitView',
+                    displayName: `${
+                      feature.get('name') || feature.get('id') || 'breakend'
+                    } split detail`,
+                    views: [
+                      {
+                        type: 'LinearGenomeView',
+                        tracks: stripIds(getSnapshot(view.tracks)),
+                      },
+                    ],
+                  },
+                ) as unknown as { views: LinearGenomeViewModel[] }
+
+                await breakpointSplitView.views[0]!.navToLocations(
+                  gatherOverlaps(
+                    [
+                      {
+                        refName,
+                        start: Math.max(0, pos - w),
+                        end: pos + w,
+                        assemblyName,
+                      },
+                      {
+                        refName: mateRefName,
+                        start: Math.max(0, matePos - w),
+                        end: matePos + w,
+                        assemblyName,
+                      },
+                    ],
+                    w,
+                  ),
+                )
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
               }
-              const { refName, pos, mateRefName, matePos } =
-                // @ts-expect-error
-                viewType.getBreakendCoveringRegions({ feature, assembly })
-
-              const breakpointSplitView = session.addView(
-                'BreakpointSplitView',
-                {
-                  type: 'BreakpointSplitView',
-                  displayName: `${
-                    feature.get('name') || feature.get('id') || 'breakend'
-                  } split detail`,
-                  views: [
-                    {
-                      type: 'LinearGenomeView',
-                      tracks: stripIds(getSnapshot(view.tracks)),
-                    },
-                  ],
-                },
-              ) as unknown as { views: LinearGenomeViewModel[] }
-
-              breakpointSplitView.views[0]!.navToLocations(
-                gatherOverlaps(
-                  [
-                    {
-                      refName,
-                      start: Math.max(0, pos - w),
-                      end: pos + w,
-                      assemblyName,
-                    },
-                    {
-                      refName: mateRefName,
-                      start: Math.max(0, matePos - w),
-                      end: matePos + w,
-                      assemblyName,
-                    },
-                  ],
-                  w,
-                ),
-              )
-            } catch (e) {
-              console.error(e)
-              session.notify(`${e}`)
-            }
+            })()
             handleClose()
           }}
           variant="contained"

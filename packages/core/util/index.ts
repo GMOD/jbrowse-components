@@ -1407,7 +1407,7 @@ interface BasicFeature {
   assemblyName?: string
 }
 
-// returns map of new non-overlapping features
+// returns new array non-overlapping features
 export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
   const memo = {} as Record<string, BasicFeature[]>
   for (const x of regions) {

@@ -10,7 +10,12 @@ import {
   getMatchedAlignmentFeatures,
   hasPairedReads,
 } from './util'
-import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
+import {
+  yPos,
+  useNextFrame,
+  getPxFromCoordinate,
+  heightFromSpecificLevel,
+} from '../util'
 import { BreakpointViewModel } from '../model'
 import {
   getLongReadOrientationAbnormal,
@@ -37,7 +42,8 @@ const AlignmentConnections = observer(function ({
   const session = getSession(model)
   const snap = getSnapshot(model)
   const { assemblyManager } = session
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
+  const v0 = views[0]
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
@@ -128,60 +134,42 @@ const AlignmentConnections = observer(function ({
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
             yOffset
           const sameLevel = level1 === level2
-          const trackHeight =
-            sameLevel && isAbnormal ? tracks[level1].displays[0].height / 2 : 0
+          const abnormalSpecialRenderFlag = sameLevel && isAbnormal
+          const trackHeight = abnormalSpecialRenderFlag
+            ? tracks[level1].displays[0].height
+            : 0
           const pf1 = hasPaired ? -1 : 1
+          const y0 = heightFromSpecificLevel(
+            views,
+            trackId,
+            level1,
+            getTrackYPosOverride,
+          )
 
           // possible todo: use totalCurveHeight to possibly make alternative
           // squiggle if the S is too small
-          const path = isAbnormal
-            ? [
-                'M',
-                x1,
-                y1,
-                'C',
+          const path = [
+            'M',
+            x1,
+            y1,
+            'C',
 
-                // first bezier x,y
-                x1 + 100 * f1.get('strand') * rf1,
-                y1,
+            // first bezier x,y
+            x1 + 200 * f1.get('strand') * rf1,
+            abnormalSpecialRenderFlag
+              ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
+              : y1,
 
-                // second bezier x,y
-                x1 + 100 * f1.get('strand') * rf1,
-                y1 + 100,
+            // second bezier x,y
+            x2 - 200 * f2.get('strand') * rf2 * pf1,
+            abnormalSpecialRenderFlag
+              ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
+              : y2,
 
-                // third bezier x,y
-                x2 - 100 * f2.get('strand') * rf2 * pf1,
-                y2 + 100,
-
-                // bezier continuation
-                'S',
-
-                // first bezier x,y
-                x2 - 100 * f2.get('strand') * rf2 * pf1,
-                y2 + 100,
-
-                // second bezier x,y
-                x2,
-                y2,
-              ].join(' ')
-            : [
-                'M',
-                x1,
-                y1,
-                'C',
-
-                // first bezier x,y
-                x1 + 200 * f1.get('strand') * rf1,
-                y1,
-
-                // second bezier x,y
-                x2 - 200 * f2.get('strand') * rf2 * pf1,
-                y2,
-
-                // third bezier x,y
-                x2,
-                y2,
-              ].join(' ')
+            // third bezier x,y
+            x2,
+            y2,
+          ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
           ret.push(
             <path
