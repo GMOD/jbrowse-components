@@ -72,7 +72,10 @@ async function getBlockFeatures(
 ) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0]!.assemblyNames[0]!
+  const assemblyName = model.views[0]?.assemblyNames[0]
+  if (!assemblyName) {
+    return undefined
+  }
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     return undefined // throw new Error(`assembly not found: "${assemblyName}"`)

@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { Button, DialogActions, DialogContent } from '@mui/material'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
-import { getSession, Feature, gatherOverlaps } from '@jbrowse/core/util'
+import {
+  getSession,
+  Feature,
+  gatherOverlaps,
+  assembleLocString,
+} from '@jbrowse/core/util'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -42,6 +47,7 @@ const BreakendOptionDialog = observer(function ({
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirror, setMirror] = useState(true)
   const [twoLevel, setTwoLevel] = useState(true)
+  const [windowSize, setWindowSize] = useState('5000')
 
   return (
     <Dialog open onClose={handleClose} title="Breakpoint split view options">
@@ -70,6 +76,31 @@ const BreakendOptionDialog = observer(function ({
             }}
           />
         ) : null}
+        <TextField
+          label="Window size (bp)"
+          value={windowSize}
+          onChange={event => setWindowSize(event.target.value)}
+        />
+
+        {/*<div>
+          Navigating to:
+          {!Number.isNaN(w)
+            ? gatherOverlaps([
+                {
+                  refName,
+                  start: pos - w,
+                  end: pos + w,
+                  assemblyName,
+                },
+                {
+                  refName: mateRefName,
+                  start: matePos - w,
+                  end: matePos + w,
+                  assemblyName,
+                },
+              ]).map(f => assembleLocString(f))
+            : null}
+        </div>*/}
       </DialogContent>
       <DialogActions>
         <Button
@@ -77,9 +108,14 @@ const BreakendOptionDialog = observer(function ({
             const { view } = model
             const session = getSession(model)
             try {
+              const { assemblyName } = view.displayedRegions[0]!
+              console.log({ assemblyName })
+              const assembly = session.assemblyManager.get(assemblyName)
+              const w = +windowSize
+              if (Number.isNaN(w)) {
+                throw new Error('windowSize not a number')
+              }
               if (!twoLevel) {
-                const { assemblyName } = view.displayedRegions[0]!
-                const assembly = session.assemblyManager.get(assemblyName)
                 const { refName, pos, mateRefName, matePos } =
                   // @ts-expect-error
                   viewType.getBreakendCoveringRegions({ feature, assembly })
@@ -104,44 +140,78 @@ const BreakendOptionDialog = observer(function ({
                   gatherOverlaps([
                     {
                       refName,
-                      start: pos - 1000,
-                      end: pos + 1000,
+                      start: pos - w,
+                      end: pos + w,
                       assemblyName,
                     },
                     {
                       refName: mateRefName,
-                      start: pos - 1000,
-                      end: pos + 1000,
+                      start: matePos - w,
+                      end: matePos + w,
                       assemblyName,
                     },
                   ]),
                 )
               } else {
-                // @ts-expect-error
-                const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                  feature,
-                  view,
-                )
-                const [view1, view2] = viewSnapshot.views
+                const { refName, pos, mateRefName, matePos } =
+                  // @ts-expect-error
+                  viewType.getBreakendCoveringRegions({ feature, assembly })
+
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                 const viewTracks = getSnapshot(view.tracks) as Track[]
-                session.addView('BreakpointSplitView', {
-                  ...viewSnapshot,
-                  views: [
-                    {
-                      ...view1,
-                      tracks: stripIds(viewTracks),
-                      offsetPx: view1.offsetPx - view.width / 2 + 100,
-                    },
-                    {
-                      ...view2,
-                      tracks: stripIds(
-                        mirror ? [...viewTracks].reverse() : viewTracks,
-                      ),
-                      offsetPx: view2.offsetPx - view.width / 2 + 100,
-                    },
-                  ],
-                })
+                const breakpointSplitView = session.addView(
+                  'BreakpointSplitView',
+                  {
+                    type: 'BreakpointSplitView',
+                    displayName: `${
+                      feature.get('name') || feature.get('id') || 'breakend'
+                    } split detail`,
+
+                    views: [
+                      {
+                        type: 'LinearGenomeView',
+                        hideHeader: true,
+                        tracks: stripIds(getSnapshot(view.tracks)),
+                      },
+                      {
+                        type: 'LinearGenomeView',
+                        hideHeader: true,
+                        tracks: stripIds(
+                          mirror ? [...viewTracks].reverse() : viewTracks,
+                        ),
+                      },
+                    ],
+                  },
+                ) as unknown as { views: LinearGenomeViewModel[] }
+                const w2 = Math.floor(w / 2)
+                breakpointSplitView.views[0]!.navToLocations([
+                  {
+                    refName,
+                    start: pos - w2,
+                    end: pos,
+                    assemblyName,
+                  },
+                  {
+                    refName,
+                    start: pos + 1,
+                    end: pos + w2,
+                    assemblyName,
+                  },
+                ])
+                breakpointSplitView.views[1]!.navToLocations([
+                  {
+                    refName: mateRefName,
+                    start: matePos - w2,
+                    end: matePos,
+                    assemblyName,
+                  },
+                  {
+                    refName: mateRefName,
+                    start: matePos + 1,
+                    end: matePos + w2,
+                    assemblyName,
+                  },
+                ])
               }
             } catch (e) {
               console.error(e)
