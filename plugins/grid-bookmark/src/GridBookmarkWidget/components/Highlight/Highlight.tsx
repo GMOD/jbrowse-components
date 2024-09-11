@@ -4,6 +4,7 @@ import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { Tooltip } from '@mui/material'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -11,16 +12,22 @@ import BookmarkIcon from '@mui/icons-material/Bookmark'
 // locals
 import { GridBookmarkModel } from '../../model'
 import { IExtendedLGV } from '../../model'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 type LGV = IExtendedLGV
 
 const useStyles = makeStyles()({
   highlight: {
+    // when the highlight is small, overflow:hidden makes the icon/indicators
+    // invisible
+    overflow: 'hidden',
     height: '100%',
     position: 'absolute',
-    // when the highlight is small, overflow:hidden makes the icon/indicators invisible
-    overflow: 'hidden',
+    zIndex: 100,
+    pointerEvents: 'none',
+  },
+  highlightButton: {
+    // re-enable pointerEvents on the button
+    pointerEvents: 'auto',
   },
 })
 
@@ -70,38 +77,39 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
               left,
               width,
               background: highlight,
-              zIndex: 100,
             }}
           >
             {showBookmarkLabels ? (
-              <CascadingMenuButton
-                menuItems={[
-                  {
-                    label: 'Open bookmark widget',
-                    onClick: () => {
-                      session.showWidget(bookmarkWidget)
+              <div className={classes.highlightButton}>
+                <CascadingMenuButton
+                  menuItems={[
+                    {
+                      label: 'Open bookmark widget',
+                      onClick: () => {
+                        session.showWidget(bookmarkWidget)
+                      },
                     },
-                  },
-                  {
-                    label: 'Remove bookmark',
-                    onClick: () => {
-                      bookmarkWidget.removeBookmarkObject(bookmark)
+                    {
+                      label: 'Remove bookmark',
+                      onClick: () => {
+                        bookmarkWidget.removeBookmarkObject(bookmark)
+                      },
                     },
-                  },
-                ]}
-              >
-                <Tooltip title={label} arrow>
-                  <BookmarkIcon
-                    fontSize="small"
-                    sx={{
-                      color:
-                        colord(highlight).alpha() !== 0
-                          ? colord(highlight).alpha(0.8).toRgbString()
-                          : colord(highlight).alpha(0).toRgbString(),
-                    }}
-                  />
-                </Tooltip>
-              </CascadingMenuButton>
+                  ]}
+                >
+                  <Tooltip title={label} arrow>
+                    <BookmarkIcon
+                      fontSize="small"
+                      sx={{
+                        color:
+                          colord(highlight).alpha() !== 0
+                            ? colord(highlight).alpha(0.8).toRgbString()
+                            : colord(highlight).alpha(0).toRgbString(),
+                      }}
+                    />
+                  </Tooltip>
+                </CascadingMenuButton>
+              </div>
             ) : null}
           </div>
         ))
