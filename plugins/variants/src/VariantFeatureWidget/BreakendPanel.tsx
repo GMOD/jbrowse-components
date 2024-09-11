@@ -13,7 +13,12 @@ import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import { VariantFeatureWidgetModel } from './stateModelFactory'
 
 // lazies
-const BreakendOptionDialog = lazy(() => import('./BreakendOptionDialog'))
+const BreakendMultiLevelOptionDialog = lazy(
+  () => import('./BreakendMultiLevelOptionDialog'),
+)
+const BreakendSingleLevelOptionDialog = lazy(
+  () => import('./BreakendMultiLevelOptionDialog'),
+)
 
 function LocStringList({
   locStrings,
@@ -73,23 +78,21 @@ function LaunchBreakpointSplitViewPanel({
   const simpleFeature = new SimpleFeature(feature)
   return (
     <div>
-      <Typography>
-        Launch split views with breakend source and target
-      </Typography>
+      <Typography>Launch split view</Typography>
       <ul>
         {locStrings.map(locString => (
           <li key={JSON.stringify(locString)}>
+            {`${feature.refName}:${feature.start} // ${locString}`}
             <Link
               href="#"
               onClick={event => {
                 event.preventDefault()
                 session.queueDialog(handleClose => [
-                  BreakendOptionDialog,
+                  BreakendMultiLevelOptionDialog,
                   {
                     handleClose,
                     model,
                     feature: simpleFeature,
-                    // @ts-expect-error
                     viewType,
                     view: model.view,
                     assemblyName: model.view.displayedRegions[0].assemblyName,
@@ -97,7 +100,26 @@ function LaunchBreakpointSplitViewPanel({
                 ])
               }}
             >
-              {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+              (top/bottom)
+            </Link>{' '}
+            <Link
+              href="#"
+              onClick={event => {
+                event.preventDefault()
+                session.queueDialog(handleClose => [
+                  BreakendSingleLevelOptionDialog,
+                  {
+                    handleClose,
+                    model,
+                    feature: simpleFeature,
+                    viewType,
+                    view: model.view,
+                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                  },
+                ])
+              }}
+            >
+              (single row)
             </Link>
           </li>
         ))}
