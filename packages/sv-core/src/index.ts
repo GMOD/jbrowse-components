@@ -1,3 +1,1 @@
-import BreakendOptionDialog from './BreakendOptionDialog'
-
-export { BreakendOptionDialog }
+export { default as BreakendOptionDialog } from './BreakendOptionDialog'

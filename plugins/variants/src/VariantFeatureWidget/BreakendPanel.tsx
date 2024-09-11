@@ -49,7 +49,7 @@ function LocStringList({
                 }
               }}
             >
-              {`${locString}`}
+              {locString}
             </Link>
           </li>
         ))}

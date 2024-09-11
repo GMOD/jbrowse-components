@@ -87,10 +87,12 @@ const BreakendOptionDialog = observer(function ({
         <TextField
           label="Window size (bp)"
           value={windowSize}
-          onChange={event => setWindowSize(event.target.value)}
+          onChange={event => {
+            setWindowSize(event.target.value)
+          }}
         />
 
-        {/*<div>
+        {/* <div>
           Navigating to:
           {!Number.isNaN(w)
             ? gatherOverlaps([
@@ -146,13 +148,13 @@ const BreakendOptionDialog = observer(function ({
                   gatherOverlaps([
                     {
                       refName,
-                      start: pos - w,
+                      start: Math.max(0, pos - w),
                       end: pos + w,
                       assemblyName,
                     },
                     {
                       refName: mateRefName,
-                      start: matePos - w,
+                      start: Math.max(0, matePos - w),
                       end: matePos + w,
                       assemblyName,
                     },

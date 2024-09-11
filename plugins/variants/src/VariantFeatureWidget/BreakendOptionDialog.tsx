@@ -1,3 +1,5 @@
-import { BreakendOptionDialog } from '@jbrowse/sv-core'
 
-export default BreakendOptionDialog
+
+
+
+export {BreakendOptionDialog as default} from '@jbrowse/sv-core'
