@@ -9,16 +9,19 @@ import Chord, { Block, AnyRegion } from './Chord'
 const StructuralVariantChordsReactComponent = observer(function ({
   features,
   config,
-  displayModel,
   blockDefinitions,
   radius,
   bezierRadius,
+  displayModel,
   onChordClick,
 }: {
   features: Map<string, Feature>
   radius: number
   config: AnyConfigurationModel
-  displayModel?: { id: string; selectedFeatureId: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId: string
+  }
   blockDefinitions: Block[]
   bezierRadius: number
   onChordClick: (
@@ -28,8 +31,7 @@ const StructuralVariantChordsReactComponent = observer(function ({
     evt: unknown,
   ) => void
 }) {
-  const { id, selectedFeatureId } = displayModel || {}
-  // make a map of refName -> blockDefinition
+  const { selectedFeatureId } = displayModel || {}
   const blocksForRefsMemo = useMemo(() => {
     const blocksForRefs = {} as Record<string, Block>
     for (const block of blockDefinitions) {
@@ -45,18 +47,22 @@ const StructuralVariantChordsReactComponent = observer(function ({
 
   return (
     <g data-testid="structuralVariantChordRenderer">
-      {[...features.values()].map(feature => (
-        <Chord
-          key={feature.id()}
-          feature={feature}
-          config={config}
-          radius={radius}
-          bezierRadius={bezierRadius}
-          blocksForRefs={blocksForRefsMemo}
-          selected={String(selectedFeatureId) === String(id)}
-          onClick={onChordClick}
-        />
-      ))}
+      {[...features.values()].map(feature => {
+        const id = feature.id()
+        const selected = String(selectedFeatureId) === String(id)
+        return (
+          <Chord
+            key={id}
+            feature={feature}
+            config={config}
+            radius={radius}
+            bezierRadius={bezierRadius}
+            blocksForRefs={blocksForRefsMemo}
+            selected={selected}
+            onClick={onChordClick}
+          />
+        )
+      })}
     </g>
   )
 })
