@@ -14,7 +14,6 @@ import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
 import { BreakpointViewModel } from '../model'
 import {
   getLongReadOrientationAbnormal,
-  getLongReadOrientationColorAbnormal,
   getLongReadOrientationColorOrDefault,
   getPairedOrientationColor,
   isAbnormalOrientation,
@@ -119,6 +118,8 @@ const AlignmentConnections = observer(function ({
           const x2 = getPxFromCoordinate(views[level2]!, f2ref, p2)
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
+          const rf1 = reversed1 ? -1 : 1
+          const rf2 = reversed2 ? -1 : 1
           const tracks = views.map(v => v.getTrack(trackId))
           const y1 =
             yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
@@ -129,25 +130,58 @@ const AlignmentConnections = observer(function ({
           const sameLevel = level1 === level2
           const trackHeight =
             sameLevel && isAbnormal ? tracks[level1].displays[0].height / 2 : 0
+          const pf1 = hasPaired ? -1 : 1
 
           // possible todo: use totalCurveHeight to possibly make alternative
           // squiggle if the S is too small
-          const path = [
-            'M',
-            x1,
-            y1,
-            'C',
-            x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
-            Math.max(y1 + trackHeight, trackHeight),
-            x2 -
-              200 *
-                f2.get('strand') *
-                (reversed2 ? -1 : 1) *
-                (hasPaired ? -1 : 1),
-            Math.max(trackHeight, y2 + trackHeight),
-            x2,
-            y2,
-          ].join(' ')
+          const path = isAbnormal
+            ? [
+                'M',
+                x1,
+                y1,
+                'C',
+
+                // first bezier x,y
+                x1 + 100 * f1.get('strand') * rf1,
+                y1,
+
+                // second bezier x,y
+                x1 + 100 * f1.get('strand') * rf1,
+                y1 + 100,
+
+                // third bezier x,y
+                x2 - 100 * f2.get('strand') * rf2 * pf1,
+                y2 + 100,
+
+                // bezier continuation
+                'S',
+
+                // first bezier x,y
+                x2 - 100 * f2.get('strand') * rf2 * pf1,
+                y2 + 100,
+
+                // second bezier x,y
+                x2,
+                y2,
+              ].join(' ')
+            : [
+                'M',
+                x1,
+                y1,
+                'C',
+
+                // first bezier x,y
+                x1 + 200 * f1.get('strand') * rf1,
+                y1,
+
+                // second bezier x,y
+                x2 - 200 * f2.get('strand') * rf2 * pf1,
+                y2,
+
+                // third bezier x,y
+                x2,
+                y2,
+              ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
           ret.push(
             <path
