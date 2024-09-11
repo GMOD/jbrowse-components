@@ -1415,7 +1415,7 @@ interface BasicFeature {
 }
 
 // returns map of new non-overlapping features
-export function gatherOverlaps(regions: BasicFeature[]) {
+export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
   const memo = {} as Record<string, BasicFeature[]>
   for (const x of regions) {
     if (!memo[x.refName]) {
@@ -1425,7 +1425,10 @@ export function gatherOverlaps(regions: BasicFeature[]) {
   }
 
   return Object.values(memo).flatMap(group =>
-    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+    mergeIntervals(
+      group.sort((a, b) => a.start - b.start),
+      w,
+    ),
   )
 }
 

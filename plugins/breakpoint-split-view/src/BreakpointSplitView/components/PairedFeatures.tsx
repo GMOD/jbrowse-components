@@ -33,13 +33,11 @@ const PairedFeatures = observer(function ({
       ),
     [totalFeatures, trackId, model],
   )
-  console.log('wow', layoutMatches)
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
   const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
-  console.log('here', { assembly, layoutMatches })
 
   if (!assembly) {
     return null
@@ -59,16 +57,13 @@ const PairedFeatures = observer(function ({
       data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
     >
       {layoutMatches.map(chunk => {
-        console.log({ chunk }, chunk.length - 1)
         const ret = []
         // we follow a path in the list of chunks, not from top to bottom, just
         // in series following x1,y1 -> x2,y2
         for (let i = 0; i < chunk.length - 1; i += 1) {
-          console.log('WOWOWOW')
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
           const id = f1.id()
-          console.log({ c1, c2 })
 
           if (!c1 || !c2) {
             return null
@@ -90,7 +85,6 @@ const PairedFeatures = observer(function ({
           const y2 =
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
             yoff
-          console.log({ x1, y1, x2, y2 })
           const path = [
             'M', // move to
             x1,

@@ -3,12 +3,17 @@ import { observer } from 'mobx-react'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
-import { getSession, Feature, gatherOverlaps } from '@jbrowse/core/util'
+import {
+  getSession,
+  Feature,
+  gatherOverlaps,
+  useLocalStorage,
+} from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import Checkbox2 from './Checkbox2'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 interface Display {
   id: string
@@ -55,7 +60,10 @@ const BreakendOptionDialog = observer(function ({
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirror, setMirror] = useState(true)
   const [twoLevel, setTwoLevel] = useState(true)
-  const [windowSize, setWindowSize] = useState('5000')
+  const [windowSize, setWindowSize] = useLocalStorage(
+    'breakpointWindowSize',
+    '5000',
+  )
 
   return (
     <Dialog open onClose={handleClose} title="Breakpoint split view options">
@@ -145,20 +153,23 @@ const BreakendOptionDialog = observer(function ({
                 ) as unknown as { views: LinearGenomeViewModel[] }
 
                 breakpointSplitView.views[0]!.navToLocations(
-                  gatherOverlaps([
-                    {
-                      refName,
-                      start: Math.max(0, pos - w),
-                      end: pos + w,
-                      assemblyName,
-                    },
-                    {
-                      refName: mateRefName,
-                      start: Math.max(0, matePos - w),
-                      end: matePos + w,
-                      assemblyName,
-                    },
-                  ]),
+                  gatherOverlaps(
+                    [
+                      {
+                        refName,
+                        start: Math.max(0, pos - w),
+                        end: pos + w,
+                        assemblyName,
+                      },
+                      {
+                        refName: mateRefName,
+                        start: Math.max(0, matePos - w),
+                        end: matePos + w,
+                        assemblyName,
+                      },
+                    ],
+                    w,
+                  ),
                 )
               } else {
                 const { refName, pos, mateRefName, matePos } =
@@ -195,13 +206,13 @@ const BreakendOptionDialog = observer(function ({
                 breakpointSplitView.views[0]!.navToLocations([
                   {
                     refName,
-                    start: pos - w2,
+                    start: Math.max(0, pos - w2),
                     end: pos,
                     assemblyName,
                   },
                   {
                     refName,
-                    start: pos + 1,
+                    start: Math.max(0, pos + 1),
                     end: pos + w2,
                     assemblyName,
                   },
@@ -209,13 +220,13 @@ const BreakendOptionDialog = observer(function ({
                 breakpointSplitView.views[1]!.navToLocations([
                   {
                     refName: mateRefName,
-                    start: matePos - w2,
+                    start: Math.max(0, matePos - w2),
                     end: matePos,
                     assemblyName,
                   },
                   {
                     refName: mateRefName,
-                    start: matePos + 1,
+                    start: Math.max(0, matePos + 1),
                     end: matePos + w2,
                     assemblyName,
                   },

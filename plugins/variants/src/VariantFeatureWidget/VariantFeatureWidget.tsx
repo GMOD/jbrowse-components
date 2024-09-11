@@ -104,6 +104,23 @@ const VariantFeatureWidget = observer(function (props: {
             locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
           />
         ) : null}
+        {feat.type === 'inversion' || feat.type === 'deletion' ? (
+          <BreakendPanel
+            feature={{
+              uniqueId: 'random',
+              refName: feat.refName,
+              start: feat.start,
+              end: feat.start + 1,
+              mate: {
+                refName: feat.refName,
+                start: feat.end,
+                end: feat.end + 1,
+              },
+            }}
+            model={model}
+            locStrings={[`${feat.refName}:${feat.end}`]}
+          />
+        ) : null}
       </Suspense>
       <VariantSampleGrid
         feature={feat}

@@ -104,6 +104,8 @@ const AlignmentConnections = observer(function ({
           const y2 =
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
             yOffset
+          const sameLevel = level1 === level2
+          const trackHeight = 0 //sameLevel ? tracks[level1].displays[0].height : 0
 
           // possible todo: use totalCurveHeight to possibly make alternative
           // squiggle if the S is too small
@@ -113,13 +115,13 @@ const AlignmentConnections = observer(function ({
             y1,
             'C',
             x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
-            y1,
+            y1 + trackHeight,
             x2 -
               200 *
                 f2.get('strand') *
                 (reversed2 ? -1 : 1) *
                 (hasPaired ? -1 : 1),
-            y2,
+            y2 + trackHeight,
             x2,
             y2,
           ].join(' ')
