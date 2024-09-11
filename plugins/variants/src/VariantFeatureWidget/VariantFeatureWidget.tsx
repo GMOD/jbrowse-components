@@ -69,7 +69,7 @@ const VariantFeatureWidget = observer(function (props: {
   const { model } = props
   const { featureData, descriptions } = model
   const feat = JSON.parse(JSON.stringify(featureData))
-  const { samples, ALT, ...rest } = feat
+  const { samples, ALT, type = '', ...rest } = feat
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -81,7 +81,7 @@ const VariantFeatureWidget = observer(function (props: {
       <CsqPanel feature={rest} descriptions={descriptions} />
       <AnnPanel feature={rest} descriptions={descriptions} />
       <Suspense fallback={null}>
-        {feat.type === 'breakend' ? (
+        {type === 'breakend' ? (
           <LaunchBreakendPanel
             feature={feat}
             locStrings={feat.ALT.map(
@@ -90,25 +90,25 @@ const VariantFeatureWidget = observer(function (props: {
             model={model}
           />
         ) : null}
-        {feat.type === 'translocation' ? (
+        {type === 'translocation' ? (
           <LaunchBreakendPanel
             feature={feat}
             model={model}
             locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
           />
         ) : null}
-        {feat.type === 'paired_feature' ? (
+        {type === 'paired_feature' ? (
           <LaunchBreakendPanel
             feature={feat}
             model={model}
             locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
           />
         ) : null}
-        {feat.type.includes('inversion') ||
-        feat.type.includes('deletion') ||
-        feat.type.includes('duplication') ||
-        feat.type.includes('cnv') ||
-        feat.type.includes('sv') ? (
+        {type.includes('inversion') ||
+        type.includes('deletion') ||
+        type.includes('duplication') ||
+        type.includes('cnv') ||
+        type.includes('sv') ? (
           <LaunchBreakendPanel
             feature={{
               uniqueId: 'random',

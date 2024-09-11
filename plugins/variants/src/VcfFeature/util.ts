@@ -5,7 +5,7 @@ const altTypeToSO: Record<string, string> = {
   INS: 'insertion',
   DUP: 'duplication',
   INV: 'inversion',
-  INVDUP: 'inverted duplication',
+  INVDUP: 'inverted_duplication',
   CNV: 'copy_number_variation',
   TRA: 'translocation',
   'DUP:TANDEM': 'tandem_duplication',
