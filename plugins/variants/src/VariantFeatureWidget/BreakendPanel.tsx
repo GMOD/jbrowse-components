@@ -17,7 +17,7 @@ const BreakendMultiLevelOptionDialog = lazy(
   () => import('./BreakendMultiLevelOptionDialog'),
 )
 const BreakendSingleLevelOptionDialog = lazy(
-  () => import('./BreakendMultiLevelOptionDialog'),
+  () => import('./BreakendSingleLevelOptionDialog'),
 )
 
 function LocStringList({
@@ -35,6 +35,7 @@ function LocStringList({
         {locStrings.map((locString, index) => (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <li key={`${locString}-${index}`}>
+            {locString}{' '}
             <Link
               href="#"
               onClick={event => {
@@ -54,7 +55,7 @@ function LocStringList({
                 }
               }}
             >
-              {locString}
+              (LGV)
             </Link>
           </li>
         ))}
@@ -82,7 +83,7 @@ function LaunchBreakpointSplitViewPanel({
       <ul>
         {locStrings.map(locString => (
           <li key={JSON.stringify(locString)}>
-            {`${feature.refName}:${feature.start} // ${locString}`}
+            {`${feature.refName}:${feature.start} // ${locString}`}{' '}
             <Link
               href="#"
               onClick={event => {
@@ -93,6 +94,7 @@ function LaunchBreakpointSplitViewPanel({
                     handleClose,
                     model,
                     feature: simpleFeature,
+                    // @ts-expect-error
                     viewType,
                     view: model.view,
                     assemblyName: model.view.displayedRegions[0].assemblyName,
@@ -112,6 +114,7 @@ function LaunchBreakpointSplitViewPanel({
                     handleClose,
                     model,
                     feature: simpleFeature,
+                    // @ts-expect-error
                     viewType,
                     view: model.view,
                     assemblyName: model.view.displayedRegions[0].assemblyName,

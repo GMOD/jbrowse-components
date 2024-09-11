@@ -14,7 +14,12 @@ import { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import { ReducedFeature, getSAFeatures } from './getSAFeatures'
 
 // lazies
-const BreakendOptionDialog = lazy(() => import('./BreakendOptionDialog'))
+const BreakendMultiLevelOptionDialog = lazy(
+  () => import('./BreakendMultiLevelOptionDialog'),
+)
+const BreakendSingleLevelOptionDialog = lazy(
+  () => import('./BreakendSingleLevelOptionDialog'),
+)
 
 export default function LaunchBreakpointSplitViewPanel({
   model,
@@ -53,40 +58,55 @@ export default function LaunchBreakpointSplitViewPanel({
   }
   return ret.length ? (
     <div>
-      <Typography>
-        Launch split views with breakend source and target
-      </Typography>
+      <Typography>Launch split view</Typography>
       {error ? <ErrorMessage error={error} /> : null}
       <ul>
         {ret.map((arg, index) => {
           const [f1, f2] = arg
           return (
             <li key={`${JSON.stringify(arg)}-${index}`}>
-              <Tooltip title="Top panel->Bottom panel">
-                <Link
-                  href="#"
-                  onClick={event => {
-                    event.preventDefault()
-                    session.queueDialog(handleClose => [
-                      BreakendOptionDialog,
-                      {
-                        handleClose,
-                        model,
-                        feature: new SimpleFeature({ ...f1, mate: f2 }),
-                        // @ts-expect-error
-                        viewType,
-                        view: model.view,
-                        assemblyName:
-                          model.view.displayedRegions[0].assemblyName,
-                      },
-                    ])
-                  }}
-                >
-                  {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)}{' '}
-                  -&gt; {f2.refName}:
-                  {toLocale(f2.strand === 1 ? f2.start : f2.end)}
-                </Link>
-              </Tooltip>
+              {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
+              {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
+              <Link
+                href="#"
+                onClick={event => {
+                  event.preventDefault()
+                  session.queueDialog(handleClose => [
+                    BreakendMultiLevelOptionDialog,
+                    {
+                      handleClose,
+                      model,
+                      feature: new SimpleFeature({ ...f1, mate: f2 }),
+                      // @ts-expect-error
+                      viewType,
+                      view: model.view,
+                      assemblyName: model.view.displayedRegions[0].assemblyName,
+                    },
+                  ])
+                }}
+              >
+                (top/bottom)
+              </Link>{' '}
+              <Link
+                href="#"
+                onClick={event => {
+                  event.preventDefault()
+                  session.queueDialog(handleClose => [
+                    BreakendSingleLevelOptionDialog,
+                    {
+                      handleClose,
+                      model,
+                      feature: new SimpleFeature({ ...f1, mate: f2 }),
+                      // @ts-expect-error
+                      viewType,
+                      view: model.view,
+                      assemblyName: model.view.displayedRegions[0].assemblyName,
+                    },
+                  ])
+                }}
+              >
+                (top/bottom)
+              </Link>
             </li>
           )
         })}
