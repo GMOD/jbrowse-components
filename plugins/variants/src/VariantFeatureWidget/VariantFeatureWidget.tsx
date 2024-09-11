@@ -11,7 +11,7 @@ import { VariantFeatureWidgetModel } from './stateModelFactory'
 import { variantFieldDescriptions } from './variantFieldDescriptions'
 
 // lazies
-const BreakendPanel = lazy(() => import('./BreakendPanel'))
+const LaunchBreakendPanel = lazy(() => import('./LaunchBreakendPanel'))
 
 function AnnPanel({
   descriptions,
@@ -82,7 +82,7 @@ const VariantFeatureWidget = observer(function (props: {
       <AnnPanel feature={rest} descriptions={descriptions} />
       <Suspense fallback={null}>
         {feat.type === 'breakend' ? (
-          <BreakendPanel
+          <LaunchBreakendPanel
             feature={feat}
             locStrings={feat.ALT.map(
               (alt: string) => parseBreakend(alt)?.MatePosition || '',
@@ -91,21 +91,21 @@ const VariantFeatureWidget = observer(function (props: {
           />
         ) : null}
         {feat.type === 'translocation' ? (
-          <BreakendPanel
+          <LaunchBreakendPanel
             feature={feat}
             model={model}
             locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
           />
         ) : null}
         {feat.type === 'paired_feature' ? (
-          <BreakendPanel
+          <LaunchBreakendPanel
             feature={feat}
             model={model}
             locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
           />
         ) : null}
         {feat.type === 'inversion' || feat.type === 'deletion' ? (
-          <BreakendPanel
+          <LaunchBreakendPanel
             feature={{
               uniqueId: 'random',
               refName: feat.refName,

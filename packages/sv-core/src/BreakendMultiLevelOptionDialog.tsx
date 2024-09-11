@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
+import { when } from 'mobx'
 import { getSession, Feature, useLocalStorage } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -54,10 +55,6 @@ const BreakendMultiLevelOptionDialog = observer(function ({
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirror, setMirror] = useState(true)
-  const [windowSize, setWindowSize] = useLocalStorage(
-    'breakpointWindowSize',
-    '5000',
-  )
 
   return (
     <Dialog
@@ -84,89 +81,100 @@ const BreakendMultiLevelOptionDialog = observer(function ({
             }}
           />
         ) : null}
-        <TextField
-          label="Window size (bp)"
-          value={windowSize}
-          onChange={event => {
-            setWindowSize(event.target.value)
-          }}
-        />
       </DialogContent>
       <DialogActions>
         <Button
           onClick={() => {
-            const session = getSession(model)
-            try {
-              console.log({ assemblyName })
-              const assembly = session.assemblyManager.get(assemblyName)
-              const w = +windowSize
-              if (Number.isNaN(w)) {
-                throw new Error('windowSize not a number')
+            ;(async () => {
+              const session = getSession(model)
+              try {
+                const asm =
+                  await session.assemblyManager.waitForAssembly(assemblyName)
+                if (!asm) {
+                  throw new Error(`assembly ${assemblyName} not found`)
+                }
+
+                const { refName, pos, mateRefName, matePos } =
+                  viewType.getBreakendCoveringRegions({
+                    feature,
+                    assembly: asm,
+                  })
+
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                const viewTracks = getSnapshot(view.tracks) as Track[]
+                const breakpointSplitView = session.addView(
+                  'BreakpointSplitView',
+                  {
+                    type: 'BreakpointSplitView',
+                    displayName: `${
+                      feature.get('name') || feature.get('id') || 'breakend'
+                    } split detail`,
+
+                    views: [
+                      {
+                        type: 'LinearGenomeView',
+                        hideHeader: true,
+                        tracks: stripIds(getSnapshot(view.tracks)),
+                      },
+                      {
+                        type: 'LinearGenomeView',
+                        hideHeader: true,
+                        tracks: stripIds(
+                          mirror ? [...viewTracks].reverse() : viewTracks,
+                        ),
+                      },
+                    ],
+                  },
+                ) as unknown as { views: LinearGenomeViewModel[] }
+                const r1 = asm.regions!.find(r => r.refName === refName)
+                const r2 = asm.regions!.find(r => r.refName === mateRefName)
+                if (!r1 || !r2) {
+                  throw new Error("can't find regions")
+                }
+                await Promise.all([
+                  breakpointSplitView.views[0]!.navToLocations([
+                    {
+                      refName,
+                      start: r1.start,
+                      end: pos,
+                      assemblyName,
+                    },
+                    {
+                      refName,
+                      start: pos + 1,
+                      end: r1.end,
+                      assemblyName,
+                    },
+                  ]),
+                  breakpointSplitView.views[1]!.navToLocations([
+                    {
+                      refName: mateRefName,
+                      start: r2.start,
+                      end: matePos,
+                      assemblyName,
+                    },
+                    {
+                      refName: mateRefName,
+                      start: matePos + 1,
+                      end: r2.end,
+                      assemblyName,
+                    },
+                  ]),
+                ])
+                await when(
+                  () =>
+                    breakpointSplitView.views[1]!.initialized &&
+                    breakpointSplitView.views[0]!.initialized,
+                )
+                breakpointSplitView.views[1]!.zoomTo(10)
+                breakpointSplitView.views[0]!.zoomTo(10)
+                breakpointSplitView.views[1]!.centerAt(matePos, mateRefName)
+                breakpointSplitView.views[0]!.centerAt(pos, refName)
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
               }
-
-              const { refName, pos, mateRefName, matePos } =
-                // @ts-expect-error
-                viewType.getBreakendCoveringRegions({ feature, assembly })
-
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-              const viewTracks = getSnapshot(view.tracks) as Track[]
-              const breakpointSplitView = session.addView(
-                'BreakpointSplitView',
-                {
-                  type: 'BreakpointSplitView',
-                  displayName: `${
-                    feature.get('name') || feature.get('id') || 'breakend'
-                  } split detail`,
-
-                  views: [
-                    {
-                      type: 'LinearGenomeView',
-                      hideHeader: true,
-                      tracks: stripIds(getSnapshot(view.tracks)),
-                    },
-                    {
-                      type: 'LinearGenomeView',
-                      hideHeader: true,
-                      tracks: stripIds(
-                        mirror ? [...viewTracks].reverse() : viewTracks,
-                      ),
-                    },
-                  ],
-                },
-              ) as unknown as { views: LinearGenomeViewModel[] }
-              const w2 = Math.floor(w / 2)
-              breakpointSplitView.views[0]!.navToLocations([
-                {
-                  refName,
-                  start: Math.max(0, pos - w2),
-                  end: pos,
-                  assemblyName,
-                },
-                {
-                  refName,
-                  start: Math.max(0, pos + 1),
-                  end: pos + w2,
-                  assemblyName,
-                },
-              ])
-              breakpointSplitView.views[1]!.navToLocations([
-                {
-                  refName: mateRefName,
-                  start: Math.max(0, matePos - w2),
-                  end: matePos,
-                  assemblyName,
-                },
-                {
-                  refName: mateRefName,
-                  start: Math.max(0, matePos + 1),
-                  end: matePos + w2,
-                  assemblyName,
-                },
-              ])
-            } catch (e) {
-              console.error(e)
-              session.notify(`${e}`)
-            }
+            })()
             handleClose()
           }}
           variant="contained"
