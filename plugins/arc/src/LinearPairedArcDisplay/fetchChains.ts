@@ -1,4 +1,5 @@
 import {
+  dedupe,
   Feature,
   getContainingTrack,
   getContainingView,
@@ -54,6 +55,6 @@ export async function fetchChains(self: LinearArcDisplayModel) {
     adapterConfig: self.adapterConfig,
   })) as Feature[]
 
-  self.setFeatures(ret)
+  self.setFeatures(dedupe(ret, r => r.id()))
   self.setLoading(false)
 }

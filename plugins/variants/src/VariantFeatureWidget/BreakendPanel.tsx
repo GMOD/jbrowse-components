@@ -9,6 +9,7 @@ import {
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
+// locals
 import { VariantFeatureWidgetModel } from './stateModelFactory'
 
 // lazies
@@ -24,7 +25,7 @@ function LocStringList({
   const session = getSession(model)
   return (
     <div>
-      <Typography>Link to linear view of breakend endpoints</Typography>
+      <Typography>Navigate to breakend endpoint in linear view:</Typography>
       <ul>
         {locStrings.map((locString, index) => (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
@@ -48,7 +49,7 @@ function LocStringList({
                 }
               }}
             >
-              {`LGV - ${locString}`}
+              {`${locString}`}
             </Link>
           </li>
         ))}

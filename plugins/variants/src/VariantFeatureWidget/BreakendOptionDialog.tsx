@@ -1,29 +1,23 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, gatherOverlaps } from '@jbrowse/core/util'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 // locals
 import { VariantFeatureWidgetModel } from './stateModelFactory'
+import Checkbox2 from './Checkbox2'
 
-const useStyles = makeStyles()({
-  block: {
-    display: 'block',
-  },
-})
-
+interface Display {
+  id: string
+  [key: string]: unknown
+}
 interface Track {
   id: string
-  displays: { id: string; [key: string]: unknown }[]
+  displays: Display[]
   [key: string]: unknown
 }
 
@@ -32,25 +26,6 @@ function stripIds(arr: Track[]) {
     ...rest,
     displays: displays.map(({ id, ...rest }) => rest),
   }))
-}
-
-function Checkbox2({
-  checked,
-  label,
-  onChange,
-}: {
-  checked: boolean
-  label: string
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <FormControlLabel
-      className={classes.block}
-      control={<Checkbox checked={checked} onChange={onChange} />}
-      label={label}
-    />
-  )
 }
 
 const BreakendOptionDialog = observer(function ({
@@ -66,24 +41,35 @@ const BreakendOptionDialog = observer(function ({
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirror, setMirror] = useState(true)
+  const [twoLevel, setTwoLevel] = useState(true)
 
   return (
     <Dialog open onClose={handleClose} title="Breakpoint split view options">
       <DialogContent>
         <Checkbox2
           checked={copyTracks}
+          label="Copy tracks into the new view"
           onChange={event => {
             setCopyTracks(event.target.checked)
           }}
-          label="Copy tracks into the new view"
         />
         <Checkbox2
-          checked={mirror}
+          checked={twoLevel}
+          label="Use two stacked linear genome views?"
           onChange={event => {
-            setMirror(event.target.checked)
+            setTwoLevel(event.target.checked)
           }}
-          label="Mirror tracks vertically in vertically stacked view"
         />
+        {copyTracks && twoLevel ? (
+          <Checkbox2
+            checked={mirror}
+            disabled={!copyTracks || !twoLevel}
+            label="Mirror the copied tracks (only available if copying tracks and using two level)"
+            onChange={event => {
+              setMirror(event.target.checked)
+            }}
+          />
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button
@@ -91,32 +77,72 @@ const BreakendOptionDialog = observer(function ({
             const { view } = model
             const session = getSession(model)
             try {
-              // @ts-expect-error
-              const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                feature,
-                view,
-              )
-              const [view1, view2] = viewSnapshot.views
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-              const viewTracks = getSnapshot(view.tracks) as Track[]
+              if (!twoLevel) {
+                const { assemblyName } = view.displayedRegions[0]!
+                const assembly = session.assemblyManager.get(assemblyName)
+                const { refName, pos, mateRefName, matePos } =
+                  // @ts-expect-error
+                  viewType.getBreakendCoveringRegions({ feature, assembly })
 
-              session.addView('BreakpointSplitView', {
-                ...viewSnapshot,
-                views: [
+                const breakpointSplitView = session.addView(
+                  'BreakpointSplitView',
                   {
-                    ...view1,
-                    tracks: stripIds(viewTracks),
-                    offsetPx: view1.offsetPx - view.width / 2 + 100,
+                    type: 'BreakpointSplitView',
+                    displayName: `${
+                      feature.get('name') || feature.get('id') || 'breakend'
+                    } split detail`,
+                    views: [
+                      {
+                        type: 'LinearGenomeView',
+                        tracks: stripIds(getSnapshot(view.tracks)),
+                      },
+                    ],
                   },
-                  {
-                    ...view2,
-                    tracks: stripIds(
-                      mirror ? [...viewTracks].reverse() : viewTracks,
-                    ),
-                    offsetPx: view2.offsetPx - view.width / 2 + 100,
-                  },
-                ],
-              })
+                ) as unknown as { views: LinearGenomeViewModel[] }
+
+                breakpointSplitView.views[0]!.navToLocations(
+                  gatherOverlaps([
+                    {
+                      refName,
+                      start: pos - 1000,
+                      end: pos + 1000,
+                      assemblyName,
+                    },
+                    {
+                      refName: mateRefName,
+                      start: pos - 1000,
+                      end: pos + 1000,
+                      assemblyName,
+                    },
+                  ]),
+                )
+              } else {
+                // @ts-expect-error
+                const viewSnapshot = viewType.snapshotFromBreakendFeature(
+                  feature,
+                  view,
+                )
+                const [view1, view2] = viewSnapshot.views
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                const viewTracks = getSnapshot(view.tracks) as Track[]
+                session.addView('BreakpointSplitView', {
+                  ...viewSnapshot,
+                  views: [
+                    {
+                      ...view1,
+                      tracks: stripIds(viewTracks),
+                      offsetPx: view1.offsetPx - view.width / 2 + 100,
+                    },
+                    {
+                      ...view2,
+                      tracks: stripIds(
+                        mirror ? [...viewTracks].reverse() : viewTracks,
+                      ),
+                      offsetPx: view2.offsetPx - view.width / 2 + 100,
+                    },
+                  ],
+                })
+              }
             } catch (e) {
               console.error(e)
               session.notify(`${e}`)
@@ -130,11 +156,11 @@ const BreakendOptionDialog = observer(function ({
           OK
         </Button>
         <Button
+          color="secondary"
+          variant="contained"
           onClick={() => {
             handleClose()
           }}
-          color="secondary"
-          variant="contained"
         >
           Cancel
         </Button>
