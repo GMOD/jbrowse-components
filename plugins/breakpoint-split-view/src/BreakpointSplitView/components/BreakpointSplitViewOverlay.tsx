@@ -37,11 +37,12 @@ const BreakpointSplitViewOverlay = observer(function ({
         }}
       >
         {matchedTracks.map(track => (
-          // note: we must pass ref down, because the child component needs to
-          // getBoundingClientRect on the this components SVG, and we cannot
-          // rely on using getBoundingClientRect in this component to make
-          // sure this works because if it gets shifted around by another
-          // element, this will not re-render necessarily
+          // note: we must pass ref down, because:
+          // - the child component needs to getBoundingClientRect on the this
+          // components SVG, and...
+          // - we cannot rely on using getBoundingClientRect in this component
+          // to make sure this works because if it gets shifted around by
+          // another element, this will not re-render necessarily
           <Overlay
             parentRef={ref}
             key={track.configuration.trackId}

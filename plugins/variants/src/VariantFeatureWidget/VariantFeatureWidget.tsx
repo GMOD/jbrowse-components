@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { Paper } from '@mui/material'
 import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
@@ -6,17 +6,29 @@ import { parseBreakend } from '@gmod/vcf'
 
 // locals
 import VariantSampleGrid from './VariantSampleGrid'
-import BreakendPanel from './BreakendPanel'
 import VariantAnnotationTable from './VariantAnnotationTable'
 import { VariantFeatureWidgetModel } from './stateModelFactory'
 import { variantFieldDescriptions } from './variantFieldDescriptions'
+
+// lazies
+const LaunchBreakendPanel = lazy(() => import('./LaunchBreakendPanel'))
 
 function AnnPanel({
   descriptions,
   feature,
 }: {
-  descriptions?: { INFO?: { ANN?: { Description?: string } } }
-  feature: { INFO?: { ANN?: string[] } }
+  descriptions?: {
+    INFO?: {
+      ANN?: {
+        Description?: string
+      }
+    }
+  }
+  feature: {
+    INFO?: {
+      ANN?: string[]
+    }
+  }
 }) {
   const annDesc = descriptions?.INFO?.ANN?.Description
   const annFields =
@@ -57,7 +69,7 @@ const VariantFeatureWidget = observer(function (props: {
   const { model } = props
   const { featureData, descriptions } = model
   const feat = JSON.parse(JSON.stringify(featureData))
-  const { samples, ...rest } = feat
+  const { samples, ALT, type = '', ...rest } = feat
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -68,22 +80,52 @@ const VariantFeatureWidget = observer(function (props: {
       />
       <CsqPanel feature={rest} descriptions={descriptions} />
       <AnnPanel feature={rest} descriptions={descriptions} />
-      {feat.type === 'breakend' ? (
-        <BreakendPanel
-          feature={feat}
-          locStrings={feat.ALT.map(
-            (alt: string) => parseBreakend(alt)?.MatePosition || '',
-          )}
-          model={model}
-        />
-      ) : null}
-      {feat.type === 'translocation' ? (
-        <BreakendPanel
-          feature={feat}
-          model={model}
-          locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
-        />
-      ) : null}
+      <Suspense fallback={null}>
+        {type === 'breakend' ? (
+          <LaunchBreakendPanel
+            feature={feat}
+            locStrings={feat.ALT.map(
+              (alt: string) => parseBreakend(alt)?.MatePosition || '',
+            )}
+            model={model}
+          />
+        ) : null}
+        {type === 'translocation' ? (
+          <LaunchBreakendPanel
+            feature={feat}
+            model={model}
+            locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
+          />
+        ) : null}
+        {type === 'paired_feature' ? (
+          <LaunchBreakendPanel
+            feature={feat}
+            model={model}
+            locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
+          />
+        ) : null}
+        {type.includes('inversion') ||
+        type.includes('deletion') ||
+        type.includes('duplication') ||
+        type.includes('cnv') ||
+        type.includes('sv') ? (
+          <LaunchBreakendPanel
+            feature={{
+              uniqueId: 'random',
+              refName: feat.refName,
+              start: feat.start,
+              end: feat.start + 1,
+              mate: {
+                refName: feat.refName,
+                start: feat.end,
+                end: feat.end + 1,
+              },
+            }}
+            model={model}
+            locStrings={[`${feat.refName}:${feat.end}`]}
+          />
+        ) : null}
+      </Suspense>
       <VariantSampleGrid
         feature={feat}
         {...props}

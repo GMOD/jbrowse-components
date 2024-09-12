@@ -2,9 +2,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 // locals
-import ReactComponent from './components/ReactComponent'
 import configSchemaF from './configSchema'
 import stateModelF from './model'
+import { lazy } from 'react'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -17,7 +17,7 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
-      ReactComponent,
+      ReactComponent: lazy(() => import('./components/ReactComponent')),
     })
   })
 }

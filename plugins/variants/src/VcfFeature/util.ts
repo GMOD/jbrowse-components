@@ -5,7 +5,7 @@ const altTypeToSO: Record<string, string> = {
   INS: 'insertion',
   DUP: 'duplication',
   INV: 'inversion',
-  INVDUP: 'inverted duplication',
+  INVDUP: 'inverted_duplication',
   CNV: 'copy_number_variation',
   TRA: 'translocation',
   'DUP:TANDEM': 'tandem_duplication',
@@ -111,6 +111,12 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   }
   if (alt === '<DEL>') {
     return ['deletion', alt]
+  }
+  if (alt === '<DUP>') {
+    return ['duplication', alt]
+  }
+  if (alt === '<CNV>') {
+    return ['cnv', alt]
   }
   if (alt === '<INV>') {
     return ['inversion', alt]
