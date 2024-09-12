@@ -356,6 +356,7 @@ export function BaseWebSession({
         return [
           {
             label: 'About track',
+            priority: 1002,
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
@@ -366,6 +367,7 @@ export function BaseWebSession({
           },
           {
             label: 'Settings',
+            priority: 1001,
             disabled: !canEdit,
             onClick: () => {
               self.editTrackConfiguration(config)
@@ -374,12 +376,14 @@ export function BaseWebSession({
           },
           {
             label: 'Delete track',
+            priority: 1000,
             disabled: !canEdit || isRefSeq,
             onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
           },
           {
             label: 'Copy track',
+            priority: 999,
             disabled: isRefSeq,
             onClick: () => {
               interface Display {
