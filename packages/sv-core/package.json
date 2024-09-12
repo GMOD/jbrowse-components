@@ -42,7 +42,8 @@
   },
   "dependencies": {
     "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0"
+    "@mui/material": "^6.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",
