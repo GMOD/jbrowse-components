@@ -1,9 +1,9 @@
-import React, { lazy } from 'react'
+import { lazy } from 'react'
 import {
   AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { AnyReactComponentType, getSession } from '@jbrowse/core/util'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
@@ -11,11 +11,10 @@ import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-
-import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
 
 // lazies
+const Tooltip = lazy(() => import('../components/Tooltip'))
 const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
@@ -51,7 +50,7 @@ function stateModelFactory(
        * #getter
        */
       get TooltipComponent() {
-        return Tooltip as React.FC
+        return Tooltip as AnyReactComponentType
       },
 
       /**

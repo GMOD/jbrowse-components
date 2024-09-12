@@ -125,3 +125,30 @@ export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
 
   return ret
 }
+
+// Getting "matched" TRA means just return all TRA
+export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
+  const candidates = new Map<string, Feature[]>()
+  const alreadySeen = new Set<string>()
+
+  for (const f of feats.values()) {
+    if (!alreadySeen.has(f.id()) && f.get('type') === 'paired_feature') {
+      const r1 = f.id().replace('-r1', '')
+      const r2 = f.id().replace('-r2', '')
+      if (f.id().endsWith('-r1')) {
+        if (!candidates.get(r1)) {
+          candidates.set(r1, [])
+        }
+        candidates.get(r1)!.push(f)
+      } else if (f.id().endsWith('-r2')) {
+        if (!candidates.get(r2)) {
+          candidates.set(r2, [])
+        }
+        candidates.get(r2)!.push(f)
+      }
+    }
+    alreadySeen.add(f.id())
+  }
+
+  return [...candidates.values()].filter(v => v.length > 1)
+}

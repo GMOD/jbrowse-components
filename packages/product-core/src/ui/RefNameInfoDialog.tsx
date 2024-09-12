@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Button, DialogContent, Typography } from '@mui/material'
+import { Button, DialogContent } from '@mui/material'
 import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { Dialog, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
@@ -19,7 +19,6 @@ const useStyles = makeStyles()(theme => ({
   },
   refNames: {
     maxHeight: 300,
-    width: '100%',
     overflow: 'auto',
     flexGrow: 1,
     background: theme.palette.background.default,
@@ -33,12 +32,11 @@ const RefNameInfoDialog = observer(function ({
   config: AnyConfigurationModel
   onClose: () => void
 }) {
+  const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
   const [refNames, setRefNames] = useState<Record<string, string[]>>()
   const [copied, setCopied] = useState(false)
-  const { classes } = useStyles()
-  const session = getSession(config)
-  const { rpcManager } = session
+  const { rpcManager } = getSession(config)
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -52,7 +50,11 @@ const RefNameInfoDialog = observer(function ({
               (await rpcManager.call(config.trackId, 'CoreGetRefNames', {
                 adapterConfig,
                 // hack for synteny adapters
-                regions: [{ assemblyName }],
+                regions: [
+                  {
+                    assemblyName,
+                  },
+                ],
               })) as string[],
             ] as const
           }),
@@ -84,10 +86,11 @@ const RefNameInfoDialog = observer(function ({
       open
       title="Reference sequence names used in track"
       onClose={onClose}
+      maxWidth="xl"
     >
       <DialogContent className={classes.container}>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : refNames === undefined ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (

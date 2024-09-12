@@ -4,6 +4,7 @@ import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { Tooltip } from '@mui/material'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -16,9 +17,17 @@ type LGV = IExtendedLGV
 
 const useStyles = makeStyles()({
   highlight: {
+    // when the highlight is small, overflow:hidden makes the icon/indicators
+    // invisible
+    overflow: 'hidden',
     height: '100%',
     position: 'absolute',
-    overflow: 'hidden',
+    zIndex: 100,
+    pointerEvents: 'none',
+  },
+  highlightButton: {
+    // re-enable pointerEvents on the button
+    pointerEvents: 'auto',
   },
 })
 
@@ -34,10 +43,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   useEffect(() => {
     if (!bookmarkWidget) {
-      session.addWidget(
-        'GridBookmarkWidget',
-        'GridBookmark',
-      ) as GridBookmarkModel
+      session.addWidget('GridBookmarkWidget', 'GridBookmark')
     }
   }, [session, bookmarkWidget])
 
@@ -57,11 +63,12 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
                 highlight: r.highlight,
                 label: r.label,
+                bookmark: r,
               }
             : undefined
         })
         .filter(notEmpty)
-        .map(({ left, width, highlight, label }, idx) => (
+        .map(({ left, width, highlight, label, bookmark }, idx) => (
           <div
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
             key={`${left}_${width}_${idx}`}
@@ -73,17 +80,36 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
             }}
           >
             {showBookmarkLabels ? (
-              <Tooltip title={label} arrow>
-                <BookmarkIcon
-                  fontSize="small"
-                  sx={{
-                    color:
-                      colord(highlight).alpha() !== 0
-                        ? colord(highlight).alpha(0.8).toRgbString()
-                        : colord(highlight).alpha(0).toRgbString(),
-                  }}
-                />
-              </Tooltip>
+              <div className={classes.highlightButton}>
+                <CascadingMenuButton
+                  menuItems={[
+                    {
+                      label: 'Open bookmark widget',
+                      onClick: () => {
+                        session.showWidget(bookmarkWidget)
+                      },
+                    },
+                    {
+                      label: 'Remove bookmark',
+                      onClick: () => {
+                        bookmarkWidget.removeBookmarkObject(bookmark)
+                      },
+                    },
+                  ]}
+                >
+                  <Tooltip title={label} arrow>
+                    <BookmarkIcon
+                      fontSize="small"
+                      sx={{
+                        color:
+                          colord(highlight).alpha() !== 0
+                            ? colord(highlight).alpha(0.8).toRgbString()
+                            : colord(highlight).alpha(0).toRgbString(),
+                      }}
+                    />
+                  </Tooltip>
+                </CascadingMenuButton>
+              </div>
             ) : null}
           </div>
         ))

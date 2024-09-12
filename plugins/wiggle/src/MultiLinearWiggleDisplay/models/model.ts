@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import { lazy } from 'react'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
@@ -9,7 +9,7 @@ import {
   AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, AnyReactComponentType } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -17,14 +17,13 @@ import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-
-import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
+const Tooltip = lazy(() => import('../components/Tooltip'))
 const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
@@ -112,7 +111,7 @@ export function stateModelFactory(
        * #getter
        */
       get TooltipComponent() {
-        return Tooltip as unknown as React.FC
+        return Tooltip as AnyReactComponentType
       },
 
       /**

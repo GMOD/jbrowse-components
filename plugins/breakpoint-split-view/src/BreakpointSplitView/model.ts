@@ -72,7 +72,10 @@ async function getBlockFeatures(
 ) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0]!.assemblyNames[0]!
+  const assemblyName = model.views[0]?.assemblyNames[0]
+  if (!assemblyName) {
+    return undefined
+  }
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
@@ -165,13 +168,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * Find all track ids that match across multiple views
+       * Find all track ids that match across multiple views, or return just
+       * the single view's track if only a single row is used
        */
       get matchedTracks() {
-        return intersect(
-          elt => elt.configuration.trackId as string,
-          ...self.views.map(view => view.tracks),
-        )
+        return self.views.length === 1
+          ? self.views[0]!.tracks
+          : intersect(
+              elt => elt.configuration.trackId,
+              ...self.views.map(
+                view => view.tracks as { configuration: { trackId: string } }[],
+              ),
+            )
       },
 
       /**
@@ -186,13 +194,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       *
-       * Translocation features are handled differently
-       * since they do not have a mate e.g. they are one sided
+       * Translocation features are handled differently since they do not have
+       * a mate e.g. they are one sided
        */
       hasTranslocations(trackConfigId: string) {
         return [...this.getTrackFeatures(trackConfigId).values()].find(
           f => f.get('type') === 'translocation',
+        )
+      },
+
+      /**
+       * #method
+       * Paired features similar to breakends, but simpler, like BEDPE
+       */
+      hasPairedFeatures(trackConfigId: string) {
+        return [...this.getTrackFeatures(trackConfigId).values()].find(
+          f => f.get('type') === 'paired_feature',
         )
       },
 
@@ -205,7 +222,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return new Map(
           self.matchedTrackFeatures[trackConfigId]
             ?.flat()
-            .map(f => [f.id(), f]),
+            .map(f => [f.id(), f] as const),
         )
       },
 
@@ -215,7 +232,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
-
         return features.map(c =>
           c
             .map(feature => {
@@ -321,6 +337,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
         self.matchedTrackFeatures = obj
       },
+      /**
+       * #action
+       */
+      reverseViewOrder() {
+        self.views.reverse()
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -336,7 +358,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-
                       await getBlockFeatures(self as any, track),
                     ]),
                   ),
@@ -357,8 +378,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...self.views
             .map((view, idx) => [idx, view.menuItems()] as const)
-            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+            .map(f => ({
+              label: `Row ${f[0] + 1} view menu`,
+              subMenu: f[1],
+            })),
 
+          {
+            label: 'Reverse view order',
+            onClick: () => {
+              self.reverseViewOrder()
+            },
+          },
           {
             label: 'Show intra-view links',
             type: 'checkbox',

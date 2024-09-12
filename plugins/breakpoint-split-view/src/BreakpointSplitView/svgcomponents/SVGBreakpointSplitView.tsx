@@ -36,7 +36,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const { width, views } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
-
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
   )
@@ -60,10 +59,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const trackLabelMaxLen = getTrackNameMaxLen(views, fontSize, session) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const textOffset = trackLabels === 'offset' ? textHeight : 0
-  const trackOffsets = [
-    getTrackOffsets(views[0]!, textOffset, fontSize + offset),
-    getTrackOffsets(views[1]!, textOffset, fontSize + heights[0]! + offset),
-  ]
+  const trackOffsets = views.map((view, idx) =>
+    getTrackOffsets(
+      view,
+      textOffset,
+      fontSize + (idx > 0 ? heights[idx - 1]! : 0) + offset,
+    ),
+  )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)
 
@@ -79,42 +81,46 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           viewBox={[0, 0, w + shift * 2, totalHeightSvg].toString()}
         >
           <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
-          <g transform={`translate(${shift} ${fontSize})`}>
-            <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                {views[0]!.assemblyNames.join(', ')}
-              </text>
+          {views[0] ? (
+            <g transform={`translate(${shift} ${fontSize})`}>
+              <g transform={`translate(${trackLabelOffset})`}>
+                <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+                  {views[0].assemblyNames.join(', ')}
+                </text>
 
-              <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
+                <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
+              </g>
+              <SVGTracks
+                textHeight={textHeight}
+                trackLabels={trackLabels}
+                fontSize={fontSize}
+                model={displayResults[0]!.view}
+                displayResults={displayResults[0]!.data}
+                offset={offset}
+                trackLabelOffset={trackLabelOffset}
+              />
             </g>
-            <SVGTracks
-              textHeight={textHeight}
-              trackLabels={trackLabels}
-              fontSize={fontSize}
-              model={displayResults[0]!.view}
-              displayResults={displayResults[0]!.data}
-              offset={offset}
-              trackLabelOffset={trackLabelOffset}
-            />
-          </g>
+          ) : null}
 
-          <g transform={`translate(${shift} ${fontSize + heights[0]!})`}>
-            <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                {views[1]!.assemblyNames.join(', ')}
-              </text>
-              <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
+          {views[1] ? (
+            <g transform={`translate(${shift} ${fontSize + heights[0]!})`}>
+              <g transform={`translate(${trackLabelOffset})`}>
+                <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+                  {views[1].assemblyNames.join(', ')}
+                </text>
+                <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
+              </g>
+              <SVGTracks
+                textHeight={textHeight}
+                trackLabels={trackLabels}
+                fontSize={fontSize}
+                model={displayResults[1]!.view}
+                displayResults={displayResults[1]!.data}
+                offset={offset}
+                trackLabelOffset={trackLabelOffset}
+              />
             </g>
-            <SVGTracks
-              textHeight={textHeight}
-              trackLabels={trackLabels}
-              fontSize={fontSize}
-              model={displayResults[1]!.view}
-              displayResults={displayResults[1]!.data}
-              offset={offset}
-              trackLabelOffset={trackLabelOffset}
-            />
-          </g>
+          ) : null}
 
           <defs>
             <clipPath id="clip-bsv">

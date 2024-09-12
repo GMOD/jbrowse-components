@@ -60,6 +60,7 @@ const TrackLabel = observer(
       {
         label: 'Track order',
         type: 'subMenu',
+        priority: 2000,
         subMenu: [
           {
             label: minimized ? 'Restore track' : 'Minimize track',

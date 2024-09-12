@@ -201,6 +201,7 @@ export function createBaseTrackModel(
                 {
                   type: 'subMenu',
                   label: 'Display types',
+                  priority: -1000,
                   subMenu: compatDisp.map(d => ({
                     type: 'radio',
                     label: pm.getDisplayType(d.type)!.displayName,

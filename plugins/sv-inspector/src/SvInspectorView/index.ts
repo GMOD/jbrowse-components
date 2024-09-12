@@ -24,7 +24,6 @@ function defaultOnChordClick(
   // try to center the offsetPx
   viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100
   viewSnapshot.views[1]!.offsetPx -= view.width / 2 + 100
-  viewSnapshot.featureData = feature.toJSON()
 
   session.addView('BreakpointSplitView', viewSnapshot)
 }

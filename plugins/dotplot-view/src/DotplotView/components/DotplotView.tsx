@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
@@ -10,7 +10,9 @@ import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
 import { VerticalAxis, HorizontalAxis } from './Axes'
-import { TooltipWhereClicked, TooltipWhereMouseovered } from './DotplotTooltip'
+
+const TooltipWhereClicked = lazy(() => import('./DotplotTooltipClick'))
+const TooltipWhereMouseovered = lazy(() => import('./DotplotTooltipMouseover'))
 
 const blank = { left: 0, top: 0, width: 0, height: 0 }
 
@@ -251,21 +253,25 @@ const DotplotViewInternal = observer(function ({
           <HorizontalAxis model={model} />
           <div ref={ref} className={classes.content}>
             {mouseOvered && validSelect ? (
-              <TooltipWhereMouseovered
-                model={model}
-                mouserect={mouserect}
-                mouserectClient={mouserectClient}
-                xdistance={xdistance}
-              />
+              <Suspense fallback={null}>
+                <TooltipWhereMouseovered
+                  model={model}
+                  mouserect={mouserect}
+                  mouserectClient={mouserectClient}
+                  xdistance={xdistance}
+                />
+              </Suspense>
             ) : null}
             {validSelect ? (
-              <TooltipWhereClicked
-                model={model}
-                mousedown={mousedown}
-                mousedownClient={mousedownClient}
-                xdistance={xdistance}
-                ydistance={ydistance}
-              />
+              <Suspense fallback={null}>
+                <TooltipWhereClicked
+                  model={model}
+                  mousedown={mousedown}
+                  mousedownClient={mousedownClient}
+                  xdistance={xdistance}
+                  ydistance={ydistance}
+                />
+              </Suspense>
             ) : null}
             <div
               style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}

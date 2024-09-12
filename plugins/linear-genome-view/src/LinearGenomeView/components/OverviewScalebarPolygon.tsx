@@ -4,10 +4,11 @@ import { observer } from 'mobx-react'
 
 // core
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 
 // locals
-import { HEADER_BAR_HEIGHT, LinearGenomeViewModel } from '..'
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '..'
+import { HEADER_BAR_HEIGHT } from '../consts'
 
 const OverviewScalebarPolygon = observer(function ({
   model,

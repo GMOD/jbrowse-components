@@ -1,5 +1,6 @@
 import { parseBreakend } from '@gmod/vcf'
 import { Feature, assembleLocString } from '@jbrowse/core/util'
+
 export function makeFeaturePair(feature: Feature, alt?: string) {
   const bnd = alt ? parseBreakend(alt) : undefined
   const start = feature.get('start')

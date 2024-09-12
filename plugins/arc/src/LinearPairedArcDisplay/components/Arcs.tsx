@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { lazy, Suspense, useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
@@ -13,8 +13,9 @@ import { getConf } from '@jbrowse/core/configuration'
 
 // local
 import { LinearArcDisplayModel } from '../model'
-import ArcTooltip from '../../ArcTooltip'
 import { makeFeaturePair, makeSummary } from './util'
+
+const ArcTooltip = lazy(() => import('../../ArcTooltip'))
 
 type LGV = LinearGenomeViewModel
 
@@ -113,7 +114,9 @@ const Arc = observer(function ({
           />
         ) : null}
         {mouseOvered ? (
-          <ArcTooltip contents={makeSummary(feature, alt)} />
+          <Suspense fallback={null}>
+            <ArcTooltip contents={makeSummary(feature, alt)} />
+          </Suspense>
         ) : null}
       </>
     ) : null

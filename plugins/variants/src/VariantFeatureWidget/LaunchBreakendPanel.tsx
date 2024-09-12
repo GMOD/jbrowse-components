@@ -9,10 +9,16 @@ import {
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
+// locals
 import { VariantFeatureWidgetModel } from './stateModelFactory'
 
 // lazies
-const BreakendOptionDialog = lazy(() => import('./BreakendOptionDialog'))
+const BreakendMultiLevelOptionDialog = lazy(
+  () => import('./BreakendMultiLevelOptionDialog'),
+)
+const BreakendSingleLevelOptionDialog = lazy(
+  () => import('./BreakendSingleLevelOptionDialog'),
+)
 
 function LocStringList({
   locStrings,
@@ -24,11 +30,12 @@ function LocStringList({
   const session = getSession(model)
   return (
     <div>
-      <Typography>Link to linear view of breakend endpoints</Typography>
+      <Typography>Navigate to breakend endpoint in linear view:</Typography>
       <ul>
         {locStrings.map((locString, index) => (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <li key={`${locString}-${index}`}>
+            {locString}{' '}
             <Link
               href="#"
               onClick={event => {
@@ -48,7 +55,7 @@ function LocStringList({
                 }
               }}
             >
-              {`LGV - ${locString}`}
+              (LGV)
             </Link>
           </li>
         ))}
@@ -72,23 +79,50 @@ function LaunchBreakpointSplitViewPanel({
   const simpleFeature = new SimpleFeature(feature)
   return (
     <div>
-      <Typography>
-        Launch split views with breakend source and target
-      </Typography>
+      <Typography>Launch split view</Typography>
       <ul>
         {locStrings.map(locString => (
           <li key={JSON.stringify(locString)}>
+            {`${feature.refName}:${feature.start} // ${locString}`}{' '}
             <Link
               href="#"
               onClick={event => {
                 event.preventDefault()
                 session.queueDialog(handleClose => [
-                  BreakendOptionDialog,
-                  { handleClose, model, feature: simpleFeature, viewType },
+                  BreakendMultiLevelOptionDialog,
+                  {
+                    handleClose,
+                    model,
+                    feature: simpleFeature,
+                    // @ts-expect-error
+                    viewType,
+                    view: model.view,
+                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                  },
                 ])
               }}
             >
-              {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+              (top/bottom)
+            </Link>{' '}
+            <Link
+              href="#"
+              onClick={event => {
+                event.preventDefault()
+                session.queueDialog(handleClose => [
+                  BreakendSingleLevelOptionDialog,
+                  {
+                    handleClose,
+                    model,
+                    feature: simpleFeature,
+                    // @ts-expect-error
+                    viewType,
+                    view: model.view,
+                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                  },
+                ])
+              }}
+            >
+              (single row)
             </Link>
           </li>
         ))}

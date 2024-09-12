@@ -479,9 +479,12 @@ export function SharedLinearPileupDisplayMixin(
             {
               label: 'Color by tag...',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   ColorByTagDialog,
-                  { model: self, handleClose: doneCallback },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -494,20 +497,10 @@ export function SharedLinearPileupDisplayMixin(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Filter by...',
-              icon: FilterListIcon,
-              priority: -1,
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  FilterByTagDialog,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
+
             {
               label: 'Set feature height...',
-              priority: -1,
+              priority: 1,
               subMenu: [
                 {
                   label: 'Normal',
@@ -526,9 +519,12 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Manually set height',
                   onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
+                    getSession(self).queueDialog(handleClose => [
                       SetFeatureHeightDialog,
-                      { model: self, handleClose: doneCallback },
+                      {
+                        model: self,
+                        handleClose,
+                      },
                     ])
                   },
                 },
@@ -536,10 +532,27 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Set max height...',
+              priority: -1,
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
-                  { model: self, handleClose: doneCallback },
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
+              label: 'Filter by...',
+              icon: FilterListIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  FilterByTagDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },

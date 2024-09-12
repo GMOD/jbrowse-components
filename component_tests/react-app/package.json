@@ -55,6 +55,7 @@
     "@jbrowse/plugin-spreadsheet-view": "file:./packed/jbrowse-plugin-spreadsheet-view.tgz",
     "@jbrowse/plugin-sv-inspector": "file:./packed/jbrowse-plugin-sv-inspector.tgz",
     "@jbrowse/app-core": "file:./packed/jbrowse-app-core.tgz",
+    "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/web-core": "file:./packed/jbrowse-web-core.tgz"
   },

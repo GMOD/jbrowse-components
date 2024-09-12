@@ -10,8 +10,19 @@ import {
   getMatchedAlignmentFeatures,
   hasPairedReads,
 } from './util'
-import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
+import {
+  yPos,
+  useNextFrame,
+  getPxFromCoordinate,
+  heightFromSpecificLevel,
+} from '../util'
 import { BreakpointViewModel } from '../model'
+import {
+  getLongReadOrientationAbnormal,
+  getLongReadOrientationColorOrDefault,
+  getPairedOrientationColor,
+  isAbnormalOrientation,
+} from './getOrientationColor'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 
@@ -31,7 +42,8 @@ const AlignmentConnections = observer(function ({
   const session = getSession(model)
   const snap = getSnapshot(model)
   const { assemblyManager } = session
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
+  const v0 = views[0]
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
@@ -61,7 +73,6 @@ const AlignmentConnections = observer(function ({
   return assembly ? (
     <g
       fill="none"
-      {...getStrokeProps(theme.palette.text.disabled)}
       data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
     >
       {layoutMatches.map(chunk => {
@@ -77,7 +88,7 @@ const AlignmentConnections = observer(function ({
             return null
           }
 
-          // disable rendering connections in a single level
+          // disable rendering connections in a single row
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
@@ -87,9 +98,25 @@ const AlignmentConnections = observer(function ({
           if (!f1ref || !f2ref) {
             throw new Error(`unable to find ref for ${f1ref || f2ref}`)
           }
+          const r = {
+            pair_orientation: f1.get('pair_orientation'),
+          }
 
           const s1 = f1.get('strand')
           const s2 = f2.get('strand')
+          const sameRef = f1ref === f2ref
+          const checkOrientation = sameRef
+          let orientationColor = ''
+          let isAbnormal = false
+          if (checkOrientation) {
+            if (hasPaired) {
+              orientationColor = getPairedOrientationColor(r)
+              isAbnormal = isAbnormalOrientation(r)
+            } else {
+              orientationColor = getLongReadOrientationColorOrDefault(s1, s2)
+              isAbnormal = getLongReadOrientationAbnormal(s1, s2)
+            }
+          }
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn1 = s2 === -1
           const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
@@ -97,6 +124,8 @@ const AlignmentConnections = observer(function ({
           const x2 = getPxFromCoordinate(views[level2]!, f2ref, p2)
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
+          const rf1 = reversed1 ? -1 : 1
+          const rf2 = reversed2 ? -1 : 1
           const tracks = views.map(v => v.getTrack(trackId))
           const y1 =
             yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
@@ -104,6 +133,18 @@ const AlignmentConnections = observer(function ({
           const y2 =
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
             yOffset
+          const sameLevel = level1 === level2
+          const abnormalSpecialRenderFlag = sameLevel && isAbnormal
+          const trackHeight = abnormalSpecialRenderFlag
+            ? tracks[level1].displays[0].height
+            : 0
+          const pf1 = hasPaired ? -1 : 1
+          const y0 = heightFromSpecificLevel(
+            views,
+            trackId,
+            level1,
+            getTrackYPosOverride,
+          )
 
           // possible todo: use totalCurveHeight to possibly make alternative
           // squiggle if the S is too small
@@ -112,14 +153,20 @@ const AlignmentConnections = observer(function ({
             x1,
             y1,
             'C',
-            x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
-            y1,
-            x2 -
-              200 *
-                f2.get('strand') *
-                (reversed2 ? -1 : 1) *
-                (hasPaired ? -1 : 1),
-            y2,
+
+            // first bezier x,y
+            x1 + 200 * f1.get('strand') * rf1,
+            abnormalSpecialRenderFlag
+              ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
+              : y1,
+
+            // second bezier x,y
+            x2 - 200 * f2.get('strand') * rf2 * pf1,
+            abnormalSpecialRenderFlag
+              ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
+              : y2,
+
+            // third bezier x,y
             x2,
             y2,
           ].join(' ')
@@ -130,6 +177,9 @@ const AlignmentConnections = observer(function ({
               key={id}
               data-testid="r1"
               strokeWidth={mouseoverElt === id ? 5 : 1}
+              {...getStrokeProps(
+                orientationColor || theme.palette.text.disabled,
+              )}
               onClick={() => {
                 const featureWidget = session.addWidget?.(
                   'BreakpointAlignmentsWidget',

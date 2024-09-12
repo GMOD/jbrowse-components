@@ -1369,14 +1369,14 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     return intervals
   }
 
-  const stack = []
+  const stack = [] as T[]
   let top = null
 
   // sort the intervals based on their start values
   intervals = intervals.sort((a, b) => a.start - b.start)
 
   // push the 1st interval into the stack
-  stack.push(intervals[0])
+  stack.push(intervals[0]!)
 
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
@@ -1404,13 +1404,12 @@ interface BasicFeature {
   end: number
   start: number
   refName: string
+  assemblyName?: string
 }
 
-// hashmap of refName->array of features
-type FeaturesPerRef = Record<string, BasicFeature[]>
-
-export function gatherOverlaps(regions: BasicFeature[]) {
-  const memo = {} as FeaturesPerRef
+// returns new array non-overlapping features
+export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
+  const memo = {} as Record<string, BasicFeature[]>
   for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
@@ -1419,7 +1418,10 @@ export function gatherOverlaps(regions: BasicFeature[]) {
   }
 
   return Object.values(memo).flatMap(group =>
-    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+    mergeIntervals(
+      group.sort((a, b) => a.start - b.start),
+      w,
+    ),
   )
 }
 

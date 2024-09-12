@@ -17,11 +17,7 @@ const JBrowseLinearGenomeView = observer(function ({
   const { session } = viewState
   const { view } = session
   const { pluginManager } = getEnv(session)
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
+  const { ReactComponent } = pluginManager.getViewType(view.type)!
   const theme = createJBrowseTheme(
     readConfObject(viewState.config.configuration, 'theme'),
   )
@@ -33,6 +29,7 @@ const JBrowseLinearGenomeView = observer(function ({
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>
+      {/* @ts-expect-error see comments on interface for AbstractSessionModel */}
       <ModalWidget session={session} />
     </ThemeProvider>
   )

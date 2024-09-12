@@ -1,3 +1,49 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.1
+
+## 2.15.1 (2024-09-12)
+
+#### :rocket: Enhancement
+
+- `core`, `sv-core`
+  - [#4561](https://github.com/GMOD/jbrowse-components/pull/4561) Create notion
+    of launching a single-row breakpoint split view
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4556](https://github.com/GMOD/jbrowse-components/pull/4556) Add dropdown
+    menu from bookmark label clicks ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4554](https://github.com/GMOD/jbrowse-components/pull/4554) Fix the
+    ability to sort menu items by priority for CascadingMenu
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4560](https://github.com/GMOD/jbrowse-components/pull/4560) Fix coloring
+    on circular chord renderings ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4553](https://github.com/GMOD/jbrowse-components/pull/4553) Fix
+    performance regression since v2.14.0 in assembly loading
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#4548](https://github.com/GMOD/jbrowse-components/pull/4548) Create
+    BaseTooltip component in @jbrowse/core/ui
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4547](https://github.com/GMOD/jbrowse-components/pull/4547) Avoid stream
+    polyfill for GFF3/GTF parsing ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.16s.
+
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.0
+
+Done in 1.26s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.14.0
 
 ## 2.14.0 (2024-08-28)

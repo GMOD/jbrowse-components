@@ -117,7 +117,7 @@
       pluginManager.addToExtensionPoint(
         'Core-replaceWidget',
         (DefaultWidget, { model }) => {
-          return model.trackId === 'volvox.inv.vcf'
+          return model.trackId === 'volvox_sv_test_renamed'
             ? ReplaceFeatureWidget
             : DefaultWidget
         },

@@ -13,6 +13,7 @@ export default tseslint.config(
       '**/dist/**/*',
       '**/esm/**/*',
       '**/public/**/*',
+      '**/storybook-static/**',
       'website/*',
       'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',
@@ -80,6 +81,7 @@ export default tseslint.config(
 
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
+      'react/no-is-mounted': 'off',
       'react/prop-types': 'off',
 
       'unicorn/prefer-structured-clone': 'off',

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import clone from 'clone'
@@ -10,10 +10,13 @@ import { tags } from './tagInfo'
 import { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 // local components
-import SuppAlignments from './SuppAlignments'
 import Flags from './Flags'
 import PairLink from './PairLink'
 import Formatter from './Formatter'
+
+// lazies
+const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
+const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
 const omit = ['clipPos', 'flags']
 
@@ -42,7 +45,10 @@ const AlignmentsFeatureDetails = observer(function (props: {
         }
       />
       {SA !== undefined ? (
-        <SuppAlignments model={model} tag={SA} feature={feat} />
+        <SupplementaryAlignments model={model} tag={SA} feature={feat} />
+      ) : null}
+      {flags & 1 ? (
+        <LinkedPairedAlignments model={model} feature={feat} />
       ) : null}
 
       {flags !== undefined ? <Flags feature={feat} {...props} /> : null}

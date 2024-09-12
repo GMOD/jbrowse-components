@@ -15,16 +15,16 @@ export function LinearAlignmentsDisplayMixin(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
-  const lowerPanelDisplays = getLowerPanelDisplays(pluginManager).map(
-    f => f.stateModel,
-  )
-
   return types.model({
     /**
      * #property
      * refers to LinearPileupDisplay sub-display model
      */
-    PileupDisplay: types.maybe(types.union(...lowerPanelDisplays)),
+    PileupDisplay: types.maybe(
+      types.union(
+        ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
+      ),
+    ),
     /**
      * #property
      * refers to LinearSNPCoverageDisplay sub-display model

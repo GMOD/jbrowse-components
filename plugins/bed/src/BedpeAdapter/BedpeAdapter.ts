@@ -8,6 +8,8 @@ import { Region, Feature, SimpleFeature, isGzip } from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
 
+const svTypes = new Set(['DUP', 'TRA', 'INV', 'CNV', 'DEL'])
+
 export function featureData(
   line: string,
   uniqueId: string,
@@ -29,21 +31,25 @@ export function featureData(
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : extra
-  const ALT = ['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0]!)
-    ? `<${extra[0]}>`
-    : undefined
+  const ALT = svTypes.has(extra[0]!) ? `<${extra[0]}>` : undefined
 
   return new SimpleFeature({
+    ...rest,
     start: start1,
     end: end1,
+    type: 'paired_feature',
     refName: ref1,
-    ...(ALT ? { ALT: [ALT] } : {}), // it's an array in VCF
     strand: strand1,
     name,
-    ...rest,
     score,
     uniqueId,
-    mate: { refName: ref2, start: start2, end: end2, strand: strand2 },
+    mate: {
+      refName: ref2,
+      start: start2,
+      end: end2,
+      strand: strand2,
+    },
+    ...(ALT ? { ALT: [ALT] } : {}), // ALT is an array in VCF
   })
 }
 

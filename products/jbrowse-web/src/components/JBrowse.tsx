@@ -74,6 +74,7 @@ const JBrowse = observer(function ({
     <ThemeProvider theme={session.theme}>
       <CssBaseline />
       <App
+        // @ts-expect-error see comments on interface for AbstractSessionModel
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />

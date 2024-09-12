@@ -33,6 +33,7 @@ const JBrowseCircularGenomeView = observer(function ({
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>
+      {/* @ts-expect-error see comments on interface for AbstractSessionModel */}
       <ModalWidget session={session} />
     </ThemeProvider>
   )

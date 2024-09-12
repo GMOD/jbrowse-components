@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-canvas",
-  "version": "2.14.0",
+  "version": "2.15.1",
   "description": "JBrowse 2 plugin for canvas features",
   "keywords": [
     "jbrowse",

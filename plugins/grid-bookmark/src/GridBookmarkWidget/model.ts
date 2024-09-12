@@ -285,6 +285,10 @@ export default function f(_pluginManager: PluginManager) {
         }
         self.selectedBookmarks = []
       },
+
+      removeBookmarkObject(arg: Instance<typeof LabeledRegionModel>) {
+        self.bookmarks.remove(arg)
+      },
     }))
     .actions(self => ({
       afterAttach() {

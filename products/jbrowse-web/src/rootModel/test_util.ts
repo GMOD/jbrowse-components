@@ -7,7 +7,7 @@ export function createTestSession(args?: {
   adminMode?: boolean
   sessionSnapshot?: Record<string, unknown>
   jbrowseConfig?: Record<string, unknown>
-}) {
+}): WebSessionModel {
   const {
     sessionSnapshot = {},
     adminMode = false,

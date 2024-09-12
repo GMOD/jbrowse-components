@@ -1,27 +1,21 @@
-import { Paper, Typography } from '@mui/material'
+import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import React from 'react'
-import { getTickDisplayStr } from '@jbrowse/core/util'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import {
-  ContentBlock as ContentBlockComponent,
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
-import { makeTicks } from '../util'
+import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
+import ScalebarRefNameLabels from './ScalebarRefNameLabels'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
-  scalebarContainer: {
+const useStyles = makeStyles()({
+  container: {
     overflow: 'hidden',
     position: 'relative',
   },
-  scalebarZoomContainer: {
+  zoomContainer: {
     position: 'relative',
     zIndex: 1,
   },
@@ -30,138 +24,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     pointerEvents: 'none',
   },
-  majorTickLabel: {
-    fontSize: 11,
-    zIndex: 1,
-    background: theme.palette.background.paper,
-    lineHeight: 'normal',
-    pointerEvents: 'none',
-  },
-  tick: {
-    position: 'absolute',
-    width: 0,
-    display: 'flex',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-  },
-  refLabel: {
-    fontSize: 11,
-    position: 'absolute',
-    left: 2,
-    top: -1,
-    fontWeight: 'bold',
-    lineHeight: 'normal',
-    zIndex: 1,
-    pointerEvents: 'none',
-    background: theme.palette.background.paper,
-  },
-}))
-
-const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
-  const { classes } = useStyles()
-  const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
-
-  // find the block that needs pinning to the left side for context
-  let lastLeftBlock = 0
-  staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - offsetPx < 0) {
-      lastLeftBlock = i
-    }
-  })
-  const val = scaleBarDisplayPrefix()
-  return (
-    <>
-      {staticBlocks.blocks[0]?.type !== 'ContentBlock' && val ? (
-        <Typography
-          style={{ left: 0, zIndex: 100 }}
-          className={classes.refLabel}
-        >
-          {val}
-        </Typography>
-      ) : null}
-      {staticBlocks.map((block, index) => {
-        return block.type === 'ContentBlock' &&
-          (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) ? (
-          <Typography
-            key={`refLabel-${block.key}-${index}`}
-            style={{
-              left:
-                index === lastLeftBlock
-                  ? Math.max(0, -offsetPx)
-                  : block.offsetPx - offsetPx - 1,
-              paddingLeft: index === lastLeftBlock ? 0 : 1,
-            }}
-            className={classes.refLabel}
-            data-testid={`refLabel-${block.refName}`}
-          >
-            {index === lastLeftBlock && val ? `${val}:` : ''}
-            {block.refName}
-          </Typography>
-        ) : null
-      })}
-    </>
-  )
-})
-
-const RenderedBlockTicks = function ({
-  block,
-  bpPerPx,
-}: {
-  block: ContentBlock
-  bpPerPx: number
-}) {
-  const { classes } = useStyles()
-  const { reversed, start, end } = block
-  const ticks = makeTicks(start, end, bpPerPx, true, false)
-
-  return (
-    <ContentBlockComponent block={block}>
-      {ticks.map(({ type, base }) => {
-        if (type === 'major') {
-          const x = (reversed ? end - base : base - start) / bpPerPx
-          const baseNumber = base + 1
-          return (
-            <div key={base} className={classes.tick} style={{ left: x }}>
-              {baseNumber ? (
-                <Typography className={classes.majorTickLabel}>
-                  {getTickDisplayStr(baseNumber, bpPerPx)}
-                </Typography>
-              ) : null}
-            </div>
-          )
-        }
-        return null
-      })}
-    </ContentBlockComponent>
-  )
-}
-
-const RenderedScalebarLabels = observer(function ({ model }: { model: LGV }) {
-  const { staticBlocks, bpPerPx } = model
-
-  return (
-    <>
-      {staticBlocks.map((block, idx) => {
-        const { key, widthPx } = block
-        const k = `${key}-${idx}`
-        if (block.type === 'ContentBlock') {
-          return <RenderedBlockTicks key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block.type === 'ElidedBlock') {
-          return <ElidedBlockComponent key={k} width={widthPx} />
-        } else if (block.type === 'InterRegionPaddingBlock') {
-          return (
-            <InterRegionPaddingBlockComponent
-              key={k}
-              width={widthPx}
-              style={{ background: 'none' }}
-              boundary={block.variant === 'boundary'}
-            />
-          )
-        }
-        return null
-      })}
-    </>
-  )
 })
 
 interface ScalebarProps {
@@ -176,38 +38,35 @@ const Scalebar = observer(
     ref,
   ) {
     const { classes, cx } = useStyles()
-
-    const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+    const { staticBlocks, offsetPx, scaleFactor } = model
+    const offsetLeft = staticBlocks.offsetPx - offsetPx
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={cx(classes.scalebarContainer, className)}
+        className={cx(classes.container, className)}
         variant="outlined"
         ref={ref}
         style={style}
         {...other}
       >
         <div
-          className={classes.scalebarZoomContainer}
+          className={classes.zoomContainer}
           style={{
-            transform:
-              model.scaleFactor !== 1
-                ? `scaleX(${model.scaleFactor})`
-                : undefined,
+            transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
           }}
         >
           <div
             className={classes.scalebar}
             style={{
               left: offsetLeft - 1,
-              width: model.staticBlocks.totalWidthPx,
+              width: staticBlocks.totalWidthPx,
               ...style,
             }}
           >
-            <RenderedScalebarLabels model={model} />
+            <ScalebarCoordinateLabels model={model} />
           </div>
         </div>
-        <RenderedRefNameLabels model={model} />
+        <ScalebarRefNameLabels model={model} />
       </Paper>
     )
   }),
