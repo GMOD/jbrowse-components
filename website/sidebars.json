@@ -87,6 +87,8 @@
     "jbrowser",
     "cli",
     "faq",
+    "privacy_app",
+    "privacy_website",
     {
       "type": "category",
       "label": "Archive",
