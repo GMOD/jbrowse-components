@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/sv-core",
-  "version": "2.15.0",
+  "version": "2.15.1",
   "description": "JBrowse 2 code shared between sv type code",
   "keywords": [
     "jbrowse",
@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/app-core": "^2.15.0",
-    "@jbrowse/product-core": "^2.15.0",
+    "@jbrowse/app-core": "^2.15.1",
+    "@jbrowse/product-core": "^2.15.1",
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "clone": "^2.0.0",
