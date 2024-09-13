@@ -361,7 +361,7 @@ export default class TextIndex extends JBrowseCommand {
     await this.indexDriver({
       trackConfigs,
       outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!),
       quiet,
       attributes: attributes.split(','),
       typesToExclude: exclude.split(','),
