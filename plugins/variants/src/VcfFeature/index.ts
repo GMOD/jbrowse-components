@@ -64,7 +64,7 @@ export default class VCFFeature implements Feature {
   dataFromVariant(variant: {
     REF: string
     POS: number
-    ALT: string[]
+    ALT?: string[]
     CHROM: string
     INFO: any
     ID?: string[]
@@ -72,8 +72,8 @@ export default class VCFFeature implements Feature {
     const { REF, ALT, POS, CHROM, INFO, ID } = variant
     const start = POS - 1
     const [type, description] = getSOTermAndDescription(REF, ALT, this.parser)
-    const isTRA = ALT.includes('<TRA>')
-    const isSymbolic = ALT.some(f => f.includes('<'))
+    const isTRA = ALT?.includes('<TRA>')
+    const isSymbolic = ALT?.some(f => f.includes('<'))
 
     return {
       refName: CHROM,
