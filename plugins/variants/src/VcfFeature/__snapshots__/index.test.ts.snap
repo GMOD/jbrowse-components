@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`null ALT 1`] = `
+{
+  "ALT": null,
+  "CHROM": "chr1",
+  "FILTER": "PASS",
+  "ID": [
+    "rs123",
+  ],
+  "INFO": {
+    "HELLO": [
+      "world",
+    ],
+  },
+  "POS": 100,
+  "QUAL": 29,
+  "REF": "G",
+  "aliases": undefined,
+  "description": "no alternative alleles",
+  "end": 100,
+  "name": "rs123",
+  "refName": "chr1",
+  "samples": {},
+  "start": 99,
+  "type": "remark",
+  "uniqueId": "myuniqueid",
+}
+`;
