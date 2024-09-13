@@ -1,3 +1,23 @@
-export { run } from '@oclif/core'
+#!/usr/bin/env node
+import yargs from 'yargs'
+import { addTrack, addTrackOptions } from './add-track.js'
+import { addAssembly, addAssemblyOptions } from './add-assembly.js'
 
-// trigger build
+const yargs2 = yargs(process.argv.slice(2))
+await yargs2
+  .command(
+    'add-track <track>',
+    'Add a track to a config.json file',
+    addTrackOptions(),
+    async run => addTrack(run),
+  )
+  .command(
+    'add-assembly <assembly>',
+    'Add an assembly to a config.json file',
+    addAssemblyOptions(),
+    async run => addAssembly(run),
+  )
+  .strictCommands()
+  .demandCommand()
+  .wrap(Math.min(yargs2.terminalWidth(), 120))
+  .help().argv
