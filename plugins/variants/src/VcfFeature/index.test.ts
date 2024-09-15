@@ -142,3 +142,22 @@ test('multiple SNV2', () => {
   })
   expect(f.get('description')).toEqual('insertion G -> AT,<*>')
 })
+
+// see example 1.1 in VCF 4.3 spec, indicates the . in ALT field indicates
+// "a site that is called monomorphic reference (i.e. with no alternate alleles"
+test('null ALT', () => {
+  const parser = new VcfParser({
+    header:
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam',
+  })
+  const line = 'chr1\t100\trs123\tG\t.\t29\tPASS\tHELLO=world'
+
+  const variant = parser.parseLine(line)
+
+  const f = new VcfFeature({
+    parser,
+    variant,
+    id: 'myuniqueid',
+  })
+  expect(f.toJSON()).toMatchSnapshot()
+})
