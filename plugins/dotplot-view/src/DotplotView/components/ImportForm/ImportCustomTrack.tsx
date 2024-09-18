@@ -19,6 +19,7 @@ function getAdapter({
   assembly1,
   assembly2,
   fileLocation,
+  indexFileLocation,
   bed1Location,
   bed2Location,
 }: {
@@ -26,6 +27,7 @@ function getAdapter({
   assembly1: string
   assembly2: string
   fileLocation?: FileLocation
+  indexFileLocation?: FileLocation
   bed1Location?: FileLocation
   bed2Location?: FileLocation
 }) {
@@ -73,6 +75,13 @@ function getAdapter({
       bed2Location,
       assemblyNames: [assembly1, assembly2],
     }
+  } else if (radioOption === '.pif.gz') {
+    return {
+      type: 'PairwiseIndexedPAFAdapter',
+      pifGzLocation: fileLocation,
+      index: { location: indexFileLocation },
+      assemblyNames: [assembly1, assembly2],
+    }
   } else {
     throw new Error(
       `Unknown to detect type ${radioOption} from filename (select radio button to clarify)`,
@@ -96,6 +105,7 @@ const OpenTrack = observer(
     const [bed2Location, setBed2Location] = useState<FileLocation>()
     const [bed1Location, setBed1Location] = useState<FileLocation>()
     const [fileLocation, setFileLocation] = useState<FileLocation>()
+    const [indexFileLocation, setIndexFileLocation] = useState<FileLocation>()
     const [value, setValue] = useState('')
     const [error, setError] = useState<unknown>()
     const fileName = getName(fileLocation)
@@ -119,6 +129,7 @@ const OpenTrack = observer(
               assembly1,
               assembly2,
               fileLocation,
+              indexFileLocation,
               bed1Location,
               bed2Location,
             }),
@@ -135,6 +146,7 @@ const OpenTrack = observer(
       bed1Location,
       bed2Location,
       fileLocation,
+      indexFileLocation,
       radioOption,
       setSessionTrackData,
     ])
@@ -143,10 +155,10 @@ const OpenTrack = observer(
         {error ? <ErrorMessage error={error} /> : null}
         <Typography style={{ textAlign: 'center' }}>
           Add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
-          .anchors.simple (MCScan) file to view in the dotplot. These file types
-          can also be gzipped. The first assembly should be the query sequence
-          (e.g. left column of the PAF) and the second assembly should be the
-          target sequence (e.g. right column of the PAF)
+          .anchors.simple (MCScan) file to view. These file types can also be
+          gzipped. The first assembly should be the query sequence (e.g. left
+          column of the PAF) and the second assembly should be the target
+          sequence (e.g. right column of the PAF)
         </Typography>
         <RadioGroup
           value={radioOption}
@@ -161,6 +173,7 @@ const OpenTrack = observer(
             <Grid item>
               <FormControlLabel value=".out" control={<Radio />} label=".out" />
             </Grid>
+
             <Grid item>
               <FormControlLabel
                 value=".delta"
@@ -187,6 +200,13 @@ const OpenTrack = observer(
                 value=".anchors.simple"
                 control={<Radio />}
                 label=".anchors.simple"
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value=".pif.gz"
+                control={<Radio />}
+                label=".pif.gz"
               />
             </Grid>
           </Grid>
@@ -233,6 +253,29 @@ const OpenTrack = observer(
                       }}
                     />
                   </div>
+                </div>
+              </div>
+            ) : value === '.pif.gz' ? (
+              <div style={{ display: 'flex' }}>
+                <div>
+                  <FileSelector
+                    name={`${value} location`}
+                    description=""
+                    location={fileLocation}
+                    setLocation={loc => {
+                      setFileLocation(loc)
+                    }}
+                  />
+                </div>
+                <div>
+                  <FileSelector
+                    name={`${value} index location`}
+                    description=""
+                    location={indexFileLocation}
+                    setLocation={loc => {
+                      setIndexFileLocation(loc)
+                    }}
+                  />
                 </div>
               </div>
             ) : (
