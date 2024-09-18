@@ -20,10 +20,6 @@ export class TextIndexRpcMethod extends RpcMethodType {
     },
     rpcDriverClassName: string,
   ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
     const {
       tracks,
       outLocation,
@@ -33,21 +29,18 @@ export class TextIndexRpcMethod extends RpcMethodType {
       indexType,
       signal,
       statusCallback,
-    } = deserializedArgs
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     checkAbortSignal(signal)
-    const indexingParams = {
-      outLocation,
+    await indexTracks({
+      outDir: outLocation,
       tracks,
-      exclude,
-      attributes,
-      assemblies,
+      featureTypesToExclude: exclude,
+      attributesToIndex: attributes,
+      assemblyNames: assemblies,
       indexType,
       statusCallback,
       signal,
-    }
-    await indexTracks(indexingParams)
-    statusCallback('Indexing Complete.')
-    return []
+    })
   }
 }
