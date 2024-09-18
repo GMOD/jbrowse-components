@@ -34,13 +34,13 @@ function sign(configuration) {
   ].join(' ')
   const preMoveFile = `cp "${configuration.path}" "${tmpExe}"`
   const postMoveFile = `cp "${path.join(TEMP_DIR, tmpExe)}" "${configuration.path}"`
-  childProcess.execSync(`${preMoveFile}`, {
+  childProcess.execSync(preMoveFile, {
     stdio: 'inherit',
   })
-  childProcess.execSync(`${signFile}`, {
+  childProcess.execSync(signFile, {
     stdio: 'inherit',
   })
-  childProcess.execSync(`${postMoveFile}`, {
+  childProcess.execSync(postMoveFile, {
     stdio: 'inherit',
   })
 }

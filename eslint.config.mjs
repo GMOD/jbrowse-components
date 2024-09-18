@@ -169,6 +169,7 @@ export default tseslint.config(
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
+      'products/jbrowse-desktop/sign.js',
       'products/jbrowse-desktop/linux-sandbox-fix.js',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
