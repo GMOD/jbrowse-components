@@ -117,6 +117,7 @@
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
+      "sign": "./sign.js",
       "publish": [
         "github"
       ],
