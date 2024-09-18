@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing",
-  "version": "2.15.2",
+  "version": "2.15.3",
   "description": "JBrowse 2 text indexing for desktop",
   "keywords": [
     "jbrowse",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/core": "^2.15.2",
+    "@jbrowse/core": "^2.15.3",
     "ixixx": "^2.0.1",
     "node-fetch": "^2.6.0",
     "sanitize-filename": "^1.6.3"
