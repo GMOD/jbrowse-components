@@ -73,15 +73,11 @@ jobs:
           cd products/jbrowse-desktop/code_signer
           wget  https://www.ssl.com/download/codesigntool-for-linux-and-macos -O out.zip
           unzip out.zip
+          chmod +x CodeSignTool.sh
           cd ../../../
 
       - name: Build app
         env:
-          # NOTE: must explicitly pass in even the parameters that
-          # esigner-codesign says are optional since we're not using the action
-          # directly, but rather passing the params in as env vars:
-          # xref https://github.com/electron-userland/electron-builder/issues/6158#issuecomment-1994110062
-          CODE_SIGN_SCRIPT_PATH: 'code_signer'
           WINDOWS_SIGN_USER_NAME: ${{ secrets.WINDOWS_SIGN_USER_NAME }}
           WINDOWS_SIGN_USER_PASSWORD: ${{ secrets.WINDOWS_SIGN_USER_PASSWORD }}
           WINDOWS_SIGN_CREDENTIAL_ID: ${{ secrets.WINDOWS_SIGN_CREDENTIAL_ID }}
