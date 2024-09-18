@@ -327,16 +327,6 @@ setHeight: (newHeight: number) => number
 setError: (e: unknown) => void
 ```
 
-#### action: closeView
-
-removes the view itself from the state tree entirely by calling the parent
-removeView
-
-```js
-// type signature
-closeView: () => void
-```
-
 #### action: zoomOutButton
 
 ```js

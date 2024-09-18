@@ -83,9 +83,10 @@ multiTicks: {
 
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  SNPCoverageRenderer: pluginManager.getRendererType('SNPCoverageRenderer')
-    .configSchema,
-})
+        SNPCoverageRenderer: pluginManager.getRendererType(
+          'SNPCoverageRenderer',
+        )!.configSchema,
+      })
 ```
 
 ### LinearSNPCoverageDisplay - Derives from

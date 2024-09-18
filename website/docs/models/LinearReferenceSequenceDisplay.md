@@ -72,6 +72,40 @@ rowHeight: 15
 
 ### LinearReferenceSequenceDisplay - Getters
 
+#### getter: sequenceType
+
+```js
+// type
+any
+```
+
+#### getter: showForwardActual
+
+showReverse setting, it is NOT disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: showReverseActual
+
+showReverse setting, is disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: showTranslationActual
+
+showTranslation setting is disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
 #### getter: sequenceHeight
 
 ```js

@@ -124,7 +124,7 @@ circularView: types.optional(CircularModel, () =>
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: showCircularView
@@ -202,13 +202,6 @@ setImportMode: () => void
 ```js
 // type signature
 setDisplayMode: () => void
-```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
 ```
 
 #### action: setDisplayedRegions

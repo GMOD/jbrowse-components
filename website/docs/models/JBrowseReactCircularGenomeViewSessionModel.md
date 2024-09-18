@@ -30,7 +30,7 @@ composed of
 // type signature
 IAnyModelType
 // code
-view: pluginManager.getViewType('CircularView').stateModel
+view: pluginManager.getViewType('CircularView')!.stateModel
 ```
 
 ### JBrowseReactCircularGenomeViewSessionModel - Getters

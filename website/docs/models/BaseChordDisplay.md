@@ -93,7 +93,7 @@ isCompatibleWithRenderer: (renderer: RendererType) => renderer is CircularChordR
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
+renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions; }) => Promise<Element>
 ```
 
 ### BaseChordDisplay - Actions

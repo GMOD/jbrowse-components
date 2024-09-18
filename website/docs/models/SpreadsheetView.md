@@ -210,10 +210,3 @@ setImportMode: () => void
 // type signature
 setDisplayMode: () => void
 ```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```

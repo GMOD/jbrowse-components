@@ -15,6 +15,6 @@ extends LinearWiggleDisplay, used specifically for GCContentTrack
 ### LinearGCContentTrackDisplay - Derives from
 
 ```js
-baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
-  .configSchema
+baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
+        .configSchema
 ```

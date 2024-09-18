@@ -122,6 +122,13 @@ string[]
 
 ### Assembly - Methods
 
+#### method: getConf
+
+```js
+// type signature
+getConf: (arg: string) => any
+```
+
 #### method: getCanonicalRefName
 
 ```js
@@ -174,7 +181,7 @@ getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) =>
 
 ```js
 // type signature
-setLoaded: ({ adapterRegionsWithAssembly, refNameAliases, lowerCaseRefNameAliases, cytobands, }: Loading) => void
+setLoaded: ({ regions, refNameAliases, lowerCaseRefNameAliases, cytobands, }: { regions: Region[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; }) => void
 ```
 
 #### action: setError
@@ -195,7 +202,7 @@ setRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-setRefNameAliases: (aliases: RefNameAliases, lcAliases: RefNameAliases) => void
+setRefNameAliases: (aliases: RefNameAliases, lowerCaseAliases: RefNameAliases) => void
 ```
 
 #### action: setCytobands

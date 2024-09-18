@@ -49,7 +49,7 @@ Feature
 
 ```js
 // type
-React.FC
+React.ComponentType<any>
 ```
 
 #### getter: rendererTypeName
