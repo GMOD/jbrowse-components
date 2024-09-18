@@ -4262,6 +4262,57 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_bedpe",
       "type": "VariantTrack",
     },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox_ins",
+          "volvox",
+        ],
+        "index": {
+          "location": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_ins.pif.gz.tbi",
+          },
+        },
+        "pifGzLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_ins.pif.gz",
+        },
+        "type": "PairwiseIndexedPAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox_ins",
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_ins.pif-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox_ins.pif-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox_ins.pif-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox_ins.pif-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_ins.pif",
+      "trackId": "volvox_ins.pif",
+      "type": "SyntenyTrack",
+    },
   ],
 }
 `;
