@@ -70,7 +70,7 @@ jobs:
           apt install --yes wine wine32 wine64 libwine libwine:i386 fonts-wine
       - name: Install build deps
         run: |
-          apt install --yes python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev openjdk-21-jdk-headless
+          apt install --yes python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       # We are just cloning the esigner repo instead of calling their github
       # action directly https://github.com/SSLcom/esigner-codesign
       - name: Get ssl.com esigner zip file and unzip
