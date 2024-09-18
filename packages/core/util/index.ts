@@ -1426,8 +1426,7 @@ export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
 }
 
 export function stripAlpha(str: string) {
-  const c = colord(str)
-  return c.alpha(1).toHex()
+  return colord(str).alpha(1).toHex()
 }
 
 export function getStrokeProps(str: string) {
