@@ -5,7 +5,6 @@ import {
   FormControl,
   FormLabel,
   FormControlLabel,
-  Grid,
   Paper,
   Radio,
   RadioGroup,
@@ -21,7 +20,7 @@ import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
 // locals
 import { DotplotViewModel } from '../../model'
-import ImportCustomTrack from './ImportCustomTrack'
+import ImportCustomTrack from './ImportSyntenyCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 const useStyles = makeStyles()(theme => ({
@@ -32,6 +31,17 @@ const useStyles = makeStyles()(theme => ({
   assemblySelector: {
     width: '75%',
     margin: '0 auto',
+  },
+  center: {
+    textAlign: 'center',
+  },
+  flex: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  p12: {
+    padding: 12,
   },
 }))
 
@@ -149,65 +159,42 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   return (
     <Container className={classes.importFormContainer}>
       {displayError ? <ErrorMessage error={displayError} /> : null}
-      <Grid
-        container
-        spacing={1}
-        justifyContent="center"
-        alignItems="center"
-        className={classes.assemblySelector}
-      >
-        <Grid item>
-          <Paper style={{ padding: 12 }}>
-            <Typography style={{ textAlign: 'center' }}>
-              Select assemblies for dotplot view
-            </Typography>
-            <Grid
-              container
-              spacing={1}
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Grid item>
-                <AssemblySelector
-                  selected={assembly1}
-                  onChange={val => {
-                    setAssembly1(val)
-                  }}
-                  session={session}
-                />
-              </Grid>
-              <Grid item>
-                <AssemblySelector
-                  selected={assembly2}
-                  onChange={val => {
-                    setAssembly2(val)
-                  }}
-                  session={session}
-                />
-              </Grid>
-              <Grid item>
-                <FormControl>
-                  <Button
-                    onClick={onOpenClick}
-                    variant="contained"
-                    color="primary"
-                  >
-                    Launch
-                  </Button>
-                </FormControl>
-              </Grid>
-            </Grid>
-          </Paper>
-          <TrackSelector
-            setShowTrackId={setShowTrackId}
-            assembly2={assembly2}
-            assembly1={assembly1}
-            setSessionTrackData={setSessionTrackData}
-            sessionTrackData={sessionTrackData}
-            model={model}
-          />
-        </Grid>
-      </Grid>
+      <div className={classes.assemblySelector}>
+        <Paper className={classes.p12}>
+          <Typography className={classes.center}>
+            Select assemblies for dotplot view
+          </Typography>
+          <div className={classes.flex}>
+            <AssemblySelector
+              selected={assembly1}
+              onChange={val => {
+                setAssembly1(val)
+              }}
+              session={session}
+            />
+            <AssemblySelector
+              selected={assembly2}
+              onChange={val => {
+                setAssembly2(val)
+              }}
+              session={session}
+            />
+            <FormControl style={{ marginLeft: 10 }}>
+              <Button onClick={onOpenClick} variant="contained" color="primary">
+                Launch
+              </Button>
+            </FormControl>
+          </div>
+        </Paper>
+        <TrackSelector
+          setShowTrackId={setShowTrackId}
+          assembly2={assembly2}
+          assembly1={assembly1}
+          setSessionTrackData={setSessionTrackData}
+          sessionTrackData={sessionTrackData}
+          model={model}
+        />
+      </div>
     </Container>
   )
 })

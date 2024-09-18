@@ -128,7 +128,7 @@ function RadioButton({
   )
 }
 
-const OpenTrack = observer(function ({
+const ImportSyntenyCustomTrack = observer(function ({
   assembly1,
   assembly2,
   setSessionTrackData,
@@ -188,7 +188,7 @@ const OpenTrack = observer(function ({
   return (
     <Paper className={classes.p12}>
       {error ? <ErrorMessage error={error} /> : null}
-      Add a file to view in the dotplot
+      Add a file to view
       <div>
         <RadioGroup
           value={radioOption}
@@ -313,4 +313,4 @@ const OpenTrack = observer(function ({
   )
 })
 
-export default OpenTrack
+export default ImportSyntenyCustomTrack
