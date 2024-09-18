@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/sv-core",
-  "version": "2.15.1",
+  "version": "2.15.2",
   "description": "JBrowse 2 code shared between sv type code",
   "keywords": [
     "jbrowse",
@@ -41,9 +41,9 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@jbrowse/plugin-linear-genome-view": "^2.15.2",
     "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^2.0.0"
+    "@mui/material": "^6.0.0"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",
