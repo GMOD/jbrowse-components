@@ -313,6 +313,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             }
           }
         } catch (e) {
+          console.error(e)
           if (isAbortException(e)) {
             self.session?.notify('Cancelled job', 'info')
           } else {
