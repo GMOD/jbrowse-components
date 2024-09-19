@@ -215,7 +215,22 @@ async function* indexFiles({
       indexingAttributes: attributesToIndex = idx1,
     } = textSearching || {}
     let myTotalBytes: number | undefined
-    if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
+    if (type === 'Gff3Adapter') {
+      yield* indexGff3({
+        config: track,
+        attributesToIndex,
+        inLocation: getLoc('gffLocation', track),
+        outDir,
+        featureTypesToExclude,
+        onStart: totalBytes => {
+          myTotalBytes = totalBytes
+        },
+        onUpdate: progressBytes => {
+          statusCallback(`${progressBytes}/${myTotalBytes}`)
+        },
+      })
+    }
+    if (type === 'Gff3TabixAdapter') {
       yield* indexGff3({
         config: track,
         attributesToIndex,
@@ -229,7 +244,20 @@ async function* indexFiles({
           statusCallback(`${progressBytes}/${myTotalBytes}`)
         },
       })
-    } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
+    } else if (type === 'VcfAdapter') {
+      yield* indexVcf({
+        config: track,
+        attributesToIndex,
+        inLocation: getLoc('vcfLocation', track),
+        outDir,
+        onStart: totalBytes => {
+          myTotalBytes = totalBytes
+        },
+        onUpdate: progressBytes => {
+          statusCallback(`${progressBytes}/${myTotalBytes}`)
+        },
+      })
+    } else if (type === 'VcfTabixAdapter') {
       yield* indexVcf({
         config: track,
         attributesToIndex,
@@ -252,7 +280,9 @@ function getLoc(attr: string, config: Track) {
     | { uri: string; localPath: string }
     | undefined
   if (!elt) {
-    throw new Error('none')
+    throw new Error(
+      `can't get find ${attr} from ${config.adapter} for text indexing`,
+    )
   }
   return elt.uri || elt.localPath
 }
