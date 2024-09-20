@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { Buffer } from 'buffer'
 
 // local
 import { App } from './loaderUtil'

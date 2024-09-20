@@ -1,3 +1,4 @@
+import type { Buffer } from 'buffer'
 const decoder =
   typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
 

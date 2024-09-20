@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/util'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { parseStringSync } from 'gtf-nostream'
+import type { Buffer } from 'buffer'
 
 // locals
 import { FeatureLoc, featureData } from '../util'

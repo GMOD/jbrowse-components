@@ -61,6 +61,7 @@ export default tseslint.config(
   },
   {
     rules: {
+      'no-restricted-globals': ['error', 'Buffer'],
       'no-empty': 'off',
       'no-console': [
         'warn',
@@ -180,6 +181,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      'no-restricted-globals': ['off'],
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
     },

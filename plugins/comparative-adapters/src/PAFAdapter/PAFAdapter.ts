@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
+import type { Buffer } from 'buffer'
 
 // locals
 import SyntenyFeature from '../SyntenyFeature'

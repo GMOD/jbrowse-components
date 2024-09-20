@@ -1,4 +1,5 @@
 import { parseTsvBuffer, ParseOptions } from './ImportUtils'
+import type { Buffer } from 'buffer'
 
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
