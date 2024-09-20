@@ -1,3 +1,20 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.4
+
+## 2.15.4 (2024-09-20)
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4582](https://github.com/GMOD/jbrowse-components/pull/4582) Fix text
+    indexing on Windows ([@cmdcolin](https://github.com/cmdcolin))
+- `text-indexing`
+  - [#4580](https://github.com/GMOD/jbrowse-components/pull/4580) Fix indexing
+    plaintext gff/vcf on desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.22s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.3
 
 Done in 0.57s.
