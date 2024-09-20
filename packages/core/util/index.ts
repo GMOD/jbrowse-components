@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
 import PluginManager from '../PluginManager'
+import type { Buffer } from 'buffer'
 import {
   addDisposer,
   getParent,

@@ -8,6 +8,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
 import VCF from '@gmod/vcf'
+import type { Buffer } from 'buffer'
 
 // local
 import VcfFeature from '../VcfFeature'

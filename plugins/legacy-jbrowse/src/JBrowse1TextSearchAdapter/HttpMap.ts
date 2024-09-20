@@ -3,6 +3,7 @@
  * Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
  */
 import crc32 from 'crc/crc32'
+import { Buffer } from 'buffer'
 
 export default class HttpMap {
   url: string

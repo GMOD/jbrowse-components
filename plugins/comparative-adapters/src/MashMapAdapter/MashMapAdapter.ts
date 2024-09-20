@@ -2,6 +2,7 @@ import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { isGzip } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 import { parseLineByLine } from '../util'

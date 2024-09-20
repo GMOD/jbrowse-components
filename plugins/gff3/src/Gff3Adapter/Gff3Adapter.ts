@@ -10,6 +10,7 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { parseStringSync } from 'gff-nostream'
 import { isGzip, updateStatus } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 
 import { featureData } from '../featureData'
 
