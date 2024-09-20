@@ -10,6 +10,7 @@ import HicStraw from 'hic-straw'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { Buffer } from 'buffer'
 
 interface ContactRecord {
   bin1: number
