@@ -27,8 +27,8 @@ export default function AutocompleteTextField({
   return (
     <TextField
       onBlur={() => {
-        // this is used to restore a refName or the non-user-typed input
-        // to the box on blurring
+        // this is used to restore a refName or the non-user-typed input to the
+        // box on blurring
         setInputValue(inputBoxVal)
       }}
       {...params}

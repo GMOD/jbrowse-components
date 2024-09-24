@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
 import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
+import {
+  LinearGenomeViewModel,
+  SearchBox,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
@@ -11,12 +14,10 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // locals
 import { LinearComparativeViewModel } from '../model'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(() => ({
-  headerBar: {
-    gridArea: '1/1/auto/span 2',
-    display: 'flex',
-  },
+  headerBar: {},
   spacer: {
     flexGrow: 1,
   },
@@ -90,24 +91,29 @@ const Header = observer(function ({
       {showSearchBoxes ? (
         <div>
           {views.map(view => (
-            <div key={view.id} className={classes.searchBox}>
-              <div className={classes.searchContainer}>
-                <SearchBox model={view} showHelp={false} />
-              </div>
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                className={classes.bp}
-              >
-                {view.assemblyNames.join(',')}{' '}
-                {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
-              </Typography>
-            </div>
+            <ViewSearchBox key={view.id} view={view} />
           ))}
         </div>
       ) : null}
 
       <div className={classes.spacer} />
+    </div>
+  )
+})
+
+const ViewSearchBox = observer(function ({
+  view,
+}: {
+  view: LinearGenomeViewModel
+}) {
+  const { classes } = useStyles()
+  const { assemblyNames, coarseTotalBp } = view
+  return (
+    <div className={classes.searchBox}>
+      <SearchBox model={view} showHelp={false} />
+      <Typography variant="body2" color="textSecondary" className={classes.bp}>
+        {assemblyNames.join(',')} {toLocale(Math.round(coarseTotalBp))} bp
+      </Typography>
     </div>
   )
 })

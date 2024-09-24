@@ -41,10 +41,11 @@ const LinearSyntenyRendering = observer(function ({
 }) {
   const { classes } = useStyles()
   const xOffset = useRef(0)
-  const currScrollFrame = useRef<number>()
   const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
   const delta = useRef(0)
+
+  const scheduled = useRef(false)
   const timeout = useRef<Timer>()
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
@@ -96,14 +97,15 @@ const LinearSyntenyRendering = observer(function ({
           if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
             xOffset.current += event.deltaX / 2
           }
-          if (currScrollFrame.current === undefined) {
-            currScrollFrame.current = requestAnimationFrame(() => {
+          if (!scheduled.current) {
+            scheduled.current = true
+            window.requestAnimationFrame(() => {
               transaction(() => {
                 for (const v of view.views) {
                   v.horizontalScroll(xOffset.current)
                 }
                 xOffset.current = 0
-                currScrollFrame.current = undefined
+                scheduled.current = false
               })
             })
           }
@@ -152,14 +154,15 @@ const LinearSyntenyRendering = observer(function ({
           if (mouseCurrDownX !== undefined) {
             xOffset.current += mouseCurrDownX - event.clientX
             setMouseCurrDownX(event.clientX)
-            if (currScrollFrame.current === undefined) {
-              currScrollFrame.current = requestAnimationFrame(() => {
+            if (!scheduled.current) {
+              scheduled.current = true
+              window.requestAnimationFrame(() => {
                 transaction(() => {
                   for (const v of view.views) {
                     v.horizontalScroll(xOffset.current)
                   }
                   xOffset.current = 0
-                  currScrollFrame.current = undefined
+                  scheduled.current = false
                 })
               })
             }
