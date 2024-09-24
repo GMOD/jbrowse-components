@@ -37,11 +37,7 @@ const Breakends = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
-
-  if (!assembly) {
-    return null
-  }
+  const asm = assemblyManager.get(views[0]!.assemblyNames[0]!)
 
   let yoff = 0
   if (ref.current) {
@@ -49,7 +45,7 @@ const Breakends = observer(function ({
     yoff = rect.top
   }
 
-  return (
+  return asm ? (
     <g
       stroke="green"
       strokeWidth={5}
@@ -71,8 +67,8 @@ const Breakends = observer(function ({
           }
           const f1origref = f1.get('refName')
           const f2origref = f2.get('refName')
-          const f1ref = assembly.getCanonicalRefName(f1origref)
-          const f2ref = assembly.getCanonicalRefName(f2origref)
+          const f1ref = asm.getCanonicalRefName(f1origref)
+          const f2ref = asm.getCanonicalRefName(f2origref)
           if (!f1ref || !f2ref) {
             throw new Error(`unable to find ref for ${f1ref || f2ref}`)
           }
@@ -140,7 +136,7 @@ const Breakends = observer(function ({
         return ret
       })}
     </g>
-  )
+  ) : null
 })
 
 export default Breakends

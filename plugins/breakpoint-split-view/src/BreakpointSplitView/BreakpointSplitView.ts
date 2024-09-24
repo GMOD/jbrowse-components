@@ -1,7 +1,6 @@
-import { getSession, Feature, Region } from '@jbrowse/core/util'
+import { Feature, AbstractSessionModel } from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { parseBreakend } from '@gmod/vcf'
-import { IStateTreeNode } from 'mobx-state-tree'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 export default class BreakpointSplitViewType extends ViewType {
@@ -52,22 +51,23 @@ export default class BreakpointSplitViewType extends ViewType {
     }
   }
 
-  singleLevelSnapshotFromBreakendFeature(
-    feature: Feature,
-    view: { displayedRegions: Region[] } & IStateTreeNode,
-  ) {
-    const session = getSession(view)
+  async singleLevelSnapshotFromBreakendFeature({
+    feature,
+    assemblyName,
+    session,
+  }: {
+    feature: Feature
+    assemblyName: string
+    session: AbstractSessionModel
+  }) {
     const bpPerPx = 10
-    const { assemblyName } = view.displayedRegions[0]!
 
     const { assemblyManager } = session
-    const assembly = assemblyManager.get(assemblyName)
-    if (!assembly) {
+    const assembly = await assemblyManager.waitForAssembly(assemblyName)
+    if (!assembly?.regions) {
       throw new Error(`assembly ${assemblyName} not found`)
     }
-    if (!assembly.regions) {
-      throw new Error(`assembly ${assemblyName} regions not loaded`)
-    }
+
     const {
       refName,
       pos: startPos,
@@ -103,23 +103,22 @@ export default class BreakpointSplitViewType extends ViewType {
       featureData: undefined as unknown,
     }
   }
-
-  snapshotFromBreakendFeature(
-    feature: Feature,
-    view: { displayedRegions: Region[] } & IStateTreeNode,
-  ) {
-    const session = getSession(view)
+  async snapshotFromBreakendFeature({
+    feature,
+    assemblyName,
+    session,
+  }: {
+    feature: Feature
+    assemblyName: string
+    session: AbstractSessionModel
+  }) {
     const bpPerPx = 10
-    const { assemblyName } = view.displayedRegions[0]!
-
     const { assemblyManager } = session
-    const assembly = assemblyManager.get(assemblyName)
-    if (!assembly) {
+    const assembly = await assemblyManager.waitForAssembly(assemblyName)
+    if (!assembly?.regions) {
       throw new Error(`assembly ${assemblyName} not found`)
     }
-    if (!assembly.regions) {
-      throw new Error(`assembly ${assemblyName} regions not loaded`)
-    }
+
     const {
       refName,
       pos: startPos,

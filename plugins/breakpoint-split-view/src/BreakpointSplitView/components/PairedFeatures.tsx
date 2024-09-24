@@ -37,11 +37,9 @@ const PairedFeatures = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
-
-  if (!assembly) {
-    return null
-  }
+  const assembly = views[0]
+    ? assemblyManager.get(views[0].assemblyNames[0]!)
+    : undefined
 
   let yoff = 0
   if (ref.current) {
@@ -49,7 +47,7 @@ const PairedFeatures = observer(function ({
     yoff = rect.top
   }
 
-  return (
+  return assembly ? (
     <g
       stroke="green"
       strokeWidth={5}
@@ -121,7 +119,7 @@ const PairedFeatures = observer(function ({
         return ret
       })}
     </g>
-  )
+  ) : null
 })
 
 export default PairedFeatures
