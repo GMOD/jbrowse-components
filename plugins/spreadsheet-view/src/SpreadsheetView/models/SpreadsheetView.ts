@@ -46,7 +46,7 @@ function stateModelFactory() {
         /**
          * #property
          */
-        spreadsheet: types.optional(SpreadsheetModelType, {}),
+        spreadsheet: types.maybe(SpreadsheetModelType),
       }),
     )
     .volatile(() => ({
@@ -57,26 +57,26 @@ function stateModelFactory() {
        * #getter
        */
       get assemblyName() {
-        return self.spreadsheet.assemblyName
+        return self.spreadsheet?.assemblyName
       },
       /**
        * #getter
        */
       get initialized() {
-        return self.spreadsheet.initialized
+        return self.spreadsheet?.initialized
       },
       /**
        * #getter
        */
       get assembly() {
-        const name = self.spreadsheet.assemblyName
+        const name = self.spreadsheet?.assemblyName
         return name ? getSession(self).assemblyManager.get(name) : undefined
       },
       /**
        * #getter
        */
       get features() {
-        return self.spreadsheet.features
+        return self.spreadsheet?.features
       },
     }))
     .actions(self => ({
@@ -115,23 +115,18 @@ function stateModelFactory() {
        * #action
        * load a new spreadsheet and set our mode to display it
        */
-      displaySpreadsheet(spreadsheet?: SpreadsheetData, assemblyName?: string) {
-        self.spreadsheet.setData(spreadsheet, assemblyName)
+      displaySpreadsheet(spreadsheet: SpreadsheetData, assemblyName: string) {
+        self.spreadsheet = { assemblyName }
+        // @ts-expect-error
+        self.spreadsheet.setData(spreadsheet)
       },
 
       /**
        * #action
        */
       clearData() {
-        self.spreadsheet.setData()
+        self.spreadsheet = undefined
         self.importWizard.setSpreadsheetFilehandle()
-      },
-
-      /**
-       * #action
-       */
-      closeView() {
-        getParent<any>(self, 2).removeView(self)
       },
     }))
     .views(self => ({

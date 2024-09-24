@@ -23,11 +23,11 @@ async function defaultOnChordClick(
   if (!assemblyName) {
     throw new Error('error trying to understand what assembly to use')
   }
-  const viewSnapshot = await viewType.snapshotFromBreakendFeature(
+  const viewSnapshot = await viewType.snapshotFromBreakendFeature({
     feature,
     assemblyName,
     session,
-  )
+  })
 
   // try to center the offsetPx
   viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100

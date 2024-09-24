@@ -1,5 +1,5 @@
 import React from 'react'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel, Feature, getEnv } from '@jbrowse/core/util'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
@@ -9,17 +9,19 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { locationLinkClick } from '../../components/util'
 
 export default function FeatureMenu({
-  value,
-  model,
-  arg,
+  assemblyName,
+  session,
+  row,
+  spreadsheetId,
 }: {
-  value: string
-  model: {
-    assemblyName?: string
+  spreadsheetId: string
+  assemblyName: string
+  session: AbstractSessionModel
+  row: {
+    feature: Feature
+    value: string
   }
-  arg: unknown
 }) {
-  console.log({ arg, value })
   return (
     <CascadingMenuButton
       menuItems={[
@@ -27,10 +29,53 @@ export default function FeatureMenu({
           label: 'Open in linear genome view',
           onClick: async () => {
             try {
-              await locationLinkClick(model, value)
+              await locationLinkClick({
+                spreadsheetViewId,
+                locString: row.value,
+                assemblyName,
+                session,
+              })
             } catch (e) {
               console.error(e)
-              getSession(model).notify(`${e}`, 'error')
+              session.notify(`${e}`, 'error')
+            }
+          },
+        },
+        {
+          label: 'Open in single level split view',
+          onClick: async () => {
+            try {
+              const { pluginManager } = getEnv(session)
+              const viewType = pluginManager.getViewType('BreakpointSplitView')!
+              // @ts-expect-error
+              const snap = viewType.singleLevelSnapshotFromBreakendFeature({
+                feature: row.feature,
+                session,
+                assemblyName,
+              })
+              session.addView('BreakpointSplitView', snap)
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
+            }
+          },
+        },
+        {
+          label: 'Open in breakpoint split view',
+          onClick: async () => {
+            try {
+              const { pluginManager } = getEnv(session)
+              const viewType = pluginManager.getViewType('BreakpointSplitView')!
+              // @ts-expect-error
+              const snap = viewType.snapshotFromBreakendFeature({
+                feature: row.feature,
+                session,
+                assemblyName,
+              })
+              session.addView('BreakpointSplitView', snap)
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
             }
           },
         },

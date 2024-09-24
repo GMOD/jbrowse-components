@@ -1,16 +1,20 @@
 import React from 'react'
 import { Link } from '@mui/material'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
 
 // locals
 import { locationLinkClick } from '../../components/util'
 
 export default function LocString({
   value,
-  model,
+  assemblyName,
+  session,
+  spreadsheetViewId,
 }: {
   value: string
-  model: { assemblyName?: string }
+  assemblyName: string
+  session: AbstractSessionModel
+  spreadsheetViewId: string
 }) {
   return (
     <Link
@@ -18,10 +22,15 @@ export default function LocString({
       onClick={async event => {
         try {
           event.preventDefault()
-          await locationLinkClick(model, value)
+          await locationLinkClick({
+            spreadsheetViewId,
+            session,
+            locString: value,
+            assemblyName,
+          })
         } catch (e) {
           console.error(e)
-          getSession(model).notify(`${e}`, 'error')
+          session.notifyError(`${e}`, e)
         }
       }}
     >
