@@ -69,7 +69,6 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
     function doHydrate() {
       if (domNode && html) {
         if (domNode.innerHTML) {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
           unmountComponentAtNode(domNode)
         }
 
@@ -81,7 +80,6 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
         // hydration for when we have some free time. helps keep the
         // framerate up.
         rIC(() => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
           hydrate(<RenderingComponent {...props} />, domNode)
         })
       }
@@ -89,7 +87,6 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
     doHydrate()
     return () => {
       if (domNode) {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         unmountComponentAtNode(domNode)
       }
     }
