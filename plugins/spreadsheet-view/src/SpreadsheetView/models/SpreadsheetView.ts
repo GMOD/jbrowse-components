@@ -116,6 +116,7 @@ function stateModelFactory() {
        * load a new spreadsheet and set our mode to display it
        */
       displaySpreadsheet(spreadsheet: SpreadsheetData, assemblyName: string) {
+        // @ts-expect-error
         self.spreadsheet = { assemblyName }
         // @ts-expect-error
         self.spreadsheet.setData(spreadsheet)

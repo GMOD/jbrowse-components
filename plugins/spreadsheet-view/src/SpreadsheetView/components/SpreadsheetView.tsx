@@ -32,7 +32,7 @@ const SpreadsheetView = observer(function ({
   const [initialHeight, setInitialHeight] = useState<number>(0)
   const { classes } = useStyles()
   const { spreadsheet, hideVerticalResizeHandle, height } = model
-  return (
+  return spreadsheet ? (
     <>
       <div style={{ height }} className={classes.contentArea}>
         <SpreadsheetDataGrid model={spreadsheet} />
@@ -47,6 +47,8 @@ const SpreadsheetView = observer(function ({
         />
       )}
     </>
+  ) : (
+    <div>Unknown</div>
   )
 })
 

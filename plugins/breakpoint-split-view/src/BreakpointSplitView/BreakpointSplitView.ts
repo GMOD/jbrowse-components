@@ -115,7 +115,7 @@ export default class BreakpointSplitViewType extends ViewType {
     const bpPerPx = 10
     const { assemblyManager } = session
     const assembly = await assemblyManager.waitForAssembly(assemblyName)
-    if (!assembly) {
+    if (!assembly?.regions) {
       throw new Error(`assembly ${assemblyName} not found`)
     }
 

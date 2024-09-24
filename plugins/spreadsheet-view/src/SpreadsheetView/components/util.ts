@@ -1,19 +1,26 @@
-import { FileLocation, getSession } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  FileLocation,
+  getSession,
+} from '@jbrowse/core/util'
 import { getParent } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 type MaybeLGV = LinearGenomeViewModel | undefined
 
-export function locationLinkClick(
-  spreadsheet: { assemblyName?: string },
-  locString: string,
-) {
-  const session = getSession(spreadsheet)
-  const { assemblyName } = spreadsheet
-  const { id } = getParent<{ id: string }>(spreadsheet)
-
-  const newViewId = `${id}_${assemblyName}`
+export function locationLinkClick({
+  assemblyName,
+  session,
+  locString,
+  spreadsheetViewId,
+}: {
+  assemblyName: string
+  session: AbstractSessionModel
+  locString: string
+  spreadsheetViewId: string
+}) {
+  const newViewId = `${spreadsheetViewId}_${assemblyName}`
   let view = session.views.find(v => v.id === newViewId) as MaybeLGV
   if (!view) {
     view = session.addView('LinearGenomeView', { id: newViewId }) as LGV

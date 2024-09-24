@@ -226,7 +226,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              self.spreadsheetView.spreadsheet.setData(undefined)
+              self.spreadsheetView.clearData()
             },
             icon: FolderOpenIcon,
           },

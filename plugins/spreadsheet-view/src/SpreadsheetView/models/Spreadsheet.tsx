@@ -111,8 +111,7 @@ function stateModelFactory() {
                 session={session}
                 spreadsheetViewId={getParent<{ id: string }>(self).id}
                 assemblyName={self.assemblyName}
-                // @ts-expect-error
-                row={row}
+                arg={row}
               />
             ),
           },
