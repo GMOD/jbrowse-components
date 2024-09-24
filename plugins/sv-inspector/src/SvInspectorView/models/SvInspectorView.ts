@@ -1,24 +1,16 @@
 import clone from 'clone'
-import { autorun } from 'mobx'
-import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
+import { autorun, trace } from 'mobx'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSession, notEmpty, Region } from '@jbrowse/core/util'
+import { getSession, notEmpty } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 
 // icons
-// import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-
-// locals
-// import {
-//   canOpenBreakpointSplitViewFromTableRow,
-//   openBreakpointSplitViewFromTableRow,
-//   getFeatureForRow,
-// } from './breakpointSplitViewFromTableRow'
 
 /**
  * #stateModel SvInspectorView
@@ -139,10 +131,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get featuresAdapterConfigSnapshot() {
-        return {
-          type: 'FromConfigAdapter',
-          features: this.features?.map(f => f.toJSON()) || [],
-        }
+        return this.features
+          ? {
+              type: 'FromConfigAdapter',
+              features: this.features.map(f => f.toJSON()) || [],
+            }
+          : undefined
       },
       /**
        * #getter
@@ -176,24 +170,26 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get featuresCircularTrackConfiguration() {
-        return {
-          type: 'VariantTrack',
-          trackId: `sv-inspector-variant-track-${self.id}`,
-          name: 'features from tabular data',
-          adapter: this.featuresAdapterConfigSnapshot,
-          assemblyNames: [this.assemblyName],
-          displays: [
-            {
-              type: 'ChordVariantDisplay',
-              displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
-              onChordClick:
-                'jexl:defaultOnChordClick(feature, track, pluginManager)',
-              renderer: {
-                type: 'StructuralVariantChordRenderer',
-              },
-            },
-          ],
-        }
+        return this.featuresAdapterConfigSnapshot
+          ? {
+              type: 'VariantTrack',
+              trackId: `sv-inspector-variant-track-${self.id}`,
+              name: 'features from tabular data',
+              adapter: this.featuresAdapterConfigSnapshot,
+              assemblyNames: [this.assemblyName],
+              displays: [
+                {
+                  type: 'ChordVariantDisplay',
+                  displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
+                  onChordClick:
+                    'jexl:defaultOnChordClick(feature, track, pluginManager)',
+                  renderer: {
+                    type: 'StructuralVariantChordRenderer',
+                  },
+                },
+              ],
+            }
+          : undefined
       },
     }))
     .actions(self => ({
@@ -279,23 +275,20 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               assembly,
             } = self
             try {
-              const { tracks } = circularView
               if (circularView.volatileWidth === undefined) {
                 return
               }
               if (assembly?.regions && featureRefSet) {
                 if (onlyDisplayRelevantRegionsInCircularView) {
-                  if (tracks.length === 1) {
-                    circularView.setDisplayedRegions(
-                      clone(
-                        assembly.regions.filter(r =>
-                          featureRefSet.has(r.refName),
-                        ),
+                  circularView.setDisplayedRegions(
+                    clone(
+                      assembly.regions.filter(r =>
+                        featureRefSet.has(r.refName),
                       ),
-                    )
-                  }
+                    ),
+                  )
                 } else {
-                  circularView.setDisplayedRegions(assembly?.regions)
+                  circularView.setDisplayedRegions(assembly.regions)
                 }
               }
             } catch (e) {
@@ -308,14 +301,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { assemblyName, featuresCircularTrackConfiguration } = self
+            const { featuresCircularTrackConfiguration } = self
             const { circularView } = self
-            // hide any visible tracks
-            circularView.tracks.forEach(t =>
-              circularView.hideTrack(t.configuration.trackId),
-            )
-            // put our track in as the only track
-            if (assemblyName) {
+            if (featuresCircularTrackConfiguration) {
+              circularView.clearTracks()
               circularView.addTrackConf(featuresCircularTrackConfiguration)
             }
           }),

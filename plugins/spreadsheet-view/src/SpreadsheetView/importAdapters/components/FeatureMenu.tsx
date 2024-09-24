@@ -1,5 +1,5 @@
-import React from 'react'
-import { AbstractSessionModel, Feature, getEnv } from '@jbrowse/core/util'
+import React, { lazy } from 'react'
+import { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
@@ -7,6 +7,15 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
 // locals
 import { locationLinkClick } from '../../components/util'
+import { getEnv } from 'mobx-state-tree'
+
+// lazies
+const BreakendMultiLevelOptionDialog = lazy(
+  () => import('./BreakendMultiLevelOptionDialog'),
+)
+const BreakendSingleLevelOptionDialog = lazy(
+  () => import('./BreakendSingleLevelOptionDialog'),
+)
 
 export default function FeatureMenu({
   assemblyName,
@@ -48,41 +57,35 @@ export default function FeatureMenu({
         {
           label: 'Open in single-level split view',
           onClick: async () => {
-            try {
-              const { pluginManager } = getEnv(session)
-              const viewType = pluginManager.getViewType('BreakpointSplitView')!
-              const snap =
-                // @ts-expect-error
-                await viewType.singleLevelSnapshotFromBreakendFeature({
-                  feature: row.feature,
-                  session,
-                  assemblyName,
-                })
-              console.log({ snap })
-              session.addView('BreakpointSplitView', snap)
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
+            const { pluginManager } = getEnv(session)
+            const viewType = pluginManager.getViewType('BreakpointSplitView')!
+            session.queueDialog(handleClose => [
+              BreakendSingleLevelOptionDialog,
+              {
+                handleClose,
+                session,
+                feature: row.feature,
+                viewType,
+                assemblyName,
+              },
+            ])
           },
         },
         {
           label: 'Open in multi-level split view',
           onClick: async () => {
-            try {
-              const { pluginManager } = getEnv(session)
-              const viewType = pluginManager.getViewType('BreakpointSplitView')!
-              // @ts-expect-error
-              const snap = await viewType.snapshotFromBreakendFeature({
-                feature: row.feature,
+            const { pluginManager } = getEnv(session)
+            const viewType = pluginManager.getViewType('BreakpointSplitView')!
+            session.queueDialog(handleClose => [
+              BreakendMultiLevelOptionDialog,
+              {
+                handleClose,
                 session,
+                feature: row.feature,
+                viewType,
                 assemblyName,
-              })
-              session.addView('BreakpointSplitView', snap)
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
+              },
+            ])
           },
         },
       ]}

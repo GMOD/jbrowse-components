@@ -1,4 +1,5 @@
 import { parseStrand } from './util'
+import type { Buffer } from 'buffer'
 
 export function parseBedPEBuffer(buffer: Buffer) {
   const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)

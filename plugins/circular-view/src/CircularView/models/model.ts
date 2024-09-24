@@ -363,6 +363,9 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
 
     .actions(self => ({
+      clearTracks() {
+        self.tracks = cast([])
+      },
       /**
        * #action
        */

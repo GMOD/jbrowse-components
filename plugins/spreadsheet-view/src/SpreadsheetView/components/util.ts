@@ -1,9 +1,4 @@
-import {
-  AbstractSessionModel,
-  FileLocation,
-  getSession,
-} from '@jbrowse/core/util'
-import { getParent } from 'mobx-state-tree'
+import { AbstractSessionModel, FileLocation } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

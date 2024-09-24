@@ -156,7 +156,7 @@ function stateModelFactory() {
               }
               const buffer = await f.readFile()
               const buf2 = self.requiresUnzip ? await unzip(buffer) : buffer
-              const spreadsheet = await typeParser(buf2)
+              const spreadsheet = typeParser(buf2)
               getParent<any>(self).displaySpreadsheet(
                 spreadsheet,
                 self.selectedAssemblyName,

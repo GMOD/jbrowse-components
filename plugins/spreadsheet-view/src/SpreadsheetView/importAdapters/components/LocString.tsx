@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from '@mui/material'
-import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // locals
 import { locationLinkClick } from '../../components/util'

@@ -317,19 +317,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           if (isAbortException(e)) {
             self.session?.notify('Cancelled job', 'info')
           } else {
-            self.session?.notify(
-              `An error occurred while indexing: ${e}`,
-              'error',
-              {
-                name: 'Retry',
-                onClick: () => {
-                  this.queueJob(entry)
-                },
-              },
-            )
+            self.session?.notifyError(`${e}`, e)
           }
-          // remove job from queue but since it was not successful
-          // do not add to finished list
+          // remove job from queue but since it was not successful do not add
+          // to finished list
           this.dequeueJob()
         }
         // clear
