@@ -54,21 +54,21 @@ connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName
 
 ```js
 // type signature
-addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+addTrackConf: (trackConf: TrackConf) => any
 ```
 
 #### action: addTrackConfs
 
 ```js
 // type signature
-addTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => any[]
+addTrackConfs: (trackConfs: TrackConf[]) => void
 ```
 
 #### action: setTrackConfs
 
 ```js
 // type signature
-setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => IMSTArray<...> & IStateTreeNode<...>
+setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: clear

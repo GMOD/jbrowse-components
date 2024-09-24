@@ -2906,19 +2906,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_v36_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "VariantTrack",

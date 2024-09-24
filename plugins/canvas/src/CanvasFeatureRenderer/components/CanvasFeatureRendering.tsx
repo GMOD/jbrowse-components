@@ -5,13 +5,16 @@ import { getContainingView } from '@jbrowse/core/util'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { isStateTreeNode } from 'mobx-state-tree'
-import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  BaseLinearDisplayModel,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import { postDraw } from '../CanvasFeatureRenderer'
 
 // locals
 import BoxGlyph from '../FeatureGlyphs/Box'
 import GeneGlyph from '../FeatureGlyphs/Gene'
-import { PostDrawFeatureRect } from '../FeatureGlyph'
+import { LaidOutFeatureRect } from '../FeatureGlyph'
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
@@ -19,18 +22,18 @@ const canvasPadding = 100
 
 function CanvasRendering(props: {
   blockKey: string
-  displayModel: BaseLinearDisplayModel
+  displayModel?: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]
   bpPerPx: number
-  layoutRecords: PostDrawFeatureRect[]
+  layoutRecords: LaidOutFeatureRect[]
   onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
 }) {
   const {
     onMouseMove,
     blockKey,
-    displayModel = {},
+    displayModel,
     width,
     height,
     regions,
@@ -39,18 +42,17 @@ function CanvasRendering(props: {
   } = props
 
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
-    displayModel
+    displayModel || {}
   const view = isStateTreeNode(displayModel)
-    ? getContainingView(displayModel)
+    ? (getContainingView(displayModel) as LinearGenomeViewModel)
     : undefined
 
-  // @ts-ignore
-  const { dynamicBlocks, staticBlocks, offsetPx: viewOffsetPx } = view || {}
-  const { offsetPx: blockOffsetPx } = staticBlocks?.contentBlocks[0] || {}
+  const { dynamicBlocks, staticBlocks, offsetPx: viewOffsetPx = 0 } = view || {}
+  const { offsetPx: blockOffsetPx = 0 } = staticBlocks?.contentBlocks[0] || {}
   const { start: viewStart } = dynamicBlocks?.contentBlocks[0] || {}
   const offsetPx = viewOffsetPx - blockOffsetPx
 
-  const [region] = regions
+  const region = regions[0]!
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const labelsCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -64,6 +66,10 @@ function CanvasRendering(props: {
     }
     const ctx = canvas.getContext('2d')
     if (!ctx) {
+      return
+    }
+
+    if (viewStart === undefined) {
       return
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -89,7 +95,7 @@ function CanvasRendering(props: {
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     const selectedRect = selectedFeatureId
-      ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
+      ? displayModel?.getFeatureByID?.(blockKey, selectedFeatureId)
       : undefined
     if (selectedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = selectedRect
@@ -111,7 +117,7 @@ function CanvasRendering(props: {
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
     const highlightedRect = highlightedFeature
-      ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
+      ? displayModel?.getFeatureByID?.(blockKey, highlightedFeature)
       : undefined
     if (highlightedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
@@ -187,7 +193,7 @@ function CanvasRendering(props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const featIdUnderMouse = displayModel.getFeatureOverlapping(
+    const featIdUnderMouse = displayModel?.getFeatureOverlapping(
       blockKey,
       clientBp,
       offsetY,

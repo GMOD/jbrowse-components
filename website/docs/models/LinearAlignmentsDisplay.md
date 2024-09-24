@@ -47,7 +47,7 @@ any
 any
 ```
 
-#### getter: DisplayBlurb
+#### getter: alignmentsdisplaymodel
 
 ```js
 // type
@@ -133,6 +133,13 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 ```js
 // type signature
 setHeight: (n: number) => number
+```
+
+#### action: setFilterBy
+
+```js
+// type signature
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setLowerPanelType

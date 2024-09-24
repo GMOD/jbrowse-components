@@ -2,6 +2,7 @@ import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { GenericFilehandle } from 'generic-filehandle'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { isGzip } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 
 import { PAFRecord } from './PAFAdapter/util'
 

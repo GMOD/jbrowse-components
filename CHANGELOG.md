@@ -1,3 +1,50 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.4
+
+## 2.15.4 (2024-09-20)
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4582](https://github.com/GMOD/jbrowse-components/pull/4582) Fix text
+    indexing on Windows ([@cmdcolin](https://github.com/cmdcolin))
+- `text-indexing`
+  - [#4580](https://github.com/GMOD/jbrowse-components/pull/4580) Fix indexing
+    plaintext gff/vcf on desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.22s.
+
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.3
+
+Done in 0.57s.
+
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.2
+
+## 2.15.2 (2024-09-18)
+
+#### :rocket: Enhancement
+
+- [#4573](https://github.com/GMOD/jbrowse-components/pull/4573) Add pif.gz
+  option to synteny import form ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4571](https://github.com/GMOD/jbrowse-components/pull/4571) Fix code signing
+  on the windows for jbrowse desktop ([@cmdcolin](https://github.com/cmdcolin))
+- [#4566](https://github.com/GMOD/jbrowse-components/pull/4566) Fix handling of
+  "." in VCF ALT field ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#4569](https://github.com/GMOD/jbrowse-components/pull/4569) Refactor GFF3
+  parser to avoid returning internal \_linehash variable
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.30s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.1
 
 ## 2.15.1 (2024-09-12)

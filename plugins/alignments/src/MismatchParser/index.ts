@@ -1,4 +1,5 @@
 import { revcom, Feature } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 import { getTagAlt } from '../util'
 
 export interface Mismatch {

@@ -2,6 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron, UriLocation } from '@jbrowse/core/util'
 import { Instance, types } from 'mobx-state-tree'
+import { Buffer } from 'buffer'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'

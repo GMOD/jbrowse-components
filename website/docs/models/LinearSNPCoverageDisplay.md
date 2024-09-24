@@ -127,7 +127,7 @@ boolean
 
 ```js
 // type
-(props: { model: { featureUnderMouse: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
 ```
 
 #### getter: adapterConfig

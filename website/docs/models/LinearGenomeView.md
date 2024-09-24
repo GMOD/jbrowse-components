@@ -191,10 +191,10 @@ highlights on the LGV from the URL parameters
 
 ```js
 // type signature
-IOptionalIType<IArrayType<IType<Required<ParsedLocString>, Required<ParsedLocString>, Required<ParsedLocString>>>, [...]>
+IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
 // code
 highlight: types.optional(
-          types.array(types.frozen<Required<ParsedLocString>>()),
+          types.array(types.frozen<HighlightType>()),
           [],
         )
 ```
@@ -348,7 +348,7 @@ number
 
 ```js
 // type
-any
+unknown
 ```
 
 #### getter: maxOffset
@@ -656,21 +656,21 @@ setShowGridlines: (b: boolean) => void
 
 ```js
 // type signature
-addToHighlights: (highlight: Required<ParsedLocString>) => void
+addToHighlights: (highlight: HighlightType) => void
 ```
 
 #### action: setHighlight
 
 ```js
 // type signature
-setHighlight: (highlight: Required<ParsedLocString>[]) => void
+setHighlight: (highlight?: HighlightType[]) => void
 ```
 
 #### action: removeHighlight
 
 ```js
 // type signature
-removeHighlight: (highlight: Required<ParsedLocString>) => void
+removeHighlight: (highlight: HighlightType) => void
 ```
 
 #### action: scrollTo
@@ -766,13 +766,6 @@ moveTrackToBottom: (id: string) => void
 ```js
 // type signature
 moveTrack: (movingId: string, targetId: string) => void
-```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
 ```
 
 #### action: toggleTrack
@@ -922,7 +915,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: ...
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undef...
 ```
 
 #### action: navToLocations

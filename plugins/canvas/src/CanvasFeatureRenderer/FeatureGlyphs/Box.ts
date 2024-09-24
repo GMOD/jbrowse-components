@@ -1,5 +1,4 @@
 import { measureText, bpSpanPx, Feature } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
 import { readConfObject } from '@jbrowse/core/configuration'
 
 // locals
@@ -7,14 +6,13 @@ import FeatureGlyph, {
   ViewInfo,
   FeatureRect,
   PreLaidOutFeatureRect,
-  PostDrawFeatureRect,
   LaidOutFeatureRect,
 } from '../FeatureGlyph'
 
 export default class Box extends FeatureGlyph {
   makeFeatureLabel(feature: Feature, fRect: FeatureRect, param?: string) {
     const text = param || this.getFeatureLabel(feature)
-    return this.makeBottomOrTopLabel(text, fRect)
+    return this.makeBottomOrTopLabel(text)
   }
 
   getFeatureLabel(feature: Feature) {
@@ -31,31 +29,26 @@ export default class Box extends FeatureGlyph {
     param?: string,
   ) {
     const text = param || this.getFeatureDescription(feature)
-    return this.makeBottomOrTopLabel(text, fRect)
+    return this.makeBottomOrTopLabel(text)
   }
 
-  makeSideLabel(text: string, fRect: FeatureRect) {
-    if (text.length > 100) {
-      text = `${text.slice(0, 100)}…`
-    }
-
+  makeSideLabel(text = '') {
+    const t2 = text.length > 100 ? `${text.slice(0, 100)}…` : text
     return {
-      text: text,
+      text: t2,
       baseline: 'middle',
-      w: measureText(text),
+      w: measureText(t2),
       h: 10, // FIXME
       offsetX: 0,
       offsetY: 0,
     }
   }
 
-  makeBottomOrTopLabel(text, fRect: FeatureRect) {
-    if (text.length > 100) {
-      text = `${text.slice(0, 100)}…`
-    }
+  makeBottomOrTopLabel(text = '') {
+    const t2 = text.length > 100 ? `${text.slice(0, 100)}…` : text
     return {
-      text: text,
-      w: measureText(text),
+      text: t2,
+      w: measureText(t2),
       h: 10, // FIXME
       offsetY: 0,
     }
@@ -84,7 +77,7 @@ export default class Box extends FeatureGlyph {
   }
 
   // given an under-construction feature layout rectangle, expand it to
-  // accomodate a label and/or a description
+  // accommodate a label and/or a description
   expandRectangleWithLabels<T extends PreLaidOutFeatureRect>(
     view: ViewInfo,
     f: Feature,
@@ -162,17 +155,19 @@ export default class Box extends FeatureGlyph {
   postDraw(
     ctx: CanvasRenderingContext2D,
     props: {
-      record: PostDrawFeatureRect
-      regions: Region[]
+      record: LaidOutFeatureRect
+      regions: {
+        start: number
+      }[]
       offsetPx: number
     },
   ) {
     const { regions, record, offsetPx } = props
-    const { start, end, l, t, label, description } = record
-    const [region] = regions
+    const { f, l, t, label, description } = record
+    const region = regions[0]!
 
     function renderText({ text, offsetY }: { text: string; offsetY: number }) {
-      if (start < region.start && region.start < end) {
+      if (f.start < region.start && region.start < f.end) {
         ctx.fillText(text, offsetPx, t + offsetY)
       } else {
         ctx.fillText(text, l, t + offsetY)

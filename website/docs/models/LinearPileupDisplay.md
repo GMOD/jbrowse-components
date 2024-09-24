@@ -114,7 +114,7 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }, { ...; }, { ...; }]
 ```
 
 ### LinearPileupDisplay - Actions

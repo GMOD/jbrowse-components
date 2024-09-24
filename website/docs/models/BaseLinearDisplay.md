@@ -45,6 +45,16 @@ configuration: ConfigurationReference(configSchema)
 
 ### BaseLinearDisplay - Getters
 
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead of the blocks, make this
+return a react component
+
+```js
+// type
+any
+```
+
 #### getter: blockType
 
 ```js
@@ -73,7 +83,7 @@ number
 
 ```js
 // type
-React.FC<any>
+React.ComponentType<any>
 ```
 
 #### getter: selectedFeatureId
@@ -84,16 +94,6 @@ feature
 ```js
 // type
 string
-```
-
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead of the blocks, make this
-return a react component
-
-```js
-// type
-any
 ```
 
 #### getter: features

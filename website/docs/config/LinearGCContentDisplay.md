@@ -15,6 +15,6 @@ extends LinearWiggleDisplay
 ### LinearGCContentDisplay - Derives from
 
 ```js
-baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
-  .configSchema
+baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
+        .configSchema
 ```

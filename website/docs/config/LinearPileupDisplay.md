@@ -26,8 +26,9 @@ defaultRendering: {
 
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  PileupRenderer: pluginManager.getRendererType('PileupRenderer').configSchema,
-})
+        PileupRenderer:
+          pluginManager.getRendererType('PileupRenderer')!.configSchema,
+      })
 ```
 
 #### slot: maxFeatureScreenDensity

@@ -27,16 +27,17 @@ export interface PreLaidOutFeatureRect {
 }
 
 export interface LaidOutFeatureRect extends FeatureRect {
-  label?: { text: string; offsetY: number }
-  description?: { text: string; offsetY: number }
+  label?: {
+    text: string
+    offsetY: number
+  }
+  description?: {
+    text: string
+    offsetY: number
+  }
   t: number
   h: number
   rect: any
-}
-
-export interface PostDrawFeatureRect extends LaidOutFeatureRect {
-  start: number
-  end: number
 }
 
 export interface Rect {
@@ -60,7 +61,13 @@ export default abstract class FeatureGlyph {
     const endbp = (fRect.l + fRect.w) / scale + leftBase
     const top = layout.addRect(feature.id(), startbp, endbp, fRect.h)
 
-    return top === null ? null : { ...fRect, f: feature, t: top }
+    return top === null
+      ? null
+      : {
+          ...fRect,
+          f: feature,
+          t: top,
+        }
   }
 
   abstract renderFeature(

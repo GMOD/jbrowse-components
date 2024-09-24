@@ -1,21 +1,41 @@
 import { GFF3FeatureLineWithRefs } from 'gff-nostream'
 
-export function featureData(data: GFF3FeatureLineWithRefs) {
-  const f: Record<string, unknown> = { ...data }
-  ;(f.start as number) -= 1 // convert to interbase
-  if (data.strand === '+') {
-    f.strand = 1
-  } else if (data.strand === '-') {
-    f.strand = -1
-  } else if (data.strand === '.') {
-    f.strand = 0
-  } else {
-    f.strand = undefined
-  }
-  f.phase = data.phase === null ? undefined : Number(data.phase)
-  f.refName = data.seq_id
-  if (data.score === null) {
-    f.score = undefined
+interface GFF3Feature {
+  start: number
+  end: number
+  strand?: number
+  type: string | null
+  source: string | null
+  refName: string
+  derived_features: unknown[] | null
+  phase?: number
+  score?: number
+  subfeatures: GFF3Feature[] | undefined
+  [key: string]: unknown
+}
+
+export function featureData(data: GFF3FeatureLineWithRefs): GFF3Feature {
+  const {
+    end,
+    start,
+    child_features,
+    derived_features,
+    attributes,
+    type,
+    source,
+    phase,
+    seq_id,
+    score,
+    strand,
+  } = data
+
+  let strand2: number | undefined
+  if (strand === '+') {
+    strand2 = 1
+  } else if (strand === '-') {
+    strand2 = -1
+  } else if (strand === '.') {
+    strand2 = 0
   }
 
   const defaultFields = new Set([
@@ -28,7 +48,8 @@ export function featureData(data: GFF3FeatureLineWithRefs) {
     'phase',
     'strand',
   ])
-  const dataAttributes = data.attributes || {}
+  const dataAttributes = attributes || {}
+  const resultAttributes = {} as Record<string, unknown>
   for (const a of Object.keys(dataAttributes)) {
     let b = a.toLowerCase()
     if (defaultFields.has(b)) {
@@ -36,29 +57,28 @@ export function featureData(data: GFF3FeatureLineWithRefs) {
       // reproduces behavior of NCList
       b += '2'
     }
-    if (dataAttributes[a]) {
+    if (dataAttributes[a] && a !== '_lineHash') {
       let attr: string | string[] | undefined = dataAttributes[a]
       if (Array.isArray(attr) && attr.length === 1) {
         ;[attr] = attr
       }
-      f[b] = attr
+      resultAttributes[b] = attr
     }
   }
-  f.refName = f.seq_id
 
-  // the SimpleFeature constructor takes care of recursively inflating
-  // subfeatures
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (data.child_features && data.child_features.length > 0) {
-    f.subfeatures = data.child_features.flatMap(childLocs =>
+  return {
+    ...resultAttributes,
+    start: start! - 1,
+    end: end!,
+    strand: strand2,
+    type,
+    source,
+    refName: seq_id!,
+    derived_features,
+    phase: phase === null ? undefined : Number(phase),
+    score: score === null ? undefined : score,
+    subfeatures: child_features.flatMap(childLocs =>
       childLocs.map(childLoc => featureData(childLoc)),
-    )
+    ),
   }
-
-  f.child_features = undefined
-  f.data = undefined
-  // delete f.derived_features
-  f.attributes = undefined
-  f.seq_id = undefined
-  return f
 }

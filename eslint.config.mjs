@@ -61,6 +61,7 @@ export default tseslint.config(
   },
   {
     rules: {
+      'no-restricted-globals': ['error', 'Buffer'],
       'no-empty': 'off',
       'no-console': [
         'warn',
@@ -169,6 +170,7 @@ export default tseslint.config(
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
+      'products/jbrowse-desktop/sign.js',
       'products/jbrowse-desktop/linux-sandbox-fix.js',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
@@ -179,6 +181,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      'no-restricted-globals': ['off'],
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
     },

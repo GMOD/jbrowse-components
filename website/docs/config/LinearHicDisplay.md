@@ -15,7 +15,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 #### slot: renderer
 
 ```js
-renderer: pluginManager.getRendererType('HicRenderer').configSchema
+renderer: pluginManager.getRendererType('HicRenderer')!.configSchema
 ```
 
 ### LinearHicDisplay - Derives from

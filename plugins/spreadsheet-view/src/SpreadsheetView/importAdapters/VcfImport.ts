@@ -7,6 +7,7 @@ import {
   Column,
   ParseOptions,
 } from './ImportUtils'
+import type { Buffer } from 'buffer'
 
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0

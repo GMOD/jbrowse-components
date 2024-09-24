@@ -27,28 +27,29 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     let codeEnd = Number.NEGATIVE_INFINITY
 
     // gather exons, find coding start and end
-    let type
+    let type: string
     const codeIndices = []
     const exons = []
     for (let i = 0; i < subparts.length; i++) {
-      type = subparts[i].get('type')
+      const subpart = subparts[i]!
+      type = subpart.get('type')
       if (/^cds/i.test(type)) {
         // if any CDSs parts are present already,
         // bail and return all subparts as-is
-        if (/:CDS:/i.test(subparts[i].get('name'))) {
+        if (/:CDS:/i.test(subpart.get('name'))) {
           return subparts
         }
 
         codeIndices.push(i)
-        if (codeStart > subparts[i].get('start')) {
-          codeStart = subparts[i].get('start')
+        if (codeStart > subpart.get('start')) {
+          codeStart = subpart.get('start')
         }
-        if (codeEnd < subparts[i].get('end')) {
-          codeEnd = subparts[i].get('end')
+        if (codeEnd < subpart.get('end')) {
+          codeEnd = subpart.get('end')
         }
       } else {
         if (/exon/i.test(type)) {
-          exons.push(subparts[i])
+          exons.push(subpart)
         }
       }
     }
@@ -58,11 +59,17 @@ export default class ProcessedTranscript extends SegmentsGlyph {
       return b - a
     })
     for (let i = codeIndices.length - 1; i >= 0; i--) {
-      subparts.splice(codeIndices[i], 1)
+      subparts.splice(codeIndices[i]!, 1)
     }
 
     // bail if we don't have exons and cds
-    if (!(exons.length && codeStart < Number.POSITIVE_INFINITY && codeEnd > Number.NEGATIVE_INFINITY)) {
+    if (
+      !(
+        exons.length &&
+        codeStart < Number.POSITIVE_INFINITY &&
+        codeEnd > Number.NEGATIVE_INFINITY
+      )
+    ) {
       return subparts
     }
 
@@ -74,8 +81,8 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     let codePartStart = Number.POSITIVE_INFINITY
     let codePartEnd = Number.NEGATIVE_INFINITY
     for (let i = 0; i < exons.length; i++) {
-      const start = exons[i].get('start')
-      const end = exons[i].get('end')
+      const start = exons[i]!.get('start')
+      const end = exons[i]!.get('end')
 
       // CDS containing exon
       if (codeStart >= start && codeEnd <= end) {
@@ -104,9 +111,9 @@ export default class ProcessedTranscript extends SegmentsGlyph {
         i,
         0,
         new SimpleFeature({
-          parent: parent,
-          uniqueId: `${parent.get('uniqueID')}:CDS:${i}`,
+          id: `${parent.get('uniqueID')}:CDS:${i}`,
           data: {
+            parent: parent,
             start: codePartStart,
             end: codePartEnd,
             strand: strand,
@@ -152,7 +159,13 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     })
 
     // bail if we don't have exons and CDS
-    if (!(exons.length && codeStart < Number.POSITIVE_INFINITY && codeEnd > Number.NEGATIVE_INFINITY)) {
+    if (
+      !(
+        exons.length &&
+        codeStart < Number.POSITIVE_INFINITY &&
+        codeEnd > Number.NEGATIVE_INFINITY
+      )
+    ) {
       return subparts
     }
 
@@ -162,21 +175,22 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     const strand = parent.get('strand')
 
     // make the left-hand UTRs
-    let start
-    let end
+    let start: number
+    let end: number
     if (!haveLeftUTR) {
       for (let i = 0; i < exons.length; i++) {
-        start = exons[i].get('start')
+        const exon = exons[i]!
+        start = exon.get('start')
         if (start >= codeStart) {
           break
         }
-        end = codeStart > exons[i].get('end') ? exons[i].get('end') : codeStart
+        end = codeStart > exon.get('end') ? exon.get('end') : codeStart
 
         subparts.unshift(
           new SimpleFeature({
-            parent: parent,
-            uniqueId: 'wow', // FIXME
+            id: 'wow', // FIXME
             data: {
+              parent: parent,
               start: start,
               end: end,
               strand: strand,
@@ -190,18 +204,18 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     // make the right-hand UTRs
     if (!haveRightUTR) {
       for (let i = exons.length - 1; i >= 0; i--) {
-        end = exons[i].get('end')
+        const exon = exons[i]!
+        end = exon.get('end')
         if (end <= codeEnd) {
           break
         }
 
-        start =
-          codeEnd < exons[i].get('start') ? exons[i].get('start') : codeEnd
+        start = codeEnd < exon.get('start') ? exon.get('start') : codeEnd
         subparts.push(
           new SimpleFeature({
-            parent: parent,
-            uniqueId: 'wow', // FIXME
+            id: 'wow', // FIXME
             data: {
+              parent: parent,
               start: start,
               end: end,
               strand: strand,

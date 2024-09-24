@@ -455,13 +455,6 @@ setBpPerPx: (newVal: number) => void
 setModelViewWhenAdjust: (secondCondition: boolean) => void
 ```
 
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
 #### action: setDisplayedRegions
 
 ```js

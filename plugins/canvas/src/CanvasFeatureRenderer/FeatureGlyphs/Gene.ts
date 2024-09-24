@@ -68,7 +68,10 @@ export default class Gene extends BoxGlyph {
         return {
           ...subRect,
           t: newTop,
-          rect: { ...rect, t: newTop },
+          rect: {
+            ...rect,
+            t: newTop,
+          },
         }
       })
 
@@ -82,8 +85,13 @@ export default class Gene extends BoxGlyph {
       w,
       subRects,
       f: feature,
-      rect: { t: 0, l, h, w },
       t: 0,
+      rect: {
+        t: 0,
+        l,
+        h,
+        w,
+      },
     })
   }
 
@@ -92,13 +100,10 @@ export default class Gene extends BoxGlyph {
     layout: BaseLayout<Feature>,
     feature: Feature,
   ) {
-    const fRect = super.layoutFeature(
-      viewInfo,
-      layout,
-      feature,
-    ) as LaidOutFeatureRectWithSubRects
+    const fRect = super.layoutFeature(viewInfo, layout, feature)
 
-    fRect.subRects?.forEach(subRect => {
+    // @ts-expect-error
+    fRect?.subRects?.forEach(subRect => {
       subRect.t += fRect.t
       subRect.rect.t += fRect.t
     })
