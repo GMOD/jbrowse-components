@@ -41,14 +41,14 @@ const LinearComparativeRenderArea = observer(function ({
   ] as React.ReactNode[]
   for (let i = 1; i < views.length; i++) {
     const view = views[i]!
-    const level = levels[i - 1]!
+    const level = levels[i - 1]
     RenderList.push(
       <React.Fragment key={view.id}>
         <div className={classes.container}>
           <Overlays model={model} level={i - 1} />
         </div>
         <ResizeHandle
-          onDrag={n => level.setHeight(level.height + n)}
+          onDrag={n => level?.setHeight(level.height + n)}
           className={classes.resizeHandle}
         />
         <View view={view} />

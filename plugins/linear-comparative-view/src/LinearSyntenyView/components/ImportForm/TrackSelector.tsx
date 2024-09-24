@@ -38,8 +38,8 @@ const ImportSyntenyTrackSelector = observer(function ({
   const [value, setValue] = useState(resetTrack)
 
   useEffect(() => {
-    // sets track data in a useEffect because the initial load is needed as well
-    // as onChange's to the select box
+    // sets track data in a useEffect because the initial load is needed as
+    // well as onChange's to the select box
     setShowTrackId(value)
   }, [value, setShowTrackId])
   return (

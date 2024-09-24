@@ -46,13 +46,22 @@ const TrackSelector = observer(function ({
     <CascadingMenuButton
       menuItems={[
         {
-          label: 'Synteny track selector',
-          onClick: () => model.activateTrackSelector(),
+          label: 'Synteny track selectors',
+          type: 'subMenu',
+          subMenu: model.views.slice(0, -1).map((_, idx) => ({
+            label: `Synteny track selector (row ${idx + 1}->${idx + 2})`,
+            onClick: () => model.activateTrackSelector(),
+          })),
         },
-        ...model.views.map((view, idx) => ({
-          label: `View ${idx + 1} track selector`,
-          onClick: () => view.activateTrackSelector(),
-        })),
+
+        {
+          label: 'Row track selectors',
+          type: 'subMenu',
+          subMenu: model.views.map((view, idx) => ({
+            label: `Row ${idx + 1} track selector`,
+            onClick: () => view.activateTrackSelector(),
+          })),
+        },
       ]}
     >
       <TrackSelectorIcon />

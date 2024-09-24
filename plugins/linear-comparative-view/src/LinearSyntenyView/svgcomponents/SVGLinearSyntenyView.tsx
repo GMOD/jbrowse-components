@@ -131,25 +131,28 @@ export async function renderToSvg(
   for (let i = 1; i < views.length; i++) {
     const view = views[i]!
     const level = levels[i - 1]!
-    const rendering = renderings[i - 1]!
+    const rendering = renderings[i - 1]
     const height = heights[i]!
+    const levelHeight = level.height || 0
     RenderList.push(
       <g key={view.id} transform={`translate(0 ${currOffset})`}>
-        <defs>
-          <clipPath id={`synclip-${i}`}>
-            <rect x={0} y={0} width={width} height={level.height} />
-          </clipPath>
-        </defs>
+        {levelHeight ? (
+          <defs>
+            <clipPath id={`synclip-${i}`}>
+              <rect x={0} y={0} width={width} height={levelHeight} />
+            </clipPath>
+          </defs>
+        ) : null}
         <g
           transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
           clipPath={`url(#synclip-${i})`}
         >
-          {rendering.map((r, i) => (
+          {rendering?.map((r, i) => (
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
             <ReactRendering key={i} rendering={r} />
           ))}
         </g>
-        <g transform={`translate(0 ${level.height})`}>
+        <g transform={`translate(0 ${levelHeight})`}>
           <SVGLinearGenomeView
             rulerHeight={rulerHeight}
             shift={shift}
@@ -164,7 +167,7 @@ export async function renderToSvg(
         </g>
       </g>,
     )
-    currOffset += height + level.height + fontSize + rulerHeight
+    currOffset += height + fontSize + rulerHeight + levelHeight
   }
 
   // the xlink namespace is used for rendering <image> tag

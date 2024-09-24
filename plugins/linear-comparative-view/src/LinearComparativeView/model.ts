@@ -315,9 +315,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return [
-          ...self.views
-            .map((view, idx) => [idx, view.menuItems()] as const)
-            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+          {
+            label: 'Row view menus',
+            type: 'subMenu',
+            subMenu: self.views
+              .map((view, idx) => [idx, view.menuItems()] as const)
+              .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+          },
           {
             label: 'Return to import form',
             onClick: () => {

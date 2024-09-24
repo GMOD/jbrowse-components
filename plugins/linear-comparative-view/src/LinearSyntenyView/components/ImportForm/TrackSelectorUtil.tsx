@@ -1,37 +1,29 @@
 import React, { useState, useEffect } from 'react'
-import {
-  FormControl,
-  FormLabel,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-} from '@mui/material'
+import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { SnapshotIn } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // locals
 import { LinearSyntenyViewModel } from '../../model'
-import ImportCustomTrack from './LinearSyntenyImportFormAddCustomTrack'
-import ImportSyntenyTrackSelector from './LinearSyntenyImportFormTrackSelector'
+import ImportCustomTrack from './AddCustomTrack'
+import ImportSyntenyTrackSelector from './TrackSelector'
 
 type Conf = SnapshotIn<AnyConfigurationModel>
 
 export default function TrackSelector({
-  setSessionTrackData,
-  setShowTrackId,
   sessionTrackData,
   assembly1,
   assembly2,
   model,
-  idx,
+  setSessionTrackData,
+  setShowTrackId,
 }: {
   sessionTrackData: Conf
-  setSessionTrackData: (arg: Conf) => void
-  setShowTrackId: (arg?: string) => void
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
-  idx: number
+  setSessionTrackData: (arg: Conf) => void
+  setShowTrackId: (arg?: string) => void
 }) {
   const [choice, setChoice] = useState('tracklist')
 
@@ -42,12 +34,8 @@ export default function TrackSelector({
     }
   }, [choice, setSessionTrackData, setShowTrackId])
   return (
-    <>
+    <div>
       <FormControl>
-        <FormLabel id="group-label">
-          (Optional) Select or add a synteny track between row {idx} and{' '}
-          {idx + 1}
-        </FormLabel>
         <RadioGroup
           row
           value={choice}
@@ -79,13 +67,13 @@ export default function TrackSelector({
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
-          key={assembly1 + '-' + assembly2}
+          key={`${assembly1}-${assembly2}`}
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}
           setShowTrackId={setShowTrackId}
         />
       ) : null}
-    </>
+    </div>
   )
 }
