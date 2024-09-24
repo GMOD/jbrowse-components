@@ -18,7 +18,7 @@ import ArrowForward from '@mui/icons-material/ArrowForward'
 import ArrowBack from '@mui/icons-material/ArrowBack'
 // locals
 import { LinearSyntenyViewModel } from '../../model'
-import TrackSelector from './ImportSyntenyTrackSelectorUtil'
+import TrackSelector from './LinearSyntenyImportFormTrackSelectorUtil'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -71,7 +71,7 @@ const LinearSyntenyViewImportForm = observer(function ({
             </p>
             <>
               {assemblies.map((assembly, idx) => (
-                <div key={assembly + '-' + idx}>
+                <div key={`${assembly}-${idx}`}>
                   <span>Row {idx + 1}: </span>
                   <AssemblySelector
                     selected={assembly}

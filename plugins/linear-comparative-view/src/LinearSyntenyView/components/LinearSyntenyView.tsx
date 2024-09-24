@@ -5,13 +5,15 @@ import { observer } from 'mobx-react'
 import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView'
 import { LinearSyntenyViewModel } from '../model'
 
-const ImportForm = lazy(() => import('./ImportForm'))
+const LinearSyntenyImportForm = lazy(
+  () => import('./ImportForm/LinearSyntenyImportForm'),
+)
 
 type LSV = LinearSyntenyViewModel
 
 const LinearSyntenyView = observer(function ({ model }: { model: LSV }) {
   return !model.initialized ? (
-    <ImportForm model={model} />
+    <LinearSyntenyImportForm model={model} />
   ) : (
     <LinearComparativeViewComponent model={model} />
   )

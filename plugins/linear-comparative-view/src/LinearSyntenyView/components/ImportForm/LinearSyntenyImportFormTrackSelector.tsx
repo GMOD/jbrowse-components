@@ -44,7 +44,7 @@ const ImportSyntenyTrackSelector = observer(function ({
   }, [value, setShowTrackId])
   return (
     <Paper style={{ padding: 12 }}>
-      <Typography paragraph>
+      <Typography>
         Select a track from the select box below, the track will be shown when
         you hit "Launch".
       </Typography>

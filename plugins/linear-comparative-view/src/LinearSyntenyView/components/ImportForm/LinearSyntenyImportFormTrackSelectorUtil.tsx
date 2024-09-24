@@ -11,8 +11,8 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // locals
 import { LinearSyntenyViewModel } from '../../model'
-import ImportCustomTrack from './ImportCustomTrack'
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
+import ImportCustomTrack from './LinearSyntenyImportFormAddCustomTrack'
+import ImportSyntenyTrackSelector from './LinearSyntenyImportFormTrackSelector'
 
 type Conf = SnapshotIn<AnyConfigurationModel>
 
