@@ -101,7 +101,7 @@
     "dotenv": "^16.3.1",
     "dotenv-expand": "^11.0.3",
     "electron": "32.1.0",
-    "electron-builder": "^25.0.5",
+    "electron-builder": "next",
     "electron-mock-ipc": "^0.3.8",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.33.2",
