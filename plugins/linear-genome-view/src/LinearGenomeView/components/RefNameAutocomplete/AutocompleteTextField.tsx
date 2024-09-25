@@ -23,7 +23,6 @@ export default function AutocompleteTextField({
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { helperText, InputProps = {} } = TextFieldProps
   return (
     <TextField
