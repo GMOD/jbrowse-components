@@ -2,7 +2,7 @@ import BoxRendererType, {
   RenderArgsDeserialized as BoxRenderArgsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-import { iterMap, Feature } from '@jbrowse/core/util'
+import { iterMap, Feature, notEmpty } from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 // locals
@@ -42,8 +42,20 @@ export default class CanvasRenderer extends BoxRendererType {
     const region = props.regions[0]!
     const glyph =
       feature.get('type') === 'gene' ? new GeneGlyph() : new BoxGlyph()
-    const fRect = glyph.layoutFeature({ region, ...props }, layout, feature)
-    return fRect ? { ...fRect, glyph } : null
+    const fRect = glyph.layoutFeature(
+      {
+        region,
+        ...props,
+      },
+      layout,
+      feature,
+    )
+    return fRect
+      ? {
+          ...fRect,
+          glyph,
+        }
+      : null
   }
 
   drawRect(
@@ -61,9 +73,9 @@ export default class CanvasRenderer extends BoxRendererType {
     layoutRecords: LaidOutFeatureRectWithGlyph[],
     props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
-    layoutRecords.forEach(fRect => {
+    for (const fRect of layoutRecords) {
       this.drawRect(ctx, fRect, props)
-    })
+    }
 
     if (props.exportSVG) {
       postDraw({
@@ -87,7 +99,7 @@ export default class CanvasRenderer extends BoxRendererType {
       featureMap.values(),
       feature => this.layoutFeature(feature, layout, renderProps),
       featureMap.size,
-    ).filter((f): f is LaidOutFeatureRectWithGlyph => !!f)
+    ).filter(notEmpty)
 
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
@@ -142,21 +154,21 @@ export function postDraw({
   regions,
 }: {
   ctx: CanvasRenderingContext2D
-  regions: { start: number }[]
+  regions: {
+    start: number
+  }[]
   offsetPx: number
   layoutRecords: PostDrawFeatureRectWithGlyph[]
 }) {
   ctx.fillStyle = 'black'
   ctx.font = '10px sans-serif'
-  layoutRecords
-    .filter(f => !!f)
-    .forEach(record => {
-      record.glyph.postDraw(ctx, {
-        record,
-        regions,
-        offsetPx,
-      })
+  layoutRecords.filter(notEmpty).forEach(record => {
+    record.glyph.postDraw(ctx, {
+      record,
+      regions,
+      offsetPx,
     })
+  })
 }
 
 export {

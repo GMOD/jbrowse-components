@@ -147,8 +147,8 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * a CompositeMap of `featureId -> feature obj` that
-       * just looks in all the block data for that feature
+       * a CompositeMap of `featureId -> feature obj` that just looks in all
+       * the block data for that feature
        */
       get features() {
         const featureMaps = []
@@ -166,6 +166,19 @@ function stateModelFactory() {
       get featureUnderMouse() {
         const feat = self.featureIdUnderMouse
         return feat ? this.features.get(feat) : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get layoutFeatures() {
+        const featureMaps = []
+        for (const block of self.blockState.values()) {
+          if (block.layout) {
+            featureMaps.push(block.layout.rectangles)
+          }
+        }
+        return new CompositeMap<string, LayoutRecord>(featureMaps)
       },
 
       /**

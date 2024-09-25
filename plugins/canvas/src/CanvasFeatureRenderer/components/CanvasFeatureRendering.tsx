@@ -1,19 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { Region } from '@jbrowse/core/util/types'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { isStateTreeNode } from 'mobx-state-tree'
-import type {
-  BaseLinearDisplayModel,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import { postDraw } from '../CanvasFeatureRenderer'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-import BoxGlyph from '../FeatureGlyphs/Box'
-import GeneGlyph from '../FeatureGlyphs/Gene'
 import { LaidOutFeatureRect } from '../FeatureGlyph'
 
 // used so that user can click-away-from-feature below the laid out features
@@ -38,51 +29,16 @@ function CanvasRendering(props: {
     height,
     regions,
     bpPerPx,
-    layoutRecords,
   } = props
 
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel || {}
-  const view = isStateTreeNode(displayModel)
-    ? (getContainingView(displayModel) as LinearGenomeViewModel)
-    : undefined
-
-  const { dynamicBlocks, staticBlocks, offsetPx: viewOffsetPx = 0 } = view || {}
-  const { offsetPx: blockOffsetPx = 0 } = staticBlocks?.contentBlocks[0] || {}
-  const { start: viewStart } = dynamicBlocks?.contentBlocks[0] || {}
-  const offsetPx = viewOffsetPx - blockOffsetPx
 
   const region = regions[0]!
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
-  const labelsCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
-
-  useEffect(() => {
-    const canvas = labelsCanvas.current
-    if (!canvas) {
-      return
-    }
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
-    if (viewStart === undefined) {
-      return
-    }
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    postDraw({
-      ctx,
-      layoutRecords: layoutRecords.map(rec => {
-        const glyph = rec.f.type === 'gene' ? new GeneGlyph() : new BoxGlyph()
-        return { ...rec, glyph }
-      }),
-      offsetPx,
-      regions: [{ start: viewStart }],
-    })
-  }, [layoutRecords, viewStart, offsetPx])
 
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
@@ -263,18 +219,6 @@ function CanvasRendering(props: {
         }}
         onFocus={() => {}}
         onBlur={() => {}}
-      />
-      <canvas
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          zIndex: 1000,
-          pointerEvents: 'none',
-        }}
-        ref={labelsCanvas}
-        width={canvasWidth}
-        height={height + canvasPadding}
       />
     </div>
   )
