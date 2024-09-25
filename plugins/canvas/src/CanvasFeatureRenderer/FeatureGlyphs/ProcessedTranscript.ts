@@ -135,14 +135,13 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     let codeStart = Number.POSITIVE_INFINITY
     let codeEnd = Number.NEGATIVE_INFINITY
 
-    let haveLeftUTR
-    let haveRightUTR
+    let haveLeftUTR: boolean | undefined
+    let haveRightUTR: boolean | undefined
 
     // gather exons, find coding start and end, and look for UTRs
-    let type
     const exons = [] as Feature[]
     subparts.forEach(sub => {
-      type = sub.get('type')
+      const type = sub.get('type')
       if (/^cds/i.test(type)) {
         if (codeStart > sub.get('start')) {
           codeStart = sub.get('start')
@@ -178,6 +177,7 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     let start: number
     let end: number
     if (!haveLeftUTR) {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < exons.length; i++) {
         const exon = exons[i]!
         start = exon.get('start')

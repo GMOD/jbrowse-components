@@ -11,7 +11,7 @@ import { LaidOutFeatureRect } from '../FeatureGlyph'
 // (issue #1248)
 const canvasPadding = 100
 
-function CanvasRendering(props: {
+const CanvasFeatureRendering = observer(function (props: {
   blockKey: string
   displayModel?: BaseLinearDisplayModel
   width: number
@@ -51,7 +51,7 @@ function CanvasRendering(props: {
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     const selectedRect = selectedFeatureId
-      ? displayModel?.getFeatureByID?.(blockKey, selectedFeatureId)
+      ? displayModel?.getFeatureByID(blockKey, selectedFeatureId)
       : undefined
     if (selectedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = selectedRect
@@ -73,7 +73,7 @@ function CanvasRendering(props: {
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
     const highlightedRect = highlightedFeature
-      ? displayModel?.getFeatureByID?.(blockKey, highlightedFeature)
+      ? displayModel?.getFeatureByID(blockKey, highlightedFeature)
       : undefined
     if (highlightedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
@@ -222,6 +222,6 @@ function CanvasRendering(props: {
       />
     </div>
   )
-}
+})
 
-export default observer(CanvasRendering)
+export default CanvasFeatureRendering

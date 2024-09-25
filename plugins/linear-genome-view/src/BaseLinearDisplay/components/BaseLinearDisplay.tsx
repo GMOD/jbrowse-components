@@ -44,7 +44,8 @@ const FloatingLabels = observer(function ({
       {[...model.layoutFeatures.entries()]
         .filter(f => !!f[1])
         .map(([key, val]) => {
-          const [left, top, right, bottom, feature] = val!
+          // @ts-expect-error
+          const [left, , right, bottom, feature] = val!
           const { refName, label } = feature!
           const r0 = assembly.getCanonicalRefName(refName) || refName
           const r = view.bpToPx({
@@ -138,7 +139,9 @@ const BaseLinearDisplay = observer(function (props: {
         <MenuPage
           contextCoord={contextCoord}
           model={model}
-          onClose={() => setContextCoord(undefined)}
+          onClose={() => {
+            setContextCoord(undefined)
+          }}
         />
       ) : null}
     </div>
@@ -174,11 +177,10 @@ function MenuPage({
         },
       }}
       anchorReference="anchorPosition"
-      anchorPosition={
-        contextCoord
-          ? { top: contextCoord[1], left: contextCoord[0] }
-          : undefined
-      }
+      anchorPosition={{
+        top: contextCoord[1],
+        left: contextCoord[0],
+      }}
       style={{
         zIndex: theme.zIndex.tooltip,
       }}

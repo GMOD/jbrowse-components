@@ -38,6 +38,7 @@ export default class Gene extends BoxGlyph {
         const glyph = this.getSubGlyph(sub)
         const subRect = glyph.getFeatureRectangle(subArgs, sub)
         const rect = subRect.rect
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!rect) {
           console.warn('feature not laid out')
           return
