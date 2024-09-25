@@ -61,6 +61,7 @@ export default abstract class FeatureGlyph {
     const endbp = (fRect.l + fRect.w) / scale + leftBase
     const top = layout.addRect(feature.id(), startbp, endbp, fRect.h, {
       label: feature.get('name') || feature.get('id'),
+      refName: feature.get('refName'),
     })
 
     return top === null

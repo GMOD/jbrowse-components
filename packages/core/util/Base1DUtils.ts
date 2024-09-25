@@ -223,14 +223,12 @@ export function bpToPx({
     }
   }
   const found = displayedRegions[i]
-  if (found) {
-    return {
-      index: i,
-      offsetPx: Math.round(bpSoFar / bpPerPx),
-    }
-  }
-
-  return undefined
+  return found
+    ? {
+        index: i,
+        offsetPx: Math.round(bpSoFar / bpPerPx),
+      }
+    : undefined
 }
 
 export function bpToPxMap({
@@ -277,12 +275,10 @@ export function bpToPxMap({
     }
   }
   const found = displayedRegions[i]
-  if (found) {
-    return {
-      index: i,
-      offsetPx: Math.round(bpSoFar / bpPerPx),
-    }
-  }
-
-  return map
+  return found
+    ? {
+        index: i,
+        offsetPx: Math.round(bpSoFar / bpPerPx),
+      }
+    : map
 }

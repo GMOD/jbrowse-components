@@ -9,7 +9,12 @@ import { Menu } from '@jbrowse/core/ui'
 
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
-import { clamp, getContainingView, measureText } from '@jbrowse/core/util'
+import {
+  clamp,
+  getContainingView,
+  getSession,
+  measureText,
+} from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 const useStyles = makeStyles()({
@@ -30,30 +35,48 @@ const FloatingLabels = observer(function ({
   model: BaseLinearDisplayModel
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { bpPerPx, offsetPx } = view
-  return (
+  const { assemblyManager } = getSession(model)
+  const { offsetPx } = view
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  return assembly ? (
     <div style={{ position: 'relative' }}>
-      {[...model.layoutFeatures.entries()].map(([key, val]) => {
-        return val ? (
-          <div
-            key={key}
-            style={{
-              position: 'absolute',
-              fontSize: 10,
-              left: clamp(
-                0,
-                val[0] / bpPerPx - offsetPx,
-                val[2] / bpPerPx - offsetPx - measureText(val[4].label),
-              ),
-              top: val[3] - 14,
-            }}
-          >
-            {val[4].label}
-          </div>
-        ) : null
-      })}
+      {[...model.layoutFeatures.entries()]
+        .filter(f => !!f[1])
+        .map(([key, val]) => {
+          const [left, top, right, bottom, feature] = val!
+          const { refName, label } = feature!
+          const r0 = assembly.getCanonicalRefName(refName) || refName
+          const r = view.bpToPx({
+            refName: r0,
+            coord: left,
+          })?.offsetPx
+          const r2 = view.bpToPx({
+            refName: r0,
+            coord: right,
+          })?.offsetPx
+          return r !== undefined ? (
+            <div
+              key={key}
+              style={{
+                position: 'absolute',
+                fontSize: 10,
+                left: clamp(
+                  0,
+                  r - offsetPx,
+                  r2 !== undefined
+                    ? r2 - offsetPx - measureText(label)
+                    : Number.POSITIVE_INFINITY,
+                ),
+                top: bottom - 14,
+              }}
+            >
+              {label}
+            </div>
+          ) : null
+        })}
     </div>
-  )
+  ) : null
 })
 
 const BaseLinearDisplay = observer(function (props: {
