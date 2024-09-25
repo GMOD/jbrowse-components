@@ -9,13 +9,14 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { getSession, getEnv } from '@jbrowse/core/util'
+import { getEnv, AbstractSessionModel } from '@jbrowse/core/util'
 import {
   BaseCard,
   Attributes,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import FileInfoPanel from './FileInfoPanel'
 import RefNameInfoDialog from './RefNameInfoDialog'
+import { isStateTreeNode } from 'mobx-state-tree'
 
 const useStyles = makeStyles()({
   content: {
@@ -39,12 +40,13 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
 
 const AboutDialogContents = observer(function ({
   config,
+  session,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
 }) {
   const [copied, setCopied] = useState(false)
-  const conf = readConfObject(config)
-  const session = getSession(config)
+  const conf = isStateTreeNode(config) ? readConfObject(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
@@ -112,9 +114,10 @@ const AboutDialogContents = observer(function ({
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfoPanel config={config} />
+      <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog
+          session={session}
           config={config}
           onClose={() => {
             setShowRefNames(false)
