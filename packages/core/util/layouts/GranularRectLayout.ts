@@ -507,10 +507,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getRectangles(): Map<string, RectTuple> {
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
-        const { l, r, originalHeight, top } = rect
+        const { l, r, originalHeight, top, data } = rect
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
-        return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
+        return [id, [l * this.pitchX, t, r * this.pitchX, b, data]] // left, top, right, bottom
       }),
     )
   }
@@ -531,7 +531,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         const x2 = region.end
         // add +/- pitchX to avoid resolution causing errors
         if (segmentsIntersect(x1, x2, y1 - this.pitchX, y2 + this.pitchX)) {
-          regionRectangles[id] = [y1, t, y2, b]
+          regionRectangles[id] = [y1, t, y2, b, rect.data]
         }
       }
     }

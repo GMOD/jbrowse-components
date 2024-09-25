@@ -77,14 +77,6 @@ export default class CanvasRenderer extends BoxRendererType {
       this.drawRect(ctx, fRect, props)
     }
 
-    if (props.exportSVG) {
-      postDraw({
-        ctx,
-        layoutRecords: layoutRecords,
-        offsetPx: 0,
-        ...props,
-      })
-    }
     return undefined
   }
 
@@ -127,17 +119,6 @@ export default class CanvasRenderer extends BoxRendererType {
     return {
       ...results,
       ...res,
-      layoutRecords: layoutRecords.map(rec => ({
-        label: rec.label,
-        description: rec.description,
-        l: rec.l,
-        t: rec.t,
-        f: {
-          start: rec.f.get('start'),
-          end: rec.f.get('end'),
-          type: rec.f.get('type'),
-        },
-      })),
       features,
       layout,
       height,
@@ -145,30 +126,6 @@ export default class CanvasRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
   }
-}
-
-export function postDraw({
-  ctx,
-  layoutRecords,
-  offsetPx,
-  regions,
-}: {
-  ctx: CanvasRenderingContext2D
-  regions: {
-    start: number
-  }[]
-  offsetPx: number
-  layoutRecords: PostDrawFeatureRectWithGlyph[]
-}) {
-  ctx.fillStyle = 'black'
-  ctx.font = '10px sans-serif'
-  layoutRecords.filter(notEmpty).forEach(record => {
-    record.glyph.postDraw(ctx, {
-      record,
-      regions,
-      offsetPx,
-    })
-  })
 }
 
 export {

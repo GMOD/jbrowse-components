@@ -9,7 +9,7 @@ import { Menu } from '@jbrowse/core/ui'
 
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
-import { clamp, getContainingView } from '@jbrowse/core/util'
+import { clamp, getContainingView, measureText } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 const useStyles = makeStyles()({
@@ -33,8 +33,8 @@ const FloatingLabels = observer(function ({
   const { bpPerPx, offsetPx } = view
   return (
     <div style={{ position: 'relative' }}>
-      {[...model.layoutFeatures.entries()].map(([key, val]) =>
-        val ? (
+      {[...model.layoutFeatures.entries()].map(([key, val]) => {
+        return val ? (
           <div
             key={key}
             style={{
@@ -43,15 +43,15 @@ const FloatingLabels = observer(function ({
               left: clamp(
                 0,
                 val[0] / bpPerPx - offsetPx,
-                val[2] / bpPerPx - offsetPx,
+                val[2] / bpPerPx - offsetPx - measureText(val[4].label),
               ),
               top: val[3] - 14,
             }}
           >
-            {key}
+            {val[4].label}
           </div>
-        ) : null,
-      )}
+        ) : null
+      })}
     </div>
   )
 })

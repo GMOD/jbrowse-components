@@ -59,7 +59,9 @@ export default abstract class FeatureGlyph {
     const leftBase = region.start
     const startbp = fRect.l / scale + leftBase
     const endbp = (fRect.l + fRect.w) / scale + leftBase
-    const top = layout.addRect(feature.id(), startbp, endbp, fRect.h)
+    const top = layout.addRect(feature.id(), startbp, endbp, fRect.h, {
+      label: feature.get('name') || feature.get('id'),
+    })
 
     return top === null
       ? null
@@ -78,12 +80,9 @@ export default abstract class FeatureGlyph {
 
   getFeatureRectangle(viewInfo: ViewInfo, feature: Feature) {
     const { region, bpPerPx } = viewInfo
-    const [leftPx, rightPx] = bpSpanPx(
-      feature.get('start'),
-      feature.get('end'),
-      region,
-      bpPerPx,
-    )
+    const s = feature.get('start')
+    const e = feature.get('end')
+    const [leftPx, rightPx] = bpSpanPx(s, e, region, bpPerPx)
 
     return {
       l: leftPx,
