@@ -23,7 +23,8 @@ import {
 // icons
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
-import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper'
+// locals
+import { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -36,8 +37,9 @@ const ReturnToImportFormDialog = lazy(
  * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
-  const LinearSyntenyViewHelper =
-    linearSyntenyViewHelperModelFactory(pluginManager)
+  const LinearSyntenyViewHelper = pluginManager.getViewType(
+    'LinearSyntenyViewHelper',
+  )?.stateModel as LinearSyntenyViewHelperStateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -252,14 +254,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return [
-          {
-            label: 'Row view menus',
-            type: 'subMenu',
-            subMenu: self.views.map((view, idx) => ({
-              label: `View ${idx + 1} Menu`,
-              subMenu: view.menuItems(),
-            })),
-          },
           {
             label: 'Return to import form',
             onClick: () => {

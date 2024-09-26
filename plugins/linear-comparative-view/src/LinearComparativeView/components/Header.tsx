@@ -1,20 +1,15 @@
 import React, { useState } from 'react'
-import { Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import {
-  LinearGenomeViewModel,
-  SearchBox,
-} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { LinearComparativeViewModel } from '../model'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { toLocale } from '@jbrowse/core/util'
+import HeaderSearchBoxes from './HeaderSearchBoxes'
 
 const useStyles = makeStyles()(() => ({
   spacer: {
@@ -23,17 +18,6 @@ const useStyles = makeStyles()(() => ({
   iconButton: {
     margin: 5,
   },
-  bp: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  searchContainer: {
-    marginLeft: 5,
-  },
-  searchBox: {
-    display: 'flex',
-  },
 }))
 
 const TrackSelector = observer(function ({
@@ -41,13 +25,14 @@ const TrackSelector = observer(function ({
 }: {
   model: LinearComparativeViewModel
 }) {
+  const { views } = model
   return (
     <CascadingMenuButton
       menuItems={[
         {
           label: 'Synteny track selectors',
           type: 'subMenu',
-          subMenu: model.views.slice(0, -1).map((_, idx) => ({
+          subMenu: views.slice(0, -1).map((_, idx) => ({
             label: `Synteny track selector (row ${idx + 1}->${idx + 2})`,
             onClick: () => {
               model.activateTrackSelector(idx)
@@ -58,7 +43,7 @@ const TrackSelector = observer(function ({
         {
           label: 'Row track selectors',
           type: 'subMenu',
-          subMenu: model.views.map((view, idx) => ({
+          subMenu: views.map((view, idx) => ({
             label: `Row ${idx + 1} track selector`,
             onClick: () => view.activateTrackSelector(),
           })),
@@ -84,7 +69,14 @@ const Header = observer(function ({
       <CascadingMenuButton
         className={classes.iconButton}
         menuItems={[
-          ...model.headerMenuItems(),
+          {
+            label: 'Row view menus',
+            type: 'subMenu',
+            subMenu: views.map((view, idx) => ({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuItems(),
+            })),
+          },
           {
             label: 'Show search boxes?',
             checked: showSearchBoxes,
@@ -93,6 +85,7 @@ const Header = observer(function ({
               setShowSearchBoxes(!showSearchBoxes)
             },
           },
+          ...model.headerMenuItems(),
         ]}
       >
         <MoreVertIcon />
@@ -101,29 +94,12 @@ const Header = observer(function ({
       {showSearchBoxes ? (
         <div>
           {views.map(view => (
-            <ViewSearchBox key={view.id} view={view} />
+            <HeaderSearchBoxes key={view.id} view={view} />
           ))}
         </div>
       ) : null}
 
       <div className={classes.spacer} />
-    </div>
-  )
-})
-
-const ViewSearchBox = observer(function ({
-  view,
-}: {
-  view: LinearGenomeViewModel
-}) {
-  const { classes } = useStyles()
-  const { assemblyNames, coarseTotalBp } = view
-  return (
-    <div className={classes.searchBox}>
-      <SearchBox model={view} showHelp={false} />
-      <Typography variant="body2" color="textSecondary" className={classes.bp}>
-        {assemblyNames.join(',')} {toLocale(Math.round(coarseTotalBp))} bp
-      </Typography>
     </div>
   )
 })

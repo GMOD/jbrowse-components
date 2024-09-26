@@ -17,8 +17,8 @@ export default class LinearComparativeViewPlugin extends Plugin {
   name = 'LinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
-    LinearComparativeViewF(pluginManager)
     LinearSyntenyViewHelperF(pluginManager)
+    LinearComparativeViewF(pluginManager)
     LinearSyntenyViewF(pluginManager)
     LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)

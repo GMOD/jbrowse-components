@@ -176,7 +176,7 @@ const LinearSyntenyViewImportForm = observer(function ({
         </div>
 
         <Spacer />
-        <div>
+        <div style={{ width: 700 }}>
           <div>
             Synteny dataset to display between row {selectedRow + 1} and{' '}
             {selectedRow + 2}
