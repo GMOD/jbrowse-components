@@ -318,24 +318,23 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Row view menus',
             type: 'subMenu',
-            subMenu: self.views
-              .map((view, idx) => [idx, view.menuItems()] as const)
-              .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+            subMenu: self.views.map((view, idx) => ({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuItems(),
+            })),
           },
           {
             label: 'Return to import form',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
             icon: FolderOpenIcon,
-          },
-          {
-            label: 'Open track selector',
-            onClick: self.activateTrackSelector,
-            icon: TrackSelectorIcon,
           },
         ]
       },

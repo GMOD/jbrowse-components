@@ -16,12 +16,14 @@ const ImportSyntenyTrackSelector = observer(function ({
   model,
   assembly1,
   assembly2,
-  setShowTrackId,
+  preConfiguredSyntenyTrack,
+  setPreConfiguredSyntenyTrack,
 }: {
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
-  setShowTrackId: (arg: string) => void
+  preConfiguredSyntenyTrack: string | undefined
+  setPreConfiguredSyntenyTrack: (arg: string) => void
 }) {
   const session = getSession(model)
   const { tracks = [], sessionTracks = [] } = session
@@ -40,8 +42,10 @@ const ImportSyntenyTrackSelector = observer(function ({
   useEffect(() => {
     // sets track data in a useEffect because the initial load is needed as
     // well as onChange's to the select box
-    setShowTrackId(value)
-  }, [value, setShowTrackId])
+    if (value !== preConfiguredSyntenyTrack) {
+      setPreConfiguredSyntenyTrack(value)
+    }
+  }, [value, preConfiguredSyntenyTrack, setPreConfiguredSyntenyTrack])
   return (
     <Paper style={{ padding: 12 }}>
       <Typography>

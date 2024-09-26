@@ -29,31 +29,24 @@ const useStyles = makeStyles()(theme => ({
   button: {
     margin: theme.spacing(2),
   },
+  rel: {
+    position: 'relative',
+  },
+  synbutton: {
+    position: 'absolute',
+    top: 30,
+  },
+  flex: {
+    display: 'flex',
+  },
+  mb: {
+    marginBottom: 10,
+  },
 }))
 
 type Conf = SnapshotIn<AnyConfigurationModel>
-
-function getFirstApplicableTrackIfAvailable({
-  session,
-  assembly1,
-  assembly2,
-}: {
-  session: AbstractSessionModel
-  assembly1: string
-  assembly2: string
-}) {
-  const { tracks = [], sessionTracks = [] } = session
-  const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
-  const filteredTrack = allTracks.find(track => {
-    const assemblyNames = readConfObject(track, 'assemblyNames')
-    return (
-      assemblyNames.includes(assembly1) &&
-      assemblyNames.includes(assembly2) &&
-      track.type.includes('Synteny')
-    )
-  })
-  return filteredTrack?.trackId
-}
+type MaybeConf = Conf | undefined
+type MaybeString = string | undefined
 
 const LinearSyntenyViewImportForm = observer(function ({
   model,
@@ -62,46 +55,42 @@ const LinearSyntenyViewImportForm = observer(function ({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const defaultAssemblyName = session.assemblyNames[0] || ''
-  const [currIdx, setCurrIdx] = useState(0)
-  const [assemblyNames, setAssemblyNames] = useState([
+  const { assemblyNames } = session
+  const defaultAssemblyName = assemblyNames[0] || ''
+  const [selectedRow, setSelectedRow] = useState(0)
+  const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
     defaultAssemblyName,
     defaultAssemblyName,
   ])
   const [error, setError] = useState<unknown>()
-  const [sessionTrackData, setSessionTrackData] = useState<
-    (Conf | undefined)[]
-  >([])
-  const [showTrackId, setShowTrackId] = useState<(string | undefined)[]>([
-    getFirstApplicableTrackIfAvailable({
-      assembly1: defaultAssemblyName,
-      assembly2: defaultAssemblyName,
-      session,
-    }),
-  ])
+  const [userOpenedSyntenyTracksToShow, setUserOpenedSyntenyTracksToShow] =
+    useState<MaybeConf[]>([])
+  const [
+    preConfiguredSyntenyTracksToShow,
+    setPreConfiguredSyntenyTracksToShow,
+  ] = useState<MaybeString[]>([])
+
+  console.log('here')
 
   // this is a combination of any displayed error message we have
   return (
     <Container className={classes.importFormContainer}>
       {error ? <ErrorMessage error={error} /> : null}
-      <div style={{ display: 'flex' }}>
+      <div className={classes.flex}>
         <Spacer />
         <div>
-          <div style={{ marginBottom: 10 }}>
+          <div className={classes.mb}>
             Select assemblies for linear synteny view
           </div>
-          {assemblyNames.map((assemblyName, idx) => (
-            <div
-              key={`${assemblyName}-${idx}`}
-              style={{ position: 'relative' }}
-            >
+          {selectedAssemblyNames.map((assemblyName, idx) => (
+            <div key={`${assemblyName}-${idx}`} className={classes.rel}>
               <span>Row {idx + 1}: </span>
 
               <IconButton
-                disabled={assemblyNames.length <= 2}
+                disabled={selectedAssemblyNames.length <= 2}
                 onClick={() => {
-                  setAssemblyNames(
-                    assemblyNames
+                  setSelectedAssemblyNames(
+                    selectedAssemblyNames
                       .map((asm, idx2) => (idx2 === idx ? undefined : asm))
                       .filter(notEmpty),
                   )
@@ -113,22 +102,19 @@ const LinearSyntenyViewImportForm = observer(function ({
                 helperText=""
                 selected={assemblyName}
                 onChange={newAssembly => {
-                  setAssemblyNames(
-                    assemblyNames.map((asm, idx2) =>
+                  setSelectedAssemblyNames(
+                    selectedAssemblyNames.map((asm, idx2) =>
                       idx2 === idx ? newAssembly : asm,
                     ),
                   )
                 }}
                 session={session}
               />
-              {idx !== assemblyNames.length - 1 ? (
+              {idx !== selectedAssemblyNames.length - 1 ? (
                 <IconButton
+                  className={classes.synbutton}
                   onClick={() => {
-                    setCurrIdx(idx)
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 30,
+                    setSelectedRow(idx)
                   }}
                 >
                   <ArrowForwardIosIcon />
@@ -142,7 +128,10 @@ const LinearSyntenyViewImportForm = observer(function ({
               variant="contained"
               color="secondary"
               onClick={() => {
-                setAssemblyNames([...assemblyNames, defaultAssemblyName])
+                setSelectedAssemblyNames([
+                  ...selectedAssemblyNames,
+                  defaultAssemblyName,
+                ])
               }}
             >
               Add row
@@ -153,14 +142,11 @@ const LinearSyntenyViewImportForm = observer(function ({
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 ;(async () => {
                   try {
-                    if (!isSessionWithAddTracks(session)) {
-                      return
-                    }
                     setError(undefined)
                     await doSubmit({
-                      sessionTrackData,
-                      showTrackId,
-                      assemblyNames,
+                      userOpenedSyntenyTracksToShow,
+                      preConfiguredSyntenyTracksToShow,
+                      selectedAssemblyNames,
                       model,
                     })
                   } catch (e) {
@@ -180,24 +166,27 @@ const LinearSyntenyViewImportForm = observer(function ({
         <Spacer />
         <div>
           <div>
-            Synteny dataset to display between row {currIdx + 1} and{' '}
-            {currIdx + 2}
+            Synteny dataset to display between row {selectedRow + 1} and{' '}
+            {selectedRow + 2}
           </div>
           <TrackSelector
-            setShowTrackId={arg => {
-              const clone = [...showTrackId]
-              clone[currIdx] = arg
-              setShowTrackId(clone)
-            }}
-            assembly1={assemblyNames[currIdx]!}
-            assembly2={assemblyNames[currIdx + 1]!}
-            setSessionTrackData={arg => {
-              const clone = [...sessionTrackData]
-              clone[currIdx] = arg
-              setSessionTrackData(clone)
-            }}
-            sessionTrackData={sessionTrackData[currIdx]}
             model={model}
+            preConfiguredSyntenyTrack={
+              preConfiguredSyntenyTracksToShow[selectedRow]
+            }
+            userOpenedSyntenyTrack={userOpenedSyntenyTracksToShow[selectedRow]}
+            assembly1={selectedAssemblyNames[selectedRow]!}
+            assembly2={selectedAssemblyNames[selectedRow + 1]!}
+            setPreConfiguredSyntenyTrack={arg => {
+              const clone = [...preConfiguredSyntenyTracksToShow]
+              clone[selectedRow] = arg
+              setPreConfiguredSyntenyTracksToShow(clone)
+            }}
+            setUserOpenedSyntenyTrack={arg => {
+              const clone = [...userOpenedSyntenyTracksToShow]
+              clone[selectedRow] = arg
+              setUserOpenedSyntenyTracksToShow(clone)
+            }}
           />
         </div>
       </div>
@@ -207,22 +196,22 @@ const LinearSyntenyViewImportForm = observer(function ({
 })
 
 async function doSubmit({
-  assemblyNames,
+  selectedAssemblyNames,
   model,
-  showTrackId,
-  sessionTrackData,
+  preConfiguredSyntenyTracksToShow,
+  userOpenedSyntenyTracksToShow,
 }: {
-  assemblyNames: string[]
+  selectedAssemblyNames: string[]
   model: LinearSyntenyViewModel
-  sessionTrackData: Conf[]
-  showTrackId: (string | undefined)[]
+  userOpenedSyntenyTracksToShow: Conf[]
+  preConfiguredSyntenyTracksToShow: (string | undefined)[]
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
 
   model.setViews(
     await Promise.all(
-      assemblyNames.map(async assemblyName => {
+      selectedAssemblyNames.map(async assemblyName => {
         const asm = await assemblyManager.waitForAssembly(assemblyName)
         if (!asm) {
           throw new Error(`Assembly "${assemblyName}" failed to load`)
@@ -244,14 +233,14 @@ async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    sessionTrackData.map((f, idx) => {
+    userOpenedSyntenyTracksToShow.map((f, idx) => {
       if (f) {
         session.addTrackConf(f)
         model.toggleTrack(f.trackId, idx)
       }
     })
   }
-  showTrackId.map((f, idx) => {
+  preConfiguredSyntenyTracksToShow.map((f, idx) => {
     if (f) {
       model.showTrack(f, idx)
     }

@@ -11,28 +11,30 @@ import ImportSyntenyTrackSelector from './TrackSelector'
 type Conf = SnapshotIn<AnyConfigurationModel>
 
 export default function TrackSelector({
-  sessionTrackData,
+  model,
   assembly1,
   assembly2,
-  model,
-  setSessionTrackData,
-  setShowTrackId,
+  userOpenedSyntenyTrack,
+  preConfiguredSyntenyTrack,
+  setPreConfiguredSyntenyTrack,
+  setUserOpenedSyntenyTrack,
 }: {
-  sessionTrackData: Conf
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
-  setSessionTrackData: (arg: Conf) => void
-  setShowTrackId: (arg?: string) => void
+  userOpenedSyntenyTrack: Conf | undefined
+  preConfiguredSyntenyTrack: string | undefined
+  setUserOpenedSyntenyTrack: (arg: Conf) => void
+  setPreConfiguredSyntenyTrack: (arg?: string) => void
 }) {
   const [choice, setChoice] = useState('tracklist')
 
   useEffect(() => {
     if (choice === 'none') {
-      setSessionTrackData(undefined)
-      setShowTrackId(undefined)
+      setPreConfiguredSyntenyTrack(undefined)
+      setUserOpenedSyntenyTrack(undefined)
     }
-  }, [choice, setSessionTrackData, setShowTrackId])
+  }, [choice, setPreConfiguredSyntenyTrack, setUserOpenedSyntenyTrack])
   return (
     <div>
       <FormControl>
@@ -59,8 +61,7 @@ export default function TrackSelector({
       </FormControl>
       {choice === 'custom' ? (
         <ImportCustomTrack
-          setSessionTrackData={setSessionTrackData}
-          sessionTrackData={sessionTrackData}
+          setUserOpenedSyntenyTrack={setUserOpenedSyntenyTrack}
           assembly2={assembly2}
           assembly1={assembly1}
         />
@@ -71,7 +72,8 @@ export default function TrackSelector({
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}
-          setShowTrackId={setShowTrackId}
+          preConfiguredSyntenyTrack={preConfiguredSyntenyTrack}
+          setPreConfiguredSyntenyTrack={setPreConfiguredSyntenyTrack}
         />
       ) : null}
     </div>
