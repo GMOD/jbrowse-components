@@ -8,6 +8,7 @@ import LinearComparativeViewF from './LinearComparativeView'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay'
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay'
 import LinearSyntenyViewF from './LinearSyntenyView'
+import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import SyntenyTrackF from './SyntenyTrack'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef'
@@ -17,6 +18,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     LinearComparativeViewF(pluginManager)
+    LinearSyntenyViewHelperF(pluginManager)
     LinearSyntenyViewF(pluginManager)
     LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)

@@ -3,20 +3,17 @@ import {
   addDisposer,
   cast,
   getPath,
-  getRoot,
-  resolveIdentifier,
   types,
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import { autorun, transaction } from 'mobx'
+import { autorun } from 'mobx'
 
 // jbrowse
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   LinearGenomeViewModel,
@@ -25,6 +22,8 @@ import {
 
 // icons
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+
+import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -37,6 +36,8 @@ const ReturnToImportFormDialog = lazy(
  * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
+  const LinearSyntenyViewHelper =
+    linearSyntenyViewHelperModelFactory(pluginManager)
   return types
     .compose(
       'LinearComparativeView',
@@ -65,22 +66,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        levels: types.array(
-          types
-            .model({
-              tracks: types.array(
-                pluginManager.pluggableMstType('track', 'stateModel'),
-              ),
-              height: 100,
-              level: types.number,
-            })
-            .actions(self => ({
-              setHeight(n: number) {
-                self.height = n
-                return self.height
-              },
-            })),
-        ),
+        levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
          * currently this is limited to an array of two
@@ -180,27 +166,29 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLevelHeight(n: number, level = 0) {
-        self.levels[level]!.setHeight(n)
-        return self.levels[level]!.height
+      setLevelHeight(newHeight: number, level = 0) {
+        const l = self.levels[level]!
+        l.setHeight(newHeight)
+        return l.height
       },
 
       /**
        * #action
        */
-      activateTrackSelector() {
+      activateTrackSelector(level: number) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
-              { view: self },
+              {
+                view: self.levels[level],
+              },
             )
             session.showWidget(selector)
             return selector
           }
-          return undefined
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -209,86 +197,36 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string, level = 0) {
-        const hiddenCount = this.hideTrack(trackId, level)
-        if (!hiddenCount) {
-          this.showTrack(trackId, level)
-          return true
-        }
-        return false
+        self.levels[level]?.toggleTrack(trackId)
       },
-
       /**
        * #action
        */
       showTrack(trackId: string, level = 0, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(schema, getRoot(self), trackId)
-        if (!configuration) {
-          throw new Error(`track not found ${trackId}`)
-        }
-        const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)!
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
         if (!self.levels[level]) {
           self.levels[level] = cast({ level })
         }
-        self.levels[level].tracks.push(
-          trackType.stateModel.create({
-            ...initialSnapshot,
-            type: configuration.type,
-            configuration,
-            displays: [
-              {
-                type: displayConf.type,
-                configuration: displayConf,
-              },
-            ],
-          }),
-        )
+        self.levels[level]?.showTrack(trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string, level = 0) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.levels[level]!.tracks.filter(
-          t => t.configuration === config,
-        )
-        transaction(() => {
-          shownTracks.forEach(t => {
-            self.levels[level]!.tracks.remove(t)
-          })
-        })
-        return shownTracks.length
+        self.levels[level]?.hideTrack(trackId)
       },
       /**
        * #action
        */
       squareView() {
         const average = avg(self.views.map(v => v.bpPerPx))
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const center = view.pxToBp(view.width / 2)
           view.setNewView(average, view.offsetPx)
-          if (!center.refName) {
-            return
+          if (center.refName) {
+            view.centerAt(center.coord, center.refName, center.index)
           }
-          view.centerAt(center.coord, center.refName, center.index)
-        })
+        }
       },
       /**
        * #action
@@ -345,12 +283,12 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Zoom to region(s)',
             onClick: () => {
-              self.views.forEach(view => {
+              for (const view of self.views) {
                 const { leftOffset, rightOffset } = view
                 if (leftOffset && rightOffset) {
                   view.moveTo(leftOffset, rightOffset)
                 }
-              })
+              }
             },
           },
         ]
@@ -362,9 +300,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             if (self.width) {
-              self.views.forEach(v => {
-                v.setWidth(self.width)
-              })
+              for (const view of self.views) {
+                view.setWidth(self.width)
+              }
             }
           }),
         )

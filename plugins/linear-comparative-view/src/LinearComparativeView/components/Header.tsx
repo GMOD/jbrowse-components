@@ -17,7 +17,6 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(() => ({
-  headerBar: {},
   spacer: {
     flexGrow: 1,
   },
@@ -50,7 +49,9 @@ const TrackSelector = observer(function ({
           type: 'subMenu',
           subMenu: model.views.slice(0, -1).map((_, idx) => ({
             label: `Synteny track selector (row ${idx + 1}->${idx + 2})`,
-            onClick: () => model.activateTrackSelector(),
+            onClick: () => {
+              model.activateTrackSelector(idx)
+            },
           })),
         },
 
@@ -78,7 +79,7 @@ const Header = observer(function ({
   const { views } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(false)
   return (
-    <div className={classes.headerBar}>
+    <div>
       <TrackSelector model={model} />
       <CascadingMenuButton
         className={classes.iconButton}
@@ -87,10 +88,10 @@ const Header = observer(function ({
           {
             label: 'Show search boxes?',
             checked: showSearchBoxes,
+            type: 'checkbox',
             onClick: () => {
               setShowSearchBoxes(!showSearchBoxes)
             },
-            type: 'checkbox',
           },
         ]}
       >
