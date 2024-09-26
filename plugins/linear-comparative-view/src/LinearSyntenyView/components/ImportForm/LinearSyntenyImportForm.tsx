@@ -2,13 +2,9 @@ import React, { useState } from 'react'
 import { Button, Container, IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { SnapshotIn } from 'mobx-state-tree'
 import {
-  AbstractSessionModel,
   getSession,
   isSessionWithAddTracks,
   notEmpty,
@@ -42,6 +38,9 @@ const useStyles = makeStyles()(theme => ({
   mb: {
     marginBottom: 10,
   },
+  bg: {
+    background: theme.palette.divider,
+  },
 }))
 
 type Conf = SnapshotIn<AnyConfigurationModel>
@@ -53,7 +52,7 @@ const LinearSyntenyViewImportForm = observer(function ({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
   const defaultAssemblyName = assemblyNames[0] || ''
@@ -70,9 +69,6 @@ const LinearSyntenyViewImportForm = observer(function ({
     setPreConfiguredSyntenyTracksToShow,
   ] = useState<MaybeString[]>([])
 
-  console.log('here')
-
-  // this is a combination of any displayed error message we have
   return (
     <Container className={classes.importFormContainer}>
       {error ? <ErrorMessage error={error} /> : null}
@@ -94,6 +90,19 @@ const LinearSyntenyViewImportForm = observer(function ({
                       .map((asm, idx2) => (idx2 === idx ? undefined : asm))
                       .filter(notEmpty),
                   )
+                  setPreConfiguredSyntenyTracksToShow(
+                    preConfiguredSyntenyTracksToShow
+                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
+                      .filter(notEmpty),
+                  )
+                  setUserOpenedSyntenyTracksToShow(
+                    userOpenedSyntenyTracksToShow
+                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
+                      .filter(notEmpty),
+                  )
+                  if (selectedRow >= selectedAssemblyNames.length - 2) {
+                    setSelectedRow(0)
+                  }
                 }}
               >
                 <CloseIcon />
@@ -112,7 +121,10 @@ const LinearSyntenyViewImportForm = observer(function ({
               />
               {idx !== selectedAssemblyNames.length - 1 ? (
                 <IconButton
-                  className={classes.synbutton}
+                  className={cx(
+                    classes.synbutton,
+                    idx === selectedRow ? classes.bg : undefined,
+                  )}
                   onClick={() => {
                     setSelectedRow(idx)
                   }}
@@ -174,7 +186,6 @@ const LinearSyntenyViewImportForm = observer(function ({
             preConfiguredSyntenyTrack={
               preConfiguredSyntenyTracksToShow[selectedRow]
             }
-            userOpenedSyntenyTrack={userOpenedSyntenyTracksToShow[selectedRow]}
             assembly1={selectedAssemblyNames[selectedRow]!}
             assembly2={selectedAssemblyNames[selectedRow + 1]!}
             setPreConfiguredSyntenyTrack={arg => {

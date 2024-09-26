@@ -1,9 +1,11 @@
-import path from 'path'
+/* eslint-disable no-console */
 import express, { Request } from 'express'
+import path from 'path'
+import cors from 'cors'
+import bodyParser from 'body-parser'
+import oauthServer from './oauth/server'
 
-import oauthServer from '../oauth/server'
-
-const router = express.Router() // Instantiate a new router
+const router = express.Router()
 
 const filePath = path.join(__dirname, '../public/oauthAuthenticate.html')
 
@@ -44,4 +46,26 @@ router.post(
 
 router.post('/token', oauthServer.token()) // Sends back token
 
-export default router
+const app = express()
+const port = 3030
+
+app.use(cors())
+
+// Here we are configuring express to use body-parser as middle-ware.
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+app.use('/oauth', router) // routes to access the auth stuff
+app.use(
+  '/data',
+  oauthServer.authenticate(),
+  express.static(path.join(__dirname, '..', '..', 'test_data', 'volvox')),
+)
+
+ 
+console.log(
+  'The redirect-uri is http://localhost:3000, must be running jbrowse-web on this port e.g. the default dev server port',
+)
+
+console.log('OAuth Server listening on port', port)
+app.listen(port)

@@ -24,7 +24,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // lazies

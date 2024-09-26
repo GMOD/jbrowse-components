@@ -14,7 +14,6 @@ export default function TrackSelector({
   model,
   assembly1,
   assembly2,
-  userOpenedSyntenyTrack,
   preConfiguredSyntenyTrack,
   setPreConfiguredSyntenyTrack,
   setUserOpenedSyntenyTrack,
@@ -22,7 +21,6 @@ export default function TrackSelector({
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
-  userOpenedSyntenyTrack: Conf | undefined
   preConfiguredSyntenyTrack: string | undefined
   setUserOpenedSyntenyTrack: (arg: Conf) => void
   setPreConfiguredSyntenyTrack: (arg?: string) => void

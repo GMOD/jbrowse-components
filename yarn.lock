@@ -4692,10 +4692,10 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
-"@types/express-oauth-server@^2.0.4":
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/@types/express-oauth-server/-/express-oauth-server-2.0.8.tgz#d9a300a54fca8027fe3fc5104ef53924ddf53141"
-  integrity sha512-wBhLebuFSrzJF7n0QbaJPTc5GcISVlxTzrb4KpNeAOJbwIydkXWVVBg+x9vOiwxvYGfiXUQ8AwfgOJatsgD3VQ==
+"@types/express-oauth-server@2.0.7":
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/@types/express-oauth-server/-/express-oauth-server-2.0.7.tgz#14575045d20a30491ac78829f2314f8a27a7b54f"
+  integrity sha512-u5O3lFdD5d9Ih25XVknqPoIp+BfFFBxsFwCXRBH5gnHjJBy3LseOjviW80PjCqWhI53BBIy77+2hYc6wUPrCJQ==
   dependencies:
     "@types/express" "*"
     "@types/oauth2-server" "*"
@@ -12934,9 +12934,9 @@ p-waterfall@2.1.1:
     p-reduce "^2.0.0"
 
 package-json-from-dist@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/package-json-from-dist/-/package-json-from-dist-1.0.0.tgz#e501cd3094b278495eb4258d4c9f6d5ac3019f00"
-  integrity sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz#4f1471a010827a86f94cfd9b0727e36d267de505"
+  integrity sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==
 
 pacote@^18.0.0, pacote@^18.0.6:
   version "18.0.6"
