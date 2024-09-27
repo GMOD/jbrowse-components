@@ -1,7 +1,8 @@
 import { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
-import modelFactory from './model'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+
+import modelFactory from './model'
 
 export default function LinearSyntenyViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

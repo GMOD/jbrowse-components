@@ -166,7 +166,17 @@ export default function RecentSessionPanel({
                 value="quickstart"
                 title="Add sessions to quickstart list"
                 disabled={!selectedSessions?.length}
-                onClick={() => addToQuickstartList(selectedSessions || [])}
+                onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  ;(async () => {
+                    try {
+                      await addToQuickstartList(selectedSessions || [])
+                    } catch (e) {
+                      setError(e)
+                      console.error(e)
+                    }
+                  })()
+                }}
               >
                 <PlaylistAddIcon />
               </ToggleButtonWithTooltip>
@@ -196,7 +206,8 @@ export default function RecentSessionPanel({
                 try {
                   const file = target.files?.[0]
                   if (file) {
-                    const path = (file as File & { path: string }).path
+                    const { webUtils } = window.require('electron')
+                    const path = webUtils.getPathForFile(file)
                     setPluginManager(await loadPluginManager(path))
                   }
                 } catch (e) {

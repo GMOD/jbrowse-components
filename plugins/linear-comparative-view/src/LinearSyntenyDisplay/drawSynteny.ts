@@ -3,6 +3,7 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
+import { getParent } from 'mobx-state-tree'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
@@ -36,9 +37,11 @@ export function drawRef(
   ctx3?: CanvasRenderingContext2D,
 ) {
   const view = getContainingView(model) as LinearSyntenyViewModel
+  // @ts-expect-error
+  const level = getParent(model, 4).level
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
-  const height = view.middleComparativeHeight
+  const { height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
@@ -47,20 +50,18 @@ export function drawRef(
   }
 
   ctx1.beginPath()
-  const featPos = model.featPositions
   const offsets = view.views.map(v => v.offsetPx)
-
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPos.length)
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
 
   // this loop is optimized to draw many thin lines with a single ctx.stroke
   // call, a separate loop below draws larger boxes
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
-  for (const { p11, p12, p21, p22 } of featPos) {
-    const x11 = p11.offsetPx - offsets[0]!
-    const x12 = p12.offsetPx - offsets[0]!
-    const x21 = p21.offsetPx - offsets[1]!
-    const x22 = p22.offsetPx - offsets[1]!
+  for (const { p11, p12, p21, p22 } of featPositions) {
+    const x11 = p11.offsetPx - offsets[level]!
+    const x12 = p12.offsetPx - offsets[level]!
+    const x21 = p21.offsetPx - offsets[level + 1]!
+    const x22 = p22.offsetPx - offsets[level + 1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const y1 = 0
@@ -89,11 +90,11 @@ export function drawRef(
   // ctx.stroke once is much more efficient than calling stroke() many times
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
-  for (const { p11, p12, p21, p22, f, cigar } of featPos) {
-    const x11 = p11.offsetPx - offsets[0]!
-    const x12 = p12.offsetPx - offsets[0]!
-    const x21 = p21.offsetPx - offsets[1]!
-    const x22 = p22.offsetPx - offsets[1]!
+  for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
+    const x11 = p11.offsetPx - offsets[level]!
+    const x12 = p12.offsetPx - offsets[level]!
+    const x21 = p21.offsetPx - offsets[level + 1]!
+    const x22 = p22.offsetPx - offsets[level + 1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
@@ -137,8 +138,8 @@ export function drawRef(
             px2 = cx2
           }
 
-          const d1 = len / bpPerPxs[0]!
-          const d2 = len / bpPerPxs[1]!
+          const d1 = len / bpPerPxs[level]!
+          const d2 = len / bpPerPxs[level + 1]!
 
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
@@ -170,9 +171,9 @@ export function drawRef(
             ) {
               continuingFlag = true
             } else {
-              // allow rendering the dominant color when using continuing flag
-              // if the last element of continuing was a large feature, else
-              // just use match
+              // allow rendering the dominant color when using continuing
+              // flag if the last element of continuing was a large
+              // feature, else just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
               continuingFlag = false
@@ -198,8 +199,8 @@ export function drawRef(
   }
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
-  for (let i = 0; i < featPos.length; i++) {
-    const feature = featPos[i]!
+  for (let i = 0; i < featPositions.length; i++) {
+    const feature = featPositions[i]!
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 
@@ -211,6 +212,7 @@ export function drawRef(
       feature,
       ctx: ctx2,
       drawCurves,
+      level,
       offsets,
       oobLimit,
       viewWidth: view.width,
@@ -218,7 +220,6 @@ export function drawRef(
       height,
     })
   }
-  return undefined
 }
 
 export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
@@ -226,10 +227,12 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   const highResolutionScaling = 1
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
-  const height = view.middleComparativeHeight
+  const height = model.height
   const width = view.width
   const ctx = model.mouseoverCanvas?.getContext('2d')
   const offsets = view.views.map(v => v.offsetPx)
+  // @ts-expect-error
+  const level = getParent(model, 4).level
 
   if (!ctx) {
     return
@@ -245,6 +248,7 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
         ctx.fill()
       },
       feature: feature1,
+      level,
       ctx,
       oobLimit,
       viewWidth: view.width,
@@ -263,6 +267,7 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
       },
       feature: feature2,
       ctx,
+      level,
       oobLimit,
       viewWidth: view.width,
       drawCurves,

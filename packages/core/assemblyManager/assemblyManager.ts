@@ -1,13 +1,14 @@
 import {
   addDisposer,
-  cast,
   getParent,
   types,
   Instance,
   IAnyType,
 } from 'mobx-state-tree'
-import { when } from '../util'
 import { reaction } from 'mobx'
+
+// locals
+import { when } from '../util'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
@@ -164,20 +165,17 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           reaction(
             () => self.assemblyList,
             assemblyConfs => {
-              self.assemblies.forEach(asm => {
+              for (const asm of self.assemblies) {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
                 }
-              })
-              assemblyConfs.forEach(conf => {
-                if (
-                  !self.assemblies.some(
-                    a => a.name === readConfObject(conf, 'name'),
-                  )
-                ) {
+              }
+              for (const conf of assemblyConfs) {
+                const name = readConfObject(conf, 'name')
+                if (!self.assemblies.some(a => a.name === name)) {
                   this.addAssembly(conf)
                 }
-              })
+              }
             },
             { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
           ),
@@ -206,16 +204,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       addAssembly(configuration: Conf) {
         self.assemblies.push({ configuration })
-      },
-
-      /**
-       * #action
-       * private: you would generally want to add to manipulate
-       * jbrowse.assemblies, session.sessionAssemblies, or
-       * session.temporaryAssemblies instead of using this directly
-       */
-      replaceAssembly(idx: number, configuration: Conf) {
-        self.assemblies[idx] = cast({ configuration })
       },
     }))
 }

@@ -3620,24 +3620,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_del.paf-1658813720770-DotplotDisplay",
+          "displayId": "volvox_del.paf-DotplotDisplay",
           "type": "DotplotDisplay",
         },
         {
-          "displayId": "volvox_del.paf-1658813720770-LinearComparativeDisplay",
+          "displayId": "volvox_del.paf-LinearComparativeDisplay",
           "type": "LinearComparativeDisplay",
         },
         {
-          "displayId": "volvox_del.paf-1658813720770-LinearSyntenyDisplay",
+          "displayId": "volvox_del.paf-LinearSyntenyDisplay",
           "type": "LinearSyntenyDisplay",
         },
         {
-          "displayId": "volvox_del.paf-1658813720770-LGVSyntenyDisplay",
+          "displayId": "volvox_del.paf-LGVSyntenyDisplay",
           "type": "LGVSyntenyDisplay",
         },
       ],
       "name": "volvox_del.paf",
-      "trackId": "volvox_del.paf-1658813720770",
+      "trackId": "volvox_del.paf",
       "type": "SyntenyTrack",
     },
     {
@@ -3661,24 +3661,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_ins.paf-1658813720770-DotplotDisplay",
+          "displayId": "volvox_ins.paf-DotplotDisplay",
           "type": "DotplotDisplay",
         },
         {
-          "displayId": "volvox_ins.paf-1658813720770-LinearComparativeDisplay",
+          "displayId": "volvox_ins.paf-LinearComparativeDisplay",
           "type": "LinearComparativeDisplay",
         },
         {
-          "displayId": "volvox_ins.paf-1658813720770-LinearSyntenyDisplay",
+          "displayId": "volvox_ins.paf-LinearSyntenyDisplay",
           "type": "LinearSyntenyDisplay",
         },
         {
-          "displayId": "volvox_ins.paf-1658813720770-LGVSyntenyDisplay",
+          "displayId": "volvox_ins.paf-LGVSyntenyDisplay",
           "type": "LGVSyntenyDisplay",
         },
       ],
       "name": "volvox_ins.paf",
-      "trackId": "volvox_ins.paf-1658813720770",
+      "trackId": "volvox_ins.paf",
       "type": "SyntenyTrack",
     },
     {

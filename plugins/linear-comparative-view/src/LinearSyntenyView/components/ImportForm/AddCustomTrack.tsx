@@ -94,12 +94,11 @@ type Conf = SnapshotIn<AnyConfigurationModel>
 const ImportCustomTrack = observer(function ({
   assembly1,
   assembly2,
-  setSessionTrackData,
+  setUserOpenedSyntenyTrack,
 }: {
-  sessionTrackData: Conf
   assembly1: string
   assembly2: string
-  setSessionTrackData: (arg: Conf) => void
+  setUserOpenedSyntenyTrack: (arg: Conf) => void
 }) {
   const [bed2Location, setBed2Location] = useState<FileLocation>()
   const [bed1Location, setBed1Location] = useState<FileLocation>()
@@ -118,7 +117,7 @@ const ImportCustomTrack = observer(function ({
         const trackId = `${fn}-${Date.now()}`
         setError(undefined)
 
-        setSessionTrackData({
+        setUserOpenedSyntenyTrack({
           trackId,
           name: fn,
           assemblyNames: [assembly2, assembly1],
@@ -147,7 +146,7 @@ const ImportCustomTrack = observer(function ({
     fileLocation,
     indexFileLocation,
     radioOption,
-    setSessionTrackData,
+    setUserOpenedSyntenyTrack,
   ])
   return (
     <Paper style={{ padding: 12 }}>

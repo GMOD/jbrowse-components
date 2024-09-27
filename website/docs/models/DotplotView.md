@@ -327,18 +327,18 @@ setHeight: (newHeight: number) => number
 setError: (e: unknown) => void
 ```
 
-#### action: zoomOutButton
+#### action: zoomOut
 
 ```js
 // type signature
-zoomOutButton: () => void
+zoomOut: () => void
 ```
 
-#### action: zoomInButton
+#### action: zoomIn
 
 ```js
 // type signature
-zoomInButton: () => void
+zoomIn: () => void
 ```
 
 #### action: activateTrackSelector
@@ -390,13 +390,13 @@ setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimple
 getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }[]
 ```
 
-#### action: zoomIn
+#### action: zoomInToMouseCoords
 
 zooms into clicked and dragged region
 
 ```js
 // type signature
-zoomIn: (mousedown: Coord, mouseup: Coord) => void
+zoomInToMouseCoords: (mousedown: Coord, mouseup: Coord) => void
 ```
 
 #### action: showAllRegions

@@ -14,7 +14,7 @@ export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
-      viewType: 'LinearSyntenyView',
+      viewType: 'LinearSyntenyViewHelper',
       ReactComponent: lazy(() => import('./components/Component')),
     })
   })

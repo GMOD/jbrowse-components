@@ -82,15 +82,16 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 cytobandHeight={cytobandHeight}
               />
             </g>
-            <SVGTracks
-              textHeight={textHeight}
-              fontSize={fontSize}
-              model={model}
-              displayResults={displayResults}
-              offset={offset}
-              trackLabels={trackLabels}
-              trackLabelOffset={trackLabelOffset}
-            />
+            <g transform={`translate(0 ${offset})`}>
+              <SVGTracks
+                textHeight={textHeight}
+                fontSize={fontSize}
+                model={model}
+                displayResults={displayResults}
+                trackLabels={trackLabels}
+                trackLabelOffset={trackLabelOffset}
+              />
+            </g>
           </g>
         </svg>
       </Wrapper>

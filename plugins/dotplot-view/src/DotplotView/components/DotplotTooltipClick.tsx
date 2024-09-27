@@ -25,7 +25,10 @@ export const DotplotTooltipClick = observer(function ({
   const y = (mousedownClient?.[1] || 0) - (ydistance < 0 ? 0 : 0)
 
   return mousedown && Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 ? (
-    <BaseTooltip clientPoint={{ x, y }}>
+    <BaseTooltip
+      placement={xdistance < 0 ? 'right' : 'left'}
+      clientPoint={{ x, y }}
+    >
       {`x - ${locstr(mousedown[0], hview)}`}
       <br />
       {`y - ${locstr(viewHeight - mousedown[1], vview)}`}

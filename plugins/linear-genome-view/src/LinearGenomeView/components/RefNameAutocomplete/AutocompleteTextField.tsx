@@ -23,13 +23,12 @@ export default function AutocompleteTextField({
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { helperText, InputProps = {} } = TextFieldProps
   return (
     <TextField
       onBlur={() => {
-        // this is used to restore a refName or the non-user-typed input
-        // to the box on blurring
+        // this is used to restore a refName or the non-user-typed input to the
+        // box on blurring
         setInputValue(inputBoxVal)
       }}
       {...params}

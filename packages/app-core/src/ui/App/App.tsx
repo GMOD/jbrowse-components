@@ -13,6 +13,7 @@ import DialogQueue from './DialogQueue'
 import AppFab from './AppFab'
 import ViewsContainer from './ViewsContainer'
 
+// lazies
 const DrawerWidget = lazy(() => import('./DrawerWidget'))
 
 const useStyles = makeStyles()(theme => ({
@@ -39,9 +40,12 @@ interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
     savedSessionNames: string[]
-    menus: { label: string; menuItems: JBMenuItem[] }[]
-    renameCurrentSession: (arg: string) => void
+    menus: {
+      label: string
+      menuItems: JBMenuItem[]
+    }[]
     snackbarMessages: SnackbarMessage[]
+    renameCurrentSession: (arg: string) => void
     popSnackbarMessage: () => unknown
   }
 }

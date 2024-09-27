@@ -1,6 +1,7 @@
 import React from 'react'
 import { getContainingView, getSession, Feature } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
+import { getParent } from 'mobx-state-tree'
 
 // locals
 import { LinearSyntenyDisplayModel } from '../model'
@@ -54,21 +55,28 @@ export default function SyntenyContextMenu({
           label: 'Center on feature',
           onClick: () => {
             const { f } = feature
+            const track = getParent<{ level: number }>(model, 4)
             const start = f.get('start')
             const end = f.get('end')
             const refName = f.get('refName')
             const mate = f.get('mate')
-            view.views[0]!.navToLocString(`${refName}:${start}-${end}`).catch(
+
+            const l1 = view.views[track.level]!
+            const l2 = view.views[track.level + 1]!
+            l1.navToLocString(`${refName}:${start}-${end}`).catch(
               (e: unknown) => {
-                console.error(e)
-                getSession(model).notifyError(`${e}`, e)
+                const err = `${l1.assemblyNames[0]}:${e}`
+                console.error(err)
+                getSession(model).notifyError(err, e)
               },
             )
-            view.views[1]!.navToLocString(
+
+            l2.navToLocString(
               `${mate.refName}:${mate.start}-${mate.end}`,
             ).catch((e: unknown) => {
-              console.error(e)
-              getSession(model).notifyError(`${e}`, e)
+              const err = `${l2.assemblyNames[0]}:${e}`
+              console.error(err)
+              getSession(model).notifyError(err, e)
             })
           },
         },
