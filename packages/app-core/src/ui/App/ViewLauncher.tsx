@@ -37,7 +37,7 @@ const useStyles = makeStyles()(theme => ({
 const ViewLauncher = observer(({ session }: { session: AppSession }) => {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
-  const viewTypes = pluginManager.getElementTypeRecord('view').all()
+  const viewTypes = pluginManager.getViewElements()
   const [value, setValue] = useState(viewTypes[0]?.name || '')
   return (
     <Paper className={classes.selectPaper}>
@@ -49,11 +49,13 @@ const ViewLauncher = observer(({ session }: { session: AppSession }) => {
             setValue(event.target.value)
           }}
         >
-          {viewTypes.map(({ displayName, name }) => (
-            <MenuItem key={name} value={name}>
-              {displayName}
-            </MenuItem>
-          ))}
+          {viewTypes
+            .filter(({ viewMetadata }) => !viewMetadata.hiddenFromGUI)
+            .map(({ displayName, name }) => (
+              <MenuItem key={name} value={name}>
+                {displayName}
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
       <FormControl className={classes.m2}>

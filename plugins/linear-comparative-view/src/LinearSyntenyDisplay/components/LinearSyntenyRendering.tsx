@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, lazy } from 'react'
+import React, { useState, useCallback, useRef, lazy, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
@@ -54,6 +54,7 @@ const LinearSyntenyRendering = observer(function ({
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
   const { mouseoverId, height } = model
+  const k2p = useRef<HTMLCanvasElement | null>()
 
   // these useCallbacks avoid new refs from being created on any mouseover,
   // etc.
@@ -65,64 +66,67 @@ const LinearSyntenyRendering = observer(function ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k2 = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
-      function onWheel(event: WheelEvent) {
-        event.preventDefault()
-        if (event.ctrlKey) {
-          delta.current += event.deltaY / 500
-          for (const v of view.views) {
-            v.setScaleFactor(
-              delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
-            )
-          }
-          if (timeout.current) {
-            clearTimeout(timeout.current)
-          }
-          timeout.current = setTimeout(() => {
-            for (const v of view.views) {
-              v.setScaleFactor(1)
-              v.zoomTo(
-                delta.current > 0
-                  ? v.bpPerPx * (1 + delta.current)
-                  : v.bpPerPx / (1 - delta.current),
-                event.clientX - (ref?.getBoundingClientRect().left || 0),
-              )
-            }
-            delta.current = 0
-          }, 300)
-        } else {
-          if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
-            xOffset.current += event.deltaX / 2
-          }
-          if (!scheduled.current) {
-            scheduled.current = true
-            window.requestAnimationFrame(() => {
-              transaction(() => {
-                for (const v of view.views) {
-                  v.horizontalScroll(xOffset.current)
-                }
-                xOffset.current = 0
-                scheduled.current = false
-              })
-            })
-          }
-        }
-      }
-      ref?.addEventListener('wheel', onWheel)
-
-      // this is a react 19-ism to have a cleanup in the ref callback
-      // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
-      // note: it warns in earlier versions of react
-      return () => {
-        ref?.removeEventListener('wheel', onWheel)
-      }
+      k2p.current = ref // this ref is additionally used in useEffect below
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    function onWheel(event: WheelEvent) {
+      event.preventDefault()
+      if (event.ctrlKey) {
+        delta.current += event.deltaY / 500
+        for (const v of view.views) {
+          v.setScaleFactor(
+            delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+          )
+        }
+        if (timeout.current) {
+          clearTimeout(timeout.current)
+        }
+        timeout.current = setTimeout(() => {
+          for (const v of view.views) {
+            v.setScaleFactor(1)
+            v.zoomTo(
+              delta.current > 0
+                ? v.bpPerPx * (1 + delta.current)
+                : v.bpPerPx / (1 - delta.current),
+              event.clientX - (k2p.current?.getBoundingClientRect().left || 0),
+            )
+          }
+          delta.current = 0
+        }, 300)
+      } else {
+        if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+          xOffset.current += event.deltaX / 2
+        }
+        if (!scheduled.current) {
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            transaction(() => {
+              for (const v of view.views) {
+                v.horizontalScroll(xOffset.current)
+              }
+              xOffset.current = 0
+              scheduled.current = false
+            })
+          })
+        }
+      }
+    }
+    k2p.current?.addEventListener('wheel', onWheel)
+    return () => {
+      k2p.current?.removeEventListener('wheel', onWheel)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, height, width])
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k3 = useCallback(
     (ref: HTMLCanvasElement | null) => {

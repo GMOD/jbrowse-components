@@ -2922,27 +2922,6 @@
     "@emnapi/runtime" "^1.1.0"
     "@tybys/wasm-util" "^0.9.0"
 
-"@node-oauth/express-oauth-server@^4.0.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@node-oauth/express-oauth-server/-/express-oauth-server-4.1.0.tgz#0ef3a4135f6e8fa28025df0421268cecdff6c045"
-  integrity sha512-uJKvH32S1nwlxjvwInlcsIBJiHMcivS1u1UKG7d76V1wp5r08hw8wOY7YkG5UbHBfRXXgpNJmHCIvNpJ8vL1gw==
-  dependencies:
-    "@node-oauth/oauth2-server" "^5.2.0"
-
-"@node-oauth/formats@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@node-oauth/formats/-/formats-1.0.0.tgz#6525478802180199ecf6ea3208fc5e1b683031be"
-  integrity sha512-DwSbLtdC8zC5B5gTJkFzJj5s9vr9SGzOgQvV9nH7tUVuMSScg0EswAczhjIapOmH3Y8AyP7C4Jv7b8+QJObWZA==
-
-"@node-oauth/oauth2-server@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@node-oauth/oauth2-server/-/oauth2-server-5.2.0.tgz#9bfabf1f5d24387c919e30a4c5fa3ff0c408cbfa"
-  integrity sha512-tbw0aHPk1Pu/HmQlll4unYd+VHwoagbAmUBLys5g6hDh9khcKzTmE77Z0myMG5a66w3Yk3xBwCRPX9a7M+HTqA==
-  dependencies:
-    "@node-oauth/formats" "1.0.0"
-    basic-auth "2.0.1"
-    type-is "1.6.18"
-
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -4692,14 +4671,6 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
-"@types/express-oauth-server@2.0.7":
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/@types/express-oauth-server/-/express-oauth-server-2.0.7.tgz#14575045d20a30491ac78829f2314f8a27a7b54f"
-  integrity sha512-u5O3lFdD5d9Ih25XVknqPoIp+BfFFBxsFwCXRBH5gnHjJBy3LseOjviW80PjCqWhI53BBIy77+2hYc6wUPrCJQ==
-  dependencies:
-    "@types/express" "*"
-    "@types/oauth2-server" "*"
-
 "@types/express-serve-static-core@*", "@types/express-serve-static-core@^5.0.0":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-5.0.0.tgz#91f06cda1049e8f17eeab364798ed79c97488a1c"
@@ -4955,13 +4926,6 @@
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.4.tgz#56e2cc26c397c038fab0e3a917a12d5c5909e901"
   integrity sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==
-
-"@types/oauth2-server@*":
-  version "3.0.18"
-  resolved "https://registry.yarnpkg.com/@types/oauth2-server/-/oauth2-server-3.0.18.tgz#0271fcee8b9077cb8ea1d7ff60ac0e30ad3c035c"
-  integrity sha512-pcRHJjaeS2ISfSpeqTzNA+IoaRPvTTVivFycHW750XU73ZfFGQ6c3wH4nZgF+NxGQmWMiThSbRKeUTi0UEsfjA==
-  dependencies:
-    "@types/express" "*"
 
 "@types/offscreencanvas@^2019.6.4":
   version "2019.7.3"
@@ -6051,13 +6015,6 @@ base64-js@^1.0.0, base64-js@^1.3.0, base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
-
-basic-auth@2.0.1, basic-auth@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/basic-auth/-/basic-auth-2.0.1.tgz#b998279bf47ce38344b4f3cf916d4679bbf51e3a"
-  integrity sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==
-  dependencies:
-    safe-buffer "5.1.2"
 
 batch@0.6.1:
   version "0.6.1"
@@ -8674,14 +8631,7 @@ exponential-backoff@^3.1.1:
   resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.1.tgz#64ac7526fe341ab18a39016cd22c787d01e00bf6"
   integrity sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==
 
-express-basic-auth@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/express-basic-auth/-/express-basic-auth-1.2.1.tgz#d31241c03a915dd55db7e5285573049cfcc36381"
-  integrity sha512-L6YQ1wQ/mNjVLAmK3AG1RK6VkokA1BIY6wmiH304Xtt/cLTps40EusZsU1Uop+v9lTDPxdtzbFmdXfFO3KEnwA==
-  dependencies:
-    basic-auth "^2.0.1"
-
-express@^4.17.1, express@^4.18.2, express@^4.19.2:
+express@^4.17.1, express@^4.19.2:
   version "4.21.0"
   resolved "https://registry.yarnpkg.com/express/-/express-4.21.0.tgz#d57cb706d49623d4ac27833f1cbc466b668eb915"
   integrity sha512-VqcNGcj/Id5ZT1LZ/cfihi3ttTn+NJmkli2eZADigjq29qTlWi/hAQ43t/VLPq8+UX06FCEx3ByOYet6ZFblng==
@@ -15674,7 +15624,7 @@ type-fest@^2.19.0, type-fest@~2.19:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
-type-is@1.6.18, type-is@~1.6.18:
+type-is@~1.6.18:
   version "1.6.18"
   resolved "https://registry.yarnpkg.com/type-is/-/type-is-1.6.18.tgz#4e552cd05df09467dcbc4ef739de89f2cf37c131"
   integrity sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==

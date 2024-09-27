@@ -62,7 +62,6 @@ app.use(
   express.static(path.join(__dirname, '..', '..', 'test_data', 'volvox')),
 )
 
- 
 console.log(
   'The redirect-uri is http://localhost:3000, must be running jbrowse-web on this port e.g. the default dev server port',
 )

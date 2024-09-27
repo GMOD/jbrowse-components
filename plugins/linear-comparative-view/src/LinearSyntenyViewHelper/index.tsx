@@ -12,6 +12,9 @@ export default function LinearSyntenyViewF(pluginManager: PluginManager) {
     return new ViewType({
       name: 'LinearSyntenyViewHelper',
       displayName: 'Linear synteny view (helper)',
+      viewMetadata: {
+        hiddenFromGUI: true,
+      },
       stateModel: linearSyntenyViewHelperModelFactory(pluginManager),
       ReactComponent: UnusedComponent,
     })

@@ -28,12 +28,12 @@ const HeaderSearchBoxes = observer(function ({
   const { classes } = useStyles()
   const { assemblyNames, coarseTotalBp } = view
   return (
-    <div className={classes.searchBox}>
+    <span className={classes.searchBox}>
       <SearchBox model={view} showHelp={false} />
       <Typography variant="body2" color="textSecondary" className={classes.bp}>
         {assemblyNames.join(',')} {toLocale(Math.round(coarseTotalBp))} bp
       </Typography>
-    </div>
+    </span>
   )
 })
 

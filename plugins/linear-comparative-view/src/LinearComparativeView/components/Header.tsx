@@ -1,73 +1,53 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { FormGroup } from '@mui/material'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import SearchIcon from '@mui/icons-material/Search'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { LinearComparativeViewModel } from '../model'
 import HeaderSearchBoxes from './HeaderSearchBoxes'
 
-const useStyles = makeStyles()(() => ({
-  spacer: {
-    flexGrow: 1,
-  },
-  iconButton: {
-    margin: 5,
-  },
-}))
-
-const TrackSelector = observer(function ({
-  model,
-}: {
-  model: LinearComparativeViewModel
-}) {
-  const { views } = model
-  return (
-    <CascadingMenuButton
-      menuItems={[
-        {
-          label: 'Synteny track selectors',
-          type: 'subMenu',
-          subMenu: views.slice(0, -1).map((_, idx) => ({
-            label: `Synteny track selector (row ${idx + 1}->${idx + 2})`,
-            onClick: () => {
-              model.activateTrackSelector(idx)
-            },
-          })),
-        },
-
-        {
-          label: 'Row track selectors',
-          type: 'subMenu',
-          subMenu: views.map((view, idx) => ({
-            label: `Row ${idx + 1} track selector`,
-            onClick: () => view.activateTrackSelector(),
-          })),
-        },
-      ]}
-    >
-      <TrackSelectorIcon />
-    </CascadingMenuButton>
-  )
-})
-
 const Header = observer(function ({
   model,
 }: {
   model: LinearComparativeViewModel
 }) {
-  const { classes } = useStyles()
   const { views } = model
-  const [showSearchBoxes, setShowSearchBoxes] = useState(false)
+  const [showSearchBoxes, setShowSearchBoxes] = useState(true)
+  const [sideBySide, setSideBySide] = useState(true)
   return (
-    <div>
-      <TrackSelector model={model} />
+    <FormGroup row>
       <CascadingMenuButton
-        className={classes.iconButton}
+        menuItems={[
+          {
+            label: 'Synteny track selectors',
+            type: 'subMenu',
+            subMenu: views.slice(0, -1).map((_, idx) => ({
+              label: `Synteny track selector (row ${idx + 1}->${idx + 2})`,
+              onClick: () => {
+                model.activateTrackSelector(idx)
+              },
+            })),
+          },
+
+          {
+            label: 'Row track selectors',
+            type: 'subMenu',
+            subMenu: views.map((view, idx) => ({
+              label: `Row ${idx + 1} track selector`,
+              onClick: () => view.activateTrackSelector(),
+            })),
+          },
+        ]}
+      >
+        <TrackSelectorIcon />
+      </CascadingMenuButton>
+      <CascadingMenuButton
         menuItems={[
           {
             label: 'Row view menus',
@@ -77,31 +57,51 @@ const Header = observer(function ({
               subMenu: view.menuItems(),
             })),
           },
-          {
-            label: 'Show search boxes?',
-            checked: showSearchBoxes,
-            type: 'checkbox',
-            onClick: () => {
-              setShowSearchBoxes(!showSearchBoxes)
-            },
-          },
           ...model.headerMenuItems(),
         ]}
       >
         <MoreVertIcon />
       </CascadingMenuButton>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Show search boxes',
+            type: 'checkbox',
+            checked: showSearchBoxes,
+            onClick: () => {
+              setShowSearchBoxes(!showSearchBoxes)
+            },
+          },
+
+          {
+            label: 'Orientation - Side-by-side',
+            type: 'radio',
+            checked: sideBySide,
+            onClick: () => {
+              setSideBySide(!sideBySide)
+            },
+          },
+          {
+            label: 'Orientation - Vertical',
+            type: 'radio',
+            checked: !sideBySide,
+            onClick: () => {
+              setSideBySide(!sideBySide)
+            },
+          },
+        ]}
+      >
+        <SearchIcon />
+      </CascadingMenuButton>
 
       {showSearchBoxes ? (
-        <div>
+        <span style={{ display: sideBySide ? 'inline-flex' : undefined }}>
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />
           ))}
-        </div>
+        </span>
       ) : null}
-
-      <div className={classes.spacer} />
-    </div>
+    </FormGroup>
   )
 })
-
 export default Header

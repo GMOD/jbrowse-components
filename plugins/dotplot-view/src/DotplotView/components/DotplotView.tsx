@@ -325,7 +325,7 @@ const DotplotViewInternal = observer(function ({
                 label: 'Zoom in',
                 onClick: () => {
                   if (mousedown && mouseup) {
-                    model.zoomIn(mousedown, mouseup)
+                    model.zoomInToMouseCoords(mousedown, mouseup)
                   }
                   // below line is needed to prevent tooltip from sticking
                   setMouseOvered(false)

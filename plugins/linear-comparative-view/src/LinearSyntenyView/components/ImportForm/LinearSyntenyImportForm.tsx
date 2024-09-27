@@ -41,6 +41,9 @@ const useStyles = makeStyles()(theme => ({
   bg: {
     background: theme.palette.divider,
   },
+  fixedWidth: {
+    width: 700,
+  },
 }))
 
 type Conf = SnapshotIn<AnyConfigurationModel>
@@ -176,7 +179,7 @@ const LinearSyntenyViewImportForm = observer(function ({
         </div>
 
         <Spacer />
-        <div style={{ width: 700 }}>
+        <div className={classes.fixedWidth}>
           <div>
             Synteny dataset to display between row {selectedRow + 1} and{' '}
             {selectedRow + 2}

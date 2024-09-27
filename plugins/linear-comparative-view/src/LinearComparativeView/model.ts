@@ -208,7 +208,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!self.levels[level]) {
           self.levels[level] = cast({ level })
         }
-        self.levels[level]?.showTrack(trackId, initialSnapshot)
+        self.levels[level].showTrack(trackId, initialSnapshot)
       },
 
       /**
