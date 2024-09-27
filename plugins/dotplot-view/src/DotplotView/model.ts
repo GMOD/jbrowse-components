@@ -339,14 +339,14 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #action
        */
-      zoomOutButton() {
+      zoomOut() {
         self.hview.zoomOut()
         self.vview.zoomOut()
       },
       /**
        * #action
        */
-      zoomInButton() {
+      zoomIn() {
         self.hview.zoomIn()
         self.vview.zoomIn()
       },
@@ -454,7 +454,7 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        * zooms into clicked and dragged region
        */
-      zoomIn(mousedown: Coord, mouseup: Coord) {
+      zoomInToMouseCoords(mousedown: Coord, mouseup: Coord) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
           const [x1, x2, y1, y2] = result

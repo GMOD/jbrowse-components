@@ -9,7 +9,12 @@ type BasicView = React.ComponentType<{
   model: any
   session?: IAnyStateTreeNode
 }>
+
 type ViewComponentType = React.LazyExoticComponent<BasicView> | BasicView
+
+interface ViewMetadata {
+  hiddenFromGUI?: boolean
+}
 
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ViewComponentType
@@ -17,6 +22,8 @@ export default class ViewType extends PluggableElementBase {
   stateModel: IAnyModelType
 
   displayTypes: DisplayType[] = []
+
+  viewMetadata: ViewMetadata = {}
 
   // extendedName can be used for when you extend a given view type, and want
   // to register all of that view types displays to yourself
@@ -30,12 +37,14 @@ export default class ViewType extends PluggableElementBase {
   constructor(stuff: {
     name: string
     displayName?: string
-    ReactComponent: ViewComponentType
     stateModel: IAnyModelType
     extendedName?: string
+    viewMetadata?: ViewMetadata
+    ReactComponent: ViewComponentType
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
+    this.viewMetadata = stuff.viewMetadata || {}
     this.stateModel = stuff.stateModel
     this.extendedName = stuff.extendedName
   }

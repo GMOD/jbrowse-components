@@ -90,15 +90,16 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
 
                 <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
               </g>
-              <SVGTracks
-                textHeight={textHeight}
-                trackLabels={trackLabels}
-                fontSize={fontSize}
-                model={displayResults[0]!.view}
-                displayResults={displayResults[0]!.data}
-                offset={offset}
-                trackLabelOffset={trackLabelOffset}
-              />
+              <g transform={`translate(0 ${offset})`}>
+                <SVGTracks
+                  textHeight={textHeight}
+                  trackLabels={trackLabels}
+                  fontSize={fontSize}
+                  model={displayResults[0]!.view}
+                  displayResults={displayResults[0]!.data}
+                  trackLabelOffset={trackLabelOffset}
+                />
+              </g>
             </g>
           ) : null}
 
@@ -110,15 +111,16 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 </text>
                 <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
               </g>
-              <SVGTracks
-                textHeight={textHeight}
-                trackLabels={trackLabels}
-                fontSize={fontSize}
-                model={displayResults[1]!.view}
-                displayResults={displayResults[1]!.data}
-                offset={offset}
-                trackLabelOffset={trackLabelOffset}
-              />
+              <g transform={`translate(0 ${offset})`}>
+                <SVGTracks
+                  textHeight={textHeight}
+                  trackLabels={trackLabels}
+                  fontSize={fontSize}
+                  model={displayResults[1]!.view}
+                  displayResults={displayResults[1]!.data}
+                  trackLabelOffset={trackLabelOffset}
+                />
+              </g>
             </g>
           ) : null}
 

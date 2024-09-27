@@ -353,6 +353,10 @@ export default class PluginManager {
     return this.getElementTypeRecord(groupName).all()
   }
 
+  getViewElements() {
+    return this.getElementTypesInGroup('view') as ViewType[]
+  }
+
   getTrackElements() {
     return this.getElementTypesInGroup('track') as TrackType[]
   }

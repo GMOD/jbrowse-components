@@ -52,6 +52,13 @@ any
 string[]
 ```
 
+#### getter: height
+
+```js
+// type
+number
+```
+
 #### getter: numFeats
 
 ```js

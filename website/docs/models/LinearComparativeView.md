@@ -63,24 +63,13 @@ false
 interactToggled: false
 ```
 
-#### property: middleComparativeHeight
+#### property: levels
 
 ```js
 // type signature
-number
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: IType<string, string, string>; tracks: IArrayType<IAnyType>; height: IType<...>; level: ISimpleType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
 // code
-middleComparativeHeight: 100
-```
-
-#### property: tracks
-
-```js
-// type signature
-IArrayType<IAnyType>
-// code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
+levels: types.array(LinearSyntenyViewHelper)
 ```
 
 #### property: views
@@ -112,13 +101,6 @@ viewTrackConfigs: types.array(
 ```
 
 ### LinearComparativeView - Getters
-
-#### getter: highResolutionScaling
-
-```js
-// type
-number
-```
 
 #### getter: initialized
 
@@ -190,39 +172,39 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
 ```
 
-#### action: setMiddleComparativeHeight
+#### action: setLevelHeight
 
 ```js
 // type signature
-setMiddleComparativeHeight: (n: number) => number
+setLevelHeight: (newHeight: number, level?: number) => number
 ```
 
 #### action: activateTrackSelector
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: (level: number) => Widget
 ```
 
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string, level?: number) => void
 ```
 
 #### action: showTrack
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, level?: number, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string, level?: number) => void
 ```
 
 #### action: squareView

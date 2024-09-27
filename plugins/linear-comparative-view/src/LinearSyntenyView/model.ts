@@ -75,9 +75,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       showAllRegions() {
         transaction(() => {
-          self.views.forEach(view => {
+          for (const view of self.views) {
             view.showAllRegionsInAssembly()
-          })
+          }
         })
       },
     }))

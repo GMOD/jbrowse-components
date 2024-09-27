@@ -20,11 +20,19 @@ const DotplotControls = observer(function ({
 }) {
   return (
     <div>
-      <IconButton onClick={model.zoomOutButton}>
+      <IconButton
+        onClick={() => {
+          model.zoomOut()
+        }}
+      >
         <ZoomOut />
       </IconButton>
 
-      <IconButton onClick={model.zoomInButton}>
+      <IconButton
+        onClick={() => {
+          model.zoomIn()
+        }}
+      >
         <ZoomIn />
       </IconButton>
 

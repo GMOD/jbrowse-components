@@ -1890,7 +1890,7 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
-      "trackId": "volvox_del.paf-1658813720770",
+      "trackId": "volvox_del.paf",
       "name": "volvox_del.paf",
       "assemblyNames": ["volvox", "volvox_del"],
       "adapter": {
@@ -1905,7 +1905,7 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
-      "trackId": "volvox_ins.paf-1658813720770",
+      "trackId": "volvox_ins.paf",
       "name": "volvox_ins.paf",
       "assemblyNames": ["volvox", "volvox_ins"],
       "adapter": {
