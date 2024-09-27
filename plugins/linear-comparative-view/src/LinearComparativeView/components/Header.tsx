@@ -36,7 +36,7 @@ const Header = observer(function ({
             label: 'Synteny track selectors',
             type: 'subMenu',
             subMenu: views.slice(0, -1).map((_, idx) => ({
-              label: `Synteny track selector (row ${idx + 1}->${idx + 2})`,
+              label: `Row ${idx + 1}->${idx + 2} (${views[idx]!.assemblyNames.join(',')}->${views[idx + 1]!.assemblyNames.join(',')})`,
               onClick: () => {
                 model.activateTrackSelector(idx)
               },
@@ -47,7 +47,7 @@ const Header = observer(function ({
             label: 'Row track selectors',
             type: 'subMenu',
             subMenu: views.map((view, idx) => ({
-              label: `Row ${idx + 1} track selector`,
+              label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
               onClick: () => view.activateTrackSelector(),
             })),
           },
