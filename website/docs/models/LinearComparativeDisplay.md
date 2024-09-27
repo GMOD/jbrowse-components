@@ -36,22 +36,13 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: height
-
-```js
-// type signature
-number
-// code
-height: 100
-```
-
 ### LinearComparativeDisplay - Getters
 
 #### getter: renderProps
 
 ```js
 // type
-() => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: { [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; height: number; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
+() => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: { [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
 ```
 
 ### LinearComparativeDisplay - Actions

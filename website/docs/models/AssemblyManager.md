@@ -112,14 +112,3 @@ reference. snapshots cannot be used
 // type signature
 addAssembly: (configuration: any) => void
 ```
-
-#### action: replaceAssembly
-
-private: you would generally want to add to manipulate jbrowse.assemblies,
-session.sessionAssemblies, or session.temporaryAssemblies instead of using this
-directly
-
-```js
-// type signature
-replaceAssembly: (idx: number, configuration: any) => void
-```

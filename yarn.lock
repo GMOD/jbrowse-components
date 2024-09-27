@@ -2922,6 +2922,27 @@
     "@emnapi/runtime" "^1.1.0"
     "@tybys/wasm-util" "^0.9.0"
 
+"@node-oauth/express-oauth-server@^4.0.0":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@node-oauth/express-oauth-server/-/express-oauth-server-4.1.1.tgz#99a2cda2328c081af604cb9de961d03703fec433"
+  integrity sha512-Ps6UFV7XAfggYvRpveoT3t3h4dluy9wViEgkSU1kBcTOhllpBNIKrlsHTC+hBd1PT/+SC7vzpIXd2uFrmwF8Vg==
+  dependencies:
+    "@node-oauth/oauth2-server" "^5.2.0"
+
+"@node-oauth/formats@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@node-oauth/formats/-/formats-1.0.0.tgz#6525478802180199ecf6ea3208fc5e1b683031be"
+  integrity sha512-DwSbLtdC8zC5B5gTJkFzJj5s9vr9SGzOgQvV9nH7tUVuMSScg0EswAczhjIapOmH3Y8AyP7C4Jv7b8+QJObWZA==
+
+"@node-oauth/oauth2-server@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@node-oauth/oauth2-server/-/oauth2-server-5.2.0.tgz#9bfabf1f5d24387c919e30a4c5fa3ff0c408cbfa"
+  integrity sha512-tbw0aHPk1Pu/HmQlll4unYd+VHwoagbAmUBLys5g6hDh9khcKzTmE77Z0myMG5a66w3Yk3xBwCRPX9a7M+HTqA==
+  dependencies:
+    "@node-oauth/formats" "1.0.0"
+    basic-auth "2.0.1"
+    type-is "1.6.18"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -4671,6 +4692,14 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
+"@types/express-oauth-server@^2.0.7":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@types/express-oauth-server/-/express-oauth-server-2.0.8.tgz#d9a300a54fca8027fe3fc5104ef53924ddf53141"
+  integrity sha512-wBhLebuFSrzJF7n0QbaJPTc5GcISVlxTzrb4KpNeAOJbwIydkXWVVBg+x9vOiwxvYGfiXUQ8AwfgOJatsgD3VQ==
+  dependencies:
+    "@types/express" "*"
+    "@types/oauth2-server" "*"
+
 "@types/express-serve-static-core@*", "@types/express-serve-static-core@^5.0.0":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-5.0.0.tgz#91f06cda1049e8f17eeab364798ed79c97488a1c"
@@ -4926,6 +4955,13 @@
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.4.tgz#56e2cc26c397c038fab0e3a917a12d5c5909e901"
   integrity sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==
+
+"@types/oauth2-server@*":
+  version "3.0.18"
+  resolved "https://registry.yarnpkg.com/@types/oauth2-server/-/oauth2-server-3.0.18.tgz#0271fcee8b9077cb8ea1d7ff60ac0e30ad3c035c"
+  integrity sha512-pcRHJjaeS2ISfSpeqTzNA+IoaRPvTTVivFycHW750XU73ZfFGQ6c3wH4nZgF+NxGQmWMiThSbRKeUTi0UEsfjA==
+  dependencies:
+    "@types/express" "*"
 
 "@types/offscreencanvas@^2019.6.4":
   version "2019.7.3"
@@ -5637,15 +5673,15 @@ anymatch@^3.0.3, anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-app-builder-bin@5.0.0-alpha.9:
-  version "5.0.0-alpha.9"
-  resolved "https://registry.yarnpkg.com/app-builder-bin/-/app-builder-bin-5.0.0-alpha.9.tgz#e2669314d0a667bf4332328da1602d7aebfcaad0"
-  integrity sha512-c/wOXdITW80MGUV2PECWuxB49MIm44latbuoWGjq0i89lmA9ZB8jcvuF1pStu3wrxStYVjYpPD3/NgQDWSHohA==
+app-builder-bin@5.0.0-alpha.10:
+  version "5.0.0-alpha.10"
+  resolved "https://registry.yarnpkg.com/app-builder-bin/-/app-builder-bin-5.0.0-alpha.10.tgz#cf12e593b6b847fb9d04027fa755c6c6610d778b"
+  integrity sha512-Ev4jj3D7Bo+O0GPD2NMvJl+PGiBAfS7pUGawntBNpCbxtpncfUixqFj9z9Jme7V7s3LBGqsWZZP54fxBX3JKJw==
 
-app-builder-lib@25.1.5:
-  version "25.1.5"
-  resolved "https://registry.yarnpkg.com/app-builder-lib/-/app-builder-lib-25.1.5.tgz#dca627d97b761743714c7e64238907c762ae8a51"
-  integrity sha512-0m44K6wTPlcstFp+U+znCCDmrJoCUN03AzqpuHFbo02OIGctCg8DggJ91GZ58eBajAU50JNOQ7G6QRkhA7wB/w==
+app-builder-lib@25.1.6:
+  version "25.1.6"
+  resolved "https://registry.yarnpkg.com/app-builder-lib/-/app-builder-lib-25.1.6.tgz#a9618e186a5fa7b38cfa2d51ebba36d176ac31b6"
+  integrity sha512-iui5q65skaawkTBcsaf2wCaegCWO+JoK5VaPnaNdIWXm2bq8a/g53W88FHjR535L9viLeGbuBp/iU1XZSe2DQQ==
   dependencies:
     "@develar/schema-utils" "~2.6.5"
     "@electron/notarize" "2.5.0"
@@ -5656,7 +5692,7 @@ app-builder-lib@25.1.5:
     "@types/fs-extra" "9.0.13"
     async-exit-hook "^2.0.1"
     bluebird-lst "^1.0.9"
-    builder-util "25.1.5"
+    builder-util "25.1.6"
     builder-util-runtime "9.2.9"
     chromium-pickle-js "^0.2.0"
     config-file-ts "0.2.8-rc1"
@@ -5664,7 +5700,7 @@ app-builder-lib@25.1.5:
     dotenv "^16.4.5"
     dotenv-expand "^11.0.6"
     ejs "^3.1.8"
-    electron-publish "25.1.5"
+    electron-publish "25.1.6"
     form-data "^4.0.0"
     fs-extra "^10.1.0"
     hosted-git-info "^4.1.0"
@@ -6016,6 +6052,13 @@ base64-js@^1.0.0, base64-js@^1.3.0, base64-js@^1.3.1, base64-js@^1.5.1:
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
 
+basic-auth@2.0.1, basic-auth@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/basic-auth/-/basic-auth-2.0.1.tgz#b998279bf47ce38344b4f3cf916d4679bbf51e3a"
+  integrity sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==
+  dependencies:
+    safe-buffer "5.1.2"
+
 batch@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/batch/-/batch-0.6.1.tgz#dc34314f4e679318093fc760272525f94bf25c16"
@@ -6241,14 +6284,14 @@ builder-util-runtime@9.2.9:
     debug "^4.3.4"
     sax "^1.2.4"
 
-builder-util@25.1.5:
-  version "25.1.5"
-  resolved "https://registry.yarnpkg.com/builder-util/-/builder-util-25.1.5.tgz#9c20c35e636535025ab986a3e1fbeccb879eff8c"
-  integrity sha512-NR/RroiugrM+HN+DHIuTfaIby+xKB2ukSZpTIIRfPbDpSnn4ByPQd0DZdyrupsbcndadMYf7R21i3GZy8DENaQ==
+builder-util@25.1.6:
+  version "25.1.6"
+  resolved "https://registry.yarnpkg.com/builder-util/-/builder-util-25.1.6.tgz#8fb5cadd67afd10e8bb6a5d29583e52cebce4fbd"
+  integrity sha512-BOMVCO/CLYaIwK2uh7BKJUmRy9fYhn674c4Cauxc/lSZ7CyLLNkUMZJUFCPd3OqD1FIQO06MZ/u7akKtVyXlJw==
   dependencies:
     "7zip-bin" "~5.2.0"
     "@types/debug" "^4.1.6"
-    app-builder-bin "5.0.0-alpha.9"
+    app-builder-bin "5.0.0-alpha.10"
     bluebird-lst "^1.0.9"
     builder-util-runtime "9.2.9"
     chalk "^4.1.2"
@@ -7780,13 +7823,13 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-dmg-builder@25.1.5:
-  version "25.1.5"
-  resolved "https://registry.yarnpkg.com/dmg-builder/-/dmg-builder-25.1.5.tgz#826f0c5563b0cbd47137dd0d9e6ceccf4e47f0c9"
-  integrity sha512-kPvdGQVVztIu9xiosBCQaXLhTwal2gX7qf79CgZwPyAlY3XsClaG+6Bt2fMGQ63Q/ZTojUEi8yrf0QMsZMabvA==
+dmg-builder@25.1.6:
+  version "25.1.6"
+  resolved "https://registry.yarnpkg.com/dmg-builder/-/dmg-builder-25.1.6.tgz#ac9c9c35e09727610f342f400256f329cc7ba064"
+  integrity sha512-TeKjLNKBu6ODewl36Q1FH0+Bv/Rnb76x1vzPJ0Xw1T/YlAByYl1G+1PaKoEpVEDisrLRSrM9a0k3vDj53xQi9w==
   dependencies:
-    app-builder-lib "25.1.5"
-    builder-util "25.1.5"
+    app-builder-lib "25.1.6"
+    builder-util "25.1.6"
     builder-util-runtime "9.2.9"
     fs-extra "^10.1.0"
     iconv-lite "^0.6.2"
@@ -7970,16 +8013,16 @@ ejs@^3.1.10, ejs@^3.1.7, ejs@^3.1.8:
   dependencies:
     jake "^10.8.5"
 
-electron-builder@next:
-  version "25.1.5"
-  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-25.1.5.tgz#1cb66173d39b6d07bfba33ae23db587a3f6a3549"
-  integrity sha512-XZJ/AIiFwes2XGJkewnHtOk0M19bjT8GSgeI3tyWVvI+8hdkST5JlPRYbI+5/OcYRV5EfdUowRqBxojdxwosEQ==
+electron-builder@^25.1.6:
+  version "25.1.6"
+  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-25.1.6.tgz#e2a8a4b4a7b6db615405a9b9b18fb3dcf7c84d8c"
+  integrity sha512-a+w0leNGcr57u9fiQBsVvVuXtTsg/6VpMOps1Q1TPAceHtK4kWtX2wc7X2cnJQrIME8bWbdm/YR9Swr/xF1/ng==
   dependencies:
-    app-builder-lib "25.1.5"
-    builder-util "25.1.5"
+    app-builder-lib "25.1.6"
+    builder-util "25.1.6"
     builder-util-runtime "9.2.9"
     chalk "^4.1.2"
-    dmg-builder "25.1.5"
+    dmg-builder "25.1.6"
     fs-extra "^10.1.0"
     is-ci "^3.0.0"
     lazy-val "^1.0.5"
@@ -8019,13 +8062,13 @@ electron-mock-ipc@^0.3.8:
   resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.12.tgz#f9a7dca9a23a95dbe5a62f27cca12768d4cb88c0"
   integrity sha512-/uwZRpbX+k4E+GesmREg6XcQiTLNhi35M/cw8Czr+ij9k+EYTYY3UPkILnsTr5KTEeAx5/uypf/KwjZDQFDyjA==
 
-electron-publish@25.1.5:
-  version "25.1.5"
-  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-25.1.5.tgz#b7c03f6e87568bccd17a85bfad43bd4f75ddb00d"
-  integrity sha512-P3hrxzY5ETTCn/YtepOdulAbkLdb/PD/uMMpjU9No3q8Yic5YZ3fd/fpbNGC7SV7TsQNqufNwFWGn2kLaoycJQ==
+electron-publish@25.1.6:
+  version "25.1.6"
+  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-25.1.6.tgz#09cd851b3af6b5ca334ee4dd35581251efe0323e"
+  integrity sha512-Hiy/tVyu57cbkyxS0GrzEnxm7+B/9IeFcBTia2QQBCTg10zvHURdAj7Sk7XHKys8kKLr1tVNThuG165uTnNJdQ==
   dependencies:
     "@types/fs-extra" "^9.0.11"
-    builder-util "25.1.5"
+    builder-util "25.1.6"
     builder-util-runtime "9.2.9"
     chalk "^4.1.2"
     fs-extra "^10.1.0"
@@ -8353,7 +8396,7 @@ esbuild-register@^3.5.0:
     "@esbuild/win32-ia32" "0.23.1"
     "@esbuild/win32-x64" "0.23.1"
 
-escalade@^3.1.1, escalade@^3.1.2:
+escalade@^3.1.1, escalade@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.2.0.tgz#011a3f69856ba189dffa7dc8fcce99d2a87903e5"
   integrity sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==
@@ -8400,9 +8443,9 @@ eslint-plugin-react-refresh@^0.4.3:
   integrity sha512-9neVjoGv20FwYtCP6CB1dzR1vr57ZDNOXst21wd2xJ/cTlM2xLq0GWVlSNTdMn/4BtP6cHYBMCSp1wFBJ9jBsg==
 
 eslint-plugin-react@^7.33.2:
-  version "7.36.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.36.1.tgz#f1dabbb11f3d4ebe8b0cf4e54aff4aee81144ee5"
-  integrity sha512-/qwbqNXZoq+VP30s1d4Nc1C5GTxjJQjk4Jzs4Wq2qzxFM7dSmuG2UkIjg2USMLh3A/aVcUNrK7v0J5U1XEGGwA==
+  version "7.37.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.37.0.tgz#c21f64a32fc34df1eaeca571ec8f70bdc40dd20a"
+  integrity sha512-IHBePmfWH5lKhJnJ7WB1V+v/GolbB0rjS8XYVCSQCZKaQCAUhMoVoOEn1Ef8Z8Wf0a7l8KTJvuZg5/e4qrZ6nA==
   dependencies:
     array-includes "^3.1.8"
     array.prototype.findlast "^1.2.5"
@@ -8631,7 +8674,14 @@ exponential-backoff@^3.1.1:
   resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.1.tgz#64ac7526fe341ab18a39016cd22c787d01e00bf6"
   integrity sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==
 
-express@^4.17.1, express@^4.19.2:
+express-basic-auth@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/express-basic-auth/-/express-basic-auth-1.2.1.tgz#d31241c03a915dd55db7e5285573049cfcc36381"
+  integrity sha512-L6YQ1wQ/mNjVLAmK3AG1RK6VkokA1BIY6wmiH304Xtt/cLTps40EusZsU1Uop+v9lTDPxdtzbFmdXfFO3KEnwA==
+  dependencies:
+    basic-auth "^2.0.1"
+
+express@^4.0.0, express@^4.17.1, express@^4.19.2:
   version "4.21.0"
   resolved "https://registry.yarnpkg.com/express/-/express-4.21.0.tgz#d57cb706d49623d4ac27833f1cbc466b668eb915"
   integrity sha512-VqcNGcj/Id5ZT1LZ/cfihi3ttTn+NJmkli2eZADigjq29qTlWi/hAQ43t/VLPq8+UX06FCEx3ByOYet6ZFblng==
@@ -9630,9 +9680,9 @@ hast-util-is-element@^3.0.0:
     "@types/hast" "^3.0.0"
 
 hast-util-to-string@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/hast-util-to-string/-/hast-util-to-string-3.0.0.tgz#2a131948b4b1b26461a2c8ac876e2c88d02946bd"
-  integrity sha512-OGkAxX1Ua3cbcW6EJ5pT/tslVb90uViVkcJ4ZZIMW/R33DX/AkcJcRrPebPwJkHYwlDHXz4aIwvAAaAdtrACFA==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/hast-util-to-string/-/hast-util-to-string-3.0.1.tgz#a4f15e682849326dd211c97129c94b0c3e76527c"
+  integrity sha512-XelQVTDWvqcl3axRfI0xSeoVKzyIFPwsAGSLIsKdJKQMXDYJS4WYrBNF/8J7RdhIcFI2BOHgAifggsvsxp/3+A==
   dependencies:
     "@types/hast" "^3.0.0"
 
@@ -13097,7 +13147,7 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-picocolors@^1.0.0, picocolors@^1.0.1, picocolors@^1.1.0:
+picocolors@^1.0.0, picocolors@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.0.tgz#5358b76a78cde483ba5cef6a9dc9671440b27d59"
   integrity sha512-TQ92mBOW0l3LeMeyLV6mzy/kWr8lkd/hp3mTg7wYK7zJhuBStmGMBG0BdeDZS/dZx1IukaX6Bk11zcln25o1Aw==
@@ -15624,7 +15674,7 @@ type-fest@^2.19.0, type-fest@~2.19:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
-type-is@~1.6.18:
+type-is@1.6.18, type-is@~1.6.18:
   version "1.6.18"
   resolved "https://registry.yarnpkg.com/type-is/-/type-is-1.6.18.tgz#4e552cd05df09467dcbc4ef739de89f2cf37c131"
   integrity sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==
@@ -15851,12 +15901,12 @@ upath@2.0.1:
   integrity sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==
 
 update-browserslist-db@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.1.0.tgz#7ca61c0d8650766090728046e416a8cde682859e"
-  integrity sha512-EdRAaAyk2cUE1wOf2DkEhzxqOQvFOoRJFNS6NeyJ01Gp2beMRpBAINjM2iDXE3KCuKhwnvHIQCJm6ThL2Z+HzQ==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.1.1.tgz#80846fba1d79e82547fb661f8d141e0945755fe5"
+  integrity sha512-R8UzCaa9Az+38REPiJ1tXlImTJXlVfgHZsglwBD/k6nj76ctsH1E3q4doGrukiLQd3sGQYu56r5+lo5r94l29A==
   dependencies:
-    escalade "^3.1.2"
-    picocolors "^1.0.1"
+    escalade "^3.2.0"
+    picocolors "^1.1.0"
 
 upper-case-first@^2.0.2:
   version "2.0.2"

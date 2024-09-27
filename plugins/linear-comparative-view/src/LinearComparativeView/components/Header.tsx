@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { FormGroup } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
@@ -12,14 +13,21 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { LinearComparativeViewModel } from '../model'
 import HeaderSearchBoxes from './HeaderSearchBoxes'
 
+const useStyles = makeStyles()({
+  inline: {
+    display: 'inline-flex',
+  },
+})
+
 const Header = observer(function ({
   model,
 }: {
   model: LinearComparativeViewModel
 }) {
+  const { classes } = useStyles()
   const { views } = model
-  const [showSearchBoxes, setShowSearchBoxes] = useState(true)
-  const [sideBySide, setSideBySide] = useState(true)
+  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
+  const [sideBySide, setSideBySide] = useState(views.length <= 3)
   return (
     <FormGroup row>
       <CascadingMenuButton
@@ -95,7 +103,7 @@ const Header = observer(function ({
       </CascadingMenuButton>
 
       {showSearchBoxes ? (
-        <span style={{ display: sideBySide ? 'inline-flex' : undefined }}>
+        <span className={sideBySide ? classes.inline : undefined}>
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />
           ))}
