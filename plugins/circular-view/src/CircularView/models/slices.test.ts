@@ -31,7 +31,7 @@ test('two slices', () => {
       {
         elided: true,
         assemblyName: 'wow',
-        refName: 'teest',
+        refName: 'test',
         start: 0,
         end: 10000,
         widthBp: 10000,

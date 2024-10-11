@@ -151,7 +151,7 @@ export function renderMismatches({
           ctx,
           Math.max(0, leftPx),
           topPx + heightPx / 2 - 1,
-          adjustPx + (leftPx < 0 ? leftPx : 0),
+          adjustPx + Math.min(leftPx, 0),
           2,
           canvasWidth,
           '#333',

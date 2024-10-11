@@ -46,6 +46,8 @@ export interface ExtraGlyphValidator {
   validator: (feature: Feature) => boolean
 }
 
+const set = new Set(['mRNA', 'transcript', 'primary_transcript'])
+
 export function chooseGlyphComponent(
   feature: Feature,
   extraGlyphs?: ExtraGlyphValidator[],
@@ -54,21 +56,18 @@ export function chooseGlyphComponent(
   const subfeatures = feature.get('subfeatures')
 
   if (subfeatures?.length && type !== 'CDS') {
-    const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
-    if (
-      ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
-      subfeatures.some(f => f.get('type') === 'CDS')
-    ) {
+    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
+    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
+    if (set.has(type) && hasCDS) {
       return ProcessedTranscript
-    }
-    if (!feature.parent() && hasSubSub) {
-      // only do sub-sub on parent level features like gene
+    } else if (!feature.parent() && hasSubSub) {
       return Subfeatures
+    } else {
+      return Segments
     }
-    return Segments
+  } else {
+    return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
   }
-
-  return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
 }
 
 interface BaseLayOutArgs {

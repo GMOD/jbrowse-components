@@ -1320,7 +1320,7 @@ export function localStorageSetItem(str: string, item: string) {
 export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
-    max = entry > max ? entry : max
+    max = Math.max(entry, max)
   }
   return max
 }
@@ -1328,7 +1328,7 @@ export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
 export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
-    min = entry < min ? entry : min
+    min = Math.min(entry, min)
   }
   return min
 }
