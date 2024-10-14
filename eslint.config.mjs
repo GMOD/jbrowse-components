@@ -85,6 +85,7 @@ export default tseslint.config(
       'react/no-is-mounted': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/prefer-global-this': 'off',
       'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',
       'unicorn/no-empty-file': 'off',

@@ -25,7 +25,7 @@ export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
 
-function isClonable(thing: unknown) {
+function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
@@ -110,11 +110,11 @@ export default abstract class BaseRpcDriver {
     this.config = args.config
   }
 
-  // filter the given object and just remove any non-clonable things from it
+  // filter the given object and just remove any non-cloneable things from it
   filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
     if (Array.isArray(thing)) {
       return thing
-        .filter(thing => isClonable(thing))
+        .filter(thing => isCloneable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
@@ -138,7 +138,7 @@ export default abstract class BaseRpcDriver {
 
       return Object.fromEntries(
         Object.entries(thing)
-          .filter(e => isClonable(e[1]))
+          .filter(e => isCloneable(e[1]))
           .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
       ) as THING_TYPE
     }

@@ -2202,6 +2202,20 @@
         "assemblyNames": ["volvox_ins", "volvox"]
       },
       "assemblyNames": ["volvox_ins", "volvox"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "test",
+      "name": "Multi-part feature segments",
+      "category": ["Integration test"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "multipart.gff",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [

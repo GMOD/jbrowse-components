@@ -1,0 +1,3 @@
+ctgA	BLASTP	polypeptide	1	10000	1	+	.	ID=match
+ctgA	BLASTP	polypeptide	1	100	1	+	.	Parent=match
+ctgA	BLASTP	polypeptide	9500	10000	1	+	.	Parent=match

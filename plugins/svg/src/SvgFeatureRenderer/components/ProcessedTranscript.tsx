@@ -90,7 +90,7 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
       if (start >= codeStart) {
         break
       }
-      end = codeStart > exons[i]!.get('end') ? exons[i]!.get('end') : codeStart
+      end = Math.min(codeStart, exons[i]!.get('end'))
       const type = strand >= 0 ? 'five_prime_UTR' : 'three_prime_UTR'
       subparts.unshift(
         new SimpleFeature({
@@ -110,8 +110,7 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
         break
       }
 
-      start =
-        codeEnd < exons[i]!.get('start') ? exons[i]!.get('start') : codeEnd
+      start = Math.max(codeEnd, exons[i]!.get('start'))
       const type = strand >= 0 ? 'three_prime_UTR' : 'five_prime_UTR'
       subparts.push(
         new SimpleFeature({
