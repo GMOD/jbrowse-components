@@ -2161,9 +2161,9 @@
     pako "^1.0.11"
 
 "@gmod/cram@^3.0.3":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.5.tgz#295edfa61425d67dd4c2c38948248aceee16fe18"
-  integrity sha512-bHBc9bFNfG7rC+EEawhR9eaE0HBn/503T4DYbYCPjX+va/soxaD7+Ai9CT5/fk7uiM0oARXL+3YCwn54IShpxg==
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.6.tgz#2fb71c2cd2c14eaf6fb9e5e4dcbccec6dd7f2b72"
+  integrity sha512-7nvrSo1umJIVLg/syAPdYJfqeaCuFfJX6Bx6MngIY1A1jFpxpK4Jo0wNLX+AQdP9hIF7XS5yiWrkI0QH4AUYdw==
   dependencies:
     "@jkbonfield/htscodecs" "^0.5.1"
     bzip2 "^0.1.1"
