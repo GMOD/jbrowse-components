@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
 import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'

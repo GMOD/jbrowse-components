@@ -483,7 +483,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             isOpenByDefault: !self.collapsed.get(s.group),
             menuItems: s.menuItems,
             children: generateHierarchy({
-              // @ts-expect-error conflict between IMSTMap and Map types in typescript 5.6
               model: self,
               trackConfs: s.tracks,
               extra: s.group,
