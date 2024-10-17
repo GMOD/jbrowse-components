@@ -131,7 +131,7 @@ exports[`open up a widget 1`] = `
                   </button>
                 </div>
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1thuchg-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
                   tabindex="0"
                   type="button"
                 >

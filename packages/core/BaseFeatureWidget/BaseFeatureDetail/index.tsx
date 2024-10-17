@@ -1,5 +1,5 @@
 import React from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import {
   Accordion,
   AccordionDetails,

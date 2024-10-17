@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 
 // locals

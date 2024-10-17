@@ -129,7 +129,7 @@ exports[`renders 1`] = `
                     >
                       A track or assembly hub in the Track Hub format
                       <a
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-16gv0ji-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1dmujzy-MuiButtonBase-root-MuiIconButton-root"
                         href="//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
                         rel="noopener noreferrer"
                         tabindex="0"

@@ -1,6 +1,6 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
 import { observer } from 'mobx-react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import {
   StringParam,
   QueryParamProvider,
