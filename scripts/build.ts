@@ -10,7 +10,7 @@ const DEPENDENCY_TYPES = [
   'optionalDependencies',
   'peerDependencies',
 ]
-const subDirs = ['cgv', 'lgv', 'react-app']
+const subDirs = ['cgv', 'lgv', 'lgv-vite', 'react-app']
 const root = workspaceRoot()!
 
 function main() {
