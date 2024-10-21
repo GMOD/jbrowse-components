@@ -1,11 +1,10 @@
-import React, { lazy, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 // locals
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
-
-const BaseTooltip = lazy(() => import('@jbrowse/core/ui/BaseTooltip'))
 
 interface Props {
   message: React.ReactNode | string
@@ -41,11 +40,9 @@ const Tooltip = observer(function ({
     : undefined
 
   return featureUnderMouse && contents ? (
-    <Suspense fallback={null}>
-      <BaseTooltip clientPoint={{ x, y }}>
-        <TooltipContents message={contents} />
-      </BaseTooltip>
-    </Suspense>
+    <BaseTooltip clientPoint={{ x, y }}>
+      <TooltipContents message={contents} />
+    </BaseTooltip>
   ) : null
 })
 
