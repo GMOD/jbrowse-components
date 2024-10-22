@@ -175,6 +175,20 @@ const SvgFeatureRenderer = ConfigurationSchema(
       description: 'imply UTR from the exon and CDS differences',
       defaultValue: false,
     },
+    /**
+     * #slot
+     */
+    transcriptTypes: {
+      type: 'stringArray',
+      defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+    },
+    /**
+     * #slot
+     */
+    containerTypes: {
+      type: 'stringArray',
+      defaultValue: ['proteoform_orf'],
+    },
   },
   { explicitlyTyped: true },
 )
