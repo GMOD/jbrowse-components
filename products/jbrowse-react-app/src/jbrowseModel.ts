@@ -10,9 +10,11 @@ import { JBrowseModelF } from '@jbrowse/app-core'
 export default function JBrowseWeb({
   pluginManager,
   assemblyConfigSchema,
+  adminMode = false,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
+  adminMode?: boolean
 }) {
-  return JBrowseModelF({ pluginManager, assemblyConfigSchema })
+  return JBrowseModelF({ pluginManager, assemblyConfigSchema, adminMode })
 }

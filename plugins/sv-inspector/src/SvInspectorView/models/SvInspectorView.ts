@@ -340,9 +340,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               const { assemblyName, generatedTrackConf } = data
               const { circularView } = self
               // hide any visible tracks
-              circularView.tracks.forEach(t =>
-                circularView.hideTrack(t.configuration.trackId),
-              )
+              circularView.tracks.forEach(t => {
+                circularView.hideTrack(t.configuration.trackId)
+              })
 
               // put our track in as the only track
               if (assemblyName) {
