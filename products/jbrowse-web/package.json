@@ -20,6 +20,7 @@
     "@jbrowse/plugin-authentication": "^2.15.4",
     "@jbrowse/plugin-bed": "^2.15.4",
     "@jbrowse/plugin-breakpoint-split-view": "^2.15.4",
+    "@jbrowse/plugin-canvas": "^2.15.4",
     "@jbrowse/plugin-circular-view": "^2.15.4",
     "@jbrowse/plugin-comparative-adapters": "^2.15.4",
     "@jbrowse/plugin-config": "^2.15.4",
