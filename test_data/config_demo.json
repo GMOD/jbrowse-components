@@ -4369,6 +4369,68 @@
         }
       },
       "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "tiberius_grch38",
+      "name": "Tiberius gene predictions",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode_47",
+      "name": "Gencode 47",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_08_24",
+      "name": "NCBI RefSeq (Aug 2024)",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],

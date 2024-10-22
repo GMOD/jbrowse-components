@@ -189,7 +189,7 @@ const LinearComparativeRubberband = observer(function Rubberband({
   }
 
   const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
-  const left = right < startX ? right : startX
+  const left = Math.min(right, startX)
   const width = Math.abs(right - startX)
   const { views } = model
   const leftBpOffset = views.map(view => view.pxToBp(left))

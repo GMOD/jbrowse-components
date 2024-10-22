@@ -98,6 +98,7 @@ m12 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|"kinase"],1
 m13 ["ctgA%3A17667..17690"|"gff3tabix_genes"|"m13"|"DEAD%20box"],1
 m14 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|"kinase"],1
 m15 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|"7-transmembrane"],1
+match ["ctgA%3A1..10000"|"test"|"match"],1
 match1 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
 match2 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
 match3 ["ctgA%3A1050..7300"|"gff3tabix_genes"|"agt221.5"|"Match3"],1

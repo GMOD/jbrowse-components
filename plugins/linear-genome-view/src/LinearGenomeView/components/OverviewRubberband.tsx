@@ -183,7 +183,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
   let left = startX || 0
   let width = 0
   if (currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
+    left = Math.min(currentX, startX)
     width = currentX - startX
   }
   // calculate the start and end bp of drag

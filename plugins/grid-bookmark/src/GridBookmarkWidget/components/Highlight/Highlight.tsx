@@ -16,18 +16,15 @@ import { IExtendedLGV } from '../../model'
 type LGV = IExtendedLGV
 
 const useStyles = makeStyles()({
+  bookmarkButton: {
+    overflow: 'hidden',
+    position: 'absolute',
+    zIndex: 1000,
+  },
   highlight: {
-    // when the highlight is small, overflow:hidden makes the icon/indicators
-    // invisible
     overflow: 'hidden',
     height: '100%',
     position: 'absolute',
-    zIndex: 100,
-    pointerEvents: 'none',
-  },
-  highlightButton: {
-    // re-enable pointerEvents on the button
-    pointerEvents: 'auto',
   },
 })
 
@@ -69,18 +66,19 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         })
         .filter(notEmpty)
         .map(({ left, width, highlight, label, bookmark }, idx) => (
-          <div
-            /* biome-ignore lint/suspicious/noArrayIndexKey: */
-            key={`${left}_${width}_${idx}`}
-            className={classes.highlight}
-            style={{
-              left,
-              width,
-              background: highlight,
-            }}
-          >
-            {showBookmarkLabels ? (
-              <div className={classes.highlightButton}>
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
+          <React.Fragment key={`${left}_${width}_${idx}`}>
+            <div
+              className={classes.highlight}
+              id="highlight"
+              style={{
+                left,
+                width,
+                background: highlight,
+              }}
+            />
+            {showBookmarkLabels && width > 20 ? (
+              <div className={classes.bookmarkButton} style={{ left }}>
                 <CascadingMenuButton
                   menuItems={[
                     {
@@ -111,7 +109,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 </CascadingMenuButton>
               </div>
             ) : null}
-          </div>
+          </React.Fragment>
         ))
     : null
 })

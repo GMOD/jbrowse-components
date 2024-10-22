@@ -195,7 +195,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #action
        */
       setHeight(newHeight: number) {
-        self.height = newHeight > minHeight ? newHeight : minHeight
+        self.height = Math.max(newHeight, minHeight)
         return self.height
       },
       /**

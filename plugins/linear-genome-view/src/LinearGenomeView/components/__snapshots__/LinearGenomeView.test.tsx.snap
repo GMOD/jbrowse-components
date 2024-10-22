@@ -25,7 +25,7 @@ exports[`renders one track, one region 1`] = `
             />
             <div>
               <p
-                class="MuiTypography-root MuiTypography-body1 css-1jz1b1y-MuiTypography-root-scalebarRefName"
+                class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
                 style="left: 3px; color: rgb(153, 102, 0);"
               >
                 ctgA
@@ -35,31 +35,31 @@ exports[`renders one track, one region 1`] = `
                 style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   20
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   40
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   60
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   80
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   100
@@ -92,7 +92,7 @@ exports[`renders one track, one region 1`] = `
           class="css-cwpsam-headerBar"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9f3vuc-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9k3vdz-MuiButtonBase-root-MuiIconButton-root-toggleButton"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -100,7 +100,7 @@ exports[`renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-17qrb42-MuiSvgIcon-root-buttonSpacer"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1v19m96-MuiSvgIcon-root-buttonSpacer"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -113,16 +113,16 @@ exports[`renders one track, one region 1`] = `
             class="css-1n1xfjh-spacer"
           />
           <div
-            class="MuiFormGroup-root MuiFormGroup-row css-1eq7wq4-MuiFormGroup-root-headerForm"
+            class="MuiFormGroup-root MuiFormGroup-row css-f2mils-MuiFormGroup-root-headerForm"
           >
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1dx6m7h-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-hu8lcx-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ArrowBackIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -133,13 +133,13 @@ exports[`renders one track, one region 1`] = `
               </svg>
             </button>
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1dx6m7h-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-hu8lcx-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ArrowForwardIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -150,16 +150,16 @@ exports[`renders one track, one region 1`] = `
               </svg>
             </button>
             <div
-              class="MuiAutocomplete-root css-1y8r37a-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-7yn9vh-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 175px;"
             >
               <div
-                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1pf3k7w-MuiFormControl-root-MuiTextField-root-headerRefName"
+                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
                 style="margin: 7px;"
               >
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-g6ygwx-MuiInputBase-root-MuiOutlinedInput-root"
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-fwcp0t-MuiInputBase-root-MuiOutlinedInput-root"
                   style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                 >
                   <input
@@ -168,7 +168,7 @@ exports[`renders one track, one region 1`] = `
                     aria-invalid="false"
                     autocapitalize="none"
                     autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-1df20ln-MuiInputBase-input-MuiOutlinedInput-input"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
                     id=":r6:"
                     placeholder="Search for location"
                     role="combobox"
@@ -177,12 +177,12 @@ exports[`renders one track, one region 1`] = `
                     value="ctgA:1..100"
                   />
                   <div
-                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1i2hsuj-MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                     style="margin-right: 7px;"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
                       data-testid="SearchIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -192,13 +192,13 @@ exports[`renders one track, one region 1`] = `
                       />
                     </svg>
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
                         data-testid="HelpIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -211,10 +211,10 @@ exports[`renders one track, one region 1`] = `
                   </div>
                   <fieldset
                     aria-hidden="true"
-                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                    class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                   >
                     <legend
-                      class="css-gpjuor"
+                      class="css-w4cd9x"
                     >
                       <span
                         class="notranslate"
@@ -228,7 +228,7 @@ exports[`renders one track, one region 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body2 css-622ihw-MuiTypography-root-bp"
+            class="MuiTypography-root MuiTypography-body2 css-6vvmul-MuiTypography-root-bp"
           >
             100bp
           </p>
@@ -236,7 +236,7 @@ exports[`renders one track, one region 1`] = `
             class="css-z84q6m-container"
           >
             <button
-              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeLarge css-pk6jtd-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeLarge css-wl3yri-MuiButtonBase-root-MuiIconButton-root"
               data-testid="zoom_out"
               disabled=""
               tabindex="-1"
@@ -244,7 +244,7 @@ exports[`renders one track, one region 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ZoomOutIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -255,17 +255,17 @@ exports[`renders one track, one region 1`] = `
               </svg>
             </button>
             <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-155bqyq-MuiSlider-root-slider"
+              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-webx07-MuiSlider-root-slider"
             >
               <span
-                class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
+                class="MuiSlider-rail css-r64h58-MuiSlider-rail"
               />
               <span
-                class="MuiSlider-track css-nl6333-MuiSlider-track"
+                class="MuiSlider-track css-1iqz70e-MuiSlider-track"
                 style="left: 0%; width: 0%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1nqyqyn-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-o0wpuw-MuiSlider-thumb"
                 data-index="0"
                 style="left: 0%;"
               >
@@ -285,14 +285,14 @@ exports[`renders one track, one region 1`] = `
               </span>
             </span>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-pk6jtd-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-wl3yri-MuiButtonBase-root-MuiIconButton-root"
               data-testid="zoom_in"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ZoomInIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -379,7 +379,7 @@ exports[`renders one track, one region 1`] = `
         data-testid="rubberband_controls"
       >
         <div
-          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-f42wkc-MuiPaper-root-container"
+          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-gcizdo-MuiPaper-root-container"
           data-resizer="true"
           style="height: 17px; box-sizing: border-box;"
         >
@@ -410,7 +410,7 @@ exports[`renders one track, one region 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1dc3p9s-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgA"
             style="left: -1px; padding-left: 1px;"
           >
@@ -419,10 +419,10 @@ exports[`renders one track, one region 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-etmq0k-MuiPaper-root-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-8osoox-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-80nm70-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-166mc98-MuiPaper-root-trackLabel-trackLabelOverlap-root"
           style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <span
@@ -432,7 +432,7 @@ exports[`renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-xfzser-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -443,14 +443,14 @@ exports[`renders one track, one region 1`] = `
             </svg>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pungfj-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9rd6c0-MuiButtonBase-root-MuiIconButton-root-iconButton"
             tabindex="0"
             title="close this track"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="CloseIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -461,21 +461,21 @@ exports[`renders one track, one region 1`] = `
             </svg>
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-1hrnph2-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1r88dex-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="MoreVertIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -560,7 +560,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
             <div>
               <p
-                class="MuiTypography-root MuiTypography-body1 css-1jz1b1y-MuiTypography-root-scalebarRefName"
+                class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
                 style="left: 3px; color: rgb(153, 102, 0);"
               >
                 ctgA
@@ -576,7 +576,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
             <div>
               <p
-                class="MuiTypography-root MuiTypography-body1 css-1jz1b1y-MuiTypography-root-scalebarRefName"
+                class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
                 style="left: 75.72727272727273px;"
               >
                 ctgB
@@ -586,31 +586,31 @@ exports[`renders two tracks, two regions 1`] = `
                 style="left: 72.72727272727273px; width: 727.2727272727273px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 145.0909090909091px; pointer-events: none;"
                 >
                   1,200
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 290.1818181818182px; pointer-events: none;"
                 >
                   1,400
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 435.27272727272725px; pointer-events: none;"
                 >
                   1,600
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 580.3636363636364px; pointer-events: none;"
                 >
                   1,800
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-1ssp5wp-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
                   style="left: 725.4545454545454px; pointer-events: none;"
                 >
                   2,000
@@ -643,7 +643,7 @@ exports[`renders two tracks, two regions 1`] = `
           class="css-cwpsam-headerBar"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9f3vuc-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9k3vdz-MuiButtonBase-root-MuiIconButton-root-toggleButton"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -651,7 +651,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-17qrb42-MuiSvgIcon-root-buttonSpacer"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1v19m96-MuiSvgIcon-root-buttonSpacer"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -664,16 +664,16 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-1n1xfjh-spacer"
           />
           <div
-            class="MuiFormGroup-root MuiFormGroup-row css-1eq7wq4-MuiFormGroup-root-headerForm"
+            class="MuiFormGroup-root MuiFormGroup-row css-f2mils-MuiFormGroup-root-headerForm"
           >
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1dx6m7h-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-hu8lcx-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ArrowBackIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -684,13 +684,13 @@ exports[`renders two tracks, two regions 1`] = `
               </svg>
             </button>
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1dx6m7h-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-hu8lcx-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ArrowForwardIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -701,16 +701,16 @@ exports[`renders two tracks, two regions 1`] = `
               </svg>
             </button>
             <div
-              class="MuiAutocomplete-root css-1y8r37a-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-7yn9vh-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 283.990625px;"
             >
               <div
-                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1pf3k7w-MuiFormControl-root-MuiTextField-root-headerRefName"
+                class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
                 style="margin: 7px;"
               >
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-g6ygwx-MuiInputBase-root-MuiOutlinedInput-root"
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-fwcp0t-MuiInputBase-root-MuiOutlinedInput-root"
                   style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                 >
                   <input
@@ -719,7 +719,7 @@ exports[`renders two tracks, two regions 1`] = `
                     aria-invalid="false"
                     autocapitalize="none"
                     autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-1df20ln-MuiInputBase-input-MuiOutlinedInput-input"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
                     id=":r8:"
                     placeholder="Search for location"
                     role="combobox"
@@ -728,12 +728,12 @@ exports[`renders two tracks, two regions 1`] = `
                     value="ctgA:1..100 ctgB:1,001..1,698"
                   />
                   <div
-                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1i2hsuj-MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                     style="margin-right: 7px;"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
                       data-testid="SearchIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -743,13 +743,13 @@ exports[`renders two tracks, two regions 1`] = `
                       />
                     </svg>
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
                         data-testid="HelpIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -762,10 +762,10 @@ exports[`renders two tracks, two regions 1`] = `
                   </div>
                   <fieldset
                     aria-hidden="true"
-                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                    class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                   >
                     <legend
-                      class="css-gpjuor"
+                      class="css-w4cd9x"
                     >
                       <span
                         class="notranslate"
@@ -779,7 +779,7 @@ exports[`renders two tracks, two regions 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body2 css-622ihw-MuiTypography-root-bp"
+            class="MuiTypography-root MuiTypography-body2 css-6vvmul-MuiTypography-root-bp"
           >
             798bp
           </p>
@@ -787,14 +787,14 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-z84q6m-container"
           >
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-pk6jtd-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-wl3yri-MuiButtonBase-root-MuiIconButton-root"
               data-testid="zoom_out"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ZoomOutIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -805,17 +805,17 @@ exports[`renders two tracks, two regions 1`] = `
               </svg>
             </button>
             <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-155bqyq-MuiSlider-root-slider"
+              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-webx07-MuiSlider-root-slider"
             >
               <span
-                class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
+                class="MuiSlider-rail css-r64h58-MuiSlider-rail"
               />
               <span
-                class="MuiSlider-track css-nl6333-MuiSlider-track"
+                class="MuiSlider-track css-1iqz70e-MuiSlider-track"
                 style="left: 0%; width: 9.774680693120512%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1nqyqyn-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-o0wpuw-MuiSlider-thumb"
                 data-index="0"
                 style="left: 9.774680693120512%;"
               >
@@ -835,14 +835,14 @@ exports[`renders two tracks, two regions 1`] = `
               </span>
             </span>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-pk6jtd-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-wl3yri-MuiButtonBase-root-MuiIconButton-root"
               data-testid="zoom_in"
               tabindex="0"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l9ansn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 data-testid="ZoomInIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -1110,7 +1110,7 @@ exports[`renders two tracks, two regions 1`] = `
         data-testid="rubberband_controls"
       >
         <div
-          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-f42wkc-MuiPaper-root-container"
+          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-gcizdo-MuiPaper-root-container"
           data-resizer="true"
           style="height: 17px; box-sizing: border-box;"
         >
@@ -1147,7 +1147,7 @@ exports[`renders two tracks, two regions 1`] = `
                   style="left: -1px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-w6vkih-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
                   >
                     1,000
                   </p>
@@ -1157,7 +1157,7 @@ exports[`renders two tracks, two regions 1`] = `
                   style="left: 199px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-w6vkih-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
                   >
                     1,200
                   </p>
@@ -1167,7 +1167,7 @@ exports[`renders two tracks, two regions 1`] = `
                   style="left: 399px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-w6vkih-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
                   >
                     1,400
                   </p>
@@ -1177,7 +1177,7 @@ exports[`renders two tracks, two regions 1`] = `
                   style="left: 599px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-w6vkih-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
                   >
                     1,600
                   </p>
@@ -1187,7 +1187,7 @@ exports[`renders two tracks, two regions 1`] = `
                   style="left: 799px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-w6vkih-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
                   >
                     1,800
                   </p>
@@ -1196,14 +1196,14 @@ exports[`renders two tracks, two regions 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1dc3p9s-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgA"
             style="left: -1px; padding-left: 1px;"
           >
             ctgA
           </p>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1dc3p9s-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgB"
             style="left: 101px; padding-left: 1px;"
           >
@@ -1212,10 +1212,10 @@ exports[`renders two tracks, two regions 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-etmq0k-MuiPaper-root-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-8osoox-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-80nm70-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-166mc98-MuiPaper-root-trackLabel-trackLabelOverlap-root"
           style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <span
@@ -1225,7 +1225,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-xfzser-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1236,14 +1236,14 @@ exports[`renders two tracks, two regions 1`] = `
             </svg>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pungfj-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9rd6c0-MuiButtonBase-root-MuiIconButton-root-iconButton"
             tabindex="0"
             title="close this track"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="CloseIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1254,21 +1254,21 @@ exports[`renders two tracks, two regions 1`] = `
             </svg>
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-1hrnph2-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1r88dex-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="MoreVertIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1335,10 +1335,10 @@ exports[`renders two tracks, two regions 1`] = `
         />
       </div>
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-etmq0k-MuiPaper-root-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-8osoox-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-80nm70-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-166mc98-MuiPaper-root-trackLabel-trackLabelOverlap-root"
           style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <span
@@ -1348,7 +1348,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-xfzser-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1359,14 +1359,14 @@ exports[`renders two tracks, two regions 1`] = `
             </svg>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pungfj-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9rd6c0-MuiButtonBase-root-MuiIconButton-root-iconButton"
             tabindex="0"
             title="close this track"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="CloseIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1377,21 +1377,21 @@ exports[`renders two tracks, two regions 1`] = `
             </svg>
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-1hrnph2-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1r88dex-MuiTypography-root-trackName"
           >
             <span>
               Bar Track
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-16y463b-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-bo2jly-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="MoreVertIcon"
               focusable="false"
               viewBox="0 0 24 24"

@@ -44,8 +44,7 @@
     "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0",
-    "material-ui-popup-state": "^5.0.0",
-    "react-error-boundary": "^4.0.3"
+    "material-ui-popup-state": "^5.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

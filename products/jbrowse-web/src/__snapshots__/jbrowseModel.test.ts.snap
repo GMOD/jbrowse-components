@@ -4313,6 +4313,36 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_ins.pif",
       "type": "SyntenyTrack",
     },
+    {
+      "adapter": {
+        "gffLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "multipart.gff",
+        },
+        "type": "Gff3Adapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+      ],
+      "displays": [
+        {
+          "displayId": "test-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "test-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Multi-part feature segments",
+      "trackId": "test",
+      "type": "FeatureTrack",
+    },
   ],
 }
 `;
