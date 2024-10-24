@@ -901,6 +901,7 @@
       "category": ["SKBR3"],
       "adapter": {
         "type": "BigWigAdapter",
+        "resolutionMultiplier": 10,
         "bigWigLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw",
           "locationType": "UriLocation"
