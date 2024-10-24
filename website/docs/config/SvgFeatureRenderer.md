@@ -200,3 +200,21 @@ impliedUTRs: {
       defaultValue: false,
     }
 ```
+
+#### slot: transcriptTypes
+
+```js
+transcriptTypes: {
+      type: 'stringArray',
+      defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+    }
+```
+
+#### slot: containerTypes
+
+```js
+containerTypes: {
+      type: 'stringArray',
+      defaultValue: ['proteoform_orf'],
+    }
+```
