@@ -3,7 +3,6 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
-import { getParent } from 'mobx-state-tree'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
@@ -37,11 +36,9 @@ export function drawRef(
   ctx3?: CanvasRenderingContext2D,
 ) {
   const view = getContainingView(model) as LinearSyntenyViewModel
-  // @ts-expect-error
-  const level = getParent(model, 4).level
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
-  const { height, featPositions } = model
+  const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
@@ -226,7 +223,7 @@ export function drawRef(
 }
 
 export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
-  const { clickId, mouseoverId } = model
+  const { level, clickId, mouseoverId } = model
   const highResolutionScaling = 1
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
@@ -234,8 +231,6 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   const width = view.width
   const ctx = model.mouseoverCanvas?.getContext('2d')
   const offsets = view.views.map(v => v.offsetPx)
-  // @ts-expect-error
-  const level = getParent(model, 4).level
 
   if (!ctx) {
     return

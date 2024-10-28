@@ -45,6 +45,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get level() {
+        return getParent<{ height: number; level: number }>(self, 4).level
+      },
+      /**
+       * #getter
+       */
+      get height() {
+        return getParent<{ height: number; level: number }>(self, 4).height
+      },
+      /**
+       * #getter
+       */
       renderProps() {
         return {
           rpcDriverName: self.rpcDriverName,
@@ -166,7 +178,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
   // serverSideRenderedBlock
   readConfObject(self.configuration)
 
-  const { adapterConfig } = self
+  const { level, adapterConfig } = self
   const parent = getContainingView(self) as LinearComparativeViewModel
   const sessionId = getRpcSessionId(self)
   getSnapshot(parent)
@@ -175,8 +187,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
         rpcManager,
         renderProps: {
           ...display.renderProps(),
-          // @ts-expect-error
-          level: getParent(self, 4).level as number,
+          level,
           view: parent,
           adapterConfig,
           sessionId,

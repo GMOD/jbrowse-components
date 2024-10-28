@@ -1,9 +1,4 @@
-import {
-  getSession,
-  getContainingTrack,
-  getContainingView,
-  Feature,
-} from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -45,24 +40,24 @@ export async function navToSynteny({
   feature,
   windowSize: ws,
   model,
+  trackId,
+  view,
   horizontallyFlip,
 }: {
   windowSize: number
+  trackId: string
   horizontallyFlip: boolean
   feature: Feature
+  view?: LinearGenomeViewModel
   model: IAnyStateTreeNode
 }) {
   const session = getSession(model)
-  const track = getContainingTrack(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const reg = view.dynamicBlocks.contentBlocks[0]
-  if (!reg) {
-    throw new Error('no visible region')
-  }
+  const reg = view?.dynamicBlocks.contentBlocks[0]
   const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')
-  const regStart = reg.start
-  const regEnd = reg.end
+
+  const featRef = feature.get('refName')
+  const featAsm = feature.get('assemblyName')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
   const mate = feature.get('mate')
@@ -70,15 +65,15 @@ export async function navToSynteny({
   const mateEnd = mate.end
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
-  const featAsm = reg.assemblyName
-  const featRef = reg.refName
 
   let rMateStart: number
   let rMateEnd: number
   let rFeatStart: number
   let rFeatEnd: number
 
-  if (cigar) {
+  if (reg && cigar) {
+    const regStart = reg.start
+    const regEnd = reg.end
     const p = parseCigar(cigar)
     const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
     const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
@@ -95,18 +90,15 @@ export async function navToSynteny({
     rMateStart = mateStart
     rMateEnd = mateEnd
   }
-  const trackId = track.configuration.trackId
 
   const view2 = session.addView('LinearSyntenyView', {
     type: 'LinearSyntenyView',
     views: [
       {
-        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
       },
       {
-        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
       },

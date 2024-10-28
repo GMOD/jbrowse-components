@@ -1,4 +1,4 @@
-import { types, Instance, getParent } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
@@ -44,35 +44,58 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      // canvas used for drawing visible screen
+      /**
+       * #volatile
+       * canvas used for drawing visible screen
+       */
       mainCanvas: null as HTMLCanvasElement | null,
 
-      // canvas used for drawing click map with feature ids
-      // this renders a unique color per alignment, so that it can be re-traced
-      // after a feature click with getImageData at that pixel
+      /**
+       * #volatile
+       * canvas used for drawing click map with feature ids this renders a
+       * unique color per alignment, so that it can be re-traced after a
+       * feature click with getImageData at that pixel
+       */
       clickMapCanvas: null as HTMLCanvasElement | null,
 
-      // canvas used for drawing click map with cigar data
-      // this can show if you are mousing over a insertion/deletion. it is similar
-      // in purpose to the clickMapRef but was not feasible to pack this into the
-      // clickMapRef
+      /**
+       * #volatile
+       * canvas used for drawing click map with cigar data this can show if you
+       * are mousing over a insertion/deletion. it is similar in purpose to the
+       * clickMapRef but was not feasible to pack this into the clickMapRef
+       */
       cigarClickMapCanvas: null as HTMLCanvasElement | null,
 
-      // canvas for drawing mouseover shading
-      // this is separate from the other code for speed: don't have to redraw
-      // entire canvas to do a feature's mouseover shading
+      /**
+       * #volatile
+       * canvas for drawing mouseover shading this is separate from the other
+       * code for speed: don't have to redraw entire canvas to do a feature's
+       * mouseover shading
+       */
       mouseoverCanvas: null as HTMLCanvasElement | null,
 
-      // assigned by reaction
+      /**
+       * #volatile
+       * assigned by reaction
+       */
       featPositions: [] as FeatPos[],
 
-      // currently mouse'd over feature
+      /**
+       * #volatile
+       * currently mouse'd over feature
+       */
       mouseoverId: undefined as string | undefined,
 
-      // currently click'd over feature
+      /**
+       * #volatile
+       * currently click'd over feature
+       */
       clickId: undefined as string | undefined,
 
-      // currently mouseover'd CIGAR subfeature
+      /**
+       * #volatile
+       * currently mouseover'd CIGAR subfeature
+       */
       cigarMouseoverId: -1,
     }))
     .actions(self => ({
@@ -137,25 +160,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...getConf(self.parentTrack, 'adapter'),
         }
       },
+
       /**
        * #getter
        */
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
       },
-      /**
-       * #getter
-       */
-      get height() {
-        // @ts-expect-error
-        return getParent(self, 4).height as number
-      },
+
       /**
        * #getter
        */
       get numFeats() {
         return self.featPositions.length
       },
+
       /**
        * #getter
        * used for synteny svg rendering

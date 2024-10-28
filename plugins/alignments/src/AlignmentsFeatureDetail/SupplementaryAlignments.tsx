@@ -1,7 +1,7 @@
 import React from 'react'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { SimpleFeatureSerialized, getEnv, getSession } from '@jbrowse/core/util'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
 // locals
 import { AlignmentFeatureWidgetModel } from './stateModelFactory'

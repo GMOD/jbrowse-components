@@ -1,5 +1,5 @@
 import React from 'react'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { SimpleFeatureSerialized, getEnv, getSession } from '@jbrowse/core/util'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
