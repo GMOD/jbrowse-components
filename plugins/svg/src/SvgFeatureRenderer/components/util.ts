@@ -46,21 +46,29 @@ export interface ExtraGlyphValidator {
   validator: (feature: Feature) => boolean
 }
 
-const set = new Set(['mRNA', 'transcript', 'primary_transcript'])
-
-export function chooseGlyphComponent(
-  feature: Feature,
-  extraGlyphs?: ExtraGlyphValidator[],
-): Glyph {
+export function chooseGlyphComponent({
+  feature,
+  extraGlyphs,
+  config,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  extraGlyphs?: ExtraGlyphValidator[]
+}): Glyph {
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
+  const transcriptTypes = readConfObject(config, 'transcriptTypes')
+  const containerTypes = readConfObject(config, 'containerTypes')
 
   if (subfeatures?.length && type !== 'CDS') {
     const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
     const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
-    if (set.has(type) && hasCDS) {
+    if (transcriptTypes.includes(type) && hasCDS) {
       return ProcessedTranscript
-    } else if (!feature.parent() && hasSubSub) {
+    } else if (
+      (!feature.parent() && hasSubSub) ||
+      containerTypes.includes(type)
+    ) {
       return Subfeatures
     } else {
       return Segments
@@ -123,7 +131,11 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Box
-      : chooseGlyphComponent(feature, extraGlyphs)
+      : chooseGlyphComponent({
+          feature,
+          extraGlyphs,
+          config,
+        })
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
@@ -149,7 +161,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   subfeatures.forEach(feature => {
-    ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
+    ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
       layout,
       feature,
       bpPerPx,

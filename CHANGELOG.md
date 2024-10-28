@@ -1,3 +1,61 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.16.0
+
+## 2.16.0 (2024-10-23)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4615](https://github.com/GMOD/jbrowse-components/pull/4615) Add
+    configuration of transcriptTypes and containerTypes to the svg feature
+    rendering ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`
+  - [#4430](https://github.com/GMOD/jbrowse-components/pull/4430) Multi-level
+    synteny rendering ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4593](https://github.com/GMOD/jbrowse-components/pull/4593) Fix navigating
+    to a refname result that is also indexed in search track index
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4612](https://github.com/GMOD/jbrowse-components/pull/4612) Fix error with
+    tooltips in embedded components in vite dev mode
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4602](https://github.com/GMOD/jbrowse-components/pull/4602) Fix decoding
+    of CRAM ML tag ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4594](https://github.com/GMOD/jbrowse-components/pull/4594) Fix highlight
+    button causing issues clicking underlying track features
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4586](https://github.com/GMOD/jbrowse-components/pull/4586) Update
+    electron-builder to fix broken desktop builds
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4600](https://github.com/GMOD/jbrowse-components/pull/4600) Fix check for
+    "hasSubSubfeatures" in svg feature rendering
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4590](https://github.com/GMOD/jbrowse-components/pull/4590) Fix opening
+    .jbrowse files on desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#4607](https://github.com/GMOD/jbrowse-components/pull/4607) Add tiberius
+  sample dataset and updated gencode and ncbi GFF gene sets
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- Other
+  - [#4607](https://github.com/GMOD/jbrowse-components/pull/4607) Add tiberius
+    sample dataset and updated gencode and ncbi GFF gene sets
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `embedded-core`, `product-core`, `web-core`
+  - [#4606](https://github.com/GMOD/jbrowse-components/pull/4606) Remove
+    react-error-boundary ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.02s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.15.4
 
 ## 2.15.4 (2024-09-20)

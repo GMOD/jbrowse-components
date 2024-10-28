@@ -65,7 +65,7 @@ function RenderedFeatureGlyph(props: {
   const labelAllowed = displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
-  const GlyphComponent = chooseGlyphComponent(feature, extraGlyphs)
+  const GlyphComponent = chooseGlyphComponent({ config, feature, extraGlyphs })
   const featureLayout = (GlyphComponent.layOut || layOut)({
     layout: rootLayout,
     feature,

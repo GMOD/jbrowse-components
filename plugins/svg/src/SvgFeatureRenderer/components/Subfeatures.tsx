@@ -67,10 +67,11 @@ Subfeatures.layOut = ({
   if (displayMode !== 'reducedRepresentation') {
     let topOffset = 0
     feature.get('subfeatures')?.forEach(subfeature => {
-      const SubfeatureGlyphComponent = chooseGlyphComponent(
-        subfeature,
+      const SubfeatureGlyphComponent = chooseGlyphComponent({
+        feature: subfeature,
         extraGlyphs,
-      )
+        config,
+      })
       const subfeatureHeight = readConfObject(config, 'height', {
         feature: subfeature,
       }) as number
