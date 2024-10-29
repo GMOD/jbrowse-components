@@ -26,6 +26,7 @@ const useStyles = makeStyles()({
     position: 'relative',
   },
   mouseoverCanvas: {
+    imageRendering: 'pixelated',
     position: 'absolute',
     pointEvents: 'none',
   },
@@ -40,11 +41,11 @@ const LinearSyntenyRendering = observer(function ({
   model: LinearSyntenyDisplayModel
 }) {
   const { classes } = useStyles()
+  const { mouseoverId, height } = model
   const xOffset = useRef(0)
   const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
   const delta = useRef(0)
-
   const scheduled = useRef(false)
   const timeout = useRef<Timer>()
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
@@ -53,13 +54,12 @@ const LinearSyntenyRendering = observer(function ({
   const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const { mouseoverId, height } = model
-  const k2p = useRef<HTMLCanvasElement | null>()
+  const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement | null>()
 
   // these useCallbacks avoid new refs from being created on any mouseover,
   // etc.
   // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const k1 = useCallback(
+  const mouseoverDetectionCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMouseoverCanvasRef(ref)
     },
@@ -68,10 +68,10 @@ const LinearSyntenyRendering = observer(function ({
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const k2 = useCallback(
+  const mainSyntenyCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
-      k2p.current = ref // this ref is additionally used in useEffect below
+      mainSyntenyCanvasRefp.current = ref // this ref is additionally used in useEffect below
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
@@ -97,7 +97,9 @@ const LinearSyntenyRendering = observer(function ({
               delta.current > 0
                 ? v.bpPerPx * (1 + delta.current)
                 : v.bpPerPx / (1 - delta.current),
-              event.clientX - (k2p.current?.getBoundingClientRect().left || 0),
+              event.clientX -
+                (mainSyntenyCanvasRefp.current?.getBoundingClientRect().left ||
+                  0),
             )
           }
           delta.current = 0
@@ -120,15 +122,15 @@ const LinearSyntenyRendering = observer(function ({
         }
       }
     }
-    k2p.current?.addEventListener('wheel', onWheel)
+    mainSyntenyCanvasRefp.current?.addEventListener('wheel', onWheel)
     return () => {
-      k2p.current?.removeEventListener('wheel', onWheel)
+      mainSyntenyCanvasRefp.current?.removeEventListener('wheel', onWheel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const k3 = useCallback(
+  const clickMapCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setClickMapCanvasRef(ref)
     },
@@ -136,7 +138,7 @@ const LinearSyntenyRendering = observer(function ({
     [model, height, width],
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const k4 = useCallback(
+  const cigarClickMapCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setCigarClickMapCanvasRef(ref)
     },
@@ -147,13 +149,13 @@ const LinearSyntenyRendering = observer(function ({
   return (
     <div className={classes.rel}>
       <canvas
-        ref={k1}
+        ref={mouseoverDetectionCanvasRef}
         width={width}
         height={height}
         className={classes.mouseoverCanvas}
       />
       <canvas
-        ref={k2}
+        ref={mainSyntenyCanvasRef}
         onMouseMove={event => {
           if (mouseCurrDownX !== undefined) {
             xOffset.current += mouseCurrDownX - event.clientX
@@ -228,8 +230,18 @@ const LinearSyntenyRendering = observer(function ({
         width={width}
         height={height}
       />
-      <canvas ref={k3} className={classes.pix} width={width} height={height} />
-      <canvas ref={k4} className={classes.pix} width={width} height={height} />
+      <canvas
+        ref={clickMapCanvasRef}
+        className={classes.pix}
+        width={width}
+        height={height}
+      />
+      <canvas
+        ref={cigarClickMapCanvasRef}
+        className={classes.pix}
+        width={width}
+        height={height}
+      />
       {mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip title={tooltip} />
       ) : null}

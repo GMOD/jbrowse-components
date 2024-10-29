@@ -240,9 +240,10 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   ctx.resetTransform()
   ctx.scale(highResolutionScaling, highResolutionScaling)
   ctx.clearRect(0, 0, width, height)
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)'
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
   const feature1 = model.featMap[mouseoverId || '']
   if (feature1) {
-    ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
       cb: ctx => {
         ctx.fill()
@@ -259,8 +260,6 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   }
   const feature2 = model.featMap[clickId || '']
   if (feature2) {
-    ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-
     drawMatchSimple({
       cb: ctx => {
         ctx.stroke()
