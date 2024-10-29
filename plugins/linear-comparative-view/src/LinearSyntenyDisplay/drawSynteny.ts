@@ -179,15 +179,18 @@ export function drawRef(
               continuingFlag = false
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              ctx1.fill()
               if (ctx3) {
                 ctx3.fillStyle = makeColor(idx)
                 draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                ctx3.fill()
               }
             }
           }
         }
       } else {
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
+        ctx1.fill()
       }
     }
   }
@@ -240,9 +243,10 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   ctx.resetTransform()
   ctx.scale(highResolutionScaling, highResolutionScaling)
   ctx.clearRect(0, 0, width, height)
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)'
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
   const feature1 = model.featMap[mouseoverId || '']
   if (feature1) {
-    ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
       cb: ctx => {
         ctx.fill()
@@ -259,8 +263,6 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   }
   const feature2 = model.featMap[clickId || '']
   if (feature2) {
-    ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-
     drawMatchSimple({
       cb: ctx => {
         ctx.stroke()

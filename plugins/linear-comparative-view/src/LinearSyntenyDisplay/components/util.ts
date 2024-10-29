@@ -128,7 +128,6 @@ export function drawBox(
   ctx.lineTo(x3, y2)
   ctx.lineTo(x4, y2)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function drawBezierBox(
@@ -159,7 +158,6 @@ export function drawBezierBox(
   ctx.lineTo(x4, y2)
   ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function onSynClick(
