@@ -78,10 +78,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
       const source = this.getConf('source')
+      const resolutionMultiplier = this.getConf('resolutionMultiplier')
       const { bigwig } = await this.setup(opts)
       const feats = await bigwig.getFeatures(refName, start, end, {
         ...opts,
-        basesPerSpan: bpPerPx / resolution,
+        basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
       })
 
       for (const data of feats) {
