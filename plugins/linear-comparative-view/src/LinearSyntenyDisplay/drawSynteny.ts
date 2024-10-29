@@ -179,15 +179,18 @@ export function drawRef(
               continuingFlag = false
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              ctx1.fill()
               if (ctx3) {
                 ctx3.fillStyle = makeColor(idx)
                 draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                ctx3.fill()
               }
             }
           }
         }
       } else {
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
+        ctx1.fill()
       }
     }
   }
