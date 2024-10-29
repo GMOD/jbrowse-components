@@ -9,6 +9,7 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
 import DeltaAdapterF from './DeltaAdapter'
 import ChainAdapterF from './ChainAdapter'
+import BlastTabularAdapter from './BlastTabularAdapter'
 
 import {
   getFileName,
@@ -27,6 +28,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MCScanAnchorsAdapterF(pluginManager)
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
+    BlastTabularAdapter(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',

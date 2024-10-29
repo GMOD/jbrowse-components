@@ -42,12 +42,12 @@ export function zip(a: number[], b: number[]) {
 const decoder =
   typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
 
-export function parseLineByLine(
+export function parseLineByLine<T>(
   buffer: Buffer,
-  cb: (line: string) => PAFRecord,
-) {
+  cb: (line: string) => T | undefined,
+): T[] {
   let blockStart = 0
-  const entries = []
+  const entries: T[] = []
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
@@ -56,7 +56,10 @@ export function parseLineByLine(
     const b = buffer.subarray(blockStart, n)
     const line = (decoder?.decode(b) || b.toString()).trim()
     if (line) {
-      entries.push(cb(line))
+      const entry = cb(line)
+      if (entry) {
+        entries.push(entry)
+      }
     }
 
     blockStart = n + 1

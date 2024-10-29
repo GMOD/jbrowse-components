@@ -52,6 +52,20 @@
         "assemblyNames": ["peach", "grape"]
       },
       "assemblyNames": ["peach", "grape"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_tblastx",
+      "name": "Grape peach synteny (TBLASTX)",
+      "assemblyNames": ["peach", "grape"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "BlastTabularAdapter",
+        "blastTableLocation": {
+          "uri": "peach_vs_grape.tsv"
+        },
+        "assemblyNames": ["peach", "grape"]
+      }
     }
   ]
 }
