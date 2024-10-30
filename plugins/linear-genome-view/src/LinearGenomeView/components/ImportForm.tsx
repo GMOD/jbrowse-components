@@ -8,7 +8,7 @@ import {
   CircularProgress,
   Container,
   FormControl,
-  Grid,
+  Grid2 as Grid,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -108,64 +108,58 @@ const LinearGenomeViewImportForm = observer(function ({
             justifyContent="center"
             alignItems="center"
           >
-            <Grid item>
-              <FormControl>
-                <AssemblySelector
-                  onChange={val => {
-                    setSelectedAsm(val)
-                  }}
-                  localStorageKey="lgv"
-                  session={session}
-                  selected={selectedAsm}
-                />
-              </FormControl>
-            </Grid>
-            <Grid item>
-              {selectedAsm ? (
-                assemblyError ? (
-                  <CloseIcon style={{ color: 'red' }} />
-                ) : assemblyLoaded ? (
-                  <FormControl>
-                    <ImportFormRefNameAutocomplete
-                      value={value}
-                      setValue={setValue}
-                      selectedAsm={selectedAsm}
-                      setOption={setOption}
-                      model={model}
-                    />
-                  </FormControl>
-                ) : (
-                  <CircularProgress size={20} disableShrink />
-                )
-              ) : null}
-            </Grid>
-            <Grid item>
-              <FormControl>
-                <Button
-                  type="submit"
-                  disabled={!value}
-                  className={classes.button}
-                  variant="contained"
-                  color="primary"
-                >
-                  Open
-                </Button>
-              </FormControl>
-              <FormControl>
-                <Button
-                  disabled={!value}
-                  className={classes.button}
-                  onClick={() => {
-                    model.setError(undefined)
-                    model.showAllRegionsInAssembly(selectedAsm)
-                  }}
-                  variant="contained"
-                  color="secondary"
-                >
-                  Show all regions in assembly
-                </Button>
-              </FormControl>
-            </Grid>
+            <FormControl>
+              <AssemblySelector
+                onChange={val => {
+                  setSelectedAsm(val)
+                }}
+                localStorageKey="lgv"
+                session={session}
+                selected={selectedAsm}
+              />
+            </FormControl>
+            {selectedAsm ? (
+              assemblyError ? (
+                <CloseIcon style={{ color: 'red' }} />
+              ) : assemblyLoaded ? (
+                <FormControl>
+                  <ImportFormRefNameAutocomplete
+                    value={value}
+                    setValue={setValue}
+                    selectedAsm={selectedAsm}
+                    setOption={setOption}
+                    model={model}
+                  />
+                </FormControl>
+              ) : (
+                <CircularProgress size={20} disableShrink />
+              )
+            ) : null}
+            <FormControl>
+              <Button
+                type="submit"
+                disabled={!value}
+                className={classes.button}
+                variant="contained"
+                color="primary"
+              >
+                Open
+              </Button>
+            </FormControl>
+            <FormControl>
+              <Button
+                disabled={!value}
+                className={classes.button}
+                onClick={() => {
+                  model.setError(undefined)
+                  model.showAllRegionsInAssembly(selectedAsm)
+                }}
+                variant="contained"
+                color="secondary"
+              >
+                Show all regions in assembly
+              </Button>
+            </FormControl>
           </Grid>
         </form>
       </Container>

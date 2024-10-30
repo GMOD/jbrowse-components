@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useState } from 'react'
 
 import { stringify, toLocale } from '@jbrowse/core/util'
 import { Popover, Typography, alpha } from '@mui/material'
@@ -41,6 +41,38 @@ interface Offset {
   oob?: boolean
 }
 
+function Tooltip({
+  anchorEl,
+  side,
+  text,
+}: {
+  anchorEl: HTMLDivElement
+  side: string
+  text: string
+}) {
+  const { classes } = useStyles()
+  return (
+    <Popover
+      className={classes.popover}
+      classes={{ paper: classes.paper }}
+      open
+      anchorEl={anchorEl}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: side === 'left' ? 'right' : 'left',
+      }}
+      transformOrigin={{
+        vertical: 'bottom',
+        horizontal: side === 'left' ? 'left' : 'right',
+      }}
+      keepMounted
+      disableRestoreFocus
+    >
+      <Typography>{text}</Typography>
+    </Popover>
+  )
+}
+
 export default function RubberbandSpan({
   leftBpOffset,
   rightBpOffset,
@@ -54,39 +86,31 @@ export default function RubberbandSpan({
   left: number
   width: number
 }) {
-  const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
   return (
     <>
-      {ref.current ? (
+      {anchorEl ? (
         <>
-          <Popover
-            className={classes.popover}
-            classes={{ paper: classes.paper }}
-            open
-            anchorEl={ref.current}
-            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            keepMounted
-            disableRestoreFocus
-          >
-            <Typography>{stringify(leftBpOffset)}</Typography>
-          </Popover>
-          <Popover
-            className={classes.popover}
-            classes={{ paper: classes.paper }}
-            open
-            anchorEl={ref.current}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            keepMounted
-            disableRestoreFocus
-          >
-            <Typography>{stringify(rightBpOffset)}</Typography>
-          </Popover>
+          <Tooltip
+            side="left"
+            anchorEl={anchorEl}
+            text={stringify(leftBpOffset)}
+          />
+          <Tooltip
+            side="right"
+            anchorEl={anchorEl}
+            text={stringify(rightBpOffset)}
+          />
         </>
       ) : null}
-      <div ref={ref} className={classes.rubberband} style={{ left, width }}>
+      <div
+        ref={el => {
+          setAnchorEl(el)
+        }}
+        className={classes.rubberband}
+        style={{ left, width }}
+      >
         {numOfBpSelected ? (
           <Typography variant="h6" className={classes.rubberbandText}>
             {toLocale(numOfBpSelected)} bp

@@ -30,6 +30,7 @@ function PaperComponent(props: PaperProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <Draggable
+      // @ts-expect-error
       nodeRef={ref}
       cancel={'[class*="MuiDialogContent-root"]'}
       // @ts-expect-error

@@ -125,6 +125,7 @@ function CascadingSubmenuHover({
 
   return (
     <CascadingContext.Provider value={context}>
+      {/* @ts-expect-error */}
       <HoverMenu {...props} {...bindMenu(popupState)} />
     </CascadingContext.Provider>
   )

@@ -1,6 +1,12 @@
+const ReactCompilerConfig = {
+  /* ... */
+}
 module.exports = function babelConfig(api) {
   api.cache(true)
   return {
+    plugins: [
+      ['babel-plugin-react-compiler', ReactCompilerConfig], // must run first!
+    ],
     presets: [
       '@babel/preset-react',
       '@babel/preset-env',

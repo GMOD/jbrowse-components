@@ -19,7 +19,7 @@ const PairedFeatures = observer(function ({
 }: {
   model: BreakpointViewModel
   trackId: string
-  parentRef: React.RefObject<SVGSVGElement>
+  parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { views } = model

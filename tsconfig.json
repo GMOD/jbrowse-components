@@ -28,6 +28,7 @@
     "**/umd/",
     "**/esm/",
     "**/tmp/",
+    "**/config/jest/",
     "**/embedded_demos/",
     "**/component_tests/",
     "**/plugin-development-tools/",

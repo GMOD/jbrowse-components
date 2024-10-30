@@ -48,14 +48,14 @@ const LinearSyntenyRendering = observer(function ({
   const width = view.width
   const delta = useRef(0)
   const scheduled = useRef(false)
-  const timeout = useRef<Timer>()
+  const timeout = useRef<Timer>(null)
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
   const [currX, setCurrX] = useState<number>()
   const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement | null>()
+  const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement>(null)
 
   // these useCallbacks avoid new refs from being created on any mouseover,
   // etc.

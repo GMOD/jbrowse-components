@@ -12,7 +12,7 @@ interface AnchorPosition {
 }
 
 export function useRangeSelect(
-  ref: React.RefObject<HTMLDivElement>,
+  ref: React.RefObject<HTMLDivElement | null>,
   model: LinearGenomeViewModel,
   shiftOnly?: boolean,
 ) {
