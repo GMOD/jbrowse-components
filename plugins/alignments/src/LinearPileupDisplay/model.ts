@@ -314,7 +314,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Modifications or methylation',
+                  label: 'Modifications w/ MM tag',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      ModificationsDialog,
+                      {
+                        model: self,
+                        handleClose: doneCallback,
+                      },
+                    ])
+                  },
+                },
+                {
+                  label: 'Methylated CpGs w/ MM tag',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
                       ModificationsDialog,

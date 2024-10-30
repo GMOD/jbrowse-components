@@ -73,7 +73,9 @@ const ColorByModificationsDialog = observer(function ({
           <Button
             variant="contained"
             onClick={() => {
-              model.setColorScheme({ type: 'modifications' })
+              model.setColorScheme({
+                type: 'modifications',
+              })
               handleClose()
             }}
           >
@@ -82,7 +84,9 @@ const ColorByModificationsDialog = observer(function ({
           <Button
             variant="contained"
             onClick={() => {
-              model.setColorScheme({ type: 'methylation' })
+              model.setColorScheme({
+                type: 'methylation',
+              })
               handleClose()
             }}
           >
