@@ -101,7 +101,7 @@ export default class HicRenderer extends ServerSideRendererType {
   }
 }
 
-export {
-  type RenderArgsSerialized,
-  type RenderResults,
+export type {
+  RenderArgsSerialized,
+  RenderResults,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'

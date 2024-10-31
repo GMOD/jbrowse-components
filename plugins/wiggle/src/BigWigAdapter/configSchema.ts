@@ -28,6 +28,9 @@ const BigWigAdapter = ConfigurationSchema(
       description: 'Used for multiwiggle',
     },
 
+    /**
+     * #slot
+     */
     resolutionMultiplier: {
       type: 'number',
       defaultValue: 1,

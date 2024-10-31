@@ -19,6 +19,14 @@ const HicAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     */
+    resolutionMultiplier: {
+      type: 'number',
+      defaultValue: 1,
+      description: 'Initial resolution multiplier',
+    },
   },
   { explicitlyTyped: true },
 )
