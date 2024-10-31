@@ -62,7 +62,7 @@
       "adapter": {
         "type": "BlastTabularAdapter",
         "blastTableLocation": {
-          "uri": "peach_vs_grape.tsv"
+          "uri": "peach_vs_grape.tsv.gz"
         },
         "assemblyNames": ["peach", "grape"]
       }

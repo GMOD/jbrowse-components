@@ -7,7 +7,7 @@ test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter(
     MyConfigSchema.create({
       blastTableLocation: {
-        localPath: require.resolve('./test_data/peach_vs_grape.tsv'),
+        localPath: require.resolve('./test_data/peach_vs_grape.tsv.gz'),
         locationType: 'LocalPathLocation',
       },
       assemblyNames: ['peach', 'grape'],
