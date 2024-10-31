@@ -351,13 +351,18 @@ export function getModificationPositions(
           }
           i++
         } while (delta >= 0 && i < seq.length)
+        if (fstrand === -1) {
+          const pos = seq.length - i
+          if (pos >= 0) {
+            // avoid negative-number-positions in array, seen in #4629 cause
+            // unknown, could warrant some further investigation
+            positions.unshift(pos)
+          }
+        } else {
+          positions.push(i - 1)
+        }
+      }
 
-        const temp = i - 1
-        positions.push(fstrand === -1 ? seq.length - 1 - temp : temp)
-      }
-      if (fstrand === -1) {
-        positions.sort((a, b) => a - b)
-      }
       result.push({
         type,
         positions,
