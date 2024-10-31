@@ -150,13 +150,12 @@ export function createAutorun(
     }, opts),
   )
 }
-export function randomColor() {}
 
-function colorHash(str: string) {
+export function randomColor(str: string) {
   let sum = 0
 
   for (let i = 0; i < str.length; i++) {
     sum += str.charCodeAt(i)
   }
-  return `hsl(${Math.random() * sum * 100}, 50%, 50%)`
+  return `hsl(${sum * 10}, 20%, 50%)`
 }

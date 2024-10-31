@@ -96,7 +96,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (!self.modificationTagMap.has(value)) {
             self.modificationTagMap.set(
               value,
-              modificationColors[value] || randomColor(),
+              modificationColors[value] || randomColor(value),
             )
           }
         })
