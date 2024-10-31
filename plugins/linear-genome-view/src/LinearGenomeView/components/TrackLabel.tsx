@@ -69,13 +69,17 @@ const TrackLabel = observer(
               track.setMinimized(!minimized)
             },
           },
-          {
-            label: 'Move track to top',
-            icon: KeyboardDoubleArrowUpIcon,
-            onClick: () => {
-              view.moveTrackToTop(track.id)
-            },
-          },
+          ...(view.tracks.length > 2
+            ? [
+                {
+                  label: 'Move track to top',
+                  icon: KeyboardDoubleArrowUpIcon,
+                  onClick: () => {
+                    view.moveTrackToTop(track.id)
+                  },
+                },
+              ]
+            : []),
 
           {
             label: 'Move track up',
@@ -91,13 +95,17 @@ const TrackLabel = observer(
               view.moveTrackDown(track.id)
             },
           },
-          {
-            label: 'Move track to bottom',
-            icon: KeyboardDoubleArrowDownIcon,
-            onClick: () => {
-              view.moveTrackToBottom(track.id)
-            },
-          },
+          ...(view.tracks.length > 2
+            ? [
+                {
+                  label: 'Move track to bottom',
+                  icon: KeyboardDoubleArrowDownIcon,
+                  onClick: () => {
+                    view.moveTrackToBottom(track.id)
+                  },
+                },
+              ]
+            : []),
         ],
       },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),

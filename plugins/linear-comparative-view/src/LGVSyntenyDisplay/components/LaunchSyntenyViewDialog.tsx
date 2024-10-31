@@ -9,8 +9,9 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material'
-import { navToSynteny } from './util'
 import { makeStyles } from 'tss-react/mui'
+// locals
+import { navToSynteny } from './util'
 
 const useStyles = makeStyles()({
   padding: {
@@ -22,10 +23,12 @@ const useStyles = makeStyles()({
 export default function LaunchSyntenyViewDialog({
   model,
   feature,
+  trackId,
   handleClose,
 }: {
   model: unknown
   feature: Feature
+  trackId: string
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -70,6 +73,7 @@ export default function LaunchSyntenyViewDialog({
                   feature,
                   windowSize: +windowSize,
                   horizontallyFlip,
+                  trackId,
                   model,
                 })
               } catch (e) {

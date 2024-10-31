@@ -16,8 +16,8 @@
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
-  "srcMain": "src/index.tsx",
-  "main": "src/index.tsx",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
   "files": [
     "dist",
     "esm"

@@ -6,7 +6,7 @@ import {
   SimpleFeature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals

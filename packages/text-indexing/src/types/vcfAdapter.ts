@@ -21,17 +21,11 @@ export async function* indexVcf({
   onUpdate: (progressBytes: number) => void
 }) {
   const { trackId } = config
-  let receivedBytes = 0
-  const { totalBytes, stream } = await getLocalOrRemoteStream(
-    inLocation,
-    outDir,
-  )
-
-  onStart(totalBytes)
-
-  stream.on('data', chunk => {
-    receivedBytes += chunk.length
-    onUpdate(receivedBytes)
+  const stream = await getLocalOrRemoteStream({
+    file: inLocation,
+    out: outDir,
+    onTotalBytes: onStart,
+    onBytesReceived: onUpdate,
   })
 
   const gzStream = /.b?gz$/.exec(inLocation)

@@ -69,13 +69,17 @@ const ViewMenu = observer(function ({
                   label: 'View order',
                   type: 'subMenu' as const,
                   subMenu: [
-                    {
-                      label: 'Move view to top',
-                      icon: KeyboardDoubleArrowUpIcon,
-                      onClick: () => {
-                        session.moveViewToTop(model.id)
-                      },
-                    },
+                    ...(session.views.length > 2
+                      ? [
+                          {
+                            label: 'Move view to top',
+                            icon: KeyboardDoubleArrowUpIcon,
+                            onClick: () => {
+                              session.moveViewToTop(model.id)
+                            },
+                          },
+                        ]
+                      : []),
                     {
                       label: 'Move view up',
                       icon: KeyboardArrowUpIcon,
@@ -90,13 +94,17 @@ const ViewMenu = observer(function ({
                         session.moveViewDown(model.id)
                       },
                     },
-                    {
-                      label: 'Move view to bottom',
-                      icon: KeyboardDoubleArrowDownIcon,
-                      onClick: () => {
-                        session.moveViewToBottom(model.id)
-                      },
-                    },
+                    ...(session.views.length > 2
+                      ? [
+                          {
+                            label: 'Move view to bottom',
+                            icon: KeyboardDoubleArrowDownIcon,
+                            onClick: () => {
+                              session.moveViewToBottom(model.id)
+                            },
+                          },
+                        ]
+                      : []),
                   ],
                 },
               ]

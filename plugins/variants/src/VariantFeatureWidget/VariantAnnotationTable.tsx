@@ -1,6 +1,6 @@
 import React from 'react'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import AnnotGrid from './AnnotGrid'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
 export default function VariantAnnotationTable({
   data,
