@@ -24,7 +24,7 @@ test('launch read vs ref panel', async () => {
   fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Linear read vs ref', {}, delay))
-  const elt = await findByText('Submit')
+  const elt = await findByText('Submit', {}, delay)
 
   // https://stackoverflow.com/a/62443937/2129219
   await waitFor(() => {
