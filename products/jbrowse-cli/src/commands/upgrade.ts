@@ -38,7 +38,7 @@ export default class Upgrade extends JBrowseCommand {
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    // will need to account for pagenation once there is a lot of releases
+    // will need to account for pagination once there is a lot of releases
     listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
