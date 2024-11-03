@@ -58,3 +58,5 @@ const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
 })
 
 export default BaseFeatureDetail
+
+export { BaseCard, FeatureDetails }
