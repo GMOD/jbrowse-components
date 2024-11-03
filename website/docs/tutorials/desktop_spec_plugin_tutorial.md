@@ -288,13 +288,24 @@ We'll add some more UI elements that allow us to do something more interesting:
 
 **./src/MyToolWidget/MyToolWidget.tsx**
 
-```jsx
+```tsx
 import React, { useEffect, useState } from 'react'
-import { Box, Button, FormControl, Paper, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  FormControl,
+  Paper,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
-import { LocalPathLocation, FileLocation, BlobLocation } from '@jbrowse/core/util/types'
+import {
+  LocalPathLocation,
+  FileLocation,
+  BlobLocation,
+} from '@jbrowse/core/util/types'
 import { getBlob, storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { isElectron } from '@jbrowse/core/util'
 
@@ -331,7 +342,6 @@ export default function MyToolWidget({ model }: { model: AddTrackModel }) {
   }, [model.trackData])
 
   return (
-    { /* formatting using paper and other mui elements */ }
     <Paper className={classes.paper}>
       <p>
         This desktop plugin widget will allow you to submit an unindexed{' '}
@@ -339,19 +349,19 @@ export default function MyToolWidget({ model }: { model: AddTrackModel }) {
         index, and zip the file. This circumvents any CLI operations you may
         have otherwise needed to do!
       </p>
-      { /* LocalFileChooser is a component we define below, it allows us to select local files only */ }
+      {/* LocalFileChooser is a component we define below, it allows us to select local files only */}
       <LocalFileChooser
         location={model.trackData}
         setLocation={model.setTrackData}
         setName={setTrackName}
       />
-      { /* displays the track name and lets the user edit it to something they wish */ }
+      {/* displays the track name and lets the user edit it to something they wish */}
       <TextField
         value={trackName}
         onChange={event => setTrackName(event.target.value)}
         helperText="Track name"
       />
-      { /* the submit button will eventually be responsible for executing our script */ }
+      {/* the submit button will eventually be responsible for executing our script */}
       <Button variant="contained" className={classes.submit} onClick={() => {}}>
         Submit
       </Button>
@@ -371,7 +381,7 @@ function LocalFileChooser(props: {
 }) {
   const { classes } = useStyles()
   const { location, setLocation, setName } = props
-  const [filename, setFilename] = useState(``)
+  const [filename, setFilename] = useState('')
 
   const needToReload =
     location && isBlobLocation(location) && !getBlob(location.blobId)
@@ -390,17 +400,19 @@ function LocalFileChooser(props: {
                 const file = target && target.files && target.files[0]
                 if (file) {
                   if (isElectron) {
+                    const { webUtils } = window.require('electron')
+                    const path = webUtils.getPathForFile(file)
                     // here we are setting the location information for the file selected
                     // these features are necessary for the VcfTabixAdapter
                     setLocation({
-                      localPath: (file as File & { path: string }).path,
+                      localPath: path,
                       locationType: 'LocalPathLocation',
                     })
                   } else {
                     setLocation(storeBlobLocation({ blob: file }))
                   }
                   // these set ui elements
-                  setFilename((file as File & { path: string }).path)
+                  setFilename(file.name)
                   setName(file.name)
                 }
               }}
