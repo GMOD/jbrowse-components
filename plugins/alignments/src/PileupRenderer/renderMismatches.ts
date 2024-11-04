@@ -152,7 +152,7 @@ export function renderMismatches({
           Math.max(0, leftPx),
           topPx + heightPx / 2 - 1,
           adjustPx + Math.min(leftPx, 0),
-          2,
+          1,
           canvasWidth,
           '#333',
         )
