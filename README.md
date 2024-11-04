@@ -63,15 +63,15 @@ For running jbrowse-web
 
 ```sh
 cd products/jbrowse-web
-yarn start
+yarn dev
 ```
 
 For jbrowse-desktop, launch two tabs
 
 ```sh
-# starts webpack dev server
+# starts dev server
 cd products/jbrowse-desktop
-yarn start
+yarn dev
 
 # starts electron window
 cd products/jbrowse-desktop

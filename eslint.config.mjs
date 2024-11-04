@@ -18,6 +18,8 @@ export default tseslint.config(
       '**/esm/**/*',
       '**/public/**/*',
       '**/storybook-static/**',
+      '**/rspack.config.js',
+      '**/rsbuild.config.js',
       'website/*',
       'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',

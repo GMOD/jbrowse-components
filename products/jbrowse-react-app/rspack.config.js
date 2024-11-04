@@ -1,6 +1,5 @@
+const rspack = require('@rspack/core')
 const path = require('path')
-const webpack = require('webpack')
-
 const buildDir = path.resolve('.')
 const distDir = path.resolve(buildDir, 'dist')
 
@@ -9,7 +8,7 @@ const mode = process.env.NODE_ENV || 'production'
 module.exports = {
   mode,
   entry: path.join(buildDir, 'src', 'index.ts'),
-  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+  devtool: 'source-map',
   output: {
     path: distDir,
     filename:
@@ -28,7 +27,7 @@ module.exports = {
     },
   },
   plugins: [
-    new webpack.optimize.LimitChunkCountPlugin({
+    new rspack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
   ],
@@ -51,19 +50,17 @@ module.exports = {
   module: {
     rules: [
       {
-        oneOf: [
-          {
-            test: /\.m?[tj]sx?$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-              loader: 'babel-loader',
-              options: {
-                rootMode: 'upward',
-                presets: ['@babel/preset-react'],
-              },
+        test: /\.tsx?$/,
+        exclude: [/node_modules/],
+        loader: 'builtin:swc-loader',
+        options: {
+          jsc: {
+            parser: {
+              syntax: 'typescript',
             },
           },
-        ],
+        },
+        type: 'javascript/auto',
       },
     ],
   },
