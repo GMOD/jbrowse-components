@@ -128,7 +128,6 @@ export function drawBox(
   ctx.lineTo(x3, y2)
   ctx.lineTo(x4, y2)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function drawBezierBox(
@@ -159,7 +158,6 @@ export function drawBezierBox(
   ctx.lineTo(x4, y2)
   ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function onSynClick(
@@ -168,8 +166,13 @@ export function onSynClick(
 ) {
   const view = getContainingView(model)
   const track = getContainingTrack(model)
-  const ref1 = model.clickMapCanvas
-  const ref2 = model.cigarClickMapCanvas
+  const {
+    featPositions,
+    numFeats,
+    clickMapCanvas: ref1,
+    cigarClickMapCanvas: ref2,
+    level,
+  } = model
   if (!ref1 || !ref2) {
     return
   }
@@ -182,19 +185,20 @@ export function onSynClick(
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
   const id = getId(r1!, g1!, b1!, unitMultiplier)
-  const feat = model.featPositions[id]
+  const feat = featPositions[id]
   if (feat) {
     const { f } = feat
     model.setClickId(f.id())
     const session = getSession(model)
     if (isSessionModelWithWidgets(session)) {
       session.showWidget(
-        session.addWidget('BaseFeatureWidget', 'baseFeature', {
+        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
           view,
           track,
           featureData: f.toJSON(),
+          level,
         }),
       )
     }
@@ -232,9 +236,17 @@ export function onSynContextClick(
   }
 }
 
-export function getTooltip(f: Feature, cigarOp?: string, cigarOpLen?: string) {
+export function getTooltip({
+  feature,
+  cigarOp,
+  cigarOpLen,
+}: {
+  feature: Feature
+  cigarOp?: string
+  cigarOpLen?: string
+}) {
   // @ts-expect-error
-  const f1 = f.toJSON() as {
+  const f1 = feature.toJSON() as {
     refName: string
     start: number
     end: number

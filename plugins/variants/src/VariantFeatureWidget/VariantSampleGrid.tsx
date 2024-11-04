@@ -8,8 +8,8 @@ import {
 } from '@mui/material'
 
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
 interface Entry {
   sample: string
@@ -92,8 +92,8 @@ export default function VariantSamples(props: {
     error = e
   }
 
-  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const [checked, setChecked] = useState(false)
+  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
   const columns = keys.map((field, index) => ({
     field,

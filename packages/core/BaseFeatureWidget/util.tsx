@@ -104,3 +104,7 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
 }
+
+export function replaceUndefinedWithNull(obj: Record<string, unknown>) {
+  return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
+}

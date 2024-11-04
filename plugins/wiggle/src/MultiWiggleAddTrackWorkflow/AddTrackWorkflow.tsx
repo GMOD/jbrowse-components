@@ -11,9 +11,6 @@ import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({
-  textbox: {
-    width: '100%',
-  },
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
@@ -24,6 +21,17 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
   },
 }))
+
+// on electron, use path to LocalFileLocation, on web, use the BlobLocation
+function makeFileLocation(file: File) {
+  const { webUtils } = window.require('electron')
+  return isElectron
+    ? {
+        localPath: webUtils.getPathForFile(file),
+        locationType: 'LocalPathLocation',
+      }
+    : storeBlobLocation({ blob: file })
+}
 
 export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
@@ -41,14 +49,14 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
 
       <TextField
         multiline
+        fullWidth
         rows={10}
         value={val}
+        placeholder="Paste list of URLs here, or use file selector below"
+        variant="outlined"
         onChange={event => {
           setVal(event.target.value)
         }}
-        placeholder={'Paste list of URLs here, or use file selector below'}
-        variant="outlined"
-        className={classes.textbox}
       />
 
       <Button variant="outlined" component="label">
@@ -60,12 +68,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           onChange={({ target }) => {
             const res = [...(target.files || [])].map(file => ({
               type: 'BigWigAdapter',
-              bigWigLocation: isElectron
-                ? {
-                    localPath: (file as File & { path: string }).path,
-                    locationType: 'LocalPathLocation',
-                  }
-                : storeBlobLocation({ blob: file }),
+              bigWigLocation: makeFileLocation(file),
               source: file.name,
             }))
             setVal(JSON.stringify(res, null, 2))
@@ -74,54 +77,58 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       </Button>
       <TextField
         value={trackName}
+        helperText="Track name"
         onChange={event => {
           setTrackName(event.target.value)
         }}
-        helperText="Track name"
       />
       <Button
         variant="contained"
         className={classes.submit}
         onClick={() => {
           const session = getSession(model)
-
-          const trackId = [
-            `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-            session.adminMode ? '' : '-sessionTrack',
-          ].join('')
-
-          // allow list of bigwigs in JSON format or line-by-line
-          let bigWigs: unknown[]
           try {
-            bigWigs = JSON.parse(val)
+            const trackId = [
+              `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
+              session.adminMode ? '' : '-sessionTrack',
+            ].join('')
+
+            // allow list of bigwigs in JSON format or line-by-line
+            let bigWigs: unknown[]
+            try {
+              bigWigs = JSON.parse(val)
+            } catch (e) {
+              bigWigs = val
+                .split(/\n|\r\n|\r/)
+                .map(f => f.trim())
+                .filter(f => !!f)
+            }
+            const obj =
+              typeof bigWigs[0] === 'string'
+                ? { bigWigs }
+                : { subadapters: bigWigs }
+
+            if (isSessionWithAddTracks(session)) {
+              session.addTrackConf({
+                trackId,
+                type: 'MultiQuantitativeTrack',
+                name: trackName,
+                assemblyNames: [model.assembly],
+                adapter: {
+                  type: 'MultiWiggleAdapter',
+                  ...obj,
+                },
+              })
+
+              model.view?.showTrack(trackId)
+            }
+            model.clearData()
+            if (isSessionModelWithWidgets(session)) {
+              session.hideWidget(model)
+            }
           } catch (e) {
-            bigWigs = val
-              .split(/\n|\r\n|\r/)
-              .map(f => f.trim())
-              .filter(f => !!f)
-          }
-          const obj =
-            typeof bigWigs[0] === 'string'
-              ? { bigWigs }
-              : { subadapters: bigWigs }
-
-          if (isSessionWithAddTracks(session)) {
-            session.addTrackConf({
-              trackId,
-              type: 'MultiQuantitativeTrack',
-              name: trackName,
-              assemblyNames: [model.assembly],
-              adapter: {
-                type: 'MultiWiggleAdapter',
-                ...obj,
-              },
-            })
-
-            model.view?.showTrack(trackId)
-          }
-          model.clearData()
-          if (isSessionModelWithWidgets(session)) {
-            session.hideWidget(model)
+            console.error(e)
+            session.notifyError(`${e}`, e)
           }
         }}
       >

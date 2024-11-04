@@ -127,6 +127,7 @@ export const modificationColors = {
   g: 'rgb(255, 160, 86)',
   e: 'rgb(141, 221, 208)',
   b: 'rgb(202, 71, 47)',
+  a: 'hsl(136, 50%, 50%)',
 } as Record<string, string>
 
 type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }
@@ -149,6 +150,12 @@ export function createAutorun(
     }, opts),
   )
 }
-export function randomColor() {
-  return `hsl(${Math.random() * 200}, 50%, 50%)`
+
+export function randomColor(str: string) {
+  let sum = 0
+
+  for (let i = 0; i < str.length; i++) {
+    sum += str.charCodeAt(i)
+  }
+  return `hsl(${sum * 10}, 20%, 50%)`
 }

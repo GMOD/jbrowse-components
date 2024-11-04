@@ -6,7 +6,6 @@ import { getEnv } from '@jbrowse/core/util'
 
 // local utils
 import { LinearGenomeViewModel } from '..'
-import { useSideScroll, useRangeSelect, useWheelScroll } from './hooks'
 
 // local components
 import Rubberband from './Rubberband'
@@ -17,6 +16,11 @@ import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
 import HighlightGroup from './Highlight'
 import { SCALE_BAR_HEIGHT } from '../consts'
+
+// hooks
+import { useSideScroll } from './useSideScroll'
+import { useWheelScroll } from './useWheelScroll'
+import { useRangeSelect } from './useRangeSelect'
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -37,6 +41,7 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
+  const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
   const {
     guideX,
@@ -73,8 +78,8 @@ const TracksContainer = observer(function TracksContainer({
       onMouseMove={mouseMove}
       onMouseUp={mouseUp}
     >
-      {model.showGridlines ? <Gridlines model={model} /> : null}
-      {model.showCenterLine ? <CenterLine model={model} /> : null}
+      {showGridlines ? <Gridlines model={model} /> : null}
+      {showCenterLine ? <CenterLine model={model} /> : null}
       {guideX !== undefined ? (
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (

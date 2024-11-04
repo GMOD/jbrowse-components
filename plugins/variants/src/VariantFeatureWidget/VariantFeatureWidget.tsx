@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { Paper } from '@mui/material'
-import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import { parseBreakend } from '@gmod/vcf'
 
 // locals

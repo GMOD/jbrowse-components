@@ -1,3 +1,46 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.16.1
+
+## 2.16.1 (2024-11-03)
+
+#### :rocket: Enhancement
+
+- `app-core`, `core`, `product-core`, `text-indexing`
+  - [#4624](https://github.com/GMOD/jbrowse-components/pull/4624) Add utility
+    links to synteny feature details to allow centering a view on a feature
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4628](https://github.com/GMOD/jbrowse-components/pull/4628) Allow
+    configuring Hi-C normalization and default resolution multiplier
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4619](https://github.com/GMOD/jbrowse-components/pull/4619) Add
+    resolutionMultiplier config slot to BigWigAdapter
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4634](https://github.com/GMOD/jbrowse-components/pull/4634) Fix opening
+  local files in the multi-wiggle add track selector
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4633](https://github.com/GMOD/jbrowse-components/pull/4633) Fix "Add track"
+  select box not going away after selecting element
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4632](https://github.com/GMOD/jbrowse-components/pull/4632) Standardize
+  modification colors between alignments track coverage and pileup subtracks
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4631](https://github.com/GMOD/jbrowse-components/pull/4631) Fix config
+  description of assembly name ordering for synteny data adapters
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4630](https://github.com/GMOD/jbrowse-components/pull/4630) Fix MM tag
+  modifications from particular BAM file failing to render on the negative
+  strand ([@cmdcolin](https://github.com/cmdcolin))
+- [#4626](https://github.com/GMOD/jbrowse-components/pull/4626) Fix dark redraw
+  on selected features after vertical resize of the synteny canvas
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.20s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.16.0
 
 ## 2.16.0 (2024-10-23)

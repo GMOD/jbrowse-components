@@ -29,19 +29,35 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-export async function getLocalOrRemoteStream(uri: string, out: string) {
-  if (isURL(uri)) {
-    const result = await createRemoteStream(uri)
-    return {
-      totalBytes: +(result.headers.get('Content-Length') || 0),
-      stream: result.body,
-    }
+export async function getLocalOrRemoteStream({
+  file,
+  out,
+  onBytesReceived,
+  onTotalBytes,
+}: {
+  file: string
+  out: string
+  onBytesReceived: (totalBytesReceived: number) => void
+  onTotalBytes: (totalBytes: number) => void
+}) {
+  let receivedBytes = 0
+  if (isURL(file)) {
+    const result = await createRemoteStream(file)
+    result.body.on('data', chunk => {
+      receivedBytes += chunk.length
+      onBytesReceived(receivedBytes)
+    })
+    onTotalBytes(+(result.headers.get('Content-Length') || 0))
+    return result.body
   } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
-    return {
-      totalBytes: fs.statSync(filename).size,
-      stream: fs.createReadStream(filename),
-    }
+    const filename = path.isAbsolute(file) ? file : path.join(out, file)
+    const stream = fs.createReadStream(filename)
+    stream.on('data', chunk => {
+      receivedBytes += chunk.length
+      onBytesReceived(receivedBytes)
+    })
+    onTotalBytes(fs.statSync(filename).size)
+    return stream
   }
 }
 

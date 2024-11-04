@@ -3,7 +3,6 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
-import { getParent } from 'mobx-state-tree'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
@@ -37,11 +36,9 @@ export function drawRef(
   ctx3?: CanvasRenderingContext2D,
 ) {
   const view = getContainingView(model) as LinearSyntenyViewModel
-  // @ts-expect-error
-  const level = getParent(model, 4).level
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
-  const { height, featPositions } = model
+  const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
@@ -179,15 +176,18 @@ export function drawRef(
               continuingFlag = false
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              ctx1.fill()
               if (ctx3) {
                 ctx3.fillStyle = makeColor(idx)
                 draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                ctx3.fill()
               }
             }
           }
         }
       } else {
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
+        ctx1.fill()
       }
     }
   }
@@ -223,7 +223,7 @@ export function drawRef(
 }
 
 export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
-  const { clickId, mouseoverId } = model
+  const { level, clickId, mouseoverId } = model
   const highResolutionScaling = 1
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
@@ -231,8 +231,6 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   const width = view.width
   const ctx = model.mouseoverCanvas?.getContext('2d')
   const offsets = view.views.map(v => v.offsetPx)
-  // @ts-expect-error
-  const level = getParent(model, 4).level
 
   if (!ctx) {
     return
@@ -240,9 +238,10 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   ctx.resetTransform()
   ctx.scale(highResolutionScaling, highResolutionScaling)
   ctx.clearRect(0, 0, width, height)
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)'
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
   const feature1 = model.featMap[mouseoverId || '']
   if (feature1) {
-    ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
       cb: ctx => {
         ctx.fill()
@@ -259,8 +258,6 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   }
   const feature2 = model.featMap[clickId || '']
   if (feature2) {
-    ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-
     drawMatchSimple({
       cb: ctx => {
         ctx.stroke()

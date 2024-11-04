@@ -1,9 +1,8 @@
-import { addDisposer, getParent, getSnapshot } from 'mobx-state-tree'
-
+import { reaction, autorun } from 'mobx'
+import { addDisposer, getSnapshot } from 'mobx-state-tree'
 import { Feature, getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { reaction, autorun } from 'mobx'
 
 // locals
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -84,10 +83,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         if (!initialized) {
           return
         }
+        const { level } = self
         const { assemblyManager } = getSession(self)
         const view = getContainingView(self) as LSV
-        // @ts-expect-error
-        const level = getParent(self, 4).level
         const viewSnaps = view.views.map(view => ({
           ...getSnapshot(view),
           width: view.width,

@@ -189,9 +189,15 @@ const MuiPrefixMUI = Object.fromEntries(
   ]),
 )
 
-const Attributes = lazy(() => import('./Attributes'))
-const FeatureDetails = lazy(() => import('./FeatureDetails'))
-const BaseCard = lazy(() => import('./BaseCard'))
+const Attributes = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/Attributes'),
+)
+const FeatureDetails = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'),
+)
+const BaseCard = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard'),
+)
 
 const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   DataGrid: lazy(() =>
