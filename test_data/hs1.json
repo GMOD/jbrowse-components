@@ -45,12 +45,12 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "RepeatMasker.sorted.bed.gz",
+          "uri": "https://jbrowse.org/genomes/hs1/RepeatMasker.sorted.bed.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "RepeatMasker.sorted.bed.gz.tbi",
+            "uri": "https://jbrowse.org/genomes/hs1/RepeatMasker.sorted.bed.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
