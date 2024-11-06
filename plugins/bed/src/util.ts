@@ -19,8 +19,6 @@ export interface TranscriptFeat extends MinimalFeature {
   subfeatures: MinimalFeature[]
 }
 
-const SPECIFIC_LENGTH_OF_REPEAT_MASKER_DESCRIPTION_FIELDS = 15
-
 export function ucscProcessedTranscript(feature: TranscriptFeat) {
   const {
     subfeatures: oldSubfeatures,
@@ -299,8 +297,7 @@ export function isUcscProcessedTranscript({
     thickStart &&
     blockCount &&
     strand !== 0 &&
-    description?.trim().split(' ').length !==
-      SPECIFIC_LENGTH_OF_REPEAT_MASKER_DESCRIPTION_FIELDS
+    !isRepeatMaskerDescriptionField(description)
   )
 }
 
@@ -312,11 +309,16 @@ export function arrayify(f?: string | number[]) {
     : undefined
 }
 
+function isRepeatMaskerDescriptionField(
+  description?: string,
+): description is string {
+  const ret = description?.trim().split(' ')
+  return [0, 1, 2, 3, 5, 6].every(s =>
+    ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
+  )
+}
 export function makeRepeatTrackDescription(description?: string) {
-  if (
-    description?.trim().split(' ').length ===
-    SPECIFIC_LENGTH_OF_REPEAT_MASKER_DESCRIPTION_FIELDS
-  ) {
+  if (isRepeatMaskerDescriptionField(description)) {
     const [
       bitsw_score,
       percent_div,
