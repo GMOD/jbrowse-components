@@ -232,7 +232,7 @@ export function featureData(
   const start = +l[colStart]!
   const colSame = colStart === colEnd ? 1 : 0
   const end = +l[colEnd]! + colSame
-  const score = scoreColumn ? +data[scoreColumn] : +score2
+  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
   const strand =
     typeof strand2 === 'string'
       ? strand2 === '-'
