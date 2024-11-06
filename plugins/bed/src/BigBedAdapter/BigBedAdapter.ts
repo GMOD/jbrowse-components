@@ -13,19 +13,20 @@ import {
   min,
   Feature,
   SimpleFeature,
+  SimpleFeatureSerializedNoId,
 } from '@jbrowse/core/util'
 import { Observer } from 'rxjs'
-import { SimpleFeatureSerializedNoId } from '@jbrowse/core/util/simpleFeature'
 
 // locals
 import {
   isUcscProcessedTranscript,
-  makeBlocks,
   ucscProcessedTranscript,
+  makeBlocks,
+  arrayify,
 } from '../util'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
-  private cached?: Promise<{
+  private cachedP?: Promise<{
     bigbed: BigBed
     header: Awaited<ReturnType<BigBed['getHeader']>>
     parser: BED
@@ -37,18 +38,24 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       filehandle: openLocation(this.getConf('bigBedLocation'), pm),
     })
     const header = await bigbed.getHeader(opts)
-    const parser = new BED({ autoSql: header.autoSql })
-    return { bigbed, header, parser }
+    const parser = new BED({
+      autoSql: header.autoSql,
+    })
+    return {
+      bigbed,
+      header,
+      parser,
+    }
   }
 
   public async configure(opts?: BaseOptions) {
-    if (!this.cached) {
-      this.cached = this.configurePre(opts).catch((e: unknown) => {
-        this.cached = undefined
+    if (!this.cachedP) {
+      this.cachedP = this.configurePre(opts).catch((e: unknown) => {
+        this.cachedP = undefined
         throw e
       })
     }
-    return this.cached
+    return this.cachedP
   }
 
   public async getRefNames(opts?: BaseOptions) {
@@ -70,13 +77,19 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  public async getFeaturesHelper(
-    query: Region,
-    opts: BaseOptions,
-    observer: Observer<Feature>,
-    allowRedispatch: boolean,
+  public async getFeaturesHelper({
+    query,
+    opts,
+    observer,
+    allowRedispatch,
     originalQuery = query,
-  ) {
+  }: {
+    query: Region
+    opts: BaseOptions
+    observer: Observer<Feature>
+    allowRedispatch: boolean
+    originalQuery?: Region
+  }) {
     const { signal } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
@@ -102,13 +115,17 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }
       }
       if (maxEnd > query.end || minStart < query.start) {
-        await this.getFeaturesHelper(
-          { ...query, start: minStart, end: maxEnd },
+        await this.getFeaturesHelper({
+          query: {
+            ...query,
+            start: minStart,
+            end: maxEnd,
+          },
           opts,
           observer,
-          false,
-          query,
-        )
+          allowRedispatch: false,
+          originalQuery: query,
+        })
         return
       }
     }
@@ -134,43 +151,53 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const {
         uniqueId,
         type,
+        chrom,
         chromStart,
-        chromStarts,
-        blockStarts,
-        blockCount,
-        blockSizes,
         chromEnd,
+        chromStarts: chromStarts2,
+        blockStarts: blockStarts2,
+        blockSizes: blockSizes2,
+        score: score2,
+        blockCount,
         thickStart,
         thickEnd,
-        chrom,
-        score,
+        strand,
         ...rest
       } = data
+      const chromStarts = arrayify(chromStarts2)
+      const blockStarts = arrayify(blockStarts2)
+      const blockSizes = arrayify(blockSizes2)
+      const score = scoreColumn ? +data[scoreColumn] : +score2
 
-      const subfeatures = blockCount
-        ? makeBlocks({
-            chromStarts,
-            blockStarts,
-            blockCount,
-            blockSizes,
-            uniqueId,
-            refName: query.refName,
-            start: feat.start,
-          })
-        : []
+      const subfeatures = makeBlocks({
+        chromStarts,
+        blockStarts,
+        blockSizes,
+        blockCount,
+        uniqueId,
+        refName: query.refName,
+        start: feat.start,
+      })
 
-      if (isUcscProcessedTranscript(data)) {
+      if (
+        isUcscProcessedTranscript({
+          strand,
+          blockCount,
+          thickStart,
+        })
+      ) {
         const f = ucscProcessedTranscript({
           ...rest,
+          strand,
           uniqueId,
           type,
           start: feat.start,
           end: feat.end,
           refName: query.refName,
-          score: scoreColumn ? +data[scoreColumn] : score,
-          chromStarts,
+          score,
+          chromStarts: chromStarts!,
+          blockSizes: blockSizes!,
           blockCount,
-          blockSizes,
           thickStart,
           thickEnd,
           subfeatures,
@@ -205,11 +232,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               id: `${this.id}-${uniqueId}`,
               data: {
                 ...rest,
+                start: feat.start,
+                end: feat.end,
+                strand,
                 uniqueId,
                 type,
-                start: feat.start,
-                score: scoreColumn ? +data[scoreColumn] : score,
-                end: feat.end,
+                score,
                 refName: query.refName,
                 subfeatures,
               },
@@ -245,7 +273,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        await this.getFeaturesHelper(query, opts, observer, true)
+        await this.getFeaturesHelper({
+          query,
+          opts,
+          observer,
+          allowRedispatch: true,
+        })
       } catch (e) {
         observer.error(e)
       }
