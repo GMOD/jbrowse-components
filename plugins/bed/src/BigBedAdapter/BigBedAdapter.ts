@@ -15,7 +15,7 @@ import {
   SimpleFeature,
   SimpleFeatureSerializedNoId,
 } from '@jbrowse/core/util'
-import { Observer } from 'rxjs'
+import { firstValueFrom, Observer, toArray } from 'rxjs'
 
 // locals
 import {
@@ -62,6 +62,23 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   public async getRefNames(opts?: BaseOptions) {
     const { header } = await this.configure(opts)
     return Object.keys(header.refsByName)
+  }
+
+  public async getData() {
+    const refNames = await this.getRefNames()
+    const features = []
+    for (const refName of refNames) {
+      const f = await firstValueFrom(
+        this.getFeatures({
+          assemblyName: 'unknown',
+          refName,
+          start: 0,
+          end: Number.MAX_SAFE_INTEGER,
+        }).pipe(toArray()),
+      )
+      features.push(f)
+    }
+    return features.flat()
   }
 
   async getHeader(opts?: BaseOptions) {
