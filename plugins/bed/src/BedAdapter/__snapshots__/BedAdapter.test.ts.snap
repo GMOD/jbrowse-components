@@ -3,6 +3,7 @@
 exports[`adapter can fetch bed with header 1`] = `
 [
   {
+    "description": undefined,
     "end": 3009,
     "refName": "contigA",
     "score": undefined,
@@ -13,6 +14,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-0",
   },
   {
+    "description": undefined,
     "end": 3114,
     "refName": "contigA",
     "score": undefined,
@@ -23,6 +25,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-1",
   },
   {
+    "description": undefined,
     "end": 3161,
     "refName": "contigA",
     "score": undefined,
@@ -33,6 +36,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-2",
   },
   {
+    "description": undefined,
     "end": 3180,
     "refName": "contigA",
     "score": undefined,
@@ -43,6 +47,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-3",
   },
   {
+    "description": undefined,
     "end": 3183,
     "refName": "contigA",
     "score": undefined,
@@ -53,6 +58,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-4",
   },
   {
+    "description": undefined,
     "end": 3222,
     "refName": "contigA",
     "score": undefined,
@@ -63,6 +69,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-5",
   },
   {
+    "description": undefined,
     "end": 3474,
     "refName": "contigA",
     "score": undefined,
@@ -73,6 +80,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-6",
   },
   {
+    "description": undefined,
     "end": 3804,
     "refName": "contigA",
     "score": undefined,
@@ -83,6 +91,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-7",
   },
   {
+    "description": undefined,
     "end": 4044,
     "refName": "contigA",
     "score": undefined,
@@ -93,6 +102,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "uniqueId": "test-contigA-8",
   },
   {
+    "description": undefined,
     "end": 4082,
     "refName": "contigA",
     "score": undefined,
@@ -125,6 +135,7 @@ exports[`adapter can fetch features bed with autosql 1`] = `
     "days_to_death": "--",
     "dbSNP_RS": "novel",
     "dbSNP_Val_Status": "",
+    "description": undefined,
     "end": 10,
     "ethnicity": "not hispanic or latino",
     "freq": "0.0108695652174",
@@ -160,6 +171,7 @@ exports[`adapter can fetch features bed with autosql 1`] = `
 exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
 [
   {
+    "description": undefined,
     "end": 3009,
     "refName": "contigA",
     "score": undefined,
@@ -170,6 +182,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-0",
   },
   {
+    "description": undefined,
     "end": 3114,
     "refName": "contigA",
     "score": undefined,
@@ -180,6 +193,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-1",
   },
   {
+    "description": undefined,
     "end": 3161,
     "refName": "contigA",
     "score": undefined,
@@ -190,6 +204,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-2",
   },
   {
+    "description": undefined,
     "end": 3180,
     "refName": "contigA",
     "score": undefined,
@@ -200,6 +215,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-3",
   },
   {
+    "description": undefined,
     "end": 3183,
     "refName": "contigA",
     "score": undefined,
@@ -210,6 +226,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-4",
   },
   {
+    "description": undefined,
     "end": 3222,
     "refName": "contigA",
     "score": undefined,
@@ -220,6 +237,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-5",
   },
   {
+    "description": undefined,
     "end": 3474,
     "refName": "contigA",
     "score": undefined,
@@ -230,6 +248,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-6",
   },
   {
+    "description": undefined,
     "end": 3804,
     "refName": "contigA",
     "score": undefined,
@@ -240,6 +259,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-7",
   },
   {
+    "description": undefined,
     "end": 4044,
     "refName": "contigA",
     "score": undefined,
@@ -250,6 +270,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
     "uniqueId": "test-contigA-8",
   },
   {
+    "description": undefined,
     "end": 4082,
     "refName": "contigA",
     "score": undefined,
@@ -265,6 +286,7 @@ exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
 exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
 [
   {
+    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.1",
@@ -332,6 +354,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
     "uniqueId": "test-ctgA-0",
   },
   {
+    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.2",
@@ -390,6 +413,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
     "uniqueId": "test-ctgA-1",
   },
   {
+    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.3",
@@ -457,6 +481,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
     "uniqueId": "test-ctgA-2",
   },
   {
+    "description": undefined,
     "end": 23000,
     "itemRgb": "0,0,0",
     "name": "rna-Apple3",
