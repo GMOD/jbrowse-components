@@ -19,6 +19,8 @@ export interface TranscriptFeat extends MinimalFeature {
   subfeatures: MinimalFeature[]
 }
 
+const SPECIFIC_LENGTH_OF_REPEAT_MASKER_DESCRIPTION_FIELDS = 15
+
 export function ucscProcessedTranscript(feature: TranscriptFeat) {
   const {
     subfeatures: oldSubfeatures,
@@ -219,6 +221,7 @@ export function featureData(
     thickStart,
     thickEnd,
     type,
+    description,
     strand: strand2,
     score: score2,
     chrom: _1,
@@ -243,6 +246,7 @@ export function featureData(
 
   const f = {
     ...rest,
+    ...makeRepeatTrackDescription(description),
     type,
     score,
     start,
@@ -266,6 +270,7 @@ export function featureData(
       strand,
       blockCount,
       thickStart,
+      description,
     })
       ? ucscProcessedTranscript({
           thickStart: thickStart!,
@@ -283,12 +288,20 @@ export function isUcscProcessedTranscript({
   thickStart,
   blockCount,
   strand,
+  description,
 }: {
   thickStart?: number
   blockCount?: number
   strand?: number
+  description?: string
 }) {
-  return thickStart && blockCount && strand !== 0
+  return (
+    thickStart &&
+    blockCount &&
+    strand !== 0 &&
+    description?.trim().split(' ').length !==
+      SPECIFIC_LENGTH_OF_REPEAT_MASKER_DESCRIPTION_FIELDS
+  )
 }
 
 export function arrayify(f?: string | number[]) {
@@ -297,4 +310,47 @@ export function arrayify(f?: string | number[]) {
       ? f.split(',').map(f => +f)
       : f
     : undefined
+}
+
+export function makeRepeatTrackDescription(description?: string) {
+  if (
+    description?.trim().split(' ').length ===
+    SPECIFIC_LENGTH_OF_REPEAT_MASKER_DESCRIPTION_FIELDS
+  ) {
+    const [
+      bitsw_score,
+      percent_div,
+      percent_del,
+      percent_ins,
+      query_chr,
+      query_begin,
+      query_end,
+      query_remaining,
+      orientation,
+      matching_repeat_name,
+      matching_repeat_class,
+      matching_repeat_begin,
+      matching_repeat_end,
+      matching_repeat_remaining,
+      repeat_id,
+    ] = description.trim().split(' ')
+    return {
+      bitsw_score,
+      percent_div,
+      percent_del,
+      percent_ins,
+      query_chr,
+      query_begin,
+      query_end,
+      query_remaining,
+      orientation,
+      matching_repeat_name,
+      matching_repeat_class,
+      matching_repeat_begin,
+      matching_repeat_end,
+      matching_repeat_remaining,
+      repeat_id,
+    }
+  }
+  return { description }
 }

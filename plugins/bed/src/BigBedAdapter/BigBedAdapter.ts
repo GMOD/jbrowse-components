@@ -21,6 +21,7 @@ import { Observer } from 'rxjs'
 import {
   isUcscProcessedTranscript,
   ucscProcessedTranscript,
+  makeRepeatTrackDescription,
   makeBlocks,
   arrayify,
 } from '../util'
@@ -154,6 +155,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         chrom,
         chromStart,
         chromEnd,
+        description,
         chromStarts: chromStarts2,
         blockStarts: blockStarts2,
         blockSizes: blockSizes2,
@@ -184,6 +186,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           strand,
           blockCount,
           thickStart,
+          description,
         })
       ) {
         const f = ucscProcessedTranscript({
@@ -195,6 +198,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           end: feat.end,
           refName: query.refName,
           score,
+          description,
           chromStarts: chromStarts!,
           blockSizes: blockSizes!,
           blockCount,
@@ -214,7 +218,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             )
           ) {
             observer.next(
-              new SimpleFeature({ id: `${this.id}-${uniqueId}`, data: f }),
+              new SimpleFeature({
+                id: `${this.id}-${uniqueId}`,
+                data: f,
+              }),
             )
           }
         }
@@ -232,6 +239,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               id: `${this.id}-${uniqueId}`,
               data: {
                 ...rest,
+                ...makeRepeatTrackDescription(description),
                 start: feat.start,
                 end: feat.end,
                 strand,
