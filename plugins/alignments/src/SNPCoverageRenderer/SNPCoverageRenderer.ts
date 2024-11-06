@@ -103,13 +103,14 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     }
 
     const feats = [...features.values()]
-    const coverage = feats.filter(f => f.get('type') !== 'skip')
-    const skips = feats.filter(f => f.get('type') === 'skip')
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
     ctx.fillStyle = colorForBase.total!
-    for (const feature of coverage) {
+    for (const feature of feats) {
+      if (feature.get('type') === 'skip') {
+        continue
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score') as number
@@ -131,7 +132,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
 
-    for (const feature of coverage) {
+    for (const feature of feats) {
+      if (feature.get('type') === 'skip') {
+        continue
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       const score = feature.get('score') as number
@@ -210,28 +214,23 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     }
 
     if (drawArcs) {
-      for (const f of skips) {
-        const [left, right] = bpSpanPx(
-          f.get('start'),
-          f.get('end'),
-          region,
-          bpPerPx,
-        )
+      for (const f of feats) {
+        if (f.get('type') !== 'skip') {
+          continue
+        }
+        const s = f.get('start')
+        const e = f.get('end')
+        const [left, right] = bpSpanPx(s, e, region, bpPerPx)
 
         ctx.beginPath()
-        const str = f.get('strand') as number
-        const xs = f.get('xs') as string
+        const effectiveStrand = f.get('effectiveStrand')
         const pos = 'rgba(255,200,200,0.7)'
         const neg = 'rgba(200,200,255,0.7)'
         const neutral = 'rgba(200,200,200,0.7)'
 
-        if (xs === '+') {
+        if (effectiveStrand === 1) {
           ctx.strokeStyle = pos
-        } else if (xs === '-') {
-          ctx.strokeStyle = neg
-        } else if (str === 1) {
-          ctx.strokeStyle = pos
-        } else if (str === -1) {
+        } else if (effectiveStrand === -1) {
           ctx.strokeStyle = neg
         } else {
           ctx.strokeStyle = neutral
@@ -247,12 +246,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      ticks.values.forEach(tick => {
+      for (const tick of ticks.values) {
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))
         ctx.stroke()
-      })
+      }
     }
     return undefined
   }

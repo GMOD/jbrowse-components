@@ -6,7 +6,7 @@ export type SkipMap = Record<
     start: number
     end: number
     strand: number
-    xs: string
+    effectiveStrand: number
   }
 >
 

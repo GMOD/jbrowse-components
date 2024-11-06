@@ -8,10 +8,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
-import { getUniqueModificationValues } from '../shared'
-
-import { createAutorun, randomColor, modificationColors } from '../util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// utils
+import { getUniqueModificationValues } from '../shared'
+import { createAutorun, getColorForModification } from '../util'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -26,7 +27,7 @@ import { observable } from 'mobx'
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
-const ModificationsDialog = lazy(
+const ColorByModificationsDialog = lazy(
   () => import('./components/ColorByModificationsDialog'),
 )
 
@@ -92,14 +93,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(value),
-            )
+        for (const m of uniqueModifications) {
+          if (!self.modificationTagMap.has(m)) {
+            self.modificationTagMap.set(m, getColorForModification(m))
           }
-        })
+        }
       },
       /**
        * #action
@@ -317,7 +315,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   label: 'Modifications or methylation',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
-                      ModificationsDialog,
+                      ColorByModificationsDialog,
                       {
                         model: self,
                         handleClose: doneCallback,

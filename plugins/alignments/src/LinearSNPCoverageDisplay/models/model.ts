@@ -17,8 +17,7 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 
 // locals
 import { FilterModel, IFilter, getUniqueModificationValues } from '../../shared'
-import { createAutorun, modificationColors } from '../../util'
-import { randomColor } from '../../util'
+import { createAutorun, getColorForModification } from '../../util'
 
 // lazies
 const Tooltip = lazy(() => import('../components/Tooltip'))
@@ -111,14 +110,11 @@ function stateModelFactory(
        * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(value),
-            )
+        for (const m of uniqueModifications) {
+          if (!self.modificationTagMap.has(m)) {
+            self.modificationTagMap.set(m, getColorForModification(m))
           }
-        })
+        }
       },
     }))
     .views(self => {

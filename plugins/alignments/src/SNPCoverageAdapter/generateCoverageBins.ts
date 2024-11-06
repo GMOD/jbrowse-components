@@ -233,14 +233,31 @@ export default async function generateCoverageBins(
       }
 
       if (mismatch.type === 'skip') {
-        const hash = `${mstart}_${mend}_${fstrand}`
+        const xs = getTag(feature, 'XS')
+        const ts = getTag(feature, 'ts')
+        const TS = getTag(feature, 'TS')
+        let effectiveStrand = 0
+        if (xs === '+') {
+          effectiveStrand = 1
+        } else if (xs === '-') {
+          effectiveStrand = -1
+        } else if (ts === '-') {
+          effectiveStrand = fstrand * -1
+        } else if (ts === '+') {
+          effectiveStrand = fstrand
+        } else if (TS === '-') {
+          effectiveStrand = -1
+        } else if (TS === '+') {
+          effectiveStrand = 1
+        }
+        const hash = `${mstart}_${mend}_${effectiveStrand}`
         if (skipmap[hash] === undefined) {
           skipmap[hash] = {
             feature: feature,
             start: mstart,
             end: mend,
             strand: fstrand,
-            xs: getTag(feature, 'XS') || getTag(feature, 'TS'),
+            effectiveStrand,
             score: 0,
           }
         }
@@ -249,5 +266,8 @@ export default async function generateCoverageBins(
     }
   }
 
-  return { bins, skipmap }
+  return {
+    bins,
+    skipmap,
+  }
 }
