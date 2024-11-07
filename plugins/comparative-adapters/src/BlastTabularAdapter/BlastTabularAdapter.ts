@@ -101,26 +101,29 @@ export function parseBlastLine(line: string): BlastRecord | undefined {
 }
 
 export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
-  private data: Promise<BlastRecord[]>
+  private data: Promise<BlastRecord[]> | undefined
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  constructor(
-    public config: BlastTabularAdapterConfig,
-    public getSubAdapter?: getSubAdapterType,
-    public pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    this.data = this.setup(config)
+  getData(opts?: BaseOptions): Promise<BlastRecord[]> {
+    if (this.data) {
+      return this.data
+    }
+    const data = this.setup(opts)
+    this.data = data
+    return data
   }
 
-  async setup(config: BlastTabularAdapterConfig): Promise<BlastRecord[]> {
+  async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
     const pm = this.pluginManager
     const blastTableLocation = openLocation(
-      readConfObject(config, 'blastTableLocation'),
+      readConfObject(this.config, 'blastTableLocation'),
       pm,
     )
-    const buffer = await blastTableLocation.readFile()
+    const buffer = await blastTableLocation.readFile({
+      ...opts,
+      encoding: undefined,
+    })
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     return parseLineByLine(buf, parseBlastLine)
   }
@@ -145,7 +148,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   async getRefNames(opts: BaseOptions = {}) {
     // @ts-expect-error
     const r1 = opts.regions?.[0].assemblyName
-    const feats = await this.data
+    const feats = await this.getData(opts)
 
     const idx = this.getAssemblyNames().indexOf(r1)
     if (idx !== -1) {
@@ -159,9 +162,9 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  getFeatures(query: Region) {
+  getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const blastRecords = await this.data
+      const blastRecords = await this.getData(opts)
       const [queryAssembly, targetAssembly] = this.getAssemblyNames()
 
       // The index of the assembly name in the query list corresponds to the
