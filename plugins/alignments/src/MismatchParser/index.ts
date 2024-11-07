@@ -459,9 +459,8 @@ export function getClip(cigar: string, strand: number) {
     : +(endClip.exec(cigar) || [])[1]! || 0
 }
 
-export function getTag(f: Feature, tag: string) {
-  const tags = f.get('tags')
-  return tags ? tags[tag] : f.get(tag)
+export function getTag(feature: Feature, tag: string) {
+  return feature.get('tags')[tag]
 }
 
 // produces a list of "feature-like" object from parsing supplementary
