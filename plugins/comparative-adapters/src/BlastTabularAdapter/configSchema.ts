@@ -44,6 +44,16 @@ const BlastTabularAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     */
+    columns: {
+      type: 'string',
+      description:
+        'Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required',
+      defaultValue:
+        'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore',
+    },
   },
   { explicitlyTyped: true },
 )
