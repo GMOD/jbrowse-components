@@ -8,11 +8,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// utils
 import { getUniqueModificationValues } from '../shared'
-import { createAutorun, getColorForModification } from '../util'
+
+import { createAutorun, randomColor, modificationColors } from '../util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -27,7 +26,7 @@ import { observable } from 'mobx'
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
-const ColorByModificationsDialog = lazy(
+const ModificationsDialog = lazy(
   () => import('./components/ColorByModificationsDialog'),
 )
 
@@ -93,11 +92,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
-        for (const m of uniqueModifications) {
-          if (!self.modificationTagMap.has(m)) {
-            self.modificationTagMap.set(m, getColorForModification(m))
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(value),
+            )
           }
-        }
+        })
       },
       /**
        * #action
@@ -315,7 +317,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   label: 'Modifications or methylation',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
-                      ColorByModificationsDialog,
+                      ModificationsDialog,
                       {
                         model: self,
                         handleClose: doneCallback,
