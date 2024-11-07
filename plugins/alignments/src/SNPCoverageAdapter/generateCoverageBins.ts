@@ -7,6 +7,7 @@ import {
   getModificationPositions,
   getMethBins,
   Mismatch,
+  getModificationProbabilities,
 } from '../MismatchParser'
 import { doesIntersect2 } from '@jbrowse/core/util'
 import { Bin, SkipMap } from './util'
@@ -94,9 +95,12 @@ export default async function generateCoverageBins(
       const fend = feature.get('end')
       if (seq) {
         const modifications = getModificationPositions(mm, seq, fstrand)
+        const probabilities = getModificationProbabilities(feature)
+        let probIndex = 0
         for (const { type, positions } of modifications) {
           const mod = `mod_${type}`
           for (const pos of getNextRefPos(ops, positions)) {
+            const prob = probabilities?.[probIndex] || 0
             const epos = pos + fstart - region.start
             if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
               if (bins[epos] === undefined) {
@@ -114,8 +118,11 @@ export default async function generateCoverageBins(
                 }
               }
               const bin = bins[epos]
-              inc(bin, fstrand, 'cov', mod)
+              if (prob > 0.5) {
+                inc(bin, fstrand, 'cov', mod)
+              }
             }
+            probIndex++
           }
         }
       }
