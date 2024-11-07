@@ -4377,7 +4377,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "gencode_47",
-      "name": "Gencode 47",
+      "name": "Gencode v47",
       "category": ["Annotation"],
       "adapter": {
         "type": "Gff3TabixAdapter",
