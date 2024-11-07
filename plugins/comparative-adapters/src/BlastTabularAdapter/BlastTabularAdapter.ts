@@ -4,19 +4,12 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { doesIntersect2, Feature, isGzip, Region } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { parseLineByLine } from '../util'
-import BlastTabularAdapterConfigType from './configSchema'
 import SyntenyFeature from '../SyntenyFeature'
-
-type BlastTabularAdapterConfig = ReturnType<
-  typeof BlastTabularAdapterConfigType.create
->
 
 // Blast output column names/descriptions taken from
 // https://www.ncbi.nlm.nih.gov/books/NBK279684/#_appendices_Options_for_the_commandline_a_
