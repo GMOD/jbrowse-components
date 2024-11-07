@@ -2226,13 +2226,14 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-2.0.1.tgz#d01cbcb2d9ad23cf0f421824b7e759a441815ebc"
   integrity sha512-6PQTJv+uxAb8XE/oL2Uh4EmFJpn65YOTSqGn8HLNXrWRlW1Clp1Oze6biHeRCMonLwEx4oH4bPeyjdcMnNP8pw==
 
-"@gmod/bam@^2.0.0":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-2.0.4.tgz#bdffb52da9af4fc90cb10993a3044d01d7bf0374"
-  integrity sha512-lV/eM/ITwVPovyn4d8iDWyRP/zIuzHUylV5y5LJm0ZBm9nQfFwE25KpHKzoZ7a/0197Dxl+jJEjKzSlDN8YNZA==
+"@gmod/bam@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-3.0.0.tgz#4e8ff76817b3d64f401a1c9f2d5676979100c084"
+  integrity sha512-m+V9k+19l1ASHHHnQsEiWY2tNjAmntFAEP13jZNLlOSAz4tSQBxL0HyDIrHc81YJPISaYkZ8+TKXeDgp/ETBaw==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@gmod/bgzf-filehandle" "^1.4.4"
+    buffer "^6.0.3"
     crc "^4.3.2"
     generic-filehandle "^3.0.0"
     long "^4.0.0"

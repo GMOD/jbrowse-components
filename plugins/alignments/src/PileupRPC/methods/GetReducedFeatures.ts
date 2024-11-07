@@ -8,6 +8,7 @@ import { firstValueFrom } from 'rxjs'
 import { filterForPairs, getInsertSizeStats } from '../util'
 import PileupBaseRPC from '../base'
 import { getTag } from '../../util'
+import { getClip } from '../../MismatchParser'
 
 // specialized get features to return limited data about alignments
 export default class PileupGetReducedFeatures extends PileupBaseRPC {
@@ -47,7 +48,7 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
         pair_orientation: f.get('pair_orientation'),
         next_ref: f.get('next_ref'),
         next_pos: f.get('next_pos'),
-        clipPos: f.get('clipPos'),
+        clipPos: getClip(f.get('CIGAR'), f.get('strand')),
         SA: getTag(f, 'SA'),
       })),
       f => f.id,

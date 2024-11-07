@@ -1,16 +1,17 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 import { RenderArgsDeserialized } from './PileupRenderer'
 import { LayoutFeature } from './util'
-import { parseCigar } from '../MismatchParser'
 
 export function renderAlignmentShape({
   ctx,
   feat,
   renderArgs,
+  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: RenderArgsDeserialized
+  cigarOps: string[]
 }) {
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
@@ -20,7 +21,6 @@ export function renderAlignmentShape({
   const CIGAR = feature.get('CIGAR')
   const flip = region.reversed ? -1 : 1
   const strand = feature.get('strand') * flip
-  const cigarOps = parseCigar(CIGAR)
   const renderChevrons = bpPerPx < 10 && heightPx > 5
   if (CIGAR) {
     if (strand === 1) {

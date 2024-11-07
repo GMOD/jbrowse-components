@@ -131,7 +131,8 @@ export default async function generateCoverageBins(
       if (!seq) {
         continue
       }
-      const { methBins, methProbs } = getMethBins(feature)
+      const cigarOps = parseCigar(feature.get('CIGAR'))
+      const { methBins, methProbs } = getMethBins(feature, cigarOps)
       const dels = mismatches.filter(f => f.type === 'deletion')
 
       // methylation based coloring takes into account both reference sequence

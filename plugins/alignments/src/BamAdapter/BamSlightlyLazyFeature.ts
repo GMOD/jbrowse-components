@@ -5,7 +5,7 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getClip, getMismatches } from '../MismatchParser'
+import { getMismatches, parseCigar } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
@@ -41,10 +41,14 @@ export default class BamSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  get fields() {
+  get parsedCigar() {
+    return parseCigar(this.record.CIGAR)
+  }
+
+  get fields(): SimpleFeatureSerialized {
     const r = this.record
     const a = this.adapter
-
+    const p = r.isPaired()
     return {
       id: this.id(),
       start: r.start,
@@ -61,16 +65,16 @@ export default class BamSlightlyLazyFeature implements Feature {
       seq: r.seq,
       type: 'match',
       pair_orientation: r.pair_orientation,
-      next_ref: r.isPaired() ? a.refIdToName(r.next_refid) : undefined,
-      next_pos: r.isPaired() ? r.next_pos : undefined,
-      next_segment_position: r.isPaired()
+      next_ref: p ? a.refIdToName(r.next_refid) : undefined,
+      next_pos: p ? r.next_pos : undefined,
+      next_segment_position: p
         ? `${a.refIdToName(r.next_refid)}:${r.next_pos + 1}`
         : undefined,
       uniqueId: this.id(),
     }
   }
 
-  toJSON() {
+  toJSON(): SimpleFeatureSerialized {
     return this.fields
   }
 }
@@ -80,7 +84,7 @@ function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
   if (!desc) {
     throw new Error('t1')
   }
-  // eslint-disable-next-line @typescript-eslint/unbound-method
+
   const getter = desc.get
   if (!getter) {
     throw new Error('t2')
@@ -95,3 +99,4 @@ function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
+cacheGetter(BamSlightlyLazyFeature, 'parsedCigar')

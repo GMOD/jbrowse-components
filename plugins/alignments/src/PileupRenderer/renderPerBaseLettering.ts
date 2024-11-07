@@ -1,5 +1,4 @@
 import { bpSpanPx, Region } from '@jbrowse/core/util'
-import { parseCigar } from '../MismatchParser'
 import { fillRect, LayoutFeature } from './util'
 
 export function renderPerBaseLettering({
@@ -12,6 +11,7 @@ export function renderPerBaseLettering({
   charWidth,
   charHeight,
   canvasWidth,
+  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -22,11 +22,11 @@ export function renderPerBaseLettering({
   charWidth: number
   charHeight: number
   canvasWidth: number
+  cigarOps: string[]
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
   const seq = feature.get('seq') as string | undefined
-  const cigarOps = parseCigar(feature.get('CIGAR'))
   const w = 1 / bpPerPx
   const start = feature.get('start')
   let soffset = 0

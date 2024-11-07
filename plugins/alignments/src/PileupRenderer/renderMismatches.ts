@@ -42,8 +42,8 @@ export function renderMismatches({
   const mismatches = feature.get('mismatches') as Mismatch[] | undefined
   const heightLim = charHeight - 2
 
-  // extraHorizontallyFlippedOffset is used to draw interbase items, which
-  // are located to the left when forward and right when reversed
+  // extraHorizontallyFlippedOffset is used to draw interbase items, which are
+  // located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx + 1 : -1
 
   if (!mismatches) {
