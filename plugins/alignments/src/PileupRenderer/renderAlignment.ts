@@ -18,6 +18,7 @@ export function renderAlignment({
   charHeight,
   defaultColor,
   canvasWidth,
+  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -28,6 +29,7 @@ export function renderAlignment({
   charHeight: number
   defaultColor: boolean
   canvasWidth: number
+  cigarOps: string[]
 }) {
   const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = renderArgs
   const { tag = '', type: colorType = '' } = colorBy || {}
@@ -43,7 +45,7 @@ export function renderAlignment({
     colorTagMap,
   })
 
-  renderAlignmentShape({ ctx, feat, renderArgs })
+  renderAlignmentShape({ cigarOps, ctx, feat, renderArgs })
 
   // second pass for color types that render per-base things that go over the
   // existing drawing
@@ -55,6 +57,7 @@ export function renderAlignment({
         region,
         bpPerPx,
         canvasWidth,
+        cigarOps,
       })
       break
 
@@ -69,6 +72,7 @@ export function renderAlignment({
         charWidth,
         charHeight,
         canvasWidth,
+        cigarOps,
       })
       break
 
@@ -80,6 +84,7 @@ export function renderAlignment({
         bpPerPx,
         renderArgs,
         canvasWidth,
+        cigarOps,
       })
       break
 
@@ -91,6 +96,7 @@ export function renderAlignment({
         bpPerPx,
         renderArgs,
         canvasWidth,
+        cigarOps,
       })
       break
   }

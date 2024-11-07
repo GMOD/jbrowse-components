@@ -3,7 +3,6 @@ import {
   getModificationPositions,
   getModificationProbabilities,
   getNextRefPos,
-  parseCigar,
 } from '../MismatchParser'
 import { getTagAlt } from '../util'
 import { fillRect, LayoutFeature } from './util'
@@ -27,6 +26,7 @@ export function renderModifications({
   bpPerPx,
   renderArgs,
   canvasWidth,
+  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -34,6 +34,7 @@ export function renderModifications({
   bpPerPx: number
   renderArgs: RenderArgsWithColor
   canvasWidth: number
+  cigarOps: string[]
 }) {
   const { feature, topPx, heightPx } = feat
   const { modificationTagMap = {} } = renderArgs
@@ -44,10 +45,8 @@ export function renderModifications({
     return
   }
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-  const cigar = feature.get('CIGAR')
   const start = feature.get('start')
   const strand = feature.get('strand')
-  const cigarOps = parseCigar(cigar)
   const probabilities = getModificationProbabilities(feature)
   const modifications = getModificationPositions(mm, seq, strand)
 

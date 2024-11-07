@@ -1,5 +1,4 @@
 import { bpSpanPx, Region } from '@jbrowse/core/util'
-import { parseCigar } from '../MismatchParser'
 import { fillRect, LayoutFeature } from './util'
 
 export function renderPerBaseQuality({
@@ -8,17 +7,18 @@ export function renderPerBaseQuality({
   region,
   bpPerPx,
   canvasWidth,
+  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   region: Region
   bpPerPx: number
   canvasWidth: number
+  cigarOps: string[]
 }) {
   const { feature, topPx, heightPx } = feat
   const qual: string = feature.get('qual') || ''
   const scores = qual.split(' ').map(val => +val)
-  const cigarOps = parseCigar(feature.get('CIGAR'))
   const w = 1 / bpPerPx
   const start = feature.get('start')
   let soffset = 0 // sequence offset

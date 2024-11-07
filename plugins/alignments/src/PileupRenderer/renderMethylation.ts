@@ -13,6 +13,7 @@ export function renderMethylation({
   bpPerPx,
   renderArgs,
   canvasWidth,
+  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -20,6 +21,7 @@ export function renderMethylation({
   bpPerPx: number
   renderArgs: RenderArgsWithColor
   canvasWidth: number
+  cigarOps: string[]
 }) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
@@ -33,7 +35,7 @@ export function renderMethylation({
   }
   const fstart = feature.get('start')
   const fend = feature.get('end')
-  const { methBins, methProbs } = getMethBins(feature)
+  const { methBins, methProbs } = getMethBins(feature, cigarOps)
 
   function getCol(k: number) {
     if (methBins[k]) {

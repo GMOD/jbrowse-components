@@ -159,3 +159,7 @@ export function randomColor(str: string) {
   }
   return `hsl(${sum * 10}, 20%, 50%)`
 }
+
+export function getColorForModification(str: string) {
+  return modificationColors[str] || randomColor(str)
+}

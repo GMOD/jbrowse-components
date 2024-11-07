@@ -213,7 +213,7 @@ export function mdToMismatches(
 }
 
 export function getMismatches(
-  cigar: string,
+  cigar?: string,
   md?: string,
   seq?: string,
   ref?: string,
@@ -221,7 +221,6 @@ export function getMismatches(
 ) {
   let mismatches: Mismatch[] = []
   const ops = parseCigar(cigar)
-
   // parse the CIGAR tag if it has one
   if (cigar) {
     mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
@@ -278,7 +277,7 @@ export function getModificationProbabilities(feature: Feature) {
         .map(elt => Math.min(1, elt / 50))
 }
 
-export function getMethBins(feature: Feature) {
+export function getMethBins(feature: Feature, cigarOps: string[]) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
   const fstrand = feature.get('strand') as -1 | 0 | 1
@@ -288,13 +287,12 @@ export function getMethBins(feature: Feature) {
   const methProbs = new Array<number>(flen)
   const seq = feature.get('seq') as string | undefined
   if (seq) {
-    const ops = parseCigar(feature.get('CIGAR'))
     const probabilities = getModificationProbabilities(feature)
     const modifications = getModificationPositions(mm, seq, fstrand)
     let probIndex = 0
     for (const { type, positions } of modifications) {
       if (type === 'm') {
-        for (const ref of getNextRefPos(ops, positions)) {
+        for (const ref of getNextRefPos(cigarOps, positions)) {
           const prob = probabilities?.[probIndex] || 0
           probIndex++
           if (ref >= 0 && ref < flen) {
@@ -338,8 +336,7 @@ export function getModificationPositions(
 
     // this logic also based on parse_mm.pl from hts-specs is that in the
     // sequence of the read, if we have a modification type e.g. C+m;2 and a
-    // sequence ACGTACGTAC we skip the two instances of C and go to the last
-    // C
+    // sequence ACGTACGTAC we skip the two instances of C and go to the last C
     for (const type of types) {
       let i = 0
       const positions = []
@@ -459,9 +456,8 @@ export function getClip(cigar: string, strand: number) {
     : +(endClip.exec(cigar) || [])[1]! || 0
 }
 
-export function getTag(f: Feature, tag: string) {
-  const tags = f.get('tags')
-  return tags ? tags[tag] : f.get(tag)
+export function getTag(feature: Feature, tag: string) {
+  return feature.get('tags')[tag]
 }
 
 // produces a list of "feature-like" object from parsing supplementary

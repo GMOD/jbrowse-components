@@ -42,8 +42,8 @@ export function renderMismatches({
   const mismatches = feature.get('mismatches') as Mismatch[] | undefined
   const heightLim = charHeight - 2
 
-  // extraHorizontallyFlippedOffset is used to draw interbase items, which
-  // are located to the left when forward and right when reversed
+  // extraHorizontallyFlippedOffset is used to draw interbase items, which are
+  // located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx + 1 : -1
 
   if (!mismatches) {
@@ -142,20 +142,16 @@ export function renderMismatches({
     } else if (mismatch.type === 'skip') {
       // fix to avoid bad rendering note that this was also related to chrome
       // bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
+      //
       // also affected firefox ref #1236 #2750
       if (leftPx + widthPx > 0) {
         // make small exons more visible when zoomed far out
         const adjustPx = widthPx - (bpPerPx > 10 ? 1.5 : 0)
-        ctx.clearRect(leftPx, topPx, adjustPx, heightPx)
-        fillRect(
-          ctx,
-          Math.max(0, leftPx),
-          topPx + heightPx / 2 - 1,
-          adjustPx + Math.min(leftPx, 0),
-          2,
-          canvasWidth,
-          '#333',
-        )
+        const l = Math.max(0, leftPx)
+        const t = topPx + heightPx / 2 - 1
+        const w = adjustPx + Math.min(leftPx, 0)
+        const h = 1
+        fillRect(ctx, l, t, w, h, canvasWidth, 'rgb(151,184,201)')
       }
     }
   }

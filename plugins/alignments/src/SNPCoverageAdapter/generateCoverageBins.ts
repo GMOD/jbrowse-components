@@ -131,7 +131,8 @@ export default async function generateCoverageBins(
       if (!seq) {
         continue
       }
-      const { methBins, methProbs } = getMethBins(feature)
+      const cigarOps = parseCigar(feature.get('CIGAR'))
+      const { methBins, methProbs } = getMethBins(feature, cigarOps)
       const dels = mismatches.filter(f => f.type === 'deletion')
 
       // methylation based coloring takes into account both reference sequence
@@ -233,14 +234,31 @@ export default async function generateCoverageBins(
       }
 
       if (mismatch.type === 'skip') {
-        const hash = `${mstart}_${mend}_${fstrand}`
+        const xs = getTag(feature, 'XS')
+        const ts = getTag(feature, 'ts')
+        const TS = getTag(feature, 'TS')
+        let effectiveStrand = 0
+        if (xs === '+') {
+          effectiveStrand = 1
+        } else if (xs === '-') {
+          effectiveStrand = -1
+        } else if (ts === '-') {
+          effectiveStrand = fstrand * -1
+        } else if (ts === '+') {
+          effectiveStrand = fstrand
+        } else if (TS === '-') {
+          effectiveStrand = -1
+        } else if (TS === '+') {
+          effectiveStrand = 1
+        }
+        const hash = `${mstart}_${mend}_${effectiveStrand}`
         if (skipmap[hash] === undefined) {
           skipmap[hash] = {
             feature: feature,
             start: mstart,
             end: mend,
             strand: fstrand,
-            xs: getTag(feature, 'XS') || getTag(feature, 'TS'),
+            effectiveStrand,
             score: 0,
           }
         }
@@ -249,5 +267,8 @@ export default async function generateCoverageBins(
     }
   }
 
-  return { bins, skipmap }
+  return {
+    bins,
+    skipmap,
+  }
 }

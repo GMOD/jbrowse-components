@@ -8,8 +8,7 @@ import { IAutorunOptions, autorun } from 'mobx'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
-  const tags = feature.get('tags')
-  return tags !== undefined ? tags[tag] : feature.get(tag)
+  return feature.get('tags')[tag]
 }
 
 // use fallback alt tag, used in situations where upper case/lower case tags

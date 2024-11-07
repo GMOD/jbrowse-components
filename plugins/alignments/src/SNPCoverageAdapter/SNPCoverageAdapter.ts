@@ -84,7 +84,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               end: skip.end,
               strand: skip.strand,
               score: skip.score,
-              xs: skip.xs,
+              effectiveStrand: skip.effectiveStrand,
             },
           }),
         )
