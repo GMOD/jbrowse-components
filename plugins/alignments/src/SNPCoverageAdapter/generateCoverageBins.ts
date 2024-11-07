@@ -1,14 +1,16 @@
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getTag, getTagAlt, shouldFetchReferenceSequence } from '../util'
+import { Feature } from '@jbrowse/core/util'
+
+// locals
+import { getTag, getTagAlt } from '../util'
 import {
   parseCigar,
   getNextRefPos,
   getModificationPositions,
-  getMethBins,
+  getModificationProbabilities,
   Mismatch,
+  getModificationProbabilitiesUnmodified,
 } from '../MismatchParser'
-import { doesIntersect2 } from '@jbrowse/core/util'
 import { Bin, SkipMap } from './util'
 
 function mismatchLen(mismatch: Mismatch) {
@@ -24,6 +26,7 @@ function inc(bin: any, strand: number, type: string, field: string) {
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
       total: 0,
+      probabilities: [],
       '-1': 0,
       '0': 0,
       '1': 0,
@@ -33,12 +36,37 @@ function inc(bin: any, strand: number, type: string, field: string) {
   thisBin[strand]++
 }
 
-export default async function generateCoverageBins(
-  features: Feature[],
-  region: Region,
-  opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } },
-  fetchSequence: (arg: Region) => Promise<string>,
+function incWithProbabilities(
+  bin: any,
+  strand: number,
+  type: string,
+  field: string,
+  probability: number,
 ) {
+  let thisBin = bin[type][field]
+  if (thisBin === undefined) {
+    thisBin = bin[type][field] = {
+      total: 0,
+      probabilities: [],
+      '-1': 0,
+      '0': 0,
+      '1': 0,
+    }
+  }
+  thisBin.total++
+  thisBin.probabilities.push(probability)
+  thisBin[strand]++
+}
+
+export async function generateCoverageBins({
+  features,
+  region,
+  opts,
+}: {
+  features: Feature[]
+  region: Region
+  opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } }
+}) {
   const { colorBy } = opts
   const extendedRegion = {
     ...region,
@@ -47,11 +75,6 @@ export default async function generateCoverageBins(
   }
   const binMax = Math.ceil(extendedRegion.end - extendedRegion.start)
   const skipmap = {} as SkipMap
-  const regionSequence =
-    features.length && shouldFetchReferenceSequence(opts.colorBy?.type)
-      ? await fetchSequence(region)
-      : undefined
-
   const bins = [] as Bin[]
 
   for (const feature of features) {
@@ -94,117 +117,62 @@ export default async function generateCoverageBins(
       const fend = feature.get('end')
       if (seq) {
         const modifications = getModificationPositions(mm, seq, fstrand)
+        const probabilities = getModificationProbabilities(feature)
+        const maxProbModForPosition = [] as {
+          mod: string
+          prob: number
+          totalProb: number
+        }[]
+
+        let probIndex = 0
         for (const { type, positions } of modifications) {
           const mod = `mod_${type}`
-          for (const pos of getNextRefPos(ops, positions)) {
-            const epos = pos + fstart - region.start
-            if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-              if (bins[epos] === undefined) {
-                bins[epos] = {
-                  total: 0,
-                  all: 0,
-                  ref: 0,
-                  '-1': 0,
-                  '0': 0,
-                  '1': 0,
-                  lowqual: {},
-                  cov: {},
-                  delskips: {},
-                  noncov: {},
-                }
-              }
-              const bin = bins[epos]
-              inc(bin, fstrand, 'cov', mod)
-            }
-          }
-        }
-      }
-    }
-
-    if (colorBy?.type === 'methylation') {
-      if (!regionSequence) {
-        throw new Error(
-          'no region sequence detected, need sequenceAdapter configuration',
-        )
-      }
-      const seq = feature.get('seq') as string | undefined
-      if (!seq) {
-        continue
-      }
-      const cigarOps = parseCigar(feature.get('CIGAR'))
-      const { methBins, methProbs } = getMethBins(feature, cigarOps)
-      const dels = mismatches.filter(f => f.type === 'deletion')
-
-      // methylation based coloring takes into account both reference sequence
-      // CpG detection and reads
-      for (let i = 0; i < fend - fstart; i++) {
-        const j = i + fstart
-        const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
-        const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
-        if (l1 === 'c' && l2 === 'g') {
-          const bin0 = bins[j - region.start]
-          const bin1 = bins[j - region.start + 1]
-          const b0 = methBins[i]
-          const b1 = methBins[i + 1]
-          const p0 = methProbs[i]
-          const p1 = methProbs[i + 1]
-
-          // color
-          if (
-            (b0 && (p0 !== undefined ? p0 > 0.5 : true)) ||
-            (b1 && (p1 !== undefined ? p1 > 0.5 : true))
-          ) {
-            if (bin0) {
-              inc(bin0, fstrand, 'cov', 'meth')
-              bin0.ref--
-              bin0[fstrand]--
-            }
-            if (bin1) {
-              inc(bin1, fstrand, 'cov', 'meth')
-              bin1.ref--
-              bin1[fstrand]--
-            }
-          } else {
-            if (bin0) {
-              if (
-                !dels.some(d =>
-                  doesIntersect2(
-                    j,
-                    j + 1,
-                    d.start + fstart,
-                    d.start + fstart + d.length,
-                  ),
-                )
-              ) {
-                inc(bin0, fstrand, 'cov', 'unmeth')
-                bin0.ref--
-                bin0[fstrand]--
-              }
-            }
-            if (bin1) {
-              if (
-                !dels.some(d =>
-                  doesIntersect2(
-                    j + 1,
-                    j + 2,
-                    d.start + fstart,
-                    d.start + fstart + d.length,
-                  ),
-                )
-              ) {
-                inc(bin1, fstrand, 'cov', 'unmeth')
-                bin1.ref--
-                bin1[fstrand]--
+          for (const { ref, idx } of getNextRefPos(ops, positions)) {
+            const idx2 =
+              probIndex + (fstrand === -1 ? positions.length - idx : idx)
+            const prob = probabilities?.[idx2] || 0
+            if (!maxProbModForPosition[ref]) {
+              maxProbModForPosition[ref] = { mod, prob, totalProb: prob }
+            } else if (maxProbModForPosition[ref].prob < prob) {
+              maxProbModForPosition[ref] = {
+                mod,
+                prob,
+                totalProb: maxProbModForPosition[ref].totalProb + prob,
               }
             }
           }
+          probIndex += positions.length
         }
+        maxProbModForPosition.forEach((entry, pos) => {
+          const epos = pos + fstart - region.start
+          if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+            if (bins[epos] === undefined) {
+              bins[epos] = {
+                total: 0,
+                all: 0,
+                ref: 0,
+                '-1': 0,
+                '0': 0,
+                '1': 0,
+                lowqual: {},
+                cov: {},
+                delskips: {},
+                noncov: {},
+              }
+            }
+            const bin = bins[epos]
+            if (1 - entry.totalProb < entry.prob) {
+              incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
+            } else {
+              incWithProbabilities(bin, fstrand, 'cov', 'mod_NONE', entry.prob)
+            }
+          }
+        })
       }
     }
 
     // normal SNP based coloring
-    const colorSNPs =
-      colorBy?.type !== 'modifications' && colorBy?.type !== 'methylation'
+    const colorSNPs = colorBy?.type !== 'modifications'
 
     for (const mismatch of mismatches) {
       const mstart = fstart + mismatch.start
@@ -234,23 +202,18 @@ export default async function generateCoverageBins(
       }
 
       if (mismatch.type === 'skip') {
-        const xs = getTag(feature, 'XS')
+        // for upper case XS and TS: reports the literal strand of the genomic
+        // transcript
+        const xs = getTag(feature, 'XS') || getTag(feature, 'TS')
+        // for lower case ts from minimap2: genomic transcript flipped by read
+        // strand
         const ts = getTag(feature, 'ts')
-        const TS = getTag(feature, 'TS')
-        let effectiveStrand = 0
-        if (xs === '+') {
-          effectiveStrand = 1
-        } else if (xs === '-') {
-          effectiveStrand = -1
-        } else if (ts === '-') {
-          effectiveStrand = fstrand * -1
-        } else if (ts === '+') {
-          effectiveStrand = fstrand
-        } else if (TS === '-') {
-          effectiveStrand = -1
-        } else if (TS === '+') {
-          effectiveStrand = 1
-        }
+        const effectiveStrand =
+          xs === '+'
+            ? 1
+            : xs === '-'
+              ? -1
+              : (ts === '+' ? 1 : xs === '-' ? -1 : 0) * fstrand
         const hash = `${mstart}_${mend}_${effectiveStrand}`
         if (skipmap[hash] === undefined) {
           skipmap[hash] = {

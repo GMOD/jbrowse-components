@@ -36,7 +36,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTagValues, FilterModel, IFilter } from '../shared'
 import { createAutorun } from '../util'
-import { ColorByModel, ExtraColorBy } from '../shared/color'
+import { ColorByModel } from '../shared/color'
 
 // lazies
 const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
@@ -150,9 +150,9 @@ export function SharedLinearPileupDisplayMixin(
       setColorScheme(colorScheme: {
         type: string
         tag?: string
-        extra?: ExtraColorBy
+        extra?: Record<string, unknown>
       }) {
-        self.colorTagMap = observable.map({}) // clear existing mapping
+        self.colorTagMap = observable.map({})
         self.colorBy = cast(colorScheme)
         if (colorScheme.tag) {
           self.tagsReady = false
@@ -443,31 +443,41 @@ export function SharedLinearPileupDisplayMixin(
             {
               label: 'Normal',
               onClick: () => {
-                self.setColorScheme({ type: 'normal' })
+                self.setColorScheme({
+                  type: 'normal',
+                })
               },
             },
             {
               label: 'Mapping quality',
               onClick: () => {
-                self.setColorScheme({ type: 'mappingQuality' })
+                self.setColorScheme({
+                  type: 'mappingQuality',
+                })
               },
             },
             {
               label: 'Strand',
               onClick: () => {
-                self.setColorScheme({ type: 'strand' })
+                self.setColorScheme({
+                  type: 'strand',
+                })
               },
             },
             {
               label: 'Per-base quality',
               onClick: () => {
-                self.setColorScheme({ type: 'perBaseQuality' })
+                self.setColorScheme({
+                  type: 'perBaseQuality',
+                })
               },
             },
             {
               label: 'Per-base lettering',
               onClick: () => {
-                self.setColorScheme({ type: 'perBaseLettering' })
+                self.setColorScheme({
+                  type: 'perBaseLettering',
+                })
               },
             },
             {

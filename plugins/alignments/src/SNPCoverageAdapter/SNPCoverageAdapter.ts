@@ -9,7 +9,6 @@ import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 
 // locals
-import generateCoverageBins from './generateCoverageBins'
 import { fetchSequence } from '../util'
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
@@ -46,16 +45,16 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { subadapter } = await this.configure()
-      const feats = await firstValueFrom(
+      const features = await firstValueFrom(
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
 
-      const { bins, skipmap } = await generateCoverageBins(
-        feats,
+      const { generateCoverageBins } = await import('./generateCoverageBins')
+      const { bins, skipmap } = await generateCoverageBins({
+        features,
         region,
         opts,
-        arg => this.fetchSequence(arg),
-      )
+      })
 
       bins.forEach((bin, index) => {
         const start = region.start + index

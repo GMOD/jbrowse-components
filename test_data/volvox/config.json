@@ -2216,6 +2216,30 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "out_noref",
+      "name": "out_noref",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "out_noref.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "out_noref.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [

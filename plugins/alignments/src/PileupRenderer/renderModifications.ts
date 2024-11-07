@@ -2,6 +2,7 @@ import { bpSpanPx, Region } from '@jbrowse/core/util'
 import {
   getModificationPositions,
   getModificationProbabilities,
+  getModificationProbabilitiesUnmodified,
   getNextRefPos,
 } from '../MismatchParser'
 import { getTagAlt } from '../util'
@@ -50,19 +51,19 @@ export function renderModifications({
   const probabilities = getModificationProbabilities(feature)
   const modifications = getModificationPositions(mm, seq, strand)
 
-  // probIndex applies across multiple modifications e.g.
   let probIndex = 0
   for (const { type, positions } of modifications) {
     const col = modificationTagMap[type] || 'black'
     const base = colord(col)
-    for (const readPos of getNextRefPos(cigarOps, positions)) {
-      const r = start + readPos
+    for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
+      const r = start + ref
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-      const prob = probabilities?.[probIndex] || 0
+      const idx2 = probIndex + (strand === -1 ? positions.length - idx : idx)
+      const prob = probabilities?.[idx2] || 0
       const c = prob !== 1 ? base.alpha(prob + 0.1).toHslString() : col
       const w = rightPx - leftPx + 0.5
       fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
-      probIndex++
     }
+    probIndex += positions.length
   }
 }

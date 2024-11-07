@@ -117,17 +117,20 @@ export function shouldFetchReferenceSequence(type?: string) {
 }
 
 // adapted from IGV
-// https://github.com/igvteam/igv/blob/e803e3af2d8c9ea049961dfd4628146bdde9a574/src/main/java/org/broad/igv/sam/mods/BaseModificationColors.java#L27
+// https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/resources/org/broad/igv/prefs/preferences.tab#L230-L242
 export const modificationColors = {
-  m: 'rgb(255,0,0)',
-  h: 'rgb(11, 132, 165)',
-  o: 'rgb(111, 78, 129)',
-  f: 'rgb(246, 200, 95)',
-  c: 'rgb(157, 216, 102)',
-  g: 'rgb(255, 160, 86)',
-  e: 'rgb(141, 221, 208)',
-  b: 'rgb(202, 71, 47)',
-  a: 'hsl(136, 50%, 50%)',
+  m: 'rgb(255,0,0)', // 5mC
+  h: 'rgb(255,0,255)', // 5hmC
+  o: 'rgb(111, 78, 129)', // 8oxoG
+  f: 'rgb(246, 200, 95)', // 5fC
+  c: 'rgb(157, 216, 102)', // 5cac
+  g: 'rgb(255, 160, 86)', // 5hmu
+  e: 'rgb(141, 221, 208)', // 5fU
+  b: 'rgb(0,100,47)', // 5caU
+  a: 'rgb(51,0,111)', // 6mA
+  17082: 'rgb(51,153,255)', // pseU
+  17596: 'rgb(102,153,0)', // inosine
+  21839: 'rgb(153,0,153)', // 4mC
 } as Record<string, string>
 
 type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }

@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { observable } from 'mobx'
 import { types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
@@ -8,9 +9,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
-import { getUniqueModificationValues } from '../shared'
-
-import { createAutorun, randomColor, modificationColors } from '../util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
@@ -21,12 +19,13 @@ import ColorLensIcon from '@mui/icons-material/ColorLens'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { observable } from 'mobx'
+import { getUniqueModificationValues } from '../shared'
+import { createAutorun, getColorForModification } from '../util'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
-const ModificationsDialog = lazy(
+const ColorByModificationsDialog = lazy(
   () => import('./components/ColorByModificationsDialog'),
 )
 
@@ -94,10 +93,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       updateModificationColorMap(uniqueModifications: string[]) {
         uniqueModifications.forEach(value => {
           if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(value),
-            )
+            self.modificationTagMap.set(value, getColorForModification(value))
           }
         })
       },
@@ -310,25 +306,77 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Pair orientation',
                   onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
+                    self.setColorScheme({
+                      type: 'pairOrientation',
+                    })
                   },
                 },
                 {
-                  label: 'Modifications or methylation',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ModificationsDialog,
-                      {
-                        model: self,
-                        handleClose: doneCallback,
+                  label: 'Modifications',
+                  type: 'subMenu',
+                  subMenu: [
+                    {
+                      label: 'All modifications',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'modifications',
+                        })
                       },
-                    ])
-                  },
+                    },
+                    {
+                      label: '5mc methylation',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'modifications',
+                          extra: { base: 'm' },
+                        })
+                      },
+                    },
+                    {
+                      label: '5hmc methylation',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'modifications',
+                          extra: { base: 'h' },
+                        })
+                      },
+                    },
+                    {
+                      label: 'All modifications (2-color)',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'modifications',
+                          extra: { twoColor: true },
+                        })
+                      },
+                    },
+                    {
+                      label: '5mc methylation (2-color)',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'modifications',
+                          extra: { base: 'm', twoColor: true },
+                        })
+                      },
+                    },
+                    {
+                      label: '5hmc methylation (2-color)',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'modifications',
+                          extra: { base: 'h', twoColor: true },
+                        })
+                      },
+                    },
+                  ],
                 },
+
                 {
                   label: 'Insert size',
                   onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
+                    self.setColorScheme({
+                      type: 'insertSize',
+                    })
                   },
                 },
                 ...superColorSchemeSubMenuItems(),

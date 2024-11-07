@@ -14,7 +14,7 @@ interface Props {
 
 const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, ref) {
-    const start = feature.get('start')
+    const start = feature.get('start') + 1
     const end = feature.get('end')
     const refName = feature.get('refName')
     const name = feature.get('name')

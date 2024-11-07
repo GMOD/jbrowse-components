@@ -1,5 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, bpSpanPx, Feature } from '@jbrowse/core/util'
+import { featureSpanPx, bpSpanPx, Feature, sum } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
@@ -25,11 +25,15 @@ export interface RenderArgsDeserializedWithFeatures
   modificationTagMap?: Record<string, string>
 }
 
-type Counts = Record<string, { total: number; strands: Record<string, number> }>
+interface BaseCount {
+  total: number
+  strands: Record<string, number>
+}
+type BaseCounts = Record<string, BaseCount>
 
 interface SNPInfo {
-  cov: Counts
-  noncov: Counts
+  cov: BaseCounts
+  noncov: BaseCounts
   total: number
 }
 
@@ -46,6 +50,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       features,
       regions,
       bpPerPx,
+      colorBy,
       displayCrossHatches,
       modificationTagMap = {},
       scaleOpts,
@@ -98,8 +103,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       softclip: 'blue',
       hardclip: 'red',
       total: readConfObject(cfg, 'color'),
-      meth: 'red',
-      unmeth: 'blue',
+      NONE: 'blue',
     }
 
     const feats = [...features.values()]
@@ -119,41 +123,53 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     // Keep track of previous total which we will use it to draw the interbase
     // indicator (if there is a sudden clip, there will be no read coverage but
-    // there will be "clip" coverage) at that position beyond the read. if the
-    // clip is right at a block boundary then prevTotal will not be available,
-    // so this is a best attempt to plot interbase indicator at the "cliffs"
+    // there will be "clip" coverage) at that position beyond the read.
+    //
+    // if the clip is right at a block boundary then prevTotal will not be
+    // available, so this is a best attempt to plot interbase indicator at the
+    // "cliffs"
     let prevTotal = 0
 
     // extraHorizontallyFlippedOffset is used to draw interbase items, which
     // are located to the left when forward and right when reversed
     const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
+    // @ts-expect-error
+    const drawingMods = colorBy.type === 'modifications'
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
-
     for (const feature of feats) {
       if (feature.get('type') === 'skip') {
         continue
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      const score = feature.get('score') as number
       const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx, 1)
-      const totalScore = snpinfo.total
-      const keys = Object.keys(snpinfo.cov).sort()
+      const score0 = feature.get('score')
+      const score = drawingMods
+        ? sum(
+            Object.entries(snpinfo.cov).map(([f, val]) =>
+              f.startsWith('mod_') ? val.total : 0,
+            ),
+          )
+        : snpinfo.total
 
+      const keys = Object.keys(snpinfo.cov).sort((a, b) => b.localeCompare(a))
       let curr = 0
       for (const base of keys) {
+        if (base === 'mod_NONE') {
+          continue
+        }
         const { total } = snpinfo.cov[base]!
         ctx.fillStyle =
           colorForBase[base] ||
           modificationTagMap[base.replace('mod_', '')] ||
           'black'
 
-        const height = toHeight(score)
-        const bottom = toY(score) + height
+        const height = toHeight(score0)
+        const bottom = toY(score0) + height
         ctx.fillRect(
           Math.round(leftPx),
           bottom - ((total + curr) / score) * height,
@@ -196,7 +212,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
         // avoid drawing a bunch of indicators if coverage is very low e.g.
         // less than 7, uses the prev total in the case of the "cliff"
-        const indicatorComparatorScore = Math.max(totalScore, prevTotal)
+        const indicatorComparatorScore = Math.max(score0, prevTotal)
         if (
           accum > indicatorComparatorScore * indicatorThreshold &&
           indicatorComparatorScore > 7
@@ -210,7 +226,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.fill()
         }
       }
-      prevTotal = totalScore
+      prevTotal = score0
     }
 
     if (drawArcs) {

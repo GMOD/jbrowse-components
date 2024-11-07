@@ -98,10 +98,6 @@ export function getPairedOrientationColor(f: { pair_orientation?: string }) {
   return getPairedOrientationColorOrDefault(f) || defaultColor
 }
 
-export interface ExtraColorBy {
-  custom?: Record<string, string>
-}
-
 export const ColorByModel = types.maybe(
   types.model({
     type: types.string,

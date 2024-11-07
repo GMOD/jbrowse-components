@@ -5,7 +5,6 @@ import { renderAlignmentShape } from './renderAlignmentShape'
 import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderModifications } from './renderModifications'
-import { renderMethylation } from './renderMethylation'
 import { RenderArgsWithColor } from './makeImageData'
 
 export function renderAlignment({
@@ -78,18 +77,6 @@ export function renderAlignment({
 
     case 'modifications':
       renderModifications({
-        ctx,
-        feat,
-        region,
-        bpPerPx,
-        renderArgs,
-        canvasWidth,
-        cigarOps,
-      })
-      break
-
-    case 'methylation':
-      renderMethylation({
         ctx,
         feat,
         region,

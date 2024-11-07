@@ -319,7 +319,6 @@ export function assembleLocStringFast(
   cb = (n: number): string | number => n,
 ) {
   const { assemblyName, refName, start, end, reversed } = region
-  const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString: string
   if (start !== undefined) {
     startString = `:${cb(start + 1)}`
@@ -330,15 +329,12 @@ export function assembleLocStringFast(
   }
   let endString: string
   if (end !== undefined) {
-    endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
+    endString = start !== undefined && start + 1 === end ? '' : `-${cb(end)}`
   } else {
-    endString = start !== undefined ? '..' : ''
+    endString = start !== undefined ? '-' : ''
   }
-  let rev = ''
-  if (reversed) {
-    rev = '[rev]'
-  }
-  return `${assemblyNameString}${refName}${startString}${endString}${rev}`
+
+  return `${assemblyName ? `{${assemblyName}}` : ''}${refName}${startString}${endString}${reversed ? '[rev]' : ''}`
 }
 
 export interface ParsedLocString {
