@@ -17,94 +17,20 @@ export default class BamSlightlyLazyFeature implements Feature {
     private ref?: string,
   ) {}
 
-  _get_name() {
-    return this.record.get('name')
-  }
-
-  _get_type(): string {
-    return 'match'
-  }
-
-  _get_score(): number {
-    return this.record.get('mq')
-  }
-
-  _get_flags(): string {
-    return this.record.flags
-  }
-
-  _get_strand(): number {
-    return this.record.isReverseComplemented() ? -1 : 1
-  }
-
-  _get_pair_orientation() {
-    return this.record.isPaired() ? this.record.getPairOrientation() : undefined
-  }
-
-  _get_next_ref() {
-    return this.record.isPaired()
-      ? this.adapter.refIdToName(this.record._next_refid())
-      : undefined
-  }
-
-  _get_next_pos() {
-    return this.record.isPaired() ? this.record._next_pos() : undefined
-  }
-
-  _get_next_segment_position() {
-    return this.record.isPaired()
-      ? `${this.adapter.refIdToName(this.record._next_refid())}:${
-          this.record._next_pos() + 1
-        }`
-      : undefined
-  }
-
-  _get_seq() {
-    return this.record.getReadBases()
-  }
-
-  qualRaw() {
-    return this.record.qualRaw()
-  }
-
-  set() {}
-
-  tags() {
-    const properties = Object.getOwnPropertyNames(
-      BamSlightlyLazyFeature.prototype,
-    )
-
-    return [
-      ...new Set(
-        properties
-          .filter(
-            prop =>
-              prop.startsWith('_get_') &&
-              prop !== '_get_mismatches' &&
-              prop !== '_get_tags',
-          )
-          .map(methodName => methodName.replace('_get_', ''))
-          .concat(this.record._tags()),
-      ),
-    ]
-  }
-
   id() {
-    return `${this.adapter.id}-${this.record.id()}`
+    return `${this.adapter.id}-${this.record.id}`
   }
 
   get(field: string): any {
-    const methodName = `_get_${field}`
-    // @ts-expect-error
-    if (this[methodName]) {
-      // @ts-expect-error
-      return this[methodName]()
-    }
-    return this.record.get(field)
-  }
-
-  _get_refName() {
-    return this.adapter.refIdToName(this.record.seq_id())
+    return field === 'mismatches'
+      ? getMismatches(
+          this.record.CIGAR,
+          this.record.tags.MD as string | undefined,
+          this.record.seq,
+          this.ref,
+          this.record.qualRaw,
+        )
+      : this.fields[field]
   }
 
   parent() {
@@ -115,33 +41,57 @@ export default class BamSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  pairedFeature() {
-    return false
-  }
+  get fields() {
+    const r = this.record
+    const a = this.adapter
 
-  toJSON(): SimpleFeatureSerialized {
     return {
-      ...Object.fromEntries(
-        this.tags()
-          .map(t => [t, this.get(t)])
-          .filter(elt => elt[1] !== undefined),
-      ),
+      id: this.id(),
+      start: r.start,
+      name: r.name,
+      end: r.end,
+      score: r.score,
+      qual: r.qual,
+      strand: r.strand,
+      template_length: r.template_length,
+      flags: r.flags,
+      tags: r.tags,
+      refName: a.refIdToName(r.ref_id)!,
+      CIGAR: r.CIGAR,
+      seq: r.seq,
+      type: 'match',
+      pair_orientation: r.pair_orientation,
+      next_ref: r.isPaired() ? a.refIdToName(r.next_refid) : undefined,
+      next_pos: r.isPaired() ? r.next_pos : undefined,
+      next_segment_position: r.isPaired()
+        ? `${a.refIdToName(r.next_refid)}:${r.next_pos + 1}`
+        : undefined,
       uniqueId: this.id(),
     }
   }
 
-  _get_mismatches() {
-    return getMismatches(
-      this.get('CIGAR'),
-      this.get('MD'),
-      this.get('seq'),
-      this.ref,
-      this.qualRaw(),
-    )
-  }
-
-  _get_clipPos() {
-    const cigar = this.get('CIGAR') || ''
-    return getClip(cigar, this.get('strand'))
+  toJSON() {
+    return this.fields
   }
 }
+
+function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
+  const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)
+  if (!desc) {
+    throw new Error('t1')
+  }
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const getter = desc.get
+  if (!getter) {
+    throw new Error('t2')
+  }
+  Object.defineProperty(ctor.prototype, prop, {
+    get() {
+      const ret = getter.call(this)
+      Object.defineProperty(this, prop, { value: ret })
+      return ret
+    },
+  })
+}
+
+cacheGetter(BamSlightlyLazyFeature, 'fields')

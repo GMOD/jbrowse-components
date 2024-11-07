@@ -1469,10 +1469,11 @@ export function isGzip(buf: Buffer) {
 }
 
 export {
+  isFeature,
   default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
-  isFeature,
+  type SimpleFeatureSerializedNoId,
 } from './simpleFeature'
 
 export { blobToDataURL } from './blobToDataURL'

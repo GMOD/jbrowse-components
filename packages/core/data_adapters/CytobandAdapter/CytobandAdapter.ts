@@ -25,8 +25,9 @@ export default class CytobandAdapter extends BaseAdapter {
           refName: refName!,
           start: +start!,
           end: +end!,
-          name: name!,
-          type: type!,
+          name,
+          type,
+          gieStain: type || name,
         })
       })
   }

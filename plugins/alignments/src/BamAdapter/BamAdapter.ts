@@ -186,11 +186,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
         for (const record of records) {
           let ref: string | undefined
-          if (!record.get('MD')) {
+          if (!record.tags.MD) {
             ref = await this.seqFetch(
               originalRefName || refName,
-              record.get('start'),
-              record.get('end'),
+              record.start,
+              record.end,
             )
           }
 
@@ -200,7 +200,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const readVal = record.get(tagFilter.tag)
+            const readVal = record.tags[tagFilter.tag]
             const filterVal = tagFilter.value
             if (
               filterVal === '*'
@@ -211,7 +211,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             }
           }
 
-          if (readName && record.get('name') !== readName) {
+          if (readName && record.name !== readName) {
             continue
           }
 
