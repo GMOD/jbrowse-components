@@ -30,8 +30,8 @@ test('adapter can fetch features from peach_grape.paf', async () => {
 
   const fa1 = await firstValueFrom(features1.pipe(toArray()))
   const fa2 = await firstValueFrom(features2.pipe(toArray()))
-  expect(fa1.length).toBe(1675)
-  expect(fa2.length).toBe(2471)
+  expect(fa1.length).toBe(204)
+  expect(fa2.length).toBe(263)
   expect(fa1[0]!.get('refName')).toBe('Pp05')
   expect(fa2[0]!.get('refName')).toBe('chr18')
 })

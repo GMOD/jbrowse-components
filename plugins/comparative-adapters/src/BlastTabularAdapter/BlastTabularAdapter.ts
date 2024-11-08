@@ -149,7 +149,16 @@ function createBlastLineParser(columns: string) {
   if (sendIndex === -1) {
     throw new Error('Missing required column "send"')
   }
-
+  const columnNameSet = new Map<string, number>(
+    columnNames
+      .map((c, idx) => [c, idx] as const)
+      .filter(
+        f =>
+          !['qseqid', 'sseqid', 'qstart', 'qend', 'sstart', 'send'].includes(
+            f[0],
+          ),
+      ),
+  )
   return (line: string): BlastRecord | undefined => {
     if (line.startsWith('#')) {
       return
@@ -174,14 +183,7 @@ function createBlastLineParser(columns: string) {
       sstart: Number.parseInt(sstart),
       send: Number.parseInt(send),
     }
-    for (const [idx, columnName] of columnNames.entries()) {
-      if (
-        ['qseqid', 'sseqid', 'qstart', 'qend', 'sstart', 'send'].includes(
-          columnName,
-        )
-      ) {
-        continue
-      }
+    for (const [columnName, idx] of columnNameSet.entries()) {
       const value = row[idx]
       if (!value) {
         continue
@@ -199,12 +201,13 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   getData(opts?: BaseOptions): Promise<BlastRecord[]> {
-    if (this.data) {
-      return this.data
+    if (!this.data) {
+      this.data = this.setup(opts).catch((e: unknown) => {
+        this.data = undefined
+        throw e
+      })
     }
-    const data = this.setup(opts)
-    this.data = data
-    return data
+    return this.data
   }
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
@@ -280,14 +283,14 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
       for (let i = 0; i < blastRecords.length; i++) {
         const r = blastRecords[i]!
-        let start,
-          end,
-          refName,
-          assemblyName,
-          mateStart,
-          mateEnd,
-          mateRefName,
-          mateAssemblyName
+        let start: number
+        let end: number
+        let refName: string
+        let assemblyName: string | undefined
+        let mateStart: number
+        let mateEnd: number
+        let mateRefName: string
+        let mateAssemblyName: string | undefined
 
         const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } = r
         if (queryAssemblyName === queryAssembly) {
