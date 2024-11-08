@@ -5,17 +5,11 @@ import { firstValueFrom } from 'rxjs'
 import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
 import { IAutorunOptions, autorun } from 'mobx'
 
-// get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
-// BAM does not
-export function getTag(feature: Feature, tag: string) {
-  const tags = feature.get('tags')
-  return tags !== undefined ? tags[tag] : feature.get(tag)
-}
-
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {
-  return getTag(feature, tag) ?? getTag(feature, alt)
+  const tags = feature.get('tags')
+  return tags[tag] ?? tags[alt]
 }
 
 // orientation definitions from igv.js, see also

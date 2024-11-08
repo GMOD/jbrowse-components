@@ -277,16 +277,6 @@ export function getModificationProbabilities(feature: Feature) {
         .map(elt => Math.min(1, elt / 50))
 }
 
-export function getModificationProbabilitiesUnmodified(feature: Feature) {
-  const m = (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
-  return m
-    ? (typeof m === 'string' ? m.split(',').map(e => +e) : m).map(e => e)
-    : (getTagAlt(feature, 'MP', 'Mp') as string | undefined)
-        ?.split('')
-        .map(s => s.charCodeAt(0) - 33)
-        .map(elt => Math.min(1, elt / 50))
-}
-
 export function getModificationPositions(
   mm: string,
   fseq: string,
@@ -299,6 +289,7 @@ export function getModificationPositions(
     const [basemod, ...skips] = mod.split(',')
 
     // regexes based on parse_mm.pl from hts-specs
+    // https://github.com/samtools/hts-specs/blob/master/test/SAMtags/parse_mm.pl
     const matches = modificationRegex.exec(basemod!)
     if (!matches) {
       throw new Error('bad format for MM tag')

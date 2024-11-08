@@ -2,7 +2,6 @@ import { bpSpanPx, Region } from '@jbrowse/core/util'
 import {
   getModificationPositions,
   getModificationProbabilities,
-  getModificationProbabilitiesUnmodified,
   getNextRefPos,
 } from '../MismatchParser'
 import { getTagAlt } from '../util'

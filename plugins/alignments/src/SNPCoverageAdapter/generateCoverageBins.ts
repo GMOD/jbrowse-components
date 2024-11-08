@@ -2,14 +2,13 @@ import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { Feature } from '@jbrowse/core/util'
 
 // locals
-import { getTag, getTagAlt } from '../util'
+import { getTagAlt } from '../util'
 import {
   parseCigar,
   getNextRefPos,
   getModificationPositions,
   getModificationProbabilities,
   Mismatch,
-  getModificationProbabilitiesUnmodified,
 } from '../MismatchParser'
 import { Bin, SkipMap } from './util'
 
@@ -204,10 +203,11 @@ export async function generateCoverageBins({
       if (mismatch.type === 'skip') {
         // for upper case XS and TS: reports the literal strand of the genomic
         // transcript
-        const xs = getTag(feature, 'XS') || getTag(feature, 'TS')
+        const tags = feature.get('tags')
+        const xs = tags?.XS || tags?.TS
         // for lower case ts from minimap2: genomic transcript flipped by read
         // strand
-        const ts = getTag(feature, 'ts')
+        const ts = tags?.ts
         const effectiveStrand =
           xs === '+'
             ? 1

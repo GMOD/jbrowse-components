@@ -135,7 +135,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
     // @ts-expect-error
-    const drawingMods = colorBy.type === 'modifications'
+    const drawingMods = colorBy?.type === 'modifications'
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
