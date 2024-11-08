@@ -127,18 +127,28 @@ export async function generateCoverageBins({
         for (const { type, positions } of modifications) {
           const mod = `mod_${type}`
           for (const { ref, idx } of getNextRefPos(ops, positions)) {
-            const idx2 =
-              probIndex + (fstrand === -1 ? positions.length - idx : idx)
-            const prob = probabilities?.[idx2] || 0
-            if (!maxProbModForPosition[ref]) {
-              maxProbModForPosition[ref] = { mod, prob, totalProb: prob }
-            } else if (maxProbModForPosition[ref].prob < prob) {
-              maxProbModForPosition[ref] = {
-                mod,
-                prob,
-                totalProb: maxProbModForPosition[ref].totalProb + prob,
-              }
+            const prob =
+              probabilities?.[
+                probIndex + (fstrand === -1 ? positions.length - idx : idx)
+              ] || 0
+            maxProbModForPosition[ref] = {
+              mod,
+              prob,
+              totalProb: prob,
             }
+            // if (!maxProbModForPosition[ref]) {
+            //   maxProbModForPosition[ref] = {
+            //     mod,
+            //     prob,
+            //     totalProb: prob,
+            //   }
+            // } else if (maxProbModForPosition[ref].prob < prob) {
+            //   maxProbModForPosition[ref] = {
+            //     mod,
+            //     prob,
+            //     totalProb: maxProbModForPosition[ref].totalProb + prob,
+            //   }
+            // }
           }
           probIndex += positions.length
         }
@@ -162,8 +172,6 @@ export async function generateCoverageBins({
             const bin = bins[epos]
             if (1 - entry.totalProb < entry.prob) {
               incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
-            } else {
-              incWithProbabilities(bin, fstrand, 'cov', 'mod_NONE', entry.prob)
             }
           }
         })
@@ -227,6 +235,12 @@ export async function generateCoverageBins({
         }
         skipmap[hash].score++
       }
+    }
+  }
+
+  for (const bin of bins) {
+    if (Object.keys(bin.cov).length > 0) {
+      console.log({ bin })
     }
   }
 

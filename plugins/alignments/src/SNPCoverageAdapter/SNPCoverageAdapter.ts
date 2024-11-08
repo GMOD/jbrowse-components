@@ -10,6 +10,7 @@ import { firstValueFrom } from 'rxjs'
 
 // locals
 import { fetchSequence } from '../util'
+import { generateCoverageBins } from './generateCoverageBins'
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {
@@ -49,7 +50,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
 
-      const { generateCoverageBins } = await import('./generateCoverageBins')
       const { bins, skipmap } = await generateCoverageBins({
         features,
         region,

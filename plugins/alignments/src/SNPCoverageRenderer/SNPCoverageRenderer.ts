@@ -9,6 +9,7 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
+import { colord } from '@jbrowse/core/util/colord'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -16,6 +17,13 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   highResolutionScaling: number
   scaleOpts: ScaleOpts
 }
+
+// width of the triangle above e.g. insertion indicators
+const INTERBASE_INDICATOR_WIDTH = 7
+
+// minimum read depth to draw the insertion indicators, below this the
+// 'statistical significance' is low
+const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
@@ -103,7 +111,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       softclip: 'blue',
       hardclip: 'red',
       total: readConfObject(cfg, 'color'),
-      NONE: 'blue',
+      mod_NONE: 'blue',
     }
 
     const feats = [...features.values()]
@@ -136,6 +144,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     // @ts-expect-error
     const drawingMods = colorBy?.type === 'modifications'
+
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
@@ -148,35 +157,57 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx, 1)
       const score0 = feature.get('score')
-      const score = drawingMods
-        ? sum(
-            Object.entries(snpinfo.cov).map(([f, val]) =>
-              f.startsWith('mod_') ? val.total : 0,
-            ),
-          )
-        : snpinfo.total
-
       const keys = Object.keys(snpinfo.cov).sort((a, b) => b.localeCompare(a))
-      let curr = 0
-      for (const base of keys) {
-        if (base === 'mod_NONE') {
-          continue
-        }
-        const { total } = snpinfo.cov[base]!
-        ctx.fillStyle =
-          colorForBase[base] ||
-          modificationTagMap[base.replace('mod_', '')] ||
-          'black'
-
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((total + curr) / score) * height,
-          w,
-          (total / score) * height,
+      if (drawingMods) {
+        const score = sum(
+          Object.entries(snpinfo.cov).map(([f, val]) =>
+            f.startsWith('mod_') ? val.total : 0,
+          ),
         )
-        curr += total
+        let curr = 0
+        for (const base of keys) {
+          if (base === 'mod_NONE') {
+            continue
+          }
+          const { total, ...rest } = snpinfo.cov[base]!
+          const prob = sum(rest.probabilities) / rest.probabilities.length
+          const col = modificationTagMap[base.replace('mod_', '')] || 'black'
+          const c =
+            prob !== 1
+              ? colord(col)
+                  .alpha(prob + 0.1)
+                  .toHslString()
+              : col
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+          const scaler = height / score
+          ctx.fillStyle = c
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - (total + curr) * scaler,
+            w,
+            total * scaler,
+          )
+          curr += total
+        }
+      } else {
+        const score = snpinfo.total
+        const keys = Object.keys(snpinfo.cov).sort((a, b) => b.localeCompare(a))
+        let curr = 0
+        for (const base of keys) {
+          const { total } = snpinfo.cov[base]!
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+          const scaler = height / score
+          ctx.fillStyle = colorForBase[base] || 'black'
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - (total + curr) * scaler,
+            w,
+            total * scaler,
+          )
+          curr += total
+        }
       }
 
       const interbaseEvents = Object.keys(snpinfo.noncov)
@@ -210,18 +241,18 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           }
         }
 
-        // avoid drawing a bunch of indicators if coverage is very low e.g.
-        // less than 7, uses the prev total in the case of the "cliff"
+        // avoid drawing a bunch of indicators if coverage is very low. note:
+        // also uses the prev total in the case of the "cliff"
         const indicatorComparatorScore = Math.max(score0, prevTotal)
         if (
           accum > indicatorComparatorScore * indicatorThreshold &&
-          indicatorComparatorScore > 7
+          indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
         ) {
           ctx.fillStyle = colorForBase[maxBase]!
           ctx.beginPath()
           const l = leftPx + extraHorizontallyFlippedOffset
-          ctx.moveTo(l - 3.5, 0)
-          ctx.lineTo(l + 3.5, 0)
+          ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
           ctx.lineTo(l, indicatorHeight)
           ctx.fill()
         }

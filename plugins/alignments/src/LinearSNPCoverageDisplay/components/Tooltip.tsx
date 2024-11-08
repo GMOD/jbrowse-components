@@ -3,10 +3,11 @@ import { observer } from 'mobx-react'
 import { Feature, toLocale } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
 
-type Count = Record<
+type BaseCount = Record<
   string,
   {
     total: number
+    probability: number
     '-1': number
     '0': number
     '1': number
@@ -14,10 +15,10 @@ type Count = Record<
 >
 
 interface SNPInfo {
-  cov: Count
-  lowqual: Count
-  noncov: Count
-  delskips: Count
+  cov: BaseCount
+  lowqual: BaseCount
+  noncov: BaseCount
+  delskips: BaseCount
   refbase: string
   total: number
   ref: number
@@ -65,6 +66,7 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
             <tr>
               <th>Base</th>
               <th>Count</th>
+              <th>Probability</th>
               <th>% of Total</th>
               <th>Strands</th>
               <th>Source</th>
@@ -91,6 +93,7 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
                 <tr key={base}>
                   <td>{base.toUpperCase()}</td>
                   <td>{score.total}</td>
+                  <td>{score.probability}</td>
                   <td>
                     {base === 'total' || base === 'skip'
                       ? '---'
