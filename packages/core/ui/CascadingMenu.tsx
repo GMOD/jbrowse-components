@@ -20,11 +20,16 @@ import {
 } from 'material-ui-popup-state/hooks'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
 import ChevronRight from '@mui/icons-material/ChevronRight'
+import { useDebounce } from '../util'
 
-const CascadingContext = React.createContext({
+interface ContextType {
+  parentPopupState: PopupState | null
+  rootPopupState: PopupState | null
+}
+const CascadingContext = React.createContext<ContextType>({
   parentPopupState: null,
   rootPopupState: null,
-} as { parentPopupState: PopupState | null; rootPopupState: PopupState | null })
+})
 
 function CascadingMenuItem({
   onClick,
@@ -65,7 +70,6 @@ function CascadingSubmenu({
   title: React.ReactNode
   onMenuItemClick: Function
   Icon: React.ComponentType<SvgIconProps> | undefined
-
   inset: boolean
   menuItems: JBMenuItem[]
   popupId: string
@@ -76,6 +80,16 @@ function CascadingSubmenu({
     variant: 'popover',
     parentPopupState,
   })
+
+  // avoid the submenu closing instantly after mouse out
+  const isOpenDebounce = useDebounce(popupState.isOpen, 400)
+
+  // ternary reasoning: if the popup is toggled to false, is the debounce,
+  // otherwise it is true, and then don't debounce it (which would delay e.g.
+  // opening a menu from scratch)
+  const isOpenDebounceEffective =
+    // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
+    !popupState.isOpen ? isOpenDebounce : popupState.isOpen
   return (
     <>
       <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
@@ -89,9 +103,18 @@ function CascadingSubmenu({
       </MenuItem>
       <CascadingSubmenuHover
         {...props}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        popupState={popupState}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        popupState={{
+          ...popupState,
+          isOpen: isOpenDebounceEffective,
+        }}
       />
     </>
   )
@@ -178,12 +201,6 @@ function CascadingMenuList({
   closeAfterItemClick: boolean
   onMenuItemClick: Function
 }) {
-  function handleClick(callback: Function) {
-    return (event: React.MouseEvent<HTMLLIElement>) => {
-      onMenuItemClick(event, callback)
-    }
-  }
-
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   return (
     <>
@@ -221,7 +238,10 @@ function CascadingMenuList({
               key={`${item.label}-${idx}`}
               closeAfterItemClick={closeAfterItemClick}
               onClick={
-                'onClick' in item ? handleClick(item.onClick) : undefined
+                'onClick' in item
+                  ? (event: React.MouseEvent<HTMLLIElement>) =>
+                      onMenuItemClick(event, item.onClick)
+                  : undefined
               }
               disabled={Boolean(item.disabled)}
             >
