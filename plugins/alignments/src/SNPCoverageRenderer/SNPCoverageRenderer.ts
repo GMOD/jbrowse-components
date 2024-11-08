@@ -170,14 +170,14 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
             continue
           }
           const { total, ...rest } = snpinfo.cov[base]!
-          const prob = sum(rest.probabilities) / rest.probabilities.length
+          // const prob = sum(rest.probabilities) / rest.probabilities.length
           const col = modificationTagMap[base.replace('mod_', '')] || 'black'
-          const c =
-            prob !== 1
-              ? colord(col)
-                  .alpha(prob + 0.1)
-                  .toHslString()
-              : col
+          const c = col
+          // prob !== 1
+          //   ? colord(col)
+          //       .alpha(prob + 0.1)
+          //       .toHslString()
+          //   : col
           const height = toHeight(score0)
           const bottom = toY(score0) + height
           const scaler = height / score

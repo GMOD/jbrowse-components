@@ -257,7 +257,10 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
     } else if (op === 'M' || op === 'X' || op === '=') {
       for (let i = 0; i < len && currPos < positions.length; i++) {
         if (positions[currPos] === readPos + i) {
-          yield { ref: refPos + i, idx: currPos }
+          yield {
+            ref: refPos + i,
+            idx: currPos,
+          }
           currPos++
         }
       }

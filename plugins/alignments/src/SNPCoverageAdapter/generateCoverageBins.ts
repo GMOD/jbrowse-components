@@ -136,45 +136,37 @@ export async function generateCoverageBins({
               prob,
               totalProb: prob,
             }
-            // if (!maxProbModForPosition[ref]) {
-            //   maxProbModForPosition[ref] = {
-            //     mod,
-            //     prob,
-            //     totalProb: prob,
-            //   }
-            // } else if (maxProbModForPosition[ref].prob < prob) {
-            //   maxProbModForPosition[ref] = {
-            //     mod,
-            //     prob,
-            //     totalProb: maxProbModForPosition[ref].totalProb + prob,
-            //   }
-            // }
+            const epos = ref + fstart - region.start
+            const bin = bins[epos]
+            if (epos >= 0 && epos < bins.length && ref + fstart < fend) {
+              incWithProbabilities(bin, fstrand, 'cov', mod, prob)
+            }
           }
           probIndex += positions.length
         }
-        maxProbModForPosition.forEach((entry, pos) => {
-          const epos = pos + fstart - region.start
-          if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-            if (bins[epos] === undefined) {
-              bins[epos] = {
-                total: 0,
-                all: 0,
-                ref: 0,
-                '-1': 0,
-                '0': 0,
-                '1': 0,
-                lowqual: {},
-                cov: {},
-                delskips: {},
-                noncov: {},
-              }
-            }
-            const bin = bins[epos]
-            if (1 - entry.totalProb < entry.prob) {
-              incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
-            }
-          }
-        })
+        // maxProbModForPosition.forEach((entry, pos) => {
+        //   const epos = pos + fstart - region.start
+        //   if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+        //     if (bins[epos] === undefined) {
+        //       bins[epos] = {
+        //         total: 0,
+        //         all: 0,
+        //         ref: 0,
+        //         '-1': 0,
+        //         '0': 0,
+        //         '1': 0,
+        //         lowqual: {},
+        //         cov: {},
+        //         delskips: {},
+        //         noncov: {},
+        //       }
+        //     }
+        //     const bin = bins[epos]
+        //     if (1 - entry.totalProb < entry.prob) {
+        //       incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
+        //     }
+        //   }
+        // })
       }
     }
 
