@@ -84,10 +84,15 @@ export function getModTypes(mm: string) {
       if (!matches) {
         throw new Error(`bad format for MM tag: ${mm}`)
       }
+      const base = matches[1]
+      const strand = matches[2]
       const typestr = matches[3]!
 
       // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
       // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-      return typestr.split(/(\d+|.)/).filter(f => !!f)
+      return typestr
+        .split(/(\d+|.)/)
+        .filter(f => !!f)
+        .map(mod => ({ mod, base, strand }))
     })
 }

@@ -1,4 +1,4 @@
-import { getModPositions } from '.'
+import { getModPositions, getModTypes } from '.'
 
 test('getModPositions', () => {
   const positions = getModPositions(
@@ -27,4 +27,10 @@ test('getModPositions with unknown (.)', () => {
     1,
   )
   expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+})
+
+test('getModTypes', () => {
+  expect(getModTypes('C+m;')).toMatchSnapshot()
+  expect(getModTypes('C+mh;')).toMatchSnapshot()
+  expect(getModTypes('C+16061;')).toMatchSnapshot()
 })

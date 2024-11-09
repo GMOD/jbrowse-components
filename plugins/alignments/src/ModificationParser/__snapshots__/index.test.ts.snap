@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getModTypes 1`] = `
+[
+  {
+    "base": "C",
+    "mod": "m",
+    "strand": "+",
+  },
+]
+`;
+
+exports[`getModTypes 2`] = `
+[
+  {
+    "base": "C",
+    "mod": "m",
+    "strand": "+",
+  },
+  {
+    "base": "C",
+    "mod": "h",
+    "strand": "+",
+  },
+]
+`;
+
+exports[`getModTypes 3`] = `
+[
+  {
+    "base": "C",
+    "mod": "16061",
+    "strand": "+",
+  },
+]
+`;

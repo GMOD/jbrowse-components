@@ -6,7 +6,7 @@ import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 
 // locals
-import { getModificationTypes } from '../../MismatchParser'
+import { getModTypes } from '../../ModificationParser'
 import PileupBaseRPC from '../base'
 import { getTagAlt } from '../../util'
 
@@ -36,7 +36,7 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
 
     const uniqueValues = new Set<string>()
     featuresArray.forEach(f => {
-      getModificationTypes(getTagAlt(f, 'MM', 'Mm') || '').forEach(t =>
+      getModTypes(getTagAlt(f, 'MM', 'Mm') || '').forEach(t =>
         uniqueValues.add(t),
       )
     })
