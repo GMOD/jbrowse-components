@@ -20,7 +20,11 @@ import ColorLensIcon from '@mui/icons-material/ColorLens'
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { getUniqueModificationValues, ModificationType } from '../shared'
-import { createAutorun, getColorForModification } from '../util'
+import {
+  createAutorun,
+  getColorForModification,
+  modificationData,
+} from '../util'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
@@ -94,14 +98,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       updateModificationColorMap(uniqueModifications: ModificationType[]) {
-        for (const value of uniqueModifications) {
+        uniqueModifications.forEach(value => {
           if (!self.modificationTagMap.has(value.type)) {
             self.modificationTagMap.set(value.type, {
               ...value,
               color: getColorForModification(value.type),
             })
           }
-        }
+        })
       },
       /**
        * #action
@@ -329,54 +333,49 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                         })
                       },
                     },
-                    {
-                      label: '5mc methylation',
+                    [...self.modificationTagMap.keys()].map(key => ({
+                      label: `Show only ${modificationData[key]?.name || key}`,
                       onClick: () => {
                         self.setColorScheme({
                           type: 'modifications',
-                          extra: { base: 'm' },
+                          extra: {
+                            modifications: {
+                              isolatedModification: key,
+                            },
+                          },
                         })
                       },
-                    },
-                    {
-                      label: '5hmc methylation',
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'modifications',
-                          extra: { base: 'h' },
-                        })
-                      },
-                    },
+                    })),
+
                     {
                       label: 'All modifications (2-color)',
                       onClick: () => {
                         self.setColorScheme({
                           type: 'modifications',
-                          extra: { twoColor: true },
+                          extra: {
+                            modifications: {
+                              twoColor: true,
+                            },
+                          },
                         })
                       },
                     },
-                    {
-                      label: '5mc methylation (2-color)',
+                    [...self.modificationTagMap.keys()].map(key => ({
+                      label: `Show only ${modificationData[key]?.name || key} (2-color)`,
                       onClick: () => {
                         self.setColorScheme({
                           type: 'modifications',
-                          extra: { base: 'm', twoColor: true },
+                          extra: {
+                            modifications: {
+                              isolatedModification: key,
+                              twoColor: true,
+                            },
+                          },
                         })
                       },
-                    },
-                    {
-                      label: '5hmc methylation (2-color)',
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'modifications',
-                          extra: { base: 'h', twoColor: true },
-                        })
-                      },
-                    },
+                    })),
                   ],
                 },
-
                 {
                   label: 'Insert size',
                   onClick: () => {

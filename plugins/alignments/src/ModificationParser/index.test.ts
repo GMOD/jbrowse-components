@@ -6,7 +6,12 @@ test('getModPositions', () => {
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
     1,
   )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+  expect(positions[0]).toEqual({
+    type: 'm',
+    base: 'C',
+    strand: '+',
+    positions: [6, 17, 20, 31, 34],
+  })
 })
 
 // ? means "modification status of the skipped bases provided."
@@ -16,7 +21,12 @@ test('getModPositions with unknown (?)', () => {
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
     1,
   )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+  expect(positions[0]).toEqual({
+    type: 'm',
+    base: 'C',
+    strand: '+',
+    positions: [6, 17, 20, 31, 34],
+  })
 })
 
 // . means "modification status of the skipped bases is low probability"
@@ -26,7 +36,12 @@ test('getModPositions with unknown (.)', () => {
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
     1,
   )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+  expect(positions[0]).toEqual({
+    base: 'C',
+    strand: '+',
+    type: 'm',
+    positions: [6, 17, 20, 31, 34],
+  })
 })
 
 test('getModTypes', () => {

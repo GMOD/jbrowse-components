@@ -38,6 +38,11 @@ interface SortedBy {
 interface ColorBy {
   type: string
   tag?: string
+  extra?: {
+    modifications?: {
+      isolatedModification?: string
+    }
+  }
 }
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {

@@ -4,8 +4,8 @@ exports[`getModTypes 1`] = `
 [
   {
     "base": "C",
-    "mod": "m",
     "strand": "+",
+    "type": "m",
   },
 ]
 `;
@@ -14,13 +14,13 @@ exports[`getModTypes 2`] = `
 [
   {
     "base": "C",
-    "mod": "m",
     "strand": "+",
+    "type": "m",
   },
   {
     "base": "C",
-    "mod": "h",
     "strand": "+",
+    "type": "h",
   },
 ]
 `;
@@ -29,8 +29,8 @@ exports[`getModTypes 3`] = `
 [
   {
     "base": "C",
-    "mod": "16061",
     "strand": "+",
+    "type": "16061",
   },
 ]
 `;

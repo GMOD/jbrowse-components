@@ -148,6 +148,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     // @ts-expect-error
     const drawingMods = colorBy?.type === 'modifications'
+    const isolatedModification =
+      // @ts-expect-error
+      colorBy?.extra?.modifications?.isolatedModification
 
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
@@ -160,51 +163,98 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const snpinfo = feature.get('snpinfo') as BaseCoverageBin
       const w = Math.max(rightPx - leftPx, 1)
       const score0 = feature.get('score')
-      const keys = Object.keys(snpinfo.mods).sort((a, b) => b.localeCompare(a))
       if (drawingMods) {
         let curr = 0
         const refbase = snpinfo.refbase?.toUpperCase()
-        for (const m of keys) {
+        const { nonmods, mods, snps, ref } = snpinfo
+        for (const m of Object.keys(nonmods).sort().reverse()) {
           const mod = modificationTagMap[m.replace('mod_', '')]
           if (!mod) {
             console.warn(`${m} not known yet`)
             continue
           }
+          if (isolatedModification && mod.type !== isolatedModification) {
+            continue
+          }
           const cmp = complementBase[mod.base as keyof typeof complementBase]
-          // this approach is inspired from the 'simplex' approach in igv that
-          // means it tallies up the number of reads on a specific strand it is
-          // possible it is inaccurate (??) since it doesn't consider if there
-          // is a imbalance of strandednexx
+
+          // this approach is inspired from the 'simplex' approach in igv
           // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
           const detectable =
             mod.base === 'N'
               ? score0
-              : (snpinfo.snps[mod.base]?.entryDepth || 0) +
-                (snpinfo.snps[cmp]?.entryDepth || 0) +
-                (refbase === mod.base ? snpinfo.ref['1'] : 0) +
-                (refbase === cmp ? snpinfo.ref['-1'] : 0)
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref['1'] : 0) +
+                (refbase === cmp ? ref['-1'] : 0)
 
           const modifiable =
             mod.base === 'N'
               ? score0
-              : (snpinfo.snps[mod.base]?.entryDepth || 0) +
-                (snpinfo.snps[cmp]?.entryDepth || 0) +
-                (refbase === mod.base ? snpinfo.ref.entryDepth : 0) +
-                (refbase === cmp ? snpinfo.ref.entryDepth : 0)
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref.entryDepth : 0) +
+                (refbase === cmp ? ref.entryDepth : 0)
 
-          const { entryDepth, averageProbability = 0 } = snpinfo.mods[m]!
-
-          const count = entryDepth
-          const total = score0
-
-          const modFraction = (modifiable / total) * (count / detectable)
-          const col = mod.color || 'black'
+          const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+          const modFraction = (modifiable / score0) * (entryDepth / detectable)
+          const baseColor = 'blue'
           const c =
-            averageProbability !== 1
-              ? colord(col)
-                  .alpha(averageProbability + 0.1)
+            avgProbability !== 1
+              ? colord(baseColor)
+                  .alpha(avgProbability + 0.1)
                   .toHslString()
-              : col
+              : baseColor
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+
+          ctx.fillStyle = c
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - (curr + modFraction * height),
+            w,
+            modFraction * height,
+          )
+          curr += modFraction * height
+        }
+        for (const m of Object.keys(mods).sort().reverse()) {
+          const mod = modificationTagMap[m.replace('mod_', '')]
+          if (!mod) {
+            console.warn(`${m} not known yet`)
+            continue
+          }
+          if (isolatedModification && mod.type !== isolatedModification) {
+            continue
+          }
+          const cmp = complementBase[mod.base as keyof typeof complementBase]
+
+          // this approach is inspired from the 'simplex' approach in igv
+          // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
+          const detectable =
+            mod.base === 'N'
+              ? score0
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref['1'] : 0) +
+                (refbase === cmp ? ref['-1'] : 0)
+
+          const modifiable =
+            mod.base === 'N'
+              ? score0
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref.entryDepth : 0) +
+                (refbase === cmp ? ref.entryDepth : 0)
+
+          const { entryDepth, avgProbability = 0 } = mods[m]!
+          const modFraction = (modifiable / score0) * (entryDepth / detectable)
+          const baseColor = mod.color || 'black'
+          const c =
+            avgProbability !== 1
+              ? colord(baseColor)
+                  .alpha(avgProbability + 0.1)
+                  .toHslString()
+              : baseColor
           const height = toHeight(score0)
           const bottom = toY(score0) + height
 
@@ -219,11 +269,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         }
       } else {
         const score = snpinfo.depth
-        const keys = Object.keys(snpinfo.snps).sort((a, b) =>
-          b.localeCompare(a),
-        )
         let curr = 0
-        for (const base of keys) {
+        for (const base of Object.keys(snpinfo.snps).sort().reverse()) {
           const { entryDepth } = snpinfo.snps[base]!
           const height = toHeight(score0)
           const bottom = toY(score0) + height

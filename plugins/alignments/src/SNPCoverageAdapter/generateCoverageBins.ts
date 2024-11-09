@@ -1,5 +1,5 @@
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature, sum } from '@jbrowse/core/util'
+import { Feature, max, sum } from '@jbrowse/core/util'
 
 // locals
 import { getTagAlt } from '../util'
@@ -104,6 +104,7 @@ export async function generateCoverageBins({
             },
             snps: {},
             mods: {},
+            nonmods: {},
             delskips: {},
             noncov: {},
           }
@@ -128,6 +129,7 @@ export async function generateCoverageBins({
         const maxProbModForPosition = [] as {
           mod: string
           prob: number
+          allProbs: number[]
         }[]
 
         let probIndex = 0
@@ -142,12 +144,16 @@ export async function generateCoverageBins({
               maxProbModForPosition[ref] = {
                 mod,
                 prob,
+                allProbs: [prob],
               }
-            } else if (maxProbModForPosition[ref].prob < prob) {
+            } else if (prob > maxProbModForPosition[ref].prob) {
               maxProbModForPosition[ref] = {
-                mod,
+                ...maxProbModForPosition[ref],
                 prob,
+                mod,
               }
+            } else {
+              maxProbModForPosition[ref].allProbs.push(prob)
             }
           }
           probIndex += positions.length
@@ -169,17 +175,29 @@ export async function generateCoverageBins({
                   1: 0,
                 },
                 mods: {},
+                nonmods: {},
                 delskips: {},
                 noncov: {},
               }
             }
-            incWithProbabilities(
-              bins[epos],
-              fstrand,
-              'mods',
-              entry.mod,
-              entry.prob,
-            )
+
+            if (1 - sum(entry.allProbs) > max(entry.allProbs)) {
+              incWithProbabilities(
+                bins[epos],
+                fstrand,
+                'nonmods',
+                entry.mod,
+                1 - sum(entry.allProbs),
+              )
+            } else {
+              incWithProbabilities(
+                bins[epos],
+                fstrand,
+                'mods',
+                entry.mod,
+                entry.prob,
+              )
+            }
           }
         })
       }
@@ -253,8 +271,18 @@ export async function generateCoverageBins({
             key,
             {
               ...val,
-              averageProbability:
-                sum(val.probabilities) / val.probabilities.length,
+              avgProbability: sum(val.probabilities) / val.probabilities.length,
+            },
+          ] as const
+        }),
+      )
+      bin.nonmods = Object.fromEntries(
+        Object.entries(bin.nonmods).map(([key, val]) => {
+          return [
+            key,
+            {
+              ...val,
+              avgProbability: sum(val.probabilities) / val.probabilities.length,
             },
           ] as const
         }),

@@ -15,7 +15,7 @@ export interface BinEntry {
   '-1': number
   '0': number
   '1': number
-  averageProbability?: number
+  avgProbability?: number
 }
 
 type BinType = Record<string, BinEntry>
@@ -32,6 +32,7 @@ export interface BaseCoverageBin {
   ref: BinEntry
   snps: BinType
   mods: BinType
+  nonmods: BinType
   delskips: BinType
   noncov: BinType
 }
@@ -49,6 +50,7 @@ type PreBinType = Record<string, PreBinEntry>
 // bins contain:
 // - snps feature if they contribute to coverage
 // - mods feature for read modifications like methylation
+// - nonmods feature for read modifications like methylation (2-color)
 // - noncov are insertions/clip features that don't contribute to coverage
 // - delskips deletions or introns that don't contribute to coverage
 export interface PreBaseCoverageBin extends PreBaseCoverageBinSubtypes {
@@ -61,6 +63,7 @@ export interface PreBaseCoverageBin extends PreBaseCoverageBinSubtypes {
 export interface PreBaseCoverageBinSubtypes {
   snps: PreBinType
   mods: PreBinType
+  nonmods: PreBinType
   delskips: PreBinType
   noncov: PreBinType
 }

@@ -36,7 +36,7 @@ export function renderModifications({
   cigarOps: string[]
 }) {
   const { feature, topPx, heightPx } = feat
-  const { modificationTagMap = {} } = renderArgs
+  const { colorBy, modificationTagMap = {} } = renderArgs
 
   const seq = feature.get('seq') as string | undefined
 
@@ -49,17 +49,28 @@ export function renderModifications({
   const probabilities = getModProbabilities(feature)
   const modifications = getModPositions(mm, seq, strand)
 
+  const isolatedModification =
+    colorBy?.extra?.modifications?.isolatedModification
+
   let probIndex = 0
   for (const { type, positions } of modifications) {
-    const col = modificationTagMap[type]?.color || 'black'
-    const base = colord(col)
+    const mod = modificationTagMap[type]
+    if (!mod) {
+      console.warn(`${type} not known yet`)
+      continue
+    }
+    if (isolatedModification && mod.type !== isolatedModification) {
+      continue
+    }
+    const col = mod.color || 'black'
+    const baseColor = colord(col)
     for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
       const r = start + ref
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
       const idx2 =
         probIndex + (strand === -1 ? positions.length - 1 - idx : idx)
       const prob = probabilities?.[idx2] || 0
-      const c = prob !== 1 ? base.alpha(prob + 0.1).toHslString() : col
+      const c = prob !== 1 ? baseColor.alpha(prob + 0.1).toHslString() : col
       const w = rightPx - leftPx + 0.5
       fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
     }

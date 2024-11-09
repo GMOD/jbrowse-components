@@ -79,6 +79,7 @@ function stateModelFactory(
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+            extra: types.frozen(),
           }),
         ),
         /**

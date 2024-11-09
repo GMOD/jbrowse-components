@@ -68,8 +68,8 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
                   <td>
                     {[
                       score.entryDepth,
-                      score.averageProbability !== undefined
-                        ? `(w/ ${pct(score.averageProbability)} prob.)`
+                      score.avgProbability !== undefined
+                        ? `(w/ ${pct(score.avgProbability)} prob.)`
                         : '',
                     ]
                       .filter(f => !!f)
