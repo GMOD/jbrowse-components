@@ -110,7 +110,9 @@ export function getMethBins(feature: Feature, cigarOps: string[]) {
   const flen = fend - fstart
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
   const methBins = []
+  const hydroxyMethBins = []
   const methProbs = []
+  const hydroxyMethProbs = []
   const seq = feature.get('seq') as string | undefined
   if (seq) {
     const probabilities = getModProbabilities(feature)
@@ -118,19 +120,23 @@ export function getMethBins(feature: Feature, cigarOps: string[]) {
     let probIndex = 0
     for (const { type, positions } of modifications) {
       for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
-        const prob =
-          probabilities?.[
-            probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-          ] || 0
-        probIndex++
+        const idx2 =
+          probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
+        const prob = probabilities?.[idx2] || 0
         if (type === 'm') {
           if (ref >= 0 && ref < flen) {
             methBins[ref] = 1
             methProbs[ref] = prob
           }
+        } else if (type === 'h') {
+          if (ref >= 0 && ref < flen) {
+            hydroxyMethBins[ref] = 1
+            hydroxyMethProbs[ref] = prob
+          }
         }
       }
+      probIndex += positions.length
     }
   }
-  return { methBins, methProbs }
+  return { methBins, hydroxyMethBins, methProbs, hydroxyMethProbs }
 }

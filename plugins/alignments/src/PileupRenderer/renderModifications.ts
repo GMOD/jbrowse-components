@@ -7,6 +7,7 @@ import { getNextRefPos } from '../MismatchParser'
 import { getTagAlt } from '../util'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
+import { probabilityToAlpha } from '../shared/util'
 
 // render modifications stored in MM tag in BAM
 //
@@ -70,7 +71,10 @@ export function renderModifications({
       const idx2 =
         probIndex + (strand === -1 ? positions.length - 1 - idx : idx)
       const prob = probabilities?.[idx2] || 0
-      const c = prob !== 1 ? baseColor.alpha(prob + 0.1).toHslString() : col
+      const c =
+        prob !== 1
+          ? baseColor.alpha(probabilityToAlpha(prob)).toHslString()
+          : col
       const w = rightPx - leftPx + 0.5
       fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
     }

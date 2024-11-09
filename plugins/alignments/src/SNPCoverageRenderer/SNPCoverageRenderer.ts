@@ -12,6 +12,7 @@ import {
 import { colord } from '@jbrowse/core/util/colord'
 // locals
 import { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
+import { probabilityToAlpha } from '../shared/util'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -200,7 +201,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           const c =
             avgProbability !== 1
               ? colord(baseColor)
-                  .alpha(avgProbability + 0.1)
+                  .alpha(probabilityToAlpha(avgProbability))
                   .toHslString()
               : baseColor
           const height = toHeight(score0)

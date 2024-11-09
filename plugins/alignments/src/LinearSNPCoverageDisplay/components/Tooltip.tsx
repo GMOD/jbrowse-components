@@ -5,6 +5,13 @@ import { Tooltip } from '@jbrowse/plugin-wiggle'
 
 // locals
 import { BaseCoverageBin } from '../../shared/types'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()(() => ({
+  td: {
+    whiteSpace: 'nowrap',
+  },
+}))
 
 const toP = (s = 0) => +(+s).toFixed(1)
 
@@ -16,6 +23,7 @@ interface Props {
 
 const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, reactRef) {
+    const { classes } = useStyles()
     const start = feature.get('start') + 1
     const end = feature.get('end')
     const name = feature.get('refName')
@@ -65,11 +73,11 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
               Object.entries(entry).map(([base, score]) => (
                 <tr key={base}>
                   <td>{base.toUpperCase()}</td>
-                  <td>
+                  <td className={classes.td}>
                     {[
                       score.entryDepth,
                       score.avgProbability !== undefined
-                        ? `(w/ ${pct(score.avgProbability)} prob.)`
+                        ? `(avg. ${pct(score.avgProbability)} prob.)`
                         : '',
                     ]
                       .filter(f => !!f)

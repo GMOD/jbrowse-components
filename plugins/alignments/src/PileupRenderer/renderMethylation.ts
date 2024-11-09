@@ -38,7 +38,8 @@ export function renderMethylation({
   }
   const fstart = feature.get('start')
   const fend = feature.get('end')
-  const { methBins, methProbs } = getMethBins(feature, cigarOps)
+  const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
+    getMethBins(feature, cigarOps)
 
   function getCol(k: number) {
     if (methBins[k]) {
@@ -47,6 +48,14 @@ export function renderMethylation({
         p > 0.5
           ? colord('red').alpha((p - 0.5) * 2)
           : colord('blue').alpha(1 - p * 2)
+      ).toHslString()
+    }
+    if (hydroxyMethBins[k]) {
+      const p = hydroxyMethProbs[k] || 0
+      return (
+        p > 0.5
+          ? colord('pink').alpha((p - 0.5) * 2)
+          : colord('purple').alpha(1 - p * 2)
       ).toHslString()
     }
     return undefined

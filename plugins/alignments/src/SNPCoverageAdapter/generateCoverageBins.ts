@@ -214,12 +214,12 @@ function processReferenceCpGs({
           (b1 && (p1 !== undefined ? p1 > 0.5 : true))
         ) {
           if (bin0) {
-            inc(bin0, fstrand, 'mods', 'cpg_meth')
+            incWithProbabilities(bin0, fstrand, 'mods', 'cpg_meth', p0 || 0)
             bin0.ref.entryDepth--
             bin0.ref[fstrand]--
           }
           if (bin1) {
-            inc(bin1, fstrand, 'mods', 'cpg_meth')
+            incWithProbabilities(bin1, fstrand, 'mods', 'cpg_meth', p1 || 0)
             bin1.ref.entryDepth--
             bin1.ref[fstrand]--
           }
@@ -235,7 +235,13 @@ function processReferenceCpGs({
                 ),
               )
             ) {
-              inc(bin0, fstrand, 'nonmods', 'cpg_unmeth')
+              incWithProbabilities(
+                bin0,
+                fstrand,
+                'nonmods',
+                'cpg_unmeth',
+                1 - (p0 || 0),
+              )
               bin0.ref.entryDepth--
               bin0.ref[fstrand]--
             }
@@ -251,7 +257,13 @@ function processReferenceCpGs({
                 ),
               )
             ) {
-              inc(bin1, fstrand, 'nonmods', 'cpg_unmeth')
+              incWithProbabilities(
+                bin1,
+                fstrand,
+                'nonmods',
+                'cpg_unmeth',
+                1 - (p1 || 0),
+              )
               bin1.ref.entryDepth--
               bin1.ref[fstrand]--
             }
@@ -401,11 +413,12 @@ export async function generateCoverageBins({
   for (const feature of features) {
     const start2 = Math.max(0, region.start - 1)
     const diff = region.start - start2
-    const regionSequence = await fetchSequence({
-      ...region,
-      start: start2,
-      end: region.end + 1,
-    })
+    const regionSequence =
+      (await fetchSequence({
+        ...region,
+        start: start2,
+        end: region.end + 1,
+      })) || ''
     processDepth({
       feature,
       bins,

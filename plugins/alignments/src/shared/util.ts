@@ -8,3 +8,7 @@ export function hasPairedReads(features: ChainData) {
   }
   return false
 }
+
+export function probabilityToAlpha(p: number) {
+  return p * p + 0.1
+}

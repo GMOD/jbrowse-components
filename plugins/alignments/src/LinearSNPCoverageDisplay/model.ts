@@ -114,7 +114,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateModificationColorMap(uniqueModifications: ModificationType[]) {
+      updateVisibleModifications(uniqueModifications: ModificationType[]) {
         for (const modification of uniqueModifications) {
           if (!self.visibleModifications.has(modification.type)) {
             self.visibleModifications.set(modification.type, {
@@ -268,7 +268,7 @@ function stateModelFactory(
                 blocks: staticBlocks,
               })
               if (isAlive(self)) {
-                self.updateModificationColorMap(vals)
+                self.updateVisibleModifications(vals)
                 self.setModificationsReady(true)
               }
             } else {

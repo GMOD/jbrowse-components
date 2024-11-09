@@ -94,7 +94,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      updateModificationColorMap(uniqueModifications: ModificationType[]) {
+      updateVisibleModifications(uniqueModifications: ModificationType[]) {
         uniqueModifications.forEach(value => {
           if (!self.visibleModifications.has(value.type)) {
             self.visibleModifications.set(value.type, {
@@ -503,7 +503,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             adapterConfig: getConf(self.parentTrack, 'adapter'),
             blocks: staticBlocks,
           })
-          self.updateModificationColorMap(vals)
+          self.updateVisibleModifications(vals)
           self.setModificationsReady(true)
         })
       },
