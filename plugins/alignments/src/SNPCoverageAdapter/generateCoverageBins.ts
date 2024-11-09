@@ -72,7 +72,11 @@ export async function generateCoverageBins({
   region: Region
   opts: {
     bpPerPx?: number
-    colorBy?: { type: string; tag?: string }
+    colorBy?: {
+      type: string
+      tag?: string
+      extra?: { modifications?: { twoColor: boolean } }
+    }
   }
 }) {
   const { colorBy } = opts
@@ -123,6 +127,7 @@ export async function generateCoverageBins({
       const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
       const ops = parseCigar(feature.get('CIGAR'))
       const fend = feature.get('end')
+      const twoColor = colorBy?.extra?.modifications?.twoColor
       if (seq) {
         const modifications = getModPositions(mm, seq, fstrand)
         const probabilities = getModProbabilities(feature)
@@ -181,7 +186,7 @@ export async function generateCoverageBins({
               }
             }
 
-            if (1 - sum(entry.allProbs) > max(entry.allProbs)) {
+            if (twoColor && 1 - sum(entry.allProbs) > max(entry.allProbs)) {
               incWithProbabilities(
                 bins[epos],
                 fstrand,

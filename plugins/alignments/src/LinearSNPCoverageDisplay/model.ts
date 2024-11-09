@@ -16,13 +16,10 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // locals
-import {
-  FilterModel,
-  IFilter,
-  ModificationType,
-  getUniqueModificationValues,
-} from '../shared'
 import { createAutorun, getColorForModification } from '../util'
+import { FilterModel, IFilter } from '../shared/filterModel'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { ModificationType, ModificationTypeWithColor } from '../shared/types'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -30,12 +27,6 @@ const Tooltip = lazy(() => import('./components/Tooltip'))
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 
-interface ModificationTypeWithColor {
-  color: string
-  type: string
-  base: string
-  strand: string
-}
 type LGV = LinearGenomeViewModel
 
 /**
@@ -89,7 +80,7 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      modificationTagMap: observable.map<string, ModificationTypeWithColor>({}),
+      visibleModifications: observable.map<string, ModificationTypeWithColor>({}),
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -123,8 +114,8 @@ function stateModelFactory(
        */
       updateModificationColorMap(uniqueModifications: ModificationType[]) {
         for (const modification of uniqueModifications) {
-          if (!self.modificationTagMap.has(modification.type)) {
-            self.modificationTagMap.set(modification.type, {
+          if (!self.visibleModifications.has(modification.type)) {
+            self.visibleModifications.set(modification.type, {
               ...modification,
               color: getColorForModification(modification.type),
             })
@@ -213,12 +204,12 @@ function stateModelFactory(
          */
         renderProps() {
           const superProps = superRenderProps()
-          const { colorBy, filterBy, modificationTagMap } = self
+          const { colorBy, filterBy, visibleModifications } = self
           return {
             ...superProps,
             notReady: !this.ready,
             filters: self.filters,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            visibleModifications: Object.fromEntries(visibleModifications.toJSON()),
 
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
@@ -267,10 +258,9 @@ function stateModelFactory(
             const { staticBlocks } = view
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
-              const adapter = getConf(self.parentTrack, 'adapter')
-              const vals = await getUniqueModificationValues({
+              const vals = await getUniqueModifications({
                 self,
-                adapterConfig: adapter,
+                adapterConfig: getConf(self.parentTrack, 'adapter'),
                 blocks: staticBlocks,
               })
               if (isAlive(self)) {

@@ -9,7 +9,9 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+// locals
 import ModificationTable from './ModificationsTable'
+import { ModificationTypeWithColor } from '../../shared/types'
 
 const ColorByModificationsDialog = observer(function ({
   model,
@@ -17,17 +19,17 @@ const ColorByModificationsDialog = observer(function ({
 }: {
   model: {
     setColorScheme: (arg: { type: string }) => void
-    modificationTagMap: ObservableMap<string, string>
+    visibleModifications: ObservableMap<string, ModificationTypeWithColor>
     colorBy?: { type: string }
   }
   handleClose: () => void
 }) {
-  const { colorBy, modificationTagMap } = model
+  const { colorBy, visibleModifications } = model
 
-  const modifications = [...modificationTagMap.entries()]
+  const modifications = [...visibleModifications.entries()]
 
   return (
-    <Dialog open onClose={handleClose} title="Color by modifications">
+    <Dialog open onClose={handleClose} title="Current modification colors">
       <DialogContent>
         <Typography>
           You can choose to color the modifications in the BAM/CRAM MM/ML
@@ -46,7 +48,7 @@ const ColorByModificationsDialog = observer(function ({
                 <>
                   Current modification-type-to-color mapping
                   <ModificationTable
-                    modifications={[...modificationTagMap.entries()]}
+                    modifications={[...visibleModifications.entries()]}
                   />
                 </>
               ) : (
@@ -60,38 +62,8 @@ const ColorByModificationsDialog = observer(function ({
               )}
             </div>
           ) : null}
-          {colorBy?.type === 'methylation' ? (
-            <ModificationTable
-              modifications={[
-                ['methylated', 'red'],
-                ['unmethylated', 'blue'],
-              ]}
-            />
-          ) : null}
         </div>
         <DialogActions>
-          <Button
-            variant="contained"
-            onClick={() => {
-              model.setColorScheme({
-                type: 'modifications',
-              })
-              handleClose()
-            }}
-          >
-            Modifications
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              model.setColorScheme({
-                type: 'methylation',
-              })
-              handleClose()
-            }}
-          >
-            Methylation
-          </Button>
           <Button
             variant="contained"
             color="secondary"
@@ -99,7 +71,7 @@ const ColorByModificationsDialog = observer(function ({
               handleClose()
             }}
           >
-            Cancel
+            Close
           </Button>
         </DialogActions>
       </DialogContent>

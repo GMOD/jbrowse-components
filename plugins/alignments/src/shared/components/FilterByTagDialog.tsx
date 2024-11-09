@@ -11,7 +11,9 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import { IFilter } from '.'
+
+// locals
+import { IFilter } from '../filterModel'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -128,7 +130,9 @@ const FilterByTagDialog = observer(function (props: {
             error={tag.length === 2 && !validTag}
             helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
             slotProps={{
-              htmlInput: { maxLength: 2 },
+              htmlInput: {
+                maxLength: 2,
+              },
             }}
           />
           <TextField

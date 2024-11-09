@@ -19,23 +19,18 @@ import ColorLensIcon from '@mui/icons-material/ColorLens'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { getUniqueModificationValues, ModificationType } from '../shared'
 import {
   createAutorun,
   getColorForModification,
   modificationData,
 } from '../util'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { ModificationType, ModificationTypeWithColor } from '../shared/types'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
 
-interface ModificationTypeWithColor {
-  color: string
-  type: string
-  base: string
-  strand: string
-}
 type LGV = LinearGenomeViewModel
 
 /**
@@ -84,7 +79,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       sortReady: false,
       currSortBpPerPx: 0,
-      modificationTagMap: observable.map<string, ModificationTypeWithColor>({}),
+      visibleModifications: observable.map<string, ModificationTypeWithColor>(
+        {},
+      ),
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -99,8 +96,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       updateModificationColorMap(uniqueModifications: ModificationType[]) {
         uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value.type)) {
-            self.modificationTagMap.set(value.type, {
+          if (!self.visibleModifications.has(value.type)) {
+            self.visibleModifications.set(value.type, {
               ...value,
               color: getColorForModification(value.type),
             })
@@ -190,6 +187,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get visibleModificationTypes() {
+        return [...self.visibleModifications.keys()]
+      },
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const {
           featureHeight,
@@ -248,13 +251,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderPropsPre() {
-          const { sortedBy, showSoftClipping, modificationTagMap } = self
+          const { sortedBy, showSoftClipping, visibleModifications } = self
           const superProps = superRenderPropsPre()
           return {
             ...superProps,
             showSoftClip: showSoftClipping,
             sortedBy,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            visibleModifications: Object.fromEntries(
+              visibleModifications.toJSON(),
+            ),
           }
         },
         /**
@@ -333,7 +338,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                         })
                       },
                     },
-                    [...self.modificationTagMap.keys()].map(key => ({
+                    ...self.visibleModificationTypes.map(key => ({
                       label: `Show only ${modificationData[key]?.name || key}`,
                       onClick: () => {
                         self.setColorScheme({
@@ -360,7 +365,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                         })
                       },
                     },
-                    [...self.modificationTagMap.keys()].map(key => ({
+                    ...self.visibleModificationTypes.map(key => ({
                       label: `Show only ${modificationData[key]?.name || key} (2-color)`,
                       onClick: () => {
                         self.setColorScheme({
@@ -484,13 +489,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (!self.autorunReady) {
             return
           }
-          const { parentTrack, colorBy } = self
+          const { colorBy } = self
           const { staticBlocks } = getContainingView(self) as LGV
           if (colorBy?.type === 'modifications') {
-            const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues({
+            const vals = await getUniqueModifications({
               self,
-              adapterConfig: adapter,
+              adapterConfig: getConf(self.parentTrack, 'adapter'),
               blocks: staticBlocks,
             })
             self.updateModificationColorMap(vals)

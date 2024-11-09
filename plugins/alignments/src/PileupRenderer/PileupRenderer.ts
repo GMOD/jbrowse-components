@@ -48,7 +48,7 @@ interface ColorBy {
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: ColorBy
   colorTagMap?: Record<string, string>
-  modificationTagMap?: Record<string, ModificationTypeWithColor>
+  visibleModifications?: Record<string, ModificationTypeWithColor>
   sortedBy?: SortedBy
   showSoftClip: boolean
   highResolutionScaling: number

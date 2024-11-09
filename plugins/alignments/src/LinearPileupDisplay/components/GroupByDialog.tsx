@@ -21,8 +21,8 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getUniqueTagValues } from '../../shared'
-import { LinearAlignmentsDisplayModel } from '../../LinearAlignmentsDisplay/models/model'
+import { getUniqueTags } from '../../shared/getUniqueTags'
+import { LinearAlignmentsDisplayModel } from '../../LinearAlignmentsDisplay/model'
 
 function clone(c: unknown) {
   return JSON.parse(JSON.stringify(c))
@@ -52,7 +52,7 @@ const GroupByTagDialog = observer(function (props: {
         if (!isInvalid) {
           setError(undefined)
           setLoading(true)
-          const vals = await getUniqueTagValues({
+          const vals = await getUniqueTags({
             self: model,
             tag: debouncedTag,
             blocks: (getContainingView(model) as LinearGenomeViewModel)

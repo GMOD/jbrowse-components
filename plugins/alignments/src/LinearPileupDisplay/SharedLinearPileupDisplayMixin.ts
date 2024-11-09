@@ -14,12 +14,12 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getEnv,
   getSession,
-  isSessionModelWithWidgets,
   getContainingView,
+  getContainingTrack,
+  isSessionModelWithWidgets,
   SimpleFeature,
   SimpleFeatureSerialized,
   Feature,
-  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import {
@@ -34,12 +34,15 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTagValues, FilterModel, IFilter } from '../shared'
+import { FilterModel, IFilter } from '../shared/filterModel'
 import { createAutorun } from '../util'
 import { ColorByModel } from '../shared/color'
+import { getUniqueTags } from '../shared/getUniqueTags'
 
 // lazies
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
+const FilterByTagDialog = lazy(
+  () => import('../shared/components/FilterByTagDialog'),
+)
 const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
 const SetFeatureHeightDialog = lazy(
   () => import('./components/SetFeatureHeightDialog'),
@@ -588,7 +591,7 @@ export function SharedLinearPileupDisplayMixin(
             const { colorBy, tagsReady } = self
             const { staticBlocks } = view
             if (colorBy?.tag && !tagsReady) {
-              const vals = await getUniqueTagValues({
+              const vals = await getUniqueTags({
                 self,
                 tag: colorBy.tag,
                 blocks: staticBlocks,

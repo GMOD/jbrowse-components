@@ -18,7 +18,7 @@ import { firstValueFrom } from 'rxjs'
 
 // locals
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
-import { IFilter } from '../shared'
+import { IFilter } from '../shared/filterModel'
 
 interface Header {
   idToName?: string[]

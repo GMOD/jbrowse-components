@@ -6,15 +6,10 @@ import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 
 // locals
+import { ModificationType } from '../../shared/types'
 import { getModTypes } from '../../ModificationParser'
 import { getTagAlt } from '../../util'
 import PileupBaseRPC from '../base'
-
-interface ModificationType {
-  type: string
-  base: string
-  strand: string
-}
 
 export default class PileupGetVisibleModifications extends PileupBaseRPC {
   name = 'PileupGetVisibleModifications'

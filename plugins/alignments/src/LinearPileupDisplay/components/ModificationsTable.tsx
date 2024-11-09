@@ -1,5 +1,7 @@
 import React from 'react'
 import { makeStyles } from 'tss-react/mui'
+// locals
+import { ModificationTypeWithColor } from '../../shared/types'
 
 const useStyles = makeStyles()(theme => ({
   table: {
@@ -14,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
 export default function ModificationTable({
   modifications,
 }: {
-  modifications: [string, string | undefined][]
+  modifications: [string, ModificationTypeWithColor][]
 }) {
   const { classes } = useStyles()
   return (
@@ -23,11 +25,11 @@ export default function ModificationTable({
         {modifications.map(([key, value]) => (
           <tr key={key}>
             <td>{key}</td>
-            <td>{value}</td>
+            <td>{value.type}</td>
             <td
               style={{
                 width: '1em',
-                background: value,
+                background: value.color,
               }}
             />
           </tr>

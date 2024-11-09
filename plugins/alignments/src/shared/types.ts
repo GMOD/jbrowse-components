@@ -67,3 +67,15 @@ export interface PreBaseCoverageBinSubtypes {
   delskips: PreBinType
   noncov: PreBinType
 }
+
+export interface ModificationType {
+  type: string
+  base: string
+  strand: string
+}
+export interface ModificationTypeWithColor {
+  color: string
+  type: string
+  base: string
+  strand: string
+}

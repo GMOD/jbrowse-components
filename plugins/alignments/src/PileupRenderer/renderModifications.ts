@@ -36,7 +36,7 @@ export function renderModifications({
   cigarOps: string[]
 }) {
   const { feature, topPx, heightPx } = feat
-  const { colorBy, modificationTagMap = {} } = renderArgs
+  const { colorBy, visibleModifications = {} } = renderArgs
 
   const seq = feature.get('seq') as string | undefined
 
@@ -54,7 +54,7 @@ export function renderModifications({
 
   let probIndex = 0
   for (const { type, positions } of modifications) {
-    const mod = modificationTagMap[type]
+    const mod = visibleModifications[type]
     if (!mod) {
       console.warn(`${type} not known yet`)
       continue

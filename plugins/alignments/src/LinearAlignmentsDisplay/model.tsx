@@ -24,7 +24,7 @@ import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
-import { IFilter } from '../../shared'
+import { IFilter } from '../shared/filterModel'
 
 const minDisplayHeight = 20
 

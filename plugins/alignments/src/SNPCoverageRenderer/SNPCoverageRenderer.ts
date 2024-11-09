@@ -10,7 +10,8 @@ import {
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
 import { colord } from '@jbrowse/core/util/colord'
-import { BaseCoverageBin } from '../shared/types'
+// locals
+import { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -27,19 +28,12 @@ const INTERBASE_INDICATOR_HEIGHT = 4.5
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
-interface ModificationTypeWithColor {
-  type: string
-  color: string
-  strand: string
-  base: string
-}
-
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap?: Record<string, ModificationTypeWithColor>
+  visibleModifications?: Record<string, ModificationTypeWithColor>
 }
 
 const complementBase = {
@@ -64,7 +58,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       bpPerPx,
       colorBy,
       displayCrossHatches,
-      modificationTagMap = {},
+      visibleModifications = {},
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
@@ -168,7 +162,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         const refbase = snpinfo.refbase?.toUpperCase()
         const { nonmods, mods, snps, ref } = snpinfo
         for (const m of Object.keys(nonmods).sort().reverse()) {
-          const mod = modificationTagMap[m.replace('mod_', '')]
+          const mod = visibleModifications[m.replace('mod_', '')]
           if (!mod) {
             console.warn(`${m} not known yet`)
             continue
@@ -218,7 +212,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           curr += modFraction * height
         }
         for (const m of Object.keys(mods).sort().reverse()) {
-          const mod = modificationTagMap[m.replace('mod_', '')]
+          const mod = visibleModifications[m.replace('mod_', '')]
           if (!mod) {
             console.warn(`${m} not known yet`)
             continue

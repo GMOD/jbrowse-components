@@ -16,11 +16,13 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import { FilterModel, IFilter } from '../shared'
+import { FilterModel, IFilter } from '../shared/filterModel'
 import { ChainData } from '../shared/fetchChains'
 
 // async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTagDialog'))
+const FilterByTagDialog = lazy(
+  () => import('../shared/components/FilterByTagDialog'),
+)
 
 /**
  * #stateModel LinearReadCloudDisplay

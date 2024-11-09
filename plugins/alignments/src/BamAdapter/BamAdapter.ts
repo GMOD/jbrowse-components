@@ -12,7 +12,7 @@ import { firstValueFrom } from 'rxjs'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { IFilter } from '../shared'
+import { IFilter } from '../shared/filterModel'
 
 interface Header {
   idToName: string[]
