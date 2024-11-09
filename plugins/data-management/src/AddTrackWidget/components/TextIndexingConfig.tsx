@@ -69,25 +69,27 @@ const TextIndexingConfig = observer(function ({
                 <ListItem key={`${val}-${idx}`} disableGutters>
                   <TextField
                     value={val}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => {
-                              const newAttr = section.values.filter(
-                                (_, i) => i !== idx,
-                              )
-                              if (index === 0) {
-                                setAttributes(newAttr)
-                              } else {
-                                setExclude(newAttr)
-                              }
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => {
+                                const newAttr = section.values.filter(
+                                  (_, i) => i !== idx,
+                                )
+                                if (index === 0) {
+                                  setAttributes(newAttr)
+                                } else {
+                                  setExclude(newAttr)
+                                }
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
                 </ListItem>
@@ -103,26 +105,30 @@ const TextIndexingConfig = observer(function ({
                       setValue2(event.target.value)
                     }
                   }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => {
-                            if (index === 0) {
-                              setAttributes([...attributes, value1])
-                              setValue1('')
-                            } else {
-                              setExclude([...exclude, value2])
-                              setValue2('')
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => {
+                              if (index === 0) {
+                                setAttributes([...attributes, value1])
+                                setValue1('')
+                              } else {
+                                setExclude([...exclude, value2])
+                                setValue2('')
+                              }
+                            }}
+                            disabled={
+                              index === 0 ? value1 === '' : value2 === ''
                             }
-                          }}
-                          disabled={index === 0 ? value1 === '' : value2 === ''}
-                          data-testid="stringArrayAdd-Feat"
-                        >
-                          <AddIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                            data-testid="stringArrayAdd-Feat"
+                          >
+                            <AddIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
               </ListItem>

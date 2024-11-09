@@ -190,10 +190,12 @@ const GetSequenceDialog = observer(function ({
               ? 'Reference sequence too large to display, use the download FASTA button'
               : sequence
           }
-          InputProps={{
-            readOnly: true,
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              readOnly: true,
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />

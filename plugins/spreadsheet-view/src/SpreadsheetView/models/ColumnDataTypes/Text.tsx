@@ -97,20 +97,22 @@ const FilterReactComponent = observer(
           value={filterModel.stringToFind}
           onChange={evt => filterModel.setString(evt.target.value)}
           className={classes.textFilterControl}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment
-                className={classes.textFilterControlAdornment}
-                position="end"
-              >
-                <IconButton
-                  aria-label="clear filter"
-                  onClick={() => filterModel.setString('')}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment
+                  className={classes.textFilterControlAdornment}
+                  position="end"
                 >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
+                  <IconButton
+                    aria-label="clear filter"
+                    onClick={() => filterModel.setString('')}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
           }}
         />
       </>

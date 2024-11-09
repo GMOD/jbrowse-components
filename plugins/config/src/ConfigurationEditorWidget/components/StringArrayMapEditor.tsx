@@ -90,20 +90,22 @@ const StringArrayMapEditor = observer(function ({
               onChange={event => {
                 setValue(event.target.value)
               }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      disabled={value === ''}
-                      onClick={() => {
-                        slot.add(value, [])
-                        setValue('')
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        disabled={value === ''}
+                        onClick={() => {
+                          slot.add(value, [])
+                          setValue('')
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           }

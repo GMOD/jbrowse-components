@@ -72,9 +72,11 @@ const JsonEditor = observer(function JsonEditor({
             setContents(event.target.value)
           }}
           style={{ background: error ? '#fdd' : undefined }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
