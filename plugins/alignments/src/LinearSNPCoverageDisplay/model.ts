@@ -80,7 +80,9 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      visibleModifications: observable.map<string, ModificationTypeWithColor>({}),
+      visibleModifications: observable.map<string, ModificationTypeWithColor>(
+        {},
+      ),
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -209,7 +211,9 @@ function stateModelFactory(
             ...superProps,
             notReady: !this.ready,
             filters: self.filters,
-            visibleModifications: Object.fromEntries(visibleModifications.toJSON()),
+            visibleModifications: Object.fromEntries(
+              visibleModifications.toJSON(),
+            ),
 
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read

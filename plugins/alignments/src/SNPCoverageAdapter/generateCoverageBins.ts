@@ -214,12 +214,12 @@ function processReferenceCpGs({
           (b1 && (p1 !== undefined ? p1 > 0.5 : true))
         ) {
           if (bin0) {
-            inc(bin0, fstrand, 'mods', 'meth')
+            inc(bin0, fstrand, 'mods', 'cpg_meth')
             bin0.ref.entryDepth--
             bin0.ref[fstrand]--
           }
           if (bin1) {
-            inc(bin1, fstrand, 'mods', 'meth')
+            inc(bin1, fstrand, 'mods', 'cpg_meth')
             bin1.ref.entryDepth--
             bin1.ref[fstrand]--
           }
@@ -235,7 +235,7 @@ function processReferenceCpGs({
                 ),
               )
             ) {
-              inc(bin0, fstrand, 'nonmods', 'unmeth')
+              inc(bin0, fstrand, 'nonmods', 'cpg_unmeth')
               bin0.ref.entryDepth--
               bin0.ref[fstrand]--
             }
@@ -251,7 +251,7 @@ function processReferenceCpGs({
                 ),
               )
             ) {
-              inc(bin1, fstrand, 'nonmods', 'unmeth')
+              inc(bin1, fstrand, 'nonmods', 'cpg_unmeth')
               bin1.ref.entryDepth--
               bin1.ref[fstrand]--
             }
@@ -272,10 +272,9 @@ function processModification({
   bins: PreBaseCoverageBin[]
   feature: Feature
   region: Region
-  colorBy: ColorBy
+  colorBy?: ColorBy
   regionSequence: string
 }) {
-  const r = regionSequence.slice(1)
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
@@ -325,7 +324,7 @@ function processModification({
           bins[epos] = {
             depth: 0,
             readsCounted: 0,
-            refbase: r[epos],
+            refbase: regionSequence[epos],
             snps: {},
             ref: {
               probabilities: [],
@@ -386,26 +385,49 @@ function incWithProbabilities(
 }
 
 export async function generateCoverageBins({
-  regionSequence = '',
+  fetchSequence,
   features,
   region,
   opts,
 }: {
-  regionSequence: string
   features: Feature[]
   region: Region
   opts: Opts
+  fetchSequence: (arg: Region) => Promise<string>
 }) {
   const { colorBy } = opts
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
   for (const feature of features) {
-    processDepth({ feature, bins, region, regionSequence })
+    const start2 = Math.max(0, region.start - 1)
+    const diff = region.start - start2
+    const regionSequence = await fetchSequence({
+      ...region,
+      start: start2,
+      end: region.end + 1,
+    })
+    processDepth({
+      feature,
+      bins,
+      region,
+      regionSequence: regionSequence.slice(diff),
+    })
 
     if (colorBy?.type === 'modifications') {
-      processModification({ feature, colorBy, bins, region, regionSequence })
+      processModification({
+        feature,
+        colorBy,
+        bins,
+        region,
+        regionSequence: regionSequence.slice(diff),
+      })
     } else if (colorBy?.type === 'methylation') {
-      processReferenceCpGs({ feature, bins, region, regionSequence })
+      processReferenceCpGs({
+        feature,
+        bins,
+        region,
+        regionSequence,
+      })
     }
     processSNPs({ feature, skipmap, bins, region })
   }

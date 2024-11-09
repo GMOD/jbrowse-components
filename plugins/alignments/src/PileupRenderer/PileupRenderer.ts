@@ -17,7 +17,7 @@ import {
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
-import { fetchSequence, shouldFetchReferenceSequence } from '../util'
+import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
 
 interface ModificationTypeWithColor {
@@ -70,10 +70,20 @@ export default class PileupRenderer extends BoxRendererType {
     if (!sequenceAdapter) {
       return undefined
     }
-    const pm = this.pluginManager
-    const { dataAdapter } = await getAdapter(pm, sessionId, sequenceAdapter)
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      sequenceAdapter,
+    )
     const region = regions[0]!
-    return fetchSequence(region, dataAdapter as BaseFeatureDataAdapter)
+    return fetchSequence(
+      {
+        ...region,
+        start: Math.max(0, region.start - 1),
+        end: region.end + 1,
+      },
+      dataAdapter as BaseFeatureDataAdapter,
+    )
   }
 
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
@@ -104,10 +114,9 @@ export default class PileupRenderer extends BoxRendererType {
 
     // only need reference sequence if there are features and only for some
     // cases
-    const regionSequence =
-      features.size && shouldFetchReferenceSequence(renderProps.colorBy?.type)
-        ? await this.fetchSequence(renderProps)
-        : undefined
+    const regionSequence = features.size
+      ? await this.fetchSequence(renderProps)
+      : undefined
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
 
@@ -157,10 +166,10 @@ export default class PileupRenderer extends BoxRendererType {
   }
 }
 
-export {
-  type RenderArgs,
-  type RenderResults,
-  type RenderArgsSerialized,
-  type ResultsSerialized,
-  type ResultsDeserialized,
+export type {
+  RenderArgs,
+  RenderResults,
+  RenderArgsSerialized,
+  ResultsSerialized,
+  ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

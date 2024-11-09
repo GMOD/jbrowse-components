@@ -54,7 +54,11 @@ export function renderMethylation({
   const r = regionSequence.toLowerCase()
   for (let i = 0; i < fend - fstart; i++) {
     const j = i + fstart
-    if (r[j - region.start] === 'c' && r[j - region.start + 1] === 'g') {
+
+    const l1 = r[j - region.start + 1]
+    const l2 = r[j - region.start + 2]
+
+    if (l1 === 'c' && l2 === 'g') {
       if (bpPerPx > 2) {
         const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
         const w = rightPx - leftPx + 0.5

@@ -84,8 +84,6 @@ export function getColorWGBS(strand: number, base: string) {
   return '#888'
 }
 
-// fetches region sequence augmenting by +/- 1bp for CpG on either side of
-// requested region
 export async function fetchSequence(
   region: AugmentedRegion,
   adapter: BaseFeatureDataAdapter,
@@ -97,17 +95,12 @@ export async function fetchSequence(
       .getFeatures({
         ...region,
         refName: originalRefName || refName,
-        end: +1,
-        start: Math.max(0, start - 1),
+        end,
+        start,
       })
       .pipe(toArray()),
   )
   return feats[0]?.get('seq')
-}
-
-// has to check underlying C-G (aka CpG) on the reference sequence
-export function shouldFetchReferenceSequence(type?: string) {
-  return type === 'methylation'
 }
 
 interface ModificationData {
