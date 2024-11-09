@@ -51,7 +51,11 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       )
 
       const regionSequence = features.length
-        ? await this.fetchSequence(region)
+        ? await this.fetchSequence({
+            ...region,
+            start: Math.max(0, region.start - 1),
+            end: region.end + 1,
+          })
         : undefined
 
       const { bins, skipmap } = await generateCoverageBins({

@@ -97,8 +97,8 @@ export async function fetchSequence(
       .getFeatures({
         ...region,
         refName: originalRefName || refName,
-        end,
-        start: Math.max(0, start),
+        end: +1,
+        start: Math.max(0, start - 1),
       })
       .pipe(toArray()),
   )

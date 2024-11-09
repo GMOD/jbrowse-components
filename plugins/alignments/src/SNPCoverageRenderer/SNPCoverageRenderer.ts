@@ -110,7 +110,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       hardclip: 'red',
       total: readConfObject(cfg, 'color'),
       mod_NONE: 'blue',
-      meth: 'read',
+      meth: 'red',
       unmeth: 'blue',
     }
 
@@ -266,47 +266,49 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           curr += modFraction * height
         }
       } else if (drawingMethylation) {
-        const score = snpinfo.depth
+        const { depth, nonmods, mods } = snpinfo
         let curr = 0
-        for (const base of Object.keys(snpinfo.nonmods).sort().reverse()) {
-          const { entryDepth } = snpinfo.nonmods[base]!
+        for (const base of Object.keys(nonmods).sort().reverse()) {
+          const { entryDepth } = nonmods[base]!
+          console.log('nonmods', { base })
           const height = toHeight(score0)
           const bottom = toY(score0) + height
           ctx.fillStyle = colorForBase[base] || 'black'
           ctx.fillRect(
             Math.round(leftPx),
-            bottom - ((entryDepth + curr) / score) * height,
+            bottom - ((entryDepth + curr) / depth) * height,
             w,
-            (entryDepth / score) * height,
+            (entryDepth / depth) * height,
           )
           curr += entryDepth
         }
-        for (const base of Object.keys(snpinfo.mods).sort().reverse()) {
-          const { entryDepth } = snpinfo.mods[base]!
+        for (const base of Object.keys(mods).sort().reverse()) {
+          const { entryDepth } = mods[base]!
           const height = toHeight(score0)
           const bottom = toY(score0) + height
+          console.log('mods', { base })
           ctx.fillStyle = colorForBase[base] || 'black'
           ctx.fillRect(
             Math.round(leftPx),
-            bottom - ((entryDepth + curr) / score) * height,
+            bottom - ((entryDepth + curr) / depth) * height,
             w,
-            (entryDepth / score) * height,
+            (entryDepth / depth) * height,
           )
           curr += entryDepth
         }
       } else {
-        const score = snpinfo.depth
+        const { depth, snps } = snpinfo
         let curr = 0
-        for (const base of Object.keys(snpinfo.snps).sort().reverse()) {
-          const { entryDepth } = snpinfo.snps[base]!
+        for (const base of Object.keys(snps).sort().reverse()) {
+          const { entryDepth } = snps[base]!
           const height = toHeight(score0)
           const bottom = toY(score0) + height
           ctx.fillStyle = colorForBase[base] || 'black'
           ctx.fillRect(
             Math.round(leftPx),
-            bottom - ((entryDepth + curr) / score) * height,
+            bottom - ((entryDepth + curr) / depth) * height,
             w,
-            (entryDepth / score) * height,
+            (entryDepth / depth) * height,
           )
           curr += entryDepth
         }

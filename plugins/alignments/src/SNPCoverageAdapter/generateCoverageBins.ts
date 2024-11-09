@@ -188,6 +188,7 @@ function processReferenceCpGs({
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
+  const r = regionSequence.toLowerCase()
   if (seq) {
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
@@ -197,8 +198,8 @@ function processReferenceCpGs({
     // CpG detection and reads
     for (let i = 0; i < fend - fstart; i++) {
       const j = i + fstart
-      const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
-      const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
+      const l1 = r[j - region.start + 1]
+      const l2 = r[j - region.start + 2]
       if (l1 === 'c' && l2 === 'g') {
         const bin0 = bins[j - region.start]
         const bin1 = bins[j - region.start + 1]
@@ -274,6 +275,7 @@ function processModification({
   colorBy: ColorBy
   regionSequence: string
 }) {
+  const r = regionSequence.slice(1)
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
@@ -323,7 +325,7 @@ function processModification({
           bins[epos] = {
             depth: 0,
             readsCounted: 0,
-            refbase: regionSequence[epos],
+            refbase: r[epos],
             snps: {},
             ref: {
               probabilities: [],
@@ -397,14 +399,12 @@ export async function generateCoverageBins({
   const { colorBy } = opts
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
-  console.log({ colorBy })
   for (const feature of features) {
     processDepth({ feature, bins, region, regionSequence })
 
     if (colorBy?.type === 'modifications') {
       processModification({ feature, colorBy, bins, region, regionSequence })
     } else if (colorBy?.type === 'methylation') {
-      console.log('hre')
       processReferenceCpGs({ feature, bins, region, regionSequence })
     }
     processSNPs({ feature, skipmap, bins, region })
@@ -419,7 +419,9 @@ export async function generateCoverageBins({
             key,
             {
               ...val,
-              avgProbability: sum(val.probabilities) / val.probabilities.length,
+              avgProbability: val.probabilities.length
+                ? sum(val.probabilities) / val.probabilities.length
+                : undefined,
             },
           ] as const
         }),
@@ -430,7 +432,9 @@ export async function generateCoverageBins({
             key,
             {
               ...val,
-              avgProbability: sum(val.probabilities) / val.probabilities.length,
+              avgProbability: val.probabilities.length
+                ? sum(val.probabilities) / val.probabilities.length
+                : undefined,
             },
           ] as const
         }),

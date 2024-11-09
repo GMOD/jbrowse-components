@@ -6,6 +6,7 @@ import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderModifications } from './renderModifications'
 import { RenderArgsWithColor } from './makeImageData'
+import { renderMethylation } from './renderMethylation'
 
 export function renderAlignment({
   ctx,
@@ -77,6 +78,18 @@ export function renderAlignment({
 
     case 'modifications':
       renderModifications({
+        ctx,
+        feat,
+        region,
+        bpPerPx,
+        renderArgs,
+        canvasWidth,
+        cigarOps,
+      })
+      break
+
+    case 'methylation':
+      renderMethylation({
         ctx,
         feat,
         region,

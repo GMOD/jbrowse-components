@@ -109,21 +109,21 @@ export function getMethBins(feature: Feature, cigarOps: string[]) {
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const flen = fend - fstart
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
-  const methBins = new Array<number>(flen)
-  const methProbs = new Array<number>(flen)
+  const methBins = []
+  const methProbs = []
   const seq = feature.get('seq') as string | undefined
   if (seq) {
     const probabilities = getModProbabilities(feature)
     const modifications = getModPositions(mm, seq, fstrand)
     let probIndex = 0
     for (const { type, positions } of modifications) {
-      if (type === 'm') {
-        for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
-          const prob =
-            probabilities?.[
-              probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-            ] || 0
-          probIndex++
+      for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
+        const prob =
+          probabilities?.[
+            probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
+          ] || 0
+        probIndex++
+        if (type === 'm') {
           if (ref >= 0 && ref < flen) {
             methBins[ref] = 1
             methProbs[ref] = prob
