@@ -47,14 +47,12 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
               <th>Count</th>
               <th>% of Total</th>
               <th>Strands</th>
-              <th>Source</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Total</td>
               <td>{readsCounted}</td>
-              <td> </td>
               <td> </td>
               <td> </td>
             </tr>
@@ -66,7 +64,6 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
                 {ref['-1'] ? `${ref['-1']}(-)` : ''}
                 {ref['1'] ? `${ref['1']}(+)` : ''}
               </td>
-              <td> </td>
             </tr>
 
             {Object.entries(info).map(([key, entry]) =>
@@ -93,7 +90,6 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
                     {score['-1'] ? `${score['-1']}(-)` : ''}
                     {score['1'] ? `${score['1']}(+)` : ''}
                   </td>
-                  <td>{key}</td>
                 </tr>
               )),
             )}

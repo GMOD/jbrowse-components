@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { observable } from 'mobx'
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, isAlive } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -487,8 +487,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ...self.renderPropsPre(),
               })
             }
-            self.setCurrSortBpPerPx(bpPerPx)
-            self.setSortReady(true)
+            if (isAlive(self)) {
+              self.setCurrSortBpPerPx(bpPerPx)
+              self.setSortReady(true)
+            }
           },
           { delay: 1000 },
         )
@@ -503,8 +505,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             adapterConfig: getConf(self.parentTrack, 'adapter'),
             blocks: staticBlocks,
           })
-          self.updateVisibleModifications(vals)
-          self.setModificationsReady(true)
+          if (isAlive(self)) {
+            self.updateVisibleModifications(vals)
+            self.setModificationsReady(true)
+          }
         })
       },
     }))

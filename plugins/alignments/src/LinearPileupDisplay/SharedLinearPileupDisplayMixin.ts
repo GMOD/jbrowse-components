@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, getSnapshot } from 'mobx-state-tree'
+import { cast, types, addDisposer, getSnapshot, isAlive } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -486,7 +486,9 @@ export function SharedLinearPileupDisplayMixin(
             {
               label: 'First-of-pair strand',
               onClick: () => {
-                self.setColorScheme({ type: 'stranded' })
+                self.setColorScheme({
+                  type: 'stranded',
+                })
               },
             },
             {
@@ -596,9 +598,13 @@ export function SharedLinearPileupDisplayMixin(
                 tag: colorBy.tag,
                 blocks: staticBlocks,
               })
-              self.updateColorTagMap(vals)
+              if (isAlive(self)) {
+                self.updateColorTagMap(vals)
+                self.setTagsReady(true)
+              }
+            } else {
+              self.setTagsReady(true)
             }
-            self.setTagsReady(true)
           },
           { delay: 1000 },
         )
@@ -634,6 +640,7 @@ export function SharedLinearPileupDisplayMixin(
                   // moused over to a new position during the async operation
                   // above
                   if (
+                    isAlive(self) &&
                     feature &&
                     self.featureIdUnderMouse === feature.uniqueId
                   ) {

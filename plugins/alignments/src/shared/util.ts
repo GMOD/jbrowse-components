@@ -10,5 +10,5 @@ export function hasPairedReads(features: ChainData) {
 }
 
 export function probabilityToAlpha(p: number) {
-  return p * p + 0.1
+  return p * p
 }

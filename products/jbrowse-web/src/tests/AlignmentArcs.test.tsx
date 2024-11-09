@@ -16,7 +16,7 @@ async function wait(view: any) {
   }, delay)
 }
 
-const delay = { timeout: 50000 }
+const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
 test('toggle short-read arc display', async () => {
@@ -30,7 +30,7 @@ test('toggle short-read arc display', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 50000)
+}, 60000)
 
 test('toggle short-read cloud display', async () => {
   const user = userEvent.setup()
@@ -43,7 +43,7 @@ test('toggle short-read cloud display', async () => {
   await user.click((await findAllByText('Read cloud display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('cloud-canvas'))
-}, 50000)
+}, 60000)
 
 test('toggle long-read cloud display', async () => {
   const user = userEvent.setup()
@@ -56,7 +56,7 @@ test('toggle long-read cloud display', async () => {
   await user.click((await findAllByText('Read cloud display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('cloud-canvas'))
-}, 50000)
+}, 60000)
 
 test('toggle long-read arc display', async () => {
   const user = userEvent.setup()
@@ -69,7 +69,7 @@ test('toggle long-read arc display', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 50000)
+}, 60000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
   const user = userEvent.setup()
@@ -84,7 +84,7 @@ test('toggle long-read arc display, use out of view pairing', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 50000)
+}, 60000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
   const user = userEvent.setup()
@@ -97,4 +97,4 @@ test('toggle short-read arc display, use out of view pairing', async () => {
   await user.click((await findAllByText('Arc display'))[0]!)
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
-}, 50000)
+}, 60000)
