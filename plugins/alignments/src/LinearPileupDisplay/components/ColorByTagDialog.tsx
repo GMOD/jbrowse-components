@@ -9,12 +9,17 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
+interface Tag {
+  type: string
+  tag: string
+}
+
 const ColorByTagDialog = observer(function ({
   model,
   handleClose,
 }: {
   model: {
-    setColorScheme: (arg: { type: string; tag: string }) => void
+    setColorScheme: (arg: Tag) => void
   }
   handleClose: () => void
 }) {
@@ -36,10 +41,12 @@ const ColorByTagDialog = observer(function ({
             setTag(event.target.value)
           }}
           placeholder="Enter tag name"
-          inputProps={{ maxLength: 2 }}
           error={tag.length === 2 && !validTag}
           helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
           autoComplete="off"
+          slotProps={{
+            htmlInput: { maxLength: 2 },
+          }}
         />
         <DialogActions>
           <Button

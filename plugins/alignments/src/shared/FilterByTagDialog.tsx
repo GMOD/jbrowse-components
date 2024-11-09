@@ -125,9 +125,11 @@ const FilterByTagDialog = observer(function (props: {
               setTag(event.target.value)
             }}
             placeholder="Enter tag name"
-            inputProps={{ maxLength: 2 }}
             error={tag.length === 2 && !validTag}
             helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
+            slotProps={{
+              htmlInput: { maxLength: 2 },
+            }}
           />
           <TextField
             className={classes.field}
