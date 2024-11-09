@@ -3,34 +3,12 @@ import { observer } from 'mobx-react'
 import { Feature, toLocale } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
 
-type BaseCount = Record<
-  string,
-  {
-    total: number
-    probability: number
-    '-1': number
-    '0': number
-    '1': number
-  }
->
-
-interface SNPInfo {
-  cov: BaseCount
-  lowqual: BaseCount
-  noncov: BaseCount
-  delskips: BaseCount
-  refbase: string
-  total: number
-  ref: number
-  all: number
-  '-1': number
-  '0': number
-  '1': number
-}
+// locals
+import { BaseCoverageBin } from '../../shared/types'
 
 const toP = (s = 0) => +(+s).toFixed(1)
 
-const pct = (n: number, total: number) => `${toP((n / (total || 1)) * 100)}%`
+const pct = (n: number, total = 1) => `${toP((n / (total || 1)) * 100)}%`
 
 interface Props {
   feature: Feature
@@ -41,16 +19,9 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
     const start = feature.get('start') + 1
     const end = feature.get('end')
     const name = feature.get('refName')
-    const {
-      refbase,
-      all,
-      total,
-      ref,
-      '-1': rn1,
-      '1': r1,
-      '0': r0,
-      ...info
-    } = feature.get('snpinfo') as SNPInfo
+    const { refbase, readsCounted, depth, ref, ...info } = feature.get(
+      'snpinfo',
+    ) as BaseCoverageBin
     const loc = [
       name,
       start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`,
@@ -66,7 +37,6 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
             <tr>
               <th>Base</th>
               <th>Count</th>
-              <th>Probability</th>
               <th>% of Total</th>
               <th>Strands</th>
               <th>Source</th>
@@ -75,29 +45,41 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
           <tbody>
             <tr>
               <td>Total</td>
-              <td>{all}</td>
+              <td>{readsCounted}</td>
+              <td> </td>
+              <td> </td>
+              <td> </td>
             </tr>
             <tr>
               <td>REF {refbase ? `(${refbase.toUpperCase()})` : ''}</td>
-              <td>{ref}</td>
-              <td>{pct(ref, all)}</td>
+              <td>{ref.entryDepth}</td>
+              <td>{pct(ref.entryDepth, readsCounted)}</td>
               <td>
-                {rn1 ? `${rn1}(-)` : ''}
-                {r1 ? `${r1}(+)` : ''}
+                {ref['-1'] ? `${ref['-1']}(-)` : ''}
+                {ref['1'] ? `${ref['1']}(+)` : ''}
               </td>
-              <td />
+              <td> </td>
             </tr>
 
             {Object.entries(info).map(([key, entry]) =>
               Object.entries(entry).map(([base, score]) => (
                 <tr key={base}>
                   <td>{base.toUpperCase()}</td>
-                  <td>{score.total}</td>
-                  <td>{score.probability}</td>
                   <td>
-                    {base === 'total' || base === 'skip'
+                    {[
+                      score.entryDepth,
+                      score.averageProbability !== undefined
+                        ? `(w/ ${pct(score.averageProbability)} prob.)`
+                        : '',
+                    ]
+                      .filter(f => !!f)
+                      .join(' ')}
+                  </td>
+
+                  <td>
+                    {base === 'depth' || base === 'skip'
                       ? '---'
-                      : pct(score.total, all)}
+                      : pct(score.entryDepth, readsCounted)}
                   </td>
                   <td>
                     {score['-1'] ? `${score['-1']}(-)` : ''}

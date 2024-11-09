@@ -20,17 +20,31 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchSequence, shouldFetchReferenceSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
 
+interface ModificationTypeWithColor {
+  type: string
+  color: string
+  strand: string
+  base: string
+}
+
+interface SortedBy {
+  type: string
+  pos: number
+  refName: string
+  assemblyName: string
+  tag?: string
+}
+
+interface ColorBy {
+  type: string
+  tag?: string
+}
+
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
-  colorBy?: { type: string; tag?: string }
+  colorBy?: ColorBy
   colorTagMap?: Record<string, string>
-  modificationTagMap?: Record<string, string>
-  sortedBy?: {
-    type: string
-    pos: number
-    refName: string
-    assemblyName: string
-    tag?: string
-  }
+  modificationTagMap?: Record<string, ModificationTypeWithColor>
+  sortedBy?: SortedBy
   showSoftClip: boolean
   highResolutionScaling: number
 }

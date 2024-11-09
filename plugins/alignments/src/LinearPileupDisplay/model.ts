@@ -13,22 +13,25 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import SortIcon from '@mui/icons-material/Sort'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { getUniqueModificationValues } from '../shared'
+import { getUniqueModificationValues, ModificationType } from '../shared'
 import { createAutorun, getColorForModification } from '../util'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
-const ColorByModificationsDialog = lazy(
-  () => import('./components/ColorByModificationsDialog'),
-)
 
+interface ModificationTypeWithColor {
+  color: string
+  type: string
+  base: string
+  strand: string
+}
 type LGV = LinearGenomeViewModel
 
 /**
@@ -77,7 +80,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       sortReady: false,
       currSortBpPerPx: 0,
-      modificationTagMap: observable.map<string, string>({}),
+      modificationTagMap: observable.map<string, ModificationTypeWithColor>({}),
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -90,12 +93,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(value, getColorForModification(value))
+      updateModificationColorMap(uniqueModifications: ModificationType[]) {
+        for (const value of uniqueModifications) {
+          if (!self.modificationTagMap.has(value.type)) {
+            self.modificationTagMap.set(value.type, {
+              ...value,
+              color: getColorForModification(value.type),
+            })
           }
-        })
+        }
       },
       /**
        * #action
@@ -268,7 +274,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
             {
               label: 'Sort by...',
-              icon: SortIcon,
+              icon: SwapVertIcon,
               disabled: self.showSoftClipping,
               subMenu: [
                 ...['Start location', 'Read strand', 'Base pair'].map(

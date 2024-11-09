@@ -51,12 +51,13 @@ export function renderModifications({
 
   let probIndex = 0
   for (const { type, positions } of modifications) {
-    const col = modificationTagMap[type] || 'black'
+    const col = modificationTagMap[type]?.color || 'black'
     const base = colord(col)
     for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
       const r = start + ref
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-      const idx2 = probIndex + (strand === -1 ? positions.length - idx : idx)
+      const idx2 =
+        probIndex + (strand === -1 ? positions.length - 1 - idx : idx)
       const prob = probabilities?.[idx2] || 0
       const c = prob !== 1 ? base.alpha(prob + 0.1).toHslString() : col
       const w = rightPx - leftPx + 0.5

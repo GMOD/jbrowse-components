@@ -38,6 +38,12 @@ export async function getUniqueTagValues({
 
 type Track = IAnyStateTreeNode & { configuration: AnyConfigurationModel }
 
+export interface ModificationType {
+  type: string
+  strand: string
+  base: string
+}
+
 export async function getUniqueModificationValues({
   self,
   adapterConfig,
@@ -67,7 +73,7 @@ export async function getUniqueModificationValues({
       ...opts,
     },
   )
-  return values as string[]
+  return values as ModificationType[]
 }
 
 export const FilterModel = types.model({

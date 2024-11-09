@@ -54,7 +54,7 @@ function propagateColorBy(self: LinearAlignmentsDisplayModel) {
     return
   }
   if (!deepSnap(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
-    SNPCoverageDisplay.setColorBy(getSnapshot(PileupDisplay.colorBy))
+    SNPCoverageDisplay.setColorScheme(getSnapshot(PileupDisplay.colorBy))
   }
 }
 

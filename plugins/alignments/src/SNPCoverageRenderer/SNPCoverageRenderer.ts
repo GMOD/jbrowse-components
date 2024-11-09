@@ -1,5 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, bpSpanPx, Feature, sum } from '@jbrowse/core/util'
+import { featureSpanPx, bpSpanPx, Feature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
@@ -10,6 +10,7 @@ import {
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
 import { colord } from '@jbrowse/core/util/colord'
+import { BaseCoverageBin } from '../shared/types'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -18,35 +19,35 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
 }
 
-// width of the triangle above e.g. insertion indicators
+// width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
+const INTERBASE_INDICATOR_HEIGHT = 4.5
 
 // minimum read depth to draw the insertion indicators, below this the
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
+
+interface ModificationTypeWithColor {
+  type: string
+  color: string
+  strand: string
+  base: string
+}
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap?: Record<string, string>
+  modificationTagMap?: Record<string, ModificationTypeWithColor>
 }
 
-interface BaseCount {
-  total: number
-  strands: Record<string, number>
-  averageProbability: number
+const complementBase = {
+  C: 'G',
+  G: 'C',
+  A: 'T',
+  T: 'A',
 }
-type BaseCounts = Record<string, BaseCount>
-
-interface SNPInfo {
-  cov: BaseCounts
-  noncov: BaseCounts
-  total: number
-}
-
-const complementBase = { C: 'G', G: 'C', A: 'T', T: 'A' }
 
 const fudgeFactor = 0.6
 
@@ -156,30 +157,48 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         continue
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-
-      const snpinfo = feature.get('snpinfo') as SNPInfo
+      const snpinfo = feature.get('snpinfo') as BaseCoverageBin
       const w = Math.max(rightPx - leftPx, 1)
       const score0 = feature.get('score')
-      const keys = Object.keys(snpinfo.cov).sort((a, b) => b.localeCompare(a))
+      const keys = Object.keys(snpinfo.mods).sort((a, b) => b.localeCompare(a))
       if (drawingMods) {
-        const score = sum(
-          Object.entries(snpinfo.cov).map(([f, val]) =>
-            f.startsWith('mod_') ? val.total : 0,
-          ),
-        )
         let curr = 0
-        for (const base of keys) {
-          console.log({ base })
-          const basecmp = complementBase[base]
-          const modifiable =
-            base === 'N'
+        const refbase = snpinfo.refbase?.toUpperCase()
+        for (const m of keys) {
+          const mod = modificationTagMap[m.replace('mod_', '')]
+          if (!mod) {
+            console.warn(`${m} not known yet`)
+            continue
+          }
+          const cmp = complementBase[mod.base as keyof typeof complementBase]
+          // this approach is inspired from the 'simplex' approach in igv that
+          // means it tallies up the number of reads on a specific strand it is
+          // possible it is inaccurate (??) since it doesn't consider if there
+          // is a imbalance of strandednexx
+          // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
+          const detectable =
+            mod.base === 'N'
               ? score0
-              : (snpinfo.cov[base]?.total || 0) +
-                (snpinfo.cov[basecmp]?.total || 0)
+              : (snpinfo.snps[mod.base]?.entryDepth || 0) +
+                (snpinfo.snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? snpinfo.ref['1'] : 0) +
+                (refbase === cmp ? snpinfo.ref['-1'] : 0)
 
-          const { total, averageProbability } = snpinfo.cov[base]!
-          const modFraction = (modifiable / score0) * (total / modifiable)
-          const col = modificationTagMap[base.replace('mod_', '')] || 'black'
+          const modifiable =
+            mod.base === 'N'
+              ? score0
+              : (snpinfo.snps[mod.base]?.entryDepth || 0) +
+                (snpinfo.snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? snpinfo.ref.entryDepth : 0) +
+                (refbase === cmp ? snpinfo.ref.entryDepth : 0)
+
+          const { entryDepth, averageProbability = 0 } = snpinfo.mods[m]!
+
+          const count = entryDepth
+          const total = score0
+
+          const modFraction = (modifiable / total) * (count / detectable)
+          const col = mod.color || 'black'
           const c =
             averageProbability !== 1
               ? colord(col)
@@ -188,50 +207,51 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
               : col
           const height = toHeight(score0)
           const bottom = toY(score0) + height
+
           ctx.fillStyle = c
           ctx.fillRect(
             Math.round(leftPx),
-            bottom - (curr / score0 + modFraction) * height,
+            bottom - (curr + modFraction * height),
             w,
-            (total / score0) * height,
+            modFraction * height,
           )
-          curr += total
+          curr += modFraction * height
         }
       } else {
-        const score = snpinfo.total
-        const keys = Object.keys(snpinfo.cov).sort((a, b) => b.localeCompare(a))
+        const score = snpinfo.depth
+        const keys = Object.keys(snpinfo.snps).sort((a, b) =>
+          b.localeCompare(a),
+        )
         let curr = 0
         for (const base of keys) {
-          const { total } = snpinfo.cov[base]!
+          const { entryDepth } = snpinfo.snps[base]!
           const height = toHeight(score0)
           const bottom = toY(score0) + height
-          const scaler = height / score
           ctx.fillStyle = colorForBase[base] || 'black'
           ctx.fillRect(
             Math.round(leftPx),
-            bottom - (total + curr) * scaler,
+            bottom - ((entryDepth + curr) / score) * height,
             w,
-            total * scaler,
+            (entryDepth / score) * height,
           )
-          curr += total
+          curr += entryDepth
         }
       }
 
       const interbaseEvents = Object.keys(snpinfo.noncov)
-      const indicatorHeight = 4.5
       if (drawInterbaseCounts) {
         let curr = 0
         for (const base of interbaseEvents) {
-          const { total } = snpinfo.noncov[base]!
+          const { entryDepth } = snpinfo.noncov[base]!
           const r = 0.6
           ctx.fillStyle = colorForBase[base]!
           ctx.fillRect(
             leftPx - r + extraHorizontallyFlippedOffset,
-            indicatorHeight + toHeight2(curr),
+            INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
             r * 2,
-            toHeight2(total),
+            toHeight2(entryDepth),
           )
-          curr += total
+          curr += entryDepth
         }
       }
 
@@ -240,10 +260,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         let max = 0
         let maxBase = ''
         for (const base of interbaseEvents) {
-          const { total } = snpinfo.noncov[base]!
-          accum += total
-          if (total > max) {
-            max = total
+          const { entryDepth } = snpinfo.noncov[base]!
+          accum += entryDepth
+          if (entryDepth > max) {
+            max = entryDepth
             maxBase = base
           }
         }
@@ -260,7 +280,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           const l = leftPx + extraHorizontallyFlippedOffset
           ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
           ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
-          ctx.lineTo(l, indicatorHeight)
+          ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
           ctx.fill()
         }
       }

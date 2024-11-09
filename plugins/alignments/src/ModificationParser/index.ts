@@ -37,6 +37,8 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
       result.push({
         type: 'unsupported',
         positions: [] as number[],
+        base: base!,
+        strand: strand,
       })
     }
 
@@ -66,6 +68,8 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
       result.push({
         type,
+        base: base!,
+        strand: strand!,
         positions,
       })
     }
@@ -82,17 +86,18 @@ export function getModTypes(mm: string) {
 
       const matches = modificationRegex.exec(basemod)
       if (!matches) {
-        throw new Error(`bad format for MM tag: ${mm}`)
+        throw new Error('bad format for MM tag')
       }
-      const base = matches[1]
-      const strand = matches[2]
-      const typestr = matches[3]!
-
+      const [, base, strand, typestr] = matches
       // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
       // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-      return typestr
+      return typestr!
         .split(/(\d+|.)/)
         .filter(f => !!f)
-        .map(mod => ({ mod, base, strand }))
+        .map(type => ({
+          type,
+          base: base!,
+          strand: strand!,
+        }))
     })
 }

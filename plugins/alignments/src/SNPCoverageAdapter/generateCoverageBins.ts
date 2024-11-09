@@ -5,7 +5,11 @@ import { Feature, sum } from '@jbrowse/core/util'
 import { getTagAlt } from '../util'
 import { parseCigar, getNextRefPos, Mismatch } from '../MismatchParser'
 import { getModPositions, getModProbabilities } from '../ModificationParser'
-import { Bin, SkipMap } from './util'
+import {
+  PreBaseCoverageBin,
+  PreBaseCoverageBinSubtypes,
+  SkipMap,
+} from '../shared/types'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
@@ -15,91 +19,100 @@ function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
-function inc(bin: any, strand: number, type: string, field: string) {
+function inc(
+  bin: PreBaseCoverageBin,
+  strand: -1 | 0 | 1,
+  type: keyof PreBaseCoverageBinSubtypes,
+  field: string,
+) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
-      total: 0,
+      entryDepth: 0,
       probabilities: [],
       '-1': 0,
       '0': 0,
       '1': 0,
     }
   }
-  thisBin.total++
+  thisBin.entryDepth++
   thisBin[strand]++
 }
 
 function incWithProbabilities(
-  bin: any,
-  strand: number,
-  type: string,
+  bin: PreBaseCoverageBin,
+  strand: -1 | 0 | 1,
+  type: keyof PreBaseCoverageBinSubtypes,
   field: string,
   probability: number,
 ) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
-      total: 0,
+      entryDepth: 0,
       probabilities: [],
       '-1': 0,
       '0': 0,
       '1': 0,
     }
   }
-  thisBin.total++
+  thisBin.entryDepth++
   thisBin.probabilities.push(probability)
   thisBin[strand]++
 }
 
 export async function generateCoverageBins({
+  regionSequence = '',
   features,
   region,
   opts,
 }: {
+  regionSequence: string
   features: Feature[]
   region: Region
-  opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } }
+  opts: {
+    bpPerPx?: number
+    colorBy?: { type: string; tag?: string }
+  }
 }) {
   const { colorBy } = opts
-  const extendedRegion = {
-    ...region,
-    start: Math.max(0, region.start - 1),
-    end: region.end + 1,
-  }
-  const binMax = Math.ceil(extendedRegion.end - extendedRegion.start)
+  const regionLength = region.end - region.start
   const skipmap = {} as SkipMap
-  const bins = [] as Bin[]
+  const bins = [] as PreBaseCoverageBin[]
 
   for (const feature of features) {
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
     const mismatches =
-      (feature.get('mismatches') as Mismatch[] | undefined) || []
+      (feature.get('mismatches') as Mismatch[] | undefined) ?? []
 
     for (let j = fstart; j < fend + 1; j++) {
       const i = j - region.start
-      if (i >= 0 && i < binMax) {
+      if (i >= 0 && i < regionLength) {
         if (bins[i] === undefined) {
           bins[i] = {
-            total: 0,
-            all: 0,
-            ref: 0,
-            '-1': 0,
-            '0': 0,
-            '1': 0,
-            lowqual: {},
-            cov: {},
+            depth: 0,
+            readsCounted: 0,
+            refbase: regionSequence[i],
+            ref: {
+              probabilities: [],
+              entryDepth: 0,
+              '-1': 0,
+              0: 0,
+              1: 0,
+            },
+            snps: {},
+            mods: {},
             delskips: {},
             noncov: {},
           }
         }
         if (j !== fend) {
-          bins[i].total++
-          bins[i].all++
-          bins[i].ref++
-          bins[i][fstrand]++
+          bins[i].depth++
+          bins[i].readsCounted++
+          bins[i].ref.entryDepth++
+          bins[i].ref[fstrand]++
         }
       }
     }
@@ -115,7 +128,6 @@ export async function generateCoverageBins({
         const maxProbModForPosition = [] as {
           mod: string
           prob: number
-          totalProb: number
         }[]
 
         let probIndex = 0
@@ -124,12 +136,18 @@ export async function generateCoverageBins({
           for (const { ref, idx } of getNextRefPos(ops, positions)) {
             const prob =
               probabilities?.[
-                probIndex + (fstrand === -1 ? positions.length - idx : idx)
+                probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
               ] || 0
-            maxProbModForPosition[ref] = {
-              mod,
-              prob,
-              totalProb: prob,
+            if (!maxProbModForPosition[ref]) {
+              maxProbModForPosition[ref] = {
+                mod,
+                prob,
+              }
+            } else if (maxProbModForPosition[ref].prob < prob) {
+              maxProbModForPosition[ref] = {
+                mod,
+                prob,
+              }
             }
           }
           probIndex += positions.length
@@ -139,30 +157,35 @@ export async function generateCoverageBins({
           if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
             if (bins[epos] === undefined) {
               bins[epos] = {
-                total: 0,
-                all: 0,
-                ref: 0,
-                '-1': 0,
-                '0': 0,
-                '1': 0,
-                lowqual: {},
-                cov: {},
+                depth: 0,
+                readsCounted: 0,
+                refbase: regionSequence[epos],
+                snps: {},
+                ref: {
+                  probabilities: [],
+                  entryDepth: 0,
+                  '-1': 0,
+                  0: 0,
+                  1: 0,
+                },
+                mods: {},
                 delskips: {},
                 noncov: {},
               }
             }
-            const bin = bins[epos]
-            if (1 - entry.totalProb < entry.prob) {
-              incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
-            }
+            incWithProbabilities(
+              bins[epos],
+              fstrand,
+              'mods',
+              entry.mod,
+              entry.prob,
+            )
           }
         })
       }
     }
 
     // normal SNP based coloring
-    const colorSNPs = colorBy?.type !== 'modifications'
-
     for (const mismatch of mismatches) {
       const mstart = fstart + mismatch.start
       const mlen = mismatchLen(mismatch)
@@ -174,18 +197,19 @@ export async function generateCoverageBins({
           const { base, type } = mismatch
           const interbase = isInterbase(type)
           if (!interbase) {
-            bin.ref--
-            bin[fstrand]--
+            // bin.ref.entryDepth++
+            // bin.ref[fstrand]++
           } else {
             inc(bin, fstrand, 'noncov', type)
           }
 
           if (type === 'deletion' || type === 'skip') {
             inc(bin, fstrand, 'delskips', type)
-            bin.total--
-          } else if (!interbase && colorSNPs) {
-            inc(bin, fstrand, 'cov', base)
-            bin.refbase = mismatch.altbase
+            bin.depth--
+          } else if (!interbase) {
+            inc(bin, fstrand, 'snps', base)
+            bin.ref.entryDepth--
+            bin.ref[fstrand]--
           }
         }
       }
@@ -221,9 +245,10 @@ export async function generateCoverageBins({
   }
 
   for (const bin of bins) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (bin) {
-      bin.cov = Object.fromEntries(
-        Object.entries(bin.cov).map(([key, val]) => {
+      bin.mods = Object.fromEntries(
+        Object.entries(bin.mods).map(([key, val]) => {
           return [
             key,
             {

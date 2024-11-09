@@ -16,15 +16,26 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // locals
-import { FilterModel, IFilter, getUniqueModificationValues } from '../../shared'
-import { createAutorun, getColorForModification } from '../../util'
+import {
+  FilterModel,
+  IFilter,
+  ModificationType,
+  getUniqueModificationValues,
+} from '../shared'
+import { createAutorun, getColorForModification } from '../util'
 
 // lazies
-const Tooltip = lazy(() => import('../components/Tooltip'))
+const Tooltip = lazy(() => import('./components/Tooltip'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 
+interface ModificationTypeWithColor {
+  color: string
+  type: string
+  base: string
+  strand: string
+}
 type LGV = LinearGenomeViewModel
 
 /**
@@ -77,7 +88,7 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      modificationTagMap: observable.map<string, string>({}),
+      modificationTagMap: observable.map<string, ModificationTypeWithColor>({}),
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -96,7 +107,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      setColorBy(colorBy?: { type: string; tag?: string }) {
+      setColorScheme(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
       },
       /**
@@ -109,10 +120,13 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        for (const m of uniqueModifications) {
-          if (!self.modificationTagMap.has(m)) {
-            self.modificationTagMap.set(m, getColorForModification(m))
+      updateModificationColorMap(uniqueModifications: ModificationType[]) {
+        for (const modification of uniqueModifications) {
+          if (!self.modificationTagMap.has(modification.type)) {
+            self.modificationTagMap.set(modification.type, {
+              ...modification,
+              color: getColorForModification(modification.type),
+            })
           }
         }
       },
@@ -178,11 +192,17 @@ function stateModelFactory(
           )
         },
 
+        /**
+         * #getter
+         */
         get renderReady() {
           const superProps = superRenderProps()
           return !superProps.notReady && self.modificationsReady
         },
 
+        /**
+         * #getter
+         */
         get ready() {
           return this.renderReady
         },
