@@ -60,7 +60,7 @@
                   },
                   "showSoftClipping": false,
                   "colorBy": {
-                    "type": "modifications"
+                    "type": "methylation"
                   },
                   "filterBy": {
                     "flagInclude": 0,
@@ -83,7 +83,7 @@
                     "flagExclude": 1540
                   },
                   "colorBy": {
-                    "type": "modifications"
+                    "type": "methylation"
                   }
                 },
                 "snpCovHeight": 45,

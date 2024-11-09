@@ -379,6 +379,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                         })
                       },
                     })),
+                    {
+                      label: 'All reference CpG',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'methylation',
+                        })
+                      },
+                    },
                   ],
                 },
                 {
@@ -489,16 +497,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (!self.autorunReady) {
             return
           }
-          const { colorBy } = self
           const { staticBlocks } = getContainingView(self) as LGV
-          if (colorBy?.type === 'modifications') {
-            const vals = await getUniqueModifications({
-              self,
-              adapterConfig: getConf(self.parentTrack, 'adapter'),
-              blocks: staticBlocks,
-            })
-            self.updateModificationColorMap(vals)
-          }
+          const vals = await getUniqueModifications({
+            self,
+            adapterConfig: getConf(self.parentTrack, 'adapter'),
+            blocks: staticBlocks,
+          })
+          self.updateModificationColorMap(vals)
           self.setModificationsReady(true)
         })
       },
