@@ -36,6 +36,7 @@ export interface RenderArgsDeserializedWithFeatures
 interface BaseCount {
   total: number
   strands: Record<string, number>
+  averageProbability: number
 }
 type BaseCounts = Record<string, BaseCount>
 
@@ -44,6 +45,8 @@ interface SNPInfo {
   noncov: BaseCounts
   total: number
 }
+
+const complementBase = { C: 'G', G: 'C', A: 'T', T: 'A' }
 
 const fudgeFactor = 0.6
 
@@ -166,27 +169,31 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         )
         let curr = 0
         for (const base of keys) {
-          if (base === 'mod_NONE') {
-            continue
-          }
-          const { total, ...rest } = snpinfo.cov[base]!
-          // const prob = sum(rest.probabilities) / rest.probabilities.length
+          console.log({ base })
+          const basecmp = complementBase[base]
+          const modifiable =
+            base === 'N'
+              ? score0
+              : (snpinfo.cov[base]?.total || 0) +
+                (snpinfo.cov[basecmp]?.total || 0)
+
+          const { total, averageProbability } = snpinfo.cov[base]!
+          const modFraction = (modifiable / score0) * (total / modifiable)
           const col = modificationTagMap[base.replace('mod_', '')] || 'black'
-          const c = col
-          // prob !== 1
-          //   ? colord(col)
-          //       .alpha(prob + 0.1)
-          //       .toHslString()
-          //   : col
+          const c =
+            averageProbability !== 1
+              ? colord(col)
+                  .alpha(averageProbability + 0.1)
+                  .toHslString()
+              : col
           const height = toHeight(score0)
           const bottom = toY(score0) + height
-          const scaler = height / score
           ctx.fillStyle = c
           ctx.fillRect(
             Math.round(leftPx),
-            bottom - (total + curr) * scaler,
+            bottom - (curr / score0 + modFraction) * height,
             w,
-            total * scaler,
+            (total / score0) * height,
           )
           curr += total
         }

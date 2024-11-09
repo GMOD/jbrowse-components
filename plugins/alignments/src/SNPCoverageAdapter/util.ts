@@ -17,6 +17,7 @@ export type SkipMap = Record<
 export interface BinType {
   total?: number
   strands?: Record<string, number>
+  averageProbability?: number
 }
 
 export interface Bin {

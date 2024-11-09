@@ -1,13 +1,12 @@
 import { bpSpanPx, Region } from '@jbrowse/core/util'
-import {
-  getModificationPositions,
-  getModificationProbabilities,
-  getNextRefPos,
-} from '../MismatchParser'
+import { colord } from '@jbrowse/core/util/colord'
+
+// locals
+import { getModPositions, getModProbabilities } from '../ModificationParser'
+import { getNextRefPos } from '../MismatchParser'
 import { getTagAlt } from '../util'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
-import { colord } from '@jbrowse/core/util/colord'
 
 // render modifications stored in MM tag in BAM
 //
@@ -47,8 +46,8 @@ export function renderModifications({
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
   const start = feature.get('start')
   const strand = feature.get('strand')
-  const probabilities = getModificationProbabilities(feature)
-  const modifications = getModificationPositions(mm, seq, strand)
+  const probabilities = getModProbabilities(feature)
+  const modifications = getModPositions(mm, seq, strand)
 
   let probIndex = 0
   for (const { type, positions } of modifications) {

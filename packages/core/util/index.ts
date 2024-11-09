@@ -330,9 +330,9 @@ export function assembleLocStringFast(
   }
   let endString: string
   if (end !== undefined) {
-    endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
+    endString = start !== undefined && start + 1 === end ? '' : `-${cb(end)}`
   } else {
-    endString = start !== undefined ? '..' : ''
+    endString = start !== undefined ? '-' : ''
   }
   let rev = ''
   if (reversed) {

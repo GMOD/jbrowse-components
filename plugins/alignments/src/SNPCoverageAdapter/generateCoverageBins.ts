@@ -1,15 +1,10 @@
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util'
+import { Feature, sum } from '@jbrowse/core/util'
 
 // locals
 import { getTagAlt } from '../util'
-import {
-  parseCigar,
-  getNextRefPos,
-  getModificationPositions,
-  getModificationProbabilities,
-  Mismatch,
-} from '../MismatchParser'
+import { parseCigar, getNextRefPos, Mismatch } from '../MismatchParser'
+import { getModPositions, getModProbabilities } from '../ModificationParser'
 import { Bin, SkipMap } from './util'
 
 function mismatchLen(mismatch: Mismatch) {
@@ -115,8 +110,8 @@ export async function generateCoverageBins({
       const ops = parseCigar(feature.get('CIGAR'))
       const fend = feature.get('end')
       if (seq) {
-        const modifications = getModificationPositions(mm, seq, fstrand)
-        const probabilities = getModificationProbabilities(feature)
+        const modifications = getModPositions(mm, seq, fstrand)
+        const probabilities = getModProbabilities(feature)
         const maxProbModForPosition = [] as {
           mod: string
           prob: number
@@ -136,37 +131,32 @@ export async function generateCoverageBins({
               prob,
               totalProb: prob,
             }
-            const epos = ref + fstart - region.start
-            const bin = bins[epos]
-            if (epos >= 0 && epos < bins.length && ref + fstart < fend) {
-              incWithProbabilities(bin, fstrand, 'cov', mod, prob)
-            }
           }
           probIndex += positions.length
         }
-        // maxProbModForPosition.forEach((entry, pos) => {
-        //   const epos = pos + fstart - region.start
-        //   if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-        //     if (bins[epos] === undefined) {
-        //       bins[epos] = {
-        //         total: 0,
-        //         all: 0,
-        //         ref: 0,
-        //         '-1': 0,
-        //         '0': 0,
-        //         '1': 0,
-        //         lowqual: {},
-        //         cov: {},
-        //         delskips: {},
-        //         noncov: {},
-        //       }
-        //     }
-        //     const bin = bins[epos]
-        //     if (1 - entry.totalProb < entry.prob) {
-        //       incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
-        //     }
-        //   }
-        // })
+        maxProbModForPosition.forEach((entry, pos) => {
+          const epos = pos + fstart - region.start
+          if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+            if (bins[epos] === undefined) {
+              bins[epos] = {
+                total: 0,
+                all: 0,
+                ref: 0,
+                '-1': 0,
+                '0': 0,
+                '1': 0,
+                lowqual: {},
+                cov: {},
+                delskips: {},
+                noncov: {},
+              }
+            }
+            const bin = bins[epos]
+            if (1 - entry.totalProb < entry.prob) {
+              incWithProbabilities(bin, fstrand, 'cov', entry.mod, entry.prob)
+            }
+          }
+        })
       }
     }
 
@@ -231,8 +221,19 @@ export async function generateCoverageBins({
   }
 
   for (const bin of bins) {
-    if (Object.keys(bin.cov).length > 0) {
-      console.log({ bin })
+    if (bin) {
+      bin.cov = Object.fromEntries(
+        Object.entries(bin.cov).map(([key, val]) => {
+          return [
+            key,
+            {
+              ...val,
+              averageProbability:
+                sum(val.probabilities) / val.probabilities.length,
+            },
+          ] as const
+        }),
+      )
     }
   }
 

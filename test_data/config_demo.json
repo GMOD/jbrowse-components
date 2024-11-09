@@ -4654,6 +4654,41 @@
       },
       "assemblyNames": ["hg38"],
       "category": ["Methylation"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "chr20_mod_call_sample",
+      "name": "chr20_mod_call_sample",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "chr20_mod_call_sample.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "chr20_mod_call_sample.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],
