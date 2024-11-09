@@ -213,7 +213,6 @@ const AssemblyAddForm = observer(function ({
       <Paper>
         <TextField
           id="assembly-name"
-          inputProps={{ 'data-testid': 'assembly-name' }}
           label="Assembly name"
           helperText="The assembly name e.g. hg38"
           variant="outlined"
@@ -221,16 +220,21 @@ const AssemblyAddForm = observer(function ({
           onChange={event => {
             setAssemblyName(event.target.value)
           }}
+          slotProps={{
+            htmlInput: { 'data-testid': 'assembly-name' },
+          }}
         />
         <TextField
           id="assembly-name"
-          inputProps={{ 'data-testid': 'assembly-display-name' }}
           label="Assembly display name"
           helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
           variant="outlined"
           value={assemblyDisplayName}
           onChange={event => {
             setAssemblyDisplayName(event.target.value)
+          }}
+          slotProps={{
+            htmlInput: { 'data-testid': 'assembly-display-name' },
           }}
         />
         <AdapterSelector

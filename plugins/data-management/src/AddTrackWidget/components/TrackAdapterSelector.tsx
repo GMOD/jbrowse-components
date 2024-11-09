@@ -45,9 +45,11 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       onChange={event => {
         model.setAdapterHint(event.target.value)
       }}
-      SelectProps={{
-        // @ts-expect-error
-        SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+      slotProps={{
+        select: {
+          // @ts-expect-error
+          SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+        },
       }}
     >
       {Object.entries(

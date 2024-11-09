@@ -40,18 +40,20 @@ const StringArrayEditor = observer(function ({
               onChange={evt => {
                 slot.setAtIndex(idx, evt.target.value)
               }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => {
-                        slot.removeAtIndex(idx)
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => {
+                          slot.removeAtIndex(idx)
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </ListItem>
@@ -65,37 +67,39 @@ const StringArrayEditor = observer(function ({
               onChange={event => {
                 setValue(event.target.value)
               }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <>
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        style={{ margin: 2 }}
-                        data-testid={`stringArrayAdd-${slot.name}`}
-                        onClick={() => {
-                          setAddNew(false)
-                          slot.add(value)
-                          setValue('')
-                        }}
-                      >
-                        OK
-                      </Button>
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        style={{ margin: 2 }}
-                        onClick={() => {
-                          setAddNew(false)
-                          setValue('')
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <>
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          style={{ margin: 2 }}
+                          data-testid={`stringArrayAdd-${slot.name}`}
+                          onClick={() => {
+                            setAddNew(false)
+                            slot.add(value)
+                            setValue('')
+                          }}
+                        >
+                          OK
+                        </Button>
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          style={{ margin: 2 }}
+                          onClick={() => {
+                            setAddNew(false)
+                            setValue('')
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </ListItem>

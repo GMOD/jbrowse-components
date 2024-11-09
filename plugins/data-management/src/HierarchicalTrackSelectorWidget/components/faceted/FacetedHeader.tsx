@@ -29,18 +29,20 @@ export default function FacetedHeader({
             onChange={event => {
               faceted.setFilterText(event.target.value)
             }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => {
-                      faceted.setFilterText('')
-                    }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => {
+                        faceted.setFilterText('')
+                      }}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Grid>

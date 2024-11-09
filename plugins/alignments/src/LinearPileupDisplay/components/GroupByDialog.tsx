@@ -97,14 +97,16 @@ const GroupByTagDialog = observer(function (props: {
             setTag(event.target.value)
           }}
           placeholder="Enter tag name"
-          inputProps={{
-            maxLength: 2,
-            'data-testid': 'group-tag-name-input',
-          }}
           error={isInvalid}
           helperText={isInvalid ? 'Not a valid tag' : ''}
           autoComplete="off"
           data-testid="group-tag-name"
+          slotProps={{
+            htmlInput: {
+              maxLength: 2,
+              'data-testid': 'group-tag-name-input',
+            },
+          }}
         />
         {error ? (
           <ErrorMessage error={error} />

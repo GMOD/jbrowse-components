@@ -16,7 +16,6 @@ const UrlChooser = observer(function ({
     <TextField
       fullWidth
       variant="outlined"
-      inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       label={label || 'Enter URL'}
       onChange={event => {
@@ -24,6 +23,9 @@ const UrlChooser = observer(function ({
           uri: event.target.value.trim(),
           locationType: 'UriLocation',
         })
+      }}
+      slotProps={{
+        htmlInput: { 'data-testid': 'urlInput' },
       }}
     />
   )

@@ -31,14 +31,16 @@ const SortByTagDialog = observer(function (props: {
             setTag(event.target.value)
           }}
           placeholder="Enter tag name"
-          inputProps={{
-            maxLength: 2,
-            'data-testid': 'sort-tag-name-input',
-          }}
           error={tag.length === 2 && !validTag}
           helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
           autoComplete="off"
           data-testid="sort-tag-name"
+          slotProps={{
+            htmlInput: {
+              maxLength: 2,
+              'data-testid': 'sort-tag-name-input',
+            },
+          }}
         />
         <DialogActions>
           <Button

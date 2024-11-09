@@ -38,27 +38,29 @@ const TextFilter = observer(function ({
           setTextFilterValue(evt.target.value)
         }}
         variant="outlined"
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <FilterIcon />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <InputAdornment
-              className={classes.textFilterControlEndAdornment}
-              position="end"
-            >
-              <IconButton
-                aria-label="clear filter"
-                onClick={() => {
-                  setTextFilterValue('')
-                }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <FilterIcon />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment
+                className={classes.textFilterControlEndAdornment}
+                position="end"
               >
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
+                <IconButton
+                  aria-label="clear filter"
+                  onClick={() => {
+                    setTextFilterValue('')
+                  }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
       />
     </div>

@@ -34,11 +34,13 @@ export function HTTPBasicLoginForm({
             required
             label="Username"
             variant="outlined"
-            inputProps={{ 'data-testid': 'login-httpbasic-username' }}
             onChange={event => {
               setUsername(event.target.value)
             }}
             margin="dense"
+            slotProps={{
+              htmlInput: { 'data-testid': 'login-httpbasic-username' },
+            }}
           />
           <TextField
             required
@@ -46,11 +48,13 @@ export function HTTPBasicLoginForm({
             type="password"
             autoComplete="current-password"
             variant="outlined"
-            inputProps={{ 'data-testid': 'login-httpbasic-password' }}
             onChange={event => {
               setPassword(event.target.value)
             }}
             margin="dense"
+            slotProps={{
+              htmlInput: { 'data-testid': 'login-httpbasic-password' },
+            }}
           />
         </DialogContent>
         <DialogActions>

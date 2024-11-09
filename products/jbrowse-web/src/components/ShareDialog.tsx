@@ -33,12 +33,14 @@ function LinkField({ url }: { url: string }) {
     <TextField
       label="URL"
       value={url}
-      InputProps={{ readOnly: true }}
       variant="filled"
       fullWidth
       onClick={event => {
         const target = event.target as HTMLTextAreaElement
         target.select()
+      }}
+      slotProps={{
+        input: { readOnly: true },
       }}
     />
   )
