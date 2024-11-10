@@ -19,13 +19,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
-
-interface ModificationTypeWithColor {
-  type: string
-  color: string
-  strand: string
-  base: string
-}
+import { ModificationTypeWithColor } from '../shared/types'
 
 interface SortedBy {
   type: string
@@ -38,10 +32,8 @@ interface SortedBy {
 interface ColorBy {
   type: string
   tag?: string
-  extra?: {
-    modifications?: {
-      isolatedModification?: string
-    }
+  modifications?: {
+    isolatedModification?: string
   }
 }
 

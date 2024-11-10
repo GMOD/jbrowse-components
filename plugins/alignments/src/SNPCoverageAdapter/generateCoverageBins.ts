@@ -10,6 +10,7 @@ import {
   getModProbabilities,
 } from '../ModificationParser'
 import {
+  ColorBy,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
   SkipMap,
@@ -42,11 +43,7 @@ function inc(
   thisBin.entryDepth++
   thisBin[strand]++
 }
-interface ColorBy {
-  type: string
-  tag?: string
-  extra?: { modifications?: { twoColor: boolean } }
-}
+
 interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
@@ -293,7 +290,7 @@ function processModification({
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
   const ops = parseCigar(feature.get('CIGAR'))
   const fend = feature.get('end')
-  const twoColor = colorBy?.extra?.modifications?.twoColor
+  const twoColor = colorBy?.modifications?.twoColor
   if (seq) {
     const modifications = getModPositions(mm, seq, fstrand)
     const probabilities = getModProbabilities(feature)

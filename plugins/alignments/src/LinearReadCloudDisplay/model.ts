@@ -16,7 +16,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import { FilterModel, IFilter } from '../shared/filterModel'
+import { ColorBy, FilterBy } from '../shared/types'
 import { ChainData } from '../shared/fetchChains'
 
 // async
@@ -52,18 +52,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        filterBy: types.frozen<FilterBy>(),
 
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
+        colorBy: types.frozen<ColorBy>(),
 
         /**
          * #property
@@ -133,7 +127,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
+      setFilterBy(filter: FilterBy) {
         self.filterBy = cast(filter)
       },
     }))
@@ -222,7 +216,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         async renderSvg(opts: {
           rasterizeLayers?: boolean
         }): Promise<React.ReactNode> {
-          const { renderSvg } = await import('../shared/renderSvg')
+          const { renderSvg } = await import('../shared/renderSvgUtil')
           const { drawFeats } = await import('./drawFeats')
           return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
         },

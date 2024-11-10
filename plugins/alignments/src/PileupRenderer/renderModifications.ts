@@ -49,9 +49,7 @@ export function renderModifications({
   const strand = feature.get('strand')
   const probabilities = getModProbabilities(feature)
   const modifications = getModPositions(mm, seq, strand)
-
-  const isolatedModification =
-    colorBy?.extra?.modifications?.isolatedModification
+  const isolatedModification = colorBy?.modifications?.isolatedModification
 
   let probIndex = 0
   for (const { type, positions } of modifications) {

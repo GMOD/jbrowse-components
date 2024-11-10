@@ -65,23 +65,36 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        sortedBy: types.maybe(
-          types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
-            assemblyName: types.string,
-          }),
-        ),
+        sortedBy: types.frozen<
+          | {
+              type: string
+              pos: number
+              tag: string | undefined
+              refName: string
+              assemblyName: string
+            }
+          | undefined
+        >(),
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       sortReady: false,
+      /**
+       * #volatile
+       */
       currSortBpPerPx: 0,
+      /**
+       * #volatile
+       */
       visibleModifications: observable.map<string, ModificationTypeWithColor>(
         {},
       ),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .actions(self => ({

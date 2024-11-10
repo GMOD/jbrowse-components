@@ -17,7 +17,7 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 
 // locals
 import { createAutorun, getColorForModification } from '../util'
-import { FilterModel, IFilter } from '../shared/filterModel'
+import { ColorBy, FilterBy } from '../shared/types'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { ModificationType, ModificationTypeWithColor } from '../shared/types'
 
@@ -62,17 +62,11 @@ function stateModelFactory(
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        filterBy: types.frozen<FilterBy>(),
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
+        colorBy: types.frozen<ColorBy>(),
         /**
          * #property
          */
@@ -80,9 +74,15 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       visibleModifications: observable.map<string, ModificationTypeWithColor>(
         {},
       ),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -95,14 +95,18 @@ function stateModelFactory(
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
+      setFilterBy(filter: FilterBy) {
+        self.filterBy = {
+          ...filter,
+        }
       },
       /**
        * #action
        */
-      setColorScheme(colorBy?: { type: string; tag?: string }) {
-        self.colorBy = cast(colorBy)
+      setColorScheme(colorBy?: ColorBy) {
+        self.colorBy = {
+          ...colorBy,
+        }
       },
       /**
        * #action

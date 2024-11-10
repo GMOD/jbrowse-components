@@ -11,9 +11,8 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-
 // locals
-import { IFilter } from '../filterModel'
+import { FilterBy } from '../types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -77,8 +76,8 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
 
 const FilterByTagDialog = observer(function (props: {
   model: {
-    filterBy: IFilter
-    setFilterBy: (arg: IFilter) => void
+    filterBy: FilterBy
+    setFilterBy: (arg: FilterBy) => void
   }
   handleClose: () => void
 }) {

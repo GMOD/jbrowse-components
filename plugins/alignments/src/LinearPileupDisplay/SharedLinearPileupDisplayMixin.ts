@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, getSnapshot, isAlive } from 'mobx-state-tree'
+import { cast, types, addDisposer, isAlive } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -34,9 +34,8 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { FilterModel, IFilter } from '../shared/filterModel'
 import { createAutorun } from '../util'
-import { ColorByModel } from '../shared/color'
+import { ColorBy, FilterBy } from '../shared/types'
 import { getUniqueTags } from '../shared/getUniqueTags'
 
 // lazies
@@ -92,11 +91,11 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        colorBy: ColorByModel,
+        colorBy: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        filterBy: types.frozen<FilterBy>(),
         /**
          * #property
          */
@@ -150,13 +149,11 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setColorScheme(colorScheme: {
-        type: string
-        tag?: string
-        extra?: Record<string, unknown>
-      }) {
+      setColorScheme(colorScheme: ColorBy) {
         self.colorTagMap = observable.map({})
-        self.colorBy = cast(colorScheme)
+        self.colorBy = {
+          ...colorScheme,
+        }
         if (colorScheme.tag) {
           self.tagsReady = false
         }
@@ -238,8 +235,10 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
+      setFilterBy(filter: FilterBy) {
+        self.filterBy = {
+          ...filter,
+        }
       },
 
       /**
@@ -360,15 +359,14 @@ export function SharedLinearPileupDisplayMixin(
          */
         renderPropsPre() {
           const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
-
           const superProps = superRenderProps()
           return {
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
             rpcDriverName,
             displayModel: self,
-            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: JSON.parse(JSON.stringify(filterBy)),
+            colorBy,
+            filterBy,
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,

@@ -24,7 +24,7 @@ import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
-import { IFilter } from '../shared/filterModel'
+import { FilterBy } from '../shared/types'
 
 const minDisplayHeight = 20
 
@@ -54,7 +54,9 @@ function propagateColorBy(self: LinearAlignmentsDisplayModel) {
     return
   }
   if (!deepSnap(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
-    SNPCoverageDisplay.setColorScheme(getSnapshot(PileupDisplay.colorBy))
+    SNPCoverageDisplay.setColorScheme({
+      ...PileupDisplay.colorBy,
+    })
   }
 }
 
@@ -64,7 +66,9 @@ function propagateFilterBy(self: LinearAlignmentsDisplayModel) {
     return
   }
   if (!deepSnap(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
-    SNPCoverageDisplay.setFilterBy(getSnapshot(PileupDisplay.filterBy))
+    SNPCoverageDisplay.setFilterBy({
+      ...PileupDisplay.filterBy,
+    })
   }
 }
 
@@ -216,7 +220,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
+      setFilterBy(filter: FilterBy) {
         self.PileupDisplay.setFilterBy(filter)
         self.SNPCoverageDisplay.setFilterBy(filter)
       },

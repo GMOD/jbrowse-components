@@ -79,3 +79,22 @@ export interface ModificationTypeWithColor {
   base: string
   strand: string
 }
+
+export interface ColorBy {
+  type: string
+  tag?: string
+  modifications?: {
+    twoColor: boolean
+    isolatedModification: string
+  }
+}
+
+export interface FilterBy {
+  flagExclude: number
+  flagInclude: number
+  readName?: string
+  tagFilter?: {
+    tag: string
+    value?: string
+  }
+}
