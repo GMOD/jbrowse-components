@@ -37,6 +37,7 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { createAutorun } from '../util'
 import { ColorBy, FilterBy } from '../shared/types'
 import { getUniqueTags } from '../shared/getUniqueTags'
+import { defaultFilterFlags } from '../shared/util'
 
 // lazies
 const FilterByTagDialog = lazy(
@@ -95,7 +96,7 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        filterBy: types.frozen<FilterBy>(),
+        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
         /**
          * #property
          */

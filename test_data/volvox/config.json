@@ -2221,6 +2221,7 @@
       "type": "AlignmentsTrack",
       "trackId": "out_noref",
       "name": "out_noref",
+      "category": ["Integration test"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {

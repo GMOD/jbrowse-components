@@ -362,7 +362,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                         })
                       },
                     })),
-
+                    { type: 'divider' },
                     {
                       label: 'All modifications (2-color)',
                       onClick: () => {
@@ -386,8 +386,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                         })
                       },
                     })),
+                    { type: 'divider' },
                     {
-                      label: 'All reference CpG',
+                      label: 'All reference CpGs',
                       onClick: () => {
                         self.setColorScheme({
                           type: 'methylation',

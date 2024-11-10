@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { types, cast, getEnv, getSnapshot, isAlive } from 'mobx-state-tree'
+import { types, cast, getEnv, isAlive } from 'mobx-state-tree'
 import { observable } from 'mobx'
 
 // jbrowse
@@ -62,7 +62,10 @@ function stateModelFactory(
         /**
          * #property
          */
-        filterBy: types.frozen<FilterBy>(),
+        filterBy: types.optional(types.frozen<FilterBy>(), {
+          flagInclude: 0,
+          flagExclude: 1540,
+        }),
         /**
          * #property
          */

@@ -2,19 +2,15 @@ import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { doesIntersect2, Feature, max, sum } from '@jbrowse/core/util'
 
 // locals
-import { getTagAlt } from '../util'
-import { parseCigar, getNextRefPos, Mismatch } from '../MismatchParser'
-import {
-  getMethBins,
-  getModPositions,
-  getModProbabilities,
-} from '../ModificationParser'
+import { parseCigar, Mismatch } from '../MismatchParser'
+import { getMethBins } from '../ModificationParser'
 import {
   ColorBy,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
   SkipMap,
 } from '../shared/types'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
@@ -286,47 +282,10 @@ function processModification({
 }) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
-  const seq = feature.get('seq') as string | undefined
-  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-  const ops = parseCigar(feature.get('CIGAR'))
   const fend = feature.get('end')
   const twoColor = colorBy?.modifications?.twoColor
-  if (seq) {
-    const modifications = getModPositions(mm, seq, fstrand)
-    const probabilities = getModProbabilities(feature)
-    const maxProbModForPosition = [] as {
-      mod: string
-      prob: number
-      allProbs: number[]
-    }[]
-
-    let probIndex = 0
-    for (const { type, positions } of modifications) {
-      const mod = `mod_${type}`
-      for (const { ref, idx } of getNextRefPos(ops, positions)) {
-        const prob =
-          probabilities?.[
-            probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-          ] || 0
-        if (!maxProbModForPosition[ref]) {
-          maxProbModForPosition[ref] = {
-            mod,
-            prob,
-            allProbs: [prob],
-          }
-        } else if (prob > maxProbModForPosition[ref].prob) {
-          maxProbModForPosition[ref] = {
-            ...maxProbModForPosition[ref],
-            prob,
-            mod,
-          }
-        } else {
-          maxProbModForPosition[ref].allProbs.push(prob)
-        }
-      }
-      probIndex += positions.length
-    }
-    maxProbModForPosition.forEach((entry, pos) => {
+  getMaxProbModAtEachPosition(feature)?.forEach(
+    ({ type, prob, allProbs }, pos) => {
       const epos = pos + fstart - region.start
       if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
         if (bins[epos] === undefined) {
@@ -349,26 +308,16 @@ function processModification({
           }
         }
 
-        if (twoColor && 1 - sum(entry.allProbs) > max(entry.allProbs)) {
-          incWithProbabilities(
-            bins[epos],
-            fstrand,
-            'nonmods',
-            entry.mod,
-            1 - sum(entry.allProbs),
-          )
+        const s = 1 - sum(allProbs)
+        const bin = bins[epos]
+        if (twoColor && s > max(allProbs)) {
+          incWithProbabilities(bin, fstrand, 'nonmods', `nonmod_${type}`, s)
         } else {
-          incWithProbabilities(
-            bins[epos],
-            fstrand,
-            'mods',
-            entry.mod,
-            entry.prob,
-          )
+          incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
         }
       }
-    })
-  }
+    },
+  )
 }
 
 function incWithProbabilities(

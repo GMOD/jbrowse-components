@@ -4369,6 +4369,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "Integration test",
+      ],
       "displays": [
         {
           "displayId": "out_noref-LinearAlignmentsDisplay",

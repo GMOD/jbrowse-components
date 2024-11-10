@@ -9,10 +9,10 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
-import { colord } from '@jbrowse/core/util/colord'
+
 // locals
 import { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
-import { probabilityToAlpha } from '../shared/util'
+import { alphaColor } from '../shared/util'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -167,7 +167,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         const refbase = snpinfo.refbase?.toUpperCase()
         const { nonmods, mods, snps, ref } = snpinfo
         for (const m of Object.keys(nonmods).sort().reverse()) {
-          const mod = visibleModifications[m.replace('mod_', '')]
+          const mod =
+            visibleModifications[m.replace('nonmod_', '')] ||
+            visibleModifications[m.replace('mod_', '')]
           if (!mod) {
             console.warn(`${m} not known yet`)
             continue
@@ -197,13 +199,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
           const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
           const modFraction = (modifiable / score0) * (entryDepth / detectable)
-          const baseColor = 'blue'
-          const c =
-            avgProbability !== 1
-              ? colord(baseColor)
-                  .alpha(probabilityToAlpha(avgProbability))
-                  .toHslString()
-              : baseColor
+          const nonModColor = 'blue'
+          const c = alphaColor(nonModColor, avgProbability)
           const height = toHeight(score0)
           const bottom = toY(score0) + height
 
@@ -248,12 +245,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           const { entryDepth, avgProbability = 0 } = mods[m]!
           const modFraction = (modifiable / score0) * (entryDepth / detectable)
           const baseColor = mod.color || 'black'
-          const c =
-            avgProbability !== 1
-              ? colord(baseColor)
-                  .alpha(probabilityToAlpha(avgProbability))
-                  .toHslString()
-              : baseColor
+          const c = alphaColor(baseColor, avgProbability)
           const height = toHeight(score0)
           const bottom = toY(score0) + height
 

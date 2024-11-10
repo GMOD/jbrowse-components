@@ -19,7 +19,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
-import { ModificationTypeWithColor } from '../shared/types'
+import { ColorBy, ModificationTypeWithColor } from '../shared/types'
 
 interface SortedBy {
   type: string
@@ -27,14 +27,6 @@ interface SortedBy {
   refName: string
   assemblyName: string
   tag?: string
-}
-
-interface ColorBy {
-  type: string
-  tag?: string
-  modifications?: {
-    isolatedModification?: string
-  }
 }
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {

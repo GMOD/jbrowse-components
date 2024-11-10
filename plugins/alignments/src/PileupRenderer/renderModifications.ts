@@ -1,24 +1,13 @@
-import { bpSpanPx, Region } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
+import type { Region } from '@jbrowse/core/util'
+import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
 // locals
-import { getModPositions, getModProbabilities } from '../ModificationParser'
-import { getNextRefPos } from '../MismatchParser'
-import { getTagAlt } from '../util'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
-import { probabilityToAlpha } from '../shared/util'
+import { alphaColor } from '../shared/util'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 // render modifications stored in MM tag in BAM
-//
-// ML stores probabilities as array of numerics and MP is scaled phred scores
-// https://github.com/samtools/hts-specs/pull/418/files#diff-e765c6479316309f56b636f88189cdde8c40b854c7bdcce9ee7fe87a4e76febcR596
-//
-// if we have ML or Ml, it is an 8bit probability, divide by 255
-//
-// if we have MP or Mp it is phred scaled ASCII, which can go up to 90 but
-// has very high likelihood basecalls at that point, we really only care
-// about low qual calls <20 approx
 export function renderModifications({
   ctx,
   feat,
@@ -44,38 +33,33 @@ export function renderModifications({
   if (!seq) {
     return
   }
-  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
   const start = feature.get('start')
-  const strand = feature.get('strand')
-  const probabilities = getModProbabilities(feature)
-  const modifications = getModPositions(mm, seq, strand)
   const isolatedModification = colorBy?.modifications?.isolatedModification
+  const twoColor = colorBy?.modifications?.twoColor
 
-  let probIndex = 0
-  for (const { type, positions } of modifications) {
-    const mod = visibleModifications[type]
-    if (!mod) {
-      console.warn(`${type} not known yet`)
-      continue
-    }
-    if (isolatedModification && mod.type !== isolatedModification) {
-      continue
-    }
-    const col = mod.color || 'black'
-    const baseColor = colord(col)
-    for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
-      const r = start + ref
+  getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
+    ({ allProbs, prob, type }, pos) => {
+      const r = start + pos
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-      const idx2 =
-        probIndex + (strand === -1 ? positions.length - 1 - idx : idx)
-      const prob = probabilities?.[idx2] || 0
-      const c =
-        prob !== 1
-          ? baseColor.alpha(probabilityToAlpha(prob)).toHslString()
-          : col
-      const w = rightPx - leftPx + 0.5
-      fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
-    }
-    probIndex += positions.length
-  }
+      const mod = visibleModifications[type]
+      if (!mod) {
+        console.warn(`${type} not known yet`)
+        return
+      }
+      if (isolatedModification && mod.type !== isolatedModification) {
+        return
+      }
+      const col = mod.color || 'black'
+      const s = 1 - sum(allProbs)
+      if (twoColor && s > max(allProbs)) {
+        const c = alphaColor('blue', s)
+        const w = rightPx - leftPx + 0.5
+        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+      } else {
+        const c = alphaColor(col, prob)
+        const w = rightPx - leftPx + 0.5
+        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+      }
+    },
+  )
 }

@@ -3,7 +3,6 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { getSnapshot } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
 import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
@@ -54,7 +53,7 @@ export async function fetchChains(
   const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
     sessionId,
     regions: view.staticBlocks.contentBlocks,
-    filterBy: getSnapshot(self.filterBy),
+    filterBy: self.filterBy,
     adapterConfig: self.adapterConfig,
   })) as ChainData
 

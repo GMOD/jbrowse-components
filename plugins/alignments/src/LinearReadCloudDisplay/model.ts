@@ -1,5 +1,5 @@
 import React, { lazy } from 'react'
-import { cast, types, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   AnyConfigurationSchemaType,
@@ -18,6 +18,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import { ColorBy, FilterBy } from '../shared/types'
 import { ChainData } from '../shared/fetchChains'
+import { defaultFilterFlags } from '../shared/util'
 
 // async
 const FilterByTagDialog = lazy(
@@ -52,12 +53,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.frozen<FilterBy>(),
+        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
 
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy>(),
+        colorBy: types.frozen<ColorBy | undefined>(),
 
         /**
          * #property
@@ -113,8 +114,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.ref = ref
       },
 
-      setColorScheme(s: { type: string }) {
-        self.colorBy = cast(s)
+      setColorScheme(colorBy: { type: string }) {
+        self.colorBy = {
+          ...colorBy,
+        }
       },
 
       /**
@@ -128,7 +131,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = cast(filter)
+        self.filterBy = {
+          ...filter,
+        }
       },
     }))
     .views(self => ({

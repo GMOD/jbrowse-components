@@ -2,10 +2,10 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { Feature, toLocale } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { BaseCoverageBin } from '../../shared/types'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(() => ({
   td: {
@@ -19,10 +19,12 @@ const pct = (n: number, total = 1) => `${toP((n / (total || 1)) * 100)}%`
 
 interface Props {
   feature: Feature
+  model: { visibleModifications: Map<string, { color: string }> }
 }
 
 const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ feature }, reactRef) {
+  function TooltipContents2(props, reactRef) {
+    const { feature, model } = props
     const { classes } = useStyles()
     const start = feature.get('start') + 1
     const end = feature.get('end')
@@ -43,6 +45,7 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
           <caption>{loc}</caption>
           <thead>
             <tr>
+              <th />
               <th>Base</th>
               <th>Count</th>
               <th>% of Total</th>
@@ -51,12 +54,14 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
           </thead>
           <tbody>
             <tr>
+              <td />
               <td>Total</td>
               <td>{readsCounted}</td>
               <td> </td>
               <td> </td>
             </tr>
             <tr>
+              <td />
               <td>REF {refbase ? `(${refbase.toUpperCase()})` : ''}</td>
               <td>{ref.entryDepth}</td>
               <td>{pct(ref.entryDepth, readsCounted)}</td>
@@ -68,8 +73,11 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 
             {Object.entries(info).map(([key, entry]) =>
               Object.entries(entry).map(([base, score]) => (
-                <tr key={base}>
-                  <td>{base.toUpperCase()}</td>
+                <tr key={`${key}_${base}`}>
+                  <td>
+                    <ColorSquare model={model} base={base} />
+                  </td>
+                  <td>{base.toUpperCase()} </td>
                   <td className={classes.td}>
                     {[
                       score.entryDepth,
@@ -99,6 +107,25 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
     )
   },
 )
+
+function ColorSquare({
+  base,
+  model,
+}: {
+  base: string
+  model: { visibleModifications: Map<string, { color: string }> }
+}) {
+  const { visibleModifications } = model
+  return base.startsWith('mod_') ? (
+    <div
+      style={{
+        width: 10,
+        height: 10,
+        background: visibleModifications.get(base.replace('mod_', ''))?.color,
+      }}
+    />
+  ) : null
+}
 
 type Coord = [number, number]
 
