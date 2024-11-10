@@ -5,7 +5,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // local
 import { LinearReadCloudDisplayModel } from '../model'
-import BaseDisplayComponent from '../../shared/BaseDisplayComponent'
+import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
 type LGV = LinearGenomeViewModel
 

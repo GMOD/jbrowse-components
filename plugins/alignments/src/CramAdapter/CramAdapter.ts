@@ -4,13 +4,8 @@ import {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  checkAbortSignal,
-  Region,
-  Feature,
-  updateStatus,
-  toLocale,
-} from '@jbrowse/core/util'
+import type { Region, Feature } from '@jbrowse/core/util'
+import { checkAbortSignal, updateStatus, toLocale } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
@@ -18,7 +13,7 @@ import { firstValueFrom } from 'rxjs'
 
 // locals
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
-import { IFilter } from '../shared'
+import { FilterBy } from '../shared/types'
 
 interface Header {
   idToName?: string[]
@@ -214,7 +209,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: IFilter
+      filterBy: FilterBy
     },
   ) {
     const { signal, filterBy, statusCallback = () => {} } = opts || {}

@@ -8,7 +8,7 @@ import {
 // locals
 import { ReducedFeature } from '../util'
 
-const { featurizeSA, getClip, getTag, getLength, getLengthSansClipping } =
+const { featurizeSA, getClip, getLength, getLengthSansClipping } =
   MismatchParser
 
 export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
@@ -25,7 +25,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const assemblyNames = [trackAssembly, readAssembly]
     const trackId = `track-${Date.now()}`
     const trackName = `${readName}_vs_${trackAssembly}`
-    const SA = (getTag(feature, 'SA') as string) || ''
+    const SA = feature.get('tags')?.SA as string
     const SA2 = featurizeSA(SA, feature.id(), strand, readName, true)
 
     const feat = feature.toJSON()

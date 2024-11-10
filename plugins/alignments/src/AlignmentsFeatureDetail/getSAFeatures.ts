@@ -3,7 +3,6 @@ import { Feature, getSession } from '@jbrowse/core/util'
 // locals
 import { featurizeSA, getClip, getLengthSansClipping } from '../MismatchParser'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { getTag } from '../util'
 
 export interface ReducedFeature {
   refName: string
@@ -33,7 +32,7 @@ export async function getSAFeatures({
   const { assemblyManager } = getSession(view)
   const cigar = feature.get('CIGAR') as string
   const origStrand = feature.get('strand') as number
-  const SA = (getTag(feature, 'SA') as string) || ''
+  const SA = (feature.get('tags')?.SA as string) || ''
   const readName = feature.get('name') as string
   const clipPos = getClip(cigar, 1)
 

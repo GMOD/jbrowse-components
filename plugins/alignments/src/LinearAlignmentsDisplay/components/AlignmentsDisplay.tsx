@@ -5,7 +5,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
-import { LinearAlignmentsDisplayModel } from '../models/model'
+import { LinearAlignmentsDisplayModel } from '../model'
 
 const useStyles = makeStyles()({
   resizeHandle: {

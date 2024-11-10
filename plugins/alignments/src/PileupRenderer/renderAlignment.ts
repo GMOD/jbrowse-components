@@ -5,8 +5,8 @@ import { renderAlignmentShape } from './renderAlignmentShape'
 import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderModifications } from './renderModifications'
-import { renderMethylation } from './renderMethylation'
 import { RenderArgsWithColor } from './makeImageData'
+import { renderMethylation } from './renderMethylation'
 
 export function renderAlignment({
   ctx,

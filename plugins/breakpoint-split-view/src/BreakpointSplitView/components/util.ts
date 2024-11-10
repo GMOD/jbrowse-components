@@ -30,11 +30,6 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   return [...candidates.values()].filter(v => v.length > 1)
 }
 
-function getTag(f: Feature, tag: string) {
-  const tags = f.get('tags')
-  return tags ? tags[tag] : f.get(tag)
-}
-
 // this finds candidate alignment features, aimed at plotting split reads from
 // BAM/CRAM files
 export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
@@ -45,7 +40,7 @@ export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   for (const feature of features.values()) {
     const id = feature.id()
     const unmapped = feature.get('flags') & 4
-    const hasSA = !!getTag(feature, 'SA')
+    const hasSA = !!feature.get('tags')?.SA
     if (!alreadySeen.has(id) && !unmapped && hasSA) {
       const n = feature.get('name')
       let val = candidates.get(n)

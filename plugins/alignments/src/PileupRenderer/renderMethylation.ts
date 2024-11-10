@@ -1,11 +1,14 @@
 import { bpSpanPx, Region } from '@jbrowse/core/util'
-import { getMethBins } from '../MismatchParser'
-import { fillRect, LayoutFeature } from './util'
-import { RenderArgsWithColor } from './makeImageData'
 import { colord } from '@jbrowse/core/util/colord'
 
-// Color by methylation is slightly modified version of color by
-// modifications that focuses on CpG sites, with non-methylated CpG colored
+// locals
+import { fillRect, LayoutFeature } from './util'
+import { RenderArgsWithColor } from './makeImageData'
+import { getMethBins } from '../ModificationParser'
+
+// Color by methylation is slightly modified version of color by modifications
+// at reference CpG sites, with non-methylated CpG colored (looking only at the
+// MM tag can not tell you where reference CpG sites are)
 export function renderMethylation({
   ctx,
   feat,
@@ -35,7 +38,8 @@ export function renderMethylation({
   }
   const fstart = feature.get('start')
   const fend = feature.get('end')
-  const { methBins, methProbs } = getMethBins(feature, cigarOps)
+  const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
+    getMethBins(feature, cigarOps)
 
   function getCol(k: number) {
     if (methBins[k]) {
@@ -46,12 +50,22 @@ export function renderMethylation({
           : colord('blue').alpha(1 - p * 2)
       ).toHslString()
     }
+    if (hydroxyMethBins[k]) {
+      const p = hydroxyMethProbs[k] || 0
+      return (
+        p > 0.5
+          ? colord('pink').alpha((p - 0.5) * 2)
+          : colord('purple').alpha(1 - p * 2)
+      ).toHslString()
+    }
     return undefined
   }
+  const r = regionSequence.toLowerCase()
   for (let i = 0; i < fend - fstart; i++) {
     const j = i + fstart
-    const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
-    const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
+
+    const l1 = r[j - region.start + 1]
+    const l2 = r[j - region.start + 2]
 
     if (l1 === 'c' && l2 === 'g') {
       if (bpPerPx > 2) {

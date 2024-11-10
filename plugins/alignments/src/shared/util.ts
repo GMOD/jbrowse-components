@@ -1,3 +1,4 @@
+import { colord } from '@jbrowse/core/util/colord'
 import { ChainData } from './fetchChains'
 
 export function hasPairedReads(features: ChainData) {
@@ -7,4 +8,17 @@ export function hasPairedReads(features: ChainData) {
     }
   }
   return false
+}
+
+export function alphaColor(baseColor: string, p: number) {
+  return p !== 1
+    ? colord(baseColor)
+        .alpha(p * p)
+        .toHslString()
+    : baseColor
+}
+
+export const defaultFilterFlags = {
+  flagInclude: 0,
+  flagExclude: 1540,
 }

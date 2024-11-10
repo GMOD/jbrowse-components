@@ -12,7 +12,7 @@ import { firstValueFrom } from 'rxjs'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { IFilter } from '../shared'
+import { FilterBy } from '../shared/types'
 
 interface Header {
   idToName: string[]
@@ -162,7 +162,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: IFilter
+      filterBy: FilterBy
     },
   ) {
     const { refName, start, end, originalRefName } = region

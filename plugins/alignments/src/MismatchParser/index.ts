@@ -1,6 +1,5 @@
-import { revcom, Feature } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util'
 import type { Buffer } from 'buffer'
-import { getTagAlt } from '../util'
 
 export interface Mismatch {
   qual?: number
@@ -13,7 +12,6 @@ export interface Mismatch {
   cliplen?: number
 }
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
-const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
@@ -40,7 +38,8 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (
-            // @ts-ignore in the full yarn build of the repo, this says that object is possibly undefined for some reason, ignored
+            // @ts-ignore in the full yarn build of the repo, this says that
+            // object is possibly undefined for some reason, ignored
             seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
           ) {
             mismatches.push({
@@ -136,10 +135,8 @@ export function mdToMismatches(
   const mismatchRecords: Mismatch[] = []
   const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
 
-  // convert a position on the reference sequence to a position
-  // on the template sequence, taking into account hard and soft
-  // clipping of reads
-
+  // convert a position on the reference sequence to a position on the template
+  // sequence, taking into account hard and soft clipping of reads
   function nextRecord(): void {
     mismatchRecords.push(curr)
 
@@ -235,6 +232,7 @@ export function getMismatches(
 
   return mismatches
 }
+
 // get relative reference sequence positions for positions given relative to
 // the read sequence
 export function* getNextRefPos(cigarOps: string[], positions: number[]) {
@@ -257,7 +255,10 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
     } else if (op === 'M' || op === 'X' || op === '=') {
       for (let i = 0; i < len && currPos < positions.length; i++) {
         if (positions[currPos] === readPos + i) {
-          yield refPos + i
+          yield {
+            ref: refPos + i,
+            idx: currPos,
+          }
           currPos++
         }
       }
@@ -265,127 +266,6 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
       refPos += len
     }
   }
-}
-
-export function getModificationProbabilities(feature: Feature) {
-  const m = (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
-  return m
-    ? (typeof m === 'string' ? m.split(',').map(e => +e) : m).map(e => e / 255)
-    : (getTagAlt(feature, 'MP', 'Mp') as string | undefined)
-        ?.split('')
-        .map(s => s.charCodeAt(0) - 33)
-        .map(elt => Math.min(1, elt / 50))
-}
-
-export function getMethBins(feature: Feature, cigarOps: string[]) {
-  const fstart = feature.get('start')
-  const fend = feature.get('end')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
-  const flen = fend - fstart
-  const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
-  const methBins = new Array<number>(flen)
-  const methProbs = new Array<number>(flen)
-  const seq = feature.get('seq') as string | undefined
-  if (seq) {
-    const probabilities = getModificationProbabilities(feature)
-    const modifications = getModificationPositions(mm, seq, fstrand)
-    let probIndex = 0
-    for (const { type, positions } of modifications) {
-      if (type === 'm') {
-        for (const ref of getNextRefPos(cigarOps, positions)) {
-          const prob = probabilities?.[probIndex] || 0
-          probIndex++
-          if (ref >= 0 && ref < flen) {
-            methBins[ref] = 1
-            methProbs[ref] = prob
-          }
-        }
-      }
-    }
-  }
-  return { methBins, methProbs }
-}
-
-export function getModificationPositions(
-  mm: string,
-  fseq: string,
-  fstrand: number,
-) {
-  const seq = fstrand === -1 ? revcom(fseq) : fseq
-  const mods = mm.split(';').filter(mod => !!mod)
-  const result = []
-  for (const mod of mods) {
-    const [basemod, ...skips] = mod.split(',')
-
-    // regexes based on parse_mm.pl from hts-specs
-    const matches = modificationRegex.exec(basemod!)
-    if (!matches) {
-      throw new Error('bad format for MM tag')
-    }
-    const [, base, strand, typestr] = matches
-
-    // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
-    // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-    const types = typestr!.split(/(\d+|.)/).filter(f => !!f)
-
-    if (strand === '-') {
-      console.warn('unsupported negative strand modifications')
-      // make sure to return a somewhat matching type even in this case
-      result.push({ type: 'unsupported', positions: [] as number[] })
-    }
-
-    // this logic also based on parse_mm.pl from hts-specs is that in the
-    // sequence of the read, if we have a modification type e.g. C+m;2 and a
-    // sequence ACGTACGTAC we skip the two instances of C and go to the last C
-    for (const type of types) {
-      let i = 0
-      const positions = []
-      for (const d of skips) {
-        let delta = +d
-        do {
-          if (base === 'N' || base === seq[i]) {
-            delta--
-          }
-          i++
-        } while (delta >= 0 && i < seq.length)
-        if (fstrand === -1) {
-          const pos = seq.length - i
-          if (pos >= 0) {
-            // avoid negative-number-positions in array, seen in #4629 cause
-            // unknown, could warrant some further investigation
-            positions.unshift(pos)
-          }
-        } else {
-          positions.push(i - 1)
-        }
-      }
-
-      result.push({
-        type,
-        positions,
-      })
-    }
-  }
-  return result
-}
-
-export function getModificationTypes(mm: string) {
-  return mm
-    .split(';')
-    .filter(mod => !!mod)
-    .flatMap(mod => {
-      const basemod = mod.split(',')[0]!
-
-      const matches = modificationRegex.exec(basemod)
-      if (!matches) {
-        throw new Error(`bad format for MM tag: ${mm}`)
-      }
-      const typestr = matches[3]!
-
-      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
-      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-      return typestr.split(/(\d+|.)/).filter(f => !!f)
-    })
 }
 
 export function getOrientedCigar(flip: boolean, cigar: string[]) {

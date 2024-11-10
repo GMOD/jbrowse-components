@@ -5,17 +5,11 @@ import { firstValueFrom } from 'rxjs'
 import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
 import { IAutorunOptions, autorun } from 'mobx'
 
-// get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
-// BAM does not
-export function getTag(feature: Feature, tag: string) {
-  const tags = feature.get('tags')
-  return tags !== undefined ? tags[tag] : feature.get(tag)
-}
-
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {
-  return getTag(feature, tag) ?? getTag(feature, alt)
+  const tags = feature.get('tags')
+  return tags[tag] ?? tags[alt]
 }
 
 // orientation definitions from igv.js, see also
@@ -90,8 +84,6 @@ export function getColorWGBS(strand: number, base: string) {
   return '#888'
 }
 
-// fetches region sequence augmenting by +/- 1bp for CpG on either side of
-// requested region
 export async function fetchSequence(
   region: AugmentedRegion,
   adapter: BaseFeatureDataAdapter,
@@ -103,32 +95,35 @@ export async function fetchSequence(
       .getFeatures({
         ...region,
         refName: originalRefName || refName,
-        end: end + 1,
-        start: Math.max(0, start - 1),
+        end,
+        start,
       })
       .pipe(toArray()),
   )
   return feats[0]?.get('seq')
 }
 
-// has to check underlying C-G (aka CpG) on the reference sequence
-export function shouldFetchReferenceSequence(type?: string) {
-  return type === 'methylation'
+interface ModificationData {
+  color: string
+  name: string
 }
 
 // adapted from IGV
-// https://github.com/igvteam/igv/blob/e803e3af2d8c9ea049961dfd4628146bdde9a574/src/main/java/org/broad/igv/sam/mods/BaseModificationColors.java#L27
-export const modificationColors = {
-  m: 'rgb(255,0,0)',
-  h: 'rgb(11, 132, 165)',
-  o: 'rgb(111, 78, 129)',
-  f: 'rgb(246, 200, 95)',
-  c: 'rgb(157, 216, 102)',
-  g: 'rgb(255, 160, 86)',
-  e: 'rgb(141, 221, 208)',
-  b: 'rgb(202, 71, 47)',
-  a: 'hsl(136, 50%, 50%)',
-} as Record<string, string>
+// https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/resources/org/broad/igv/prefs/preferences.tab#L230-L242
+export const modificationData = {
+  m: { color: 'rgb(255,0,0)', name: '5mC' },
+  h: { color: 'rgb(255,0,255)', name: '5hmC' },
+  o: { color: 'rgb(111, 78, 129)', name: '8oxoG' },
+  f: { color: 'rgb(246, 200, 95)', name: '5fC' },
+  c: { color: 'rgb(157, 216, 102)', name: '5cac' },
+  g: { color: 'rgb(255, 160, 86)', name: '5hmu' },
+  e: { color: 'rgb(141, 221, 208)', name: '5fU' },
+  b: { color: 'rgb(0,100,47)', name: '5caU' },
+  a: { color: 'rgb(51,0,111)', name: '6mA' },
+  17082: { color: 'rgb(51,153,255)', name: 'pseU' },
+  17596: { color: 'rgb(102,153,0)', name: 'inosine' },
+  21839: { color: 'rgb(153,0,153)', name: '4mC' },
+} as Record<string, ModificationData>
 
 type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }
 
@@ -161,5 +156,5 @@ export function randomColor(str: string) {
 }
 
 export function getColorForModification(str: string) {
-  return modificationColors[str] || randomColor(str)
+  return modificationData[str]?.color || randomColor(str)
 }

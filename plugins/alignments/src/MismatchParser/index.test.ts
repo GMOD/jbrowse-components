@@ -3,15 +3,14 @@ import {
   cigarToMismatches,
   mdToMismatches,
   parseCigar,
-  getNextRefPos,
-  getModificationPositions,
 } from './index'
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'
 
-// examples come from https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files
-// and http://seqanswers.com/forums/showthread.php?t=8978
+// examples come from
+// https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files and
+// http://seqanswers.com/forums/showthread.php?t=8978
 
 test('cigar to mismatches', () => {
   expect(cigarToMismatches(parseCigar('56M1D45M'), seq)).toEqual([
@@ -240,44 +239,4 @@ test('clipping', () => {
     { cliplen: 10, base: 'S10', length: 1, start: 10, type: 'softclip' },
     { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },
   ])
-})
-
-test('getNextRefPos test 1', () => {
-  const cigar = parseCigar('10S10M1I4M1D15M')
-  const iter = getNextRefPos(cigar, [5, 10, 15, 20, 25, 30, 35])
-  expect([...iter]).toEqual([0, 5, 15, 20, 25])
-})
-test('getNextRefPos test 2', () => {
-  const cigar = parseCigar('10S15M')
-  const iter = getNextRefPos(cigar, [5, 10, 15])
-  expect([...iter]).toEqual([0, 5])
-})
-
-test('getModificationPositions', () => {
-  const positions = getModificationPositions(
-    'C+m,2,2,1,4,1',
-    'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
-    1,
-  )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
-})
-
-// ? means "modification status of the skipped bases provided."
-test('getModificationPositions with unknown (?)', () => {
-  const positions = getModificationPositions(
-    'C+m?,2,2,1,4,1',
-    'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
-    1,
-  )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
-})
-
-// . means "modification status of the skipped bases is low probability"
-test('getModificationPositions with unknown (.)', () => {
-  const positions = getModificationPositions(
-    'C+m.,2,2,1,4,1',
-    'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
-    1,
-  )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
 })

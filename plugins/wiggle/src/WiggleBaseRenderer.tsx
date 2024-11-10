@@ -86,9 +86,9 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
   ): Promise<Record<string, unknown> | undefined>
 }
 
-export {
-  type RenderArgsSerialized,
-  type RenderResults,
-  type ResultsDeserialized,
-  type ResultsSerialized,
+export type {
+  RenderArgsSerialized,
+  RenderResults,
+  ResultsDeserialized,
+  ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
