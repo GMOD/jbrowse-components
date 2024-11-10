@@ -1,5 +1,3 @@
-import { types, Instance } from 'mobx-state-tree'
-
 import { orientationTypes, pairMap } from '../util'
 import { ChainStats } from './fetchChains'
 
@@ -97,13 +95,3 @@ export function getPairedOrientationColorOrDefault(f: {
 export function getPairedOrientationColor(f: { pair_orientation?: string }) {
   return getPairedOrientationColorOrDefault(f) || defaultColor
 }
-
-export const ColorByModel = types.maybe(
-  types.model({
-    type: types.string,
-    tag: types.maybe(types.string),
-    extra: types.frozen(),
-  }),
-)
-
-export type IColorByModel = Instance<typeof ColorByModel>

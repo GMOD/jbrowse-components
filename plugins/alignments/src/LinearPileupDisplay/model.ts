@@ -356,10 +356,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       onClick: () => {
                         self.setColorScheme({
                           type: 'modifications',
-                          extra: {
-                            modifications: {
-                              isolatedModification: key,
-                            },
+                          modifications: {
+                            isolatedModification: key,
                           },
                         })
                       },
@@ -370,10 +368,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       onClick: () => {
                         self.setColorScheme({
                           type: 'modifications',
-                          extra: {
-                            modifications: {
-                              twoColor: true,
-                            },
+                          modifications: {
+                            twoColor: true,
                           },
                         })
                       },
@@ -383,11 +379,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       onClick: () => {
                         self.setColorScheme({
                           type: 'modifications',
-                          extra: {
-                            modifications: {
-                              isolatedModification: key,
-                              twoColor: true,
-                            },
+                          modifications: {
+                            isolatedModification: key,
+                            twoColor: true,
                           },
                         })
                       },

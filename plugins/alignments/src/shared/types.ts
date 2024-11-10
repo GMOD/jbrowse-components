@@ -84,8 +84,8 @@ export interface ColorBy {
   type: string
   tag?: string
   modifications?: {
-    twoColor: boolean
-    isolatedModification: string
+    twoColor?: boolean
+    isolatedModification?: string
   }
 }
 

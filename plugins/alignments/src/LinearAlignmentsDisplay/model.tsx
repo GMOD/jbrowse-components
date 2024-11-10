@@ -6,7 +6,6 @@ import {
   isAlive,
   types,
   Instance,
-  IStateTreeNode,
 } from 'mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 
@@ -28,16 +27,6 @@ import { FilterBy } from '../shared/types'
 
 const minDisplayHeight = 20
 
-function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
-  x1?: T,
-  x2?: U,
-) {
-  return deepEqual(
-    x1 ? getSnapshot(x1) : undefined,
-    x2 ? getSnapshot(x2) : undefined,
-  )
-}
-
 function preCheck(self: LinearAlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
   return (
@@ -53,7 +42,7 @@ function propagateColorBy(self: LinearAlignmentsDisplayModel) {
   if (!preCheck(self) || !PileupDisplay.colorBy) {
     return
   }
-  if (!deepSnap(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
+  if (!deepEqual(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
     SNPCoverageDisplay.setColorScheme({
       ...PileupDisplay.colorBy,
     })
@@ -65,7 +54,7 @@ function propagateFilterBy(self: LinearAlignmentsDisplayModel) {
   if (!preCheck(self) || !PileupDisplay.filterBy) {
     return
   }
-  if (!deepSnap(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
+  if (!deepEqual(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
     SNPCoverageDisplay.setFilterBy({
       ...PileupDisplay.filterBy,
     })
@@ -89,6 +78,9 @@ function stateModelFactory(
       LinearAlignmentsDisplayMixin(pluginManager, configSchema),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       scrollTop: 0,
     }))
     .actions(self => ({

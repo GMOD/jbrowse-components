@@ -66,7 +66,7 @@ function stateModelFactory(
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy>(),
+        colorBy: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
@@ -104,9 +104,11 @@ function stateModelFactory(
        * #action
        */
       setColorScheme(colorBy?: ColorBy) {
-        self.colorBy = {
-          ...colorBy,
-        }
+        self.colorBy = colorBy
+          ? {
+              ...colorBy,
+            }
+          : undefined
       },
       /**
        * #action
@@ -139,13 +141,14 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+          const { drawArcs, drawInterbaseCounts, drawIndicators } = self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
               drawInterbaseCounts:
-                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: self.drawArcs ?? configBlob.drawArcs,
+                drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
+              drawIndicators: drawIndicators ?? configBlob.drawIndicators,
+              drawArcs: drawArcs ?? configBlob.drawArcs,
             },
             getEnv(self),
           )
@@ -210,19 +213,16 @@ function stateModelFactory(
          */
         renderProps() {
           const superProps = superRenderProps()
-          const { colorBy, filterBy, visibleModifications } = self
+          const { filters, colorBy, filterBy, visibleModifications } = self
           return {
             ...superProps,
             notReady: !this.ready,
-            filters: self.filters,
+            filters,
+            colorBy,
+            filterBy,
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
-
-            // must use getSnapshot because otherwise changes to e.g. just the
-            // colorBy.type are not read
-            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: getSnapshot(filterBy),
           }
         },
       }

@@ -149,7 +149,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const drawingMethylation = colorBy?.type === 'methylation'
     const isolatedModification =
       // @ts-expect-error
-      colorBy?.extra?.modifications?.isolatedModification
+      colorBy?.modifications?.isolatedModification
 
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
