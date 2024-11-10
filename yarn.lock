@@ -2329,11 +2329,12 @@
   resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.9.tgz#5c81f50c73decbb9bc973319a05f1b9fc8566ae0"
   integrity sha512-H4I4HLJRhBV7t1fsoLLTRMiaiS4CRCDDr+k/CdyAc1kK+Qj5ox7XMSkkAJrd2AzVys35Iz09hJQHzyUL/lN3NA==
 
-"@gmod/twobit@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-2.0.1.tgz#bb967c8ba2057a8bf45a4a1eda26412dd3455ebb"
-  integrity sha512-uHiWjslhsE1AkX39ndbrADSceP9xOBb3BmJ2QCcu8Tw1ej0YnsaQv+hWbwVJ2K+EO439jocgtVfkmohGB78ZUA==
+"@gmod/twobit@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-3.0.1.tgz#3be6a5a782d95b09709a6243f9b921fa972cea81"
+  integrity sha512-0G6Maq3PzwqZfavPQpCQSl2yd7M1W1NrpFtn+0xqfigdHA08gtn1GF7OvrD2leei6JhN8VR3hEiQVh0nRGztcw==
   dependencies:
+    buffer "^6.0.3"
     generic-filehandle "^3.0.0"
 
 "@gmod/ucsc-hub@^0.3.0":

@@ -4662,12 +4662,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "chr20_mod_call_sample.bam",
+          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/chr20_mod_call_sample.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "chr20_mod_call_sample.bam.bai",
+            "uri": "https://jbrowse.org/genomes/GRCh38/methylation/chr20_mod_call_sample.bam.bai",
             "locationType": "UriLocation"
           },
           "indexType": "BAI"

@@ -25,7 +25,11 @@ import {
   modificationData,
 } from '../util'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { ModificationType, ModificationTypeWithColor } from '../shared/types'
+import {
+  ModificationType,
+  ModificationTypeWithColor,
+  SortedBy,
+} from '../shared/types'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
@@ -65,16 +69,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        sortedBy: types.frozen<
-          | {
-              type: string
-              pos: number
-              tag: string | undefined
-              refName: string
-              assemblyName: string
-            }
-          | undefined
-        >(),
+        sortedBy: types.frozen<SortedBy | undefined>(),
       }),
     )
     .volatile(() => ({

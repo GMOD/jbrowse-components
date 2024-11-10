@@ -1,14 +1,10 @@
 import { doesIntersect2, Feature } from '@jbrowse/core/util'
 import { Mismatch } from '../MismatchParser'
+import { SortedBy } from '../shared/types'
 
-interface SortObject {
-  pos: number
-  type: string
-  tag?: string
-}
 export const sortFeature = (
   features: Map<string, Feature>,
-  sortedBy: SortObject,
+  sortedBy: SortedBy,
 ) => {
   const featureArray = Array.from(features.values())
   const featuresInCenterLine: Feature[] = []

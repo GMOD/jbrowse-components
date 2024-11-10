@@ -39,7 +39,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     if (!sequenceAdapter) {
       return undefined
     }
-
     return fetchSequence(region, sequenceAdapter)
   }
 

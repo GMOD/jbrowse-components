@@ -356,15 +356,15 @@ export async function generateCoverageBins({
   const { colorBy } = opts
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
+  const start2 = Math.max(0, region.start - 1)
+  const diff = region.start - start2
+  const regionSequence =
+    (await fetchSequence({
+      ...region,
+      start: start2,
+      end: region.end + 1,
+    })) || ''
   for (const feature of features) {
-    const start2 = Math.max(0, region.start - 1)
-    const diff = region.start - start2
-    const regionSequence =
-      (await fetchSequence({
-        ...region,
-        start: start2,
-        end: region.end + 1,
-      })) || ''
     processDepth({
       feature,
       bins,

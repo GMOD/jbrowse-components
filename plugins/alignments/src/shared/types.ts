@@ -98,3 +98,11 @@ export interface FilterBy {
     value?: string
   }
 }
+
+export interface SortedBy {
+  type: string
+  pos: number
+  refName: string
+  assemblyName: string
+  tag?: string
+}
