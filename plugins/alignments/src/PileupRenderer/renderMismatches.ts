@@ -1,8 +1,8 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
-import { Mismatch } from '../MismatchParser'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
 import { colord } from '@jbrowse/core/util/colord'
+import { Mismatch } from '../shared/types'
 
 export function renderMismatches({
   ctx,

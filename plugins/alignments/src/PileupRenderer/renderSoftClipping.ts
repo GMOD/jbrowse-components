@@ -6,9 +6,9 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { Theme } from '@mui/material'
 
 // locals
-import { Mismatch } from '../MismatchParser'
 import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { fillRect, getCharWidthHeight, LayoutFeature } from './util'
+import { Mismatch } from '../shared/types'
 
 export function renderSoftClipping({
   ctx,

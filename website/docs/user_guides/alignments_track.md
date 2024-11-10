@@ -90,8 +90,9 @@ If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
 format, then the alignments track can use these tags to color modifications. It
 uses two modes:
 
-1. Modifications mode - draws the modifications as they are
-2. Methylation mode - draws both unmodified and modified CpGs (unmodified
+1. All modifications - draws the modifications as they are
+1. modifications - draws the modifications as they are
+1. Methylation mode - draws both unmodified and modified CpGs (unmodified
    positions are not indicated by the MM tag and this mode considers the
    sequence context)
 

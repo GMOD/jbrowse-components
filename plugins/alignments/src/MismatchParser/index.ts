@@ -1,16 +1,7 @@
 import { Feature } from '@jbrowse/core/util'
 import type { Buffer } from 'buffer'
+import { Mismatch } from '../shared/types'
 
-export interface Mismatch {
-  qual?: number
-  start: number
-  length: number
-  type: string
-  base: string
-  altbase?: string
-  seq?: string
-  cliplen?: number
-}
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 const startClip = new RegExp(/(\d+)[SH]$/)
@@ -125,7 +116,7 @@ export function mdToMismatches(
   ops: string[],
   cigarMismatches: Mismatch[],
   seq: string,
-  qual?: Buffer,
+  qual?: Buffer | number[] | null,
 ) {
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
   let lastCigar = 0

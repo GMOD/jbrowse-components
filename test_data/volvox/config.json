@@ -2217,19 +2217,20 @@
       },
       "assemblyNames": ["volvox"]
     },
+
     {
       "type": "AlignmentsTrack",
-      "trackId": "out_noref",
-      "name": "out_noref",
+      "trackId": "volvox-sorted.noref.cram",
+      "name": "volvox-sorted.cram (noref)",
       "category": ["Integration test"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "out_noref.cram",
+          "uri": "volvox-sorted.noref.cram",
           "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "out_noref.cram.crai",
+          "uri": "volvox-sorted.noref.cram.crai",
           "locationType": "UriLocation"
         },
         "sequenceAdapter": {

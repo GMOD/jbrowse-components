@@ -31,7 +31,11 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches' ? this.mismatches : this.fields[field]
+    return field === 'mismatches'
+      ? this.mismatches
+      : field === 'qual'
+        ? this.record.qual
+        : this.fields[field]
   }
 
   parent() {
@@ -51,7 +55,6 @@ export default class BamSlightlyLazyFeature implements Feature {
       name: r.name,
       end: r.end,
       score: r.score,
-      qual: r.qual,
       strand: r.strand,
       template_length: r.template_length,
       flags: r.flags,

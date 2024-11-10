@@ -1,12 +1,10 @@
-import {
-  Feature,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
+import { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import { CramRecord } from '@gmod/cram'
 
 // locals
 import CramAdapter from './CramAdapter'
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
+import { mdToMismatches, parseCigar } from '../MismatchParser'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -26,10 +24,6 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   get end() {
     return this.start + (this.record.lengthOnRef ?? 1)
-  }
-
-  get type() {
-    return 'match'
   }
 
   get score() {
@@ -110,7 +104,13 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches' ? this.mismatches : this.fields[field]
+    return field === 'mismatches'
+      ? this.mismatches
+      : field === 'qual'
+        ? this.qual
+        : field === 'CIGAR'
+          ? this.CIGAR
+          : this.fields[field]
   }
 
   parent() {
@@ -122,11 +122,22 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get mismatches() {
-    return readFeaturesToMismatches(
+    const mismatches = readFeaturesToMismatches(
       this.record.readFeatures,
       this.start,
       this.qualRaw,
     )
+    return this.tags.MD && this.seq
+      ? mismatches.concat(
+          mdToMismatches(
+            this.tags.MD,
+            parseCigar(this.CIGAR),
+            mismatches,
+            this.seq,
+            this.qualRaw,
+          ),
+        )
+      : mismatches
   }
 
   get fields(): SimpleFeatureSerialized {
@@ -135,13 +146,11 @@ export default class CramSlightlyLazyFeature implements Feature {
       name: this.name,
       end: this.end,
       score: this.score,
-      qual: this.qual,
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
       tags: this.tags,
       refName: this.refName,
-      CIGAR: this.CIGAR,
       seq: this.seq,
       type: 'match',
       pair_orientation: this.pair_orientation,
@@ -153,7 +162,13 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
-    return this.fields
+    return {
+      ...this.fields,
+      // lazy
+      CIGAR: this.CIGAR,
+      // lazy
+      qual: this.qual,
+    }
   }
 }
 

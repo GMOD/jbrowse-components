@@ -106,3 +106,14 @@ export interface SortedBy {
   assemblyName: string
   tag?: string
 }
+
+export interface Mismatch {
+  qual?: number
+  start: number
+  length: number
+  type: string
+  base: string
+  altbase?: string
+  seq?: string
+  cliplen?: number
+}
