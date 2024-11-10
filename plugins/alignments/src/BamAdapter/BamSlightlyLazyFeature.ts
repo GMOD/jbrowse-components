@@ -5,7 +5,7 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getMismatches, parseCigar } from '../MismatchParser'
+import { getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
@@ -20,17 +20,18 @@ export default class BamSlightlyLazyFeature implements Feature {
   id() {
     return `${this.adapter.id}-${this.record.id}`
   }
+  get mismatches() {
+    return getMismatches(
+      this.record.CIGAR,
+      this.record.tags.MD as string | undefined,
+      this.record.seq,
+      this.ref,
+      this.record.qualRaw,
+    )
+  }
 
   get(field: string): any {
-    return field === 'mismatches'
-      ? getMismatches(
-          this.record.CIGAR,
-          this.record.tags.MD as string | undefined,
-          this.record.seq,
-          this.ref,
-          this.record.qualRaw,
-        )
-      : this.fields[field]
+    return field === 'mismatches' ? this.mismatches : this.fields[field]
   }
 
   parent() {
@@ -41,16 +42,11 @@ export default class BamSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  get parsedCigar() {
-    return parseCigar(this.record.CIGAR)
-  }
-
   get fields(): SimpleFeatureSerialized {
     const r = this.record
     const a = this.adapter
     const p = r.isPaired()
     return {
-      id: this.id(),
       start: r.start,
       name: r.name,
       end: r.end,
@@ -99,4 +95,3 @@ function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
-cacheGetter(BamSlightlyLazyFeature, 'parsedCigar')
