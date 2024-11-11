@@ -2,10 +2,11 @@ import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { doesIntersect2, Feature, max, sum } from '@jbrowse/core/util'
 
 // locals
-import { parseCigar, Mismatch } from '../MismatchParser'
+import { parseCigar } from '../MismatchParser'
 import { getMethBins } from '../ModificationParser'
 import {
   ColorBy,
+  Mismatch,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
   SkipMap,

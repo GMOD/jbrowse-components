@@ -1,12 +1,10 @@
-import {
-  Feature,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
+import { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import { CramRecord } from '@gmod/cram'
 
 // locals
 import CramAdapter from './CramAdapter'
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
+import { mdToMismatches, parseCigar } from '../MismatchParser'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -16,73 +14,57 @@ export default class CramSlightlyLazyFeature implements Feature {
     private _store: CramAdapter,
   ) {}
 
-  _get_name() {
+  get name() {
     return this.record.readName
   }
 
-  _get_start() {
+  get start() {
     return this.record.alignmentStart - 1
   }
 
-  _get_end() {
-    return this.record.alignmentStart + (this.record.lengthOnRef ?? 1) - 1
+  get end() {
+    return this.start + (this.record.lengthOnRef ?? 1)
   }
 
-  _get_cram_read_features() {
-    return this.record.readFeatures
-  }
-
-  _get_type() {
-    return 'match'
-  }
-
-  _get_score() {
+  get score() {
     return this.record.mappingQuality
   }
 
-  _get_flags() {
+  get flags() {
     return this.record.flags
   }
 
-  _get_strand() {
+  get strand() {
     return this.record.isReverseComplemented() ? -1 : 1
   }
 
-  _read_group_id() {
-    return this._store.samHeader.readGroups?.[this.record.readGroupId]
-  }
-
-  _get_qual() {
+  get qual() {
     return (this.record.qualityScores || []).join(' ')
   }
 
-  qualRaw() {
+  get qualRaw() {
     return this.record.qualityScores
   }
 
-  _get_refName() {
-    return this._store.refIdToName(this.record.sequenceId)
+  get refName() {
+    return this._store.refIdToName(this.record.sequenceId)!
   }
 
-  _get_is_paired() {
-    return !!this.record.mate
-  }
-
-  _get_pair_orientation() {
+  get pair_orientation() {
     return this.record.isPaired() ? this.record.getPairOrientation() : undefined
   }
 
-  _get_template_length() {
+  get template_length() {
     return this.record.templateLength || this.record.templateSize
   }
 
-  _get_next_ref() {
+  get next_ref() {
     return this.record.mate
       ? this._store.refIdToName(this.record.mate.sequenceId)
       : undefined
   }
 
-  _get_next_segment_position() {
+  get next_segment_position() {
     return this.record.mate
       ? `${this._store.refIdToName(this.record.mate.sequenceId)}:${
           this.record.mate.alignmentStart
@@ -90,23 +72,25 @@ export default class CramSlightlyLazyFeature implements Feature {
       : undefined
   }
 
-  _get_next_pos() {
+  get is_paired() {
+    return !!this.record.mate
+  }
+
+  get next_pos() {
     return this.record.mate?.alignmentStart
   }
 
-  _get_tags() {
-    const RG = this._read_group_id()
-    const { tags } = this.record
-    // avoids a tag copy if no RG, but just copy if there is one
-    return RG !== undefined ? { ...tags, RG } : tags
+  get tags() {
+    const RG = this._store.samHeader.readGroups?.[this.record.readGroupId]
+    return RG !== undefined ? { ...this.record.tags, RG } : this.record.tags
   }
 
-  _get_seq() {
+  get seq() {
     return this.record.getReadBases()
   }
 
   // generate a CIGAR, based on code from jkbonfield
-  _get_CIGAR() {
+  get CIGAR() {
     return readFeaturesToCIGAR(
       this.record.readFeatures,
       this.record.alignmentStart,
@@ -115,29 +99,18 @@ export default class CramSlightlyLazyFeature implements Feature {
     )
   }
 
-  tags() {
-    return Object.getOwnPropertyNames(CramSlightlyLazyFeature.prototype)
-      .filter(
-        prop =>
-          prop.startsWith('_get_') &&
-          prop !== '_get_mismatches' &&
-          prop !== '_get_cram_read_features',
-      )
-      .map(methodName => methodName.replace('_get_', ''))
-  }
-
   id() {
     return `${this._store.id}-${this.record.uniqueId}`
   }
 
-  get(field: string) {
-    const methodName = `_get_${field}`
-    // @ts-expect-error
-    if (this[methodName]) {
-      // @ts-expect-error
-      return this[methodName]()
-    }
-    return undefined
+  get(field: string): any {
+    return field === 'mismatches'
+      ? this.mismatches
+      : field === 'qual'
+        ? this.qual
+        : field === 'CIGAR'
+          ? this.CIGAR
+          : this.fields[field]
   }
 
   parent() {
@@ -148,40 +121,73 @@ export default class CramSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  set() {}
-
-  pairedFeature() {
-    return false
+  get mismatches() {
+    const mismatches = readFeaturesToMismatches(
+      this.record.readFeatures,
+      this.start,
+      this.qualRaw,
+    )
+    return this.tags.MD && this.seq
+      ? mismatches.concat(
+          mdToMismatches(
+            this.tags.MD,
+            parseCigar(this.CIGAR),
+            mismatches,
+            this.seq,
+            this.qualRaw,
+          ),
+        )
+      : mismatches
   }
 
-  _get_clipPos() {
-    const mismatches = this.get('mismatches')
-    if (mismatches.length) {
-      const record =
-        this.get('strand') === -1 ? mismatches.at(-1) : mismatches[0]
-      const { type, cliplen } = record
-      if (type === 'softclip' || type === 'hardclip') {
-        return cliplen
-      }
-    }
-    return 0
-  }
-
-  toJSON(): SimpleFeatureSerialized {
+  get fields(): SimpleFeatureSerialized {
     return {
-      ...Object.fromEntries(
-        this.tags()
-          .map(t => [t, this.get(t)])
-          .filter(elt => elt[1] !== undefined),
-      ),
+      start: this.start,
+      name: this.name,
+      end: this.end,
+      score: this.score,
+      strand: this.strand,
+      template_length: this.template_length,
+      flags: this.flags,
+      tags: this.tags,
+      refName: this.refName,
+      seq: this.seq,
+      type: 'match',
+      pair_orientation: this.pair_orientation,
+      next_ref: this.next_ref,
+      next_pos: this.next_pos,
+      next_segment_position: this.next_segment_position,
       uniqueId: this.id(),
     }
   }
 
-  _get_mismatches() {
-    const readFeatures = this.record.readFeatures
-    const qual = this.qualRaw()
-    const start = this.get('start')
-    return readFeaturesToMismatches(readFeatures, start, qual)
+  toJSON(): SimpleFeatureSerialized {
+    return {
+      ...this.fields,
+      // lazy
+      CIGAR: this.CIGAR,
+      // lazy
+      qual: this.qual,
+    }
   }
 }
+
+function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
+  const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)
+  if (!desc) {
+    throw new Error('t1')
+  }
+
+  const getter = desc.get
+  if (!getter) {
+    throw new Error('t2')
+  }
+  Object.defineProperty(ctor.prototype, prop, {
+    get() {
+      const ret = getter.call(this)
+      Object.defineProperty(this, prop, { value: ret })
+      return ret
+    },
+  })
+}
+cacheGetter(CramSlightlyLazyFeature, 'fields')

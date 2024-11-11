@@ -1,17 +1,7 @@
 import { CramRecord } from '@gmod/cram'
+import { Mismatch } from '../shared/types'
 
 type ReadFeatures = CramRecord['readFeatures']
-
-export interface Mismatch {
-  qual?: number
-  start: number
-  length: number
-  type: string
-  base: string | undefined
-  altbase?: string
-  seq?: string
-  cliplen?: number
-}
 
 export function readFeaturesToMismatches(
   readFeatures: ReadFeatures,
@@ -48,7 +38,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         length: 1,
-        base: sub,
+        base: sub!,
         qual: qual?.[pos - 1],
         altbase: ref?.toUpperCase(),
         type: 'mismatch',
