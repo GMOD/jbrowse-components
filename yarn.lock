@@ -88,7 +88,7 @@
     "@smithy/util-utf8" "^2.0.0"
     tslib "^2.6.2"
 
-"@aws-sdk/client-cloudfront@^3.682.0":
+"@aws-sdk/client-cloudfront@^3.687.0":
   version "3.687.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/client-cloudfront/-/client-cloudfront-3.687.0.tgz#c6df576bcf224bbdd64074408d9c21030ba20878"
   integrity sha512-50FX2Ej+iITUQhJ3p+0ipYvgvpvvaJ4nJEesPOX9ckbftrSJH7gGw6xlj+ujFI3KZdnDfrRSlwLU2aWLieyCVw==
@@ -138,7 +138,7 @@
     "@smithy/util-waiter" "^3.1.7"
     tslib "^2.6.2"
 
-"@aws-sdk/client-s3@^3.685.0":
+"@aws-sdk/client-s3@^3.688.0":
   version "3.688.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/client-s3/-/client-s3-3.688.0.tgz#4326e6e7cc6d792bb085b6da7d45b80eeb394e83"
   integrity sha512-bLyF7gT0RTWrsJPxbaslg1xP1gUdw3BJVvgfWM/63BDBpVCqIk9YlrXfJwjImcKguxGp8sCTdttywmfdPwQEfg==
@@ -2229,9 +2229,9 @@
   integrity sha512-6PQTJv+uxAb8XE/oL2Uh4EmFJpn65YOTSqGn8HLNXrWRlW1Clp1Oze6biHeRCMonLwEx4oH4bPeyjdcMnNP8pw==
 
 "@gmod/bam@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-3.0.0.tgz#4e8ff76817b3d64f401a1c9f2d5676979100c084"
-  integrity sha512-m+V9k+19l1ASHHHnQsEiWY2tNjAmntFAEP13jZNLlOSAz4tSQBxL0HyDIrHc81YJPISaYkZ8+TKXeDgp/ETBaw==
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-3.0.3.tgz#54c0353087d94c05f65ded8dde286e0a46bff7a7"
+  integrity sha512-TGp3QqvyXgYequSMyOOpUCyPawRAO2V/dkpvTZy3KluCVjl4SuotIL4M/PP/BufsCz9vdRu9N5x7e5UxQmGa4g==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@gmod/bgzf-filehandle" "^1.4.4"
@@ -3495,7 +3495,7 @@
   dependencies:
     "@oclif/core" "^4"
 
-"@oclif/plugin-not-found@^3.2.24":
+"@oclif/plugin-not-found@^3.2.25":
   version "3.2.25"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-not-found/-/plugin-not-found-3.2.25.tgz#70e9200e08c5999f69769dc65efa9711d5ddccf1"
   integrity sha512-Hm07ouLZq8I9/V46F2BqWEzFexdjaxGHFbwckxXu3YlVq4/xp6lOJXlF5olu4dbTUaJs532Hth4Uh0OIsp9CSw==
@@ -3505,7 +3505,7 @@
     ansis "^3.3.1"
     fast-levenshtein "^3.0.0"
 
-"@oclif/plugin-warn-if-update-available@^3.1.20":
+"@oclif/plugin-warn-if-update-available@^3.1.21":
   version "3.1.21"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-warn-if-update-available/-/plugin-warn-if-update-available-3.1.21.tgz#2c86e4cdeb7dac3293e6c67094c4e6f9a3d3e62b"
   integrity sha512-yG03rR6Z795lSlkuS+6A9JBSq/VQZ40XspTsKdXa/PUJl52RTeZeOHlaecuv4TddAE6T8VsPdWvry68q5TPE4w==
@@ -6601,9 +6601,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001669:
-  version "1.0.30001679"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001679.tgz#18c573b72f72ba70822194f6c39e7888597f9e32"
-  integrity sha512-j2YqID/YwpLnKzCmBOS4tlZdWprXm3ZmQLBH9ZBXFOhoxLA46fwyBvx6toCBWBmnuwUY/qB3kEU6gFx8qgCroA==
+  version "1.0.30001680"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001680.tgz#5380ede637a33b9f9f1fc6045ea99bd142f3da5e"
+  integrity sha512-rPQy70G6AGUMnbwS1z6Xg+RkHYPAi18ihs47GH0jcxIG7wArmPgY3XbS2sRdBbxJljp3thdT8BIqv9ccCypiPA==
 
 canvas-sequencer@^3.1.0:
   version "3.1.0"
@@ -12763,19 +12763,19 @@ obuf@^1.0.0, obuf@^1.1.2:
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
 oclif@^4.0.0:
-  version "4.15.20"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.15.20.tgz#2e033466921c787f4dceed0156bbc0cc5635c809"
-  integrity sha512-QQC1k+GNj1grEZMwIrE2RGRnckzDx4+jMK4P0w7eWSoq0EbiG1Pr0CioWRbA5wNnUo5oQx4DyxDMq5sVpxHZgw==
+  version "4.15.24"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.15.24.tgz#a29003ce6472c4a4f6bc63bdd60bae245b8f7376"
+  integrity sha512-wjDhmwYUhK+OamLJGEHY3x2hf0/d6XAntfIfWFr1zTe9w+iw7R//2uzNrYTChZV+BQSlBP4bBkVKOCc3XG3Oww==
   dependencies:
-    "@aws-sdk/client-cloudfront" "^3.682.0"
-    "@aws-sdk/client-s3" "^3.685.0"
+    "@aws-sdk/client-cloudfront" "^3.687.0"
+    "@aws-sdk/client-s3" "^3.688.0"
     "@inquirer/confirm" "^3.1.22"
     "@inquirer/input" "^2.2.4"
     "@inquirer/select" "^2.5.0"
     "@oclif/core" "^4.0.31"
     "@oclif/plugin-help" "^6.2.16"
-    "@oclif/plugin-not-found" "^3.2.24"
-    "@oclif/plugin-warn-if-update-available" "^3.1.20"
+    "@oclif/plugin-not-found" "^3.2.25"
+    "@oclif/plugin-warn-if-update-available" "^3.1.21"
     async-retry "^1.3.3"
     chalk "^4"
     change-case "^4"
@@ -13245,7 +13245,7 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-picocolors@^1.0.0, picocolors@^1.1.0:
+picocolors@^1.0.0, picocolors@^1.1.0, picocolors@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.1.tgz#3d321af3eab939b083c8f929a1d12cda81c26b6b"
   integrity sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==
@@ -13599,12 +13599,12 @@ postcss-value-parser@^4.1.0, postcss-value-parser@^4.2.0:
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
 postcss@^8.4.33:
-  version "8.4.47"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.47.tgz#5bf6c9a010f3e724c503bf03ef7947dcb0fea365"
-  integrity sha512-56rxCq7G/XfB4EkXq9Egn5GCqugWvDFjafDOThIdMBsI15iqPqR5r15TfSr1YPYeEI19YeaXMCbY6u88Y76GLQ==
+  version "8.4.48"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.48.tgz#765f3f8abaa2a2b065cdddbc57ad4cb5a76e515f"
+  integrity sha512-GCRK8F6+Dl7xYniR5a4FYbpBzU8XnZVeowqsQFYdcXuSbChgiks7qybSkbvnaeqv0G0B+dd9/jJgH8kkLDQeEA==
   dependencies:
     nanoid "^3.3.7"
-    picocolors "^1.1.0"
+    picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
 prelude-ls@^1.2.1:
