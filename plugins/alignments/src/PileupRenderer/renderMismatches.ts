@@ -161,10 +161,10 @@ export function renderMismatches({
     for (const mismatch of mismatches) {
       const mstart = start + mismatch.start
       const mlen = mismatch.length
-      const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
       const len = +mismatch.base || mismatch.length
-      const txt = `${len}`
       if (mismatch.type === 'insertion' && len >= 10) {
+        const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
+        const txt = `${len}`
         if (bpPerPx > largeInsertionIndicatorScale) {
           fillRect(ctx, leftPx - 1, topPx, 2, heightPx, canvasWidth, 'purple')
         } else if (heightPx > charHeight) {
