@@ -61,13 +61,12 @@ export function renderMismatches({
     if (mismatch.type === 'mismatch') {
       if (!drawSNPsMuted) {
         const baseColor = colorForBase[mismatch.base] || '#888'
-        const c = mismatchAlpha
-          ? mismatch.qual === undefined
-            ? baseColor
-            : colord(baseColor)
+        const c =
+          mismatchAlpha && mismatch.qual !== undefined
+            ? colord(baseColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
                 .toHslString()
-          : baseColor
+            : baseColor
 
         fillRect(
           ctx,
@@ -85,13 +84,12 @@ export function renderMismatches({
         const contrastColor = drawSNPsMuted
           ? 'black'
           : contrastForBase[mismatch.base] || 'black'
-        ctx.fillStyle = mismatchAlpha
-          ? mismatch.qual === undefined
-            ? contrastColor
-            : colord(contrastColor)
+        ctx.fillStyle =
+          mismatchAlpha && mismatch.qual !== undefined
+            ? colord(contrastColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
                 .toHslString()
-          : contrastColor
+            : contrastColor
         ctx.fillText(
           mbase,
           leftPx + (widthPx - charWidth) / 2 + 1,
