@@ -1,9 +1,6 @@
-import {
-  getMismatches,
-  cigarToMismatches,
-  mdToMismatches,
-  parseCigar,
-} from './index'
+import { getMismatches, parseCigar } from './index'
+import { cigarToMismatches } from './cigarToMismatches'
+import { mdToMismatches } from './mdToMismatches'
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'
@@ -137,94 +134,7 @@ test('more skip', () => {
     getMismatches('31M1I17M1D37M', '6G4C20G1A5C5A1^C3A15G1G15', seq).sort(
       (a, b) => a.start - b.start,
     ),
-  ).toMatchInlineSnapshot(`
-    [
-      {
-        "altbase": "G",
-        "base": "A",
-        "length": 1,
-        "qual": undefined,
-        "start": 6,
-        "type": "mismatch",
-      },
-      {
-        "altbase": "C",
-        "base": "A",
-        "length": 1,
-        "qual": undefined,
-        "start": 11,
-        "type": "mismatch",
-      },
-      {
-        "base": "1",
-        "length": 0,
-        "start": 31,
-        "type": "insertion",
-      },
-      {
-        "altbase": "G",
-        "base": "C",
-        "length": 1,
-        "qual": undefined,
-        "start": 32,
-        "type": "mismatch",
-      },
-      {
-        "altbase": "A",
-        "base": "C",
-        "length": 1,
-        "qual": undefined,
-        "start": 34,
-        "type": "mismatch",
-      },
-      {
-        "altbase": "C",
-        "base": "C",
-        "length": 1,
-        "qual": undefined,
-        "start": 40,
-        "type": "mismatch",
-      },
-      {
-        "altbase": "A",
-        "base": "C",
-        "length": 1,
-        "qual": undefined,
-        "start": 46,
-        "type": "mismatch",
-      },
-      {
-        "base": "*",
-        "length": 1,
-        "start": 48,
-        "type": "deletion",
-      },
-      {
-        "altbase": "A",
-        "base": "G",
-        "length": 1,
-        "qual": undefined,
-        "start": 52,
-        "type": "mismatch",
-      },
-      {
-        "altbase": "G",
-        "base": "G",
-        "length": 1,
-        "qual": undefined,
-        "start": 68,
-        "type": "mismatch",
-      },
-      {
-        "altbase": "G",
-        "base": "G",
-        "length": 1,
-        "qual": undefined,
-        "start": 70,
-        "type": "mismatch",
-      },
-    ]
-  `)
+  ).toMatchSnapshot()
 })
 
 test('clipping', () => {

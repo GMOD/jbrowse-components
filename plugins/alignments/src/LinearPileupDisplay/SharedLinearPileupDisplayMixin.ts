@@ -391,7 +391,7 @@ export function SharedLinearPileupDisplayMixin(
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
-                  if (feature) {
+                  if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }

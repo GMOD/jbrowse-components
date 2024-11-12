@@ -26,7 +26,7 @@ export default class BamSlightlyLazyFeature implements Feature {
       this.record.tags.MD as string | undefined,
       this.record.seq,
       this.ref,
-      this.record.qualRaw,
+      this.record.qual,
     )
   }
 
@@ -34,7 +34,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     return field === 'mismatches'
       ? this.mismatches
       : field === 'qual'
-        ? this.record.qual
+        ? this.record.qual?.join(' ')
         : this.fields[field]
   }
 
