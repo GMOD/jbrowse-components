@@ -337,60 +337,67 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Modifications',
                   type: 'subMenu',
-                  subMenu: [
-                    {
-                      label: 'All modifications',
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'modifications',
-                        })
-                      },
-                    },
-                    ...self.visibleModificationTypes.map(key => ({
-                      label: `Show only ${modificationData[key]?.name || key}`,
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'modifications',
-                          modifications: {
-                            isolatedModification: key,
+                  subMenu: self.modificationsReady
+                    ? [
+                        {
+                          label: 'All modifications',
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                            })
                           },
-                        })
-                      },
-                    })),
-                    { type: 'divider' },
-                    {
-                      label: 'All modifications (2-color)',
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'modifications',
-                          modifications: {
-                            twoColor: true,
+                        },
+                        ...self.visibleModificationTypes.map(key => ({
+                          label: `Show only ${modificationData[key]?.name || key}`,
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                              modifications: {
+                                isolatedModification: key,
+                              },
+                            })
                           },
-                        })
-                      },
-                    },
-                    ...self.visibleModificationTypes.map(key => ({
-                      label: `Show only ${modificationData[key]?.name || key} (2-color)`,
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'modifications',
-                          modifications: {
-                            isolatedModification: key,
-                            twoColor: true,
+                        })),
+                        { type: 'divider' },
+                        {
+                          label: 'All modifications (<50% prob colored blue)',
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                              modifications: {
+                                twoColor: true,
+                              },
+                            })
                           },
-                        })
-                      },
-                    })),
-                    { type: 'divider' },
-                    {
-                      label: 'All reference CpGs',
-                      onClick: () => {
-                        self.setColorScheme({
-                          type: 'methylation',
-                        })
-                      },
-                    },
-                  ],
+                        },
+                        ...self.visibleModificationTypes.map(key => ({
+                          label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                              modifications: {
+                                isolatedModification: key,
+                                twoColor: true,
+                              },
+                            })
+                          },
+                        })),
+                        { type: 'divider' },
+                        {
+                          label: 'All reference CpGs',
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'methylation',
+                            })
+                          },
+                        },
+                      ]
+                    : [
+                        {
+                          label: 'Loading modifications...',
+                          onClick: () => {},
+                        },
+                      ],
                 },
                 {
                   label: 'Insert size',

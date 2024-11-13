@@ -888,59 +888,67 @@ export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
 
-export function revcom(seqString: string) {
-  return reverse(complement(seqString))
-}
+// from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+// generated with:
+// perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+export const complementTable = {
+  S: 'S',
+  w: 'w',
+  T: 'A',
+  r: 'y',
+  a: 't',
+  N: 'N',
+  K: 'M',
+  x: 'x',
+  d: 'h',
+  Y: 'R',
+  V: 'B',
+  y: 'r',
+  M: 'K',
+  h: 'd',
+  k: 'm',
+  C: 'G',
+  g: 'c',
+  t: 'a',
+  A: 'T',
+  n: 'n',
+  W: 'W',
+  X: 'X',
+  m: 'k',
+  v: 'b',
+  B: 'V',
+  s: 's',
+  H: 'D',
+  c: 'g',
+  D: 'H',
+  b: 'v',
+  R: 'Y',
+  G: 'C',
+} as Record<string, string>
 
-export function reverse(seqString: string) {
-  return seqString.split('').reverse().join('')
-}
-
-export const complement = (() => {
-  const complementRegex = /[ACGT]/gi
-
-  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
-  // generated with:
-  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
-  const complementTable = {
-    S: 'S',
-    w: 'w',
-    T: 'A',
-    r: 'y',
-    a: 't',
-    N: 'N',
-    K: 'M',
-    x: 'x',
-    d: 'h',
-    Y: 'R',
-    V: 'B',
-    y: 'r',
-    M: 'K',
-    h: 'd',
-    k: 'm',
-    C: 'G',
-    g: 'c',
-    t: 'a',
-    A: 'T',
-    n: 'n',
-    W: 'W',
-    X: 'X',
-    m: 'k',
-    v: 'b',
-    B: 'V',
-    s: 's',
-    H: 'D',
-    c: 'g',
-    D: 'H',
-    b: 'v',
-    R: 'Y',
-    G: 'C',
-  } as Record<string, string>
-
-  return (seqString: string) => {
-    return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
+export function revcom(str: string) {
+  let revcomped = ''
+  for (let i = str.length - 1; i >= 0; i--) {
+    revcomped += complementTable[str[i]!] ?? str[i]
   }
-})()
+  return revcomped
+}
+
+export function reverse(str: string) {
+  let reversed = ''
+  for (let i = str.length - 1; i >= 0; i--) {
+    reversed += str[i]!
+  }
+  return reversed
+}
+
+export function complement(str: string) {
+  let comp = ''
+  for (let i = 0; i < str.length; i++) {
+    comp += complementTable[str[i]!] ?? str[i]
+  }
+  return comp
+}
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
