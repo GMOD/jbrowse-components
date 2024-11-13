@@ -1,4 +1,7 @@
 import { BamFile } from '@gmod/bam'
+import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+// jbrowse
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -7,8 +10,6 @@ import { Region } from '@jbrowse/core/util/types'
 import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
@@ -25,9 +26,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<Header>
 
-  private featureMap = new QuickLRU<string, Feature>({
-    maxSize: 5000,
-  })
+  private featureCache = new QuickLRU<string, Feature>({ maxSize: 5000 })
 
   private configureP?: Promise<{
     bam: BamFile
@@ -190,8 +189,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           readName,
         } = filterBy || {}
 
-        let retrievedFromCache = 0
-        let notRetrievedFromCache = 0
         for (const record of records) {
           let ref: string | undefined
           if (!record.tags.MD) {
@@ -223,19 +220,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          const ret = this.featureMap.get(`${record.id}`)
-
+          // retrieve a feature from our feature cache if it is available, the
+          // features in the cache have pre-computed mismatches objects that
+          // can be re-used across blocks
+          const ret = this.featureCache.get(`${record.id}`)
           if (!ret) {
             const elt = new BamSlightlyLazyFeature(record, this, ref)
-            this.featureMap.set(`${record.id}`, elt)
+            this.featureCache.set(`${record.id}`, elt)
             observer.next(elt)
-            notRetrievedFromCache++
           } else {
-            retrievedFromCache++
             observer.next(ret)
           }
         }
-        // console.log({ retrievedFromCache, notRetrievedFromCache })
         observer.complete()
       })
     }, signal)

@@ -22,3 +22,15 @@ export const defaultFilterFlags = {
   flagInclude: 0,
   flagExclude: 1540,
 }
+
+export function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
+  const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)!
+  const getter = desc.get!
+  Object.defineProperty(ctor.prototype, prop, {
+    get() {
+      const ret = getter.call(this)
+      Object.defineProperty(this, prop, { value: ret })
+      return ret
+    },
+  })
+}

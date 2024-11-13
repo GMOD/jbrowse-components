@@ -6,6 +6,7 @@ import CramAdapter from './CramAdapter'
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 import { parseCigar } from '../MismatchParser'
 import { mdToMismatches } from '../MismatchParser/mdToMismatches'
+import { cacheGetter } from '../shared/util'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -173,22 +174,6 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 }
 
-function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
-  const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)
-  if (!desc) {
-    throw new Error('t1')
-  }
-
-  const getter = desc.get
-  if (!getter) {
-    throw new Error('t2')
-  }
-  Object.defineProperty(ctor.prototype, prop, {
-    get() {
-      const ret = getter.call(this)
-      Object.defineProperty(this, prop, { value: ret })
-      return ret
-    },
-  })
-}
 cacheGetter(CramSlightlyLazyFeature, 'fields')
+cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
+cacheGetter(CramSlightlyLazyFeature, 'mismatches')

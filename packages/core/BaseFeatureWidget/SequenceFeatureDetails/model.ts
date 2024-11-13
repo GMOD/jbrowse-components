@@ -12,22 +12,54 @@ function localStorageGetNumber(key: string, defaultVal: number) {
   return +(localStorageGetItem(key) ?? defaultVal)
 }
 
+function localStorageGetBoolean(key: string, defaultVal: boolean) {
+  return Boolean(
+    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
+  )
+}
+
+function localStorageSetNumber(key: string, value: number) {
+  localStorageSetItem(key, JSON.stringify(value))
+}
+
+function localStorageSetBoolean(key: string, value: boolean) {
+  localStorageSetItem(key, JSON.stringify(value))
+}
+
+const p = 'sequenceFeatureDetails'
+
 export function SequenceFeatureDetailsF() {
   return types
     .model('SequenceFeatureDetails')
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       showCoordinatesSetting:
-        localStorageGetItem('sequenceFeatureDetails-showCoordinatesSetting') ||
-        'none',
-      intronBp: localStorageGetNumber('sequenceFeatureDetails-intronBp', 10),
-      upDownBp: localStorageGetNumber('sequenceFeatureDetails-upDownBp', 100),
-      upperCaseCDS: Boolean(
-        JSON.parse(
-          localStorageGetItem('sequenceFeatureDetails-upperCaseCDS') || 'true',
-        ),
-      ),
+        localStorageGetItem(`${p}-showCoordinatesSetting`) || 'none',
+      /**
+       * #volatile
+       */
+      intronBp: localStorageGetNumber(`${p}-intronBp`, 10),
+      /**
+       * #volatile
+       */
+      upDownBp: localStorageGetNumber(`${p}-upDownBp`, 100),
+      /**
+       * #volatile
+       */
+      upperCaseCDS: localStorageGetBoolean(`${p}-upperCaseCDS`, true),
+      /**
+       * #volatile
+       */
       charactersPerRow: 100,
+      /**
+       * #volatile
+       */
       feature: undefined as SimpleFeatureSerialized | undefined,
+      /**
+       * #volatile
+       */
       mode: '',
     }))
     .actions(self => ({
@@ -110,20 +142,11 @@ export function SequenceFeatureDetailsF() {
         addDisposer(
           self,
           autorun(() => {
+            localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
+            localStorageSetNumber(`${p}-intronBp`, self.intronBp)
+            localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
             localStorageSetItem(
-              'sequenceFeatureDetails-upDownBp',
-              JSON.stringify(self.upDownBp),
-            )
-            localStorageSetItem(
-              'sequenceFeatureDetails-intronBp',
-              JSON.stringify(self.intronBp),
-            )
-            localStorageSetItem(
-              'sequenceFeatureDetails-upperCaseCDS',
-              JSON.stringify(self.upperCaseCDS),
-            )
-            localStorageSetItem(
-              'sequenceFeatureDetails-showCoordinatesSetting',
+              `${p}-showCoordinatesSetting`,
               self.showCoordinatesSetting,
             )
           }),

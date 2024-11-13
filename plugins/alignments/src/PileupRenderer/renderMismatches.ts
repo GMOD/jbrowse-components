@@ -57,7 +57,7 @@ export function renderMismatches({
     const mlen = mismatch.length
     const mbase = mismatch.base
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
-    const widthPx = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
+    const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
     if (mismatch.type === 'mismatch') {
       if (!drawSNPsMuted) {
         const baseColor = colorForBase[mismatch.base] || '#888'
@@ -113,7 +113,6 @@ export function renderMismatches({
         ctx.fillText(txt, (leftPx + rightPx) / 2 - rwidth / 2, topPx + heightPx)
       }
     } else if (mismatch.type === 'insertion' && drawIndels) {
-      ctx.fillStyle = 'purple'
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
       const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))

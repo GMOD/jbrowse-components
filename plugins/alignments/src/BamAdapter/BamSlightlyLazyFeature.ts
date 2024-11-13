@@ -7,6 +7,7 @@ import { BamRecord } from '@gmod/bam'
 // locals
 import { getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
+import { cacheGetter } from '../shared/util'
 
 export default class BamSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -30,11 +31,15 @@ export default class BamSlightlyLazyFeature implements Feature {
     )
   }
 
+  get qual() {
+    return this.record.qual?.join(' ')
+  }
+
   get(field: string): any {
     return field === 'mismatches'
       ? this.mismatches
       : field === 'qual'
-        ? this.record.qual?.join(' ')
+        ? this.qual
         : this.fields[field]
   }
 
@@ -74,27 +79,11 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
-    return this.fields
+    return {
+      ...this.fields,
+      qual: this.qual,
+    }
   }
-}
-
-function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
-  const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)
-  if (!desc) {
-    throw new Error('t1')
-  }
-
-  const getter = desc.get
-  if (!getter) {
-    throw new Error('t2')
-  }
-  Object.defineProperty(ctor.prototype, prop, {
-    get() {
-      const ret = getter.call(this)
-      Object.defineProperty(this, prop, { value: ret })
-      return ret
-    },
-  })
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')

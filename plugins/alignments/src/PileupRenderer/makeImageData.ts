@@ -12,7 +12,6 @@ import {
 import { renderAlignment } from './renderAlignment'
 import { renderMismatches } from './renderMismatches'
 import { renderSoftClipping } from './renderSoftClipping'
-import { parseCigar } from '../MismatchParser'
 
 export type RenderArgsWithColor = RenderArgsDeserializedWithFeaturesAndLayout
 
@@ -50,7 +49,6 @@ export function makeImageData({
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
   for (const feat of layoutRecords) {
-    const cigarOps = parseCigar(feat.feature.get('CIGAR'))
     renderAlignment({
       ctx,
       feat,
@@ -61,7 +59,6 @@ export function makeImageData({
       charWidth,
       charHeight,
       canvasWidth,
-      cigarOps,
     })
     renderMismatches({
       ctx,
@@ -87,7 +84,6 @@ export function makeImageData({
         config,
         theme,
         canvasWidth,
-        cigarOps,
       })
     }
   }
