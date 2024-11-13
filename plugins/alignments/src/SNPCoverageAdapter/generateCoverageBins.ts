@@ -118,12 +118,6 @@ function processSNPs({
         const bin = bins[epos]!
         const { base, type } = mismatch
         const interbase = isInterbase(type)
-        if (!interbase) {
-          // bin.ref.entryDepth++
-          // bin.ref[fstrand]++
-        } else {
-          inc(bin, fstrand, 'noncov', type)
-        }
 
         if (type === 'deletion' || type === 'skip') {
           inc(bin, fstrand, 'delskips', type)
@@ -132,6 +126,8 @@ function processSNPs({
           inc(bin, fstrand, 'snps', base)
           bin.ref.entryDepth--
           bin.ref[fstrand]--
+        } else {
+          inc(bin, fstrand, 'noncov', type)
         }
       }
     }

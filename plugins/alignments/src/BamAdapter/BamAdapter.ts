@@ -1,4 +1,7 @@
 import { BamFile } from '@gmod/bam'
+import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+// jbrowse
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -7,8 +10,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
@@ -23,6 +25,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
   private setupP?: Promise<Header>
+
+  private featureCache = new QuickLRU<string, Feature>({ maxSize: 5000 })
+
   private configureP?: Promise<{
     bam: BamFile
     sequenceAdapter?: BaseFeatureDataAdapter
@@ -215,7 +220,17 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          observer.next(new BamSlightlyLazyFeature(record, this, ref))
+          // retrieve a feature from our feature cache if it is available, the
+          // features in the cache have pre-computed mismatches objects that
+          // can be re-used across blocks
+          const ret = this.featureCache.get(`${record.id}`)
+          if (!ret) {
+            const elt = new BamSlightlyLazyFeature(record, this, ref)
+            this.featureCache.set(`${record.id}`, elt)
+            observer.next(elt)
+          } else {
+            observer.next(ret)
+          }
         }
         observer.complete()
       })

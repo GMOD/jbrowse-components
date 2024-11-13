@@ -1,4 +1,7 @@
 import { CraiIndex, IndexedCramFile, CramRecord } from '@gmod/cram'
+import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+// jbrowse
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -8,8 +11,7 @@ import type { Region, Feature } from '@jbrowse/core/util'
 import { checkAbortSignal, updateStatus, toLocale } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
@@ -34,6 +36,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     cram: IndexedCramFile
     sequenceAdapter: BaseSequenceAdapter
   }>
+
+  private featureCache = new QuickLRU<string, Feature>({ maxSize: 5000 })
 
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined
@@ -266,7 +270,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           if (readName && record.readName !== readName) {
             continue
           }
-          observer.next(this.cramRecordToFeature(record))
+          // retrieve a feature from our feature cache if it is available, the
+          // features in the cache have pre-computed mismatches objects that
+          // can be re-used across blocks
+          const ret = this.featureCache.get(`${record.uniqueId}`)
+          if (!ret) {
+            const elt = this.cramRecordToFeature(record)
+            this.featureCache.set(`${record.uniqueId}`, elt)
+            observer.next(elt)
+          } else {
+            observer.next(ret)
+          }
         }
 
         observer.complete()

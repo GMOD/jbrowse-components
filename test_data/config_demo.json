@@ -4233,6 +4233,7 @@
     {
       "type": "AlignmentsTrack",
       "name": "Paired-end stranded RNA-seq (BAM,XS)",
+      "category": ["RNA-seq"],
       "metadata": {
         "source": "From sample files listed at https://rseqc.sourceforge.net/"
       },
@@ -4524,6 +4525,7 @@
       "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.cram",
       "name": "Paired-end stranded RNA-seq (CRAM,XS)",
+      "category": ["RNA-seq"],
       "metadata": {
         "source": "From sample files listed at https://rseqc.sourceforge.net/"
       },
@@ -4559,6 +4561,7 @@
       "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS",
       "name": "Paired-end stranded RNA-seq (CRAM,TS)",
+      "category": ["RNA-seq"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -4591,6 +4594,7 @@
       "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.bam",
       "name": "Paired-end stranded RNA-seq (BAM,TS)",
+      "category": ["RNA-seq"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {

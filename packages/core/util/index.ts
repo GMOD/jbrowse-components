@@ -609,24 +609,29 @@ export function cartesianToPolar(x: number, y: number) {
   const theta = Math.atan(y / x)
   return [rho, theta] as [number, number]
 }
+interface MinimalRegion {
+  start: number
+  end: number
+  reversed?: boolean
+}
 
 export function featureSpanPx(
   feature: Feature,
-  region: { start: number; end: number; reversed?: boolean },
+  region: MinimalRegion,
   bpPerPx: number,
-): [number, number] {
+) {
   return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
 }
 
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  region: MinimalRegion,
   bpPerPx: number,
-): [number, number] {
+) {
   const start = bpToPx(leftBp, region, bpPerPx)
   const end = bpToPx(rightBp, region, bpPerPx)
-  return region.reversed ? [end, start] : [start, end]
+  return region.reversed ? ([end, start] as const) : ([start, end] as const)
 }
 
 // do an array map of an iterable
@@ -646,8 +651,7 @@ export function iterMap<T, U>(
 
 /**
  * Returns the index of the last element in the array where predicate is true,
- * and -1 otherwise.
- * Based on https://stackoverflow.com/a/53187807
+ * and -1 otherwise. Based on https://stackoverflow.com/a/53187807
  *
  * @param array - The source array to search in
  *
@@ -660,7 +664,7 @@ export function iterMap<T, U>(
 export function findLastIndex<T>(
   array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
-): number {
+) {
   let l = array.length
   while (l--) {
     if (predicate(array[l]!, l, array)) {
@@ -673,7 +677,7 @@ export function findLastIndex<T>(
 export function findLast<T>(
   array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
-): T | undefined {
+) {
   let l = array.length
   while (l--) {
     if (predicate(array[l]!, l, array)) {

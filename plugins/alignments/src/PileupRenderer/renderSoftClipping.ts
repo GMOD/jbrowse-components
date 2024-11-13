@@ -9,6 +9,7 @@ import { Theme } from '@mui/material'
 import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { fillRect, getCharWidthHeight, LayoutFeature } from './util'
 import { Mismatch } from '../shared/types'
+import { parseCigar } from '../MismatchParser'
 
 export function renderSoftClipping({
   ctx,
@@ -18,7 +19,6 @@ export function renderSoftClipping({
   theme,
   colorForBase,
   canvasWidth,
-  cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -27,7 +27,6 @@ export function renderSoftClipping({
   colorForBase: Record<string, string>
   theme: Theme
   canvasWidth: number
-  cigarOps: string[]
 }) {
   const { feature, topPx, heightPx } = feat
   const { regions, bpPerPx } = renderArgs
@@ -45,6 +44,8 @@ export function renderSoftClipping({
   const heightLim = charHeight - 2
   let seqOffset = 0
   let refOffset = 0
+  const CIGAR = feature.get('CIGAR')
+  const cigarOps = parseCigar(CIGAR)
   for (let i = 0; i < cigarOps.length; i += 2) {
     const op = cigarOps[i + 1]!
     const len = +cigarOps[i]!
