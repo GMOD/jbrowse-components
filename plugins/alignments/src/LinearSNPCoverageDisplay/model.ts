@@ -135,7 +135,7 @@ function stateModelFactory(
       },
     }))
     .views(self => {
-      const { renderProps: superRenderProps } = self
+      const { adapterProps: superAdapterProps } = self
       return {
         /**
          * #getter
@@ -197,35 +197,15 @@ function stateModelFactory(
         },
 
         /**
-         * #getter
-         */
-        get renderReady() {
-          const superProps = superRenderProps()
-          return !superProps.notReady && self.modificationsReady
-        },
-
-        /**
-         * #getter
-         */
-        get ready() {
-          return this.renderReady
-        },
-
-        /**
          * #method
          */
-        renderProps() {
-          const superProps = superRenderProps()
-          const { filters, colorBy, filterBy, visibleModifications } = self
+        adapterProps() {
+          const superProps = superAdapterProps()
+          const { filters, filterBy } = self
           return {
             ...superProps,
-            notReady: !this.ready,
             filters,
-            colorBy,
             filterBy,
-            visibleModifications: Object.fromEntries(
-              visibleModifications.toJSON(),
-            ),
           }
         },
       }
@@ -288,8 +268,39 @@ function stateModelFactory(
     }))
 
     .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
+      const {
+        renderProps: superRenderProps,
+        trackMenuItems: superTrackMenuItems,
+      } = self
       return {
+        /**
+         * #getter
+         */
+        get renderReady() {
+          const superProps = superRenderProps()
+          return !superProps.notReady && self.modificationsReady
+        },
+
+        /**
+         * #getter
+         */
+        get ready() {
+          return this.renderReady
+        },
+        /**
+         * #method
+         */
+        renderProps() {
+          const { colorBy, visibleModifications } = self
+          return {
+            ...superRenderProps(),
+            notReady: !this.ready,
+            colorBy,
+            visibleModifications: Object.fromEntries(
+              visibleModifications.toJSON(),
+            ),
+          }
+        },
         /**
          * #getter
          */

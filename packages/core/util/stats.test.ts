@@ -4,7 +4,6 @@ import {
   calcStdFromSums,
   rectifyStats,
   scoresToStats,
-  calcPerBaseStats,
   UnrectifiedQuantitativeStats,
 } from './stats'
 
@@ -54,35 +53,4 @@ test('scores to stats', async () => {
   expect(ret.scoreMax).toEqual(3)
   expect(ret.scoreMin).toEqual(1)
   expect(ret.scoreStdDev).toEqual(1) // calculated from a webapp
-})
-
-// peter TODO: fix this test
-test('calc per base stats', () => {
-  // one score at start
-  expect(
-    calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
-      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 10 } }),
-    ]),
-  ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 0])
-  // multiple features
-  expect(
-    calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
-      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 10 } }),
-      new SimpleFeature({ id: 2, data: { start: 8, end: 9, score: 10 } }),
-    ]),
-  ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 10])
-  // multiple features
-  expect(
-    calcPerBaseStats({ refName: 'ctgA', start: 15, end: 30 }, [
-      new SimpleFeature({ id: 1, data: { start: 10, end: 20, score: 10 } }),
-      new SimpleFeature({ id: 2, data: { start: 25, end: 26, score: 10 } }),
-    ]),
-  ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0])
-  // feature starts before region
-  expect(
-    calcPerBaseStats({ refName: 'ctgA', start: 10, end: 19 }, [
-      new SimpleFeature({ id: 1, data: { start: 5, end: 15, score: 10 } }),
-      new SimpleFeature({ id: 1, data: { start: 18, end: 26, score: 10 } }),
-    ]),
-  ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 10])
 })

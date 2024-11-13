@@ -3,19 +3,26 @@ import {
   AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
-import { AnyReactComponentType, getSession } from '@jbrowse/core/util'
+import {
+  AnyReactComponentType,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-import SharedWiggleMixin from '../../shared/modelShared'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 
 // lazies
-const Tooltip = lazy(() => import('../components/Tooltip'))
-const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -64,52 +71,33 @@ function stateModelFactory(
         }
         return rendererType
       },
-    }))
-
-    .views(self => ({
       /**
        * #getter
        */
-      get ticks() {
-        const { scaleType, domain, height } = self
-        const minimalTicks = getConf(self, 'minimalTicks')
-        const inverted = getConf(self, 'inverted')
-        const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
-        if (!domain) {
-          return undefined
-        }
-        const scale = getScale({
-          scaleType,
-          domain,
-          range,
-          inverted,
-        })
-        const ticks = axisPropsFromTickScale(scale, 4)
-        return height < 100 || minimalTicks
-          ? { ...ticks, values: domain }
-          : ticks
+      get quantitativeStatsRelevantToCurrentZoom() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return self.stats?.currStatsBpPerPx === view.bpPerPx
       },
     }))
+
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
         /**
          * #method
          */
-        renderProps() {
+        adapterProps() {
           const superProps = superRenderProps()
-          const { filters, ticks, height, resolution, scaleOpts } = self
+          const { filters, resolution, scaleOpts } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.stats,
+
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
             displayCrossHatches: self.displayCrossHatchesSetting,
             scaleOpts,
             resolution,
-            height,
-            ticks,
             filters,
           }
         },
@@ -117,24 +105,78 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get needsScalebar() {
-          const { rendererTypeName: type } = self
-          return type === 'XYPlotRenderer' || type === 'LinePlotRenderer'
-        },
-        /**
-         * #getter
-         */
-        get fillSetting() {
-          if (self.filled) {
-            return 0
-          } else if (self.minSize === 1) {
-            return 1
-          } else {
-            return 2
+        get ticks() {
+          const { scaleType, domain, height } = self
+          const minimalTicks = getConf(self, 'minimalTicks')
+          const inverted = getConf(self, 'inverted')
+          const range = [
+            height - YSCALEBAR_LABEL_OFFSET,
+            YSCALEBAR_LABEL_OFFSET,
+          ]
+          if (!domain) {
+            return undefined
           }
+          const scale = getScale({
+            scaleType,
+            domain,
+            range,
+            inverted,
+          })
+          const ticks = axisPropsFromTickScale(scale, 4)
+          return height < 100 || minimalTicks
+            ? { ...ticks, values: domain }
+            : ticks
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      renderProps() {
+        const { ticks, height } = self
+        const superProps = self.adapterProps()
+        return {
+          ...self.adapterProps(),
+          notReady:
+            superProps.notReady || !self.quantitativeStatsRelevantToCurrentZoom,
+          height,
+          ticks,
+        }
+      },
+
+      /**
+       * #getter
+       */
+      get needsScalebar() {
+        const { rendererTypeName: type } = self
+        return type === 'XYPlotRenderer' || type === 'LinePlotRenderer'
+      },
+      /**
+       * #getter
+       */
+      get fillSetting() {
+        if (self.filled) {
+          return 0
+        } else if (self.minSize === 1) {
+          return 1
+        } else {
+          return 2
+        }
+      },
+      /**
+       * #getter
+       */
+      get quantitativeStatsReady() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return (
+          view.initialized &&
+          self.featureDensityStatsReady &&
+          !self.regionTooLarge &&
+          !self.error
+        )
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       const hasRenderings = getConf(self, 'defaultRendering')
@@ -202,7 +244,10 @@ function stateModelFactory(
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -217,7 +262,9 @@ function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { quantitativeStatsAutorun } = await import('../../util')
+            const { quantitativeStatsAutorun } = await import(
+              '../quantitativeStatsAutorun'
+            )
             quantitativeStatsAutorun(self)
           })()
         },

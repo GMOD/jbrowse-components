@@ -12,7 +12,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { WiggleDisplayModel } from '../models/model'
+import { WiggleDisplayModel } from '../model'
 import YScaleBar from '../../shared/YScaleBar'
 
 type LGV = LinearGenomeViewModel
