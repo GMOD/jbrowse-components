@@ -72,45 +72,6 @@ export function rectifyStats(s: UnrectifiedQuantitativeStats) {
 }
 
 /**
- * calculates per-base scores for variable width features over a region
- *
- * @param region - object contains start, end
- * @param features - list of features with start, end, score
- * @returns array of numeric scores
- */
-export function calcPerBaseStats(
-  region: NoAssemblyRegion,
-  features: Feature[],
-): number[] {
-  const { start, end } = region
-  const scores = []
-  const feats = features.sort((a, b) => a.get('start') - b.get('start'))
-  let pos = start
-  let currentFeat = 0
-  let i = 0
-
-  while (pos < end) {
-    while (
-      currentFeat < feats.length &&
-      pos >= feats[currentFeat]!.get('end')
-    ) {
-      currentFeat += 1
-    }
-    const f = feats[currentFeat]
-    if (!f) {
-      scores[i] = 0
-    } else if (pos >= f.get('start') && pos < f.get('end')) {
-      scores[i] = f.get('score')
-    } else {
-      scores[i] = 0
-    }
-    i += 1
-    pos += 1
-  }
-  return scores
-}
-
-/**
  * transform a list of scores to summary statistics
  *
  * @param region - object with start, end

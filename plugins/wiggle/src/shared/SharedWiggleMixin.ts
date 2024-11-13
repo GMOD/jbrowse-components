@@ -6,11 +6,15 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   Feature,
+  getContainingView,
   getEnv,
   getSession,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import {
+  BaseLinearDisplay,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 // locals
@@ -95,24 +99,49 @@ export default function SharedWiggleMixin(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
+      currStatBpPerPx: 0,
+      /**
+       * #volatile
+       */
       message: undefined as undefined | string,
-      stats: undefined as { scoreMin: number; scoreMax: number } | undefined,
+      /**
+       * #volatile
+       */
+      stats: undefined as
+        | { currStatBpPerPx: number; scoreMin: number; scoreMax: number }
+        | undefined,
+      /**
+       * #volatile
+       */
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
       /**
        * #action
        */
+      setCurrStatBpPerPx(n: number) {
+        self.currStatBpPerPx = n
+      },
+      /**
+       * #action
+       */
       updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
-        if (!self.stats) {
-          self.stats = { scoreMin, scoreMax }
-        } else if (
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (
+          !self.stats ||
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
           Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
-          self.stats = { scoreMin, scoreMax }
+          self.stats = {
+            currStatBpPerPx: view.bpPerPx,
+            scoreMin,
+            scoreMax,
+          }
         }
       },
       /**

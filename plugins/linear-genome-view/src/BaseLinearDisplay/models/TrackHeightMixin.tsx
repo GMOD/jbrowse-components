@@ -23,7 +23,7 @@ export default function TrackHeightMixin() {
     })
     .volatile(() => ({
       /**
-       * #property
+       * #volatile
        */
       scrollTop: 0,
     }))

@@ -9,15 +9,23 @@ import {
   AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
-import { getSession, Feature, AnyReactComponentType } from '@jbrowse/core/util'
+import {
+  getSession,
+  Feature,
+  AnyReactComponentType,
+  getContainingView,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-import SharedWiggleMixin from '../../shared/modelShared'
+import SharedWiggleMixin from '../../shared/SharedWiggleMixin'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
@@ -211,6 +219,18 @@ export function stateModelFactory(
               s.color ||
               (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
           }))
+      },
+      /**
+       * #getter
+       */
+      get quantitativeStatsReady() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return (
+          view.initialized &&
+          self.featureDensityStatsReady &&
+          !self.regionTooLarge &&
+          !self.error
+        )
       },
     }))
 

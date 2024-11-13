@@ -259,9 +259,7 @@ export async function getQuantitativeStats(
 }
 
 export function quantitativeStatsAutorun(self: {
-  featureDensityStatsReady: boolean
-  regionTooLarge: boolean
-  error: unknown
+  quantitativeStatsReady: boolean
   setLoading: (aborter: AbortController) => void
   setError: (error: unknown) => void
   updateQuantitativeStats: (
@@ -283,12 +281,7 @@ export function quantitativeStatsAutorun(self: {
           const view = getContainingView(self) as LGV
           self.setLoading(aborter)
 
-          if (
-            !view.initialized ||
-            !self.featureDensityStatsReady ||
-            self.regionTooLarge ||
-            self.error
-          ) {
+          if (!self.quantitativeStatsReady) {
             return
           }
           const statsRegion = JSON.stringify(view.dynamicBlocks)

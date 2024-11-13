@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import sharedWiggleConfigFactory from '../../shared/configShared'
+import sharedWiggleConfigFactory from '../../shared/SharedWiggleConfigSchema'
 
 /**
  * #config LinearWiggleDisplay

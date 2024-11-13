@@ -3,15 +3,22 @@ import {
   AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
-import { AnyReactComponentType, getSession } from '@jbrowse/core/util'
+import {
+  AnyReactComponentType,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-import SharedWiggleMixin from '../../shared/modelShared'
+import SharedWiggleMixin from '../../shared/SharedWiggleMixin'
 
 // lazies
 const Tooltip = lazy(() => import('../components/Tooltip'))
@@ -132,6 +139,18 @@ function stateModelFactory(
           } else {
             return 2
           }
+        },
+        /**
+         * #getter
+         */
+        get quantitativeStatsReady() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return (
+            view.initialized &&
+            self.featureDensityStatsReady &&
+            !self.regionTooLarge &&
+            !self.error
+          )
         },
       }
     })
