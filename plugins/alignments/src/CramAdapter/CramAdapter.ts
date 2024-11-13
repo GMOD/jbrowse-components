@@ -260,7 +260,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
             const filterVal = tagFilter.value
             if (
               filterVal === '*'
-                ? readVal !== undefined
+                ? readVal === undefined
                 : `${readVal}` !== `${filterVal}`
             ) {
               continue

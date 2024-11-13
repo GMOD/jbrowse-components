@@ -207,9 +207,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           if (tagFilter) {
             const readVal = record.tags[tagFilter.tag]
             const filterVal = tagFilter.value
+            console.log({ readVal, filterVal })
             if (
               filterVal === '*'
-                ? readVal !== undefined
+                ? readVal === undefined
                 : `${readVal}` !== `${filterVal}`
             ) {
               continue
