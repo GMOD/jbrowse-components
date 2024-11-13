@@ -929,7 +929,7 @@ export const complementTable = {
 export function revcom(str: string) {
   let revcomped = ''
   for (let i = str.length - 1; i >= 0; i--) {
-    revcomped += complementTable[str[i]!]
+    revcomped += complementTable[str[i]!] ?? str[i]
   }
   return revcomped
 }
@@ -944,8 +944,8 @@ export function reverse(str: string) {
 
 export function complement(str: string) {
   let comp = ''
-  for (let i = 0; i <= str.length; i++) {
-    comp += complementTable[str[i]!]
+  for (let i = 0; i < str.length; i++) {
+    comp += complementTable[str[i]!] ?? str[i]
   }
   return comp
 }

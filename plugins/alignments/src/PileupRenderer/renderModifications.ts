@@ -5,7 +5,7 @@ import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
 import { alphaColor } from '../shared/util'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { getMaxProbModAtEachPosition } from '../shared/getMaxProbModAtEachPosition'
 
 // render modifications stored in MM tag in BAM
 export function renderModifications({

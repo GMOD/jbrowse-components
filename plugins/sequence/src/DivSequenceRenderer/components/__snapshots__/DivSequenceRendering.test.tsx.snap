@@ -168,7 +168,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       x="19950"
       y="70"
     >
-      B
+      V
     </text>
     <rect
       fill="#ff9800"
@@ -204,7 +204,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       x="19910"
       y="70"
     >
-      D
+      H
     </text>
     <rect
       fill="#aaa"
@@ -276,7 +276,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       x="19830"
       y="70"
     >
-      H
+      D
     </text>
     <rect
       fill="#aaa"

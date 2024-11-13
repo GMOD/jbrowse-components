@@ -11,7 +11,7 @@ import {
   PreBaseCoverageBinSubtypes,
   SkipMap,
 } from '../shared/types'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { getMaxProbModAtEachPosition } from '../shared/getMaxProbModAtEachPosition'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
