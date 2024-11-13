@@ -9,6 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
@@ -23,6 +24,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
   private setupP?: Promise<Header>
+
+  private featureMap = new QuickLRU<string, Feature>({
+    maxSize: 5000,
+  })
+
   private configureP?: Promise<{
     bam: BamFile
     sequenceAdapter?: BaseFeatureDataAdapter
@@ -184,6 +190,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           readName,
         } = filterBy || {}
 
+        let retrievedFromCache = 0
+        let notRetrievedFromCache = 0
         for (const record of records) {
           let ref: string | undefined
           if (!record.tags.MD) {
@@ -215,8 +223,19 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          observer.next(new BamSlightlyLazyFeature(record, this, ref))
+          const ret = this.featureMap.get(`${record.id}`)
+
+          if (!ret) {
+            const elt = new BamSlightlyLazyFeature(record, this, ref)
+            this.featureMap.set(`${record.id}`, elt)
+            observer.next(elt)
+            notRetrievedFromCache++
+          } else {
+            retrievedFromCache++
+            observer.next(ret)
+          }
         }
+        // console.log({ retrievedFromCache, notRetrievedFromCache })
         observer.complete()
       })
     }, signal)

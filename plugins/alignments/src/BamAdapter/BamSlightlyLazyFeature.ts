@@ -98,3 +98,4 @@ function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
+cacheGetter(BamSlightlyLazyFeature, 'mismatches')
