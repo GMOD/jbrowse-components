@@ -96,6 +96,14 @@ function stateModelFactory(
           ? { ...ticks, values: domain }
           : ticks
       },
+      /**
+       * #getter
+       */
+      get quantitativeStatsReleventToCurrentZoom() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        console.log(self.stats?.currStatsBpPerPx, view.bpPerPx)
+        return self.stats?.currStatsBpPerPx === view.bpPerPx
+      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
@@ -108,7 +116,9 @@ function stateModelFactory(
           const { filters, ticks, height, resolution, scaleOpts } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.stats,
+            notReady:
+              superProps.notReady ||
+              !self.quantitativeStatsReleventToCurrentZoom,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -221,7 +231,10 @@ function stateModelFactory(
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -236,7 +249,9 @@ function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { quantitativeStatsAutorun } = await import('../../util')
+            const { quantitativeStatsAutorun } = await import(
+              '../../quantitativeStatsAutorun'
+            )
             quantitativeStatsAutorun(self)
           })()
         },

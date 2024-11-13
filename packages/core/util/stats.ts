@@ -14,6 +14,7 @@ export interface UnrectifiedQuantitativeStats {
   basesCovered: number
 }
 export interface QuantitativeStats extends UnrectifiedQuantitativeStats {
+  currStatsBpPerPx: number
   featureDensity: number
   scoreMean: number
   scoreStdDev: number

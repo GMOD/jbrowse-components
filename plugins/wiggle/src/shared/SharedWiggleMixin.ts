@@ -102,16 +102,12 @@ export default function SharedWiggleMixin(
       /**
        * #volatile
        */
-      currStatBpPerPx: 0,
-      /**
-       * #volatile
-       */
       message: undefined as undefined | string,
       /**
        * #volatile
        */
       stats: undefined as
-        | { currStatBpPerPx: number; scoreMin: number; scoreMax: number }
+        | { currStatsBpPerPx: number; scoreMin: number; scoreMax: number }
         | undefined,
       /**
        * #volatile
@@ -122,23 +118,20 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setCurrStatBpPerPx(n: number) {
-        self.currStatBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
-        const { scoreMin, scoreMax } = stats
+      updateQuantitativeStats(stats: {
+        currStatsBpPerPx: number
+        scoreMin: number
+        scoreMax: number
+      }) {
+        const { currStatsBpPerPx, scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
-        const view = getContainingView(self) as LinearGenomeViewModel
         if (
           !self.stats ||
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
           Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
           self.stats = {
-            currStatBpPerPx: view.bpPerPx,
+            currStatsBpPerPx,
             scoreMin,
             scoreMax,
           }

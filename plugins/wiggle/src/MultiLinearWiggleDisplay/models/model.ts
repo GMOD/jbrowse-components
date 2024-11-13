@@ -457,7 +457,9 @@ export function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { quantitativeStatsAutorun } = await import('../../util')
+            const { quantitativeStatsAutorun } = await import(
+              '../../quantitativeStatsAutorun'
+            )
             quantitativeStatsAutorun(self)
             addDisposer(
               self,
