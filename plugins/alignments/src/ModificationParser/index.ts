@@ -1,4 +1,4 @@
-import { Feature, revcom } from '@jbrowse/core/util'
+import { Feature, complementTable } from '@jbrowse/core/util'
 import { getTagAlt } from '../util'
 import { getNextRefPos } from '../MismatchParser'
 
@@ -31,8 +31,7 @@ export function getModProbabilities(feature: Feature) {
   }
 }
 
-export function getModPositions(mm: string, fseq: string, fstrand: number) {
-  const seq = fstrand === -1 ? revcom(fseq) : fseq
+export function getModPositions(mm: string, seq: string, fstrand: number) {
   const mods = mm.split(';')
   const result = []
   for (const mod of mods) {
@@ -61,7 +60,13 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
           for (const d of skips) {
             let delta = +d
             do {
-              if (base === 'N' || base === seq[i]) {
+              if (
+                base === 'N' ||
+                base ===
+                  (fstrand === -1
+                    ? complementTable[seq[seq.length - 1 - i]!]!
+                    : seq[i])
+              ) {
                 delta--
               }
               i++
@@ -95,7 +100,13 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
             for (const d of skips) {
               let delta = +d
               do {
-                if (base === 'N' || base === seq[i]) {
+                if (
+                  base === 'N' ||
+                  base ===
+                    (fstrand === -1
+                      ? complementTable[seq[seq.length - 1 - i]!]!
+                      : seq[i])
+                ) {
                   delta--
                 }
                 i++
