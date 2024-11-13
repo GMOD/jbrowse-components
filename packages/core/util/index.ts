@@ -944,6 +944,7 @@ export function reverse(str: string) {
 
 export function complement(str: string) {
   let comp = ''
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < str.length; i++) {
     comp += complementTable[str[i]!] ?? str[i]
   }
