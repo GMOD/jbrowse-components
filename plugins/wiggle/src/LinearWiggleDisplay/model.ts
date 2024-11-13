@@ -17,12 +17,12 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-import SharedWiggleMixin from '../../shared/SharedWiggleMixin'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 
 // lazies
-const Tooltip = lazy(() => import('../components/Tooltip'))
-const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -101,7 +101,6 @@ function stateModelFactory(
        */
       get quantitativeStatsReleventToCurrentZoom() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        console.log(self.stats?.currStatsBpPerPx, view.bpPerPx)
         return self.stats?.currStatsBpPerPx === view.bpPerPx
       },
     }))
@@ -250,7 +249,7 @@ function stateModelFactory(
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             const { quantitativeStatsAutorun } = await import(
-              '../../quantitativeStatsAutorun'
+              '../quantitativeStatsAutorun'
             )
             quantitativeStatsAutorun(self)
           })()

@@ -24,15 +24,15 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
-import SharedWiggleMixin from '../../shared/SharedWiggleMixin'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
-const Tooltip = lazy(() => import('../components/Tooltip'))
-const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -458,7 +458,7 @@ export function stateModelFactory(
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             const { quantitativeStatsAutorun } = await import(
-              '../../quantitativeStatsAutorun'
+              '../quantitativeStatsAutorun'
             )
             quantitativeStatsAutorun(self)
             addDisposer(

@@ -6,15 +6,11 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   Feature,
-  getContainingView,
   getEnv,
   getSession,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import {
-  BaseLinearDisplay,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 // locals

@@ -36,11 +36,9 @@ export function quantitativeStatsAutorun(self: {
           const view = getContainingView(self) as LGV
           self.setLoading(aborter)
 
-          console.log(self.quantitativeStatsReady, 'wow')
           if (!self.quantitativeStatsReady) {
             return
           }
-          console.log(self.quantitativeStatsReady, 'past')
           const statsRegion = JSON.stringify(view.dynamicBlocks)
 
           const wiggleStats = await getQuantitativeStats(self, {

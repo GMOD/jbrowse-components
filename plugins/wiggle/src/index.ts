@@ -126,6 +126,6 @@ export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay'
-export { type TooltipContentsComponent } from './Tooltip'
+export type { TooltipContentsComponent } from './Tooltip'
 
 export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'

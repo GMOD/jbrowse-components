@@ -8,7 +8,7 @@ import {
 
 // locals
 import { WiggleDisplayModel } from './model'
-import YScaleBars from '../components/YScaleBars'
+import YScaleBars from './components/YScaleBars'
 
 export async function renderSvg(
   self: WiggleDisplayModel,
