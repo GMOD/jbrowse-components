@@ -258,119 +258,129 @@ export function stateModelFactory(
         )
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get ticks() {
-        const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
-          self
-
-        if (!domain) {
-          return undefined
-        }
-
-        const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-        const ticks = axisPropsFromTickScale(
-          getScale({
-            scaleType,
-            domain,
-            range: [rowHeight - offset, offset],
-            inverted: getConf(self, 'inverted') as boolean,
-          }),
-          4,
-        )
-        return useMinimalTicks ? { ...ticks, values: domain } : ticks
-      },
-
-      /**
-       * #getter
-       */
-      get colors() {
-        return [
-          'red',
-          'blue',
-          'green',
-          'orange',
-          'purple',
-          'cyan',
-          'pink',
-          'darkblue',
-          'darkred',
-          'pink',
-        ]
-      },
-    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
         /**
          * #method
          */
-        renderProps() {
+        adapterProps() {
           const superProps = superRenderProps()
-          const {
-            displayCrossHatches,
-            filters,
-            height,
-            resolution,
-            rpcDriverName,
-            scaleOpts,
-            stats,
-            sources,
-            ticks,
-            rendererConfig: config,
-          } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !sources || !stats,
             displayModel: self,
-            config,
-            displayCrossHatches,
-            filters,
-            height,
-            resolution,
-            rpcDriverName,
-            scaleOpts,
-            sources,
-            ticks,
-            onMouseMove: (_: unknown, f: Feature) => {
-              self.setFeatureUnderMouse(f)
-            },
-            onMouseLeave: () => {
-              self.setFeatureUnderMouse(undefined)
-            },
+            config: self.rendererConfig,
+            filters: self.filters,
+            resolution: self.resolution,
+            rpcDriverName: self.rpcDriverName,
+            sources: self.sources,
           }
         },
-
         /**
          * #getter
          */
-        get hasResolution() {
-          return self.adapterCapabilities.includes('hasResolution')
-        },
+        get ticks() {
+          const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
+            self
 
-        /**
-         * #getter
-         */
-        get hasGlobalStats() {
-          return self.adapterCapabilities.includes('hasGlobalStats')
-        },
-
-        /**
-         * #getter
-         */
-        get fillSetting() {
-          if (self.filled) {
-            return 0
-          } else if (self.minSize === 1) {
-            return 1
-          } else {
-            return 2
+          if (!domain) {
+            return undefined
           }
+
+          const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
+          const ticks = axisPropsFromTickScale(
+            getScale({
+              scaleType,
+              domain,
+              range: [rowHeight - offset, offset],
+              inverted: getConf(self, 'inverted') as boolean,
+            }),
+            4,
+          )
+          return useMinimalTicks ? { ...ticks, values: domain } : ticks
+        },
+
+        /**
+         * #getter
+         */
+        get colors() {
+          return [
+            'red',
+            'blue',
+            'green',
+            'orange',
+            'purple',
+            'cyan',
+            'pink',
+            'darkblue',
+            'darkred',
+            'pink',
+          ]
+        },
+        /**
+         * #getter
+         */
+        get quantitativeStatsRelevantToCurrentZoom() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return self.stats?.currStatsBpPerPx === view.bpPerPx
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      renderProps() {
+        const superProps = self.adapterProps()
+        return {
+          ...superProps,
+          notReady:
+            superProps.notReady ||
+            !self.sources ||
+            !self.quantitativeStatsRelevantToCurrentZoom,
+          displayModel: self,
+          rpcDriverName: self.rpcDriverName,
+          displayCrossHatches: self.displayCrossHatches,
+          height: self.height,
+          ticks: self.ticks,
+          stats: self.stats,
+          scaleOpts: self.scaleOpts,
+          onMouseMove: (_: unknown, f: Feature) => {
+            self.setFeatureUnderMouse(f)
+          },
+          onMouseLeave: () => {
+            self.setFeatureUnderMouse(undefined)
+          },
+        }
+      },
+
+      /**
+       * #getter
+       */
+      get hasResolution() {
+        return self.adapterCapabilities.includes('hasResolution')
+      },
+
+      /**
+       * #getter
+       */
+      get hasGlobalStats() {
+        return self.adapterCapabilities.includes('hasGlobalStats')
+      },
+
+      /**
+       * #getter
+       */
+      get fillSetting() {
+        if (self.filled) {
+          return 0
+        } else if (self.minSize === 1) {
+          return 1
+        } else {
+          return 2
+        }
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       const hasRenderings = getConf(self, 'defaultRendering')

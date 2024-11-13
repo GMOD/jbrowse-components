@@ -1,4 +1,6 @@
 import { autorun } from 'mobx'
+import { addDisposer, isAlive } from 'mobx-state-tree'
+// jbrowse
 import {
   isAbortException,
   getSession,
@@ -6,8 +8,6 @@ import {
 } from '@jbrowse/core/util'
 import { QuantitativeStats } from '@jbrowse/core/util/stats'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive } from 'mobx-state-tree'
-
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
@@ -21,7 +21,7 @@ export function quantitativeStatsAutorun(self: {
     stats: QuantitativeStats,
     statsRegion: string,
   ) => void
-  renderProps: () => Record<string, unknown>
+  adapterProps: () => Record<string, unknown>
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
@@ -45,7 +45,7 @@ export function quantitativeStatsAutorun(self: {
             signal: aborter.signal,
             filters: [],
             currStatsBpPerPx: view.bpPerPx,
-            ...self.renderProps(),
+            ...self.adapterProps(),
           })
 
           if (isAlive(self)) {
