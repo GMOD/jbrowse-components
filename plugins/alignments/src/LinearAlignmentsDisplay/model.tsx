@@ -13,6 +13,7 @@ import deepEqual from 'fast-deep-equal'
 import {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
+  ConfigurationReference,
   getConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -21,7 +22,6 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
-import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
 import { FilterBy } from '../shared/types'
 
@@ -75,7 +75,48 @@ function stateModelFactory(
     .compose(
       'LinearAlignmentsDisplay',
       BaseDisplay,
-      LinearAlignmentsDisplayMixin(pluginManager, configSchema),
+      types.model({
+        /**
+         * #property
+         * refers to LinearPileupDisplay sub-display model
+         */
+        PileupDisplay: types.maybe(
+          types.union(
+            ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
+          ),
+        ),
+        /**
+         * #property
+         * refers to LinearSNPCoverageDisplay sub-display model
+         */
+        SNPCoverageDisplay: types.maybe(
+          pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
+        ),
+        /**
+         * #property
+         */
+        snpCovHeight: 45,
+        /**
+         * #property
+         */
+        type: types.literal('LinearAlignmentsDisplay'),
+        /**
+         * #property
+         */
+        configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        heightPreConfig: types.maybe(types.number),
+        /**
+         * #property
+         */
+        userFeatureScreenDensity: types.maybe(types.number),
+        /**
+         * #property
+         */
+        lowerPanelType: 'LinearPileupDisplay',
+      }),
     )
     .volatile(() => ({
       /**
