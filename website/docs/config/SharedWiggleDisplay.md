@@ -8,7 +8,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### Source file
 
-[plugins/wiggle/src/shared/SharedWiggleConfigSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/SharedWiggleConfigSchema.ts)
+[plugins/wiggle/src/shared/configShared.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/configShared.ts)
 
 extends
 

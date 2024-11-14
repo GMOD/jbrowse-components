@@ -75,25 +75,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       /**
        * #volatile
-       * check if the sorting is complete before rendering
        */
       sortReady: false,
       /**
        * #volatile
-       * the sort is relative to a current zoom level due to the layout being
-       * linked to a certain zoom level
        */
       currSortBpPerPx: 0,
       /**
        * #volatile
-       * visible MM tag type modifications in current region
        */
       visibleModifications: observable.map<string, ModificationTypeWithColor>(
         {},
       ),
       /**
        * #volatile
-       * whether we have checked for mods at least once
        */
       modificationsReady: false,
     }))

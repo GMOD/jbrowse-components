@@ -19,14 +19,14 @@ export async function getQuantitativeStats(
     headers?: Record<string, string>
     signal?: AbortSignal
     filters: string[]
-    currStatsRegions: string
+    currStatsBpPerPx: number
   },
 ): Promise<QuantitativeStats> {
-  const numStdDev = getConf(self, 'numStdDev') || 3
-  const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
+  const numStdDev = getConf(self, 'numStdDev') || 3
   const { adapterConfig, autoscaleType } = self
-  const { currStatsRegions } = opts
+  const sessionId = getRpcSessionId(self)
+  const { currStatsBpPerPx } = opts
   const params = {
     sessionId,
     adapterConfig,
@@ -54,11 +54,11 @@ export async function getQuantitativeStats(
           ...results,
           scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
           scoreMax: scoreMean + numStdDev * scoreStdDev,
-          currStatsRegions,
+          currStatsBpPerPx,
         }
       : {
           ...results,
-          currStatsRegions,
+          currStatsBpPerPx,
         }
   }
   if (autoscaleType === 'local' || autoscaleType === 'localsd') {
@@ -89,11 +89,11 @@ export async function getQuantitativeStats(
           ...results,
           scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
           scoreMax: scoreMean + numStdDev * scoreStdDev,
-          currStatsRegions,
+          currStatsBpPerPx,
         }
       : {
           ...results,
-          currStatsRegions,
+          currStatsBpPerPx,
         }
   }
   if (autoscaleType === 'zscale') {

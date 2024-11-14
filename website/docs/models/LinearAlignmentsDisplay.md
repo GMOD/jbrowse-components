@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearAlignmentsDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.tsx)
+[plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx)
 
 extends
 
@@ -139,7 +139,7 @@ setHeight: (n: number) => number
 
 ```js
 // type signature
-setFilterBy: (filter: FilterBy) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setLowerPanelType

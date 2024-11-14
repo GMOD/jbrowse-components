@@ -20,12 +20,6 @@ import { lazy } from 'react'
 // lazies
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
 
-export interface QuantitativeStats {
-  currStatsRegions: string
-  scoreMin: number
-  scoreMax: number
-}
-
 /**
  * #stateModel SharedWiggleMixin
  */
@@ -108,7 +102,9 @@ export default function SharedWiggleMixin(
       /**
        * #volatile
        */
-      stats: undefined as QuantitativeStats | undefined,
+      stats: undefined as
+        | { currStatsBpPerPx: number; scoreMin: number; scoreMax: number }
+        | undefined,
       /**
        * #volatile
        */
@@ -118,8 +114,24 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      updateQuantitativeStats(stats: QuantitativeStats) {
-        self.stats = stats
+      updateQuantitativeStats(stats: {
+        currStatsBpPerPx: number
+        scoreMin: number
+        scoreMax: number
+      }) {
+        const { currStatsBpPerPx, scoreMin, scoreMax } = stats
+        const EPSILON = 0.000001
+        if (
+          !self.stats ||
+          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+        ) {
+          self.stats = {
+            currStatsBpPerPx,
+            scoreMin,
+            scoreMax,
+          }
+        }
       },
       /**
        * #action
@@ -506,10 +518,7 @@ export default function SharedWiggleMixin(
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetMinMaxDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
+                { model: self, handleClose },
               ])
             },
           },

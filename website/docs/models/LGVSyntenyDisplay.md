@@ -54,12 +54,3 @@ contextMenuItems: () => MenuItem[]
 // type signature
 trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
-
-### LGVSyntenyDisplay - Actions
-
-#### action: selectFeature
-
-```js
-// type signature
-selectFeature: (feature: Feature) => void
-```

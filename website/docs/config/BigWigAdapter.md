@@ -33,13 +33,3 @@ source: {
       description: 'Used for multiwiggle',
     }
 ```
-
-#### slot: resolutionMultiplier
-
-```js
-resolutionMultiplier: {
-      type: 'number',
-      defaultValue: 1,
-      description: 'Initial resolution multiplier',
-    }
-```

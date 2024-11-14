@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts)
+[plugins/wiggle/src/MultiLinearWiggleDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/models/model.ts)
 
 extends
 
@@ -90,13 +90,6 @@ this yet but flag can be used for this
 boolean
 ```
 
-#### getter: canHaveFill
-
-```js
-// type
-boolean
-```
-
 #### getter: renderColorBoxes
 
 the multirowxy and multiline don't need to use colors on the legend boxes since
@@ -122,13 +115,6 @@ any
 ```js
 // type
 { color: string; name: string; group?: string; }[]
-```
-
-#### getter: quantitativeStatsReady
-
-```js
-// type
-boolean
 ```
 
 #### getter: rowHeight
@@ -166,13 +152,6 @@ any
 string[]
 ```
 
-#### getter: quantitativeStatsUpToDate
-
-```js
-// type
-boolean
-```
-
 #### getter: hasResolution
 
 ```js
@@ -195,13 +174,6 @@ boolean
 ```
 
 ### MultiLinearWiggleDisplay - Methods
-
-#### method: adapterProps
-
-```js
-// type signature
-adapterProps: () => any
-```
 
 #### method: renderProps
 

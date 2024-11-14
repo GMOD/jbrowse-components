@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/wiggle/src/LinearWiggleDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts)
+[plugins/wiggle/src/LinearWiggleDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/model.ts)
 
 extends
 
@@ -43,13 +43,6 @@ React.ComponentType<any>
 string
 ```
 
-#### getter: quantitativeStatsUpToDate
-
-```js
-// type
-boolean
-```
-
 #### getter: ticks
 
 ```js
@@ -71,21 +64,7 @@ boolean
 ;1 | 0 | 2
 ```
 
-#### getter: quantitativeStatsReady
-
-```js
-// type
-boolean
-```
-
 ### LinearWiggleDisplay - Methods
-
-#### method: adapterProps
-
-```js
-// type signature
-adapterProps: () => any
-```
 
 #### method: renderProps
 

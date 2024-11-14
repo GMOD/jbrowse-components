@@ -38,20 +38,6 @@ configuration: ConfigurationReference(configSchema)
 
 ### LinearComparativeDisplay - Getters
 
-#### getter: level
-
-```js
-// type
-number
-```
-
-#### getter: height
-
-```js
-// type
-number
-```
-
 #### getter: renderProps
 
 ```js

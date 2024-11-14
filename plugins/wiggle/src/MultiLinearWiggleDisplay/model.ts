@@ -322,11 +322,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * unused currently
          */
-        get quantitativeStatsUpToDate() {
+        get quantitativeStatsRelevantToCurrentZoom() {
           const view = getContainingView(self) as LinearGenomeViewModel
-          const statsRegions = JSON.stringify(view.dynamicBlocks)
-          return self.stats?.currStatsRegions === statsRegions
+          return self.stats?.currStatsBpPerPx === view.bpPerPx
         },
       }
     })
@@ -338,10 +338,7 @@ export function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...superProps,
-          notReady:
-            superProps.notReady ||
-            !self.sources ||
-            !self.quantitativeStatsUpToDate,
+          notReady: superProps.notReady || !self.sources || !self.stats,
           displayModel: self,
           rpcDriverName: self.rpcDriverName,
           displayCrossHatches: self.displayCrossHatches,

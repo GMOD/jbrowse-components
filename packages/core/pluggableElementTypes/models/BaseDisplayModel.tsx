@@ -17,17 +17,14 @@ function stateModelFactory() {
     .model('BaseDisplay', {
       /**
        * #property
-       * corresponds to a displayId
        */
       id: ElementId,
       /**
        * #property
-       * display type
        */
       type: types.string,
       /**
        * #property
-       * RPC driver
        */
       rpcDriverName: types.maybe(types.string),
     })
@@ -39,7 +36,6 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * the component that contains the rendered content
        */
       get RenderingComponent(): React.FC<{
         model: typeof self
@@ -57,10 +53,8 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * a component to display a 'blurb' of information (docked bottom left of
-       * track)
        */
-      get DisplayBlurb(): React.FC<any> | null {
+      get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
         return null
       },
 

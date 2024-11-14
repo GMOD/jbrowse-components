@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModel.tsx)
+[plugins/alignments/src/LinearAlignmentsDisplay/models/alignmentsModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/alignmentsModel.tsx)
 
 ### LinearAlignmentsDisplayMixin - Properties
 

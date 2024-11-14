@@ -65,18 +65,18 @@ trackMaxHeight: types.maybe(types.number)
 
 ```js
 // type signature
-IType<ColorBy, ColorBy, ColorBy>
+IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
 // code
-colorBy: types.frozen<ColorBy | undefined>()
+colorBy: ColorByModel
 ```
 
 #### property: filterBy
 
 ```js
 // type signature
-IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
+IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
 // code
-filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
+filterBy: types.optional(FilterModel, {})
 ```
 
 #### property: jexlFilters
@@ -210,7 +210,7 @@ setNoSpacing: (flag?: boolean) => void
 
 ```js
 // type signature
-setColorScheme: (colorScheme: ColorBy) => void
+setColorScheme: (colorScheme: { type: string; tag?: string; extra?: ExtraColorBy; }) => void
 ```
 
 #### action: updateColorTagMap
@@ -254,7 +254,7 @@ setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotNa
 
 ```js
 // type signature
-setFilterBy: (filter: FilterBy) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setJexlFilters
