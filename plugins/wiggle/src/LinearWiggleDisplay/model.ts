@@ -77,10 +77,7 @@ function stateModelFactory(
       get quantitativeStatsUpToDate() {
         const view = getContainingView(self) as LinearGenomeViewModel
         const statsRegions = JSON.stringify(view.dynamicBlocks)
-        return (
-          self.stats?.currStatsBpPerPx === view.bpPerPx ||
-          self.stats?.currStatsRegions === statsRegions
-        )
+        return self.stats?.currStatsRegions === statsRegions
       },
     }))
 

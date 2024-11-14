@@ -41,7 +41,6 @@ export function getQuantitativeStatsAutorun(self: {
           const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
             filters: [],
-            currStatsBpPerPx: view.bpPerPx,
             currStatsRegions: statsRegions,
             ...self.adapterProps(),
           })

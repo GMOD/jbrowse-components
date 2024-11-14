@@ -22,7 +22,6 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
 
 export interface QuantitativeStats {
   currStatsRegions: string
-  currStatsBpPerPx: number
   scoreMin: number
   scoreMax: number
 }

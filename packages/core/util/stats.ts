@@ -15,7 +15,6 @@ export interface UnrectifiedQuantitativeStats {
 }
 export interface QuantitativeStats extends UnrectifiedQuantitativeStats {
   currStatsRegions: string
-  currStatsBpPerPx: number
   featureDensity: number
   scoreMean: number
   scoreStdDev: number

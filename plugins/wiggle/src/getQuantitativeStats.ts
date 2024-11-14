@@ -19,7 +19,6 @@ export async function getQuantitativeStats(
     headers?: Record<string, string>
     signal?: AbortSignal
     filters: string[]
-    currStatsBpPerPx: number
     currStatsRegions: string
   },
 ): Promise<QuantitativeStats> {
@@ -27,7 +26,7 @@ export async function getQuantitativeStats(
   const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
   const { adapterConfig, autoscaleType } = self
-  const { currStatsRegions, currStatsBpPerPx } = opts
+  const { currStatsRegions } = opts
   const params = {
     sessionId,
     adapterConfig,
@@ -55,12 +54,10 @@ export async function getQuantitativeStats(
           ...results,
           scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
           scoreMax: scoreMean + numStdDev * scoreStdDev,
-          currStatsBpPerPx,
           currStatsRegions,
         }
       : {
           ...results,
-          currStatsBpPerPx,
           currStatsRegions,
         }
   }
@@ -92,12 +89,10 @@ export async function getQuantitativeStats(
           ...results,
           scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
           scoreMax: scoreMean + numStdDev * scoreStdDev,
-          currStatsBpPerPx,
           currStatsRegions,
         }
       : {
           ...results,
-          currStatsBpPerPx,
           currStatsRegions,
         }
   }
