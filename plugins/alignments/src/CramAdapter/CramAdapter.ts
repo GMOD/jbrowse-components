@@ -245,7 +245,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           tagFilter,
           readName,
         } = filterBy || {}
-
+        let hits = 0
+        let nohits = 0
         for (const record of records) {
           const flags = record.flags
           if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
@@ -275,13 +276,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           // can be re-used across blocks
           const ret = this.featureCache.get(`${record.uniqueId}`)
           if (!ret) {
+            nohits++
             const elt = this.cramRecordToFeature(record)
             this.featureCache.set(`${record.uniqueId}`, elt)
             observer.next(elt)
           } else {
+            hits++
             observer.next(ret)
           }
         }
+        console.log({ nohits, hits })
 
         observer.complete()
       })

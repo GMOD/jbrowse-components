@@ -4,7 +4,7 @@ import { getModPositions, getModProbabilities } from '../ModificationParser'
 import { getNextRefPos, parseCigar } from '../MismatchParser'
 import { getTagAlt } from '../util'
 
-interface MaximumProbabilityMod {
+export interface MaximumProbabilityMod {
   type: string
   prob: number
   allProbs: number[]

@@ -7,6 +7,7 @@ import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 import { parseCigar } from '../MismatchParser'
 import { mdToMismatches } from '../MismatchParser/mdToMismatches'
 import { cacheGetter } from '../shared/util'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -112,7 +113,9 @@ export default class CramSlightlyLazyFeature implements Feature {
         ? this.qual
         : field === 'CIGAR'
           ? this.CIGAR
-          : this.fields[field]
+          : field === 'modifications'
+            ? this.modifications
+            : this.fields[field]
   }
 
   parent() {
@@ -140,6 +143,11 @@ export default class CramSlightlyLazyFeature implements Feature {
           ),
         )
       : mismatches
+  }
+
+  get modifications() {
+    console.log('here')
+    return getMaxProbModAtEachPosition(this)
   }
 
   get fields(): SimpleFeatureSerialized {
@@ -177,3 +185,4 @@ export default class CramSlightlyLazyFeature implements Feature {
 cacheGetter(CramSlightlyLazyFeature, 'fields')
 cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'mismatches')
+cacheGetter(CramSlightlyLazyFeature, 'modifications')

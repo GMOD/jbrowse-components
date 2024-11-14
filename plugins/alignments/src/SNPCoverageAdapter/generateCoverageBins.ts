@@ -11,7 +11,7 @@ import {
   PreBaseCoverageBinSubtypes,
   SkipMap,
 } from '../shared/types'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { MaximumProbabilityMod } from '../shared/getMaxProbModAtEachPosition'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
@@ -282,7 +282,8 @@ function processModification({
   const fend = feature.get('end')
   const twoColor = colorBy?.modifications?.twoColor
   const isolatedModification = colorBy?.modifications?.isolatedModification
-  getMaxProbModAtEachPosition(feature)?.forEach(
+
+  ;(feature.get('modifications') as MaximumProbabilityMod[])?.forEach(
     ({ type, prob, allProbs }, pos) => {
       if (isolatedModification && type !== isolatedModification) {
         return

@@ -5,9 +5,12 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getMismatches } from '../MismatchParser'
+import { getMismatches, parseCigar } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 import { cacheGetter } from '../shared/util'
+import { getTagAlt } from '../util'
+import { getModPositions, getModProbabilities } from '../ModificationParser'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 export default class BamSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -31,6 +34,10 @@ export default class BamSlightlyLazyFeature implements Feature {
     )
   }
 
+  get modifications() {
+    return getMaxProbModAtEachPosition(this)
+  }
+
   get qual() {
     return this.record.qual?.join(' ')
   }
@@ -40,7 +47,9 @@ export default class BamSlightlyLazyFeature implements Feature {
       ? this.mismatches
       : field === 'qual'
         ? this.qual
-        : this.fields[field]
+        : field === 'modifications'
+          ? this.modifications
+          : this.fields[field]
   }
 
   parent() {
@@ -88,3 +97,4 @@ export default class BamSlightlyLazyFeature implements Feature {
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
 cacheGetter(BamSlightlyLazyFeature, 'mismatches')
+cacheGetter(BamSlightlyLazyFeature, 'modifications')

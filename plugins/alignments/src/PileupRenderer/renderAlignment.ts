@@ -88,7 +88,6 @@ export function renderAlignment({
         bpPerPx,
         renderArgs,
         canvasWidth,
-        cigarOps,
       })
       break
     }
