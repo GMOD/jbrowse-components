@@ -29,15 +29,6 @@ heightPreConfig: types.maybe(
       )
 ```
 
-#### property: scrollTop
-
-```js
-// type signature
-number
-// code
-scrollTop: 0
-```
-
 ### TrackHeightMixin - Actions
 
 #### action: setScrollTop

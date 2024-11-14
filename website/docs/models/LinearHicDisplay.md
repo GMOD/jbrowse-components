@@ -61,6 +61,15 @@ IMaybe<ISimpleType<string>>
 colorScheme: types.maybe(types.string)
 ```
 
+#### property: activeNormalization
+
+```js
+// type signature
+string
+// code
+activeNormalization: 'KR'
+```
+
 ### LinearHicDisplay - Getters
 
 #### getter: blockType
@@ -81,7 +90,7 @@ string
 
 ```js
 // type
-() => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+() => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearHicDisplay - Methods
@@ -114,4 +123,18 @@ setUseLogScale: (f: boolean) => void
 ```js
 // type signature
 setColorScheme: (f?: string) => void
+```
+
+#### action: setActiveNormalization
+
+```js
+// type signature
+setActiveNormalization: (f: string) => void
+```
+
+#### action: setAvailableNormalizations
+
+```js
+// type signature
+setAvailableNormalizations: (f: string[]) => void
 ```

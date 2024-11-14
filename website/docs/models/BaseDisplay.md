@@ -16,6 +16,8 @@ info
 
 #### property: id
 
+corresponds to a displayId
+
 ```js
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
@@ -25,6 +27,8 @@ id: ElementId
 
 #### property: type
 
+display type
+
 ```js
 // type signature
 ISimpleType<string>
@@ -33,6 +37,8 @@ type: types.string
 ```
 
 #### property: rpcDriverName
+
+RPC driver
 
 ```js
 // type signature

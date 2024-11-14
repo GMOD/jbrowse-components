@@ -23,3 +23,13 @@ hicLocation: {
       },
     }
 ```
+
+#### slot: resolutionMultiplier
+
+```js
+resolutionMultiplier: {
+      type: 'number',
+      defaultValue: 1,
+      description: 'Initial resolution multiplier',
+    }
+```

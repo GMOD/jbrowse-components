@@ -155,7 +155,7 @@ getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
 
 ```js
 // type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; }[][]
+getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipPos: number; }[][]
 ```
 
 #### method: menuItems

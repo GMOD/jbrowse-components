@@ -43,9 +43,9 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
 // code
-filterBy: types.optional(FilterModel, {})
+filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
 ```
 
 #### property: lineWidth
@@ -70,15 +70,9 @@ jitter: types.maybe(types.number)
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
+IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
+colorBy: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: drawInter
@@ -191,7 +185,7 @@ setRef: (ref: HTMLCanvasElement) => void
 
 ```js
 // type signature
-setColorScheme: (s: { type: string; }) => void
+setColorScheme: (colorBy: { type: string; }) => void
 ```
 
 #### action: setChainData
@@ -219,7 +213,7 @@ setDrawLongRange: (f: boolean) => void
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```
 
 #### action: setLineWidth
