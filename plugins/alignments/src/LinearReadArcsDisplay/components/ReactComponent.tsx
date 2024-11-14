@@ -6,6 +6,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // local
 import { LinearReadArcsDisplayModel } from '../model'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
+import { isAlive } from 'mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 
@@ -20,7 +21,9 @@ const Arcs = observer(function ({
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
     (ref: HTMLCanvasElement) => {
-      model.setRef(ref)
+      if (isAlive(model)) {
+        model.setRef(ref)
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, width, height],

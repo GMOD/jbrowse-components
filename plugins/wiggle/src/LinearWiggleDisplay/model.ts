@@ -73,7 +73,6 @@ function stateModelFactory(
       },
       /**
        * #getter
-       * unused currently
        */
       get quantitativeStatsUpToDate() {
         const view = getContainingView(self) as LinearGenomeViewModel

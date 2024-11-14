@@ -120,20 +120,7 @@ export default function SharedWiggleMixin(
        * #action
        */
       updateQuantitativeStats(stats: QuantitativeStats) {
-        const { currStatsRegions, currStatsBpPerPx, scoreMin, scoreMax } = stats
-        const EPSILON = 0.000001
-        if (
-          !self.stats ||
-          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
-          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
-        ) {
-          self.stats = {
-            currStatsRegions,
-            currStatsBpPerPx,
-            scoreMin,
-            scoreMax,
-          }
-        }
+        self.stats = stats
       },
       /**
        * #action
