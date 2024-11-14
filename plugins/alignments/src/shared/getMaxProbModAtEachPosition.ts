@@ -4,7 +4,7 @@ import { getModPositions, getModProbabilities } from '../ModificationParser'
 import { getNextRefPos, parseCigar } from '../MismatchParser'
 import { getTagAlt } from '../util'
 
-export interface MaximumProbabilityMod {
+export interface MaxProbMod {
   type: string
   prob: number
   allProbs: number[]
@@ -21,7 +21,7 @@ export function getMaxProbModAtEachPosition(
   if (seq) {
     const modifications = getModPositions(mm, seq, fstrand)
     const probabilities = getModProbabilities(feature)
-    const maxProbModForPosition = [] as MaximumProbabilityMod[]
+    const maxProbModForPosition = [] as MaxProbMod[]
 
     let probIndex = 0
     for (const { type, positions } of modifications) {

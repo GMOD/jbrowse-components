@@ -5,12 +5,10 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getMismatches, parseCigar } from '../MismatchParser'
+import { getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 import { cacheGetter } from '../shared/util'
-import { getTagAlt } from '../util'
-import { getModPositions, getModProbabilities } from '../ModificationParser'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { getMaxProbModAtEachPosition } from '../shared/getMaxProbModAtEachPosition'
 
 export default class BamSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class

@@ -80,7 +80,6 @@ export function renderAlignment({
     }
 
     case 'modifications': {
-      const cigarOps = parseCigar(feature.get('CIGAR'))
       renderModifications({
         ctx,
         feat,

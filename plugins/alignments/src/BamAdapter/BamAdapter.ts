@@ -189,8 +189,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           readName,
         } = filterBy || {}
 
-        let hits = 0
-        let nohits = 0
         for (const record of records) {
           let ref: string | undefined
           if (!record.tags.MD) {
@@ -228,16 +226,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           const ret = this.featureCache.get(`${record.id}`)
 
           if (!ret) {
-            nohits++
             const elt = new BamSlightlyLazyFeature(record, this, ref)
             this.featureCache.set(`${record.id}`, elt)
             observer.next(elt)
           } else {
-            hits++
             observer.next(ret)
           }
         }
-        console.log({ hits, nohits })
         observer.complete()
       })
     }, signal)

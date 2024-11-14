@@ -5,7 +5,7 @@ import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
 import { alphaColor } from '../shared/util'
-import { MaximumProbabilityMod } from '../shared/getMaximumModificationAtEachPosition'
+import { MaxProbMod } from '../shared/getMaxProbModAtEachPosition'
 
 // render modifications stored in MM tag in BAM
 export function renderModifications({
@@ -35,7 +35,7 @@ export function renderModifications({
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
 
-  ;(feature.get('modifications') as MaximumProbabilityMod[])?.forEach(
+  ;(feature.get('modifications') as MaxProbMod[] | undefined)?.forEach(
     ({ allProbs, prob, type }, pos) => {
       const r = start + pos
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)

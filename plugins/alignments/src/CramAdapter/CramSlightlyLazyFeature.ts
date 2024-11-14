@@ -7,7 +7,7 @@ import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 import { parseCigar } from '../MismatchParser'
 import { mdToMismatches } from '../MismatchParser/mdToMismatches'
 import { cacheGetter } from '../shared/util'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { getMaxProbModAtEachPosition } from '../shared/getMaxProbModAtEachPosition'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -146,7 +146,6 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get modifications() {
-    console.log('here')
     return getMaxProbModAtEachPosition(this)
   }
 
