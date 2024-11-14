@@ -77,12 +77,19 @@ function stateModelFactory() {
         blockState: types.map(BlockState),
         /**
          * #property
+         * configuration
          */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       featureIdUnderMouse: undefined as undefined | string,
+      /**
+       * #volatile
+       */
       contextMenuFeature: undefined as undefined | Feature,
     }))
     .views(self => ({

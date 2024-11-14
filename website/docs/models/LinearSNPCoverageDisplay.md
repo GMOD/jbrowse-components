@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts)
+[plugins/alignments/src/LinearSNPCoverageDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/model.ts)
 
 extends
 
@@ -58,23 +58,21 @@ drawArcs: types.maybe(types.boolean)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
 // code
-filterBy: types.optional(FilterModel, {})
+filterBy: types.optional(types.frozen<FilterBy>(), {
+          flagInclude: 0,
+          flagExclude: 1540,
+        })
 ```
 
 #### property: colorBy
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>
+IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        )
+colorBy: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: jexlFilters
@@ -123,6 +121,20 @@ any
 boolean
 ```
 
+#### getter: renderReady
+
+```js
+// type
+boolean
+```
+
+#### getter: ready
+
+```js
+// type
+any
+```
+
 #### getter: TooltipComponent
 
 ```js
@@ -163,6 +175,13 @@ SerializableFilterChain
 
 ### LinearSNPCoverageDisplay - Methods
 
+#### method: adapterProps
+
+```js
+// type signature
+adapterProps: () => any
+```
+
 #### method: renderProps
 
 ```js
@@ -197,14 +216,14 @@ setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubsche
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```
 
-#### action: setColorBy
+#### action: setColorScheme
 
 ```js
 // type signature
-setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+setColorScheme: (colorBy?: ColorBy) => void
 ```
 
 #### action: setJexlFilters
@@ -214,11 +233,11 @@ setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 setJexlFilters: (filters: string[]) => void
 ```
 
-#### action: updateModificationColorMap
+#### action: updateVisibleModifications
 
 ```js
 // type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
+updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 ```
 
 #### action: setModificationsReady
