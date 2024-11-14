@@ -37,7 +37,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     sequenceAdapter: BaseSequenceAdapter
   }>
 
-  private featureCache = new QuickLRU<string, Feature>({ maxSize: 5000 })
+  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
+  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
+  // of these in memory is fairly intensive but can reduce recomputation on
+  // these objects
+  private ultraLongFeatureCache = new QuickLRU<string, Feature>({
+    maxSize: 500,
+  })
 
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined
@@ -270,13 +276,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           if (readName && record.readName !== readName) {
             continue
           }
-          // retrieve a feature from our feature cache if it is available, the
-          // features in the cache have pre-computed mismatches objects that
-          // can be re-used across blocks
-          const ret = this.featureCache.get(`${record.uniqueId}`)
+
+          const ret = this.ultraLongFeatureCache.get(`${record.uniqueId}`)
           if (!ret) {
             const elt = this.cramRecordToFeature(record)
-            this.featureCache.set(`${record.uniqueId}`, elt)
+            this.ultraLongFeatureCache.set(`${record.uniqueId}`, elt)
             observer.next(elt)
           } else {
             observer.next(ret)

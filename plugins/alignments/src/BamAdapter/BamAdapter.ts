@@ -26,7 +26,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<Header>
 
-  private featureCache = new QuickLRU<string, Feature>({ maxSize: 5000 })
+  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
+  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
+  // of these in memory is memory intensive but can reduce recomputation on
+  // these objects
+  private ultraLongFeatureCache = new QuickLRU<string, Feature>({
+    maxSize: 500,
+  })
 
   private configureP?: Promise<{
     bam: BamFile
@@ -223,10 +229,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           // retrieve a feature from our feature cache if it is available, the
           // features in the cache have pre-computed mismatches objects that
           // can be re-used across blocks
-          const ret = this.featureCache.get(`${record.id}`)
+          const ret = this.ultraLongFeatureCache.get(`${record.id}`)
           if (!ret) {
             const elt = new BamSlightlyLazyFeature(record, this, ref)
-            this.featureCache.set(`${record.id}`, elt)
+            this.ultraLongFeatureCache.set(`${record.id}`, elt)
             observer.next(elt)
           } else {
             observer.next(ret)
