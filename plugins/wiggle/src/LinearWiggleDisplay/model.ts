@@ -73,6 +73,7 @@ function stateModelFactory(
       },
       /**
        * #getter
+       * unused currently
        */
       get quantitativeStatsRelevantToCurrentZoom() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -91,7 +92,6 @@ function stateModelFactory(
           const { filters, resolution, scaleOpts } = self
           return {
             ...superProps,
-
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -109,23 +109,25 @@ function stateModelFactory(
           const { scaleType, domain, height } = self
           const minimalTicks = getConf(self, 'minimalTicks')
           const inverted = getConf(self, 'inverted')
-          const range = [
-            height - YSCALEBAR_LABEL_OFFSET,
-            YSCALEBAR_LABEL_OFFSET,
-          ]
-          if (!domain) {
+          if (domain) {
+            const ticks = axisPropsFromTickScale(
+              getScale({
+                scaleType,
+                domain,
+                range: [
+                  height - YSCALEBAR_LABEL_OFFSET,
+                  YSCALEBAR_LABEL_OFFSET,
+                ],
+                inverted,
+              }),
+              4,
+            )
+            return height < 100 || minimalTicks
+              ? { ...ticks, values: domain }
+              : ticks
+          } else {
             return undefined
           }
-          const scale = getScale({
-            scaleType,
-            domain,
-            range,
-            inverted,
-          })
-          const ticks = axisPropsFromTickScale(scale, 4)
-          return height < 100 || minimalTicks
-            ? { ...ticks, values: domain }
-            : ticks
         },
       }
     })
@@ -138,8 +140,7 @@ function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...self.adapterProps(),
-          notReady:
-            superProps.notReady || !self.quantitativeStatsRelevantToCurrentZoom,
+          notReady: superProps.notReady || !self.stats,
           height,
           ticks,
         }
@@ -262,10 +263,10 @@ function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { quantitativeStatsAutorun } = await import(
-              '../quantitativeStatsAutorun'
+            const { getQuantitativeStatsAutorun } = await import(
+              '../getQuantitativeStatsAutorun'
             )
-            quantitativeStatsAutorun(self)
+            getQuantitativeStatsAutorun(self)
           })()
         },
         /**

@@ -13,7 +13,7 @@ export function hasPairedReads(features: ChainData) {
 export function alphaColor(baseColor: string, p: number) {
   return p !== 1
     ? colord(baseColor)
-        .alpha(p * p * p)
+        .alpha(p * p)
         .toHslString()
     : baseColor
 }

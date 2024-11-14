@@ -155,10 +155,12 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setLoading(aborter: AbortController) {
-        const { statsFetchInProgress: statsFetch } = self
-        if (statsFetch !== undefined && !statsFetch.signal.aborted) {
-          statsFetch.abort()
+      setStatsLoading(aborter: AbortController) {
+        if (
+          self.statsFetchInProgress !== undefined &&
+          !self.statsFetchInProgress.signal.aborted
+        ) {
+          self.statsFetchInProgress.abort()
         }
         self.statsFetchInProgress = aborter
       },

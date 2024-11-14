@@ -13,56 +13,6 @@ import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
 
-export function quantitativeStatsAutorun(self: {
-  quantitativeStatsReady: boolean
-  setLoading: (aborter: AbortController) => void
-  setError: (error: unknown) => void
-  updateQuantitativeStats: (
-    stats: QuantitativeStats,
-    statsRegion: string,
-  ) => void
-  adapterProps: () => Record<string, unknown>
-  configuration: AnyConfigurationModel
-  adapterConfig: AnyConfigurationModel
-  autoscaleType: string
-  setMessage: (str: string) => void
-}) {
-  addDisposer(
-    self,
-    autorun(
-      async () => {
-        try {
-          const aborter = new AbortController()
-          const view = getContainingView(self) as LGV
-          self.setLoading(aborter)
-
-          if (!self.quantitativeStatsReady) {
-            return
-          }
-          const statsRegion = JSON.stringify(view.dynamicBlocks)
-
-          const wiggleStats = await getQuantitativeStats(self, {
-            signal: aborter.signal,
-            filters: [],
-            currStatsBpPerPx: view.bpPerPx,
-            ...self.adapterProps(),
-          })
-
-          if (isAlive(self)) {
-            self.updateQuantitativeStats(wiggleStats, statsRegion)
-          }
-        } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
-            console.error(e)
-            self.setError(e)
-          }
-        }
-      },
-      { delay: 1000 },
-    ),
-  )
-}
-
 export async function getQuantitativeStats(
   self: {
     adapterConfig: AnyConfigurationModel

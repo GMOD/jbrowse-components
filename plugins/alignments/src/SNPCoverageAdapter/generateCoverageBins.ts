@@ -281,8 +281,12 @@ function processModification({
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const fend = feature.get('end')
   const twoColor = colorBy?.modifications?.twoColor
+  const isolatedModification = colorBy?.modifications?.isolatedModification
   getMaxProbModAtEachPosition(feature)?.forEach(
     ({ type, prob, allProbs }, pos) => {
+      if (isolatedModification && type !== isolatedModification) {
+        return
+      }
       const epos = pos + fstart - region.start
       if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
         if (bins[epos] === undefined) {

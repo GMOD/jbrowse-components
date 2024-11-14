@@ -174,6 +174,9 @@ export function stateModelFactory(
         return self.rendererTypeName === 'MultiDensityRenderer'
       },
 
+      /**
+       * #getter
+       */
       get canHaveFill() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
@@ -319,6 +322,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * unused currently
          */
         get quantitativeStatsRelevantToCurrentZoom() {
           const view = getContainingView(self) as LinearGenomeViewModel
@@ -334,10 +338,7 @@ export function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...superProps,
-          notReady:
-            superProps.notReady ||
-            !self.sources ||
-            !self.quantitativeStatsRelevantToCurrentZoom,
+          notReady: superProps.notReady || !self.sources || !self.stats,
           displayModel: self,
           rpcDriverName: self.rpcDriverName,
           displayCrossHatches: self.displayCrossHatches,
@@ -467,10 +468,10 @@ export function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { quantitativeStatsAutorun } = await import(
-              '../quantitativeStatsAutorun'
+            const { getQuantitativeStatsAutorun } = await import(
+              '../getQuantitativeStatsAutorun'
             )
-            quantitativeStatsAutorun(self)
+            getQuantitativeStatsAutorun(self)
             addDisposer(
               self,
               autorun(async () => {
