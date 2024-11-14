@@ -1,11 +1,6 @@
-import { autorun } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
+import { isAlive } from 'mobx-state-tree'
 // jbrowse
-import {
-  isAbortException,
-  getSession,
-  getContainingView,
-} from '@jbrowse/core/util'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 import { QuantitativeStats } from '@jbrowse/core/util/stats'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
