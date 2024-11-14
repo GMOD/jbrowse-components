@@ -75,9 +75,13 @@ function stateModelFactory(
        * #getter
        * unused currently
        */
-      get quantitativeStatsRelevantToCurrentZoom() {
+      get quantitativeStatsUpToDate() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        return self.stats?.currStatsBpPerPx === view.bpPerPx
+        const statsRegions = JSON.stringify(view.dynamicBlocks)
+        return (
+          self.stats?.currStatsBpPerPx === view.bpPerPx ||
+          self.stats?.currStatsRegions === statsRegions
+        )
       },
     }))
 
@@ -140,7 +144,7 @@ function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...self.adapterProps(),
-          notReady: superProps.notReady || !self.stats,
+          notReady: superProps.notReady || !self.quantitativeStatsUpToDate,
           height,
           ticks,
         }
@@ -150,8 +154,10 @@ function stateModelFactory(
        * #getter
        */
       get needsScalebar() {
-        const { rendererTypeName: type } = self
-        return type === 'XYPlotRenderer' || type === 'LinePlotRenderer'
+        return (
+          self.rendererTypeName === 'XYPlotRenderer' ||
+          self.rendererTypeName === 'LinePlotRenderer'
+        )
       },
       /**
        * #getter

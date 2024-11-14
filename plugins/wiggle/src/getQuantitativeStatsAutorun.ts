@@ -12,6 +12,7 @@ type LGV = LinearGenomeViewModel
 
 export function getQuantitativeStatsAutorun(self: {
   quantitativeStatsReady: boolean
+  quantitativeStatsUpToDate: boolean
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
@@ -29,21 +30,24 @@ export function getQuantitativeStatsAutorun(self: {
           const view = getContainingView(self) as LGV
           const aborter = new AbortController()
           self.setStatsLoading(aborter)
-
           if (!self.quantitativeStatsReady) {
             return
           }
+          if (self.quantitativeStatsUpToDate) {
+            return
+          }
 
-          const statsRegion = JSON.stringify(view.dynamicBlocks)
+          const statsRegions = JSON.stringify(view.dynamicBlocks)
           const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
             filters: [],
             currStatsBpPerPx: view.bpPerPx,
+            currStatsRegions: statsRegions,
             ...self.adapterProps(),
           })
 
           if (isAlive(self)) {
-            self.updateQuantitativeStats(wiggleStats, statsRegion)
+            self.updateQuantitativeStats(wiggleStats, statsRegions)
           }
         } catch (e) {
           console.error(e)
