@@ -8,7 +8,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### Source file
 
-[plugins/alignments/src/LinearAlignmentsDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/configSchema.ts)
+[plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts)
 
 has a "pileup" sub-display, where you can see individual reads and a
 quantitative "snpcoverage" sub-display track showing SNP frequencies

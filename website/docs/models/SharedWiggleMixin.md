@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/wiggle/src/shared/modelShared.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/modelShared.ts)
+[plugins/wiggle/src/shared/SharedWiggleMixin.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/SharedWiggleMixin.ts)
 
 ### SharedWiggleMixin - Properties
 
@@ -238,7 +238,7 @@ string
 
 ```js
 // type
-{ domain: number[]; stats: { scoreMin: number; scoreMax: number; }; autoscaleType: any; scaleType: any; inverted: any; }
+{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }; autoscaleType: any; scaleType: any; inverted: any; }
 ```
 
 #### getter: canHaveFill
@@ -284,7 +284,7 @@ scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: 
 
 ```js
 // type signature
-updateQuantitativeStats: (stats: { scoreMin: number; scoreMax: number; }) => void
+updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }) => void
 ```
 
 #### action: setColor
@@ -308,11 +308,11 @@ setPosColor: (color?: string) => void
 setNegColor: (color?: string) => void
 ```
 
-#### action: setLoading
+#### action: setStatsLoading
 
 ```js
 // type signature
-setLoading: (aborter: AbortController) => void
+setStatsLoading: (aborter: AbortController) => void
 ```
 
 #### action: selectFeature

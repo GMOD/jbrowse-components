@@ -58,20 +58,19 @@ mismatchAlpha: types.maybe(types.boolean)
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; pos: ISimpleType<number>; tag: IMaybe<ISimpleType<string>>; refName: ISimpleType<string>; assemblyName: ISimpleType<...>; }, {}, _NotCustomized, _NotCustomized>>
+IType<SortedBy, SortedBy, SortedBy>
 // code
-sortedBy: types.maybe(
-          types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
-            assemblyName: types.string,
-          }),
-        )
+sortedBy: types.frozen<SortedBy | undefined>()
 ```
 
 ### LinearPileupDisplay - Getters
+
+#### getter: visibleModificationTypes
+
+```js
+// type
+any[]
+```
 
 #### getter: rendererConfig
 
@@ -126,11 +125,11 @@ trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; r
 setCurrSortBpPerPx: (n: number) => void
 ```
 
-#### action: updateModificationColorMap
+#### action: updateVisibleModifications
 
 ```js
 // type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
+updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 ```
 
 #### action: setModificationsReady
