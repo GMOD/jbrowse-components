@@ -5,6 +5,7 @@ import { doesIntersect2, Feature } from '@jbrowse/core/util'
 import { parseCigar } from '../MismatchParser'
 import { getMethBins } from '../ModificationParser'
 import { Mismatch, PreBaseCoverageBin } from '../shared/types'
+import { incWithProbabilities } from './util'
 
 export function processReferenceCpGs({
   feature,
