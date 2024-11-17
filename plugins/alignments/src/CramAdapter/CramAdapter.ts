@@ -58,7 +58,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
     const cram = new IndexedCramFile({
       cramFilehandle: openLocation(cramLocation, pm),
-      index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
+      index: new CraiIndex({
+        filehandle: openLocation(craiLocation, pm),
+      }),
       seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
     })

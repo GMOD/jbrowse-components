@@ -94,6 +94,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
         )
       }
       const seq = (await Promise.all(chunks))
+        .filter(f => !!f)
         .join('')
         .slice(start - s)
         .slice(0, end - start)

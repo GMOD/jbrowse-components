@@ -132,8 +132,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return idToName
   }
 
-  private async seqFetch(refName: string, start: number, end: number) {
+  private async seqFetch(
+    refName: string,
+    start: number,
+    end: number,
+    opts?: { signal?: AbortSignal },
+  ) {
+    const { signal } = opts || {}
+    checkAbortSignal(signal)
     const { sequenceAdapter } = await this.configure()
+    checkAbortSignal(signal)
     const refSeqStore = sequenceAdapter
     if (!refSeqStore) {
       return undefined
@@ -142,12 +150,15 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
 
-    const features = refSeqStore.getFeatures({
-      refName,
-      start,
-      end,
-      assemblyName: '',
-    })
+    const features = refSeqStore.getFeatures(
+      {
+        refName,
+        start,
+        end,
+        assemblyName: '',
+      },
+      opts,
+    )
 
     const seqChunks = await firstValueFrom(features.pipe(toArray()))
 
@@ -207,13 +218,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             readName,
           } = filterBy || {}
 
+          let i = 0
           for (const record of records) {
+            i++
             let ref: string | undefined
             if (!record.tags.MD) {
               ref = await this.seqFetch(
                 originalRefName || refName,
                 record.start,
                 record.end,
+                opts,
               )
             }
 
