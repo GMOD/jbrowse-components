@@ -72,12 +72,17 @@ export default class Box extends FeatureGlyph {
     return this.expandRectangleWithLabels(viewArgs, feature, {
       ...fRect,
       w,
-      rect: { l, h, w, t: 0 },
+      rect: {
+        l,
+        h,
+        w,
+        t: 0,
+      },
     })
   }
 
   // given an under-construction feature layout rectangle, expand it to
-  // accommodate a label and/or a description
+  // accommodate label and/or a description
   expandRectangleWithLabels<T extends PreLaidOutFeatureRect>(
     view: ViewInfo,
     f: Feature,
@@ -86,7 +91,7 @@ export default class Box extends FeatureGlyph {
     const { config } = view
     const showLabels = readConfObject(config, 'showLabels')
     const label = showLabels ? this.makeFeatureLabel(f, fRect) : undefined
-    if (label) {
+    if (label?.text) {
       fRect.h += label.h
       fRect.w = Math.max(label.w, fRect.w)
       label.offsetY = fRect.h
@@ -95,12 +100,16 @@ export default class Box extends FeatureGlyph {
     const description = showDescriptions
       ? this.makeFeatureDescriptionLabel(f, fRect)
       : undefined
-    if (description) {
+    if (description?.text) {
       fRect.h += description.h
       fRect.w = Math.max(description.w, fRect.w)
       description.offsetY = fRect.h // -marginBottom removed in jb2
     }
-    return { ...fRect, description, label }
+    return {
+      ...fRect,
+      description,
+      label,
+    }
   }
 
   _embeddedImages = {
@@ -141,14 +150,27 @@ export default class Box extends FeatureGlyph {
       bpPerPx,
     )
     const left = leftPx
-    const width = rightPx - leftPx
+    const width = Math.max(rightPx - leftPx, 2)
 
     const height = this.getFeatureHeight(viewInfo, feature)
     if (height !== overallHeight) {
       top += (overallHeight - height) / 2
     }
 
-    context.fillStyle = readConfObject(config, 'color1', { feature })
-    context.fillRect(left, top, Math.max(1, width), height)
+    context.fillStyle = this.isUTR(feature)
+      ? readConfObject(config, 'color3', { feature })
+      : readConfObject(config, 'color1', { feature })
+    context.fillRect(left, top, width, height)
+  }
+
+  getFeatureHeight(viewInfo: ViewInfo, feature: Feature) {
+    const height = super.getFeatureHeight(viewInfo, feature)
+    return this.isUTR(feature) ? height * 0.2 : height
+  }
+
+  protected isUTR(feature: Feature) {
+    return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
+      feature.get('type') || '',
+    )
   }
 }
