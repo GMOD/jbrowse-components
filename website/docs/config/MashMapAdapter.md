@@ -19,7 +19,7 @@ assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Target is the first value in the array, query is the second',
+        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     }
 ```
 

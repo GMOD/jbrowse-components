@@ -79,7 +79,7 @@ export default tseslint.config(
           markers: ['/'],
         },
       ],
-
+      'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
       'react/no-is-mounted': 'off',

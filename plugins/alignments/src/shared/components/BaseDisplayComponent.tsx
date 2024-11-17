@@ -10,8 +10,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { Button, Tooltip } from '@mui/material'
 
 // local
-import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
-import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
+import { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
+import { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
 
 const useStyles = makeStyles()(theme => ({
   loading: {

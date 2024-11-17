@@ -55,9 +55,9 @@ const AlignmentConnections = observer(function ({
         : getMatchedAlignmentFeatures(allFeatures),
     )
     if (!hasPaired) {
-      layoutMatches.forEach(m => {
-        m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
-      })
+      for (const m of layoutMatches) {
+        m.sort((a, b) => a.clipPos - b.clipPos)
+      }
     }
     return layoutMatches
   }, [allFeatures, trackId, hasPaired, model])

@@ -95,24 +95,42 @@ export default function SharedWiggleMixin(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       message: undefined as undefined | string,
-      stats: undefined as { scoreMin: number; scoreMax: number } | undefined,
+      /**
+       * #volatile
+       */
+      stats: undefined as
+        | { currStatsBpPerPx: number; scoreMin: number; scoreMax: number }
+        | undefined,
+      /**
+       * #volatile
+       */
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
-        const { scoreMin, scoreMax } = stats
+      updateQuantitativeStats(stats: {
+        currStatsBpPerPx: number
+        scoreMin: number
+        scoreMax: number
+      }) {
+        const { currStatsBpPerPx, scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
-        if (!self.stats) {
-          self.stats = { scoreMin, scoreMax }
-        } else if (
+        if (
+          !self.stats ||
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
           Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
-          self.stats = { scoreMin, scoreMax }
+          self.stats = {
+            currStatsBpPerPx,
+            scoreMin,
+            scoreMax,
+          }
         }
       },
       /**
@@ -137,10 +155,12 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setLoading(aborter: AbortController) {
-        const { statsFetchInProgress: statsFetch } = self
-        if (statsFetch !== undefined && !statsFetch.signal.aborted) {
-          statsFetch.abort()
+      setStatsLoading(aborter: AbortController) {
+        if (
+          self.statsFetchInProgress !== undefined &&
+          !self.statsFetchInProgress.signal.aborted
+        ) {
+          self.statsFetchInProgress.abort()
         }
         self.statsFetchInProgress = aborter
       },

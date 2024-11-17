@@ -23,11 +23,13 @@ export const ExternalTokenEntryForm = ({
           required
           label="Enter Token"
           variant="outlined"
-          inputProps={{ 'data-testid': 'entry-externalToken' }}
           onChange={event => {
             setToken(event.target.value)
           }}
           margin="dense"
+          slotProps={{
+            htmlInput: { 'data-testid': 'entry-externalToken' },
+          }}
         />
       </DialogContent>
       <DialogActions>

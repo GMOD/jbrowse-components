@@ -12,10 +12,12 @@ export default function ConfigurationTextField(
     <TextField
       {...props}
       helperText={<SanitizedHTML html={helperText || ''} />}
-      FormHelperTextProps={{
-        component: 'div',
-      }}
       fullWidth
+      slotProps={{
+        formHelperText: {
+          component: 'div',
+        },
+      }}
     />
   )
 }

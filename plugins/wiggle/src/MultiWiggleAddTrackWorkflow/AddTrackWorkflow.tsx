@@ -46,7 +46,6 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           computer
         </li>
       </ul>
-
       <TextField
         multiline
         fullWidth
@@ -58,7 +57,6 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           setVal(event.target.value)
         }}
       />
-
       <Button variant="outlined" component="label">
         Choose Files from your computer
         <input
@@ -134,7 +132,6 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       >
         Submit
       </Button>
-
       <p>Additional notes: </p>
       <ul>
         <li>

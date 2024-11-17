@@ -42,24 +42,18 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
 // code
-filterBy: types.optional(FilterModel, {})
+filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
 ```
 
 #### property: colorBy
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
+IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
+colorBy: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: drawSingletons
@@ -145,5 +139,5 @@ setChainData: (args: ChainData) => void
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```

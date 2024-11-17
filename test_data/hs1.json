@@ -1,0 +1,62 @@
+{
+  "assemblies": [
+    {
+      "name": "hs1",
+      "displayName": "Homo sapiens (hs1/T2T-CHM13v2.0)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-reference",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit",
+            "locationType": "UriLocation"
+          },
+          "chromSizesLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chrom.sizes.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "BigBedAdapter",
+          "bigBedLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/cytoBandMapped/cytoBandMapped.bb"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "RepeatMasker.sorted.bed",
+      "name": "RepeatMasker.sorted.bed",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hs1/RepeatMasker.sorted.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hs1/RepeatMasker.sorted.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    }
+  ]
+}

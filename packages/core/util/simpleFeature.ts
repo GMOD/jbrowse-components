@@ -11,18 +11,6 @@ export interface Feature {
   get(name: 'subfeatures'): Feature[] | undefined
 
   get(name: string): any
-
-  /**
-   * Set an item of data.
-   */
-
-  set(name: string, val: any): void
-
-  /**
-   * Get an array listing which data keys are present in this feature.
-   */
-  tags(): string[]
-
   /**
    * Get the unique ID of this feature.
    */

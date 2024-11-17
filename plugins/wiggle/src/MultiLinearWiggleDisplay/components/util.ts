@@ -3,7 +3,7 @@ import {
   getContainingView,
   measureText,
 } from '@jbrowse/core/util'
-import { WiggleDisplayModel } from '../models/model'
+import { WiggleDisplayModel } from '../model'
 import { getConf } from '@jbrowse/core/configuration'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

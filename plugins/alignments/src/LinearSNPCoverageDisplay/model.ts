@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { types, cast, getEnv, getSnapshot, isAlive } from 'mobx-state-tree'
+import { types, cast, getEnv, isAlive } from 'mobx-state-tree'
 import { observable } from 'mobx'
 
 // jbrowse
@@ -16,12 +16,13 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // locals
-import { FilterModel, IFilter, getUniqueModificationValues } from '../../shared'
-import { createAutorun, modificationColors } from '../../util'
-import { randomColor } from '../../util'
+import { createAutorun, getColorForModification } from '../util'
+import { ColorBy, FilterBy } from '../shared/types'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { ModificationType, ModificationTypeWithColor } from '../shared/types'
 
 // lazies
-const Tooltip = lazy(() => import('../components/Tooltip'))
+const Tooltip = lazy(() => import('./components/Tooltip'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -61,16 +62,14 @@ function stateModelFactory(
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        filterBy: types.optional(types.frozen<FilterBy>(), {
+          flagInclude: 0,
+          flagExclude: 1540,
+        }),
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        ),
+        colorBy: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
@@ -78,7 +77,15 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      modificationTagMap: observable.map<string, string>({}),
+      /**
+       * #volatile
+       */
+      visibleModifications: observable.map<string, ModificationTypeWithColor>(
+        {},
+      ),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -91,14 +98,20 @@ function stateModelFactory(
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
+      setFilterBy(filter: FilterBy) {
+        self.filterBy = {
+          ...filter,
+        }
       },
       /**
        * #action
        */
-      setColorBy(colorBy?: { type: string; tag?: string }) {
-        self.colorBy = cast(colorBy)
+      setColorScheme(colorBy?: ColorBy) {
+        self.colorBy = colorBy
+          ? {
+              ...colorBy,
+            }
+          : undefined
       },
       /**
        * #action
@@ -110,19 +123,19 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(value),
-            )
+      updateVisibleModifications(uniqueModifications: ModificationType[]) {
+        for (const modification of uniqueModifications) {
+          if (!self.visibleModifications.has(modification.type)) {
+            self.visibleModifications.set(modification.type, {
+              ...modification,
+              color: getColorForModification(modification.type),
+            })
           }
-        })
+        }
       },
     }))
     .views(self => {
-      const { renderProps: superRenderProps } = self
+      const { adapterProps: superAdapterProps } = self
       return {
         /**
          * #getter
@@ -131,13 +144,14 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+          const { drawArcs, drawInterbaseCounts, drawIndicators } = self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
               drawInterbaseCounts:
-                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: self.drawArcs ?? configBlob.drawArcs,
+                drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
+              drawIndicators: drawIndicators ?? configBlob.drawIndicators,
+              drawArcs: drawArcs ?? configBlob.drawArcs,
             },
             getEnv(self),
           )
@@ -182,31 +196,16 @@ function stateModelFactory(
           )
         },
 
-        get renderReady() {
-          const superProps = superRenderProps()
-          return !superProps.notReady && self.modificationsReady
-        },
-
-        get ready() {
-          return this.renderReady
-        },
-
         /**
          * #method
          */
-        renderProps() {
-          const superProps = superRenderProps()
-          const { colorBy, filterBy, modificationTagMap } = self
+        adapterProps() {
+          const superProps = superAdapterProps()
+          const { filters, filterBy } = self
           return {
             ...superProps,
-            notReady: !this.ready,
-            filters: self.filters,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
-
-            // must use getSnapshot because otherwise changes to e.g. just the
-            // colorBy.type are not read
-            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: getSnapshot(filterBy),
+            filters,
+            filterBy,
           }
         },
       }
@@ -250,14 +249,13 @@ function stateModelFactory(
             const { staticBlocks } = view
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
-              const adapter = getConf(self.parentTrack, 'adapter')
-              const vals = await getUniqueModificationValues({
+              const vals = await getUniqueModifications({
                 self,
-                adapterConfig: adapter,
+                adapterConfig: getConf(self.parentTrack, 'adapter'),
                 blocks: staticBlocks,
               })
               if (isAlive(self)) {
-                self.updateModificationColorMap(vals)
+                self.updateVisibleModifications(vals)
                 self.setModificationsReady(true)
               }
             } else {
@@ -270,8 +268,39 @@ function stateModelFactory(
     }))
 
     .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
+      const {
+        renderProps: superRenderProps,
+        trackMenuItems: superTrackMenuItems,
+      } = self
       return {
+        /**
+         * #getter
+         */
+        get renderReady() {
+          const superProps = superRenderProps()
+          return !superProps.notReady && self.modificationsReady
+        },
+
+        /**
+         * #getter
+         */
+        get ready() {
+          return this.renderReady
+        },
+        /**
+         * #method
+         */
+        renderProps() {
+          const { colorBy, visibleModifications } = self
+          return {
+            ...superRenderProps(),
+            notReady: !this.ready,
+            colorBy,
+            visibleModifications: Object.fromEntries(
+              visibleModifications.toJSON(),
+            ),
+          }
+        },
         /**
          * #getter
          */

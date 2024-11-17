@@ -86,6 +86,7 @@ const midnight = '#0D233F'
 const grape = '#721E63'
 const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
 const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
+const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
 const bases = {
   A: refTheme.palette.augmentColor({ color: green }),
   C: refTheme.palette.augmentColor({ color: blue }),
@@ -468,66 +469,43 @@ export function createJBrowseTheme(
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(themes.default!, augmentTheme(configTheme), {
+        ? deepmerge(themes.default!, augmentThemeColors(configTheme), {
             arrayMerge: overwriteArrayMerge,
           })
-        : augmentThemePlus(themes[themeName]),
+        : addMissingColors(themes[themeName]),
     ),
   )
 }
 
-function augmentTheme(theme: ThemeOptions = {}) {
-  if (theme.palette?.tertiary) {
-    theme = deepmerge(theme, {
-      palette: {
-        tertiary: refTheme.palette.augmentColor(
-          'color' in theme.palette.tertiary
-            ? (theme.palette.tertiary as PaletteAugmentColorOptions)
-            : { color: theme.palette.tertiary },
-        ),
-      },
-    })
+// MUI by default allows strings like '#f00' for primary and secondary and
+// augments them to have light and dark variants but not for anything else, so
+// we augment them here
+function augmentThemeColors(theme: ThemeOptions = {}) {
+  for (const entry of ['tertiary', 'quaternary', 'highlight'] as const) {
+    if (theme.palette?.[entry]) {
+      theme = deepmerge(theme, {
+        palette: {
+          [entry]: refTheme.palette.augmentColor(
+            'color' in theme.palette[entry]
+              ? (theme.palette[entry] as PaletteAugmentColorOptions)
+              : { color: theme.palette[entry] },
+          ),
+        },
+      })
+    }
   }
-
-  if (theme.palette?.quaternary) {
-    theme = deepmerge(theme, {
-      palette: {
-        quaternary: refTheme.palette.augmentColor(
-          'color' in theme.palette.quaternary
-            ? (theme.palette.quaternary as PaletteAugmentColorOptions)
-            : { color: theme.palette.quaternary },
-        ),
-      },
-    })
-  }
-
   return theme
 }
 
-// creates some blank quaternary/tertiary colors if unsupplied by a user theme
-function augmentThemePlus(theme: ThemeOptions = {}) {
-  theme = augmentTheme(theme)
-  if (!theme.palette?.quaternary) {
-    theme = deepmerge(theme, {
+// adds missing colors to users theme
+function addMissingColors(theme: ThemeOptions = {}) {
+  return augmentThemeColors(
+    deepmerge(theme, {
       palette: {
-        quaternary: refTheme.palette.augmentColor({
-          color: {
-            main: '#aaa',
-          },
-        }),
+        quaternary: theme.palette?.quaternary || lightgrey,
+        tertiary: theme.palette?.tertiary || lightgrey,
+        highlight: theme.palette?.highlight || mandarin,
       },
-    })
-  }
-  if (!theme.palette?.tertiary) {
-    theme = deepmerge(theme, {
-      palette: {
-        tertiary: refTheme.palette.augmentColor({
-          color: {
-            main: '#aaa',
-          },
-        }),
-      },
-    })
-  }
-  return theme
+    }),
+  )
 }

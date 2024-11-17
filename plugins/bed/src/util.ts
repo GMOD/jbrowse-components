@@ -149,9 +149,9 @@ function defaultParser(fields: string[], line: string) {
 
   return {
     ...rest,
-    blockStarts: blockStarts?.split(',').map(r => +r),
-    chromStarts: chromStarts?.split(',').map(r => +r),
-    blockSizes: blockSizes?.split(',').map(r => +r),
+    blockStarts: arrayify(blockStarts),
+    chromStarts: arrayify(chromStarts),
+    blockSizes: arrayify(blockSizes),
     thickStart: thickStart ? +thickStart : undefined,
     thickEnd: thickEnd ? +thickEnd : undefined,
     blockCount: blockCount ? +blockCount : undefined,
@@ -172,23 +172,29 @@ export function makeBlocks({
   uniqueId: string
   refName: string
   chromStarts?: number[]
-  blockSizes: number[]
+  blockSizes?: number[]
   blockStarts?: number[]
 }) {
-  const subfeatures = []
-  const starts = chromStarts || blockStarts || []
-  for (let b = 0; b < blockCount; b++) {
-    const bmin = (starts[b] || 0) + start
-    const bmax = bmin + (blockSizes[b] || 0)
-    subfeatures.push({
-      uniqueId: `${uniqueId}-${b}`,
-      start: bmin,
-      end: bmax,
-      refName,
-      type: 'block',
-    })
+  if (blockCount) {
+    const subfeatures = []
+    const starts = chromStarts || blockStarts || []
+    for (let b = 0; b < blockCount; b++) {
+      const bmin = (starts[b] || 0) + start
+      const bsize = blockSizes?.[b]
+      if (bsize && bsize > 0) {
+        const bmax = bmin + bsize
+        subfeatures.push({
+          uniqueId: `${uniqueId}-${b}`,
+          start: bmin,
+          end: bmax,
+          refName,
+          type: 'block',
+        })
+      }
+    }
+    return subfeatures
   }
-  return subfeatures
+  return []
 }
 export function featureData(
   line: string,
@@ -201,10 +207,6 @@ export function featureData(
   names?: string[],
 ) {
   const l = line.split('\t')
-  const refName = l[colRef]!
-  const start = +l[colStart]!
-  const colSame = colStart === colEnd ? 1 : 0
-  const end = +l[colEnd]! + colSame
   const data = names
     ? defaultParser(names, line)
     : parser.parseLine(line, { uniqueId })
@@ -217,36 +219,57 @@ export function featureData(
     thickStart,
     thickEnd,
     type,
-    score,
+    description,
+    strand: strand2,
+    score: score2,
     chrom: _1,
     chromStart: _2,
     chromEnd: _3,
     ...rest
   } = data
-  const subfeatures = blockCount
-    ? makeBlocks({
-        start,
-        uniqueId,
-        refName,
-        chromStarts,
-        blockCount,
-        blockSizes,
-        blockStarts,
-      })
-    : []
+
+  const refName = l[colRef]!
+  const start = +l[colStart]!
+  const colSame = colStart === colEnd ? 1 : 0
+  const end = +l[colEnd]! + colSame
+  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
+  const strand =
+    typeof strand2 === 'string'
+      ? strand2 === '-'
+        ? -1
+        : strand2 === '+'
+          ? 1
+          : 0
+      : strand2
+
   const f = {
     ...rest,
+    ...makeRepeatTrackDescription(description),
     type,
-    score: scoreColumn ? +data[scoreColumn] : score,
+    score,
     start,
     end,
+    strand,
     refName,
     uniqueId,
-    subfeatures,
+    subfeatures: makeBlocks({
+      start,
+      uniqueId,
+      refName,
+      chromStarts,
+      blockCount,
+      blockSizes,
+      blockStarts,
+    }),
   }
   return new SimpleFeature({
     id: uniqueId,
-    data: isUcscProcessedTranscript(data)
+    data: isUcscProcessedTranscript({
+      strand,
+      blockCount,
+      thickStart,
+      description,
+    })
       ? ucscProcessedTranscript({
           thickStart: thickStart!,
           thickEnd: thickEnd!,
@@ -259,10 +282,77 @@ export function featureData(
   })
 }
 
-export function isUcscProcessedTranscript(f: {
+export function isUcscProcessedTranscript({
+  thickStart,
+  blockCount,
+  strand,
+  description,
+}: {
   thickStart?: number
   blockCount?: number
   strand?: number
+  description?: string
 }) {
-  return f.thickStart && f.blockCount && f.strand !== 0
+  return (
+    thickStart &&
+    blockCount &&
+    strand !== 0 &&
+    !isRepeatMaskerDescriptionField(description)
+  )
+}
+
+export function arrayify(f?: string | number[]) {
+  return f !== undefined
+    ? typeof f === 'string'
+      ? f.split(',').map(f => +f)
+      : f
+    : undefined
+}
+
+function isRepeatMaskerDescriptionField(
+  description?: string,
+): description is string {
+  const ret = description?.trim().split(' ')
+  return [0, 1, 2, 3, 5, 6].every(s =>
+    ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
+  )
+}
+export function makeRepeatTrackDescription(description?: string) {
+  if (isRepeatMaskerDescriptionField(description)) {
+    const [
+      bitsw_score,
+      percent_div,
+      percent_del,
+      percent_ins,
+      query_chr,
+      query_begin,
+      query_end,
+      query_remaining,
+      orientation,
+      matching_repeat_name,
+      matching_repeat_class,
+      matching_repeat_begin,
+      matching_repeat_end,
+      matching_repeat_remaining,
+      repeat_id,
+    ] = description.trim().split(' ')
+    return {
+      bitsw_score,
+      percent_div,
+      percent_del,
+      percent_ins,
+      query_chr,
+      query_begin,
+      query_end,
+      query_remaining,
+      orientation,
+      matching_repeat_name,
+      matching_repeat_class,
+      matching_repeat_begin,
+      matching_repeat_end,
+      matching_repeat_remaining,
+      repeat_id,
+    }
+  }
+  return { description }
 }

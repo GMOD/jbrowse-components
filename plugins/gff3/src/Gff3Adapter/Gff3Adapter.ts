@@ -7,10 +7,8 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { unzip } from '@gmod/bgzf-filehandle'
 import { parseStringSync } from 'gff-nostream'
-import { isGzip, updateStatus } from '@jbrowse/core/util'
-import type { Buffer } from 'buffer'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 
 import { featureData } from '../featureData'
 
@@ -26,27 +24,21 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
 
   private async loadDataP(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const buf = (await openLocation(
-      this.getConf('gffLocation'),
-      this.pluginManager,
-    ).readFile(opts)) as Buffer
-    const buffer = isGzip(buf)
-      ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
-      : buf
+    const buffer = await fetchAndMaybeUnzip(
+      openLocation(this.getConf('gffLocation'), this.pluginManager),
+    )
+
     const headerLines = []
     const featureMap = {} as Record<string, string>
+    const decoder = new TextDecoder('utf8')
     let blockStart = 0
-
-    const decoder =
-      typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
-
     let i = 0
     while (blockStart < buffer.length) {
       const n = buffer.indexOf('\n', blockStart)
       // could be a non-newline ended file, so subarray to end of file if n===-1
       const b =
         n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
-      const line = (decoder?.decode(b) || b.toString()).trim()
+      const line = decoder.decode(b).trim()
       if (line) {
         if (line.startsWith('#')) {
           headerLines.push(line)

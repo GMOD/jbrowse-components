@@ -26,9 +26,6 @@
   ],
   "configuration": {},
   "connections": [],
-  "defaultSession": {
-    "name": "New Session"
-  },
   "tracks": [
     {
       "type": "FeatureTrack",
@@ -42,18 +39,6 @@
         }
       },
       "assemblyNames": ["Wuhan-Hu-1"]
-    }
-  ],
-  "plugins": [
-    {
-      "name": "Protein3d",
-      "umdLoc": {
-        "uri": "http://localhost:9001/dist/out.js"
-      }
-    },
-    {
-      "name": "MafViewer",
-      "url": "https://unpkg.com/jbrowse-plugin-mafviewer/dist/jbrowse-plugin-mafviewer.umd.production.min.js"
     }
   ],
   "defaultSession": {

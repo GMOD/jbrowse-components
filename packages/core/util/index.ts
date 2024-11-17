@@ -35,6 +35,9 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
 // eslint-disable-next-line react/no-deprecated
 import { flushSync, render } from 'react-dom'
+import { GenericFilehandle } from 'generic-filehandle'
+import { unzip } from '@gmod/bgzf-filehandle'
+import { BaseOptions } from '../data_adapters/BaseAdapter'
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -609,24 +612,29 @@ export function cartesianToPolar(x: number, y: number) {
   const theta = Math.atan(y / x)
   return [rho, theta] as [number, number]
 }
+interface MinimalRegion {
+  start: number
+  end: number
+  reversed?: boolean
+}
 
 export function featureSpanPx(
   feature: Feature,
-  region: { start: number; end: number; reversed?: boolean },
+  region: MinimalRegion,
   bpPerPx: number,
-): [number, number] {
+) {
   return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
 }
 
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  region: MinimalRegion,
   bpPerPx: number,
-): [number, number] {
+) {
   const start = bpToPx(leftBp, region, bpPerPx)
   const end = bpToPx(rightBp, region, bpPerPx)
-  return region.reversed ? [end, start] : [start, end]
+  return region.reversed ? ([end, start] as const) : ([start, end] as const)
 }
 
 // do an array map of an iterable
@@ -646,8 +654,7 @@ export function iterMap<T, U>(
 
 /**
  * Returns the index of the last element in the array where predicate is true,
- * and -1 otherwise.
- * Based on https://stackoverflow.com/a/53187807
+ * and -1 otherwise. Based on https://stackoverflow.com/a/53187807
  *
  * @param array - The source array to search in
  *
@@ -660,7 +667,7 @@ export function iterMap<T, U>(
 export function findLastIndex<T>(
   array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
-): number {
+) {
   let l = array.length
   while (l--) {
     if (predicate(array[l]!, l, array)) {
@@ -673,7 +680,7 @@ export function findLastIndex<T>(
 export function findLast<T>(
   array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
-): T | undefined {
+) {
   let l = array.length
   while (l--) {
     if (predicate(array[l]!, l, array)) {
@@ -884,59 +891,68 @@ export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
 
-export function revcom(seqString: string) {
-  return reverse(complement(seqString))
-}
+// from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+// generated with:
+// perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+export const complementTable = {
+  S: 'S',
+  w: 'w',
+  T: 'A',
+  r: 'y',
+  a: 't',
+  N: 'N',
+  K: 'M',
+  x: 'x',
+  d: 'h',
+  Y: 'R',
+  V: 'B',
+  y: 'r',
+  M: 'K',
+  h: 'd',
+  k: 'm',
+  C: 'G',
+  g: 'c',
+  t: 'a',
+  A: 'T',
+  n: 'n',
+  W: 'W',
+  X: 'X',
+  m: 'k',
+  v: 'b',
+  B: 'V',
+  s: 's',
+  H: 'D',
+  c: 'g',
+  D: 'H',
+  b: 'v',
+  R: 'Y',
+  G: 'C',
+} as Record<string, string>
 
-export function reverse(seqString: string) {
-  return seqString.split('').reverse().join('')
-}
-
-export const complement = (() => {
-  const complementRegex = /[ACGT]/gi
-
-  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
-  // generated with:
-  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
-  const complementTable = {
-    S: 'S',
-    w: 'w',
-    T: 'A',
-    r: 'y',
-    a: 't',
-    N: 'N',
-    K: 'M',
-    x: 'x',
-    d: 'h',
-    Y: 'R',
-    V: 'B',
-    y: 'r',
-    M: 'K',
-    h: 'd',
-    k: 'm',
-    C: 'G',
-    g: 'c',
-    t: 'a',
-    A: 'T',
-    n: 'n',
-    W: 'W',
-    X: 'X',
-    m: 'k',
-    v: 'b',
-    B: 'V',
-    s: 's',
-    H: 'D',
-    c: 'g',
-    D: 'H',
-    b: 'v',
-    R: 'Y',
-    G: 'C',
-  } as Record<string, string>
-
-  return (seqString: string) => {
-    return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
+export function revcom(str: string) {
+  let revcomped = ''
+  for (let i = str.length - 1; i >= 0; i--) {
+    revcomped += complementTable[str[i]!] ?? str[i]
   }
-})()
+  return revcomped
+}
+
+export function reverse(str: string) {
+  let reversed = ''
+  for (let i = str.length - 1; i >= 0; i--) {
+    reversed += str[i]!
+  }
+  return reversed
+}
+
+export function complement(str: string) {
+  let comp = ''
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
+  for (let i = 0; i < str.length; i++) {
+    comp += complementTable[str[i]!] ?? str[i]
+  }
+  return comp
+}
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
@@ -1467,12 +1483,25 @@ export function renderToStaticMarkup(
 export function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
+export async function fetchAndMaybeUnzip(
+  loc: GenericFilehandle,
+  opts?: BaseOptions,
+) {
+  const { statusCallback = () => {} } = opts || {}
+  const buf = (await updateStatus('Downloading file', statusCallback, () =>
+    loc.readFile(opts),
+  )) as Buffer
+  return isGzip(buf)
+    ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
+    : buf
+}
 
 export {
+  isFeature,
   default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
-  isFeature,
+  type SimpleFeatureSerializedNoId,
 } from './simpleFeature'
 
 export { blobToDataURL } from './blobToDataURL'

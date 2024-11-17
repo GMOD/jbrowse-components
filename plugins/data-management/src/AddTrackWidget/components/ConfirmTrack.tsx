@@ -154,7 +154,9 @@ const ConfirmTrack = observer(function ConfirmTrack({
         onChange={event => {
           model.setTrackName(event.target.value)
         }}
-        inputProps={{ 'data-testid': 'trackNameInput' }}
+        slotProps={{
+          htmlInput: { 'data-testid': 'trackNameInput' },
+        }}
       />
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />

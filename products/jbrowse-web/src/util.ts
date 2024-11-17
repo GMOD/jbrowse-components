@@ -54,7 +54,8 @@ export async function fromUrlSafeB64(b64: string) {
   const { inflate } = await import('pako')
   const bytes = toByteArray(originalB64)
   const inflated = inflate(bytes)
-  return new TextDecoder().decode(inflated)
+  const decoder = new TextDecoder('utf8')
+  return decoder.decode(inflated)
 }
 
 /**

@@ -89,9 +89,11 @@ const AddFiltersDialog = observer(function ({
           onChange={event => {
             setData(event.target.value)
           }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />

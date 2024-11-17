@@ -37,6 +37,14 @@ interface Track {
   displays: Display[]
 }
 
+const startClip = new RegExp(/(\d+)[SH]$/)
+const endClip = new RegExp(/^(\d+)([SH])/)
+
+export function getClip(cigar: string, strand: number) {
+  return strand === -1
+    ? +(startClip.exec(cigar) || [])[1]! || 0
+    : +(endClip.exec(cigar) || [])[1]! || 0
+}
 function calc(track: Track, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
 }
@@ -241,6 +249,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     feature,
                     layout: calc(tracks[level], feature),
                     level,
+                    clipPos: getClip(
+                      feature.get('CIGAR'),
+                      feature.get('strand'),
+                    ),
                   }
                 : undefined
             })

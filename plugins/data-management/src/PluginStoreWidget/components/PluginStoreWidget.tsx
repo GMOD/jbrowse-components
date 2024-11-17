@@ -98,18 +98,20 @@ const PluginStoreWidget = observer(function ({
           model.setFilterText(event.target.value)
         }}
         fullWidth
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => {
-                  model.clearFilterText()
-                }}
-              >
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => {
+                    model.clearFilterText()
+                  }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
       />
       <Accordion defaultExpanded>

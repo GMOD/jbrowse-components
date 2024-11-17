@@ -7,7 +7,6 @@ import { firstValueFrom } from 'rxjs'
 
 // locals
 import PileupBaseRPC from '../base'
-import { getTag } from '../../util'
 
 export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
   name = 'PileupGetGlobalValueForTag'
@@ -35,7 +34,7 @@ export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
     return [
       ...new Set(
         featuresArray
-          .map(feature => getTag(feature, tag))
+          .map(feature => feature.get('tags')?.[tag])
           .filter(f => f !== undefined)
           .map(f => `${f}`),
       ),

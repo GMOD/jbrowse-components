@@ -6,14 +6,12 @@ import { Region } from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature, isGzip } from '@jbrowse/core/util'
+import { Feature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { unzip } from '@gmod/bgzf-filehandle'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import type { Buffer } from 'buffer'
 
 // locals
 import SyntenyFeature from '../SyntenyFeature'
@@ -49,15 +47,14 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   async setupPre(opts?: BaseOptions) {
     const pm = this.pluginManager
     const pafLocation = openLocation(this.getConf('pafLocation'), pm)
-    const buffer = (await pafLocation.readFile(opts)) as Buffer
-    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
+    const buf = await fetchAndMaybeUnzip(pafLocation, opts)
     return parseLineByLine(buf, parsePAFLine)
   }
 
   async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseAdapter filters it out)
+    // determining this properly is basically a call to getFeatures so is not
+    // really that important, and has to be true or else getFeatures is never
+    // called (BaseAdapter filters it out)
     return true
   }
 

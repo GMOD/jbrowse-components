@@ -77,20 +77,22 @@ const NumberMapEditor = observer(function ({
               onChange={event => {
                 setValue(event.target.value)
               }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      disabled={value === ''}
-                      onClick={() => {
-                        slot.add(value, 0)
-                        setValue('')
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        disabled={value === ''}
+                        onClick={() => {
+                          slot.add(value, 0)
+                          setValue('')
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           }

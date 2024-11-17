@@ -26,7 +26,6 @@ const useStyles = makeStyles()({
     position: 'relative',
   },
   mouseoverCanvas: {
-    imageRendering: 'pixelated',
     position: 'absolute',
     pointEvents: 'none',
   },

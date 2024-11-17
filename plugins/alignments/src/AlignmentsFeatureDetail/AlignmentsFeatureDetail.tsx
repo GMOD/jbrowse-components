@@ -18,8 +18,6 @@ import Formatter from './Formatter'
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
 const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
-const omit = ['clipPos', 'flags']
-
 const AlignmentsFeatureDetails = observer(function (props: {
   model: AlignmentFeatureWidgetModel
 }) {
@@ -32,7 +30,6 @@ const AlignmentsFeatureDetails = observer(function (props: {
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
         {...props}
-        omit={omit}
         // @ts-expect-error
         descriptions={{ ...tags, tags: tags }}
         feature={feat}

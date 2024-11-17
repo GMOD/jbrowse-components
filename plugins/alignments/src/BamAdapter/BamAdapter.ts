@@ -1,4 +1,7 @@
 import { BamFile } from '@gmod/bam'
+import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+// jbrowse
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -7,12 +10,11 @@ import { Region } from '@jbrowse/core/util/types'
 import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { IFilter } from '../shared'
+import { FilterBy } from '../shared/types'
 
 interface Header {
   idToName: string[]
@@ -23,6 +25,15 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
   private setupP?: Promise<Header>
+
+  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
+  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
+  // of these in memory is memory intensive but can reduce recomputation on
+  // these objects
+  private ultraLongFeatureCache = new QuickLRU<string, Feature>({
+    maxSize: 500,
+  })
+
   private configureP?: Promise<{
     bam: BamFile
     sequenceAdapter?: BaseFeatureDataAdapter
@@ -162,7 +173,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: IFilter
+      filterBy: FilterBy
     },
   ) {
     const { refName, start, end, originalRefName } = region
@@ -186,11 +197,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
         for (const record of records) {
           let ref: string | undefined
-          if (!record.get('MD')) {
+          if (!record.tags.MD) {
             ref = await this.seqFetch(
               originalRefName || refName,
-              record.get('start'),
-              record.get('end'),
+              record.start,
+              record.end,
             )
           }
 
@@ -200,22 +211,32 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const readVal = record.get(tagFilter.tag)
+            const readVal = record.tags[tagFilter.tag]
             const filterVal = tagFilter.value
             if (
               filterVal === '*'
-                ? readVal !== undefined
+                ? readVal === undefined
                 : `${readVal}` !== `${filterVal}`
             ) {
               continue
             }
           }
 
-          if (readName && record.get('name') !== readName) {
+          if (readName && record.name !== readName) {
             continue
           }
 
-          observer.next(new BamSlightlyLazyFeature(record, this, ref))
+          // retrieve a feature from our feature cache if it is available, the
+          // features in the cache have pre-computed mismatches objects that
+          // can be re-used across blocks
+          const ret = this.ultraLongFeatureCache.get(`${record.id}`)
+          if (!ret) {
+            const elt = new BamSlightlyLazyFeature(record, this, ref)
+            this.ultraLongFeatureCache.set(`${record.id}`, elt)
+            observer.next(elt)
+          } else {
+            observer.next(ret)
+          }
         }
         observer.complete()
       })

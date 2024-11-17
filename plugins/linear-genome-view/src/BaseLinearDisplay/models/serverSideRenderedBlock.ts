@@ -67,7 +67,7 @@ const blockState = types
             makeAbortableReaction(
               self as any,
               renderBlockData,
-              renderBlockEffect, // reaction doesn't expect async here
+              renderBlockEffect,
               {
                 name: `${display.id}/${assembleLocString(
                   self.region,

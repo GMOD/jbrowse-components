@@ -31,13 +31,15 @@ const EditBookmarkLabelDialog = observer(function ({
         </Alert>
         <TextField
           fullWidth
-          inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
           variant="outlined"
           value={newLabel}
           onChange={e => {
             setNewLabel(e.target.value)
           }}
           autoFocus
+          slotProps={{
+            htmlInput: { 'data-testid': 'edit-bookmark-label-field' },
+          }}
         />
       </DialogContent>
       <DialogActions>

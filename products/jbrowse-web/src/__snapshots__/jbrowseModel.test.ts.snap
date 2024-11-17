@@ -4343,6 +4343,61 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "test",
       "type": "FeatureTrack",
     },
+    {
+      "adapter": {
+        "craiLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted.noref.cram.crai",
+        },
+        "cramLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted.noref.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sorted.cram (noref)",
+      "trackId": "volvox-sorted.noref.cram",
+      "type": "AlignmentsTrack",
+    },
   ],
 }
 `;

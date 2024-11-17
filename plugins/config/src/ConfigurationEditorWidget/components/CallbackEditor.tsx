@@ -87,9 +87,11 @@ const CallbackEditor = observer(function ({
             setCode(event.target.value)
           }}
           style={{ background: error ? '#fdd' : undefined }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
