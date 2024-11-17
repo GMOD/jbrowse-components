@@ -10,9 +10,8 @@ import { Region } from '@jbrowse/core/util/types'
 import {
   bytesForRegions,
   updateStatus2,
-  Feature,
-  abortBreakPoint,
   checkAbortSignal,
+  Feature,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'

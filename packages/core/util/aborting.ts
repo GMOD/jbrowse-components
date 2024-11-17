@@ -13,7 +13,6 @@ class AbortError extends Error {
  */
 export function checkAbortSignal(signal?: AbortSignal): void {
   if (signal?.aborted) {
-    console.log('ABORTED!!', signal)
     throw makeAbortError()
   }
 }

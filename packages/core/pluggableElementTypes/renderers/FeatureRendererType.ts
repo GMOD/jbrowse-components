@@ -167,7 +167,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
 
     const region = requestRegions[0]!
 
-    console.log('feature renderer')
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(

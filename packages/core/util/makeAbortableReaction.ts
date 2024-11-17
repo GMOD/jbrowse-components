@@ -36,7 +36,6 @@ export function makeAbortableReaction<T, U, V>(
 ) {
   let inProgress: AbortController | undefined
 
-  console.log('making new')
   function handleError(error: unknown) {
     if (!isAbortException(error)) {
       if (isAlive(self)) {
@@ -60,7 +59,6 @@ export function makeAbortableReaction<T, U, V>(
       },
       async (data, mobxReactionHandle) => {
         if (inProgress && !inProgress.signal.aborted) {
-          console.log('abort new')
           inProgress.abort()
         }
 
@@ -85,7 +83,6 @@ export function makeAbortableReaction<T, U, V>(
           }
         } catch (e) {
           if (!thisInProgress.signal.aborted) {
-            console.log('abort catch')
             thisInProgress.abort()
           }
           handleError(e)
@@ -96,7 +93,6 @@ export function makeAbortableReaction<T, U, V>(
   )
   addDisposer(self, () => {
     if (inProgress && !inProgress.signal.aborted) {
-      console.log('abort dispose')
       inProgress.abort()
     }
   })

@@ -30,7 +30,6 @@ export function getQuantitativeStatsAutorun(self: {
           const aborter = new AbortController()
           self.setStatsLoading(aborter)
 
-          console.log('stats autorun')
           if (!self.quantitativeStatsReady) {
             return
           }

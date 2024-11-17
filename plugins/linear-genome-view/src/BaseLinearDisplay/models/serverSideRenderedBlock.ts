@@ -30,7 +30,6 @@ import {
 
 // locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
