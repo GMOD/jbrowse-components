@@ -1,18 +1,21 @@
 /* ---------------- for the RPC client ----------------- */
 
 let abortSignalCounter = 0
+
 export interface RemoteAbortSignal {
   abortSignalId: number
 }
-const abortSignalIds = new WeakMap<AbortSignal, number>() // map of abortsignal => numerical ID
+
+// map of AbortSignal => numerical ID
+const abortSignalIds = new WeakMap<AbortSignal, number>()
 
 /**
  * assign an ID to the given abort signal and return a plain object
  * representation
  *
  * @param signal - the signal to serialize
- * @param callfunc - function used to call
- *  a remote method, will be called like callfunc('signalAbort', signalId)
+ * @param callfunc - function used to call a remote method, will be called like
+ * callfunc('signalAbort', signalId)
  */
 export function serializeAbortSignal(
   signal: AbortSignal,
@@ -33,27 +36,24 @@ export function serializeAbortSignal(
   return { abortSignalId }
 }
 
-/* ---------------- for the RPC server ----------------- */
-
 /**
  * test whether a given object
  * @param thing - the thing to test
  * @returns true if the thing is a remote abort signal
  */
-export function isRemoteAbortSignal(
-  thing: unknown,
-): thing is RemoteAbortSignal {
+export function isRemoteAbortSignal(t: unknown): t is RemoteAbortSignal {
   return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'abortSignalId' in thing &&
-    typeof thing.abortSignalId === 'number'
+    typeof t === 'object' &&
+    t !== null &&
+    'abortSignalId' in t &&
+    typeof t.abortSignalId === 'number'
   )
 }
 
 // the server side keeps a set of surrogate abort controllers that can be
 // aborted based on ID
-const surrogateAbortControllers = new Map<number, AbortController>() // numerical ID => surrogate abort controller
+// numerical ID => surrogate abort controller
+const surrogateAbortControllers = new Map<number, AbortController>()
 
 /**
  * deserialize the result of serializeAbortSignal into an AbortSignal
@@ -61,9 +61,7 @@ const surrogateAbortControllers = new Map<number, AbortController>() // numerica
  * @param signal -
  * @returns an abort signal that corresponds to the given ID
  */
-export function deserializeAbortSignal({
-  abortSignalId,
-}: RemoteAbortSignal): AbortSignal {
+export function deserializeAbortSignal({ abortSignalId }: RemoteAbortSignal) {
   let surrogateAbortController = surrogateAbortControllers.get(abortSignalId)
   if (!surrogateAbortController) {
     surrogateAbortController = new AbortController()

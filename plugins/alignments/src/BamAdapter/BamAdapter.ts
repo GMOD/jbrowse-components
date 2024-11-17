@@ -7,7 +7,13 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
+import {
+  bytesForRegions,
+  updateStatus2,
+  Feature,
+  abortBreakPoint,
+  checkAbortSignal,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
@@ -81,16 +87,17 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { signal, statusCallback = () => {} } = opts || {}
     const { bam } = await this.configure()
-    this.samHeader = await updateStatus(
+    this.samHeader = await updateStatus2(
       'Downloading index',
       statusCallback,
+      signal,
       async () => {
         const samHeader = await bam.getHeader(opts)
 
-        // use the @SQ lines in the header to figure out the
-        // mapping between ref ref ID numbers and names
+        // use the @SQ lines in the header to figure out the mapping between
+        // ref ref ID numbers and names
         const idToName: string[] = []
         const nameToId: Record<string, number> = {}
         samHeader
@@ -179,67 +186,77 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end, originalRefName } = region
     const { signal, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
+      checkAbortSignal(signal)
       const { bam } = await this.configure()
-      await this.setup(opts)
-      const records = await updateStatus(
+      checkAbortSignal(signal)
+
+      const records = await updateStatus2(
         'Downloading alignments',
         statusCallback,
+        signal,
         () => bam.getRecordsForRange(refName, start, end, opts),
       )
+      await updateStatus2(
+        'Processing alignments',
+        statusCallback,
+        signal,
+        async () => {
+          const {
+            flagInclude = 0,
+            flagExclude = 0,
+            tagFilter,
+            readName,
+          } = filterBy || {}
 
-      await updateStatus('Processing alignments', statusCallback, async () => {
-        const {
-          flagInclude = 0,
-          flagExclude = 0,
-          tagFilter,
-          readName,
-        } = filterBy || {}
+          for (const record of records) {
+            let ref: string | undefined
+            if (!record.tags.MD) {
+              ref = await this.seqFetch(
+                originalRefName || refName,
+                record.start,
+                record.end,
+              )
+            }
 
-        for (const record of records) {
-          let ref: string | undefined
-          if (!record.tags.MD) {
-            ref = await this.seqFetch(
-              originalRefName || refName,
-              record.start,
-              record.end,
-            )
-          }
-
-          const flags = record.flags
-          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
-            continue
-          }
-
-          if (tagFilter) {
-            const readVal = record.tags[tagFilter.tag]
-            const filterVal = tagFilter.value
+            const flags = record.flags
             if (
-              filterVal === '*'
-                ? readVal === undefined
-                : `${readVal}` !== `${filterVal}`
+              (flags & flagInclude) !== flagInclude &&
+              !(flags & flagExclude)
             ) {
               continue
             }
-          }
 
-          if (readName && record.name !== readName) {
-            continue
-          }
+            if (tagFilter) {
+              const readVal = record.tags[tagFilter.tag]
+              const filterVal = tagFilter.value
+              if (
+                filterVal === '*'
+                  ? readVal === undefined
+                  : `${readVal}` !== `${filterVal}`
+              ) {
+                continue
+              }
+            }
 
-          // retrieve a feature from our feature cache if it is available, the
-          // features in the cache have pre-computed mismatches objects that
-          // can be re-used across blocks
-          const ret = this.ultraLongFeatureCache.get(`${record.id}`)
-          if (!ret) {
-            const elt = new BamSlightlyLazyFeature(record, this, ref)
-            this.ultraLongFeatureCache.set(`${record.id}`, elt)
-            observer.next(elt)
-          } else {
-            observer.next(ret)
+            if (readName && record.name !== readName) {
+              continue
+            }
+
+            // retrieve a feature from our feature cache if it is available, the
+            // features in the cache have pre-computed mismatches objects that
+            // can be re-used across blocks
+            const ret = this.ultraLongFeatureCache.get(`${record.id}`)
+            if (!ret) {
+              const elt = new BamSlightlyLazyFeature(record, this, ref)
+              this.ultraLongFeatureCache.set(`${record.id}`, elt)
+              observer.next(elt)
+            } else {
+              observer.next(ret)
+            }
           }
-        }
-        observer.complete()
-      })
+        },
+      )
+      observer.complete()
     }, signal)
   }
 

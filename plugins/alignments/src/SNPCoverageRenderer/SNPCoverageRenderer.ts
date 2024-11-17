@@ -1,5 +1,10 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, bpSpanPx, Feature } from '@jbrowse/core/util'
+import {
+  abortBreakPoint,
+  featureSpanPx,
+  bpSpanPx,
+  Feature,
+} from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
@@ -65,6 +70,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       theme: configTheme,
       config: cfg,
       ticks,
+      signal,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const region = regions[0]!
@@ -120,6 +126,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
     ctx.fillStyle = colorForBase.total!
+    let start = performance.now()
     for (const feature of feats) {
       if (feature.get('type') === 'skip') {
         continue
@@ -128,6 +135,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
+      const now = performance.now()
+      if (now - start > 400) {
+        await abortBreakPoint(signal)
+        start = now
+      }
     }
 
     // Keep track of previous total which we will use it to draw the interbase
@@ -154,7 +166,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
+    start = performance.now()
     for (const feature of feats) {
+      const now = performance.now()
+      if (now - start > 400) {
+        await abortBreakPoint(signal)
+      }
       if (feature.get('type') === 'skip') {
         continue
       }

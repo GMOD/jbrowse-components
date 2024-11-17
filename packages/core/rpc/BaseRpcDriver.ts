@@ -94,7 +94,8 @@ export default abstract class BaseRpcDriver {
 
   private lastWorkerAssignment = -1
 
-  private workerAssignments = new Map<string, number>() // sessionId -> worker number
+  // sessionId -> worker number
+  private workerAssignments = new Map<string, number>()
 
   abstract makeWorker(): Promise<WorkerHandle>
 
@@ -116,33 +117,27 @@ export default abstract class BaseRpcDriver {
       return thing
         .filter(thing => isCloneable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
-    }
-    if (typeof thing === 'object' && thing !== null) {
-      // AbortSignals are specially handled
+    } else if (typeof thing === 'object' && thing !== null) {
       if (thing instanceof AbortSignal) {
         return serializeAbortSignal(
           thing,
-          this.remoteAbort.bind(this, sessionId),
+          (functionName: string, signalId: number) =>
+            this.remoteAbort(sessionId, functionName, signalId),
         ) as unknown as THING_TYPE
-      }
-
-      if (isStateTreeNode(thing) && !isAlive(thing)) {
+      } else if (isStateTreeNode(thing) && !isAlive(thing)) {
         throw new Error('dead state tree node passed to RPC call')
-      }
-
-      // special case, don't try to iterate the file's subelements as the
-      // object entries below would
-      if (thing instanceof File) {
+      } else if (thing instanceof File) {
         return thing
+      } else {
+        return Object.fromEntries(
+          Object.entries(thing)
+            .filter(e => isCloneable(e[1]))
+            .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
+        ) as THING_TYPE
       }
-
-      return Object.fromEntries(
-        Object.entries(thing)
-          .filter(e => isCloneable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
-      ) as THING_TYPE
+    } else {
+      return thing
     }
-    return thing
   }
 
   async remoteAbort(sessionId: string, functionName: string, signalId: number) {
