@@ -253,4 +253,19 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     }
     return this.getRegionFeatureDensityStats(regions[0]!, opts)
   }
+
+  async getSources(
+    regions: Region[],
+  ): Promise<{ name: string; color?: string; [key: string]: unknown }[]> {
+    const features = await firstValueFrom(
+      this.getFeaturesInMultipleRegions(regions).pipe(toArray()),
+    )
+    const sources = new Set<string>()
+    for (const f of features) {
+      sources.add(f.get('source'))
+    }
+    return [...sources].map(source => ({
+      name: source,
+    }))
+  }
 }

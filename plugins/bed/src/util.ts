@@ -221,15 +221,17 @@ function generateBedMethylFeature({
   start: number
   end: number
 }) {
+  // see
+  // https://github.com/nanoporetech/modkit?tab=readme-ov-file#description-of-bedmethyl-output
   const [
-    _ref,
-    _start,
-    _end,
+    ,
+    ,
+    ,
     code,
-    score,
+    ,
     strand,
-    _start2,
-    _end2,
+    ,
+    ,
     color,
     n_valid_cov,
     fraction_modified,
@@ -248,9 +250,10 @@ function generateBedMethylFeature({
       start,
       end,
       code,
-      score,
+      score: fraction_modified,
       strand,
       color,
+      source: code,
       n_valid_cov,
       fraction_modified,
       n_mod,

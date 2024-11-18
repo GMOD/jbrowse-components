@@ -478,10 +478,15 @@ export function stateModelFactory(
                 const { rpcManager } = getSession(self)
                 const { adapterConfig } = self
                 const sessionId = getRpcSessionId(self)
+                const view = getContainingView(self) as LinearGenomeViewModel
+                if (!view.initialized) {
+                  return
+                }
                 const sources = (await rpcManager.call(
                   sessionId,
                   'MultiWiggleGetSources',
                   {
+                    regions: view.staticBlocks.contentBlocks,
                     sessionId,
                     adapterConfig,
                   },

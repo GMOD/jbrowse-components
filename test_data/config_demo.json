@@ -4713,6 +4713,27 @@
       },
       "assemblyNames": ["hg38"],
       "category": ["Methylation"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "COLO829_tumor.ht_modkit.bed_multi",
+      "name": "COLO829_tumor.ht_modkit.bed (as MultiQuantitativeTrack)",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/COLO829/COLO829_tumor.ht_modkit.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/COLO829/COLO829_tumor.ht_modkit.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"]
     }
   ],
   "connections": [],
