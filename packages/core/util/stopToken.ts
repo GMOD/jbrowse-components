@@ -29,10 +29,14 @@
  */
 
 export function createStopToken() {
+  // URL not available in jest and can't properly mock it
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
 }
 
 export function stopStopToken(stopToken: string) {
+  // URL not available in jest and can't properly mock it
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   URL.revokeObjectURL?.(stopToken)
 }
 

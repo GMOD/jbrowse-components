@@ -1009,6 +1009,9 @@ export async function updateStatus<U>(
   cb('')
   return res
 }
+
+// call statusCallback with current status and clear when finished, and check
+// stopToken afterwards
 export async function updateStatus2<U>(
   msg: string,
   cb: (arg: string) => void,

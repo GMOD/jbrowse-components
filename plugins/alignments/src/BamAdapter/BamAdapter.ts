@@ -7,15 +7,15 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { bytesForRegions, updateStatus2, Feature } from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { FilterBy } from '../shared/types'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface Header {
   idToName: string[]
@@ -78,23 +78,20 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async getHeader(_opts?: BaseOptions) {
     const { bam } = await this.configure()
-    // TODO:ABORT
     return bam.getHeaderText()
   }
 
   private async setupPre(opts?: BaseOptions) {
-    const { stopToken, statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts || {}
     const { bam } = await this.configure()
-    this.samHeader = await updateStatus2(
+    this.samHeader = await updateStatus(
       'Downloading index',
       statusCallback,
-      stopToken,
       async () => {
-        // TODO:ABORT
         const samHeader = await bam.getHeader()
 
-        // use the @SQ lines in the header to figure out the mapping between
-        // ref ref ID numbers and names
+        // use the @SQ lines in the header to figure out the
+        // mapping between ref ref ID numbers and names
         const idToName: string[] = []
         const nameToId: Record<string, number> = {}
         samHeader
@@ -130,12 +127,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return idToName
   }
 
-  private async seqFetch(
-    refName: string,
-    start: number,
-    end: number,
-    opts?: { stopToken?: string },
-  ) {
+  private async seqFetch(refName: string, start: number, end: number) {
     const { sequenceAdapter } = await this.configure()
     const refSeqStore = sequenceAdapter
     if (!refSeqStore) {
@@ -145,15 +137,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
 
-    const features = refSeqStore.getFeatures(
-      {
-        refName,
-        start,
-        end,
-        assemblyName: '',
-      },
-      opts,
-    )
+    const features = refSeqStore.getFeatures({
+      refName,
+      start,
+      end,
+      assemblyName: '',
+    })
 
     const seqChunks = await firstValueFrom(features.pipe(toArray()))
 
@@ -191,80 +180,70 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end, originalRefName } = region
     const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
-      checkStopToken(stopToken)
       const { bam } = await this.configure()
+      await this.setup(opts)
       checkStopToken(stopToken)
-
-      // TODO:ABORT
-      const records = await updateStatus2(
+      const records = await updateStatus(
         'Downloading alignments',
         statusCallback,
-        stopToken,
         () => bam.getRecordsForRange(refName, start, end),
       )
-      await updateStatus2(
-        'Processing alignments',
-        statusCallback,
-        stopToken,
-        async () => {
-          const {
-            flagInclude = 0,
-            flagExclude = 0,
-            tagFilter,
-            readName,
-          } = filterBy || {}
+      checkStopToken(stopToken)
 
-          for (const record of records) {
-            let ref: string | undefined
-            if (!record.tags.MD) {
-              ref = await this.seqFetch(
-                originalRefName || refName,
-                record.start,
-                record.end,
-                opts,
-              )
-            }
+      await updateStatus('Processing alignments', statusCallback, async () => {
+        const {
+          flagInclude = 0,
+          flagExclude = 0,
+          tagFilter,
+          readName,
+        } = filterBy || {}
 
-            const flags = record.flags
+        for (const record of records) {
+          let ref: string | undefined
+          if (!record.tags.MD) {
+            ref = await this.seqFetch(
+              originalRefName || refName,
+              record.start,
+              record.end,
+            )
+          }
+
+          const flags = record.flags
+          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
+            continue
+          }
+
+          if (tagFilter) {
+            const readVal = record.tags[tagFilter.tag]
+            const filterVal = tagFilter.value
             if (
-              (flags & flagInclude) !== flagInclude &&
-              !(flags & flagExclude)
+              filterVal === '*'
+                ? readVal === undefined
+                : `${readVal}` !== `${filterVal}`
             ) {
               continue
             }
-
-            if (tagFilter) {
-              const readVal = record.tags[tagFilter.tag]
-              const filterVal = tagFilter.value
-              if (
-                filterVal === '*'
-                  ? readVal === undefined
-                  : `${readVal}` !== `${filterVal}`
-              ) {
-                continue
-              }
-            }
-
-            if (readName && record.name !== readName) {
-              continue
-            }
-
-            // retrieve a feature from our feature cache if it is available, the
-            // features in the cache have pre-computed mismatches objects that
-            // can be re-used across blocks
-            const ret = this.ultraLongFeatureCache.get(`${record.id}`)
-            if (!ret) {
-              const elt = new BamSlightlyLazyFeature(record, this, ref)
-              this.ultraLongFeatureCache.set(`${record.id}`, elt)
-              observer.next(elt)
-            } else {
-              observer.next(ret)
-            }
           }
-        },
-      )
-      observer.complete()
-    }, stopToken)
+
+          if (readName && record.name !== readName) {
+            continue
+          }
+
+          // retrieve a feature from our feature cache if it is available, the
+          // features in the cache have pre-computed mismatches objects that
+          // can be re-used across blocks
+          const ret = this.ultraLongFeatureCache.get(`${record.id}`)
+          if (!ret) {
+            const elt = new BamSlightlyLazyFeature(record, this, ref)
+            this.ultraLongFeatureCache.set(`${record.id}`, elt)
+            observer.next(elt)
+          } else {
+            observer.next(ret)
+          }
+        }
+        observer.complete()
+      })
+    })
   }
 
   async getMultiRegionFeatureDensityStats(
