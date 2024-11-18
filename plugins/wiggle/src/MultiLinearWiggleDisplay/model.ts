@@ -43,12 +43,6 @@ const rendererTypes = new Map([
   ['multirowline', 'MultiRowLineRenderer'],
 ])
 
-interface Source {
-  name: string
-  color?: string
-  group?: string
-}
-
 /**
  * #stateModel MultiLinearWiggleDisplay
  * extends
@@ -468,34 +462,22 @@ export function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { getQuantitativeStatsAutorun } = await import(
-              '../getQuantitativeStatsAutorun'
-            )
-            getQuantitativeStatsAutorun(self)
-            addDisposer(
-              self,
-              autorun(async () => {
-                const { rpcManager } = getSession(self)
-                const { adapterConfig } = self
-                const sessionId = getRpcSessionId(self)
-                const view = getContainingView(self) as LinearGenomeViewModel
-                if (!view.initialized) {
-                  return
-                }
-                const sources = (await rpcManager.call(
-                  sessionId,
-                  'MultiWiggleGetSources',
-                  {
-                    regions: view.staticBlocks.contentBlocks,
-                    sessionId,
-                    adapterConfig,
-                  },
-                )) as Source[]
-                if (isAlive(self)) {
-                  self.setSources(sources)
-                }
-              }),
-            )
+            try {
+              const [
+                { getMultiWiggleSourcesAutorun },
+                { getQuantitativeStatsAutorun },
+              ] = await Promise.all([
+                import('../getMultiWiggleSourcesAutorun'),
+                import('../getQuantitativeStatsAutorun'),
+              ])
+              getQuantitativeStatsAutorun(self)
+              getMultiWiggleSourcesAutorun(self)
+            } catch (e) {
+              if (isAlive(self)) {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              }
+            }
           })()
         },
 
