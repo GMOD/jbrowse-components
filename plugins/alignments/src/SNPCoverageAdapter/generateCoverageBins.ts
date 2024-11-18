@@ -31,10 +31,11 @@ export async function generateCoverageBins({
       start: start2,
       end: region.end + 1,
     })) || ''
-  let i = 0
+  let start = performance.now()
   for (const feature of features) {
-    if (i++ % 1000 === 0) {
+    if (performance.now() - start > 400) {
       await abortBreakPoint(signal)
+      start = performance.now()
     }
     processDepth({
       feature,

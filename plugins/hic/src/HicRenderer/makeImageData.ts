@@ -96,7 +96,7 @@ export async function makeImageData(
       ctx.translate(-width, 0)
     }
     ctx.rotate(-Math.PI / 4)
-    let start = Date.now()
+    let start = performance.now()
     for (const { bin1, bin2, counts } of features) {
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
@@ -106,9 +106,9 @@ export async function makeImageData(
         useLogScale,
       })
       ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-      if (+Date.now() - start > 400) {
+      if (performance.now() - start > 400) {
         await abortBreakPoint(signal)
-        start = +Date.now()
+        start = performance.now()
       }
     }
     ctx.restore()

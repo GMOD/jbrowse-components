@@ -21,7 +21,7 @@ interface LayoutFeature {
   feature: Feature
 }
 
-export function makeImageData({
+export async function makeImageData({
   ctx,
   layoutRecords,
   canvasWidth,
@@ -32,7 +32,14 @@ export function makeImageData({
   layoutRecords: LayoutFeature[]
   renderArgs: RenderArgsWithColor
 }) {
-  const { config, showSoftClip, colorBy, theme: configTheme } = renderArgs
+  const {
+    signal,
+    config,
+    showSoftClip,
+    colorBy,
+    theme: configTheme,
+  } = renderArgs
+  console.log({ signal })
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
   const largeInsertionIndicatorScale = readConfObject(
@@ -48,7 +55,12 @@ export function makeImageData({
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
+  let start = performance.now()
   for (const feat of layoutRecords) {
+    if (performance.now() - start > 400) {
+      await abortBreakPoint(signal)
+      start = performance.now()
+    }
     renderAlignment({
       ctx,
       feat,

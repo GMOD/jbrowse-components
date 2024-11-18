@@ -135,10 +135,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-      const now = performance.now()
-      if (now - start > 400) {
+      if (performance.now() - start > 400) {
         await abortBreakPoint(signal)
-        start = now
+        start = performance.now()
       }
     }
 
