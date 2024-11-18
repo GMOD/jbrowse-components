@@ -1,6 +1,5 @@
 import { lazy } from 'react'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
-import { autorun } from 'mobx'
+import { isAlive, types, Instance } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import deepEqual from 'fast-deep-equal'
 
@@ -15,7 +14,6 @@ import {
   AnyReactComponentType,
   getContainingView,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
@@ -24,7 +22,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import { getScale, Source, YSCALEBAR_LABEL_OFFSET } from '../util'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 
 const randomColor = () =>

@@ -10,8 +10,6 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-type LGV = LinearGenomeViewModel
-
 export interface Source {
   name: string
   color?: string

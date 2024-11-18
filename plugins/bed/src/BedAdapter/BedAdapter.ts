@@ -5,7 +5,12 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Region, Feature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  Region,
+  Feature,
+  fetchAndMaybeUnzip,
+  SimpleFeature,
+} from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
 
 // locals
@@ -123,17 +128,19 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
-    const ret = lines.map((f, i) => {
+    const ret = lines.map((line, i) => {
       const uniqueId = `${this.id}-${refName}-${i}`
-      return featureData(
-        f,
-        colRef,
-        colStart,
-        colEnd,
-        scoreColumn,
-        parser,
-        uniqueId,
-        names,
+      return new SimpleFeature(
+        featureData({
+          line,
+          colRef,
+          colStart,
+          colEnd,
+          scoreColumn,
+          parser,
+          uniqueId,
+          names,
+        }),
       )
     })
 
