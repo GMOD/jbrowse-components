@@ -62,7 +62,6 @@ async function loadRefNameMap(
 ) {
   const { sessionId } = options
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
-    stopToken,
     name: 'when assembly ready',
   })
 
@@ -157,11 +156,29 @@ export default function assemblyFactory(
       configuration: types.safeReference(assemblyConfigType),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       loadingP: undefined as Promise<void> | undefined,
+      /**
+       * #volatile
+       */
       volatileRegions: undefined as BasicRegion[] | undefined,
+      /**
+       * #volatile
+       */
       refNameAliases: undefined as RefNameAliases | undefined,
+      /**
+       * #volatile
+       */
       lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+      /**
+       * #volatile
+       */
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
@@ -175,6 +192,8 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #getter
+       * this is a getter with a side effect of loading the data. not the best
+       * practice, but it helps to lazy load the assembly
        */
       get initialized() {
         // @ts-expect-error
@@ -212,7 +231,7 @@ export default function assemblyFactory(
         return self.getConf('displayName')
       },
       /**
-       * #getter
+       * #method
        */
       hasName(name: string) {
         return this.allAliases.includes(name)
