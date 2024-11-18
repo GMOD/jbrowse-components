@@ -8,6 +8,7 @@ export interface MinimalFeature {
   refName: string
   [key: string]: unknown
 }
+
 export interface TranscriptFeat extends MinimalFeature {
   thickStart: number
   thickEnd: number
@@ -19,7 +20,7 @@ export interface TranscriptFeat extends MinimalFeature {
   subfeatures: MinimalFeature[]
 }
 
-export function ucscProcessedTranscript(feature: TranscriptFeat) {
+export function generateUcscTranscript(feature: TranscriptFeat) {
   const {
     subfeatures: oldSubfeatures,
     thickStart,
@@ -37,100 +38,110 @@ export function ucscProcessedTranscript(feature: TranscriptFeat) {
   }
 
   const subfeatures: MinimalFeature[] = []
-  oldSubfeatures
+  const feats = oldSubfeatures
     .filter(child => child.type === 'block')
     .sort((a, b) => a.start - b.start)
-    .forEach(block => {
-      const start = block.start
-      const end = block.end
-      if (thickStart >= end) {
-        // left-side UTR
-        const prime = strand > 0 ? 'five' : 'three'
-        subfeatures.push({
-          type: `${prime}_prime_UTR`,
+
+  for (const block of feats) {
+    const start = block.start
+    const end = block.end
+    if (thickStart >= end) {
+      // left-side UTR
+      subfeatures.push({
+        type: `${strand > 0 ? 'five' : 'three'}_prime_UTR`,
+        start,
+        end,
+        refName,
+      })
+    } else if (thickStart > start && thickStart < end && thickEnd >= end) {
+      // UTR | CDS
+      subfeatures.push(
+        {
+          type: `${strand > 0 ? 'five' : 'three'}_prime_UTR`,
           start,
+          end: thickStart,
+          refName,
+        },
+        {
+          type: 'CDS',
+          start: thickStart,
           end,
           refName,
-        })
-      } else if (thickStart > start && thickStart < end && thickEnd >= end) {
-        // UTR | CDS
-        const prime = strand > 0 ? 'five' : 'three'
-        subfeatures.push(
-          {
-            type: `${prime}_prime_UTR`,
-            start,
-            end: thickStart,
-            refName,
-          },
-          {
-            type: 'CDS',
-            start: thickStart,
-            end,
-            refName,
-          },
-        )
-      } else if (thickStart <= start && thickEnd >= end) {
-        // CDS
-        subfeatures.push({
+        },
+      )
+    } else if (thickStart <= start && thickEnd >= end) {
+      // CDS
+      subfeatures.push({
+        type: 'CDS',
+        start,
+        end,
+        refName,
+      })
+    } else if (thickStart > start && thickStart < end && thickEnd < end) {
+      // UTR | CDS | UTR
+      subfeatures.push(
+        {
+          type: `${strand > 0 ? 'five' : 'three'}_prime_UTR`,
+          start,
+          end: thickStart,
+          refName,
+        },
+        {
+          type: 'CDS',
+          start: thickStart,
+          end: thickEnd,
+          refName,
+        },
+        {
+          type: `${strand > 0 ? 'three' : 'five'}_prime_UTR`,
+          start: thickEnd,
+          end,
+          refName,
+        },
+      )
+    } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
+      // CDS | UTR
+      subfeatures.push(
+        {
           type: 'CDS',
           start,
+          end: thickEnd,
+          refName,
+        },
+        {
+          type: `${strand > 0 ? 'three' : 'five'}_prime_UTR`,
+          start: thickEnd,
           end,
           refName,
-        })
-      } else if (thickStart > start && thickStart < end && thickEnd < end) {
-        // UTR | CDS | UTR
-        const leftPrime = strand > 0 ? 'five' : 'three'
-        const rightPrime = strand > 0 ? 'three' : 'five'
-        subfeatures.push(
-          {
-            type: `${leftPrime}_prime_UTR`,
-            start,
-            end: thickStart,
-            refName,
-          },
-          {
-            type: 'CDS',
-            start: thickStart,
-            end: thickEnd,
-            refName,
-          },
-          {
-            type: `${rightPrime}_prime_UTR`,
-            start: thickEnd,
-            end,
-            refName,
-          },
-        )
-      } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
-        // CDS | UTR
-        const prime = strand > 0 ? 'three' : 'five'
-        subfeatures.push(
-          {
-            type: 'CDS',
-            start,
-            end: thickEnd,
-            refName,
-          },
-          {
-            type: `${prime}_prime_UTR`,
-            start: thickEnd,
-            end,
-            refName,
-          },
-        )
-      } else if (thickEnd <= start) {
-        // right-side UTR
-        const prime = strand > 0 ? 'three' : 'five'
-        subfeatures.push({
-          type: `${prime}_prime_UTR`,
-          start,
-          end,
-          refName,
-        })
-      }
-    })
+        },
+      )
+    } else if (thickEnd <= start) {
+      // right-side UTR
+      subfeatures.push({
+        type: `${strand > 0 ? 'three' : 'five'}_prime_UTR`,
+        start,
+        end,
+        refName,
+      })
+    }
+  }
 
-  return { ...rest, strand, type: 'mRNA', refName, subfeatures }
+  return {
+    ...rest,
+    strand,
+    type: 'mRNA',
+    refName,
+    subfeatures,
+  }
+}
+function stringToStrand(f: string) {
+  if (f === '-1') {
+    return -1
+  } else if (f === '+') {
+    return 1
+  } else {
+    return 0
+  }
 }
 
 function defaultParser(fields: string[], line: string) {
@@ -196,6 +207,63 @@ export function makeBlocks({
   }
   return []
 }
+
+function generateBedMethylFeature({
+  line,
+  uniqueId,
+  refName,
+  start,
+  end,
+}: {
+  line: string
+  uniqueId: string
+  refName: string
+  start: number
+  end: number
+}) {
+  const [
+    _ref,
+    _start,
+    _end,
+    code,
+    score,
+    strand,
+    _start2,
+    _end2,
+    color,
+    n_valid_cov,
+    fraction_modified,
+    n_mod,
+    n_canonical,
+    n_other_mod,
+    n_delete,
+    n_fail,
+    n_diff,
+    n_nocall,
+  ] = line.split('\t')
+  return new SimpleFeature({
+    id: uniqueId,
+    data: {
+      refName,
+      start,
+      end,
+      code,
+      score,
+      strand,
+      color,
+      n_valid_cov,
+      fraction_modified,
+      n_mod,
+      n_canonical,
+      n_other_mod,
+      n_delete,
+      n_fail,
+      n_diff,
+      n_nocall,
+    },
+  })
+}
+
 export function featureData(
   line: string,
   colRef: number,
@@ -206,20 +274,11 @@ export function featureData(
   uniqueId: string,
   names?: string[],
 ) {
-  const l = line.split('\t')
+  const splitLine = line.split('\t')
   const data = names
     ? defaultParser(names, line)
     : parser.parseLine(line, { uniqueId })
-
   const {
-    blockCount,
-    blockSizes,
-    blockStarts,
-    chromStarts,
-    thickStart,
-    thickEnd,
-    type,
-    description,
     strand: strand2,
     score: score2,
     chrom: _1,
@@ -228,61 +287,113 @@ export function featureData(
     ...rest
   } = data
 
-  const refName = l[colRef]!
-  const start = +l[colStart]!
-  const colSame = colStart === colEnd ? 1 : 0
-  const end = +l[colEnd]! + colSame
-  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
-  const strand =
-    typeof strand2 === 'string'
-      ? strand2 === '-'
-        ? -1
-        : strand2 === '+'
-          ? 1
-          : 0
-      : strand2
-
-  const f = {
-    ...rest,
-    ...makeRepeatTrackDescription(description),
+  const {
+    chromStarts,
+    blockSizes,
+    blockStarts,
     type,
-    score,
+    blockCount,
+    thickStart,
+    thickEnd,
+    description,
+    ...rest2
+  } = rest
+
+  const refName = splitLine[colRef]!
+  const start = +splitLine[colStart]!
+  const end = +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0)
+  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
+  const strand = typeof strand2 === 'string' ? stringToStrand(strand2) : strand2
+  const subfeatures = makeBlocks({
     start,
-    end,
-    strand,
-    refName,
     uniqueId,
-    subfeatures: makeBlocks({
-      start,
+    refName,
+    chromStarts,
+    blockCount,
+    blockSizes,
+    blockStarts,
+  })
+
+  if (isBedMethylFeature({ splitLine, start, end })) {
+    return generateBedMethylFeature({
+      line,
       uniqueId,
       refName,
-      chromStarts,
-      blockCount,
-      blockSizes,
-      blockStarts,
-    }),
-  }
-  return new SimpleFeature({
-    id: uniqueId,
-    data: isUcscProcessedTranscript({
+      start,
+      end,
+    })
+  } else if (isRepeatMaskerDescriptionField(description)) {
+    return new SimpleFeature({
+      id: uniqueId,
+      data: {
+        ...rest2,
+        ...makeRepeatTrackDescription(description),
+        refName,
+        start,
+        end,
+        type,
+        subfeatures,
+      },
+    })
+  } else if (
+    isUcscTranscript({
       strand,
       blockCount,
       thickStart,
       description,
     })
-      ? ucscProcessedTranscript({
-          thickStart: thickStart!,
-          thickEnd: thickEnd!,
-          blockCount: blockCount!,
-          blockSizes: blockSizes!,
-          chromStarts: chromStarts,
-          ...f,
-        })
-      : f,
-  })
+  ) {
+    const {
+      strand: strand2,
+      score: score2,
+      chrom: _1,
+      chromStart: _2,
+      chromEnd: _3,
+      chromStarts,
+      blockStarts,
+      blockSizes,
+      ...rest
+    } = data
+    return new SimpleFeature({
+      id: uniqueId,
+      data: generateUcscTranscript({
+        ...rest,
+        ...makeRepeatTrackDescription(description),
+        chromStarts,
+        thickStart,
+        thickEnd,
+        blockSizes,
+        blockCount,
+        type,
+        score,
+        start,
+        end,
+        strand,
+        refName,
+        uniqueId,
+        subfeatures,
+      }),
+    })
+  } else {
+    return new SimpleFeature({
+      id: uniqueId,
+      data: {
+        ...rest,
+        ...makeRepeatTrackDescription(description),
+        type,
+        score,
+        start,
+        end,
+        strand,
+        refName,
+        uniqueId,
+        subfeatures,
+      },
+    })
+  }
 }
 
-export function isUcscProcessedTranscript({
+export function isUcscTranscript({
   thickStart,
   blockCount,
   strand,
@@ -301,6 +412,18 @@ export function isUcscProcessedTranscript({
   )
 }
 
+export function isBedMethylFeature({
+  splitLine,
+  start,
+  end,
+}: {
+  splitLine: string[]
+  start: number
+  end: number
+}) {
+  return +(splitLine[6] || 0) === start && +(splitLine[7] || 0) === end
+}
+
 export function arrayify(f?: string | number[]) {
   return f !== undefined
     ? typeof f === 'string'
@@ -309,10 +432,8 @@ export function arrayify(f?: string | number[]) {
     : undefined
 }
 
-function isRepeatMaskerDescriptionField(
-  description?: string,
-): description is string {
-  const ret = description?.trim().split(' ')
+function isRepeatMaskerDescriptionField(desc?: string): desc is string {
+  const ret = desc?.trim().split(' ')
   return [0, 1, 2, 3, 5, 6].every(s =>
     ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
   )

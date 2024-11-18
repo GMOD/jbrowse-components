@@ -19,8 +19,8 @@ import { firstValueFrom, Observer, toArray } from 'rxjs'
 
 // locals
 import {
-  isUcscProcessedTranscript,
-  ucscProcessedTranscript,
+  isUcscTranscript,
+  generateUcscTranscript,
   makeRepeatTrackDescription,
   makeBlocks,
   arrayify,
@@ -199,14 +199,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       })
 
       if (
-        isUcscProcessedTranscript({
+        isUcscTranscript({
           strand,
           blockCount,
           thickStart,
           description,
         })
       ) {
-        const f = ucscProcessedTranscript({
+        const f = generateUcscTranscript({
           ...rest,
           strand,
           uniqueId,
