@@ -7,7 +7,7 @@ import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track, indexType } from './util'
 import {
-  checkAbortSignal,
+  checkStopToken,
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
@@ -50,9 +50,9 @@ export async function indexTracks(args: {
         attributesToIndex,
         assemblyNames,
         featureTypesToExclude,
-        signal,
+        stopToken,
       }))
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   return []
 }
 
@@ -62,7 +62,7 @@ async function perTrackIndex({
   outDir: paramOutDir,
   attributesToIndex = ['Name', 'ID'],
   featureTypesToExclude = ['exon', 'CDS'],
-  signal,
+  stopToken,
 }: {
   tracks: Track[]
   statusCallback: (message: string) => void
@@ -97,7 +97,7 @@ async function perTrackIndex({
       featureTypesToExclude,
       assemblyNames,
       statusCallback,
-      signal,
+      stopToken,
     })
   }
 }
@@ -108,7 +108,7 @@ async function aggregateIndex({
   outDir: paramOutDir,
   attributesToIndex = ['Name', 'ID'],
   featureTypesToExclude = ['exon', 'CDS'],
-  signal,
+  stopToken,
   assemblyNames,
 }: {
   tracks: Track[]
@@ -146,7 +146,7 @@ async function aggregateIndex({
       featureTypesToExclude,
       assemblyNames: [asm],
       statusCallback,
-      signal,
+      stopToken,
     })
   }
 }
@@ -159,7 +159,7 @@ async function indexDriver({
   featureTypesToExclude,
   assemblyNames,
   statusCallback,
-  signal,
+  stopToken,
 }: {
   tracks: Track[]
   outDir: string
@@ -177,12 +177,12 @@ async function indexDriver({
       outDir,
       featureTypesToExclude,
       statusCallback,
-      signal,
+      stopToken,
     }),
   )
   statusCallback('Indexing files.')
   await runIxIxx(readable, outDir, name)
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   await generateMeta({
     configs: tracks,
     attributesToIndex,
@@ -191,7 +191,7 @@ async function indexDriver({
     featureTypesToExclude,
     assemblyNames,
   })
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
 }
 
 async function* indexFiles({

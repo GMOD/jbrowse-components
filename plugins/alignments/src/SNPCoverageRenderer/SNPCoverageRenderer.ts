@@ -70,7 +70,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       theme: configTheme,
       config: cfg,
       ticks,
-      signal,
+      stopToken,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const region = regions[0]!
@@ -136,7 +136,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
       if (performance.now() - start > 400) {
-        await abortBreakPoint(signal)
+        await abortBreakPoint(stopToken)
         start = performance.now()
       }
     }
@@ -169,7 +169,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     for (const feature of feats) {
       const now = performance.now()
       if (now - start > 400) {
-        await abortBreakPoint(signal)
+        await abortBreakPoint(stopToken)
       }
       if (feature.get('type') === 'skip') {
         continue

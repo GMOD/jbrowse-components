@@ -1,4 +1,4 @@
-import { getContainingView, isAbortException } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 import { isAlive } from 'mobx-state-tree'
 import { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
@@ -38,8 +38,8 @@ export default async function autorunFeatureDensityStats(
       self.setFeatureDensityStats(stats)
     }
   } catch (e) {
-    if (!isAbortException(e) && isAlive(self)) {
-      console.error(e)
+    console.error(e)
+    if (isAlive(self)) {
       self.setError(e)
     }
   }

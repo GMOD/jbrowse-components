@@ -30,7 +30,15 @@ import {
 
 // locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
+interface RenderedProps {
+  reactElement: React.ReactElement
+  features: Map<string, Feature>
+  layout: any
+  maxHeightReached: boolean
+  renderProps: any
+}
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
   .model('BlockState', {
@@ -42,7 +50,7 @@ const blockState = types
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
-    renderInProgress: undefined as AbortController | undefined,
+    stopToken: undefined as string | undefined,
     filled: false,
     reactElement: undefined as React.ReactElement | undefined,
     features: undefined as Map<string, Feature> | undefined,
@@ -85,12 +93,9 @@ const blockState = types
       setStatus(message: string) {
         self.status = message
       },
-      setLoading(abortController: AbortController) {
-        if (
-          renderInProgress !== undefined &&
-          !renderInProgress.signal.aborted
-        ) {
-          renderInProgress.abort()
+      setLoading(newStopToken: string) {
+        if (self.stopToken !== undefined) {
+          stopStopToken(self.stopToken)
         }
         self.filled = false
         self.message = undefined
@@ -100,11 +105,11 @@ const blockState = types
         self.error = undefined
         self.maxHeightReached = false
         self.renderProps = undefined
-        renderInProgress = abortController
+        self.stopToken = newStopToken
       },
       setMessage(messageText: string) {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
+        if (self.stopToken !== undefined) {
+          stopStopToken(self.stopToken)
         }
         self.filled = false
         self.message = messageText
@@ -116,17 +121,7 @@ const blockState = types
         self.renderProps = undefined
         renderInProgress = undefined
       },
-      setRendered(
-        props:
-          | {
-              reactElement: React.ReactElement
-              features: Map<string, Feature>
-              layout: any
-              maxHeightReached: boolean
-              renderProps: any
-            }
-          | undefined,
-      ) {
+      setRendered(props: RenderedProps | undefined) {
         if (!props) {
           return
         }
@@ -149,8 +144,8 @@ const blockState = types
       },
       setError(error: unknown) {
         console.error(error)
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
+        if (self.stopToken !== undefined) {
+          stopStopToken(self.stopToken)
         }
         // the rendering failed for some reason
         self.filled = false
@@ -167,7 +162,7 @@ const blockState = types
         }
       },
       reload() {
-        self.renderInProgress = undefined
+        self.stopToken = undefined
         self.filled = false
         self.reactElement = undefined
         self.features = undefined
@@ -183,8 +178,8 @@ const blockState = types
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            if (renderInProgress && !renderInProgress.signal.aborted) {
-              renderInProgress.abort()
+            if (self.stopToken !== undefined) {
+              stopStopToken(self.stopToken)
             }
             const display = getContainingDisplay(self)
             const { rpcManager } = getSession(self)
@@ -307,7 +302,7 @@ async function renderBlockEffect(
       ...renderArgs,
       ...renderProps,
       viewParams: getViewParams(self),
-      signal,
+      stopToken,
     })
   return {
     reactElement,

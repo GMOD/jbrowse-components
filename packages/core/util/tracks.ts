@@ -85,6 +85,7 @@ export function getBlobMap() {
   return blobMap
 }
 
+// TODO:IS THIS BAD?
 // used in new contexts like webworkers
 export function setBlobMap(map: Record<string, File>) {
   blobMap = map

@@ -1,5 +1,5 @@
 import PluginManager from '../PluginManager'
-import { checkAbortSignal } from '../util'
+import { checkStopToken } from '../util'
 import BaseRpcDriver, { watchWorker, WorkerHandle } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import { ConfigurationSchema } from '../configuration'
@@ -26,7 +26,7 @@ class MockWorkerHandle implements WorkerHandle {
       rpcDriverClassName?: string
     } = {},
   ) {
-    const { signal, timeout = 3000 } = opts
+    const { stopToken, timeout = 3000 } = opts
     const start = Date.now()
     switch (name) {
       case 'ping': {
@@ -58,13 +58,13 @@ class MockWorkerHandle implements WorkerHandle {
       case 'doWorkLongPingTime': {
         this.busy = true
         await delay(1000)
-        checkAbortSignal(signal)
+        checkStopToken(stopToken)
         this.busy = false
         await delay(1000)
-        checkAbortSignal(signal)
+        checkStopToken(stopToken)
         this.busy = true
         await delay(1000)
-        checkAbortSignal(signal)
+        checkStopToken(stopToken)
         this.busy = false
 
         break
@@ -79,7 +79,7 @@ class MockWorkerHandle implements WorkerHandle {
       case 'MockRenderShort': {
         this.busy = true
         await delay(100)
-        checkAbortSignal(signal)
+        checkStopToken(stopToken)
         this.busy = false
 
         break
@@ -111,7 +111,7 @@ test('test worker abort', async () => {
   try {
     const controller = new AbortController()
     const resultP = worker.call('doWorkLongPingTime', undefined, {
-      signal: controller.signal,
+      stopToken: controller.stopToken,
       timeout: 2000,
       rpcDriverClassName: 'MockRpcDriver',
     })
@@ -188,7 +188,7 @@ test('remote abort', async () => {
       'sessionId',
       'MockRenderShort',
       {},
-      { signal: controller.signal },
+      { stopToken: controller.stopToken },
     )
     controller.abort()
     await resP

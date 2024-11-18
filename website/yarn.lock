@@ -4213,12 +4213,12 @@ execa@^5.0.0:
   dependencies:
     cross-spawn "^7.0.3"
     get-stream "^6.0.0"
-    human-signals "^2.1.0"
+    human-stopTokens "^2.1.0"
     is-stream "^2.0.0"
     merge-stream "^2.0.0"
     npm-run-path "^4.0.1"
     onetime "^5.1.2"
-    signal-exit "^3.0.3"
+    stopToken-exit "^3.0.3"
     strip-final-newline "^2.0.0"
 
 express@^4.17.3:
@@ -4980,9 +4980,9 @@ http2-wrapper@^2.1.10:
     quick-lru "^5.1.1"
     resolve-alpn "^1.2.0"
 
-human-signals@^2.1.0:
+human-stopTokens@^2.1.0:
   version "2.1.0"
-  resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
+  resolved "https://registry.yarnpkg.com/human-stopTokens/-/human-stopTokens-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
 iconv-lite@0.4.24:
@@ -7924,9 +7924,9 @@ side-channel@^1.0.6:
     get-intrinsic "^1.2.4"
     object-inspect "^1.13.1"
 
-signal-exit@^3.0.2, signal-exit@^3.0.3:
+stopToken-exit@^3.0.2, stopToken-exit@^3.0.3:
   version "3.0.7"
-  resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.7.tgz#a9a1767f8af84155114eaabd73f99273c8f59ad9"
+  resolved "https://registry.yarnpkg.com/stopToken-exit/-/stopToken-exit-3.0.7.tgz#a9a1767f8af84155114eaabd73f99273c8f59ad9"
   integrity sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==
 
 sirv@^2.0.3:
@@ -8775,7 +8775,7 @@ write-file-atomic@^3.0.3:
   dependencies:
     imurmurhash "^0.1.4"
     is-typedarray "^1.0.0"
-    signal-exit "^3.0.2"
+    stopToken-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
 ws@^7.3.1:

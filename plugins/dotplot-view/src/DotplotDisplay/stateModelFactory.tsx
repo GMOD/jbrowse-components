@@ -138,7 +138,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #action
          */
         setMessage(messageText: string) {
-          if (renderInProgress && !renderInProgress.signal.aborted) {
+          if (renderInProgress && !renderInProgress.stopToken.aborted) {
             renderInProgress.abort()
           }
           self.filled = false
@@ -175,7 +175,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         setError(error: unknown) {
           console.error(error)
-          if (renderInProgress && !renderInProgress.signal.aborted) {
+          if (renderInProgress && !renderInProgress.stopToken.aborted) {
             renderInProgress.abort()
           }
           // the rendering failed for some reason

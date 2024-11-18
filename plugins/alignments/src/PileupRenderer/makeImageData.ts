@@ -33,13 +33,13 @@ export async function makeImageData({
   renderArgs: RenderArgsWithColor
 }) {
   const {
-    signal,
+    stopToken,
     config,
     showSoftClip,
     colorBy,
     theme: configTheme,
   } = renderArgs
-  console.log({ signal })
+  console.log({ stopToken })
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
   const largeInsertionIndicatorScale = readConfObject(
@@ -58,7 +58,7 @@ export async function makeImageData({
   let start = performance.now()
   for (const feat of layoutRecords) {
     if (performance.now() - start > 400) {
-      await abortBreakPoint(signal)
+      await abortBreakPoint(stopToken)
       start = performance.now()
     }
     renderAlignment({

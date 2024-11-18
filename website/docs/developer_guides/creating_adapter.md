@@ -207,8 +207,8 @@ interface Options {
 
 - `bpPerPx` - number: resolution of the genome browser when the features were
   fetched
-- `signal` - can be used to abort a fetch request when it is no longer needed,
-  from AbortController
+- `stopToken` - can be used to abort a fetch request when it is no longer
+  needed, from AbortController
 - `statusCallback` - not implemented yet but in the future may allow you to
   report the status of your loading operations
 - `headers` - set of HTTP headers as a JSON object

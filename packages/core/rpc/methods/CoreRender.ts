@@ -7,7 +7,7 @@ import {
   validateRendererType,
 } from './util'
 import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { checkAbortSignal, renameRegionsIfNeeded } from '../../util'
+import { checkStopToken, renameRegionsIfNeeded } from '../../util'
 
 /**
  * fetches features from an adapter and call a renderer with them
@@ -39,19 +39,19 @@ export default class CoreRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: RemoteAbortSignal },
     rpcDriver: string,
   ) {
     let deserializedArgs = args
     if (rpcDriver !== 'MainThreadRpcDriver') {
       deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
-    const { sessionId, rendererType, signal } = deserializedArgs
+    const { sessionId, rendererType, stopToken } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
 
     const RendererType = validateRendererType(
       rendererType,
@@ -63,7 +63,7 @@ export default class CoreRender extends RpcMethodType {
         ? await RendererType.render(deserializedArgs)
         : await RendererType.renderInWorker(deserializedArgs)
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
     return result
   }
 

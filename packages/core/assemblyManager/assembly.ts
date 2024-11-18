@@ -62,7 +62,7 @@ async function loadRefNameMap(
 ) {
   const { sessionId } = options
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
-    signal,
+    stopToken,
     name: 'when assembly ready',
   })
 
@@ -71,7 +71,7 @@ async function loadRefNameMap(
     'CoreGetRefNames',
     {
       adapterConfig,
-      signal,
+      stopToken,
       ...options,
     },
     { timeout: 1000000 },
@@ -149,7 +149,7 @@ export default function assemblyFactory(
         self,
         adapterConf,
         { ...options, statusCallback },
-        signal,
+        stopToken,
       )
     },
   })
@@ -453,7 +453,7 @@ export default function assemblyFactory(
        * #method
        */
       getAdapterMapEntry(adapterConf: AdapterConf, options: BaseOptions) {
-        const { signal, statusCallback, ...rest } = options
+        const { stopToken, statusCallback, ...rest } = options
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -465,7 +465,7 @@ export default function assemblyFactory(
             options: rest,
           } as CacheData,
 
-          // signal intentionally not passed here, fixes issues like #2221.
+          // stopToken intentionally not passed here, fixes issues like #2221.
           // alternative fix #2540 was proposed but non-working currently
           undefined,
           statusCallback,
@@ -504,7 +504,7 @@ export default function assemblyFactory(
 async function getRefNameAliases({
   config,
   pluginManager,
-  signal,
+  stopToken,
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
@@ -517,7 +517,7 @@ async function getRefNameAliases({
     undefined,
     pluginManager,
   ) as BaseRefNameAliasAdapter
-  return adapter.getRefNameAliases({ signal })
+  return adapter.getRefNameAliases({ stopToken })
 }
 
 async function getCytobands({
@@ -538,7 +538,7 @@ async function getCytobands({
 async function getAssemblyRegions({
   config,
   pluginManager,
-  signal,
+  stopToken,
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
@@ -547,7 +547,7 @@ async function getAssemblyRegions({
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pluginManager) as RegionsAdapter
-  return adapter.getRegions({ signal })
+  return adapter.getRegions({ stopToken })
 }
 
 export type AssemblyModel = ReturnType<typeof assemblyFactory>

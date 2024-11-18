@@ -22,5 +22,5 @@ export function ObservableCreate<T>(
     } catch (error) {
       observer.error(error)
     }
-  }).pipe(takeUntil(observeAbortSignal(signal)))
+  }).pipe(takeUntil(observeAbortSignal(stopToken)))
 }

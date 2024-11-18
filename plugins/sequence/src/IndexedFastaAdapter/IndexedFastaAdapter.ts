@@ -22,20 +22,23 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   private seqCache = new AbortablePromiseCache<T, string | undefined>({
     cache: new QuickLRU({ maxSize: 200 }),
-    fill: async (args: T, stopToken?: string) => {
+    fill: async (args: T) => {
       const { refName, start, end, fasta } = args
-      return fasta.getSequence(refName, start, end, { ...args, signal })
+      // TODO:ABORT
+      return fasta.getSequence(refName, start, end)
     },
   })
 
   public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    return fasta.getSequenceNames(opts)
+    // TODO:ABORT
+    return fasta.getSequenceNames()
   }
 
   public async getRegions(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    const seqSizes = await fasta.getSequenceSizes(opts)
+    // TODO:ABORT
+    const seqSizes = await fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(refName => ({
       refName,
       start: 0,
@@ -76,7 +79,8 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       const { fasta } = await this.setup()
-      const size = await fasta.getSequenceSize(refName, opts)
+      // TODO:ABORT
+      const size = await fasta.getSequenceSize(refName)
       const regionEnd = Math.min(size, end)
       const chunks = []
       const chunkSize = 128000
@@ -89,9 +93,8 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
           start: chunkStart,
           end: chunkStart + chunkSize,
         }
-        chunks.push(
-          this.seqCache.get(JSON.stringify(r), { ...r, fasta }, opts?.signal),
-        )
+        // TODO:ABORT
+        chunks.push(this.seqCache.get(JSON.stringify(r), { ...r, fasta }))
       }
       const seq = (await Promise.all(chunks))
         .filter(f => !!f)

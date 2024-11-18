@@ -35,9 +35,7 @@ import { flushSync, render } from 'react-dom'
 import { GenericFilehandle } from 'generic-filehandle'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { BaseOptions } from '../data_adapters/BaseAdapter'
-import { checkAbortSignal } from './aborting'
 export * from './types'
-export * from './aborting'
 export * from './when'
 export * from './range'
 export * from './dedupe'
@@ -1013,12 +1011,12 @@ export async function updateStatus<U>(
 export async function updateStatus2<U>(
   msg: string,
   cb: (arg: string) => void,
-  stopToken?: string | undefined,
+  stopToken: string | undefined,
   fn: () => U | Promise<U>,
 ) {
   cb(msg)
   const res = await fn()
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   cb('')
   return res
 }

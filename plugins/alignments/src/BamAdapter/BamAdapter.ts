@@ -10,7 +10,7 @@ import { Region } from '@jbrowse/core/util/types'
 import {
   bytesForRegions,
   updateStatus2,
-  checkAbortSignal,
+  checkStopToken,
   Feature,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -86,12 +86,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setupPre(opts?: BaseOptions) {
-    const { signal, statusCallback = () => {} } = opts || {}
+    const { stopToken, statusCallback = () => {} } = opts || {}
     const { bam } = await this.configure()
     this.samHeader = await updateStatus2(
       'Downloading index',
       statusCallback,
-      signal,
+      stopToken,
       async () => {
         const samHeader = await bam.getHeader(opts)
 
@@ -138,10 +138,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     end: number,
     opts?: { stopToken?: string },
   ) {
-    const { signal } = opts || {}
-    checkAbortSignal(signal)
+    const { stopToken } = opts || {}
+    checkStopToken(stopToken)
     const { sequenceAdapter } = await this.configure()
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
     const refSeqStore = sequenceAdapter
     if (!refSeqStore) {
       return undefined
@@ -194,22 +194,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { signal, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
-      checkAbortSignal(signal)
+      checkStopToken(stopToken)
       const { bam } = await this.configure()
-      checkAbortSignal(signal)
+      checkStopToken(stopToken)
 
       const records = await updateStatus2(
         'Downloading alignments',
         statusCallback,
-        signal,
+        stopToken,
         () => bam.getRecordsForRange(refName, start, end, opts),
       )
       await updateStatus2(
         'Processing alignments',
         statusCallback,
-        signal,
+        stopToken,
         async () => {
           const {
             flagInclude = 0,
@@ -268,7 +268,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         },
       )
       observer.complete()
-    }, signal)
+    }, stopToken)
   }
 
   async getMultiRegionFeatureDensityStats(

@@ -29,7 +29,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     args: {
       adapterConfig: Record<string, unknown>
       regions: Region[]
-      signal?: RemoteAbortSignal
+      stopToken?: RemoteAbortSignal
       headers?: Record<string, string>
       sessionId: string
     },

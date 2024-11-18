@@ -1,6 +1,5 @@
 import { addDisposer, isAlive } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import { isAbortException } from './aborting'
 import { createStopToken, stopStopToken } from './stopToken'
 
 /**
@@ -8,7 +7,7 @@ import { createStopToken, stopStopToken } from './stopToken'
  * model for each stage of execution, and to abort the reaction function when
  * the model is destroyed.
  *
- * Will call startedFunction(signal), successFunction(result), and
+ * Will call startedFunction(stopToken), successFunction(result), and
  * errorFunction(error) when the async reaction function starts, completes, and
  * errors respectively.
  *
@@ -38,12 +37,9 @@ export function makeAbortableReaction<T, U, V>(
   let inProgress: string | undefined
 
   function handleError(error: unknown) {
-    if (!isAbortException(error)) {
-      if (isAlive(self)) {
-        errorFunction(error)
-      } else {
-        console.error(error)
-      }
+    console.error(error)
+    if (isAlive(self)) {
+      errorFunction(error)
     }
   }
 

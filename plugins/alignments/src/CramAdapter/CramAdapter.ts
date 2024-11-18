@@ -8,7 +8,7 @@ import {
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, Feature } from '@jbrowse/core/util'
-import { checkAbortSignal, updateStatus2, toLocale } from '@jbrowse/core/util'
+import { checkStopToken, updateStatus2, toLocale } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
@@ -147,11 +147,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setupPre(opts?: BaseOptions) {
-    const { signal, statusCallback = () => {} } = opts || {}
+    const { stopToken, statusCallback = () => {} } = opts || {}
     return updateStatus2(
       'Downloading index',
       statusCallback,
-      signal,
+      stopToken,
       async () => {
         const conf = await this.configure()
         const { cram } = conf
@@ -229,7 +229,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       filterBy: FilterBy
     },
   ) {
-    const { signal, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
@@ -245,18 +245,18 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
       }
-      checkAbortSignal(signal)
+      checkStopToken(stopToken)
       const records = await updateStatus2(
         'Downloading alignments',
         statusCallback,
-        signal,
+        stopToken,
         () => cram.getRecordsForRange(refId, start, end),
       )
-      checkAbortSignal(signal)
+      checkStopToken(stopToken)
       await updateStatus2(
         'Processing alignments',
         statusCallback,
-        signal,
+        stopToken,
         () => {
           const {
             flagInclude = 0,
@@ -302,11 +302,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
               observer.next(ret)
             }
           }
-          checkAbortSignal(signal)
+          checkStopToken(stopToken)
           observer.complete()
         },
       )
-    }, signal)
+    }, stopToken)
   }
 
   freeResources(/* { region } */): void {}

@@ -101,7 +101,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
             ),
           )
         },
-        signal: opts.stopToken,
+        stopToken: opts.stopToken,
       })
       observer.complete()
     }, opts.stopToken)

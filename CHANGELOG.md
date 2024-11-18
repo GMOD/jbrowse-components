@@ -272,7 +272,7 @@ yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.13.1
   track selector in linear synteny view causing crash in v2.13.0
   ([@cmdcolin](https://github.com/cmdcolin))
 - [#4495](https://github.com/GMOD/jbrowse-components/pull/4495) Fix log scale
-  for some types of signal tracks ([@cmdcolin](https://github.com/cmdcolin))
+  for some types of stopToken tracks ([@cmdcolin](https://github.com/cmdcolin))
 
 #### Committers: 1
 
@@ -6437,7 +6437,7 @@ Broken releases missing some packages
     rendering outside it's allowed bounds
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#1783](https://github.com/GMOD/jbrowse-components/pull/1783) Add hic
-    aborting and fix remoteAbort signal propagation
+    aborting and fix remoteAbort stopToken propagation
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#1723](https://github.com/GMOD/jbrowse-components/pull/1723) A few bugfixes
     ([@garrettjstevens](https://github.com/garrettjstevens))

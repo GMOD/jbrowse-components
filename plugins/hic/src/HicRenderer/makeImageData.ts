@@ -1,6 +1,5 @@
 import { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { Region } from '@jbrowse/core/util/types'
-import { abortBreakPoint } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -14,6 +13,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import interpolateViridis from './viridis'
 import { RenderArgsDeserializedWithFeatures } from './HicRenderer'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
   getResolution: (bp: number) => Promise<number>
@@ -31,7 +31,7 @@ export async function makeImageData(
     features,
     config,
     bpPerPx,
-    signal,
+    stopToken,
     resolution,
     sessionId,
     adapterConfig,
@@ -58,13 +58,13 @@ export async function makeImageData(
     let maxScore = 0
     let minBin = 0
     let maxBin = 0
-    await abortBreakPoint(signal)
+    checkStopToken(stopToken)
     for (const { bin1, bin2, counts } of features) {
       maxScore = Math.max(counts, maxScore)
       minBin = Math.min(Math.min(bin1, bin2), minBin)
       maxBin = Math.max(Math.max(bin1, bin2), maxBin)
     }
-    await abortBreakPoint(signal)
+    checkStopToken(stopToken)
     const colorSchemes = {
       juicebox: ['rgba(0,0,0,0)', 'red'],
       fall: interpolateRgbBasis([
@@ -107,7 +107,7 @@ export async function makeImageData(
       })
       ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       if (performance.now() - start > 400) {
-        await abortBreakPoint(signal)
+        checkStopToken(stopToken)
         start = performance.now()
       }
     }

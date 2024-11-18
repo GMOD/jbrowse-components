@@ -28,7 +28,7 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: RemoteAbortSignal },
     rpcDriver: string,
   ) {
     let deserializedArgs = args

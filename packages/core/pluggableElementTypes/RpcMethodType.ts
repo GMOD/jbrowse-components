@@ -51,15 +51,12 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return loc
   }
 
-  async deserializeArguments<T extends SerializedArgs>(
-    serializedArgs: T,
-    _rpcDriverClassName: string,
-  ) {
-    if (serializedArgs.blobMap) {
-      setBlobMap(serializedArgs.blobMap)
+  async deserializeArguments(args: { blobMap?: Record<string, File> }) {
+    if (args.blobMap) {
+      setBlobMap(args.blobMap)
     }
 
-    return serializedArgs
+    return args
   }
 
   abstract execute(

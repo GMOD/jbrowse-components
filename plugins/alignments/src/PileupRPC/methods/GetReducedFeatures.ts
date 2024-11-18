@@ -16,7 +16,7 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
   async execute(
     args: {
       adapterConfig: Record<string, unknown>
-      signal?: RemoteAbortSignal
+      stopToken?: RemoteAbortSignal
       headers?: Record<string, string>
       regions: Region[]
       sessionId: string

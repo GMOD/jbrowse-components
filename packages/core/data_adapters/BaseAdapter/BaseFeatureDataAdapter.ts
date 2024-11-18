@@ -6,7 +6,7 @@ import { BaseAdapter } from './BaseAdapter'
 import { BaseOptions } from './BaseOptions'
 import { FeatureDensityStats } from './types'
 import { ObservableCreate } from '../../util/rxjs'
-import { checkAbortSignal, sum, max, min } from '../../util'
+import { checkStopToken, sum, max, min } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import { AugmentedRegion as Region } from '../../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
@@ -82,7 +82,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
-      checkAbortSignal(opts.stopToken)
+      checkStopToken(opts.stopToken)
       if (!hasData) {
         observer.complete()
       } else {

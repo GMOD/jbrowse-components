@@ -252,11 +252,11 @@ export const BaseChordDisplayModel = types
           assemblyManager: getSession(self).assemblyManager,
         }),
 
-        async ({ assemblyNames, adapter, assemblyManager }: any, signal) => {
+        async ({ assemblyNames, adapter, assemblyManager }: any, stopToken) => {
           return assemblyManager.getRefNameMapForAdapter(
             adapter,
             assemblyNames[0],
-            { signal, sessionId: getRpcSessionId(self) },
+            { stopToken, sessionId: getRpcSessionId(self) },
           )
         },
         {

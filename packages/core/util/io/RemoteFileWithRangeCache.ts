@@ -65,7 +65,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
           url,
           s,
           len + 1,
-          { signal: init?.signal },
+          { stopToken: init?.stopToken },
         )) as BinaryRangeResponse
         return new Response(buffer, { status: 206, headers })
       }

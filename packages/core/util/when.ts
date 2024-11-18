@@ -10,7 +10,7 @@ interface WhenOpts extends IWhenOptions {
  */
 export function when(
   getter: () => boolean,
-  { timeout, signal, name }: WhenOpts = {},
+  { timeout, stopToken, name }: WhenOpts = {},
 ) {
   return new Promise((resolve, reject) => {
     let finished = false
@@ -36,8 +36,8 @@ export function when(
     }
 
     // set up aborting
-    if (signal) {
-      signal.addEventListener('abort', () => {
+    if (stopToken) {
+      stopToken.addEventListener('abort', () => {
         if (!finished) {
           finished = true
 

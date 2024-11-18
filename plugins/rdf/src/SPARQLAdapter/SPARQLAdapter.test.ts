@@ -44,7 +44,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     'http://somesite.com/sparql?query=fakeRefNamesQuery&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
-      signal: undefined,
+      stopToken: undefined,
     },
   )
   expect(refNames.length).toBe(17)
@@ -61,7 +61,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr1&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
-      signal: undefined,
+      stopToken: undefined,
     },
   )
 
@@ -78,7 +78,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr80&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
-      signal: undefined,
+      stopToken: undefined,
     },
   )
 })

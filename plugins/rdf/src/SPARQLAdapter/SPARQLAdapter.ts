@@ -108,12 +108,11 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
     }
-    const signal = opts?.signal
+    // TODO:ABORT
     const response = await fetch(
       `${this.endpoint}?query=${query}${additionalQueryParams}`,
       {
         headers: { accept: 'application/json,application/sparql-results+json' },
-        signal,
       },
     )
     return response.json()

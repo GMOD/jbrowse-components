@@ -20,7 +20,7 @@ export async function generateCoverageBins({
   opts: Opts
   fetchSequence: (arg: Region) => Promise<string>
 }) {
-  const { signal, colorBy } = opts
+  const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
@@ -35,7 +35,7 @@ export async function generateCoverageBins({
   for (const feature of features) {
     if (performance.now() - start > 400) {
       console.log('here')
-      await abortBreakPoint(signal)
+      await abortBreakPoint(stopToken)
       start = performance.now()
     }
     processDepth({

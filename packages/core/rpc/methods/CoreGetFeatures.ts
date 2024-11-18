@@ -43,7 +43,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       sessionId: string
       regions: Region[]
       adapterConfig: Record<string, unknown>
-      signal?: RemoteAbortSignal
+      stopToken?: RemoteAbortSignal
 
       opts?: any
     },
@@ -51,14 +51,14 @@ export default class CoreGetFeatures extends RpcMethodType {
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { signal, sessionId, adapterConfig, regions, opts } = deserializedArgs
+    const { stopToken, sessionId, adapterConfig, regions, opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
     const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
       ...opts,
-      signal,
+      stopToken,
     })
     const r = await firstValueFrom(ret.pipe(toArray()))
     return r.map(f => f.toJSON())

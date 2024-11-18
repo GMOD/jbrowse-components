@@ -124,7 +124,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             }),
           )
         },
-        signal: opts.stopToken,
+        stopToken: opts.stopToken,
       })
 
       observer.complete()

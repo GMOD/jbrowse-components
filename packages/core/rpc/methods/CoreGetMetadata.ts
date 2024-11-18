@@ -10,7 +10,7 @@ export default class CoreGetMetadata extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
+      stopToken: RemoteAbortSignal
       adapterConfig: Record<string, unknown>
     },
     rpcDriver: string,

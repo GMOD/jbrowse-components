@@ -10,7 +10,7 @@ export default class CoreGetRefNames extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
+      stopToken: RemoteAbortSignal
       adapterConfig: Record<string, unknown>
     },
     rpcDriver: string,

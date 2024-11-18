@@ -14,6 +14,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -66,17 +67,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => {
-      let renderInProgress: undefined | AbortController
+      let stopToken: undefined | string
 
       return {
         /**
          * #action
          * controlled by a reaction
          */
-        setLoading(abortController: AbortController) {
+        setLoading(newStopToken: string) {
           self.message = undefined
           self.error = undefined
-          renderInProgress = abortController
+          stopToken = newStopToken
         },
 
         /**
@@ -84,12 +85,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setMessage(messageText: string) {
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
+          // TODO:ABORT(??)
           self.message = messageText
           self.error = undefined
-          renderInProgress = undefined
+          stopToken = undefined
         },
 
         /**
@@ -123,7 +122,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
           self.message = undefined
           self.error = undefined
-          renderInProgress = undefined
+          stopToken = undefined
 
           if (
             foundNewFeatureNotInExistingMap ||
@@ -140,13 +139,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         setError(error: unknown) {
           console.error(error)
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
+          if (stopToken !== undefined) {
+            stopStopToken(stopToken)
           }
           // the rendering failed for some reason
           self.message = undefined
           self.error = error
-          renderInProgress = undefined
+          stopToken = undefined
         },
       }
     })
