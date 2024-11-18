@@ -108,7 +108,7 @@ export default function SharedWiggleMixin(
       /**
        * #volatile
        */
-      statsFetchInProgress: undefined as undefined | AbortController,
+      statsFetchInProgress: undefined as undefined | string,
     }))
     .actions(self => ({
       /**

@@ -61,11 +61,11 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         const s = Number.parseInt(start!, 10)
         const e = Number.parseInt(end!, 10)
         const len = e - s
+        // tODO: abort
         const { buffer, headers } = (await globalRangeCache.getRange(
           url,
           s,
           len + 1,
-          { stopToken: init?.stopToken },
         )) as BinaryRangeResponse
         return new Response(buffer, { status: 206, headers })
       }

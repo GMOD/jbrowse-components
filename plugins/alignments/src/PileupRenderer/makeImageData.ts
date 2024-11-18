@@ -2,6 +2,7 @@ import { Feature } from '@jbrowse/core/util'
 import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -58,7 +59,7 @@ export async function makeImageData({
   let start = performance.now()
   for (const feat of layoutRecords) {
     if (performance.now() - start > 400) {
-      await abortBreakPoint(stopToken)
+      checkStopToken(stopToken)
       start = performance.now()
     }
     renderAlignment({

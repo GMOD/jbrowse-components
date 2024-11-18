@@ -1,6 +1,7 @@
 import { addDisposer, isAlive } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { createStopToken, stopStopToken } from './stopToken'
+import { isAbortException } from './aborting'
 
 /**
  * makes a mobx reaction with the given functions, that calls actions on the
@@ -37,9 +38,11 @@ export function makeAbortableReaction<T, U, V>(
   let inProgress: string | undefined
 
   function handleError(error: unknown) {
-    console.error(error)
-    if (isAlive(self)) {
-      errorFunction(error)
+    if (!isAbortException(error)) {
+      console.error(error)
+      if (isAlive(self)) {
+        errorFunction(error)
+      }
     }
   }
 

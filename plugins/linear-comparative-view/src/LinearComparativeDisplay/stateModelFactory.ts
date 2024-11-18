@@ -38,7 +38,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile((/* self */) => ({
-      renderInProgress: undefined as AbortController | undefined,
+      renderInProgress: undefined as string | undefined,
       features: undefined as Feature[] | undefined,
       message: undefined as string | undefined,
     }))

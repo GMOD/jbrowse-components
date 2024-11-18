@@ -5,7 +5,6 @@ import ComparativeRenderer, {
   RenderResults,
   ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderArgs extends ComparativeRenderArgs {
@@ -47,7 +46,7 @@ export default class ComparativeRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { stopToken?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
     let deserializedArgs = args

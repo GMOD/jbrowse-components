@@ -10,7 +10,7 @@ import {
 } from 'mobx-state-tree'
 
 // locals
-import { checkStopToken, getSerializedSvg, updateStatus } from '../../util'
+import { getSerializedSvg, updateStatus } from '../../util'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
@@ -20,6 +20,7 @@ import { createJBrowseTheme } from '../../ui'
 
 import RendererType, { RenderProps, RenderResults } from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
+import { checkStopToken } from '../../util/stopToken'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string

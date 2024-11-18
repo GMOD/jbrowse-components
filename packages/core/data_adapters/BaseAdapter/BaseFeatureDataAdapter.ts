@@ -6,10 +6,11 @@ import { BaseAdapter } from './BaseAdapter'
 import { BaseOptions } from './BaseOptions'
 import { FeatureDensityStats } from './types'
 import { ObservableCreate } from '../../util/rxjs'
-import { checkStopToken, sum, max, min } from '../../util'
+import { sum, max, min } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import { AugmentedRegion as Region } from '../../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
+import { checkStopToken } from '../../util/stopToken'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that

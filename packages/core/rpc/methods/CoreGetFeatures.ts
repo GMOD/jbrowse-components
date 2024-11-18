@@ -5,7 +5,6 @@ import { firstValueFrom } from 'rxjs'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { renameRegionsIfNeeded, Region } from '../../util'
 import SimpleFeature, {
@@ -43,15 +42,15 @@ export default class CoreGetFeatures extends RpcMethodType {
       sessionId: string
       regions: Region[]
       adapterConfig: Record<string, unknown>
-      stopToken?: RemoteAbortSignal
-
+      stopToken?: string
       opts?: any
     },
     rpcDriver: string,
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { stopToken, sessionId, adapterConfig, regions, opts } = deserializedArgs
+    const { stopToken, sessionId, adapterConfig, regions, opts } =
+      deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')

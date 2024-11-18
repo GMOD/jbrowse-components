@@ -3,7 +3,7 @@ import clone from 'clone'
 import { firstValueFrom } from 'rxjs'
 
 // locals
-import { checkStopToken, iterMap } from '../../util'
+import { iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
@@ -20,6 +20,7 @@ import ServerSideRendererType, {
 } from './ServerSideRendererType'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration'
+import { checkStopToken } from '../../util/stopToken'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel?: {

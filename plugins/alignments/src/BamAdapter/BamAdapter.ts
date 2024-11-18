@@ -7,14 +7,10 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import {
-  bytesForRegions,
-  updateStatus2,
-  checkStopToken,
-  Feature,
-} from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus2, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
@@ -82,7 +78,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async getHeader(opts?: BaseOptions) {
     const { bam } = await this.configure()
-    return bam.getHeaderText(opts)
+    // TODO:ABORT
+    return bam.getHeaderText()
   }
 
   private async setupPre(opts?: BaseOptions) {
@@ -93,7 +90,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       statusCallback,
       stopToken,
       async () => {
-        const samHeader = await bam.getHeader(opts)
+        // TODO:ABORT
+        const samHeader = await bam.getHeader()
 
         // use the @SQ lines in the header to figure out the mapping between
         // ref ref ID numbers and names
@@ -138,10 +136,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     end: number,
     opts?: { stopToken?: string },
   ) {
-    const { stopToken } = opts || {}
-    checkStopToken(stopToken)
     const { sequenceAdapter } = await this.configure()
-    checkStopToken(stopToken)
     const refSeqStore = sequenceAdapter
     if (!refSeqStore) {
       return undefined
@@ -200,11 +195,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const { bam } = await this.configure()
       checkStopToken(stopToken)
 
+      // TODO:ABORT
       const records = await updateStatus2(
         'Downloading alignments',
         statusCallback,
         stopToken,
-        () => bam.getRecordsForRange(refName, start, end, opts),
+        () => bam.getRecordsForRange(refName, start, end),
       )
       await updateStatus2(
         'Processing alignments',

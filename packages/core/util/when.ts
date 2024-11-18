@@ -1,5 +1,5 @@
 import { when as mobxWhen, IWhenOptions } from 'mobx'
-import { makeAbortError } from './aborting'
+import { checkStopToken } from './stopToken'
 
 interface WhenOpts extends IWhenOptions {
   stopToken?: string
@@ -36,18 +36,15 @@ export function when(
     }
 
     // set up aborting
-    if (stopToken) {
-      stopToken.addEventListener('abort', () => {
-        if (!finished) {
-          finished = true
-
-          // mobx when supports a cancel method
-          whenPromise.cancel()
-          finishTimeout()
-
-          reject(makeAbortError())
-        }
-      })
+    if (stopToken !== undefined) {
+      try {
+        checkStopToken(stopToken)
+      } catch (e) {
+        finished = true
+        whenPromise.cancel()
+        finishTimeout()
+        reject(new Error('aborted'))
+      }
     }
 
     whenPromise

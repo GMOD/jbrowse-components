@@ -18,6 +18,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * #stateModel DotplotDisplay
@@ -104,7 +105,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => {
-      let renderInProgress: undefined | AbortController
+      let renderInProgress: undefined | string
 
       return {
         afterAttach() {
@@ -125,22 +126,19 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #action
          */
-        setLoading(abortController: AbortController) {
+        setLoading(stopToken?: string) {
           self.filled = false
           self.message = undefined
           self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
-          renderInProgress = abortController
+          renderInProgress = stopToken
         },
         /**
          * #action
          */
         setMessage(messageText: string) {
-          if (renderInProgress && !renderInProgress.stopToken.aborted) {
-            renderInProgress.abort()
-          }
           self.filled = false
           self.message = messageText
           self.reactElement = undefined
@@ -175,9 +173,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         setError(error: unknown) {
           console.error(error)
-          if (renderInProgress && !renderInProgress.stopToken.aborted) {
-            renderInProgress.abort()
-          }
           // the rendering failed for some reason
           self.filled = false
           self.message = undefined

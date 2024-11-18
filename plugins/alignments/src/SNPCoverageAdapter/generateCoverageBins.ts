@@ -1,5 +1,6 @@
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { abortBreakPoint, Feature, sum } from '@jbrowse/core/util'
+import { Feature, sum } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 // locals
 import { PreBaseCoverageBin, SkipMap } from '../shared/types'
@@ -34,8 +35,7 @@ export async function generateCoverageBins({
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
-      console.log('here')
-      await abortBreakPoint(stopToken)
+      checkStopToken(stopToken)
       start = performance.now()
     }
     processDepth({

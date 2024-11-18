@@ -10,9 +10,6 @@ import {
   UriLocation,
 } from '../util/types'
 
-interface SerializedArgs {
-  blobMap?: Record<string, File>
-}
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
@@ -51,7 +48,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return loc
   }
 
-  async deserializeArguments(args: { blobMap?: Record<string, File> }) {
+  async deserializeArguments<T>(
+    args: T & { blobMap?: Record<string, File> },
+    _rpcDriverClassName: string,
+  ): Promise<T> {
     if (args.blobMap) {
       setBlobMap(args.blobMap)
     }

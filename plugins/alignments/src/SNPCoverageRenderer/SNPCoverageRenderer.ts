@@ -1,10 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  abortBreakPoint,
-  featureSpanPx,
-  bpSpanPx,
-  Feature,
-} from '@jbrowse/core/util'
+import { featureSpanPx, bpSpanPx, Feature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
@@ -14,6 +9,7 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 // locals
 import { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
@@ -136,7 +132,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
       if (performance.now() - start > 400) {
-        await abortBreakPoint(stopToken)
+        checkStopToken(stopToken)
         start = performance.now()
       }
     }
@@ -169,7 +165,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     for (const feature of feats) {
       const now = performance.now()
       if (now - start > 400) {
-        await abortBreakPoint(stopToken)
+        checkStopToken(stopToken)
       }
       if (feature.get('type') === 'skip') {
         continue

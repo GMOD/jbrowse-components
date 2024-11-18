@@ -6,8 +6,8 @@ import {
   RenderArgsSerialized,
   validateRendererType,
 } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { checkStopToken, renameRegionsIfNeeded } from '../../util'
+import { renameRegionsIfNeeded } from '../../util'
+import { checkStopToken } from '../../util/stopToken'
 
 /**
  * fetches features from an adapter and call a renderer with them
@@ -39,7 +39,7 @@ export default class CoreRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { stopToken?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
     let deserializedArgs = args

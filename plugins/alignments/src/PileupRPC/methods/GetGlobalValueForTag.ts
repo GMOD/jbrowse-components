@@ -1,6 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { Region } from '@jbrowse/core/util'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
@@ -14,7 +13,7 @@ export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
   async execute(
     args: {
       adapterConfig: Record<string, unknown>
-      stopToken?: RemoteAbortSignal
+      stopToken?: string
       headers?: Record<string, string>
       regions: Region[]
       sessionId: string

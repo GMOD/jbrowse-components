@@ -32,7 +32,7 @@ import {
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
-interface RenderedProps {
+export interface RenderedProps {
   reactElement: React.ReactElement
   features: Map<string, Feature>
   layout: any
@@ -63,7 +63,7 @@ const blockState = types
     renderProps: undefined as any,
   }))
   .actions(self => {
-    let renderInProgress: undefined | AbortController
+    let renderInProgress: undefined | string
     return {
       doReload() {
         self.reloadFlag = self.reloadFlag + 1
@@ -266,7 +266,7 @@ export function renderBlockData(
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  stopToken?: string,
+  stopToken: string | undefined,
   self: BlockModel,
 ) {
   if (!props) {

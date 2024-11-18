@@ -1,16 +1,15 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+// misc
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
 import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track, indexType } from './util'
-import {
-  checkStopToken,
-  isSupportedIndexingAdapter,
-} from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 export async function indexTracks(args: {
   tracks: Track[]

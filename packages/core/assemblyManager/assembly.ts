@@ -139,18 +139,14 @@ export default function assemblyFactory(
     cache: new QuickLRU({ maxSize: 1000 }),
 
     // @ts-expect-error
+    // TODO:ABORT (possible? desirable??)
     async fill(
       args: CacheData,
-      stopToken?: string,
+      _stopToken?: string,
       statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
-      return loadRefNameMap(
-        self,
-        adapterConf,
-        { ...options, statusCallback },
-        stopToken,
-      )
+      return loadRefNameMap(self, adapterConf, { ...options, statusCallback })
     },
   })
   return types

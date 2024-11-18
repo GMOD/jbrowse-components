@@ -1,7 +1,6 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { renameRegionsIfNeeded, Region } from '../../util'
 
@@ -29,7 +28,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     args: {
       adapterConfig: Record<string, unknown>
       regions: Region[]
-      stopToken?: RemoteAbortSignal
+      stopToken?: string
       headers?: Record<string, string>
       sessionId: string
     },
