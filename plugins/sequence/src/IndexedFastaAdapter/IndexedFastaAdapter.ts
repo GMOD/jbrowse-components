@@ -29,13 +29,13 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     },
   })
 
-  public async getRefNames(opts?: BaseOptions) {
+  public async getRefNames(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
     // TODO:ABORT
     return fasta.getSequenceNames()
   }
 
-  public async getRegions(opts?: BaseOptions) {
+  public async getRegions(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
     // TODO:ABORT
     const seqSizes = await fasta.getSequenceSizes()
@@ -75,7 +75,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     return this.setupP
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion, _opts?: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       const { fasta } = await this.setup()

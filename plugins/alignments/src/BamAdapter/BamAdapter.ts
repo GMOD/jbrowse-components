@@ -76,7 +76,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return this.configureP
   }
 
-  async getHeader(opts?: BaseOptions) {
+  async getHeader(_opts?: BaseOptions) {
     const { bam } = await this.configure()
     // TODO:ABORT
     return bam.getHeaderText()

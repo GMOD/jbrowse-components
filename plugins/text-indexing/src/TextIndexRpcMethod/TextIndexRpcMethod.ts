@@ -17,7 +17,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       tracks: Track[]
       statusCallback: (message: string) => void
     },
-    rpcDriverClassName: string,
+    _rpcDriverClassName: string,
   ) {
     const {
       tracks,

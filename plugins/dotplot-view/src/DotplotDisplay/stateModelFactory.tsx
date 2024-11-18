@@ -18,7 +18,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * #stateModel DotplotDisplay
@@ -41,13 +40,37 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           configuration: ConfigurationReference(configSchema),
         })
         .volatile(() => ({
+          /**
+           * #volatile
+           */
+          stopToken: undefined as string | undefined,
+          /**
+           * #volatile
+           */
           warnings: [] as { message: string; effect: string }[],
-          renderInProgress: undefined as AbortController | undefined,
+          /**
+           * #volatile
+           */
           filled: false,
+          /**
+           * #volatile
+           */
           data: undefined as any,
+          /**
+           * #volatile
+           */
           reactElement: undefined as React.ReactElement | undefined,
+          /**
+           * #volatile
+           */
           message: undefined as string | undefined,
+          /**
+           * #volatile
+           */
           renderingComponent: undefined as any,
+          /**
+           * #volatile
+           */
           ReactComponent2:
             ServerSideRenderedBlockContent as unknown as React.FC<any>,
         })),
@@ -104,86 +127,82 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         )
       },
     }))
-    .actions(self => {
-      let renderInProgress: undefined | string
-
-      return {
-        afterAttach() {
-          makeAbortableReaction(
-            self,
-            () => renderBlockData(self),
-            blockData => renderBlockEffect(blockData),
-            {
-              name: `${self.type} ${self.id} rendering`,
-              delay: 500,
-              fireImmediately: true,
-            },
-            this.setLoading,
-            this.setRendered,
-            this.setError,
-          )
-        },
-        /**
-         * #action
-         */
-        setLoading(stopToken?: string) {
-          self.filled = false
-          self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = undefined
-          self.renderingComponent = undefined
-          renderInProgress = stopToken
-        },
-        /**
-         * #action
-         */
-        setMessage(messageText: string) {
-          self.filled = false
-          self.message = messageText
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = undefined
-          self.renderingComponent = undefined
-          renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        setRendered(args?: {
-          data: any
-          reactElement: React.ReactElement
-          renderingComponent: React.Component
-        }) {
-          if (args === undefined) {
-            return
-          }
-          const { data, reactElement, renderingComponent } = args
-          self.warnings = data.warnings
-          self.filled = true
-          self.message = undefined
-          self.reactElement = reactElement
-          self.data = data
-          self.error = undefined
-          self.renderingComponent = renderingComponent
-          renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        setError(error: unknown) {
-          console.error(error)
-          // the rendering failed for some reason
-          self.filled = false
-          self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = error
-          self.renderingComponent = undefined
-          renderInProgress = undefined
-        },
-      }
-    })
+    .actions(self => ({
+      afterAttach() {
+        makeAbortableReaction(
+          self,
+          () => renderBlockData(self),
+          blockData => renderBlockEffect(blockData),
+          {
+            name: `${self.type} ${self.id} rendering`,
+            delay: 500,
+            fireImmediately: true,
+          },
+          this.setLoading,
+          this.setRendered,
+          this.setError,
+        )
+      },
+      /**
+       * #action
+       */
+      setLoading(stopToken?: string) {
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = undefined
+        self.renderingComponent = undefined
+        self.stopToken = stopToken
+      },
+      /**
+       * #action
+       */
+      setMessage(messageText: string) {
+        self.filled = false
+        self.message = messageText
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = undefined
+        self.renderingComponent = undefined
+        self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setRendered(args?: {
+        data: any
+        reactElement: React.ReactElement
+        renderingComponent: React.Component
+      }) {
+        if (args === undefined) {
+          return
+        }
+        const { data, reactElement, renderingComponent } = args
+        self.warnings = data.warnings
+        self.filled = true
+        self.message = undefined
+        self.reactElement = reactElement
+        self.data = data
+        self.error = undefined
+        self.renderingComponent = renderingComponent
+        self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        console.error(error)
+        // the rendering failed for some reason
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = error
+        self.renderingComponent = undefined
+        self.stopToken = undefined
+      },
+    }))
 }
 
 export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>

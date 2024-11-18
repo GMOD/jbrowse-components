@@ -22,7 +22,7 @@ interface LayoutFeature {
   feature: Feature
 }
 
-export async function makeImageData({
+export function makeImageData({
   ctx,
   layoutRecords,
   canvasWidth,
@@ -40,7 +40,6 @@ export async function makeImageData({
     colorBy,
     theme: configTheme,
   } = renderArgs
-  console.log({ stopToken })
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
   const largeInsertionIndicatorScale = readConfObject(
