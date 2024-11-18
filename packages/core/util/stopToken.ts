@@ -29,11 +29,11 @@
  */
 
 export function createStopToken() {
-  return URL.createObjectURL(new Blob())
+  return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
 }
 
 export function stopStopToken(stopToken: string) {
-  URL.revokeObjectURL(stopToken)
+  URL.revokeObjectURL?.(stopToken)
 }
 
 export function checkStopToken(stopToken?: string) {

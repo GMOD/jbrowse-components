@@ -5,9 +5,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { QuantitativeStats } from '@jbrowse/core/util/stats'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { createStopToken } from '@jbrowse/core/util/stopToken'
 // locals
 import { getQuantitativeStats } from './getQuantitativeStats'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 
 type LGV = LinearGenomeViewModel
 
