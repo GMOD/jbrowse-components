@@ -234,7 +234,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

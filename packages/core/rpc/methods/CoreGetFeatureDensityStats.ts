@@ -10,7 +10,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
+      stopToken?: string
       statusCallback?: (arg: string) => void
     },
     rpcDriver: string,

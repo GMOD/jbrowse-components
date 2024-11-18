@@ -9,7 +9,7 @@ import { observeAbortSignal } from '.'
  */
 export function ObservableCreate<T>(
   func: (arg: Observer<T>) => void | Promise<void>,
-  signal?: AbortSignal,
+  stopToken?: string,
 ): Observable<T> {
   return new Observable((observer: Observer<T>) => {
     try {

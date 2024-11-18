@@ -49,48 +49,51 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
 
-      const { bins, skipmap } = await generateCoverageBins({
-        features,
-        region,
-        opts,
-        fetchSequence: (region: Region) => this.fetchSequence(region),
-      })
+      try {
+        const { bins, skipmap } = await generateCoverageBins({
+          features,
+          region,
+          opts,
+          fetchSequence: (region: Region) => this.fetchSequence(region),
+        })
 
-      bins.forEach((bin, index) => {
-        const start = region.start + index
-        observer.next(
-          new SimpleFeature({
-            id: `${this.id}-${start}`,
-            data: {
-              score: bin.depth,
-              snpinfo: bin,
-              start,
-              end: start + 1,
-              refName: region.refName,
-            },
-          }),
-        )
-      })
+        bins.forEach((bin, index) => {
+          const start = region.start + index
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${start}`,
+              data: {
+                score: bin.depth,
+                snpinfo: bin,
+                start,
+                end: start + 1,
+                refName: region.refName,
+              },
+            }),
+          )
+        })
 
-      // make fake features from the coverage
-      Object.entries(skipmap).forEach(([key, skip]) => {
-        observer.next(
-          new SimpleFeature({
-            id: key,
-            data: {
-              type: 'skip',
-              start: skip.start,
-              end: skip.end,
-              strand: skip.strand,
-              score: skip.score,
-              effectiveStrand: skip.effectiveStrand,
-            },
-          }),
-        )
-      })
-
+        // make fake features from the coverage
+        Object.entries(skipmap).forEach(([key, skip]) => {
+          observer.next(
+            new SimpleFeature({
+              id: key,
+              data: {
+                type: 'skip',
+                start: skip.start,
+                end: skip.end,
+                strand: skip.strand,
+                score: skip.score,
+                effectiveStrand: skip.effectiveStrand,
+              },
+            }),
+          )
+        })
+      } catch (e) {
+        console.error('wtf', e)
+      }
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   async getMultiRegionFeatureDensityStats(

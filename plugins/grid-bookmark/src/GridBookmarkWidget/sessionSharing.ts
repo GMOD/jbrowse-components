@@ -70,7 +70,7 @@ export async function readSessionFromDynamo(
   baseUrl: string,
   sessionQueryParam: string,
   password: string,
-  signal?: AbortSignal,
+  stopToken?: string,
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]!
   const url = `${baseUrl}?sessionId=${encodeURIComponent(sessionId)}`

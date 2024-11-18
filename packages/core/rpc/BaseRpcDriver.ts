@@ -1,6 +1,5 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { clamp } from '../util'
-import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 
@@ -118,13 +117,7 @@ export default abstract class BaseRpcDriver {
         .filter(thing => isCloneable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
     } else if (typeof thing === 'object' && thing !== null) {
-      if (thing instanceof AbortSignal) {
-        return serializeAbortSignal(
-          thing,
-          (functionName: string, signalId: number) =>
-            this.remoteAbort(sessionId, functionName, signalId),
-        ) as unknown as THING_TYPE
-      } else if (isStateTreeNode(thing) && !isAlive(thing)) {
+      if (isStateTreeNode(thing) && !isAlive(thing)) {
         throw new Error('dead state tree node passed to RPC call')
       } else if (thing instanceof File) {
         return thing

@@ -132,7 +132,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

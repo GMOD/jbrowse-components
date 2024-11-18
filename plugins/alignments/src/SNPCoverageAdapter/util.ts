@@ -8,7 +8,7 @@ import {
 export interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
-  signal?: AbortSignal
+  stopToken?: string
 }
 
 export function mismatchLen(mismatch: Mismatch) {

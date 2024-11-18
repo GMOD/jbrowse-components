@@ -58,7 +58,7 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterConfig: unknown,
   options: BaseOptions,
-  signal?: AbortSignal,
+  stopToken?: string,
 ) {
   const { sessionId } = options
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
@@ -141,7 +141,7 @@ export default function assemblyFactory(
     // @ts-expect-error
     async fill(
       args: CacheData,
-      signal?: AbortSignal,
+      stopToken?: string,
       statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
@@ -508,7 +508,7 @@ async function getRefNameAliases({
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
@@ -542,7 +542,7 @@ async function getAssemblyRegions({
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()

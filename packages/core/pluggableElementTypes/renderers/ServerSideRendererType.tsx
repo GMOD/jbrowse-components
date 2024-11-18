@@ -25,7 +25,7 @@ interface BaseRenderArgs extends RenderProps {
   sessionId: string
   // Note that signal serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
-  signal?: AbortSignal
+  stopToken?: string
   theme: ThemeOptions
   exportSVG?: {
     rasterizeLayers?: boolean

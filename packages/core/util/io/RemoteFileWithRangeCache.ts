@@ -6,7 +6,7 @@ type BinaryRangeFetch = (
   url: string,
   start: number,
   end: number,
-  options?: { headers?: HeadersInit; signal?: AbortSignal },
+  options?: { headers?: HeadersInit; stopToken?: string },
 ) => Promise<BinaryRangeResponse>
 
 export interface BinaryRangeResponse {
@@ -22,7 +22,7 @@ function binaryRangeFetch(
   url: string,
   start: number,
   end: number,
-  options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+  options: { headers?: HeadersInit; stopToken?: string } = {},
 ): Promise<BinaryRangeResponse> {
   const fetcher = fetchers[url]
   if (!fetcher) {
@@ -77,7 +77,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     url: string,
     start: number,
     end: number,
-    options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+    options: { headers?: HeadersInit; stopToken?: string } = {},
   ): Promise<BinaryRangeResponse> {
     const requestDate = new Date()
     const res = await super.fetch(url, {

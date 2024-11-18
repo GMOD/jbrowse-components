@@ -1,6 +1,7 @@
 import { addDisposer, isAlive } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import { isAbortException, checkAbortSignal } from './aborting'
+import { isAbortException } from './aborting'
+import { createStopToken, stopStopToken } from './stopToken'
 
 /**
  * makes a mobx reaction with the given functions, that calls actions on the
@@ -24,17 +25,17 @@ export function makeAbortableReaction<T, U, V>(
   dataFunction: (arg: T) => U,
   asyncReactionFunction: (
     arg: U | undefined,
-    signal: AbortSignal,
+    stopToken: string,
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
   // @ts-expect-error
   reactionOptions: IReactionOptions,
-  startedFunction: (aborter: AbortController) => void,
+  startedFunction: (stopToken: string) => void,
   successFunction: (arg: V) => void,
   errorFunction: (err: unknown) => void,
 ) {
-  let inProgress: AbortController | undefined
+  let inProgress: string | undefined
 
   function handleError(error: unknown) {
     if (!isAbortException(error)) {
@@ -58,33 +59,28 @@ export function makeAbortableReaction<T, U, V>(
         }
       },
       async (data, mobxReactionHandle) => {
-        if (inProgress && !inProgress.signal.aborted) {
-          inProgress.abort()
+        if (inProgress) {
+          stopStopToken(inProgress)
         }
 
         if (!isAlive(self)) {
           return
         }
-        inProgress = new AbortController()
+        inProgress = createStopToken()
 
-        const thisInProgress = inProgress
-        startedFunction(thisInProgress)
+        startedFunction(inProgress)
         try {
           const result = await asyncReactionFunction(
             data,
-            thisInProgress.signal,
+            inProgress,
             self,
             // @ts-expect-error
             mobxReactionHandle,
           )
-          checkAbortSignal(thisInProgress.signal)
           if (isAlive(self)) {
             successFunction(result)
           }
         } catch (e) {
-          if (!thisInProgress.signal.aborted) {
-            thisInProgress.abort()
-          }
           handleError(e)
         }
       },
@@ -92,8 +88,8 @@ export function makeAbortableReaction<T, U, V>(
     ),
   )
   addDisposer(self, () => {
-    if (inProgress && !inProgress.signal.aborted) {
-      inProgress.abort()
+    if (inProgress) {
+      stopStopToken(inProgress)
     }
   })
 }

@@ -170,7 +170,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
         observer.next(f)
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

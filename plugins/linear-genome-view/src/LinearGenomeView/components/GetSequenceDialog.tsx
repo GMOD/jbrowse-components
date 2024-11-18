@@ -50,7 +50,7 @@ type LGV = LinearGenomeViewModel
 async function fetchSequence(
   model: LGV,
   regions: Region[],
-  signal?: AbortSignal,
+  stopToken?: string,
 ) {
   const session = getSession(model)
   const { leftOffset, rightOffset } = model

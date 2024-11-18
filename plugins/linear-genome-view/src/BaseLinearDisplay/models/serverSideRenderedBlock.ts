@@ -271,7 +271,7 @@ export function renderBlockData(
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  signal: AbortSignal,
+  stopToken?: string,
   self: BlockModel,
 ) {
   if (!props) {

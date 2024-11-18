@@ -71,7 +71,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
     //    originalRefName:string the name of the refName from the fasta file, e.g. 1 instead of chr1
     // }
     // opts: {
-    //   signal?: AbortSignal
+    //   stopToken?: string
     //   ...rest: all the renderProps() object from the display type
     // }
   }
@@ -199,7 +199,7 @@ The options parameter to getFeatures can contain any number of things:
 ```typescript
 interface Options {
   bpPerPx: number
-  signal: AbortSignal
+  stopToken?: string
   statusCallback: Function
   headers: Record<string, string>
 }

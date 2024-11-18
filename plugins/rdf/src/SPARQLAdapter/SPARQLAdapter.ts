@@ -100,7 +100,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
         observer.next(feature)
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   private async querySparql(query: string, opts?: BaseOptions): Promise<any> {

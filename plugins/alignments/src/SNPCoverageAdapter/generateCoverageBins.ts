@@ -34,6 +34,7 @@ export async function generateCoverageBins({
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
+      console.log('here')
       await abortBreakPoint(signal)
       start = performance.now()
     }

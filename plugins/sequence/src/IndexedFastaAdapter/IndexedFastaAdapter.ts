@@ -22,7 +22,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   private seqCache = new AbortablePromiseCache<T, string | undefined>({
     cache: new QuickLRU({ maxSize: 200 }),
-    fill: async (args: T, signal?: AbortSignal) => {
+    fill: async (args: T, stopToken?: string) => {
       const { refName, start, end, fasta } = args
       return fasta.getSequence(refName, start, end, { ...args, signal })
     },

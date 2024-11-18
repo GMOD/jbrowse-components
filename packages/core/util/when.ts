@@ -2,7 +2,7 @@ import { when as mobxWhen, IWhenOptions } from 'mobx'
 import { makeAbortError } from './aborting'
 
 interface WhenOpts extends IWhenOptions {
-  signal?: AbortSignal
+  stopToken?: string
 }
 
 /**

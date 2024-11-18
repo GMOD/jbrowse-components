@@ -715,7 +715,7 @@ export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
     regions?: Region[]
-    signal?: AbortSignal
+    stopToken?: string
     adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
@@ -1013,7 +1013,7 @@ export async function updateStatus<U>(
 export async function updateStatus2<U>(
   msg: string,
   cb: (arg: string) => void,
-  signal: AbortSignal | undefined,
+  stopToken?: string | undefined,
   fn: () => U | Promise<U>,
 ) {
   cb(msg)

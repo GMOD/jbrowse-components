@@ -10,14 +10,7 @@ import {
   UriLocation,
 } from '../util/types'
 
-import {
-  deserializeAbortSignal,
-  isRemoteAbortSignal,
-  RemoteAbortSignal,
-} from '../rpc/remoteAbortSignals'
-
 interface SerializedArgs {
-  signal?: RemoteAbortSignal
   blobMap?: Record<string, File>
 }
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
@@ -65,14 +58,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
-    const { signal } = serializedArgs
 
-    return {
-      ...serializedArgs,
-      signal: isRemoteAbortSignal(signal)
-        ? deserializeAbortSignal(signal)
-        : undefined,
-    }
+    return serializedArgs
   }
 
   abstract execute(

@@ -22,7 +22,7 @@ class MockWorkerHandle implements WorkerHandle {
     _args = [],
     opts: {
       timeout?: number
-      signal?: AbortSignal
+      stopToken?: string
       rpcDriverClassName?: string
     } = {},
   ) {

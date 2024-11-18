@@ -136,7 +136,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     refName: string,
     start: number,
     end: number,
-    opts?: { signal?: AbortSignal },
+    opts?: { stopToken?: string },
   ) {
     const { signal } = opts || {}
     checkAbortSignal(signal)

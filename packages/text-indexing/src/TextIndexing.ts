@@ -10,11 +10,12 @@ import {
   checkAbortSignal,
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 export async function indexTracks(args: {
   tracks: Track[]
   outDir?: string
-  signal?: AbortSignal
+  stopToken?: string
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
@@ -29,10 +30,10 @@ export async function indexTracks(args: {
     assemblyNames,
     indexType,
     statusCallback,
-    signal,
+    stopToken,
   } = args
   const idxType = indexType || 'perTrack'
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   await (idxType === 'perTrack'
     ? perTrackIndex({
         tracks,
@@ -40,7 +41,7 @@ export async function indexTracks(args: {
         outDir,
         attributesToIndex,
         featureTypesToExclude,
-        signal,
+        stopToken,
       })
     : aggregateIndex({
         tracks,
@@ -68,7 +69,7 @@ async function perTrackIndex({
   outDir?: string
   attributesToIndex?: string[]
   featureTypesToExclude?: string[]
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const outFlag = paramOutDir || '.'
 
@@ -116,7 +117,7 @@ async function aggregateIndex({
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const outFlag = paramOutDir || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
@@ -167,7 +168,7 @@ async function indexDriver({
   featureTypesToExclude: string[]
   assemblyNames: string[]
   statusCallback: (message: string) => void
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const readable = Readable.from(
     indexFiles({
@@ -205,7 +206,7 @@ async function* indexFiles({
   outDir: string
   featureTypesToExclude: string[]
   statusCallback: (message: string) => void
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   for (const track of tracks) {
     const { adapter, textSearching } = track

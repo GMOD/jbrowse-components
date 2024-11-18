@@ -82,7 +82,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
-      checkAbortSignal(opts.signal)
+      checkAbortSignal(opts.stopToken)
       if (!hasData) {
         observer.complete()
       } else {

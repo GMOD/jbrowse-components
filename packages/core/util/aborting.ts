@@ -11,7 +11,7 @@ class AbortError extends Error {
  * a regular error with a `code` attribute set to `ERR_ABORTED`. for
  * convenience, passing `undefined` is a no-op
  */
-export function checkAbortSignal(signal?: AbortSignal): void {
+export function checkAbortSignal(stopToken?: string): void {
   if (signal?.aborted) {
     throw makeAbortError()
   }
@@ -22,7 +22,7 @@ export function checkAbortSignal(signal?: AbortSignal): void {
  * an otherwise synchronous loop to provide a place to break when an abort
  * signal is received.
  */
-export async function abortBreakPoint(signal?: AbortSignal) {
+export async function abortBreakPoint(stopToken?: string) {
   await nextTickMod()
   checkAbortSignal(signal)
 }
@@ -36,7 +36,7 @@ export function makeAbortError() {
   return e
 }
 
-export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
+export function observeAbortSignal(stopToken?: string): Observable<Event> {
   if (!signal) {
     return new Observable()
   }

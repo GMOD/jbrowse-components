@@ -121,7 +121,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: { stopToken?: string; sessionId: string },
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -136,7 +136,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getReverseRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: { stopToken?: string; sessionId: string },
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
