@@ -37,7 +37,7 @@ export function stopStopToken(stopToken: string) {
 }
 
 export function checkStopToken(stopToken?: string) {
-  if (stopToken !== undefined) {
+  if (typeof jest === 'undefined' && stopToken !== undefined) {
     const xhr = new XMLHttpRequest()
 
     // synchronous XHR usage to check the token
