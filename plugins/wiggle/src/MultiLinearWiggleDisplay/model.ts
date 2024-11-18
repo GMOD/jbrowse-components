@@ -1,6 +1,5 @@
 import { lazy } from 'react'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
-import { autorun } from 'mobx'
+import { isAlive, types, Instance } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import deepEqual from 'fast-deep-equal'
 
@@ -15,7 +14,6 @@ import {
   AnyReactComponentType,
   getContainingView,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
@@ -24,7 +22,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import { getScale, Source, YSCALEBAR_LABEL_OFFSET } from '../util'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 
 const randomColor = () =>
@@ -42,12 +40,6 @@ const rendererTypes = new Map([
   ['multiline', 'MultiLineRenderer'],
   ['multirowline', 'MultiRowLineRenderer'],
 ])
-
-interface Source {
-  name: string
-  color?: string
-  group?: string
-}
 
 /**
  * #stateModel MultiLinearWiggleDisplay
@@ -468,29 +460,22 @@ export function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { getQuantitativeStatsAutorun } = await import(
-              '../getQuantitativeStatsAutorun'
-            )
-            getQuantitativeStatsAutorun(self)
-            addDisposer(
-              self,
-              autorun(async () => {
-                const { rpcManager } = getSession(self)
-                const { adapterConfig } = self
-                const sessionId = getRpcSessionId(self)
-                const sources = (await rpcManager.call(
-                  sessionId,
-                  'MultiWiggleGetSources',
-                  {
-                    sessionId,
-                    adapterConfig,
-                  },
-                )) as Source[]
-                if (isAlive(self)) {
-                  self.setSources(sources)
-                }
-              }),
-            )
+            try {
+              const [
+                { getMultiWiggleSourcesAutorun },
+                { getQuantitativeStatsAutorun },
+              ] = await Promise.all([
+                import('../getMultiWiggleSourcesAutorun'),
+                import('../getQuantitativeStatsAutorun'),
+              ])
+              getQuantitativeStatsAutorun(self)
+              getMultiWiggleSourcesAutorun(self)
+            } catch (e) {
+              if (isAlive(self)) {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              }
+            }
           })()
         },
 

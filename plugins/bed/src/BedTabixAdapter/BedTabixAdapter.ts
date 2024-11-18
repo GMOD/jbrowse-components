@@ -5,7 +5,12 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { FileLocation, Region, Feature } from '@jbrowse/core/util'
+import {
+  FileLocation,
+  Region,
+  Feature,
+  SimpleFeature,
+} from '@jbrowse/core/util'
 import { TabixIndexedFile } from '@gmod/tabix'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -78,22 +83,21 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colRef = columnNumbers.ref - 1
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
-      // colSame handles special case for tabix where a single column is both
-      // the start and end, this is assumed to be covering the base at this
-      // position (e.g. tabix -s 1 -b 2 -e 2) begin and end are same
       const names = await this.getNames()
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line, fileOffset) => {
           observer.next(
-            featureData(
-              line,
-              colRef,
-              colStart,
-              colEnd,
-              this.scoreColumn,
-              this.parser,
-              `${this.id}-${fileOffset}`,
-              names,
+            new SimpleFeature(
+              featureData({
+                line,
+                colRef,
+                colStart,
+                colEnd,
+                scoreColumn: this.scoreColumn,
+                parser: this.parser,
+                uniqueId: `${this.id}-${fileOffset}`,
+                names,
+              }),
             ),
           )
         },
