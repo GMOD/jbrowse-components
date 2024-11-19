@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from '../BedAdapter/configSchema'
+import configSchema from './configSchema'
 
 export default function BedGraphAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(

@@ -1,5 +1,10 @@
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature, fetchAndMaybeUnzip, SimpleFeature } from '@jbrowse/core/util'
+import {
+  Feature,
+  fetchAndMaybeUnzip,
+  Region,
+  SimpleFeature,
+} from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
 import {
   BaseFeatureDataAdapter,
@@ -42,24 +47,29 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     const names = (await this.getNames())?.slice(3) || []
     const intervalTree = new IntervalTree()
     for (let i = 0; i < lines.length; i++) {
-      const [refName, s, e, ...rest] = lines[i]!.split('\t')
+      const line = lines[i]!
+      const [refName, s, e, ...rest] = line.split('\t')
       for (let j = 0; j < rest.length; j++) {
-        const uniqueId = `${this.id}-${refName}-${i}`
+        const uniqueId = `${this.id}-${refName}-${i}-${j}`
         const start = +s!
         const end = +e!
-        intervalTree.insert(
-          [start, end],
-          new SimpleFeature({
-            id: uniqueId,
-            data: {
-              refName,
-              start,
-              end,
-              score: +rest[i]!,
-              source: names[i] || `col${i}`,
-            },
-          }),
-        )
+        const score = +rest[j]!
+        const source = names[j] || `col${j}`
+        if (score) {
+          intervalTree.insert(
+            [start, end],
+            new SimpleFeature({
+              id: uniqueId,
+              data: {
+                refName,
+                start,
+                end,
+                score,
+                source,
+              },
+            }),
+          )
+        }
       }
     }
 
@@ -132,7 +142,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
       intervalTree?.search([start, end]).forEach(f => {
-        console.log({ f })
         observer.next(f)
       })
       observer.complete()
