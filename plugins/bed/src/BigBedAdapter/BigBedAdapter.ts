@@ -13,18 +13,12 @@ import {
   min,
   Feature,
   SimpleFeature,
-  SimpleFeatureSerializedNoId,
+  SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
 import { firstValueFrom, Observer, toArray } from 'rxjs'
 
 // locals
-import {
-  isUcscProcessedTranscript,
-  ucscProcessedTranscript,
-  makeRepeatTrackDescription,
-  makeBlocks,
-  arrayify,
-} from '../util'
+import { featureData2 } from '../util'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
   private cachedP?: Promise<{
@@ -108,7 +102,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { signal } = opts
+    const { stopToken } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const { parser, bigbed } = await this.configure(opts)
@@ -117,7 +111,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       query.start,
       query.end,
       {
-        signal,
+        stopToken,
         basesPerSpan: query.end - query.start,
       },
     )
@@ -148,19 +142,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const parentAggregation = {} as Record<
-      string,
-      SimpleFeatureSerializedNoId[]
-    >
+    const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
 
     if (feats.some(f => f.uniqueId === undefined)) {
       throw new Error('found uniqueId undefined')
     }
     for (const feat of feats) {
-      const data = parser.parseLine(
-        `${query.refName}\t${feat.start}\t${feat.end}\t${feat.rest}`,
-        { uniqueId: feat.uniqueId! },
-      )
+      const line = `${query.refName}\t${feat.start}\t${feat.end}\t${feat.rest}`
+      const data = parser.parseLine(line, { uniqueId: feat.uniqueId! })
 
       const aggr = data[aggregateField]
       if (!parentAggregation[aggr]) {
@@ -183,89 +172,27 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         strand,
         ...rest
       } = data
-      const chromStarts = arrayify(chromStarts2)
-      const blockStarts = arrayify(blockStarts2)
-      const blockSizes = arrayify(blockSizes2)
-      const score = scoreColumn ? +data[scoreColumn] : +score2
 
-      const subfeatures = makeBlocks({
-        chromStarts,
-        blockStarts,
-        blockSizes,
-        blockCount,
+      const f = featureData2({
+        ...rest,
+        scoreColumn,
+        line,
+        parser,
         uniqueId,
-        refName: query.refName,
         start: feat.start,
+        end: feat.end,
+        refName: query.refName,
       })
-
-      if (
-        isUcscProcessedTranscript({
-          strand,
-          blockCount,
-          thickStart,
-          description,
-        })
-      ) {
-        const f = ucscProcessedTranscript({
-          ...rest,
-          strand,
-          uniqueId,
-          type,
-          start: feat.start,
-          end: feat.end,
-          refName: query.refName,
-          score,
-          description,
-          chromStarts: chromStarts!,
-          blockSizes: blockSizes!,
-          blockCount,
-          thickStart,
-          thickEnd,
-          subfeatures,
-        })
-        if (aggr) {
-          parentAggregation[aggr].push(f)
-        } else {
-          if (
-            doesIntersect2(
-              f.start,
-              f.end,
-              originalQuery.start,
-              originalQuery.end,
-            )
-          ) {
-            observer.next(
-              new SimpleFeature({
-                id: `${this.id}-${uniqueId}`,
-                data: f,
-              }),
-            )
-          }
-        }
+      if (aggr) {
+        parentAggregation[aggr].push(f)
       } else {
         if (
-          doesIntersect2(
-            feat.start,
-            feat.end,
-            originalQuery.start,
-            originalQuery.end,
-          )
+          doesIntersect2(f.start, f.end, originalQuery.start, originalQuery.end)
         ) {
           observer.next(
             new SimpleFeature({
               id: `${this.id}-${uniqueId}`,
-              data: {
-                ...rest,
-                ...makeRepeatTrackDescription(description),
-                start: feat.start,
-                end: feat.end,
-                strand,
-                uniqueId,
-                type,
-                score,
-                refName: query.refName,
-                subfeatures,
-              },
+              data: f,
             }),
           )
         }
@@ -307,7 +234,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

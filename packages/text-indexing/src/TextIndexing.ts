@@ -1,20 +1,20 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+// misc
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
 import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track, indexType } from './util'
-import {
-  checkAbortSignal,
-  isSupportedIndexingAdapter,
-} from '@jbrowse/core/util'
 
 export async function indexTracks(args: {
   tracks: Track[]
   outDir?: string
-  signal?: AbortSignal
+  stopToken?: string
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
@@ -29,10 +29,10 @@ export async function indexTracks(args: {
     assemblyNames,
     indexType,
     statusCallback,
-    signal,
+    stopToken,
   } = args
   const idxType = indexType || 'perTrack'
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   await (idxType === 'perTrack'
     ? perTrackIndex({
         tracks,
@@ -40,7 +40,7 @@ export async function indexTracks(args: {
         outDir,
         attributesToIndex,
         featureTypesToExclude,
-        signal,
+        stopToken,
       })
     : aggregateIndex({
         tracks,
@@ -49,9 +49,9 @@ export async function indexTracks(args: {
         attributesToIndex,
         assemblyNames,
         featureTypesToExclude,
-        signal,
+        stopToken,
       }))
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   return []
 }
 
@@ -61,14 +61,14 @@ async function perTrackIndex({
   outDir: paramOutDir,
   attributesToIndex = ['Name', 'ID'],
   featureTypesToExclude = ['exon', 'CDS'],
-  signal,
+  stopToken,
 }: {
   tracks: Track[]
   statusCallback: (message: string) => void
   outDir?: string
   attributesToIndex?: string[]
   featureTypesToExclude?: string[]
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const outFlag = paramOutDir || '.'
 
@@ -96,7 +96,7 @@ async function perTrackIndex({
       featureTypesToExclude,
       assemblyNames,
       statusCallback,
-      signal,
+      stopToken,
     })
   }
 }
@@ -107,7 +107,7 @@ async function aggregateIndex({
   outDir: paramOutDir,
   attributesToIndex = ['Name', 'ID'],
   featureTypesToExclude = ['exon', 'CDS'],
-  signal,
+  stopToken,
   assemblyNames,
 }: {
   tracks: Track[]
@@ -116,7 +116,7 @@ async function aggregateIndex({
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const outFlag = paramOutDir || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
@@ -145,7 +145,7 @@ async function aggregateIndex({
       featureTypesToExclude,
       assemblyNames: [asm],
       statusCallback,
-      signal,
+      stopToken,
     })
   }
 }
@@ -158,7 +158,7 @@ async function indexDriver({
   featureTypesToExclude,
   assemblyNames,
   statusCallback,
-  signal,
+  stopToken,
 }: {
   tracks: Track[]
   outDir: string
@@ -167,7 +167,7 @@ async function indexDriver({
   featureTypesToExclude: string[]
   assemblyNames: string[]
   statusCallback: (message: string) => void
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const readable = Readable.from(
     indexFiles({
@@ -176,12 +176,12 @@ async function indexDriver({
       outDir,
       featureTypesToExclude,
       statusCallback,
-      signal,
+      stopToken,
     }),
   )
   statusCallback('Indexing files.')
   await runIxIxx(readable, outDir, name)
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   await generateMeta({
     configs: tracks,
     attributesToIndex,
@@ -190,7 +190,7 @@ async function indexDriver({
     featureTypesToExclude,
     assemblyNames,
   })
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
 }
 
 async function* indexFiles({
@@ -205,7 +205,7 @@ async function* indexFiles({
   outDir: string
   featureTypesToExclude: string[]
   statusCallback: (message: string) => void
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   for (const track of tracks) {
     const { adapter, textSearching } = track

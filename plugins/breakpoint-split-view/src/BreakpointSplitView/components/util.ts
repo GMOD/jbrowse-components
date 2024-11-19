@@ -1,4 +1,4 @@
-import { Feature, notEmpty } from '@jbrowse/core/util'
+import { assembleLocStringFast, Feature, notEmpty } from '@jbrowse/core/util'
 
 import { parseBreakend } from '@gmod/vcf'
 
@@ -7,15 +7,26 @@ import { parseBreakend } from '@gmod/vcf'
 export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   const alreadySeen = new Set<string>()
+  const alreadyPairedWithSamePosition = new Set<string>()
 
   // this finds candidate features that share the same name
   for (const feature of features.values()) {
     const flags = feature.get('flags')
     const id = feature.id()
+    const supp = assembleLocStringFast({
+      refName: feature.get('refName'),
+      start: feature.get('start'),
+      end: feature.get('end'),
+    })
     const unmapped = flags & 4
     const correctlyPaired = flags & 2
 
-    if (!alreadySeen.has(id) && !correctlyPaired && !unmapped) {
+    if (
+      !alreadySeen.has(id) &&
+      !alreadyPairedWithSamePosition.has(supp) &&
+      !correctlyPaired &&
+      !unmapped
+    ) {
       const n = feature.get('name')
       let val = candidates.get(n)
       if (!val) {
@@ -25,6 +36,7 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
       val.push(feature)
     }
     alreadySeen.add(feature.id())
+    alreadyPairedWithSamePosition.add(supp)
   }
 
   return [...candidates.values()].filter(v => v.length > 1)

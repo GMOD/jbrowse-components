@@ -82,7 +82,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         ...opts,
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(/* { region } */): void {}

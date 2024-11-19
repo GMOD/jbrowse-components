@@ -1,6 +1,5 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { indexTracks, indexType, Track } from '@jbrowse/text-indexing'
 
 export class TextIndexRpcMethod extends RpcMethodType {
@@ -9,7 +8,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal?: RemoteAbortSignal
+      stopToken?: string
       outLocation?: string
       attributes?: string[]
       exclude?: string[]
@@ -18,7 +17,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       tracks: Track[]
       statusCallback: (message: string) => void
     },
-    rpcDriverClassName: string,
+    _rpcDriverClassName: string,
   ) {
     const {
       tracks,
@@ -27,11 +26,11 @@ export class TextIndexRpcMethod extends RpcMethodType {
       attributes,
       assemblies,
       indexType,
-      signal,
+      stopToken,
       statusCallback,
-    } = await this.deserializeArguments(args, rpcDriverClassName)
+    } = args
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
     await indexTracks({
       outDir: outLocation,
       tracks,
@@ -40,7 +39,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       assemblyNames: assemblies,
       indexType,
       statusCallback,
-      signal,
+      stopToken,
     })
   }
 }

@@ -103,17 +103,19 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
           ),
         ),
       ).subscribe(observer)
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   // always render bigwig instead of calculating a feature density for it
   async getMultiRegionFeatureDensityStats(_regions: Region[]) {
-    return { featureDensity: 0 }
+    return {
+      featureDensity: 0,
+    }
   }
 
   // in another adapter type, this could be dynamic depending on region or
   // something, but it is static for this particular multi-wiggle adapter type
-  async getSources() {
+  async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
     return adapters.map(({ dataAdapter, source, name, ...rest }) => ({
       name: source,

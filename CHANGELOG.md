@@ -1,3 +1,52 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.17.0
+
+## 2.17.0 (2024-11-18)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4662](https://github.com/GMOD/jbrowse-components/pull/4662) Add better
+    handling for bedMethyl files ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4652](https://github.com/GMOD/jbrowse-components/pull/4652) Reduce
+    re-rendering on quantitative and snpcoverage track height adjustments
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4651](https://github.com/GMOD/jbrowse-components/pull/4651) Add mismatches
+    cache to improve performance on ultra-long reads
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4649](https://github.com/GMOD/jbrowse-components/pull/4649) Add support
+    for displaying SNPs in "no_ref" CRAM files
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4627](https://github.com/GMOD/jbrowse-components/pull/4627) Create BLAST
+    tabular adapter ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4647](https://github.com/GMOD/jbrowse-components/pull/4647) Improved
+    rendering of modifications ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4646](https://github.com/GMOD/jbrowse-components/pull/4646) Fix mouseover
+    pixelation on linear synteny view ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4639](https://github.com/GMOD/jbrowse-components/pull/4639) Fix RNA-seq
+    stranded arc coloring, change the color of RNA-seq introns, and improve
+    compact rendering ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4638](https://github.com/GMOD/jbrowse-components/pull/4638) Fix rendering
+    of UCSC repeatmasker BigBed and BED files
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#4648](https://github.com/GMOD/jbrowse-components/pull/4648) Run codemod
+    fix for some MUI deprecated props ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.81s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.16.1
 
 ## 2.16.1 (2024-11-03)

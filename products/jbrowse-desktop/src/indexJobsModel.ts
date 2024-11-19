@@ -11,7 +11,7 @@ import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
-import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import path from 'path'
 import fs from 'fs'
 
@@ -61,10 +61,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #volatile
        */
       jobName: '',
-      /**
-       * #volatile
-       */
-      controller: new AbortController(),
       /**
        * #volatile
        */
@@ -162,12 +158,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       setStatusMessage(arg: string) {
         self.statusMessage = arg
       },
-      /**
-       * #action
-       */
-      abortJob() {
-        self.controller.abort()
-      },
+
       /**
        * #action
        */
@@ -216,7 +207,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         this.setStatusMessage('')
         this.setJobName('')
         self.progressPct = 0
-        self.controller = new AbortController()
       },
       /**
        * #action
@@ -238,8 +228,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         try {
           this.setRunning(true)
           this.setJobName(entry.name)
-          const { signal } = self.controller
-
           const userData = await ipcRenderer.invoke('userData')
           const outLocation = path.join(
             userData,
@@ -258,7 +246,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             statusCallback: (message: string) => {
               this.setProgressPct(message)
             },
-            signal,
             timeout: 1000 * ONE_HOUR,
           })
           if (indexType === 'perTrack') {
@@ -314,20 +301,17 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           }
         } catch (e) {
           console.error(e)
-          if (isAbortException(e)) {
-            self.session?.notify('Cancelled job', 'info')
-          } else {
-            self.session?.notify(
-              `An error occurred while indexing: ${e}`,
-              'error',
-              {
-                name: 'Retry',
-                onClick: () => {
-                  this.queueJob(entry)
-                },
+
+          self.session?.notify(
+            `An error occurred while indexing: ${e}`,
+            'error',
+            {
+              name: 'Retry',
+              onClick: () => {
+                this.queueJob(entry)
               },
-            )
-          }
+            },
+          )
           // remove job from queue but since it was not successful
           // do not add to finished list
           this.dequeueJob()

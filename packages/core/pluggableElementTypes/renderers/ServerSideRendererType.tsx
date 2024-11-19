@@ -10,7 +10,7 @@ import {
 } from 'mobx-state-tree'
 
 // locals
-import { checkAbortSignal, getSerializedSvg, updateStatus } from '../../util'
+import { getSerializedSvg, updateStatus } from '../../util'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
@@ -20,12 +20,13 @@ import { createJBrowseTheme } from '../../ui'
 
 import RendererType, { RenderProps, RenderResults } from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
+import { checkStopToken } from '../../util/stopToken'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
-  // Note that signal serialization happens after serializeArgsInClient and
+  // Note that stopToken serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
-  signal?: AbortSignal
+  stopToken?: string
   theme: ThemeOptions
   exportSVG?: {
     rasterizeLayers?: boolean
@@ -189,13 +190,13 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - serialized render args
    */
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    const { signal, statusCallback = () => {} } = args
+    const { stopToken, statusCallback = () => {} } = args
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
     const results = await updateStatus('Rendering plot', statusCallback, () =>
       this.render(deserializedArgs),
     )
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out

@@ -129,7 +129,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(/* { region } */) {}

@@ -69,7 +69,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
       await this.getFeaturesHelper(query, opts, metadata, observer, true)
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   private async getFeaturesHelper(

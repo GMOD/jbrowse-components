@@ -103,9 +103,6 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                       name: indexName,
                     },
                     name: indexName,
-                    cancelCallback: () => {
-                      jobsManager.abortJob()
-                    },
                   })
                 },
                 icon: Indexing,

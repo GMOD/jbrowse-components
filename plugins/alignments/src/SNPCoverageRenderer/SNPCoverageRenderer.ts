@@ -9,6 +9,7 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 // locals
 import { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
@@ -65,6 +66,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       theme: configTheme,
       config: cfg,
       ticks,
+      stopToken,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const region = regions[0]!
@@ -120,6 +122,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
     ctx.fillStyle = colorForBase.total!
+    let start = performance.now()
     for (const feature of feats) {
       if (feature.get('type') === 'skip') {
         continue
@@ -128,6 +131,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
     }
 
     // Keep track of previous total which we will use it to draw the interbase
@@ -154,7 +161,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
+    start = performance.now()
     for (const feature of feats) {
+      const now = performance.now()
+      if (now - start > 400) {
+        checkStopToken(stopToken)
+      }
       if (feature.get('type') === 'skip') {
         continue
       }

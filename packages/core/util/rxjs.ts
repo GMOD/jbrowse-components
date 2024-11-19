@@ -1,15 +1,14 @@
 import { Observable, Observer } from 'rxjs'
-import { takeUntil } from 'rxjs/operators'
-import { observeAbortSignal } from '.'
 
 /**
  * Wrapper for rxjs Observable.create with improved error handling and
  * aborting support
  * @param func - observer function, could be async
+ * TODO:ABORTING?
  */
 export function ObservableCreate<T>(
   func: (arg: Observer<T>) => void | Promise<void>,
-  signal?: AbortSignal,
+  _stopToken?: string,
 ): Observable<T> {
   return new Observable((observer: Observer<T>) => {
     try {
@@ -22,5 +21,5 @@ export function ObservableCreate<T>(
     } catch (error) {
       observer.error(error)
     }
-  }).pipe(takeUntil(observeAbortSignal(signal)))
+  })
 }

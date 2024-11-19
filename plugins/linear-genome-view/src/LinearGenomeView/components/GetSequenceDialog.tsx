@@ -47,11 +47,7 @@ type LGV = LinearGenomeViewModel
 /**
  * Fetches and returns a list features for a given list of regions
  */
-async function fetchSequence(
-  model: LGV,
-  regions: Region[],
-  signal?: AbortSignal,
-) {
+async function fetchSequence(model: LGV, regions: Region[]) {
   const session = getSession(model)
   const { leftOffset, rightOffset } = model
 
@@ -75,7 +71,6 @@ async function fetchSequence(
     adapterConfig,
     regions,
     sessionId,
-    signal,
   }) as Promise<Feature[]>
 }
 
@@ -108,7 +103,8 @@ const GetSequenceDialog = observer(function ({
         if (selection.length === 0) {
           throw new Error('Selected region is out of bounds')
         }
-        const chunks = await fetchSequence(model, selection, controller.signal)
+        // TODO:ABORT
+        const chunks = await fetchSequence(model, selection)
         setSequenceChunks(chunks)
       } catch (e) {
         console.error(e)

@@ -150,8 +150,10 @@ function stateModelFactory(
        * #getter
        */
       get needsScalebar() {
-        const { rendererTypeName: type } = self
-        return type === 'XYPlotRenderer' || type === 'LinePlotRenderer'
+        return (
+          self.rendererTypeName === 'XYPlotRenderer' ||
+          self.rendererTypeName === 'LinePlotRenderer'
+        )
       },
       /**
        * #getter

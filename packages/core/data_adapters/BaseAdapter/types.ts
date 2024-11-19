@@ -1,5 +1,5 @@
 export interface BaseOptions {
-  signal?: AbortSignal
+  stopToken?: string
   bpPerPx?: number
   sessionId?: string
   statusCallback?: (message: string) => void
@@ -12,7 +12,7 @@ export type SearchType = 'full' | 'prefix' | 'exact'
 export interface BaseTextSearchArgs {
   queryString: string
   searchType?: SearchType
-  signal?: AbortSignal
+  stopToken?: string
   limit?: number
   pageNumber?: number
 }

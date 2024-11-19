@@ -6,10 +6,11 @@ import { BaseAdapter } from './BaseAdapter'
 import { BaseOptions } from './BaseOptions'
 import { FeatureDensityStats } from './types'
 import { ObservableCreate } from '../../util/rxjs'
-import { checkAbortSignal, sum, max, min } from '../../util'
+import { sum, max, min } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import { AugmentedRegion as Region } from '../../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
+import { checkStopToken } from '../../util/stopToken'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -82,7 +83,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
-      checkAbortSignal(opts.signal)
+      checkStopToken(opts.stopToken)
       if (!hasData) {
         observer.complete()
       } else {
@@ -252,5 +253,20 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       throw new Error('No regions supplied')
     }
     return this.getRegionFeatureDensityStats(regions[0]!, opts)
+  }
+
+  async getSources(
+    regions: Region[],
+  ): Promise<{ name: string; color?: string; [key: string]: unknown }[]> {
+    const features = await firstValueFrom(
+      this.getFeaturesInMultipleRegions(regions).pipe(toArray()),
+    )
+    const sources = new Set<string>()
+    for (const f of features) {
+      sources.add(f.get('source'))
+    }
+    return [...sources].map(source => ({
+      name: source,
+    }))
   }
 }

@@ -17,7 +17,7 @@ export async function getQuantitativeStats(
   },
   opts: {
     headers?: Record<string, string>
-    signal?: AbortSignal
+    stopToken?: string
     filters: string[]
     currStatsBpPerPx: number
   },

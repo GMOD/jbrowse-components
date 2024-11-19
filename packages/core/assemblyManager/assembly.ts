@@ -58,11 +58,10 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterConfig: unknown,
   options: BaseOptions,
-  signal?: AbortSignal,
+  stopToken?: string,
 ) {
   const { sessionId } = options
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
-    signal,
     name: 'when assembly ready',
   })
 
@@ -71,7 +70,7 @@ async function loadRefNameMap(
     'CoreGetRefNames',
     {
       adapterConfig,
-      signal,
+      stopToken,
       ...options,
     },
     { timeout: 1000000 },
@@ -139,18 +138,14 @@ export default function assemblyFactory(
     cache: new QuickLRU({ maxSize: 1000 }),
 
     // @ts-expect-error
+    // TODO:ABORT (possible? desirable??)
     async fill(
       args: CacheData,
-      signal?: AbortSignal,
+      _stopToken?: string,
       statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
-      return loadRefNameMap(
-        self,
-        adapterConf,
-        { ...options, statusCallback },
-        signal,
-      )
+      return loadRefNameMap(self, adapterConf, { ...options, statusCallback })
     },
   })
   return types
@@ -161,11 +156,29 @@ export default function assemblyFactory(
       configuration: types.safeReference(assemblyConfigType),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       loadingP: undefined as Promise<void> | undefined,
+      /**
+       * #volatile
+       */
       volatileRegions: undefined as BasicRegion[] | undefined,
+      /**
+       * #volatile
+       */
       refNameAliases: undefined as RefNameAliases | undefined,
+      /**
+       * #volatile
+       */
       lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+      /**
+       * #volatile
+       */
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
@@ -179,6 +192,8 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #getter
+       * this is a getter with a side effect of loading the data. not the best
+       * practice, but it helps to lazy load the assembly
        */
       get initialized() {
         // @ts-expect-error
@@ -216,7 +231,7 @@ export default function assemblyFactory(
         return self.getConf('displayName')
       },
       /**
-       * #getter
+       * #method
        */
       hasName(name: string) {
         return this.allAliases.includes(name)
@@ -453,7 +468,7 @@ export default function assemblyFactory(
        * #method
        */
       getAdapterMapEntry(adapterConf: AdapterConf, options: BaseOptions) {
-        const { signal, statusCallback, ...rest } = options
+        const { stopToken, statusCallback, ...rest } = options
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -465,7 +480,7 @@ export default function assemblyFactory(
             options: rest,
           } as CacheData,
 
-          // signal intentionally not passed here, fixes issues like #2221.
+          // stopToken intentionally not passed here, fixes issues like #2221.
           // alternative fix #2540 was proposed but non-working currently
           undefined,
           statusCallback,
@@ -504,11 +519,11 @@ export default function assemblyFactory(
 async function getRefNameAliases({
   config,
   pluginManager,
-  signal,
+  stopToken,
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
@@ -517,7 +532,7 @@ async function getRefNameAliases({
     undefined,
     pluginManager,
   ) as BaseRefNameAliasAdapter
-  return adapter.getRefNameAliases({ signal })
+  return adapter.getRefNameAliases({ stopToken })
 }
 
 async function getCytobands({
@@ -538,16 +553,16 @@ async function getCytobands({
 async function getAssemblyRegions({
   config,
   pluginManager,
-  signal,
+  stopToken,
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  signal?: AbortSignal
+  stopToken?: string
 }) {
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pluginManager) as RegionsAdapter
-  return adapter.getRegions({ signal })
+  return adapter.getRegions({ stopToken })
 }
 
 export type AssemblyModel = ReturnType<typeof assemblyFactory>

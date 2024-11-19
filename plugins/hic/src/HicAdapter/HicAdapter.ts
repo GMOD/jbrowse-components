@@ -120,7 +120,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         }
       })
       observer.complete()
-    }, opts.signal) as any
+    }, opts.stopToken) as any
   }
 
   // don't do feature stats estimation, similar to bigwigadapter

@@ -3,7 +3,6 @@ import isObject from 'is-object'
 import PluginManager from '../PluginManager'
 import type { Buffer } from 'buffer'
 import {
-  addDisposer,
   getParent,
   getSnapshot,
   getEnv as getEnvMST,
@@ -14,7 +13,6 @@ import {
   IStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
-import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { Feature } from './simpleFeature'
 import {
   isSessionModel,
@@ -26,7 +24,6 @@ import {
   TypeTestedByPredicate,
 } from './types'
 import type { Region as MUIRegion } from './types/mst'
-import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
 
@@ -38,8 +35,8 @@ import { flushSync, render } from 'react-dom'
 import { GenericFilehandle } from 'generic-filehandle'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { BaseOptions } from '../data_adapters/BaseAdapter'
+import { checkStopToken } from './stopToken'
 export * from './types'
-export * from './aborting'
 export * from './when'
 export * from './range'
 export * from './dedupe'
@@ -690,102 +687,6 @@ export function findLast<T>(
   return undefined
 }
 
-/**
- * makes a mobx reaction with the given functions, that calls actions on the
- * model for each stage of execution, and to abort the reaction function when
- * the model is destroyed.
- *
- * Will call startedFunction(signal), successFunction(result), and
- * errorFunction(error) when the async reaction function starts, completes, and
- * errors respectively.
- *
- * @param self -
- * @param dataFunction -
- * @param asyncReactionFunction -
- * @param reactionOptions -
- * @param startedFunction -
- * @param successFunction -
- * @param errorFunction -
- */
-export function makeAbortableReaction<T, U, V>(
-  self: T,
-  dataFunction: (arg: T) => U,
-  asyncReactionFunction: (
-    arg: U | undefined,
-    signal: AbortSignal,
-    model: T,
-    handle: IReactionPublic,
-  ) => Promise<V>,
-  // @ts-expect-error
-  reactionOptions: IReactionOptions,
-  startedFunction: (aborter: AbortController) => void,
-  successFunction: (arg: V) => void,
-  errorFunction: (err: unknown) => void,
-) {
-  let inProgress: AbortController | undefined
-
-  function handleError(error: unknown) {
-    if (!isAbortException(error)) {
-      if (isAlive(self)) {
-        errorFunction(error)
-      } else {
-        console.error(error)
-      }
-    }
-  }
-
-  addDisposer(
-    self,
-    reaction(
-      () => {
-        try {
-          return dataFunction(self)
-        } catch (e) {
-          handleError(e)
-          return undefined
-        }
-      },
-      async (data, mobxReactionHandle) => {
-        if (inProgress && !inProgress.signal.aborted) {
-          inProgress.abort()
-        }
-
-        if (!isAlive(self)) {
-          return
-        }
-        inProgress = new AbortController()
-
-        const thisInProgress = inProgress
-        startedFunction(thisInProgress)
-        try {
-          const result = await asyncReactionFunction(
-            data,
-            thisInProgress.signal,
-            self,
-            // @ts-expect-error
-            mobxReactionHandle,
-          )
-          checkAbortSignal(thisInProgress.signal)
-          if (isAlive(self)) {
-            successFunction(result)
-          }
-        } catch (e) {
-          if (!thisInProgress.signal.aborted) {
-            thisInProgress.abort()
-          }
-          handleError(e)
-        }
-      },
-      reactionOptions,
-    ),
-  )
-  addDisposer(self, () => {
-    if (inProgress && !inProgress.signal.aborted) {
-      inProgress.abort()
-    }
-  })
-}
-
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,
@@ -813,7 +714,7 @@ export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
     regions?: Region[]
-    signal?: AbortSignal
+    stopToken?: string
     adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
@@ -1105,6 +1006,21 @@ export async function updateStatus<U>(
 ) {
   cb(msg)
   const res = await fn()
+  cb('')
+  return res
+}
+
+// call statusCallback with current status and clear when finished, and check
+// stopToken afterwards
+export async function updateStatus2<U>(
+  msg: string,
+  cb: (arg: string) => void,
+  stopToken: string | undefined,
+  fn: () => U | Promise<U>,
+) {
+  cb(msg)
+  const res = await fn()
+  checkStopToken(stopToken)
   cb('')
   return res
 }
@@ -1505,3 +1421,4 @@ export {
 } from './simpleFeature'
 
 export { blobToDataURL } from './blobToDataURL'
+export { makeAbortableReaction } from './makeAbortableReaction'

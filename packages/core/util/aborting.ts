@@ -5,10 +5,9 @@ class AbortError extends Error {
 }
 
 /**
- * properly check if the given AbortSignal is aborted.
- * per the standard, if the signal reads as aborted,
- * this function throws either a DOMException AbortError, or a regular error
- * with a `code` attribute set to `ERR_ABORTED`.
+ * properly check if the given AbortSignal is aborted. per the standard, if the
+ * signal reads as aborted, this function throws either a DOMException
+ * AbortError, or a regular error with a `code` attribute set to `ERR_ABORTED`.
  *
  * for convenience, passing `undefined` is a no-op
  *

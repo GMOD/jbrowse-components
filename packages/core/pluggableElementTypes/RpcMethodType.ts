@@ -10,16 +10,6 @@ import {
   UriLocation,
 } from '../util/types'
 
-import {
-  deserializeAbortSignal,
-  isRemoteAbortSignal,
-  RemoteAbortSignal,
-} from '../rpc/remoteAbortSignals'
-
-interface SerializedArgs {
-  signal?: RemoteAbortSignal
-  blobMap?: Record<string, File>
-}
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
@@ -58,21 +48,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return loc
   }
 
-  async deserializeArguments<T extends SerializedArgs>(
-    serializedArgs: T,
+  async deserializeArguments<T>(
+    args: T & { blobMap?: Record<string, File> },
     _rpcDriverClassName: string,
-  ) {
-    if (serializedArgs.blobMap) {
-      setBlobMap(serializedArgs.blobMap)
+  ): Promise<T> {
+    if (args.blobMap) {
+      setBlobMap(args.blobMap)
     }
-    const { signal } = serializedArgs
 
-    return {
-      ...serializedArgs,
-      signal: isRemoteAbortSignal(signal)
-        ? deserializeAbortSignal(signal)
-        : undefined,
-    }
+    return args
   }
 
   abstract execute(

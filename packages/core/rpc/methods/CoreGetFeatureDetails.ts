@@ -1,6 +1,5 @@
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { renameRegionsIfNeeded, getLayoutId } from '../../util'
 import { RenderArgsSerialized } from './util'
 
@@ -28,7 +27,7 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
     let deserializedArgs = args

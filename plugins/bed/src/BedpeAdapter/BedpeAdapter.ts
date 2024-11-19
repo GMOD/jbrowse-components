@@ -204,7 +204,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
         observer.next(f)
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

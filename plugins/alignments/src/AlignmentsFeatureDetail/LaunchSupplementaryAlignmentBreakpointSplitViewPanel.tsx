@@ -30,7 +30,6 @@ export default function LaunchBreakpointSplitViewPanel({
   feature: SimpleFeatureSerialized
   viewType: ViewType
 }) {
-  const session = getSession(model)
   const { view } = model
   const [res, setRes] = useState<ReducedFeature[]>()
   const [error, setError] = useState<unknown>()
@@ -67,50 +66,92 @@ export default function LaunchBreakpointSplitViewPanel({
             <li key={`${JSON.stringify(arg)}-${index}`}>
               {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
               {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
-              <Link
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
-                  session.queueDialog(handleClose => [
-                    BreakendMultiLevelOptionDialog,
-                    {
-                      handleClose,
-                      model,
-                      feature: new SimpleFeature({ ...f1, mate: f2 }),
-                      // @ts-expect-error
-                      viewType,
-                      view: model.view,
-                      assemblyName: model.view.displayedRegions[0].assemblyName,
-                    },
-                  ])
-                }}
-              >
-                (top/bottom)
-              </Link>{' '}
-              <Link
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
-                  session.queueDialog(handleClose => [
-                    BreakendSingleLevelOptionDialog,
-                    {
-                      handleClose,
-                      model,
-                      feature: new SimpleFeature({ ...f1, mate: f2 }),
-                      // @ts-expect-error
-                      viewType,
-                      view: model.view,
-                      assemblyName: model.view.displayedRegions[0].assemblyName,
-                    },
-                  ])
-                }}
-              >
-                (single row)
-              </Link>
+              <TopBottomSplitViewLink
+                model={model}
+                f1={f1}
+                f2={f2}
+                viewType={viewType}
+              />{' '}
+              <SideBySideViewLink
+                model={model}
+                f1={f1}
+                f2={f2}
+                viewType={viewType}
+              />
             </li>
           )
         })}
       </ul>
     </div>
   ) : null
+}
+
+function TopBottomSplitViewLink({
+  model,
+  f1,
+  f2,
+  viewType,
+}: {
+  model: AlignmentFeatureWidgetModel
+  f1: ReducedFeature
+  f2: ReducedFeature
+  viewType: ViewType
+}) {
+  return (
+    <Link
+      href="#"
+      onClick={event => {
+        event.preventDefault()
+        getSession(model).queueDialog(handleClose => [
+          BreakendMultiLevelOptionDialog,
+          {
+            handleClose,
+            model,
+            feature: new SimpleFeature({ ...f1, mate: f2 }),
+            // @ts-expect-error
+            viewType,
+            view: model.view,
+            assemblyName: model.view.displayedRegions[0].assemblyName,
+          },
+        ])
+      }}
+    >
+      (top/bottom)
+    </Link>
+  )
+}
+
+function SideBySideViewLink({
+  model,
+  f1,
+  f2,
+  viewType,
+}: {
+  model: AlignmentFeatureWidgetModel
+  f1: ReducedFeature
+  f2: ReducedFeature
+  viewType: ViewType
+}) {
+  return (
+    <Link
+      href="#"
+      onClick={event => {
+        event.preventDefault()
+        getSession(model).queueDialog(handleClose => [
+          BreakendSingleLevelOptionDialog,
+          {
+            handleClose,
+            model,
+            feature: new SimpleFeature({ ...f1, mate: f2 }),
+            // @ts-expect-error
+            viewType,
+            view: model.view,
+            assemblyName: model.view.displayedRegions[0].assemblyName,
+          },
+        ])
+      }}
+    >
+      (single row)
+    </Link>
+  )
 }
