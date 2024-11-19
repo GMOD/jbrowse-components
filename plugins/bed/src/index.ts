@@ -4,6 +4,7 @@ import BigBedAdapterF from './BigBedAdapter'
 import BedpeAdapterF from './BedpeAdapter'
 import BedTabixAdapterF from './BedTabixAdapter'
 import BedAdapterF from './BedAdapter'
+import BedGraphAdapterF from './BedGraphAdapter'
 import { FileLocation } from '@jbrowse/core/util/types'
 import {
   getFileName,
@@ -21,6 +22,7 @@ export default class BedPlugin extends Plugin {
     BedAdapterF(pluginManager)
     BedpeAdapterF(pluginManager)
     BedTabixAdapterF(pluginManager)
+    BedGraphAdapterF(pluginManager)
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {

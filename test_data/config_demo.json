@@ -4734,6 +4734,19 @@
       },
       "assemblyNames": ["hg38"],
       "category": ["Methylation"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "ai_bedgraph",
+      "name": "AI bedgraph",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedGraphAdapter",
+        "bedGraphLocation": {
+          "uri": "out.bg",
+          "locationType": "UriLocation"
+        }
+      }
     }
   ],
   "connections": [],
