@@ -130,6 +130,7 @@ export default tseslint.config(
       'unicorn/prefer-at': 'off',
       'unicorn/prefer-string-replace-all': 'off',
       'unicorn/no-array-reduce': 'off',
+      'unicorn/expiring-todo-comments': 'off',
 
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
