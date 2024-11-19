@@ -16,7 +16,7 @@ export async function getUniqueModifications({
   blocks: BlockSet
   opts?: {
     headers?: Record<string, string>
-    signal?: AbortSignal
+    stopToken?: string
     filters: string[]
   }
 }) {

@@ -102,7 +102,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { signal } = opts
+    const { stopToken } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const { parser, bigbed } = await this.configure(opts)
@@ -111,7 +111,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       query.start,
       query.end,
       {
-        signal,
+        stopToken,
         basesPerSpan: query.end - query.start,
       },
     )
@@ -234,7 +234,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

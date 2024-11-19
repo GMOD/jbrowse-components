@@ -6,7 +6,7 @@ import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 export default abstract class PileupBaseRPC extends RpcMethodType {
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
+      stopToken?: string
       statusCallback?: (arg: string) => void
     },
     rpcDriver: string,

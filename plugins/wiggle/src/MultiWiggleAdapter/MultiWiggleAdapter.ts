@@ -103,7 +103,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
           ),
         ),
       ).subscribe(observer)
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   // always render bigwig instead of calculating a feature density for it

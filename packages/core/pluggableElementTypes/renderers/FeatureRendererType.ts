@@ -3,7 +3,7 @@ import clone from 'clone'
 import { firstValueFrom } from 'rxjs'
 
 // locals
-import { checkAbortSignal, iterMap } from '../../util'
+import { iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
@@ -20,6 +20,7 @@ import ServerSideRendererType, {
 } from './ServerSideRendererType'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration'
+import { checkStopToken } from '../../util/stopToken'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel?: {
@@ -146,7 +147,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
     const pm = this.pluginManager
-    const { signal, regions, sessionId, adapterConfig } = renderArgs
+    const { stopToken, regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
@@ -176,7 +177,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     const feats = await firstValueFrom(featureObservable.pipe(toArray()))
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
     return new Map<string, Feature>(
       feats
         .filter(feat => this.featurePassesFilters(renderArgs, feat))

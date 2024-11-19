@@ -71,7 +71,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end } = region
     const {
       bpPerPx = 0,
-      signal,
+      stopToken,
       resolution = 1,
       statusCallback = () => {},
     } = opts
@@ -103,7 +103,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         })
       }
       observer.complete()
-    }, signal)
+    }, stopToken)
   }
 
   // always render bigwig instead of calculating a feature density for it

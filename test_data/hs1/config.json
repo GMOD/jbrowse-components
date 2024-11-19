@@ -57,6 +57,19 @@
         }
       },
       "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chm13v2.0_rmsk",
+      "name": "chm13v2.0_rmsk",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hs1"]
     }
   ]
 }

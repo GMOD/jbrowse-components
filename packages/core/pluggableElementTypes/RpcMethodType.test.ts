@@ -31,7 +31,7 @@ test('test serialize arguments with augmentLocationObject', async () => {
         testLocation: locationInAdapter,
       },
       filters: [],
-      signal: 'teststring',
+      stopToken: 'teststring',
       randomProperty: 'randomstring',
       parentObject: {
         nestedObject: {

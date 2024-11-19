@@ -44,13 +44,14 @@ export function generateBedMethylFeature({
     n_diff,
     n_nocall,
   ] = line.split('\t')
+
   return {
     uniqueId,
     refName,
     start,
     end,
     code,
-    score: fraction_modified,
+    score: +fraction_modified! || 0,
     strand,
     color,
     source: code,

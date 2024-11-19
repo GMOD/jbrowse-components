@@ -27,7 +27,7 @@ Example QuantitativeTrack config:
 
 - `scaleType` - options: linear, log, to display the coverage data. default:
   linear
-- `adapter` - an adapter that returns numeric signal data, e.g.
+- `adapter` - an adapter that returns numeric stopToken data, e.g.
   feature.get('score')
 
 #### Autoscale options for QuantitativeTrack

@@ -75,7 +75,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     this.configRefNames = readConfObject(config, 'refNames')
   }
 
-  public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
+  public async getRefNames(opts?: BaseOptions): Promise<string[]> {
     if (this.refNames) {
       return this.refNames
     }
@@ -96,26 +96,26 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       )
       const { refName } = query
       const results = await this.querySparql(filledTemplate, opts)
-      this.resultsToFeatures(results, refName).forEach(feature => {
+      const features = this.resultsToFeatures(results, refName)
+      for (const feature of features) {
         observer.next(feature)
-      })
+      }
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
-  private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
+  private async querySparql(query: string, _opts?: BaseOptions): Promise<any> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
     }
-    const signal = opts?.signal
-    const response = await fetch(
-      `${this.endpoint}?query=${query}${additionalQueryParams}`,
-      {
-        headers: { accept: 'application/json,application/sparql-results+json' },
-        signal,
+    // TODO:ABORT
+    const url = `${this.endpoint}?query=${query}${additionalQueryParams}`
+    const response = await fetch(url, {
+      headers: {
+        accept: 'application/json,application/sparql-results+json',
       },
-    )
+    })
     return response.json()
   }
 

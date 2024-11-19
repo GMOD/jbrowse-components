@@ -1,14 +1,11 @@
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 // jbrowse
-import {
-  getContainingView,
-  getSession,
-  isAbortException,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAbortException } from '@jbrowse/core/util/aborting'
 
 export interface Source {
   name: string
@@ -51,8 +48,8 @@ export function getMultiWiggleSourcesAutorun(self: {
           self.setSources(sources)
         }
       } catch (e) {
+        console.error(e)
         if (!isAbortException(e) && isAlive(self)) {
-          console.error(e)
           getSession(self).notifyError(`${e}`, e)
         }
       }

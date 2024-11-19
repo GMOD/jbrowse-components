@@ -15,6 +15,7 @@ import QuickLRU from '@jbrowse/core/util/QuickLRU'
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { FilterBy } from '../shared/types'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface Header {
   idToName: string[]
@@ -75,9 +76,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return this.configureP
   }
 
-  async getHeader(opts?: BaseOptions) {
+  async getHeader(_opts?: BaseOptions) {
     const { bam } = await this.configure()
-    return bam.getHeaderText(opts)
+    return bam.getHeaderText()
   }
 
   private async setupPre(opts?: BaseOptions) {
@@ -87,7 +88,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       'Downloading index',
       statusCallback,
       async () => {
-        const samHeader = await bam.getHeader(opts)
+        const samHeader = await bam.getHeader()
 
         // use the @SQ lines in the header to figure out the
         // mapping between ref ref ID numbers and names
@@ -177,15 +178,17 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { signal, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const { bam } = await this.configure()
       await this.setup(opts)
+      checkStopToken(stopToken)
       const records = await updateStatus(
         'Downloading alignments',
         statusCallback,
-        () => bam.getRecordsForRange(refName, start, end, opts),
+        () => bam.getRecordsForRange(refName, start, end),
       )
+      checkStopToken(stopToken)
 
       await updateStatus('Processing alignments', statusCallback, async () => {
         const {
@@ -240,7 +243,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         }
         observer.complete()
       })
-    }, signal)
+    })
   }
 
   async getMultiRegionFeatureDensityStats(

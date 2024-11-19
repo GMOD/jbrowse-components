@@ -1,5 +1,4 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
@@ -17,7 +16,7 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
   async execute(
     args: {
       adapterConfig: Record<string, unknown>
-      signal?: RemoteAbortSignal
+      stopToken?: string
       headers?: Record<string, string>
       regions: Region[]
       sessionId: string

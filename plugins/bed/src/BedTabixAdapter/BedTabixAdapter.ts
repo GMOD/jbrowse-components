@@ -101,10 +101,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
             ),
           )
         },
-        signal: opts.signal,
+        stopToken: opts.stopToken,
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

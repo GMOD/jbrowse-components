@@ -108,7 +108,7 @@ export default function SharedWiggleMixin(
       /**
        * #volatile
        */
-      statsFetchInProgress: undefined as undefined | AbortController,
+      statsFetchInProgress: undefined as undefined | string,
     }))
     .actions(self => ({
       /**
@@ -155,14 +155,8 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setStatsLoading(aborter: AbortController) {
-        if (
-          self.statsFetchInProgress !== undefined &&
-          !self.statsFetchInProgress.signal.aborted
-        ) {
-          self.statsFetchInProgress.abort()
-        }
-        self.statsFetchInProgress = aborter
+      setStatsLoading() {
+        /* do nothing */
       },
 
       /**

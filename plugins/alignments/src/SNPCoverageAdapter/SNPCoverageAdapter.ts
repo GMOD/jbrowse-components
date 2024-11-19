@@ -90,7 +90,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       })
 
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   async getMultiRegionFeatureDensityStats(

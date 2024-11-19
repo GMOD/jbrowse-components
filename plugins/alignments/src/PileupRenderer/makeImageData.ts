@@ -2,6 +2,7 @@ import { Feature } from '@jbrowse/core/util'
 import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -32,7 +33,13 @@ export function makeImageData({
   layoutRecords: LayoutFeature[]
   renderArgs: RenderArgsWithColor
 }) {
-  const { config, showSoftClip, colorBy, theme: configTheme } = renderArgs
+  const {
+    stopToken,
+    config,
+    showSoftClip,
+    colorBy,
+    theme: configTheme,
+  } = renderArgs
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
   const largeInsertionIndicatorScale = readConfObject(
@@ -48,7 +55,12 @@ export function makeImageData({
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
+  let start = performance.now()
   for (const feat of layoutRecords) {
+    if (performance.now() - start > 400) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
     renderAlignment({
       ctx,
       feat,

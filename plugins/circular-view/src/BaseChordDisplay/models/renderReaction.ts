@@ -26,7 +26,7 @@ export function renderReactionData(self: any) {
 
 export async function renderReactionEffect(
   props: any,
-  signal: AbortSignal | undefined,
+  stopToken: string | undefined,
   self: any,
 ) {
   if (!props) {

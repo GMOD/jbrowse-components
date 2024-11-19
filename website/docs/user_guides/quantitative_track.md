@@ -5,8 +5,9 @@ title: Quantitative tracks
 
 import Figure from '../figure'
 
-Visualizing genome signals, whether it is read depth-of-coverage or other
-signal, can often be done by using BigWig or other quantitative feature files.
+Visualizing genome stopTokens, whether it is read depth-of-coverage or other
+stopToken, can often be done by using BigWig or other quantitative feature
+files.
 
 <Figure caption="A simple wiggle track with the XY plot renderer." src="/img/bigwig_xyplot.png" />
 
