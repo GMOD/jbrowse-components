@@ -82,7 +82,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  private async loadData(opts: BaseOptions = {}) {
+  async loadData(opts: BaseOptions = {}) {
     if (!this.bedFeatures) {
       this.bedFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.bedFeatures = undefined
@@ -128,9 +128,10 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
-    const ret = lines.map((line, i) => {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]!
       const uniqueId = `${this.id}-${refName}-${i}`
-      return new SimpleFeature(
+      const feat = new SimpleFeature(
         featureData({
           line,
           colRef,
@@ -142,15 +143,13 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
           names,
         }),
       )
-    })
-
-    for (const obj of ret) {
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+      intervalTree.insert([feat.get('start'), feat.get('end')], feat)
     }
+
     return intervalTree
   }
 
-  private async loadFeatureIntervalTree(refName: string) {
+  async loadFeatureIntervalTree(refName: string) {
     if (!this.intervalTrees[refName]) {
       this.intervalTrees[refName] = this.loadFeatureIntervalTreeHelper(
         refName,
