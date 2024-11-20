@@ -65,8 +65,8 @@ export function cigarToMismatches(
         mismatches.push({
           start: roffset + j,
           type: 'mismatch',
-          base: r[j]!,
-          qual: q[j]!,
+          base: r[j] || 'X',
+          qual: q[j],
           length: 1,
         })
       }
