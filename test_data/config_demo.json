@@ -4747,6 +4747,19 @@
           "locationType": "UriLocation"
         }
       }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "bilby2",
+      "name": "Bilby transition matrix (full names)",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedGraphAdapter",
+        "bedGraphLocation": {
+          "uri": "https://jbrowse.org/demos/bilby/test2.bg",
+          "locationType": "UriLocation"
+        }
+      }
     }
   ],
   "connections": [],
