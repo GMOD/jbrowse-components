@@ -4737,13 +4737,13 @@
     },
     {
       "type": "MultiQuantitativeTrack",
-      "trackId": "ai_bedgraph",
-      "name": "AI bedgraph",
+      "trackId": "bilby",
+      "name": "Bilby transition matrix",
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "BedGraphAdapter",
         "bedGraphLocation": {
-          "uri": "out.bg",
+          "uri": "https://jbrowse.org/demos/bilby/test.bg",
           "locationType": "UriLocation"
         }
       }
