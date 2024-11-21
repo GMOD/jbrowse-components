@@ -55,11 +55,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
-
-        /**
-         * #property
-         */
         lineWidth: types.maybe(types.number),
 
         /**
@@ -193,7 +188,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },
