@@ -1422,3 +1422,4 @@ export {
 
 export { blobToDataURL } from './blobToDataURL'
 export { makeAbortableReaction } from './makeAbortableReaction'
+export * from './aborting'
