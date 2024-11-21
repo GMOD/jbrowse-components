@@ -4,6 +4,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
+  getConf,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -18,7 +19,6 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import { ColorBy, FilterBy } from '../shared/types'
 import { ChainData } from '../shared/fetchChains'
-import { defaultFilterFlags } from '../shared/util'
 
 // async
 const FilterByTagDialog = lazy(
@@ -53,12 +53,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
+        filterBySetting: types.frozen<FilterBy | undefined>(),
 
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
 
         /**
          * #property
@@ -67,11 +67,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       loading: false,
+      /**
+       * #volatile
+       */
       chainData: undefined as ChainData | undefined,
+      /**
+       * #volatile
+       */
       lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       lastDrawnBpPerPx: 0,
+      /**
+       * #volatile
+       */
       ref: null as HTMLCanvasElement | null,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
     }))
     .actions(self => ({
       /**
@@ -115,7 +144,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
 
       setColorScheme(colorBy: { type: string }) {
-        self.colorBy = {
+        self.colorBySetting = {
           ...colorBy,
         }
       },
@@ -131,7 +160,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },

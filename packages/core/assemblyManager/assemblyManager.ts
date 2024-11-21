@@ -32,6 +32,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get assemblyNameMap() {
         const obj = {} as Record<string, Assembly>
         for (const assembly of self.assemblies) {
@@ -59,12 +62,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #getter
-       * looks at jbrowse.assemblies, session.sessionAssemblies, and
-       * session.temporaryAssemblies to load from
+       * combined jbrowse.assemblies, session.sessionAssemblies, and
+       * session.temporaryAssemblies
        */
       get assemblyList() {
-        // name is the explicit identifier and can be accessed without getConf,
-        // hence the union with {name:string}
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
@@ -83,8 +84,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     .views(self => ({
       /**
        * #method
-       * use this method instead of assemblyManager.get(assemblyName)
-       * to get an assembly with regions loaded
+       * use this method instead of assemblyManager.get(assemblyName) to get an
+       * assembly with regions loaded
        */
       async waitForAssembly(assemblyName: string) {
         if (!assemblyName) {

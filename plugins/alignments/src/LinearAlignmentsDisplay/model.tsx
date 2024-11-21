@@ -150,7 +150,7 @@ function stateModelFactory(
       },
 
       /**
-       * #getteralignmentsdisplaymodel
+       * #getter
        */
       get DisplayBlurb() {
         return self.PileupDisplay?.DisplayBlurb

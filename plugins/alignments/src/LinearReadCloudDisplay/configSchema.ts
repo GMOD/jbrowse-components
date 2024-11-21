@@ -1,7 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
 /**
  * #config LinearReadCloudDisplay
@@ -30,18 +29,9 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      colorScheme: {
-        type: 'stringEnum',
-        model: types.enumeration('colorScheme', [
-          'strand',
-          'normal',
-          'insertSize',
-          'insertSizeAndOrientation',
-          'mappingQuality',
-          'tag',
-        ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
+      colorBy: {
+        type: 'frozen',
+        defaultValue: { type: 'insertSizeAndOrientation' },
       },
     },
     {

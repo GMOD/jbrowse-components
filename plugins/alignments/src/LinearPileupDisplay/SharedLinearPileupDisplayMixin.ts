@@ -37,7 +37,6 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { createAutorun } from '../util'
 import { ColorBy, FilterBy } from '../shared/types'
 import { getUniqueTags } from '../shared/getUniqueTags'
-import { defaultFilterFlags } from '../shared/util'
 
 // lazies
 const FilterByTagDialog = lazy(
@@ -60,7 +59,8 @@ type LGV = LinearGenomeViewModel
 /**
  * #stateModel SharedLinearPileupDisplayMixin
  * #category display
- * extends `BaseLinearDisplay`
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export function SharedLinearPileupDisplayMixin(
   configSchema: AnyConfigurationSchemaType,
@@ -92,11 +92,11 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
+        filterBySetting: types.frozen<FilterBy | undefined>(),
         /**
          * #property
          */
@@ -104,9 +104,33 @@ export function SharedLinearPileupDisplayMixin(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       colorTagMap: observable.map<string, string>({}),
+      /**
+       * #volatile
+       */
       featureUnderMouseVolatile: undefined as undefined | Feature,
+      /**
+       * #volatile
+       */
       tagsReady: false,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
     }))
     .views(self => ({
       get autorunReady() {
@@ -152,7 +176,7 @@ export function SharedLinearPileupDisplayMixin(
        */
       setColorScheme(colorScheme: ColorBy) {
         self.colorTagMap = observable.map({})
-        self.colorBy = {
+        self.colorBySetting = {
           ...colorScheme,
         }
         if (colorScheme.tag) {
@@ -237,7 +261,7 @@ export function SharedLinearPileupDisplayMixin(
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },
@@ -655,4 +679,17 @@ export function SharedLinearPileupDisplayMixin(
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap) {
+        // @ts-expect-error
+        const { colorBy, filterBy, ...rest } = snap
+        return {
+          ...rest,
+          filterBySetting: filterBy,
+          colorBySetting: colorBy,
+        }
+      }
+      return snap
+    })
 }

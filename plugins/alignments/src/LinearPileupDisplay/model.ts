@@ -416,7 +416,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   GroupByDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },

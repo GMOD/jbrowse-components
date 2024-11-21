@@ -330,7 +330,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_pileup",
-      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height)",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height, colorBy mappingQual)",
       "category": ["Integration test"],
       "metadata": {
         "description": "this is a metadata description",
@@ -364,7 +364,8 @@
         {
           "type": "LinearPileupDisplay",
           "displayId": "volvox_cram_pileup_pileup",
-          "height": 400
+          "height": 400,
+          "colorBy": { "type": "mappingQuality" }
         }
       ]
     },
@@ -489,7 +490,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA, larger default height)",
+      "name": "volvox-sorted.bam (ctgA, larger default height, colorBy mappingQual)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
@@ -512,7 +513,8 @@
           "displayId": "volvox_alignments_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup"
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "colorBy": { "type": "mappingQuality" }
           }
         }
       ]
