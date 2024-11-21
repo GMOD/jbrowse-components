@@ -37,7 +37,6 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { createAutorun } from '../util'
 import { ColorBy, FilterBy } from '../shared/types'
 import { getUniqueTags } from '../shared/getUniqueTags'
-import { defaultFilterFlags } from '../shared/util'
 
 // lazies
 const FilterByTagDialog = lazy(
@@ -97,7 +96,7 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        filterBySetting: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
+        filterBySetting: types.frozen<FilterBy | undefined>(),
         /**
          * #property
          */
@@ -105,12 +104,20 @@ export function SharedLinearPileupDisplayMixin(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       colorTagMap: observable.map<string, string>({}),
+      /**
+       * #volatile
+       */
       featureUnderMouseVolatile: undefined as undefined | Feature,
+      /**
+       * #volatile
+       */
       tagsReady: false,
     }))
     .views(self => ({
-
       /**
        * #getter
        */
@@ -169,7 +176,7 @@ export function SharedLinearPileupDisplayMixin(
        */
       setColorScheme(colorScheme: ColorBy) {
         self.colorTagMap = observable.map({})
-        self.colorBy = {
+        self.colorBySetting = {
           ...colorScheme,
         }
         if (colorScheme.tag) {
@@ -254,7 +261,7 @@ export function SharedLinearPileupDisplayMixin(
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },
@@ -675,8 +682,12 @@ export function SharedLinearPileupDisplayMixin(
     .preProcessSnapshot(snap => {
       if (snap) {
         // @ts-expect-error
-        const { colorBy, ...rest } = snap
-        return { ...rest, colorBySetting: colorBy }
+        const { colorBy, filterBy, ...rest } = snap
+        return {
+          ...rest,
+          filterBySetting: filterBy,
+          colorBySetting: colorBy,
+        }
       }
       return snap
     })

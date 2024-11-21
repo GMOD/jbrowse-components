@@ -24,6 +24,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // locals
 import { getUniqueTags } from '../../shared/getUniqueTags'
 import { LinearAlignmentsDisplayModel } from '../../LinearAlignmentsDisplay/model'
+import { defaultFilterFlags } from '../../shared/util'
 
 function clone(c: unknown) {
   return JSON.parse(JSON.stringify(c))
@@ -154,50 +155,78 @@ const GroupByTagDialog = observer(function (props: {
                   ret.push(undefined)
                 }
                 for (const tagValue of ret) {
+                  const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${+Date.now()}-sessionTrack`
                   // @ts-expect-error
-                  const newTrackConf = session.addTrackConf({
+                  session.addTrackConf({
                     ...trackConf,
-                    trackId: `${trackConf.trackId}-${tag}:${tagValue}-${+Date.now()}-sessionTrack`,
-                    name: `${trackConf.name} ${tag}:${tagValue}`,
-                    displays: undefined,
+                    trackId: t1,
+                    name: `${trackConf.name} (-)`,
+                    displays: [
+                      {
+                        displayId: `${t1}-LinearAlignmentsDisplay`,
+                        type: 'LinearAlignmentsDisplay',
+                        pileupDisplay: {
+                          displayId: `${t1}-LinearAlignmentsDisplay-LinearPileupDisplay`,
+                          type: 'LinearPileupDisplay',
+                          filterBy: {
+                            ...defaultFilterFlags,
+                            tagFilter: {
+                              tag,
+                              value: tagValue,
+                            },
+                          },
+                        },
+                      },
+                    ],
                   })
-                  const view = getContainingView(model) as LinearGenomeViewModel
-                  const t = view.showTrack(newTrackConf.trackId)
-                  const d = t.displays[0] as LinearAlignmentsDisplayModel
-                  d.setFilterBy({
-                    flagInclude: 0,
-                    flagExclude: 1540,
-                    tagFilter: {
-                      tag,
-                      value: tagValue,
-                    },
-                  })
+                  view.showTrack(t1)
                 }
               }
             } else if (type === 'strand') {
+              const t1 = `${trackConf.trackId}-${tag}:(-)-${+Date.now()}-sessionTrack`
+              const t2 = `${trackConf.trackId}-${tag}:(+)-${+Date.now()}-sessionTrack`
               // @ts-expect-error
-              const newTrackConf1 = session.addTrackConf({
+              session.addTrackConf({
                 ...trackConf,
-                trackId: `${trackConf.trackId}-${tag}:(-)-${+Date.now()}-sessionTrack`,
+                trackId: t1,
                 name: `${trackConf.name} (-)`,
-                displays: undefined,
+                displays: [
+                  {
+                    displayId: `${t1}-LinearAlignmentsDisplay`,
+                    type: 'LinearAlignmentsDisplay',
+                    pileupDisplay: {
+                      displayId: `${t1}-LinearAlignmentsDisplay-LinearPileupDisplay`,
+                      type: 'LinearPileupDisplay',
+                      filterBy: {
+                        flagInclude: 16,
+                        flagExclude: 1540,
+                      },
+                    },
+                  },
+                ],
               })
-              view.showTrack(newTrackConf1.trackId).displays[0].setFilterBy({
-                flagInclude: 16,
-                flagExclude: 1540,
-              })
-
               // @ts-expect-error
-              const newTrackConf2 = session.addTrackConf({
+              session.addTrackConf({
                 ...trackConf,
-                trackId: `${trackConf.trackId}-${tag}:(+)-${+Date.now()}-sessionTrack`,
+                trackId: t2,
                 name: `${trackConf.name} (+)`,
-                displays: undefined,
+                displays: [
+                  {
+                    displayId: `${t2}-LinearAlignmentsDisplay`,
+                    type: 'LinearAlignmentsDisplay',
+                    pileupDisplay: {
+                      displayId: `${t2}-LinearAlignmentsDisplay-LinearPileupDisplay`,
+                      type: 'LinearPileupDisplay',
+                      filterBy: {
+                        flagInclude: 0,
+                        flagExclude: 1556,
+                      },
+                    },
+                  },
+                ],
               })
-              view.showTrack(newTrackConf2.trackId).displays[0].setFilterBy({
-                flagInclude: 0,
-                flagExclude: 1556,
-              })
+              view.showTrack(t1)
+              view.showTrack(t2)
             }
             handleClose()
           }}

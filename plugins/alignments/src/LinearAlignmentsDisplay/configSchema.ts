@@ -16,7 +16,7 @@ export default function configModelFactory(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      pileupDisplay: pluginManager.getDisplayType('LinearPileupDisplay')
+      pileupDisplay: pluginManager.getDisplayType('LinearPileupDisplay')!
         .configSchema,
 
       /**
@@ -24,7 +24,7 @@ export default function configModelFactory(pluginManager: PluginManager) {
        */
       snpCoverageDisplay: pluginManager.getDisplayType(
         'LinearSNPCoverageDisplay',
-      ).configSchema,
+      )!.configSchema,
 
       /**
        * #slot

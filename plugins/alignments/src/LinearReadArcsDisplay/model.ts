@@ -70,7 +70,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
+
+        /**
+         * #property
+         */
+        filterBySetting: types.frozen<FilterBy | undefined>(),
 
         /**
          * #property
@@ -84,11 +89,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       loading: false,
+      /**
+       * #volatile
+       */
       chainData: undefined as ChainData | undefined,
+      /**
+       * #volatile
+       */
       lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       lastDrawnBpPerPx: 0,
+      /**
+       * #volatile
+       */
       ref: null as HTMLCanvasElement | null,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
     }))
     .actions(self => ({
       /**
@@ -129,7 +163,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setColorScheme(colorBy: { type: string }) {
-        self.colorBy = {
+        self.colorBySetting = {
           ...colorBy,
         }
       },
