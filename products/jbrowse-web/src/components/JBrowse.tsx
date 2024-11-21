@@ -23,8 +23,8 @@ const JBrowse = observer(function ({
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse } = rootModel || {}
-  const session = rootModel?.session as WebSessionModel
-  const currentSessionId = session.id
+  const session = rootModel?.session as WebSessionModel | undefined
+  const currentSessionId = session?.id
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`, 'replaceIn')
@@ -40,7 +40,7 @@ const JBrowse = observer(function ({
     }
     return onSnapshot(jbrowse, async snapshot => {
       try {
-        const response = await fetch(adminServer || `/updateConfig`, {
+        const response = await fetch(adminServer || '/updateConfig', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -60,6 +60,7 @@ const JBrowse = observer(function ({
   }, [jbrowse, session, adminKey, adminServer, configPath])
 
   if (error) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw error
   }
   if (!rootModel) {
@@ -73,6 +74,7 @@ const JBrowse = observer(function ({
     <ThemeProvider theme={session.theme}>
       <CssBaseline />
       <App
+        // @ts-expect-error see comments on interface for AbstractSessionModel
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />

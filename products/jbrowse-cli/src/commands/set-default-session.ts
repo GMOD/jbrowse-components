@@ -11,7 +11,7 @@ type Track = Record<string, unknown>
 
 interface Config {
   assemblies?: { name: string; sequence: Record<string, unknown> }[]
-  configuration?: {}
+  configuration?: Record<string, unknown>
   connections?: unknown[]
   defaultSession?: DefaultSession
   tracks?: Track[]
@@ -24,16 +24,21 @@ export default class SetDefaultSession extends JBrowseCommand {
   static description = 'Set a default session with views and tracks'
 
   static examples = [
+    '# set default session for the config.json in your current directory',
     '$ jbrowse set-default-session --session /path/to/default/session.json',
-    '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json',
-    '$ jbrowse set-default-session --view LinearGenomeView, --name newName',
+    '',
+    '# make session.json the defaultSession on the specified target config.json file',
+    '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json',
+    '',
+    '# print current default session',
     '$ jbrowse set-default-session --currentSession # Prints out current default session',
   ]
 
   static flags = {
     session: Flags.string({
       char: 's',
-      description: 'set path to a file containing session in json format',
+      description:
+        'set path to a file containing session in json format (required, unless using delete/currentSession flags)',
     }),
     name: Flags.string({
       char: 'n',
@@ -68,7 +73,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     const configContents: Config = await this.readJsonFile(this.target)
 
     if (deleteDefaultSession) {
-      delete configContents.defaultSession
+      configContents.defaultSession = undefined
       await this.writeJsonFile(this.target, configContents)
     } else if (currentSession) {
       this.log(
@@ -78,7 +83,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       )
       this.exit()
     } else if (!session) {
-      this.error(`Please either provide a default session file`, { exit: 120 })
+      this.error('Please provide a --session file', { exit: 120 })
     } else if (session) {
       await this.writeJsonFile(this.target, {
         ...configContents,

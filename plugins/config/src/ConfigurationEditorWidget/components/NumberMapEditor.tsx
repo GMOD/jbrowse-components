@@ -45,7 +45,11 @@ const NumberMapEditor = observer(function ({
           <CardHeader
             title={key}
             action={
-              <IconButton onClick={() => slot.remove(key)}>
+              <IconButton
+                onClick={() => {
+                  slot.remove(key)
+                }}
+              >
                 <DeleteIcon />
               </IconButton>
             }
@@ -54,7 +58,9 @@ const NumberMapEditor = observer(function ({
             <NumberEditor
               slot={{
                 value: val,
-                set: (val: number) => slot.add(key, val),
+                set: (val: number) => {
+                  slot.add(key, val)
+                },
               }}
             />
           </CardContent>
@@ -68,21 +74,25 @@ const NumberMapEditor = observer(function ({
               fullWidth
               value={value}
               placeholder="add new"
-              onChange={event => setValue(event.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      disabled={value === ''}
-                      onClick={() => {
-                        slot.add(value, 0)
-                        setValue('')
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              onChange={event => {
+                setValue(event.target.value)
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        disabled={value === ''}
+                        onClick={() => {
+                          slot.add(value, 0)
+                          setValue('')
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           }

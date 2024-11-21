@@ -12,12 +12,13 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
 // locals
 import ErrorMessage from './ErrorMessage'
+import SanitizedHTML from './SanitizedHTML'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -52,7 +53,7 @@ const Dialog = observer(function (props: Props) {
           header
         ) : (
           <DialogTitle>
-            {title}
+            <SanitizedHTML html={title || ''} />
             {onClose ? (
               <IconButton
                 className={classes.closeButton}

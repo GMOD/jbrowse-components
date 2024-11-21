@@ -41,7 +41,9 @@ const ViewContainerTitle = observer(function ({
             view.minimized ? ' (minimized)' : ''
           }`
         }
-        setValue={val => view.setDisplayName(val)}
+        setValue={val => {
+          view.setDisplayName(val)
+        }}
         variant="body2"
         classes={{
           input: classes.input,

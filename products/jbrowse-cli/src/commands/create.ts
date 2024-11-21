@@ -29,7 +29,7 @@ export default class Create extends JBrowseCommand {
   static args = {
     localPath: Args.string({
       required: true,
-      description: `Location where JBrowse 2 will be installed`,
+      description: 'Location where JBrowse 2 will be installed',
     }),
   }
 
@@ -40,7 +40,7 @@ export default class Create extends JBrowseCommand {
       description:
         'Overwrites existing JBrowse 2 installation if present in path',
     }),
-    // will need to account for pagenation once there is a lot of releases
+    // will need to account for pagination once there is a lot of releases
     listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
@@ -115,7 +115,7 @@ export default class Create extends JBrowseCommand {
     const allFiles = await fsPromises.readdir(userPath)
     if (allFiles.length > 0) {
       this.error(
-        `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
+        `This directory (${userPath}) has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
         { exit: 120 },
       )
     }

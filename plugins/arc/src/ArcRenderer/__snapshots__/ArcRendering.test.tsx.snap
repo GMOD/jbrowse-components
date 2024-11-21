@@ -22,7 +22,7 @@ exports[`one feature 1`] = `
         pointer-events="stroke"
         stroke="#000000"
         stroke-opacity="1"
-        stroke-width="1"
+        stroke-width="2"
       />
       <text
         stroke="white"
@@ -53,7 +53,7 @@ exports[`one semicircle 1`] = `
         pointer-events="stroke"
         stroke="#000000"
         stroke-opacity="1"
-        stroke-width="1"
+        stroke-width="2"
       />
       <text
         stroke="white"

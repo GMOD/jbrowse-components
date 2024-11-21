@@ -67,7 +67,7 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
   getByCoord(x: number, y: number) {
     const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
     return this.rbush.collides(rect)
-      ? this.rbush.search(rect)[0].name
+      ? this.rbush.search(rect)[0]!.name
       : undefined
   }
 

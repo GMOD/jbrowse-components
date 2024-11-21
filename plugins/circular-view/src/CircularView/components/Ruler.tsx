@@ -203,11 +203,8 @@ const RegionRulerArc = observer(function ({
   const centerRadians = (endRadians + startRadians) / 2
   const widthPx = (endRadians - startRadians) * radiusPx
   const session = getSession(model)
-  let color
   const assembly = session.assemblyManager.get(region.assemblyName)
-  if (assembly) {
-    color = assembly.getRefNameColor(region.refName)
-  }
+  let color = assembly ? assembly.getRefNameColor(region.refName) : undefined
   if (color) {
     try {
       color = makeContrasting(color, theme.palette.background.paper)
@@ -248,7 +245,7 @@ const Ruler = observer(function ({
 }) {
   return slice.region.elided ? (
     <ElisionRulerArc
-      key={assembleLocString(slice.region.regions[0])}
+      key={assembleLocString(slice.region.regions[0]!)}
       model={model}
       region={slice.region}
       slice={slice}

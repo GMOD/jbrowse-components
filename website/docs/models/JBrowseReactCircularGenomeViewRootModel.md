@@ -27,7 +27,7 @@ config: createConfigModel(pluginManager, assemblyConfigSchema)
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 20 more ... & { ...; }, _NotCustomized, _NotCustomized>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, _NotCustomized>
 // code
 session: Session
 ```
@@ -36,7 +36,7 @@ session: Session
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytob...
 // code
 assemblyManager: types.optional(assemblyManagerType, {})
 ```
@@ -58,7 +58,7 @@ internetAccounts: types.array(
 
 ```js
 // type
-{ configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<...>; }, ConfigurationSchema...
+{ configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 5 more ...; plugins: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>
 ```
 
 #### getter: pluginManager

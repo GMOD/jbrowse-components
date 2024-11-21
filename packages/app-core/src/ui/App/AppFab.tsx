@@ -36,7 +36,9 @@ const AppFab = observer(function ({
         className={drawerPosition === 'right' ? classes.right : classes.left}
         color="primary"
         data-testid="drawer-maximize"
-        onClick={() => session.showWidgetDrawer()}
+        onClick={() => {
+          session.showWidgetDrawer()
+        }}
       >
         <LaunchIcon />
       </Fab>

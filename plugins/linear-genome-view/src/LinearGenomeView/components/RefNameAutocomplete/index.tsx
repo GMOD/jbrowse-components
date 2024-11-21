@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
@@ -64,7 +64,7 @@ const RefNameAutocomplete = observer(function ({
         session.notifyError(`${e}`, e)
       }
     })()
-  }, [assemblyName, fetchResults, debouncedSearch, session, model])
+  }, [assemblyName, fetchResults, debouncedSearch, session])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
@@ -74,18 +74,15 @@ const RefNameAutocomplete = observer(function ({
     maxWidth,
   )
 
-  const regions = assembly?.regions
-  const regionOptions = useMemo(
-    () =>
-      regions?.map(option => ({
-        result: new RefSequenceResult({
-          refName: option.refName,
-          label: option.refName,
-          matchedAttribute: 'refName',
-        }),
-      })) || [],
-    [regions],
-  )
+  const refNames = assembly?.refNames
+  const regionOptions =
+    refNames?.map(refName => ({
+      result: new RefSequenceResult({
+        refName,
+        label: refName,
+        matchedAttribute: 'refName',
+      }),
+    })) || []
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
@@ -108,7 +105,9 @@ const RefNameAutocomplete = observer(function ({
       }}
       loadingText="loading results"
       open={open}
-      onOpen={() => setOpen(true)}
+      onOpen={() => {
+        setOpen(true)
+      }}
       onClose={() => {
         setOpen(false)
         setLoaded(true)

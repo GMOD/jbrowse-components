@@ -14,21 +14,34 @@ export default function FactoryResetDialog({
 }: {
   open: boolean
   onClose: () => void
-  onFactoryReset: Function
+  onFactoryReset: () => void
 }) {
   return (
-    <Dialog open={open} onClose={() => onClose()} title="Reset">
+    <Dialog
+      open={open}
+      onClose={() => {
+        onClose()
+      }}
+      title="Reset"
+    >
       <DialogContent>
         <DialogContentText>
           Are you sure you want to reset? This will remove all your sessions.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose()} color="primary">
+        <Button
+          onClick={() => {
+            onClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button
-          onClick={() => onFactoryReset()}
+          onClick={() => {
+            onFactoryReset()
+          }}
           color="primary"
           variant="contained"
         >

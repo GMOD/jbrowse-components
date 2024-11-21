@@ -6,7 +6,7 @@ import { CanvasSequence } from 'canvas-sequencer'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './blobToDataURL'
 
-export type RenderReturn = Record<string, unknown> | void
+export type RenderReturn = Record<string, unknown> | undefined
 
 type RendererRet = Promise<RenderReturn> | RenderReturn
 
@@ -102,9 +102,6 @@ export function ReactRendering({
   return React.isValidElement(rendering.reactElement) ? (
     rendering.reactElement
   ) : (
-    <g
-      /* eslint-disable-next-line react/no-danger */
-      dangerouslySetInnerHTML={{ __html: rendering.html || '' }}
-    />
+    <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
   )
 }

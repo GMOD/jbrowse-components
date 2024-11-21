@@ -60,7 +60,7 @@ export default function SharedModelF(
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
-        renderProps: superRenderProps,
+        adapterProps: superAdapterProps,
       } = self
       return {
         trackMenuItems() {
@@ -82,10 +82,10 @@ export default function SharedModelF(
          * retrieves the sequence adapter from parent track, and puts it as a
          * subadapter on a GCContentAdapter
          */
-        renderProps() {
+        adapterProps() {
           const sequenceAdapter = getConf(self.parentTrack, 'adapter')
           return {
-            ...superRenderProps(),
+            ...superAdapterProps(),
             adapterConfig: {
               type: 'GCContentAdapter',
               sequenceAdapter,

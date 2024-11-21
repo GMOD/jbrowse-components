@@ -48,11 +48,15 @@ export const PopoverPicker = ({
       <div
         className={classes.swatch}
         style={{ backgroundColor: color }}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       />
       <ColorPopover
         anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
         color={color}
         onChange={onChange}
       />
@@ -122,17 +126,23 @@ export function ColorPicker({
         <div className={classes.swatches}>
           {presetColors.map((presetColor, idx) => (
             <button
+              type="button"
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               key={`${presetColor}-${idx}`}
               className={classes.swatch}
               style={{ background: presetColor }}
-              onClick={() => handleChange(presetColor)}
+              onClick={() => {
+                handleChange(presetColor)
+              }}
             />
           ))}
         </div>
         <TextField
           helperText={'Manually set color (hex, rgb, or css color name)'}
           value={text}
-          onChange={event => handleChange(event.target.value)}
+          onChange={event => {
+            handleChange(event.target.value)
+          }}
         />
       </div>
     </div>

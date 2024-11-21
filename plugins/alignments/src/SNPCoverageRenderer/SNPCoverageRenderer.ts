@@ -9,6 +9,11 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+// locals
+import { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
+import { alphaColor } from '../shared/util'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -17,20 +22,27 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
 }
 
+// width/height of the triangle above e.g. insertion indicators
+const INTERBASE_INDICATOR_WIDTH = 7
+const INTERBASE_INDICATOR_HEIGHT = 4.5
+
+// minimum read depth to draw the insertion indicators, below this the
+// 'statistical significance' is low
+const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
+
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap?: Record<string, string | undefined>
+  visibleModifications?: Record<string, ModificationTypeWithColor>
 }
 
-type Counts = Record<string, { total: number; strands: Record<string, number> }>
-
-interface SNPInfo {
-  cov: Counts
-  noncov: Counts
-  total: number
+const complementBase = {
+  C: 'G',
+  G: 'C',
+  A: 'T',
+  T: 'A',
 }
 
 const fudgeFactor = 0.6
@@ -46,16 +58,18 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       features,
       regions,
       bpPerPx,
+      colorBy,
       displayCrossHatches,
-      modificationTagMap = {},
+      visibleModifications = {},
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
       ticks,
+      stopToken,
     } = props
     const theme = createJBrowseTheme(configTheme)
-    const [region] = regions
+    const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -64,10 +78,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    const { domain } = scaleOpts
-    if (!domain) {
-      return
-    }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
 
@@ -102,82 +112,226 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       softclip: 'blue',
       hardclip: 'red',
       total: readConfObject(cfg, 'color'),
-      meth: 'red',
-      unmeth: 'blue',
+      mod_NONE: 'blue',
+      cpg_meth: 'red',
+      cpg_unmeth: 'blue',
     }
 
     const feats = [...features.values()]
-    const coverage = feats.filter(f => f.get('type') !== 'skip')
-    const skips = feats.filter(f => f.get('type') === 'skip')
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
-    ctx.fillStyle = colorForBase.total
-    for (const feature of coverage) {
+    ctx.fillStyle = colorForBase.total!
+    let start = performance.now()
+    for (const feature of feats) {
+      if (feature.get('type') === 'skip') {
+        continue
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
     }
 
     // Keep track of previous total which we will use it to draw the interbase
     // indicator (if there is a sudden clip, there will be no read coverage but
-    // there will be "clip" coverage) at that position beyond the read. if the
-    // clip is right at a block boundary then prevTotal will not be available,
-    // so this is a best attempt to plot interbase indicator at the "cliffs"
+    // there will be "clip" coverage) at that position beyond the read.
+    //
+    // if the clip is right at a block boundary then prevTotal will not be
+    // available, so this is a best attempt to plot interbase indicator at the
+    // "cliffs"
     let prevTotal = 0
 
     // extraHorizontallyFlippedOffset is used to draw interbase items, which
     // are located to the left when forward and right when reversed
     const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
+    // @ts-expect-error
+    const drawingModifications = colorBy?.type === 'modifications'
+    // @ts-expect-error
+    const drawingMethylation = colorBy?.type === 'methylation'
+    const isolatedModification =
+      // @ts-expect-error
+      colorBy?.modifications?.isolatedModification
+
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
-
-    for (const feature of coverage) {
+    start = performance.now()
+    for (const feature of feats) {
+      const now = performance.now()
+      if (now - start > 400) {
+        checkStopToken(stopToken)
+      }
+      if (feature.get('type') === 'skip') {
+        continue
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-
-      const score = feature.get('score') as number
-      const snpinfo = feature.get('snpinfo') as SNPInfo
+      const snpinfo = feature.get('snpinfo') as BaseCoverageBin
       const w = Math.max(rightPx - leftPx, 1)
-      const totalScore = snpinfo.total
-      const keys = Object.keys(snpinfo.cov).sort()
+      const score0 = feature.get('score')
+      if (drawingModifications) {
+        let curr = 0
+        const refbase = snpinfo.refbase?.toUpperCase()
+        const { nonmods, mods, snps, ref } = snpinfo
+        for (const m of Object.keys(nonmods).sort().reverse()) {
+          const mod =
+            visibleModifications[m.replace('nonmod_', '')] ||
+            visibleModifications[m.replace('mod_', '')]
+          if (!mod) {
+            console.warn(`${m} not known yet`)
+            continue
+          }
+          if (isolatedModification && mod.type !== isolatedModification) {
+            continue
+          }
+          const cmp = complementBase[mod.base as keyof typeof complementBase]
 
-      let curr = 0
-      for (const base of keys) {
-        const { total } = snpinfo.cov[base]
-        ctx.fillStyle =
-          colorForBase[base] ||
-          modificationTagMap[base.replace('mod_', '')] ||
-          'black'
+          // this approach is inspired from the 'simplex' approach in igv
+          // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
+          const detectable =
+            mod.base === 'N'
+              ? score0
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref['1'] : 0) +
+                (refbase === cmp ? ref['-1'] : 0)
 
-        const height = toHeight(score)
-        const bottom = toY(score) + height
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((total + curr) / score) * height,
-          w,
-          (total / score) * height,
-        )
-        curr += total
+          const modifiable =
+            mod.base === 'N'
+              ? score0
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref.entryDepth : 0) +
+                (refbase === cmp ? ref.entryDepth : 0)
+
+          const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+          const modFraction = (modifiable / score0) * (entryDepth / detectable)
+          const nonModColor = 'blue'
+          const c = alphaColor(nonModColor, avgProbability)
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+
+          ctx.fillStyle = c
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - (curr + modFraction * height),
+            w,
+            modFraction * height,
+          )
+          curr += modFraction * height
+        }
+        for (const m of Object.keys(mods).sort().reverse()) {
+          const mod = visibleModifications[m.replace('mod_', '')]
+          if (!mod) {
+            console.warn(`${m} not known yet`)
+            continue
+          }
+          if (isolatedModification && mod.type !== isolatedModification) {
+            continue
+          }
+          const cmp = complementBase[mod.base as keyof typeof complementBase]
+
+          // this approach is inspired from the 'simplex' approach in igv
+          // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
+          const detectable =
+            mod.base === 'N'
+              ? score0
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref['1'] : 0) +
+                (refbase === cmp ? ref['-1'] : 0)
+
+          const modifiable =
+            mod.base === 'N'
+              ? score0
+              : (snps[mod.base]?.entryDepth || 0) +
+                (snps[cmp]?.entryDepth || 0) +
+                (refbase === mod.base ? ref.entryDepth : 0) +
+                (refbase === cmp ? ref.entryDepth : 0)
+
+          const { entryDepth, avgProbability = 0 } = mods[m]!
+          const modFraction = (modifiable / score0) * (entryDepth / detectable)
+          const baseColor = mod.color || 'black'
+          const c = alphaColor(baseColor, avgProbability)
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+
+          ctx.fillStyle = c
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - (curr + modFraction * height),
+            w,
+            modFraction * height,
+          )
+          curr += modFraction * height
+        }
+      } else if (drawingMethylation) {
+        const { depth, nonmods, mods } = snpinfo
+        let curr = 0
+
+        for (const base of Object.keys(mods).sort().reverse()) {
+          const { entryDepth } = mods[base]!
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+          ctx.fillStyle = colorForBase[base] || 'black'
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - ((entryDepth + curr) / depth) * height,
+            w,
+            (entryDepth / depth) * height,
+          )
+          curr += entryDepth
+        }
+        for (const base of Object.keys(nonmods).sort().reverse()) {
+          const { entryDepth } = nonmods[base]!
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+          ctx.fillStyle = colorForBase[base] || 'black'
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - ((entryDepth + curr) / depth) * height,
+            w,
+            (entryDepth / depth) * height,
+          )
+          curr += entryDepth
+        }
+      } else {
+        const { depth, snps } = snpinfo
+        let curr = 0
+        for (const base of Object.keys(snps).sort().reverse()) {
+          const { entryDepth } = snps[base]!
+          const height = toHeight(score0)
+          const bottom = toY(score0) + height
+          ctx.fillStyle = colorForBase[base] || 'black'
+          ctx.fillRect(
+            Math.round(leftPx),
+            bottom - ((entryDepth + curr) / depth) * height,
+            w,
+            (entryDepth / depth) * height,
+          )
+          curr += entryDepth
+        }
       }
 
       const interbaseEvents = Object.keys(snpinfo.noncov)
-      const indicatorHeight = 4.5
       if (drawInterbaseCounts) {
         let curr = 0
         for (const base of interbaseEvents) {
-          const { total } = snpinfo.noncov[base]
+          const { entryDepth } = snpinfo.noncov[base]!
           const r = 0.6
-          ctx.fillStyle = colorForBase[base]
+          ctx.fillStyle = colorForBase[base]!
           ctx.fillRect(
             leftPx - r + extraHorizontallyFlippedOffset,
-            indicatorHeight + toHeight2(curr),
+            INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
             r * 2,
-            toHeight2(total),
+            toHeight2(entryDepth),
           )
-          curr += total
+          curr += entryDepth
         }
       }
 
@@ -186,56 +340,51 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         let max = 0
         let maxBase = ''
         for (const base of interbaseEvents) {
-          const { total } = snpinfo.noncov[base]
-          accum += total
-          if (total > max) {
-            max = total
+          const { entryDepth } = snpinfo.noncov[base]!
+          accum += entryDepth
+          if (entryDepth > max) {
+            max = entryDepth
             maxBase = base
           }
         }
 
-        // avoid drawing a bunch of indicators if coverage is very low e.g.
-        // less than 7, uses the prev total in the case of the "cliff"
-        const indicatorComparatorScore = Math.max(totalScore, prevTotal)
+        // avoid drawing a bunch of indicators if coverage is very low. note:
+        // also uses the prev total in the case of the "cliff"
+        const indicatorComparatorScore = Math.max(score0, prevTotal)
         if (
           accum > indicatorComparatorScore * indicatorThreshold &&
-          indicatorComparatorScore > 7
+          indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
         ) {
-          ctx.fillStyle = colorForBase[maxBase]
+          ctx.fillStyle = colorForBase[maxBase]!
           ctx.beginPath()
           const l = leftPx + extraHorizontallyFlippedOffset
-          ctx.moveTo(l - 3.5, 0)
-          ctx.lineTo(l + 3.5, 0)
-          ctx.lineTo(l, indicatorHeight)
+          ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
           ctx.fill()
         }
       }
-      prevTotal = totalScore
+      prevTotal = score0
     }
 
     if (drawArcs) {
-      for (const f of skips) {
-        const [left, right] = bpSpanPx(
-          f.get('start'),
-          f.get('end'),
-          region,
-          bpPerPx,
-        )
+      for (const f of feats) {
+        if (f.get('type') !== 'skip') {
+          continue
+        }
+        const s = f.get('start')
+        const e = f.get('end')
+        const [left, right] = bpSpanPx(s, e, region, bpPerPx)
 
         ctx.beginPath()
-        const str = f.get('strand') as number
-        const xs = f.get('xs') as string
+        const effectiveStrand = f.get('effectiveStrand')
         const pos = 'rgba(255,200,200,0.7)'
         const neg = 'rgba(200,200,255,0.7)'
         const neutral = 'rgba(200,200,200,0.7)'
 
-        if (xs === '+') {
+        if (effectiveStrand === 1) {
           ctx.strokeStyle = pos
-        } else if (xs === '-') {
-          ctx.strokeStyle = neg
-        } else if (str === 1) {
-          ctx.strokeStyle = pos
-        } else if (str === -1) {
+        } else if (effectiveStrand === -1) {
           ctx.strokeStyle = neg
         } else {
           ctx.strokeStyle = neutral
@@ -251,12 +400,13 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      ticks.values.forEach(tick => {
+      for (const tick of ticks.values) {
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))
         ctx.stroke()
-      })
+      }
     }
+    return undefined
   }
 }

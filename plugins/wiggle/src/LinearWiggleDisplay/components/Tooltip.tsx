@@ -14,10 +14,15 @@ interface Props {
 
 const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, ref) {
-    const start = feature.get('start')
+    const start = feature.get('start') + 1
     const end = feature.get('end')
-    const name = feature.get('refName')
-    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+    const refName = feature.get('refName')
+    const name = feature.get('name')
+    const loc = [
+      refName,
+      name,
+      start === end ? en(start) : `${en(start)}..${en(end)}`,
+    ]
       .filter(f => !!f)
       .join(':')
 
@@ -44,7 +49,9 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 type Coord = [number, number]
 
 const WiggleTooltip = observer(function (props: {
-  model: { featureUnderMouse: Feature }
+  model: {
+    featureUnderMouse?: Feature
+  }
   height: number
   offsetMouseCoord: Coord
   clientMouseCoord: Coord

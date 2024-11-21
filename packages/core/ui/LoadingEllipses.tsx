@@ -40,7 +40,7 @@ export default function LoadingEllipses({
   const { classes } = useStyles()
   return (
     <Typography className={classes.dots} {...rest} variant={variant}>
-      {`${message || 'Loading'}`}
+      {message || 'Loading'}
     </Typography>
   )
 }

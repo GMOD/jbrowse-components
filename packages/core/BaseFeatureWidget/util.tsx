@@ -34,7 +34,7 @@ function getItemId(feat: Feat) {
 // filters if successive elements share same start/end
 export function dedupe(list: Feat[]) {
   return list.filter(
-    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]),
+    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )
 }
 
@@ -63,8 +63,8 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
   const lastCdsIdx = exons.findIndex(
     exon => exon.end >= lastCds.end && exon.start <= lastCds.end,
   )
-  const lastCdsExon = exons[lastCdsIdx]
-  const firstCdsExon = exons[firstCdsIdx]
+  const lastCdsExon = exons[lastCdsIdx]!
+  const firstCdsExon = exons[firstCdsIdx]!
 
   const fiveUTRs = [
     ...exons.slice(0, firstCdsIdx),
@@ -103,4 +103,8 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 
 export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
+}
+
+export function replaceUndefinedWithNull(obj: Record<string, unknown>) {
+  return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
 }

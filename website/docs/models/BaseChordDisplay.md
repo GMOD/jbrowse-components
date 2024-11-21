@@ -86,14 +86,14 @@ renderProps: () => any
 
 ```js
 // type signature
-isCompatibleWithRenderer: (renderer: RendererType) => boolean
+isCompatibleWithRenderer: (renderer: RendererType) => renderer is CircularChordRendererType
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
+renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions; }) => Promise<Element>
 ```
 
 ### BaseChordDisplay - Actions

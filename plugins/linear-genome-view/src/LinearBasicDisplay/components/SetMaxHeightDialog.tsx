@@ -29,7 +29,7 @@ const SetMaxHeightDialog = observer(function ({
   const { classes } = useStyles()
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
-
+  const ok = max !== '' && !Number.isNaN(+max)
   return (
     <Dialog open onClose={handleClose} title="Set max height">
       <DialogContent className={classes.root}>
@@ -39,9 +39,12 @@ const SetMaxHeightDialog = observer(function ({
         </Typography>
         <TextField
           value={max}
-          onChange={event => setMax(event.target.value)}
+          onChange={event => {
+            setMax(event.target.value)
+          }}
           placeholder="Enter max score"
         />
+        {!ok ? <div style={{ color: 'red' }}>Invalid number</div> : null}
       </DialogContent>
       <DialogActions>
         <Button
@@ -49,10 +52,9 @@ const SetMaxHeightDialog = observer(function ({
           color="primary"
           type="submit"
           autoFocus
+          disabled={!ok}
           onClick={() => {
-            model.setMaxHeight(
-              max !== '' && !Number.isNaN(+max) ? +max : undefined,
-            )
+            model.setMaxHeight(+max)
             handleClose()
           }}
         >
@@ -61,7 +63,9 @@ const SetMaxHeightDialog = observer(function ({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

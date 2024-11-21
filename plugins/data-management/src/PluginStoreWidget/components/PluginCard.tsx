@@ -54,11 +54,11 @@ const PluginCard = observer(function PluginCard({
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { runtimePluginDefinitions } = pluginManager
+  // @ts-expect-error
   const isInstalled = runtimePluginDefinitions.some(d => d.url === plugin.url)
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rootModel = getParent<any>(model, 3)
   const { jbrowse } = rootModel
 

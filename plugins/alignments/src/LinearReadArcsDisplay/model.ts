@@ -1,5 +1,5 @@
 import React, { lazy } from 'react'
-import { cast, types, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -17,11 +17,14 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import { FilterModel, IFilter } from '../shared'
+import { ColorBy, FilterBy } from '../shared/types'
 import { ChainData } from '../shared/fetchChains'
+import { defaultFilterFlags } from '../shared/util'
 
-// async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
+// lazies
+const FilterByTagDialog = lazy(
+  () => import('../shared/components/FilterByTagDialog'),
+)
 
 /**
  * #stateModel LinearReadArcsDisplay
@@ -52,7 +55,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
 
         /**
          * #property
@@ -67,13 +70,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
+        colorBy: types.frozen<ColorBy | undefined>(),
 
         /**
          * #property
@@ -131,8 +128,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setColorScheme(s: { type: string }) {
-        self.colorBy = cast(s)
+      setColorScheme(colorBy: { type: string }) {
+        self.colorBy = {
+          ...colorBy,
+        }
       },
 
       /**
@@ -159,8 +158,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
+      setFilterBy(filter: FilterBy) {
+        self.filterBy = {
+          ...filter,
+        }
       },
 
       /**
@@ -240,15 +241,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Thin',
-                  onClick: () => self.setLineWidth(1),
+                  onClick: () => {
+                    self.setLineWidth(1)
+                  },
                 },
                 {
                   label: 'Bold',
-                  onClick: () => self.setLineWidth(2),
+                  onClick: () => {
+                    self.setLineWidth(2)
+                  },
                 },
                 {
                   label: 'Extra bold',
-                  onClick: () => self.setLineWidth(5),
+                  onClick: () => {
+                    self.setLineWidth(5)
+                  },
                 },
               ],
             },
@@ -259,19 +266,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   type: 'checkbox',
                   checked: self.jitterVal === 0,
                   label: 'None',
-                  onClick: () => self.setJitter(0),
+                  onClick: () => {
+                    self.setJitter(0)
+                  },
                 },
                 {
                   type: 'checkbox',
                   checked: self.jitterVal === 2,
                   label: 'Small',
-                  onClick: () => self.setJitter(2),
+                  onClick: () => {
+                    self.setJitter(2)
+                  },
                 },
                 {
                   type: 'checkbox',
                   checked: self.jitterVal === 10,
                   label: 'Large',
-                  onClick: () => self.setJitter(10),
+                  onClick: () => {
+                    self.setJitter(10)
+                  },
                 },
               ],
             },
@@ -279,13 +292,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Draw inter-region vertical lines',
               type: 'checkbox',
               checked: self.drawInter,
-              onClick: () => self.setDrawInter(!self.drawInter),
+              onClick: () => {
+                self.setDrawInter(!self.drawInter)
+              },
             },
             {
               label: 'Draw long range connections',
               type: 'checkbox',
               checked: self.drawLongRange,
-              onClick: () => self.setDrawLongRange(!self.drawLongRange),
+              onClick: () => {
+                self.setDrawLongRange(!self.drawLongRange)
+              },
             },
             {
               label: 'Color scheme',
@@ -293,20 +310,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Insert size ± 3σ and orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                  },
                 },
                 {
                   label: 'Insert size ± 3σ',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
                 },
                 {
                   label: 'Orientation',
-                  onClick: () => self.setColorScheme({ type: 'orientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'orientation' })
+                  },
                 },
                 {
                   label: 'Insert size gradient',
-                  onClick: () => self.setColorScheme({ type: 'gradient' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'gradient' })
+                  },
                 },
               ],
             },
@@ -321,7 +345,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       async renderSvg(opts: {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {
-        const { renderSvg } = await import('../shared/renderSvg')
+        const { renderSvg } = await import('../shared/renderSvgUtil')
         const { drawFeats } = await import('./drawFeats')
         return renderSvg(self as LinearReadArcsDisplayModel, opts, drawFeats)
       },

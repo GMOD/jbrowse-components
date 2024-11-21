@@ -44,7 +44,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -71,17 +71,18 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end } = region
     const {
       bpPerPx = 0,
-      signal,
+      stopToken,
       resolution = 1,
       statusCallback = () => {},
     } = opts
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
       const source = this.getConf('source')
+      const resolutionMultiplier = this.getConf('resolutionMultiplier')
       const { bigwig } = await this.setup(opts)
       const feats = await bigwig.getFeatures(refName, start, end, {
         ...opts,
-        basesPerSpan: bpPerPx / resolution,
+        basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
       })
 
       for (const data of feats) {
@@ -102,7 +103,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         })
       }
       observer.complete()
-    }, signal)
+    }, stopToken)
   }
 
   // always render bigwig instead of calculating a feature density for it

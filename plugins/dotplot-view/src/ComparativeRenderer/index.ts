@@ -1,4 +1,3 @@
-import { checkAbortSignal } from '@jbrowse/core/util'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import ComparativeRenderer, {
   RenderArgs as ComparativeRenderArgs,
@@ -6,15 +5,15 @@ import ComparativeRenderer, {
   RenderResults,
   ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderArgs extends ComparativeRenderArgs {
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
 interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
@@ -47,19 +46,19 @@ export default class ComparativeRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
     let deserializedArgs = args
     if (rpcDriver !== 'MainThreadRpcDriver') {
       deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
-    const { sessionId, rendererType, signal } = deserializedArgs
+    const { sessionId, rendererType, stopToken } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
 
     const renderer = this.getRenderer(rendererType)
     return rpcDriver === 'MainThreadRpcDriver'

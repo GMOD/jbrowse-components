@@ -7,6 +7,9 @@ export default function LinearComparativeViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
       name: 'LinearComparativeView',
+      viewMetadata: {
+        hiddenFromGUI: true,
+      },
       displayName: 'Linear comparative view',
       stateModel: modelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/LinearComparativeView')),

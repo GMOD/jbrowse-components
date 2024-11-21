@@ -24,7 +24,6 @@ test('no features', () => {
         new PrecomputedLayout({
           rectangles: {},
           totalHeight: 20,
-          containsNoTransferables: true,
           maxHeightReached: false,
         })
       }

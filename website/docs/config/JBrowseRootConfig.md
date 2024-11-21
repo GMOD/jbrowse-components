@@ -147,6 +147,6 @@ connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
 
 ```js
 defaultSession: types.optional(types.frozen(), {
-  name: `New Session`,
+  name: 'New Session',
 })
 ```

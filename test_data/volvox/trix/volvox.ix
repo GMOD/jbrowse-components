@@ -77,6 +77,7 @@ ig-like ["ctgA%3A33325..35791"|"gff3tabix_genes"|"m04"|"Ig-like"],1
 inv133 ["ctgA%3A1..1000"|"volvox.inv.vcf"|"inv133"],1
 inv134 ["ctgA%3A2700..10000"|"volvox.inv.vcf"|"inv134"],1
 inv135 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],1 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],2
+inv136 ["ctgA%3A19848..30074"|"volvox.inv.vcf"|"inv136"],1
 inv9000 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv9000"],1
 is ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],4 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],5
 kinase ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A11911..15561"|"gff3tabix_genes"|"m11"|"kinase"],2 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|"kinase"],3 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|"kinase"],4 ["ctgA%3A46012..48851"|"gff3tabix_genes"|"m09"|"kinase"],5
@@ -97,6 +98,7 @@ m12 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|"kinase"],1
 m13 ["ctgA%3A17667..17690"|"gff3tabix_genes"|"m13"|"DEAD%20box"],1
 m14 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|"kinase"],1
 m15 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|"7-transmembrane"],1
+match ["ctgA%3A1..10000"|"test"|"match"],1
 match1 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
 match2 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
 match3 ["ctgA%3A1050..7300"|"gff3tabix_genes"|"agt221.5"|"Match3"],1

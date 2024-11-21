@@ -21,7 +21,6 @@ interface DisplayResult {
 export default function SVGTracks({
   displayResults,
   model,
-  offset,
   textHeight,
   fontSize,
   trackLabels = 'offset',
@@ -29,7 +28,6 @@ export default function SVGTracks({
 }: {
   displayResults: DisplayResult[]
   model: LGV
-  offset: number
   textHeight: number
   fontSize: number
   trackLabels?: string
@@ -37,13 +35,14 @@ export default function SVGTracks({
 }) {
   const session = getSession(model)
   const textOffset = trackLabels === 'offset' ? textHeight : 0
+  let offset = 0
   return (
     <>
       {displayResults.map(({ track, result }) => {
         const current = offset
         const conf = track.configuration
         const trackName = getTrackName(conf, session)
-        const display = track.displays[0]
+        const display = track.displays[0]!
         const x = Math.max(-model.offsetPx, 0)
         offset += display.height + textOffset
         return (

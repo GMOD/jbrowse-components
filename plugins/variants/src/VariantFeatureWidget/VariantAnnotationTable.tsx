@@ -1,6 +1,6 @@
 import React from 'react'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import AnnotGrid from './AnnotGrid'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
 export default function VariantAnnotationTable({
   data,
@@ -14,12 +14,10 @@ export default function VariantAnnotationTable({
   return data.length ? (
     <BaseCard title={title}>
       <AnnotGrid
-        rows={
-          data.map((elt, id) => ({
-            id,
-            ...Object.fromEntries(elt.split('|').map((e, i) => [fields[i], e])),
-          })) || []
-        }
+        rows={data.map((elt, id) => ({
+          id,
+          ...Object.fromEntries(elt.split('|').map((e, i) => [fields[i], e])),
+        }))}
         columns={fields.map(c => ({ field: c }))}
       />
     </BaseCard>

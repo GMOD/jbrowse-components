@@ -13,8 +13,12 @@ function loc(r: Region) {
 
 type ViewState = ReturnType<typeof createViewState>
 
-const VisibleRegions = observer(({ viewState }: { viewState: ViewState }) => {
-  const view = viewState.session.views[0]
+const VisibleRegions = observer(function ({
+  viewState,
+}: {
+  viewState: ViewState
+}) {
+  const view = viewState.session.views[0]!
   return view.initialized ? (
     <div>
       <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>

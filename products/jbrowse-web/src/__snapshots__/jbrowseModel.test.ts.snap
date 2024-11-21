@@ -581,7 +581,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearPairedArcDisplay",
         },
       ],
-      "name": "volvox structural variant test (<i>HTML italic</i>)",
+      "name": "volvox structural variant test (<a href="https://google.com"><i>HTML italic+link</i></a>)",
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },
@@ -2392,9 +2392,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearArcDisplay",
         },
       ],
-      "formatDetails": {
-        "maxDepth": 0,
-      },
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
       "type": "FeatureTrack",
@@ -3623,24 +3620,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_del.paf-1658813720770-DotplotDisplay",
+          "displayId": "volvox_del.paf-DotplotDisplay",
           "type": "DotplotDisplay",
         },
         {
-          "displayId": "volvox_del.paf-1658813720770-LinearComparativeDisplay",
+          "displayId": "volvox_del.paf-LinearComparativeDisplay",
           "type": "LinearComparativeDisplay",
         },
         {
-          "displayId": "volvox_del.paf-1658813720770-LinearSyntenyDisplay",
+          "displayId": "volvox_del.paf-LinearSyntenyDisplay",
           "type": "LinearSyntenyDisplay",
         },
         {
-          "displayId": "volvox_del.paf-1658813720770-LGVSyntenyDisplay",
+          "displayId": "volvox_del.paf-LGVSyntenyDisplay",
           "type": "LGVSyntenyDisplay",
         },
       ],
       "name": "volvox_del.paf",
-      "trackId": "volvox_del.paf-1658813720770",
+      "trackId": "volvox_del.paf",
       "type": "SyntenyTrack",
     },
     {
@@ -3664,24 +3661,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_ins.paf-1658813720770-DotplotDisplay",
+          "displayId": "volvox_ins.paf-DotplotDisplay",
           "type": "DotplotDisplay",
         },
         {
-          "displayId": "volvox_ins.paf-1658813720770-LinearComparativeDisplay",
+          "displayId": "volvox_ins.paf-LinearComparativeDisplay",
           "type": "LinearComparativeDisplay",
         },
         {
-          "displayId": "volvox_ins.paf-1658813720770-LinearSyntenyDisplay",
+          "displayId": "volvox_ins.paf-LinearSyntenyDisplay",
           "type": "LinearSyntenyDisplay",
         },
         {
-          "displayId": "volvox_ins.paf-1658813720770-LGVSyntenyDisplay",
+          "displayId": "volvox_ins.paf-LGVSyntenyDisplay",
           "type": "LGVSyntenyDisplay",
         },
       ],
       "name": "volvox_ins.paf",
-      "trackId": "volvox_ins.paf-1658813720770",
+      "trackId": "volvox_ins.paf",
       "type": "SyntenyTrack",
     },
     {
@@ -4264,6 +4261,142 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "BEDPE arcs",
       "trackId": "volvox_bedpe",
       "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox_ins",
+          "volvox",
+        ],
+        "index": {
+          "location": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_ins.pif.gz.tbi",
+          },
+        },
+        "pifGzLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_ins.pif.gz",
+        },
+        "type": "PairwiseIndexedPAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox_ins",
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_ins.pif-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox_ins.pif-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox_ins.pif-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox_ins.pif-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_ins.pif",
+      "trackId": "volvox_ins.pif",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "gffLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "multipart.gff",
+        },
+        "type": "Gff3Adapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+      ],
+      "displays": [
+        {
+          "displayId": "test-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "test-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Multi-part feature segments",
+      "trackId": "test",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "craiLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted.noref.cram.crai",
+        },
+        "cramLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted.noref.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sorted.cram (noref)",
+      "trackId": "volvox-sorted.noref.cram",
+      "type": "AlignmentsTrack",
     },
   ],
 }

@@ -11,10 +11,10 @@ const WiggleRendering = observer(function (props: {
   bpPerPx: number
   width: number
   height: number
-  onMouseLeave: Function
-  onMouseMove: Function
-  onFeatureClick: Function
   blockKey: string
+  onMouseLeave?: (event: React.MouseEvent) => void
+  onMouseMove?: (event: React.MouseEvent, arg?: string) => void
+  onFeatureClick?: (event: React.MouseEvent, arg?: string) => void
 }) {
   const {
     regions,
@@ -22,11 +22,11 @@ const WiggleRendering = observer(function (props: {
     bpPerPx,
     width,
     height,
-    onMouseLeave = () => {},
-    onMouseMove = () => {},
-    onFeatureClick = () => {},
+    onMouseLeave,
+    onMouseMove,
+    onFeatureClick,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
 
   function getFeatureUnderMouse(eventClientX: number) {
@@ -38,7 +38,7 @@ const WiggleRendering = observer(function (props: {
     const offsetX = eventClientX - offset
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
-    let featureUnderMouse
+    let featureUnderMouse: Feature | undefined
     for (const feature of features.values()) {
       // bpPerPx added to the end to accommodate "reduced features" (one feature per px)
       if (
@@ -55,13 +55,9 @@ const WiggleRendering = observer(function (props: {
     <div
       ref={ref}
       data-testid="wiggle-rendering-test"
-      onMouseMove={event =>
-        onMouseMove(event, getFeatureUnderMouse(event.clientX)?.id())
-      }
-      onClick={event =>
-        onFeatureClick(event, getFeatureUnderMouse(event.clientX)?.id())
-      }
-      onMouseLeave={event => onMouseLeave(event)}
+      onMouseMove={e => onMouseMove?.(e, getFeatureUnderMouse(e.clientX)?.id())}
+      onClick={e => onFeatureClick?.(e, getFeatureUnderMouse(e.clientX)?.id())}
+      onMouseLeave={e => onMouseLeave?.(e)}
       style={{
         overflow: 'visible',
         position: 'relative',

@@ -174,7 +174,7 @@ export default function RootModel({
       get currentSessionId() {
         const locationUrl = new URL(window.location.href)
         const params = new URLSearchParams(locationUrl.search)
-        return params?.get('session')?.split('local-')[1]
+        return params.get('session')?.split('local-')[1]
       },
     }))
 
@@ -216,9 +216,7 @@ export default function RootModel({
               if (!self.session) {
                 return
               }
-              const snapshot = getSnapshot(self.session as BaseSession) || {
-                name: 'empty',
-              }
+              const snapshot = getSnapshot(self.session as BaseSession)
               const s = JSON.stringify
               sessionStorage.setItem('current', s({ session: snapshot }))
               localStorage.setItem(
@@ -368,7 +366,7 @@ export default function RootModel({
             {
               label: 'New session',
               icon: AddIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
               onClick: (session: any) => {
                 const lastAutosave = localStorage.getItem(self.autosaveId)
                 if (lastAutosave) {
@@ -438,12 +436,12 @@ export default function RootModel({
                   const widget = session.addWidget(
                     'AddTrackWidget',
                     'addTrackWidget',
-                    { view: session.views[0].id },
+                    { view: session.views[0]!.id },
                   )
                   session.showWidget(widget)
                   if (session.views.length > 1) {
                     session.notify(
-                      `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+                      'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
                     )
                   }
                 }
@@ -465,7 +463,9 @@ export default function RootModel({
             {
               label: 'Return to splash screen',
               icon: AppsIcon,
-              onClick: () => self.setSession(undefined),
+              onClick: () => {
+                self.setSession(undefined)
+              },
             },
           ],
         },

@@ -219,7 +219,8 @@ Expanded
 
 ### Dotplot view
 
-Here is an example of a JSON session spec for a Dotplot View
+Here is an example of a JSON session spec for a dotplot view (self-vs-self
+alignment)
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
@@ -234,7 +235,7 @@ Expanded
   "views": [
     {
       "type": "DotplotView",
-      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }],
+      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }], //  (self vs self alignment)
       "tracks": ["volvox_fake_synteny"]
     }
   ]
@@ -295,7 +296,7 @@ Expanded
 
 ### Linear synteny view
 
-Here is an example of a JSON session spec for a Linear Synteny View
+Here is an example of a JSON session spec for a linear synteny view
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
@@ -310,10 +311,39 @@ Expanded
   "views": [
     {
       "type": "LinearSyntenyView",
-      "tracks": ["volvox_fake_synteny"],
+      "tracks": ["volvox_fake_synteny"], //  (self vs self alignment)
       "views": [
         { "loc": "ctgA:1-30000", "assembly": "volvox" },
         { "loc": "ctgA:1000-31000", "assembly": "volvox" }
+      ]
+    }
+  ]
+}
+```
+
+### Linear synteny view (multi-way)
+
+Here is an example of a JSON session spec for a linear synteny view, but with
+more than two views
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": [["volvox_ins.paf"],["volvox_del.paf"]], // this multidimensional array refers to the synteny tracks at each level of the multi-level synteny view
+      "views": [
+        { "loc": "ctgA:1-50000", "assembly": "volvox-ins" },
+        { "loc": "ctgA:1000-50000", "assembly": "volvox" }
+        { "loc": "ctgA:1000-44000", "assembly": "volvox-del" }
       ]
     }
   ]

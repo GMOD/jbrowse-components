@@ -4,7 +4,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 // locals
-import { WiggleDisplayModel } from '../models/model'
+import { WiggleDisplayModel } from '../model'
 import YScaleBar from '../../shared/YScaleBar'
 import ColorLegend from './ColorLegend'
 import ScoreLegend from './ScoreLegend'
@@ -66,9 +66,9 @@ export const YScaleBars = observer(function (props: {
   }
 
   const labelWidth = Math.max(
-    ...(sources
+    ...sources
       .map(s => measureText(s.name, svgFontSize))
-      .map(width => (canDisplayLabel ? width : minWidth)) || [0]),
+      .map(width => (canDisplayLabel ? width : minWidth)),
   )
 
   return (

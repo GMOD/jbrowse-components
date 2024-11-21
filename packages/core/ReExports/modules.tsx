@@ -7,7 +7,6 @@ import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import PropTypes from 'prop-types'
 
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
@@ -166,7 +165,6 @@ const Entries = {
 
 const LazyMUICore = Object.fromEntries(
   Object.entries(Entries).map(([key, ReactComponent]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = React.forwardRef((props: any, ref) => (
       <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
@@ -179,23 +177,28 @@ const LazyMUICore = Object.fromEntries(
 
 const MaterialPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
-    '@material-ui/core/' + key,
+    `@material-ui/core/${key}`,
     value,
   ]),
 )
 
 const MuiPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
-    '@mui/material/' + key,
+    `@mui/material/${key}`,
     value,
   ]),
 )
 
-const Attributes = lazy(() => import('./Attributes'))
-const FeatureDetails = lazy(() => import('./FeatureDetails'))
-const BaseCard = lazy(() => import('./BaseCard'))
+const Attributes = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/Attributes'),
+)
+const FeatureDetails = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'),
+)
+const BaseCard = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard'),
+)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   DataGrid: lazy(() =>
     import('@mui/x-data-grid').then(module => ({ default: module.DataGrid })),
@@ -456,7 +459,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
 
 const LazyDataGridComponents = Object.fromEntries(
   Object.entries(DataGridEntries).map(([key, ReactComponent]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = React.forwardRef((props: any, ref) => (
       <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
@@ -467,7 +469,6 @@ const LazyDataGridComponents = Object.fromEntries(
   }),
 )
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAttributes = React.forwardRef((props: any, ref) => (
   <Suspense fallback={null}>
     <Attributes {...props} ref={ref} />
@@ -475,7 +476,6 @@ const LazyAttributes = React.forwardRef((props: any, ref) => (
 ))
 LazyAttributes.displayName = 'Attributes'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
   <Suspense fallback={null}>
     <FeatureDetails {...props} ref={ref} />
@@ -483,7 +483,6 @@ const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
 ))
 LazyFeatureDetails.displayName = 'FeatureDetails'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyBaseCard = React.forwardRef((props: any, ref) => (
   <Suspense fallback={null}>
     <BaseCard {...props} ref={ref} />
@@ -514,7 +513,7 @@ const libs = {
     ...LazyMUICore,
     useTheme,
     alpha: MUIStyles.alpha,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
       return () => useStyles().classes
@@ -525,13 +524,12 @@ const libs = {
     alpha: MUIStyles.alpha,
     useTheme: MUIStyles.useTheme,
   },
-  'prop-types': PropTypes,
 
   // end special case
   // material-ui subcomponents, should get rid of these
   '@mui/material/styles': {
     MUIStyles,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
       return () => useStyles().classes
@@ -539,7 +537,7 @@ const libs = {
   },
   '@material-ui/core/styles': {
     MUIStyles,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
       return () => useStyles().classes

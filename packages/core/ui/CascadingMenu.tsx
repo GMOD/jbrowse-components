@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import React, { useContext, useMemo } from 'react'
 import {
   Divider,
@@ -178,7 +179,7 @@ function CascadingMenuList({
   onMenuItemClick: Function
 }) {
   function handleClick(callback: Function) {
-    return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    return (event: React.MouseEvent<HTMLLIElement>) => {
       onMenuItemClick(event, callback)
     }
   }
@@ -186,52 +187,59 @@ function CascadingMenuList({
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   return (
     <>
-      {menuItems.map((item, idx) => {
-        return 'subMenu' in item ? (
-          <CascadingSubmenu
-            key={`subMenu-${item.label}-${idx}`}
-            popupId={`subMenu-${item.label}`}
-            title={item.label}
-            Icon={item.icon}
-            inset={hasIcon && !item.icon}
-            onMenuItemClick={onMenuItemClick}
-            menuItems={item.subMenu}
-          >
-            <CascadingMenuList
-              {...props}
-              closeAfterItemClick={closeAfterItemClick}
+      {menuItems
+        .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+        .map((item, idx) => {
+          return 'subMenu' in item ? (
+            <CascadingSubmenu
+              key={`subMenu-${item.label}-${idx}`}
+              popupId={`subMenu-${item.label}`}
+              title={item.label}
+              Icon={item.icon}
+              inset={hasIcon && !item.icon}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
+            >
+              <CascadingMenuList
+                {...props}
+                closeAfterItemClick={closeAfterItemClick}
+                onMenuItemClick={onMenuItemClick}
+                menuItems={item.subMenu}
+              />
+            </CascadingSubmenu>
+          ) : item.type === 'divider' ? (
+            <Divider
+              key={`divider-${JSON.stringify(item)}-${idx}`}
+              component="li"
             />
-          </CascadingSubmenu>
-        ) : item.type === 'divider' ? (
-          <Divider key={`divider-${idx}`} component="li" />
-        ) : item.type === 'subHeader' ? (
-          <ListSubheader key={`subHeader-${item.label}-${idx}`}>
-            {item.label}
-          </ListSubheader>
-        ) : (
-          <CascadingMenuItem
-            key={`${item.label}-${idx}`}
-            closeAfterItemClick={closeAfterItemClick}
-            onClick={'onClick' in item ? handleClick(item.onClick) : undefined}
-            disabled={Boolean(item.disabled)}
-          >
-            {item.icon ? (
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-            ) : null}{' '}
-            <ListItemText
-              primary={item.label}
-              secondary={item.subLabel}
-              inset={hasIcon && !item.icon}
-            />
-            <div style={{ flexGrow: 1, minWidth: 10 }} />
-            <EndDecoration item={item} />
-          </CascadingMenuItem>
-        )
-      })}
+          ) : item.type === 'subHeader' ? (
+            <ListSubheader key={`subHeader-${item.label}-${idx}`}>
+              {item.label}
+            </ListSubheader>
+          ) : (
+            <CascadingMenuItem
+              key={`${item.label}-${idx}`}
+              closeAfterItemClick={closeAfterItemClick}
+              onClick={
+                'onClick' in item ? handleClick(item.onClick) : undefined
+              }
+              disabled={Boolean(item.disabled)}
+            >
+              {item.icon ? (
+                <ListItemIcon>
+                  <item.icon />
+                </ListItemIcon>
+              ) : null}{' '}
+              <ListItemText
+                primary={item.label}
+                secondary={item.subLabel}
+                inset={hasIcon && !item.icon}
+              />
+              <div style={{ flexGrow: 1, minWidth: 10 }} />
+              <EndDecoration item={item} />
+            </CascadingMenuItem>
+          )
+        })}
     </>
   )
 }

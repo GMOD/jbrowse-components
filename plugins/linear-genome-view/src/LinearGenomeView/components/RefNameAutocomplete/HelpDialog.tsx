@@ -60,7 +60,12 @@ export default function HelpDialog({
       </DialogContent>
       <Divider />
       <DialogActions>
-        <Button onClick={() => handleClose()} color="primary">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          color="primary"
+        >
           Close
         </Button>
       </DialogActions>

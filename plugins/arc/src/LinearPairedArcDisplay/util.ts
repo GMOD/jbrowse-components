@@ -8,8 +8,7 @@ import { IAutorunOptions, autorun } from 'mobx'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
-  const tags = feature.get('tags')
-  return tags !== undefined ? tags[tag] : feature.get(tag)
+  return feature.get('tags')[tag]
 }
 
 // use fallback alt tag, used in situations where upper case/lower case tags
@@ -127,7 +126,7 @@ export const modificationColors = {
   g: 'rgb(255, 160, 86)',
   e: 'rgb(141, 221, 208)',
   b: 'rgb(202, 71, 47)',
-} as Record<string, string | undefined>
+} as Record<string, string>
 
 type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }
 

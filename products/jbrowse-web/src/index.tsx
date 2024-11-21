@@ -7,7 +7,7 @@ const Main = lazy(() => import('./components/Loader'))
 
 const initialTimeStamp = Date.now()
 
-if (window?.name.startsWith('JBrowseAuthWindow')) {
+if (window.name.startsWith('JBrowseAuthWindow')) {
   const parent = window.opener
   if (parent) {
     parent.postMessage({

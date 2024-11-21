@@ -37,7 +37,6 @@ export default ConfigurationSchema(
     ),
   },
   {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     actions: (self: any) => ({
       addDriverConfig(configName: string, configSnapshot: { type: string }) {
         self.drivers.set(configName, configSnapshot)

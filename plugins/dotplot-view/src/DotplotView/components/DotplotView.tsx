@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
-import normalizeWheel from 'normalize-wheel'
 
 // locals
 import { DotplotViewModel } from '../model'
@@ -11,7 +10,9 @@ import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
 import { VerticalAxis, HorizontalAxis } from './Axes'
-import { TooltipWhereClicked, TooltipWhereMouseovered } from './DotplotTooltip'
+
+const TooltipWhereClicked = lazy(() => import('./DotplotTooltipClick'))
+const TooltipWhereMouseovered = lazy(() => import('./DotplotTooltipMouseover'))
 
 const blank = { left: 0, top: 0, width: 0, height: 0 }
 
@@ -127,12 +128,11 @@ const DotplotViewInternal = observer(function ({
 
   // use non-React wheel handler to properly prevent body scrolling
   useEffect(() => {
-    function onWheel(origEvent: WheelEvent) {
-      const event = normalizeWheel(origEvent)
-      origEvent.preventDefault()
+    function onWheel(event: WheelEvent) {
+      event.preventDefault()
 
-      distanceX.current += event.pixelX
-      distanceY.current -= event.pixelY
+      distanceX.current += event.deltaX
+      distanceY.current -= event.deltaY
       if (!scheduled.current) {
         scheduled.current = true
 
@@ -164,7 +164,9 @@ const DotplotViewInternal = observer(function ({
     if (ref.current) {
       const curr = ref.current
       curr.addEventListener('wheel', onWheel)
-      return () => curr.removeEventListener('wheel', onWheel)
+      return () => {
+        curr.removeEventListener('wheel', onWheel)
+      }
     }
     return () => {}
   }, [hview, vview, wheelMode, mousecurr, rootRect.height])
@@ -180,17 +182,11 @@ const DotplotViewInternal = observer(function ({
     }
 
     window.addEventListener('mousemove', globalMouseMove)
-    return () => window.removeEventListener('mousemove', globalMouseMove)
-  }, [
-    validPan,
-    mousecurrClient,
-    mousedownClient,
-    cursorMode,
-    ctrlKeyWasUsed,
-    mouseupClient,
-    hview,
-    vview,
-  ])
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+    }
+  }, [validPan, mousecurrClient, mousedownClient, mouseupClient, hview, vview])
+
   useEffect(() => {
     function globalCtrlKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey) {
@@ -225,19 +221,9 @@ const DotplotViewInternal = observer(function ({
       return () => {
         window.removeEventListener('mouseup', globalMouseUp, true)
       }
-    } else {
-      return () => {}
     }
-  }, [
-    validSelect,
-    mousedown,
-    mousecurr,
-    mouseup,
-    xdistance,
-    ydistance,
-    ctrlKeyWasUsed,
-    cursorMode,
-  ])
+    return () => {}
+  }, [validSelect, mousedown, mouseup, xdistance, ydistance])
 
   return (
     <div>
@@ -255,29 +241,37 @@ const DotplotViewInternal = observer(function ({
       <div
         ref={root}
         className={classes.root}
-        onMouseLeave={() => setMouseOvered(false)}
-        onMouseEnter={() => setMouseOvered(true)}
+        onMouseLeave={() => {
+          setMouseOvered(false)
+        }}
+        onMouseEnter={() => {
+          setMouseOvered(true)
+        }}
       >
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
           <div ref={ref} className={classes.content}>
             {mouseOvered && validSelect ? (
-              <TooltipWhereMouseovered
-                model={model}
-                mouserect={mouserect}
-                mouserectClient={mouserectClient}
-                xdistance={xdistance}
-              />
+              <Suspense fallback={null}>
+                <TooltipWhereMouseovered
+                  model={model}
+                  mouserect={mouserect}
+                  mouserectClient={mouserectClient}
+                  xdistance={xdistance}
+                />
+              </Suspense>
             ) : null}
             {validSelect ? (
-              <TooltipWhereClicked
-                model={model}
-                mousedown={mousedown}
-                mousedownClient={mousedownClient}
-                xdistance={xdistance}
-                ydistance={ydistance}
-              />
+              <Suspense fallback={null}>
+                <TooltipWhereClicked
+                  model={model}
+                  mousedown={mousedown}
+                  mousedownClient={mousedownClient}
+                  xdistance={xdistance}
+                  ydistance={ydistance}
+                />
+              </Suspense>
             ) : null}
             <div
               style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}
@@ -331,7 +325,7 @@ const DotplotViewInternal = observer(function ({
                 label: 'Zoom in',
                 onClick: () => {
                   if (mousedown && mouseup) {
-                    model.zoomIn(mousedown, mouseup)
+                    model.zoomInToMouseCoords(mousedown, mouseup)
                   }
                   // below line is needed to prevent tooltip from sticking
                   setMouseOvered(false)
@@ -358,7 +352,7 @@ const DotplotViewInternal = observer(function ({
     </div>
   )
 })
-const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
   const { initialized, loading, error } = model
 
   if ((!initialized && !loading) || error) {

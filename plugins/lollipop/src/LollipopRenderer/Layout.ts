@@ -64,7 +64,7 @@ export class FloatingLayout {
     let maxBottom = 0
     const layoutEntries: [string, LayoutEntry][] = new Array(sorted.length)
     for (let i = 0; i < sorted.length; i += 1) {
-      const currentItem = sorted[i]
+      const currentItem = sorted[i]!
       const { anchorLocation, width, height } = currentItem
       const start = anchorLocation - width / 2
       const end = start + width
@@ -73,7 +73,7 @@ export class FloatingLayout {
 
       // figure out how far down to put it
       for (let j = 0; j < i; j += 1) {
-        const [, previouslyLaidOutItem] = layoutEntries[j]
+        const [, previouslyLaidOutItem] = layoutEntries[j]!
         const {
           x: prevStart,
           y: prevTop,

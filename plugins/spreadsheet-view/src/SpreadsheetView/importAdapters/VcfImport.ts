@@ -7,6 +7,7 @@ import {
   Column,
   ParseOptions,
 } from './ImportUtils'
+import type { Buffer } from 'buffer'
 
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0
@@ -20,7 +21,6 @@ const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'FORMAT', type: 'Text' }, // 8
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   const vcfVariant = vcfParser.parseLine(line)
   const vcfFeature = new VcfFeature({
@@ -70,14 +70,17 @@ export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
   for (let i = 0; i < vcfCoreColumns.length; i += 1) {
     columnDisplayOrder.push(i)
     columns[i] = {
-      name: vcfCoreColumns[i].name,
-      dataType: { type: vcfCoreColumns[i].type },
+      name: vcfCoreColumns[i]!.name,
+      dataType: { type: vcfCoreColumns[i]!.type },
     }
   }
   for (let i = 0; i < vcfParser.samples.length; i += 1) {
     const oi = vcfCoreColumns.length + i
     columnDisplayOrder.push(oi)
-    columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
+    columns[oi] = {
+      name: vcfParser.samples[i]!,
+      dataType: { type: 'Text' },
+    }
   }
 
   columnDisplayOrder.push(columnDisplayOrder.length)
@@ -102,7 +105,7 @@ export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
 export function splitVcfFileHeaderAndBody(wholeFile: string) {
   // split into header and the rest of the file
   let headerEndIndex = 0
-  let prevChar
+  let prevChar: string | undefined
   for (; headerEndIndex < wholeFile.length; headerEndIndex += 1) {
     const c = wholeFile[headerEndIndex]
     if (prevChar === '\n' && c !== '#') {

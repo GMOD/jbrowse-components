@@ -45,7 +45,7 @@ interface StateModel {
 }
 
 function generateStateModelDocs(files: string[]) {
-  const cwd = process.cwd() + '/'
+  const cwd = `${process.cwd()}/`
   const contents = {} as Record<string, StateModel>
   extractWithComment(files, obj => {
     const fn = obj.filename
@@ -59,8 +59,8 @@ function generateStateModelDocs(files: string[]) {
       filename: fn2,
     }
     const current = contents[fn]
-    const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(filter(obj.comment, '#' + obj.type), '#category')
+    const name = rm(obj.comment, `#${obj.type}`) || obj.name
+    const docs = filter(filter(obj.comment, `#${obj.type}`), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
 
@@ -111,64 +111,51 @@ function generateStateModelDocs(files: string[]) {
   Object.values(contents).forEach(
     ({ model, getters, properties, actions, methods, filename }) => {
       if (model) {
-        const getterstr =
-          `${getters.length ? `### ${model.name} - Getters` : ''}\n` +
-          getters
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### getter: ${name}`,
-                docs,
-                codeBlock('// type', signature || ''),
-              ),
-            )
-            .join('\n')
+        const getterstr = `${getters.length ? `### ${model.name} - Getters` : ''}\n${getters
 
-        const methodstr =
-          `${methods.length ? `### ${model.name} - Methods` : ''}\n` +
-          methods
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### method: ${name}`,
-                docs,
-                codeBlock('// type signature', `${name}: ${signature || ''}`),
-              ),
-            )
-            .join('\n')
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### getter: ${name}`,
+              docs,
+              codeBlock('// type', signature || ''),
+            ),
+          )
+          .join('\n')}`
 
-        const propertiesstr =
-          `${properties.length ? `### ${model.name} - Properties` : ''}\n` +
-          properties
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code, signature }: any) =>
-              join(
-                `#### property: ${name}`,
-                docs,
-                codeBlock(
-                  '// type signature',
-                  signature || '',
-                  '// code',
-                  code,
-                ),
-              ),
-            )
-            .join('\n')
+        const methodstr = `${methods.length ? `### ${model.name} - Methods` : ''}\n${methods
 
-        const actionstr =
-          `${actions.length ? `### ${model.name} - Actions` : ''}\n` +
-          actions
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### action: ${name}`,
-                docs,
-                codeBlock('// type signature', `${name}: ${signature || ''}`),
-              ),
-            )
-            .join('\n')
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### method: ${name}`,
+              docs,
+              codeBlock('// type signature', `${name}: ${signature || ''}`),
+            ),
+          )
+          .join('\n')}`
 
-        const dir = `website/docs/models`
+        const propertiesstr = `${properties.length ? `### ${model.name} - Properties` : ''}\n${properties
+
+          .map(({ name, docs, code, signature }: any) =>
+            join(
+              `#### property: ${name}`,
+              docs,
+              codeBlock('// type signature', signature || '', '// code', code),
+            ),
+          )
+          .join('\n')}`
+
+        const actionstr = `${actions.length ? `### ${model.name} - Actions` : ''}\n${actions
+
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### action: ${name}`,
+              docs,
+              codeBlock('// type signature', `${name}: ${signature || ''}`),
+            ),
+          )
+          .join('\n')}`
+
+        const dir = 'website/docs/models'
         try {
           fs.mkdirSync(dir)
         } catch (e) {}

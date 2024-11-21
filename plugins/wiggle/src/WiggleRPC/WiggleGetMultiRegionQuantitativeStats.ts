@@ -2,13 +2,11 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { Region, renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionQuantitativeStats'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
@@ -23,7 +21,6 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
       statusCallback?: (arg: string) => void
     },
     rpcDriverClassName: string,
@@ -44,8 +41,8 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
+      adapterConfig: Record<string, unknown>
+      stopToken?: string
       sessionId: string
       headers?: Record<string, string>
       regions: Region[]

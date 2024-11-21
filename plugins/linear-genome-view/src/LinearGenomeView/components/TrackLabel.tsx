@@ -30,10 +30,7 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   trackName: {
-    margin: '0 auto',
-    width: '90%',
     fontSize: '0.8rem',
-    pointerEvents: 'none',
   },
   iconButton: {
     padding: theme.spacing(1),
@@ -63,33 +60,52 @@ const TrackLabel = observer(
       {
         label: 'Track order',
         type: 'subMenu',
+        priority: 2000,
         subMenu: [
           {
             label: minimized ? 'Restore track' : 'Minimize track',
             icon: minimized ? AddIcon : MinimizeIcon,
-            onClick: () => track.setMinimized(!minimized),
+            onClick: () => {
+              track.setMinimized(!minimized)
+            },
           },
-          {
-            label: 'Move track to top',
-            icon: KeyboardDoubleArrowUpIcon,
-            onClick: () => view.moveTrackToTop(track.id),
-          },
+          ...(view.tracks.length > 2
+            ? [
+                {
+                  label: 'Move track to top',
+                  icon: KeyboardDoubleArrowUpIcon,
+                  onClick: () => {
+                    view.moveTrackToTop(track.id)
+                  },
+                },
+              ]
+            : []),
 
           {
             label: 'Move track up',
             icon: KeyboardArrowUpIcon,
-            onClick: () => view.moveTrackUp(track.id),
+            onClick: () => {
+              view.moveTrackUp(track.id)
+            },
           },
           {
             label: 'Move track down',
             icon: KeyboardArrowDownIcon,
-            onClick: () => view.moveTrackDown(track.id),
+            onClick: () => {
+              view.moveTrackDown(track.id)
+            },
           },
-          {
-            label: 'Move track to bottom',
-            icon: KeyboardDoubleArrowDownIcon,
-            onClick: () => view.moveTrackToBottom(track.id),
-          },
+          ...(view.tracks.length > 2
+            ? [
+                {
+                  label: 'Move track to bottom',
+                  icon: KeyboardDoubleArrowDownIcon,
+                  onClick: () => {
+                    view.moveTrackToBottom(track.id)
+                  },
+                },
+              ]
+            : []),
         ],
       },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
@@ -111,6 +127,10 @@ const TrackLabel = observer(
           variant="body1"
           component="span"
           className={classes.trackName}
+          onMouseDown={event => {
+            // avoid becoming a click-and-drag action on the lgv
+            event.stopPropagation()
+          }}
         >
           <SanitizedHTML
             html={[trackName, minimized ? '(minimized)' : '']

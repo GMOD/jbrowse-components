@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
 // locals
@@ -10,8 +10,7 @@ import { SanitizedHTML } from '../../ui'
 
 const useStyles = makeStyles()(theme => ({
   margin: {
-    margin: theme.spacing(1),
-    width: '100%',
+    marginBottom: theme.spacing(4),
   },
 
   cell: {
@@ -37,7 +36,7 @@ export default function DataGridDetails({
 }) {
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
-  const keys = Object.keys(value[0]).sort()
+  const keys = Object.keys(value[0]!).sort()
   const unionKeys = new Set(keys)
 
   // avoids key 'id' from being used in row data
@@ -65,53 +64,55 @@ export default function DataGridDetails({
     colNames = [...unionKeys]
   }
   const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
-
   if (unionKeys.size < keys.length + 5) {
     return (
-      <>
+      <div className={classes.margin}>
         <FieldName prefix={prefix} name={name} />
         <FormControlLabel
           control={
             <Checkbox
               checked={checked}
-              onChange={event => setChecked(event.target.checked)}
+              onChange={event => {
+                setChecked(event.target.checked)
+              }}
             />
           }
           label={<Typography variant="body2">Show options</Typography>}
         />
-        <div className={classes.margin}>
-          <DataGrid
-            disableRowSelectionOnClick
-            // @ts-expect-error the rows gets confused by the renderCell of the
-            // columns below
-            rows={rows}
-            rowCount={25}
-            rowHeight={25}
-            columnHeaderHeight={35}
-            hideFooter={rows.length < 25}
-            slots={{ toolbar: checked ? GridToolbar : null }}
-            slotProps={{
-              toolbar: {
-                printOptions: {
-                  disableToolbarButton: true,
+        <DataGrid
+          autoHeight
+          disableRowSelectionOnClick
+          rows={rows}
+          rowHeight={20}
+          columnHeaderHeight={35}
+          hideFooter={rows.length < 25}
+          slots={{
+            toolbar: checked ? GridToolbar : null,
+          }}
+          slotProps={{
+            toolbar: {
+              printOptions: {
+                disableToolbarButton: true,
+              },
+            },
+          }}
+          columns={colNames.map(
+            (val, index) =>
+              ({
+                field: val,
+                renderCell: params => {
+                  const value = params.value as string
+                  return (
+                    <div className={classes.cell}>
+                      <SanitizedHTML html={getStr(value || '')} />
+                    </div>
+                  )
                 },
-              },
-            }}
-            columns={colNames.map((val, index) => ({
-              field: val,
-              renderCell: params => {
-                const value = params.value as string
-                return (
-                  <div className={classes.cell}>
-                    <SanitizedHTML html={getStr(value)} />
-                  </div>
-                )
-              },
-              width: widths[index],
-            }))}
-          />
-        </div>
-      </>
+                width: widths[index],
+              }) satisfies GridColDef<(typeof rows)[0]>,
+          )}
+        />
+      </div>
     )
   }
   return null

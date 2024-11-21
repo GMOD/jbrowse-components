@@ -17,7 +17,7 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { createRootFn } = getRoot<any>(model)
   const { width, tracks, height } = model
   const shift = 50
@@ -46,9 +46,11 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
           <SVGBackground width={width} height={height} shift={shift} />
           <g transform={`translate(${centerXY}) rotate(${deg})`}>
             {staticSlices.map((slice, i) => (
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <Ruler key={i} model={model} slice={slice} />
             ))}
             {displayResults.map(({ result }, i) => (
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <React.Fragment key={i}>{result}</React.Fragment>
             ))}
           </g>

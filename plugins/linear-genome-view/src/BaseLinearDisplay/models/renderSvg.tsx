@@ -17,7 +17,7 @@ export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
   opts: ExportSvgOptions & {
     overrideHeight: number
-    theme: ThemeOptions
+    theme?: ThemeOptions
   },
 ) {
   const { height, id } = self
@@ -77,6 +77,7 @@ export async function renderBaseLinearDisplaySvg(
         const clipid = getId(id, index)
 
         return (
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <React.Fragment key={`frag-${index}`}>
             <defs>
               <clipPath id={clipid}>

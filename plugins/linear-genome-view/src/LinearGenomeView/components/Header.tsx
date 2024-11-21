@@ -10,10 +10,11 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
-import { LinearGenomeViewModel, SPACING } from '..'
+import { LinearGenomeViewModel } from '..'
 import OverviewScalebar from './OverviewScalebar'
 import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
+import { SPACING } from '../consts'
 
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
@@ -69,14 +70,18 @@ function PanControls({ model }: { model: LGV }) {
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(-0.9)}
+        onClick={() => {
+          model.slide(-0.9)
+        }}
       >
         <ArrowBackIcon />
       </Button>
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(0.9)}
+        onClick={() => {
+          model.slide(0.9)
+        }}
       >
         <ArrowForwardIcon />
       </Button>
@@ -84,7 +89,7 @@ function PanControls({ model }: { model: LGV }) {
   )
 }
 
-const RegionWidth = observer(({ model }: { model: LGV }) => {
+const RegionWidth = observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const { coarseTotalBp } = model
   return (
@@ -111,9 +116,10 @@ const Controls = ({ model }: { model: LGV }) => {
   )
 }
 
-const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
-  return !model.hideHeader ? (
-    model.hideHeaderOverview ? (
+const LinearGenomeViewHeader = observer(function ({ model }: { model: LGV }) {
+  const { hideHeader, hideHeaderOverview } = model
+  return !hideHeader ? (
+    hideHeaderOverview ? (
       <Controls model={model} />
     ) : (
       <OverviewScalebar model={model}>

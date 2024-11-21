@@ -70,17 +70,12 @@ export async function readSessionFromDynamo(
   baseUrl: string,
   sessionQueryParam: string,
   password: string,
-  signal?: AbortSignal,
 ) {
-  const sessionId = sessionQueryParam.split('share-')[1]
+  const sessionId = sessionQueryParam.split('share-')[1]!
   const url = `${baseUrl}?sessionId=${encodeURIComponent(sessionId)}`
-  const response = await fetch(url, {
-    signal,
-  })
-
+  const response = await fetch(url)
   if (!response.ok) {
-    const err = await response.text()
-    throw new Error(getErrorMsg(err))
+    throw new Error(getErrorMsg(await response.text()))
   }
 
   const json = await response.json()

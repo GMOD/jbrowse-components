@@ -39,7 +39,11 @@ function RecentSessionCard({
           </IconButton>
         }
       >
-        <ListItemButton onClick={() => onClick(sessionName)}>
+        <ListItemButton
+          onClick={() => {
+            onClick(sessionName)
+          }}
+        >
           <Tooltip title={sessionName} enterDelay={300}>
             <Typography variant="body2" noWrap>
               {sessionName}
@@ -50,7 +54,9 @@ function RecentSessionCard({
       <Menu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
-        onClose={() => setMenuAnchorEl(null)}
+        onClose={() => {
+          setMenuAnchorEl(null)
+        }}
       >
         <MenuItem
           onClick={() => {

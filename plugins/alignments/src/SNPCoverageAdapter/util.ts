@@ -1,34 +1,62 @@
-export type SkipMap = Record<
-  string,
-  {
-    score: number
-    feature: unknown
-    start: number
-    end: number
-    strand: number
-    xs: string
-  }
->
+import {
+  ColorBy,
+  Mismatch,
+  PreBaseCoverageBin,
+  PreBaseCoverageBinSubtypes,
+} from '../shared/types'
 
-// bins contain:
-// - cov feature if they contribute to coverage
-// - noncov are insertions/clip features that don't contribute to coverage
-// - delskips deletions or introns that don't contribute to coverage
-export interface BinType {
-  total?: number
-  strands?: Record<string, number>
+export interface Opts {
+  bpPerPx?: number
+  colorBy?: ColorBy
+  stopToken?: string
 }
 
-export interface Bin {
-  refbase?: string
-  total: number
-  all: number
-  ref: number
-  '-1': number
-  '0': number
-  '1': number
-  lowqual: BinType
-  cov: BinType
-  delskips: BinType
-  noncov: BinType
+export function mismatchLen(mismatch: Mismatch) {
+  return !isInterbase(mismatch.type) ? mismatch.length : 1
+}
+
+export function isInterbase(type: string) {
+  return type === 'softclip' || type === 'hardclip' || type === 'insertion'
+}
+
+export function inc(
+  bin: PreBaseCoverageBin,
+  strand: -1 | 0 | 1,
+  type: keyof PreBaseCoverageBinSubtypes,
+  field: string,
+) {
+  let thisBin = bin[type][field]
+  if (thisBin === undefined) {
+    thisBin = bin[type][field] = {
+      entryDepth: 0,
+      probabilities: [],
+      '-1': 0,
+      '0': 0,
+      '1': 0,
+    }
+  }
+  thisBin.entryDepth++
+  thisBin[strand]++
+}
+
+export function incWithProbabilities(
+  bin: PreBaseCoverageBin,
+  strand: -1 | 0 | 1,
+  type: keyof PreBaseCoverageBinSubtypes,
+  field: string,
+  probability: number,
+) {
+  let thisBin = bin[type][field]
+  if (thisBin === undefined) {
+    thisBin = bin[type][field] = {
+      entryDepth: 0,
+      probabilities: [],
+      '-1': 0,
+      '0': 0,
+      '1': 0,
+    }
+  }
+  thisBin.entryDepth++
+  thisBin.probabilities.push(probability)
+  thisBin[strand]++
 }

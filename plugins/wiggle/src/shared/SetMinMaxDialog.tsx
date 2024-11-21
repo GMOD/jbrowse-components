@@ -13,8 +13,8 @@ export default function SetMinMaxDialog(props: {
     minScore: number
     maxScore: number
     scaleType: string
-    setMinScore: Function
-    setMaxScore: Function
+    setMinScore: (arg?: number) => void
+    setMaxScore: (arg?: number) => void
   }
   handleClose: () => void
 }) {
@@ -54,12 +54,16 @@ export default function SetMinMaxDialog(props: {
 
         <TextField
           value={min}
-          onChange={event => setMin(event.target.value)}
+          onChange={event => {
+            setMin(event.target.value)
+          }}
           placeholder="Enter min score"
         />
         <TextField
           value={max}
-          onChange={event => setMax(event.target.value)}
+          onChange={event => {
+            setMax(event.target.value)
+          }}
           placeholder="Enter max score"
         />
       </DialogContent>

@@ -1,10 +1,23 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { AbstractSessionModel, notEmpty } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 // locals
 import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
+
 type LSV = LinearSyntenyViewModel
+
+interface ViewData {
+  loc: string
+  assembly: string
+  tracks?: string[]
+}
+
+type MaybeString = string | undefined
+
+function makeMultiDimArray(str: string[] | string[][]) {
+  return Array.isArray(str[0]) ? (str as string[][]) : ([str] as string[][])
+}
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -16,8 +29,8 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       tracks = [],
     }: {
       session: AbstractSessionModel
-      views: { loc: string; assembly: string; tracks?: string[] }[]
-      tracks?: string[]
+      views: ViewData[]
+      tracks?: string[] | string[][]
     }) => {
       try {
         const { assemblyManager } = session
@@ -45,23 +58,42 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
 
         await Promise.all(model.views.map(view => when(() => view.initialized)))
 
-        const idsNotFound = [] as string[]
+        let idsNotFound = [] as MaybeString[]
         await Promise.all(
           views.map(async (data, idx) => {
-            const view = model.views[idx]
+            const view = model.views[idx]!
             const { assembly, loc, tracks = [] } = data
             const asm = await assemblyManager.waitForAssembly(assembly)
             if (!asm) {
               throw new Error(`Assembly ${data.assembly} failed to load`)
             }
             await view.navToSearchString({ input: loc, assembly: asm })
-            tracks.forEach(track => tryTrack(view, track, idsNotFound))
+            idsNotFound = [
+              ...idsNotFound,
+              ...tracks.map(trackId =>
+                tryTrackLGV({
+                  model: view,
+                  trackId,
+                }),
+              ),
+            ]
           }),
         )
 
-        tracks.forEach(track => tryTrack(model, track, idsNotFound))
+        idsNotFound = [
+          ...idsNotFound,
+          ...makeMultiDimArray(tracks).flatMap((trackSet, level) =>
+            trackSet.map(trackId =>
+              tryTrackSynteny({
+                model,
+                trackId,
+                level,
+              }),
+            ),
+          ),
+        ]
 
-        if (idsNotFound.length) {
+        if (idsNotFound.filter(notEmpty).length) {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,
           )
@@ -74,18 +106,52 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   )
 }
 
-function tryTrack(
-  model: { showTrack: (arg: string) => void },
-  trackId: string,
-  idsNotFound: string[],
-) {
+function tryTrackLGV({
+  model,
+  trackId,
+}: {
+  model: {
+    showTrack: (arg: string) => void
+  }
+  trackId: string
+}) {
   try {
     model.showTrack(trackId)
   } catch (e) {
-    if (`${e}`.match('Could not resolve identifier')) {
-      idsNotFound.push(trackId)
+    if (
+      /Could not resolve identifier/.exec(`${e}`) ||
+      /track not found/.exec(`${e}`)
+    ) {
+      return trackId
     } else {
       throw e
     }
   }
+  return undefined
+}
+
+function tryTrackSynteny({
+  model,
+  trackId,
+  level,
+}: {
+  model: {
+    showTrack: (arg: string, level?: number) => void
+  }
+  trackId: string
+  level: number
+}) {
+  try {
+    model.showTrack(trackId, level)
+  } catch (e) {
+    if (
+      /Could not resolve identifier/.exec(`${e}`) ||
+      /track not found/.exec(`${e}`)
+    ) {
+      return trackId
+    } else {
+      throw e
+    }
+  }
+  return undefined
 }

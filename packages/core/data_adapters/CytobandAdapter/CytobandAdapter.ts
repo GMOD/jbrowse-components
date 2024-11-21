@@ -1,24 +1,20 @@
-import { unzip } from '@gmod/bgzf-filehandle'
-
 // locals
-import { SimpleFeature } from '../../util'
+import { fetchAndMaybeUnzip, SimpleFeature } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
-
-export function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+import { BaseOptions } from '../BaseAdapter/BaseOptions'
 
 export default class CytobandAdapter extends BaseAdapter {
-  async getData() {
-    const pm = this.pluginManager
-    const loc = this.getConf('cytobandLocation')
-    if (loc.uri === '' || loc.uri === '/path/to/cytoband.txt.gz') {
+  async getData(opts?: BaseOptions) {
+    const conf = this.getConf('cytobandLocation')
+    if (conf.uri === '' || conf.uri === '/path/to/cytoband.txt.gz') {
       return []
     }
-    const buffer = await openLocation(loc, pm).readFile()
-    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
-    const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
+
+    const pm = this.pluginManager
+    const buf = await fetchAndMaybeUnzip(openLocation(conf, pm), opts)
+    const decoder = new TextDecoder('utf8', { fatal: true })
+    const text = decoder.decode(buf)
     return text
       .split(/\n|\r\n|\r/)
       .filter(f => !!f.trim())
@@ -26,11 +22,12 @@ export default class CytobandAdapter extends BaseAdapter {
         const [refName, start, end, name, type] = line.split('\t')
         return new SimpleFeature({
           uniqueId: `${i}`,
-          refName,
-          start: +start,
-          end: +end,
+          refName: refName!,
+          start: +start!,
+          end: +end!,
           name,
           type,
+          gieStain: type || name,
         })
       })
   }

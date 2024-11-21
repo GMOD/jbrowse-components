@@ -1,8 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import configSchemaFactory from './models/configSchema'
-import modelFactory from './models/model'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+
+// locals
+import configSchemaFactory from './configSchema'
+import modelFactory from './model'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

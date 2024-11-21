@@ -11,6 +11,8 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { Dialog, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
+
+// locals
 import AdapterInput from './AdapterInput'
 
 const { ipcRenderer } = window.require('electron')
@@ -38,26 +40,27 @@ function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
+const adapterTypes = [
+  'IndexedFastaAdapter',
+  'BgzipFastaAdapter',
+  'FastaAdapter',
+  'TwoBitAdapter',
+]
+
 const OpenSequenceDialog = ({
   onClose,
 }: {
   onClose: (conf?: unknown) => Promise<void>
 }) => {
   const { classes } = useStyles()
-
-  const adapterTypes = [
-    'IndexedFastaAdapter',
-    'BgzipFastaAdapter',
-    'FastaAdapter',
-    'TwoBitAdapter',
-  ]
   type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
+
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
   const [loading, setLoading] = useState('')
-  const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
+  const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0]!)
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
   const [gziLocation, setGziLocation] = useState(blank)
@@ -196,7 +199,9 @@ const OpenSequenceDialog = ({
             helperText="The assembly name e.g. hg38"
             variant="outlined"
             value={assemblyName}
-            onChange={event => setAssemblyName(event.target.value)}
+            onChange={event => {
+              setAssemblyName(event.target.value)
+            }}
           />
 
           <TextField
@@ -204,7 +209,9 @@ const OpenSequenceDialog = ({
             helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
             variant="outlined"
             value={assemblyDisplayName}
-            onChange={event => setAssemblyDisplayName(event.target.value)}
+            onChange={event => {
+              setAssemblyDisplayName(event.target.value)
+            }}
           />
 
           <TextField
@@ -213,7 +220,9 @@ const OpenSequenceDialog = ({
             select
             helperText="Type of adapter to use"
             fullWidth
-            onChange={event => setAdapterSelection(event.target.value)}
+            onChange={event => {
+              setAdapterSelection(event.target.value)
+            }}
           >
             {adapterTypes.map(str => (
               <MenuItem key={str} value={str}>
@@ -237,7 +246,12 @@ const OpenSequenceDialog = ({
           />
         </Paper>
 
-        <Button onClick={() => setShowAdvanced(a => !a)} variant="contained">
+        <Button
+          onClick={() => {
+            setShowAdvanced(a => !a)
+          }}
+          variant="contained"
+        >
           {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
         </Button>
         {showAdvanced ? (

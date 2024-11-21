@@ -1,4 +1,4 @@
-import { HttpRangeFetcher } from 'http-range-fetcher'
+import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
 import { Buffer } from 'buffer'
 import { RemoteFile, PolyfilledResponse } from 'generic-filehandle'
 
@@ -6,7 +6,7 @@ type BinaryRangeFetch = (
   url: string,
   start: number,
   end: number,
-  options?: { headers?: HeadersInit; signal?: AbortSignal },
+  options?: { headers?: HeadersInit; stopToken?: string },
 ) => Promise<BinaryRangeResponse>
 
 export interface BinaryRangeResponse {
@@ -22,7 +22,7 @@ function binaryRangeFetch(
   url: string,
   start: number,
   end: number,
-  options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+  options: { headers?: HeadersInit; stopToken?: string } = {},
 ): Promise<BinaryRangeResponse> {
   const fetcher = fetchers[url]
   if (!fetcher) {
@@ -53,19 +53,19 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       fetchers[str] = this.fetchBinaryRange.bind(this)
     }
     // if it is a range request, route it through the range cache
-    const range = new Headers(init?.headers)?.get('range')
+    const range = new Headers(init?.headers).get('range')
     if (range) {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
       if (rangeParse) {
         const [, start, end] = rangeParse
-        const s = Number.parseInt(start, 10)
-        const e = Number.parseInt(end, 10)
+        const s = Number.parseInt(start!, 10)
+        const e = Number.parseInt(end!, 10)
         const len = e - s
+        // tODO: abort
         const { buffer, headers } = (await globalRangeCache.getRange(
           url,
           s,
           len + 1,
-          { signal: init?.signal },
         )) as BinaryRangeResponse
         return new Response(buffer, { status: 206, headers })
       }
@@ -77,7 +77,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     url: string,
     start: number,
     end: number,
-    options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+    options: { headers?: HeadersInit; stopToken?: string } = {},
   ): Promise<BinaryRangeResponse> {
     const requestDate = new Date()
     const res = await super.fetch(url, {
@@ -96,7 +96,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
 
     // translate the Headers object into a regular key -> value object.
     // will miss duplicate headers of course
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const headers: Record<string, any> = {}
     for (const [k, v] of res.headers.entries()) {
       headers[k] = v

@@ -1,11 +1,9 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { GenericFilehandle } from 'generic-filehandle'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { PAFRecord } from './PAFAdapter/util'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 
-export function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+import { PAFRecord } from './PAFAdapter/util'
 
 export function parseBed(text: string) {
   return new Map(
@@ -18,9 +16,9 @@ export function parseBed(text: string) {
           name,
           {
             refName,
-            start: +start,
-            end: +end,
-            score: +score,
+            start: +start!,
+            end: +end!,
+            score: +score!,
             name,
             strand: strand === '-' ? -1 : 1,
           },
@@ -30,34 +28,34 @@ export function parseBed(text: string) {
 }
 
 export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  const buffer = (await file.readFile(opts)) as Buffer
-  return new TextDecoder('utf8', { fatal: true }).decode(
-    isGzip(buffer) ? await unzip(buffer) : buffer,
-  )
+  const buf = await fetchAndMaybeUnzip(file, opts)
+  const decoder = new TextDecoder('utf8')
+  return decoder.decode(buf)
 }
 
 export function zip(a: number[], b: number[]) {
   return a.map((e, i) => [e, b[i]] as [number, number])
 }
 
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
-
-export function parseLineByLine(
+export function parseLineByLine<T>(
   buffer: Buffer,
-  cb: (line: string) => PAFRecord,
-) {
+  cb: (line: string) => T | undefined,
+): T[] {
   let blockStart = 0
-  const entries = []
+  const entries: T[] = []
+  const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
       break
     }
-    const b = buffer.slice(blockStart, n)
-    const line = (decoder?.decode(b) || b.toString()).trim()
+    const b = buffer.subarray(blockStart, n)
+    const line = decoder.decode(b).trim()
     if (line) {
-      entries.push(cb(line))
+      const entry = cb(line)
+      if (entry) {
+        entries.push(entry)
+      }
     }
 
     blockStart = n + 1
@@ -93,16 +91,16 @@ export function parsePAFLine(line: string) {
 
   return {
     tname,
-    tstart: +tstart,
-    tend: +tend,
+    tstart: +tstart!,
+    tend: +tend!,
     qname,
-    qstart: +qstart,
-    qend: +qend,
+    qstart: +qstart!,
+    qend: +qend!,
     strand: strand === '-' ? -1 : 1,
     extra: {
-      numMatches: +numMatches,
-      blockLen: +blockLen,
-      mappingQual: +mappingQual,
+      numMatches: +numMatches!,
+      blockLen: +blockLen!,
+      mappingQual: +mappingQual!,
       ...rest,
     },
   } as PAFRecord

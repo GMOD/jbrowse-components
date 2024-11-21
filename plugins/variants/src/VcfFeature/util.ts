@@ -1,11 +1,11 @@
 import VCF, { parseBreakend } from '@gmod/vcf'
 
-const altTypeToSO: Record<string, string | undefined> = {
+const altTypeToSO: Record<string, string> = {
   DEL: 'deletion',
   INS: 'insertion',
   DUP: 'duplication',
   INV: 'inversion',
-  INVDUP: 'inverted duplication',
+  INVDUP: 'inverted_duplication',
   CNV: 'copy_number_variation',
   TRA: 'translocation',
   'DUP:TANDEM': 'tandem_duplication',
@@ -18,7 +18,7 @@ const altTypeToSO: Record<string, string | undefined> = {
  */
 export function getSOTermAndDescription(
   ref: string,
-  alt: string[],
+  alt: string[] | undefined,
   parser: VCF,
 ): string[] {
   // it's just a remark if there are no alternate alleles
@@ -43,10 +43,12 @@ export function getSOTermAndDescription(
   if (descriptions.size > 1) {
     const descs = [...descriptions]
     const prefixes = new Set(
-      descs.map(desc => {
-        const prefix = desc.split('->')
-        return prefix[1] ? prefix[0] : desc
-      }),
+      descs
+        .map(desc => {
+          const prefix = desc.split('->')
+          return prefix[1] ? prefix[0] : desc
+        })
+        .filter((f): f is string => !!f),
     )
 
     descriptions = new Set(
@@ -100,35 +102,50 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   const bnd = parseBreakend(alt)
   if (bnd) {
     return ['breakend', alt]
-  } else if (ref.length === 1 && alt.length === 1) {
+  }
+  if (ref.length === 1 && alt.length === 1) {
     return ['SNV', makeDescriptionString('SNV', ref, alt)]
-  } else if (alt === '<INS>') {
+  }
+  if (alt === '<INS>') {
     return ['insertion', alt]
-  } else if (alt === '<DEL>') {
+  }
+  if (alt === '<DEL>') {
     return ['deletion', alt]
-  } else if (alt === '<INV>') {
+  }
+  if (alt === '<DUP>') {
+    return ['duplication', alt]
+  }
+  if (alt === '<CNV>') {
+    return ['cnv', alt]
+  }
+  if (alt === '<INV>') {
     return ['inversion', alt]
-  } else if (alt === '<TRA>') {
+  }
+  if (alt === '<TRA>') {
     return ['translocation', alt]
-  } else if (alt.includes('<')) {
+  }
+  if (alt.includes('<')) {
     return ['sv', alt]
-  } else if (ref.length === alt.length) {
+  }
+  if (ref.length === alt.length) {
     return ref.split('').reverse().join('') === alt
       ? ['inversion', makeDescriptionString('inversion', ref, alt)]
       : ['substitution', makeDescriptionString('substitution', ref, alt)]
-  } else if (ref.length <= alt.length) {
+  }
+  if (ref.length <= alt.length) {
     const len = alt.length - ref.length
     const lena = len.toLocaleString('en-US')
     return [
       'insertion',
-      len > 5 ? lena + 'bp INS' : makeDescriptionString('insertion', ref, alt),
+      len > 5 ? `${lena}bp INS` : makeDescriptionString('insertion', ref, alt),
     ]
-  } else if (ref.length > alt.length) {
+  }
+  if (ref.length > alt.length) {
     const len = ref.length - alt.length
     const lena = len.toLocaleString('en-US')
     return [
       'deletion',
-      len > 5 ? lena + 'bp DEL' : makeDescriptionString('deletion', ref, alt),
+      len > 5 ? `${lena}bp DEL` : makeDescriptionString('deletion', ref, alt),
     ]
   }
 

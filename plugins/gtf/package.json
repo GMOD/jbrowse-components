@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gtf",
-  "version": "2.11.2",
+  "version": "2.17.0",
   "description": "JBrowse 2 gtf feature adapter",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/gtf --passWithNoTests",
+    "test": "cd ../..; jest --passWithNoTests plugins/gtf --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -38,12 +38,12 @@
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/gtf": "^0.0.9"
+    "gtf-nostream": "^1.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

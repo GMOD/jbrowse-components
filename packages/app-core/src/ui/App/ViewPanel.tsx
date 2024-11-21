@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 
 // locals
@@ -42,8 +42,12 @@ const ViewPanel = observer(function ({
   return (
     <ViewContainer
       view={view}
-      onClose={() => session.removeView(view)}
-      onMinimize={() => view.setMinimized(!view.minimized)}
+      onClose={() => {
+        session.removeView(view)
+      }}
+      onMinimize={() => {
+        view.setMinimized(!view.minimized)
+      }}
     >
       {!view.minimized ? (
         <ErrorBoundary

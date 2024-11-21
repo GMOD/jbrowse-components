@@ -38,12 +38,22 @@ blockState: types.map(BlockState)
 
 ```js
 // type signature
-ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; }, ConfigurationSchemaOptions<...>>
+ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; jexlFilters: { ...; }; }, Configura...
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 ### BaseLinearDisplay - Getters
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead of the blocks, make this
+return a react component
+
+```js
+// type
+any
+```
 
 #### getter: blockType
 
@@ -73,7 +83,7 @@ number
 
 ```js
 // type
-React.FC<any>
+React.ComponentType<any>
 ```
 
 #### getter: selectedFeatureId
@@ -84,16 +94,6 @@ feature
 ```js
 // type
 string
-```
-
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead of the blocks, make this
-return a react component
-
-```js
-// type
-any
 ```
 
 #### getter: features
@@ -185,6 +185,13 @@ deleteBlock: (key: string) => void
 ```js
 // type signature
 selectFeature: (feature: Feature) => void
+```
+
+#### action: navToFeature
+
+```js
+// type signature
+navToFeature: (feature: Feature) => void
 ```
 
 #### action: clearFeatureSelection

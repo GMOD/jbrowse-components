@@ -5,34 +5,31 @@ import { observer } from 'mobx-react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-
-// locals
-import { HEADER_OVERVIEW_HEIGHT } from '..'
-import { getCytobands } from './util'
 import { getFillProps } from '@jbrowse/core/util'
 
+// locals
+import { getCytobands } from './util'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts'
+
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
-// prettier-ignore
-function rightRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
-  return "M" + x + "," + y
-       + "h" + (width - radius)
-       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
-       + "v" + (height - 2 * radius)
-       + "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
-       + "h" + (radius - width)
-       + "z";
+function rightRoundedRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  return `M${x},${y}h${width - radius}a${radius},${radius} 0 0 1 ${radius},${radius}v${height - 2 * radius}a${radius},${radius} 0 0 1 ${-radius},${radius}h${radius - width}z`
 }
 
-// prettier-ignore
-function leftRoundedRect(x: number, y: number, width: number, height: number, radius: number ) {
-  return "M" + (x + radius) + "," + y
-       + "h" + (width - radius)
-       + "v" + height
-       + "h" + (radius - width)
-       + "a" + radius + "," + radius + " 0 0 1 " + (-radius) + "," + (-radius)
-       + "v" + (2 * radius - height)
-       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + (-radius)
-       + "z";
+function leftRoundedRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  return `M${x + radius},${y}h${width - radius}v${height}h${radius - width}a${radius},${radius} 0 0 1 ${-radius},${-radius}v${2 * radius - height}a${radius},${radius} 0 0 1 ${radius},${-radius}z`
 }
 
 function leftTriangle(x: number, y: number, width: number, height: number) {
@@ -51,7 +48,7 @@ function rightTriangle(x: number, y: number, width: number, height: number) {
   ].toString()
 }
 
-const colorMap: Record<string, string | undefined> = {
+const colorMap: Record<string, string> = {
   gneg: 'rgb(227,227,227)',
   gpos25: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
@@ -101,7 +98,8 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        } else if (type === 'acen' && centromereSeen) {
+        }
+        if (type === 'acen' && centromereSeen) {
           return (
             <polygon
               key={k}
@@ -113,7 +111,8 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        } else if (lcap === index) {
+        }
+        if (lcap === index) {
           return (
             <path
               key={k}
@@ -121,7 +120,8 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        } else if (rcap === index) {
+        }
+        if (rcap === index) {
           return (
             <path
               key={k}
@@ -129,18 +129,10 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        } else {
-          return (
-            <rect
-              key={k}
-              x={l}
-              y={0}
-              width={w}
-              height={h}
-              {...getFillProps(c)}
-            />
-          )
         }
+        return (
+          <rect key={k} x={l} y={0} width={w} height={h} {...getFillProps(c)} />
+        )
       })}
     </g>
   )

@@ -1,14 +1,9 @@
 import { doesIntersect2, Feature } from '@jbrowse/core/util'
-import { Mismatch } from '../MismatchParser'
+import { Mismatch, SortedBy } from '../shared/types'
 
-interface SortObject {
-  pos: number
-  type: string
-  tag?: string
-}
 export const sortFeature = (
   features: Map<string, Feature>,
-  sortedBy: SortObject,
+  sortedBy: SortedBy,
 ) => {
   const featureArray = Array.from(features.values())
   const featuresInCenterLine: Feature[] = []
@@ -27,7 +22,7 @@ export const sortFeature = (
     }
   })
 
-  const isCram = featureArray.length ? featureArray[0].get('tags') : false
+  const isCram = featureArray.length ? featureArray[0]!.get('tags') : false
   switch (type) {
     case 'Start location': {
       featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))
@@ -57,19 +52,18 @@ export const sortFeature = (
     // first sort all mismatches, then all reference bases at the end
     case 'Base pair': {
       const baseSortArray: [string, Mismatch][] = []
-      featuresInCenterLine.forEach(feature => {
+      for (const feature of featuresInCenterLine) {
         const mismatches: Mismatch[] = feature.get('mismatches')
-        mismatches.forEach(mismatch => {
+        for (const m of mismatches) {
           const start = feature.get('start')
-          const offset = start + mismatch.start + 1
-          const consuming =
-            mismatch.type === 'insertion' || mismatch.type === 'softclip'
-          const len = consuming ? 0 : mismatch.length
+          const offset = start + m.start + 1
+          const consuming = m.type === 'insertion' || m.type === 'softclip'
+          const len = consuming ? 0 : m.length
           if (pos >= offset && pos < offset + len) {
-            baseSortArray.push([feature.id(), mismatch])
+            baseSortArray.push([feature.id(), m])
           }
-        })
-      })
+        }
+      }
 
       const baseMap = new Map(baseSortArray)
       featuresInCenterLine.sort((a, b) => {
@@ -77,13 +71,11 @@ export const sortFeature = (
         const bMismatch = baseMap.get(b.id())
         const acode = bMismatch?.base.toUpperCase()
         const bcode = aMismatch?.base.toUpperCase()
-        if (acode === bcode && acode === '*') {
-          // @ts-expect-error
-          return aMismatch.length - bMismatch.length
-        }
-        return (
-          (acode ? acode.charCodeAt(0) : 0) - (bcode ? bcode.charCodeAt(0) : 0)
-        )
+        return acode === bcode && acode === '*'
+          ? // @ts-expect-error
+            aMismatch.length - bMismatch.length
+          : (acode ? acode.charCodeAt(0) : 0) -
+              (bcode ? bcode.charCodeAt(0) : 0)
       })
 
       break

@@ -1,6 +1,5 @@
 import RpcServer from 'librpc-web-mod'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import PluginLoader, {
   LoadedPlugin,
   PluginDefinition,
@@ -91,7 +90,6 @@ export async function initializeWorker(
     // @ts-expect-error
     self.rpcServer = new RpcServer.Server({
       ...rpcConfig,
-      ...remoteAbortRpcHandler(),
       ping: async () => {
         // the ping method is required by the worker driver for checking the
         // health of the worker

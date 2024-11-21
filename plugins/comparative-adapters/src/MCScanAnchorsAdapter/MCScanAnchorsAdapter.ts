@@ -33,7 +33,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -51,9 +51,9 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       [bed1, bed2, mcscan].map(r => readFile(r, opts)),
     )
 
-    const bed1Map = parseBed(bed1text)
-    const bed2Map = parseBed(bed2text)
-    const feats = mcscantext
+    const bed1Map = parseBed(bed1text!)
+    const bed2Map = parseBed(bed2text!)
+    const feats = mcscantext!
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
@@ -63,7 +63,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
         if (!r1 || !r2) {
           throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
         }
-        return [r1, r2, +score, index] as Row
+        return [r1, r2, +score!, index] as Row
       })
 
     return {
@@ -73,14 +73,31 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   }
 
   async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseFeatureDataAdapter filters it out)
+    // determining this properly is basically a call to getFeatures so is not
+    // really that important, and has to be true or else getFeatures is never
+    // called (BaseFeatureDataAdapter filters it out)
     return true
   }
 
-  async getRefNames() {
-    // we cannot determine this accurately
+  getAssemblyNames() {
+    const assemblyNames = this.getConf('assemblyNames') as string[]
+    return assemblyNames
+  }
+
+  async getRefNames(opts: BaseOptions = {}) {
+    // @ts-expect-error
+    const r1 = opts.regions?.[0].assemblyName
+    const { feats } = await this.setup(opts)
+
+    const idx = this.getAssemblyNames().indexOf(r1)
+    if (idx !== -1) {
+      const set = new Set<string>()
+      for (const feat of feats) {
+        set.add(idx === 0 ? feat[0].refName : feat[1].refName)
+      }
+      return [...set]
+    }
+    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 

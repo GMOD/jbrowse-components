@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-breakpoint-split-view",
-  "version": "2.11.2",
+  "version": "2.17.0",
   "description": "JBrowse 2 breakpoint detail split view",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/breakpoint-split-view",
+    "test": "cd ../..; jest --passWithNoTests plugins/breakpoint-split-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -37,14 +37,14 @@
   },
   "dependencies": {
     "@gmod/vcf": "^5.0.9",
-    "@mui/icons-material": "^5.0.1",
+    "@mui/icons-material": "^6.0.0",
     "@types/file-saver": "^2.0.1",
     "file-saver": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

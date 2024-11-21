@@ -1,6 +1,6 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
 import { observer } from 'mobx-react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import {
   StringParam,
   QueryParamProvider,
@@ -8,6 +8,7 @@ import {
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
+import PluginManager from '@jbrowse/core/PluginManager'
 import '@fontsource/roboto'
 
 // locals
@@ -19,8 +20,8 @@ import SessionLoader, {
   SessionTriagedInfo,
 } from '../SessionLoader'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from '../createPluginManager'
+import type { WebRootModel } from '../rootModel/rootModel'
 
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
@@ -99,15 +100,19 @@ const SessionTriaged = observer(function ({
 }) {
   return (
     <Suspense fallback={null}>
-      {sessionTriaged?.origin === 'session' ? (
+      {sessionTriaged.origin === 'session' ? (
         <SessionWarningDialog
           loader={loader}
-          handleClose={() => loader.setSessionTriaged(undefined)}
+          handleClose={() => {
+            loader.setSessionTriaged(undefined)
+          }}
         />
       ) : (
         <ConfigWarningDialog
           loader={loader}
-          handleClose={() => loader.setSessionTriaged(undefined)}
+          handleClose={() => {
+            loader.setSessionTriaged(undefined)
+          }}
         />
       )}
     </Suspense>
@@ -122,7 +127,10 @@ const PluginManagerLoaded = observer(function ({
   const { rootModel } = pluginManager
   return !rootModel?.session ? (
     <Suspense fallback={<LoadingEllipses />}>
-      <StartScreen rootModel={rootModel} onFactoryReset={factoryReset} />
+      <StartScreen
+        rootModel={rootModel as WebRootModel}
+        onFactoryReset={factoryReset}
+      />
     </Suspense>
   ) : (
     <JBrowse pluginManager={pluginManager} />

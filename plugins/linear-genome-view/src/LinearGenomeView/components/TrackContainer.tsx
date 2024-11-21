@@ -3,7 +3,7 @@ import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
 // jbrowse core
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -37,14 +37,15 @@ const TrackContainer = observer(function ({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId } = model
+  const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)
 
   return (
     <Paper
       ref={ref}
       className={classes.root}
-      variant="outlined"
+      variant={showTrackOutlines ? 'outlined' : undefined}
+      elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
         if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0

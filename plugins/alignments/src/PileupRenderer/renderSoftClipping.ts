@@ -6,9 +6,10 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { Theme } from '@mui/material'
 
 // locals
-import { Mismatch, parseCigar } from '../MismatchParser'
 import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { fillRect, getCharWidthHeight, LayoutFeature } from './util'
+import { Mismatch } from '../shared/types'
+import { parseCigar } from '../MismatchParser'
 
 export function renderSoftClipping({
   ctx,
@@ -29,7 +30,7 @@ export function renderSoftClipping({
 }) {
   const { feature, topPx, heightPx } = feat
   const { regions, bpPerPx } = renderArgs
-  const [region] = regions
+  const region = regions[0]!
   const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
   const mismatches = feature.get('mismatches') as Mismatch[] | undefined
   const seq = feature.get('seq') as string | undefined
@@ -41,15 +42,16 @@ export function renderSoftClipping({
   }
 
   const heightLim = charHeight - 2
-  const CIGAR = parseCigar(feature.get('CIGAR'))
   let seqOffset = 0
   let refOffset = 0
-  for (let i = 0; i < CIGAR.length; i += 2) {
-    const op = CIGAR[i + 1]
-    const len = +CIGAR[i]
+  const CIGAR = feature.get('CIGAR')
+  const cigarOps = parseCigar(CIGAR)
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const op = cigarOps[i + 1]!
+    const len = +cigarOps[i]!
     if (op === 'S') {
       for (let k = 0; k < len; k++) {
-        const base = seq[seqOffset + k]
+        const base = seq[seqOffset + k]!
         const s0 = feature.get('start') - (i === 0 ? len : 0) + refOffset + k
         const [leftPx, rightPx] = bpSpanPx(s0, s0 + 1, region, bpPerPx)
         const widthPx = Math.max(minFeatWidth, rightPx - leftPx)

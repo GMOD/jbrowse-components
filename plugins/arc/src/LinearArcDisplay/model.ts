@@ -116,13 +116,17 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   type: 'radio',
                   label: 'Arcs',
-                  onClick: () => self.setDisplayMode('arcs'),
+                  onClick: () => {
+                    self.setDisplayMode('arcs')
+                  },
                   checked: self.displayMode === 'arcs',
                 },
                 {
                   type: 'radio',
                   label: 'Semi-circles',
-                  onClick: () => self.setDisplayMode('semicircles'),
+                  onClick: () => {
+                    self.setDisplayMode('semicircles')
+                  },
                   checked: self.displayMode === 'semicircles',
                 },
               ],

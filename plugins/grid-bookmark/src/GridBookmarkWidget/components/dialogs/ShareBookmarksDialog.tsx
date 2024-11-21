@@ -26,6 +26,11 @@ const useStyles = makeStyles()(() => ({
   flexItem: {
     margin: 5,
   },
+  content: {
+    display: 'flex',
+    flexFlow: 'column',
+    gap: '5px',
+  },
 }))
 
 const ShareBookmarksDialog = observer(function ({
@@ -48,7 +53,6 @@ const ShareBookmarksDialog = observer(function ({
       : model.sharedBookmarksModel
 
   useEffect(() => {
-    let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -63,30 +67,22 @@ const ShareBookmarksDialog = observer(function ({
           session.shareURL,
           locationUrl.href,
         )
-        if (!cancelled) {
-          const params = new URLSearchParams(locationUrl.search)
-          params.set('bookmarks', `share-${result.json.sessionId}`)
-          params.set('password', result.password)
-          locationUrl.search = params.toString()
-          setUrl(locationUrl.href)
-          setLoading(false)
-        }
+        const params = new URLSearchParams(locationUrl.search)
+        params.set('bookmarks', `share-${result.json.sessionId}`)
+        params.set('password', result.password)
+        locationUrl.search = params.toString()
+        setUrl(locationUrl.href)
+        setLoading(false)
       } catch (e) {
         setError(e)
       } finally {
         setLoading(false)
       }
     })()
-
-    return () => {
-      cancelled = true
-    }
   }, [bookmarksToShare, session])
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
-      <DialogContent
-        style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
-      >
+      <DialogContent className={classes.content}>
         <Alert severity="info">
           {shareAll ? (
             <>
@@ -111,7 +107,11 @@ const ShareBookmarksDialog = observer(function ({
           <TextField
             label="URL"
             value={url}
-            InputProps={{ readOnly: true }}
+            slotProps={{
+              input: {
+                readOnly: true,
+              },
+            }}
             variant="filled"
             fullWidth
             onClick={event => {

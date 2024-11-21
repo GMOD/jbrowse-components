@@ -17,7 +17,7 @@ export async function renderArcSvg(
   const view = getContainingView(model) as LinearGenomeViewModel
   const width = view.dynamicBlocks.totalWidthPx
   const height = model.height
-  const clipid = 'arc-' + model.id
+  const clipid = `arc-${model.id}`
   return (
     <>
       <defs>

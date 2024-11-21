@@ -29,7 +29,7 @@ sessionAssemblies: types.array(assemblyConfigSchemasType)
 
 ```js
 // type signature
-addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>
+addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<...> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### action: removeSessionAssembly

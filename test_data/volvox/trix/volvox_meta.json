@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2023-09-07T19:05:43.740Z",
+  "dateCreated": "2024-10-14T14:42:44.177Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -178,6 +178,18 @@
         "type": "VcfAdapter",
         "vcfLocation": {
           "uri": "volvox_vcf_jannovar.vcf",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "trackId": "test",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "multipart.gff",
           "locationType": "UriLocation"
         }
       }

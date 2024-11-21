@@ -64,10 +64,6 @@ module.exports = {
               },
             },
           },
-          {
-            loader: require.resolve('file-loader'),
-            exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
-          },
         ],
       },
     ],

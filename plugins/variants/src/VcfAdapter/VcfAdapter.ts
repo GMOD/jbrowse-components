@@ -2,43 +2,26 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region, Feature } from '@jbrowse/core/util'
+import { Region, Feature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
-import { unzip } from '@gmod/bgzf-filehandle'
 import VCF from '@gmod/vcf'
 
 // local
 import VcfFeature from '../VcfFeature'
 
-const readVcf = (f: string) => {
-  const header: string[] = []
-  const rest: string[] = []
-  f.split(/\n|\r\n|\r/)
-    .map(f => f.trim())
-    .filter(f => !!f)
-    .forEach(line => {
-      if (line.startsWith('#')) {
-        header.push(line)
-      } else if (line) {
-        rest.push(line)
-      }
-    })
-  return { header: header.join('\n'), lines: rest }
-}
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+type StatusCallback = (arg: string) => void
 
 export default class VcfAdapter extends BaseFeatureDataAdapter {
-  public static capabilities = ['getFeatures', 'getRefNames']
+  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
 
-  protected vcfFeatures?: Promise<{
+  vcfFeatures?: Promise<{
     header: string
-    intervalTree: Record<string, IntervalTree<VcfFeature>>
+    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
   }>
+
+  public static capabilities = ['getFeatures', 'getRefNames']
 
   public async getHeader() {
     const { header } = await this.setup()
@@ -47,46 +30,82 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   async getMetadata() {
     const { header } = await this.setup()
-    const parser = new VCF({ header: header })
+    const parser = new VCF({ header })
     return parser.getMetadata()
   }
 
-  // converts lines into an interval tree
-  public async setupP() {
-    const pm = this.pluginManager
-    const buf = await openLocation(this.getConf('vcfLocation'), pm).readFile()
-    const buffer = isGzip(buf) ? await unzip(buf) : buf
+  public async setupP(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
+    const buffer = await fetchAndMaybeUnzip(loc, opts)
+    const headerLines = []
+    const featureMap = {} as Record<string, string[]>
+    let blockStart = 0
 
-    // 512MB  max chrome string length is 512MB
-    if (buffer.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-
-    const str = new TextDecoder().decode(buffer)
-    const { header, lines } = readVcf(str)
-    const intervalTree = {} as Record<string, IntervalTree<VcfFeature>>
-
-    const parser = new VCF({ header })
-    let idx = 0
-    for (const line of lines) {
-      const f = new VcfFeature({
-        variant: parser.parseLine(line),
-        parser,
-        id: `${this.id}-${idx++}`,
-      })
-      const key = f.get('refName')
-      if (!intervalTree[key]) {
-        intervalTree[key] = new IntervalTree<VcfFeature>()
+    const decoder = new TextDecoder('utf8')
+    let i = 0
+    while (blockStart < buffer.length) {
+      const n = buffer.indexOf('\n', blockStart)
+      // could be a non-newline ended file, so slice to end of file if n===-1
+      const b =
+        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
+      const line = decoder.decode(b).trim()
+      if (line) {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else {
+          const ret = line.indexOf('\t')
+          const refName = line.slice(0, ret)
+          if (!featureMap[refName]) {
+            featureMap[refName] = []
+          }
+          featureMap[refName].push(line)
+        }
       }
-      intervalTree[key].insert([f.get('start'), f.get('end')], f)
+      if (i++ % 10_000 === 0) {
+        statusCallback(
+          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+        )
+      }
+
+      blockStart = n + 1
     }
 
-    return { header, intervalTree }
+    const header = headerLines.join('\n')
+    const parser = new VCF({ header })
+
+    const intervalTreeMap = Object.fromEntries(
+      Object.entries(featureMap).map(([refName, lines]) => [
+        refName,
+        (sc?: (arg: string) => void) => {
+          if (!this.calculatedIntervalTreeMap[refName]) {
+            sc?.('Parsing VCF data')
+            let idx = 0
+            const intervalTree = new IntervalTree()
+            for (const line of lines) {
+              const f = new VcfFeature({
+                variant: parser.parseLine(line),
+                parser,
+                id: `${this.id}-${refName}-${idx++}`,
+              })
+              intervalTree.insert([f.get('start'), f.get('end')], f)
+            }
+            this.calculatedIntervalTreeMap[refName] = intervalTree
+          }
+          return this.calculatedIntervalTreeMap[refName]
+        },
+      ]),
+    )
+
+    return {
+      header,
+      intervalTreeMap,
+    }
   }
 
   public async setup() {
     if (!this.vcfFeatures) {
-      this.vcfFeatures = this.setupP().catch(e => {
+      this.vcfFeatures = this.setupP().catch((e: unknown) => {
         this.vcfFeatures = undefined
         throw e
       })
@@ -95,23 +114,25 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(_: BaseOptions = {}) {
-    const { intervalTree } = await this.setup()
-    return Object.keys(intervalTree)
+    const { intervalTreeMap } = await this.setup()
+    return Object.keys(intervalTreeMap)
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = region
-        const { intervalTree } = await this.setup()
-        intervalTree[refName]?.search([start, end]).forEach((f: VcfFeature) => {
-          observer.next(f)
-        })
+        const { intervalTreeMap } = await this.setup()
+        intervalTreeMap[refName]?.(opts.statusCallback)
+          .search([start, end])
+          .forEach(f => {
+            observer.next(f)
+          })
         observer.complete()
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

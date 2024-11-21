@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { stringToJexlExpression } from './jexlStrings'
 import SimpleFeature from './simpleFeature'
 

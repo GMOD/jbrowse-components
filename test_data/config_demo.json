@@ -1,5 +1,4 @@
 {
-  "configuration": {},
   "plugins": [
     {
       "name": "Biothings",
@@ -106,6 +105,15 @@
           },
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.gzi"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -892,6 +900,7 @@
       "category": ["SKBR3"],
       "adapter": {
         "type": "BigWigAdapter",
+        "resolutionMultiplier": 10,
         "bigWigLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw",
           "locationType": "UriLocation"
@@ -1770,6 +1779,7 @@
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "HicAdapter",
+        "resolutionMultiplier": 10,
         "hicLocation": {
           "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
           "locationType": "UriLocation"
@@ -3949,27 +3959,6 @@
       ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "genes",
-      "name": "Gene annotation v4",
-      "category": ["Annotation"],
-      "assemblyNames": ["t2t-chm13-v1.1"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      }
-    },
-    {
       "type": "SyntenyTrack",
       "trackId": "hg19ToHg38.over.chain.gz-1645073157673",
       "name": "hg19ToHg38.over.chain.gz",
@@ -4242,7 +4231,8 @@
     },
     {
       "type": "AlignmentsTrack",
-      "name": "Paired-end stranded RNA-seq",
+      "name": "Paired-end stranded RNA-seq (BAM,XS)",
+      "category": ["RNA-seq"],
       "metadata": {
         "source": "From sample files listed at https://rseqc.sourceforge.net/"
       },
@@ -4279,6 +4269,189 @@
       "assemblyNames": ["hg19"]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes",
+      "name": "NCBI genes",
+      "metadata": {
+        "accessed_date": "2024/06/14",
+        "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_009914755.1/"
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/genes/ncbi_genes.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/CHM13/genes/ncbi_genes.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["chm13v2.0"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc-v1.0-minigraph-grch38.bb.bed",
+      "name": "hprc-v1.0-minigraph-grch38.bb.bed",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "hprc-v1.0-minigraph-grch38.bb.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "hprc-v1.0-minigraph-grch38.bb.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878_LINE1",
+      "name": "NA12878_LINE1",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/NA12878_LINE1.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878_SVA",
+      "name": "NA12878_SVA",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/NA12878_SVA.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878_ALU",
+      "name": "NA12878_ALU",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/NA12878_ALU.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "tiberius_grch38",
+      "name": "Tiberius gene predictions",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode_47",
+      "name": "Gencode v47",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_08_24",
+      "name": "NCBI RefSeq (Aug 2024)",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002_WGS_fiberseq.MAGEL2_2",
+      "name": "HG002_WGS_fiberseq.MAGEL2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/HG002_WGS_fiberseq.MAGEL2.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/HG002_WGS_fiberseq.MAGEL2.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted",
       "name": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted",
@@ -4313,6 +4486,280 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.chr1",
+      "name": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.chr1",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/NA12878/NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.chr1.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/NA12878/NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.chr1.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "category": ["NA12878"],
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.cram",
+      "name": "Paired-end stranded RNA-seq (CRAM,XS)",
+      "category": ["RNA-seq"],
+      "metadata": {
+        "source": "From sample files listed at https://rseqc.sourceforge.net/"
+      },
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/paired_end-rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.chr1.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/paired_end-rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.chr1.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS",
+      "name": "Paired-end stranded RNA-seq (CRAM,TS)",
+      "category": ["RNA-seq"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/paired_end-rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/paired_end-rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.bam",
+      "name": "Paired-end stranded RNA-seq (BAM,TS)",
+      "category": ["RNA-seq"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/paired_end-rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/paired_end-rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "COLO829_tumor.ht",
+      "name": "COLO829_tumor.ht",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "chr20_mod_call_sample",
+      "name": "chr20_mod_call_sample",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/chr20_mod_call_sample.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/methylation/chr20_mod_call_sample.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "COLO829_tumor.ht_modkit.bed",
+      "name": "COLO829_tumor.ht_modkit.bed",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/COLO829/COLO829_tumor.ht_modkit.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/COLO829/COLO829_tumor.ht_modkit.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "COLO829_tumor.ht_modkit.bed_multi",
+      "name": "COLO829_tumor.ht_modkit.bed (as MultiQuantitativeTrack)",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/COLO829/COLO829_tumor.ht_modkit.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/COLO829/COLO829_tumor.ht_modkit.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "bilby",
+      "name": "Bilby transition matrix",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedGraphAdapter",
+        "bedGraphLocation": {
+          "uri": "https://jbrowse.org/demos/bilby/test.bg",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "bilby2",
+      "name": "Bilby transition matrix (full names)",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedGraphAdapter",
+        "bedGraphLocation": {
+          "uri": "https://jbrowse.org/demos/bilby/test2.bg",
+          "locationType": "UriLocation"
+        }
+      }
     }
   ],
   "connections": [],

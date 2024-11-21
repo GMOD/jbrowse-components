@@ -55,22 +55,20 @@ const CurrentJobCard = observer(function CurrentJobCard({
           )}
         </Box>
       </CardContent>
-      {job.cancelCallback ? (
-        <CardActions>
-          <Button
-            variant="contained"
-            color="inherit"
-            disabled={clicked || job.progressPct === 0}
-            onClick={() => {
-              job.setStatusMessage('Aborted via cancel button')
-              job.cancelCallback && job.cancelCallback()
-              setClicked(true)
-            }}
-          >
-            Cancel
-          </Button>
-        </CardActions>
-      ) : null}
+      <CardActions>
+        <Button
+          variant="contained"
+          color="inherit"
+          disabled={clicked || job.progressPct === 0}
+          onClick={() => {
+            job.setStatusMessage('Aborted via cancel button')
+            job.cancelCallback()
+            setClicked(true)
+          }}
+        >
+          Cancel
+        </Button>
+      </CardActions>
     </Card>
   )
 })

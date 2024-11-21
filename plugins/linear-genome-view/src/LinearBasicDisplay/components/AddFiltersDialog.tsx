@@ -45,7 +45,9 @@ const AddFiltersDialog = observer(function ({
         .split('\n')
         .map(line => line.trim())
         .filter(line => !!line)
-        .map(line => checkJexl(line.trim()))
+        .map(line => {
+          checkJexl(line.trim())
+        })
       setError(undefined)
     } catch (e) {
       console.error(e)
@@ -84,10 +86,14 @@ const AddFiltersDialog = observer(function ({
           className={classes.dialogContent}
           fullWidth
           value={data}
-          onChange={event => setData(event.target.value)}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          onChange={event => {
+            setData(event.target.value)
+          }}
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
@@ -109,7 +115,9 @@ const AddFiltersDialog = observer(function ({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

@@ -52,7 +52,6 @@ const useStyles = makeStyles()({
 const FilterReactComponent = observer(function ({
   filterModel,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filterModel: any
 }) {
   const { classes } = useStyles()
@@ -78,20 +77,22 @@ const FilterReactComponent = observer(function ({
         value={filterModel.locString}
         onChange={evt => filterModel.setLocString(evt.target.value)}
         className={classes.textFilterControl}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment
-              className={classes.textFilterControlAdornment}
-              position="end"
-            >
-              <IconButton
-                aria-label="clear filter"
-                onClick={() => filterModel.setLocString('')}
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment
+                className={classes.textFilterControlAdornment}
+                position="end"
               >
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
+                <IconButton
+                  aria-label="clear filter"
+                  onClick={() => filterModel.setLocString('')}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
       />
     </>
@@ -105,7 +106,7 @@ const OPERATIONS = [
   'does not overlap',
   'not contained within',
   'does not contain',
-]
+] as const
 
 interface Loc {
   start: number
@@ -154,13 +155,16 @@ OPERATION_PREDICATES['does not overlap'] = (
   cellLocation,
   specifiedLocation,
 ) => {
-  return !OPERATION_PREDICATES['overlaps with'](cellLocation, specifiedLocation)
+  return !OPERATION_PREDICATES['overlaps with']!(
+    cellLocation,
+    specifiedLocation,
+  )
 }
 OPERATION_PREDICATES['not contained within'] = (
   cellLocation,
   specifiedLocation,
 ) => {
-  return !OPERATION_PREDICATES['contained within'](
+  return !OPERATION_PREDICATES['contained within']!(
     cellLocation,
     specifiedLocation,
   )
@@ -169,7 +173,7 @@ OPERATION_PREDICATES['does not contain'] = (
   cellLocation,
   specifiedLocation,
 ) => {
-  return !OPERATION_PREDICATES['fully contains'](
+  return !OPERATION_PREDICATES['fully contains']!(
     cellLocation,
     specifiedLocation,
   )
@@ -181,7 +185,7 @@ const FilterModelType = types
     type: types.literal('LocString'),
     columnNumber: types.integer,
     locString: '',
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.string, OPERATIONS[0]),
   })
   .views(self => ({
     get locStringIsInvalid() {
@@ -200,7 +204,6 @@ const FilterModelType = types
     get parsedLocString() {
       const session = getSession(self)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const model = getParent<any>(self, 3).spreadsheet
       const { assemblyName } = model
       try {
@@ -228,7 +231,6 @@ const FilterModelType = types
         }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived: cells } = row
         const cell = cells[columnNumber]
@@ -263,20 +265,18 @@ const FilterModelType = types
 // opens a new LGV at the location described in the locString in the cell text
 
 async function locationLinkClick(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spreadsheet: any,
   _columnNumber: number,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   cell: any,
 ) {
   const session = getSession(spreadsheet)
   const { assemblyName } = spreadsheet
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { id } = getParent<any>(spreadsheet)
 
   const newViewId = `${id}_${assemblyName}`
-  let view = session.views.find(v => v.id === newViewId) as LGV
+  let view = session.views.find(v => v.id === newViewId) as LGV | undefined
   if (!view) {
     view = session.addView('LinearGenomeView', {
       id: newViewId,
@@ -285,7 +285,6 @@ async function locationLinkClick(
   await view.navToLocString(cell.text, assemblyName)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DataCell = any
 
 const DataCellReactComponent = observer(function ({
@@ -306,7 +305,7 @@ const DataCellReactComponent = observer(function ({
         }
       }}
       title="open a new linear genome view here"
-      href="#link"
+      href="#"
     >
       {cell.text}
     </a>
@@ -317,7 +316,6 @@ const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
   categoryName: 'Location',
   displayName: 'Full location',
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   compare(cellA: { extendedData: any }, cellB: { extendedData: any }) {
     return compareLocs(cellA.extendedData, cellB.extendedData)
   },

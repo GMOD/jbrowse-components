@@ -61,7 +61,9 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
       </IconButton>
       <CascadingMenu
         {...bindPopover(popupState)}
-        onMenuItemClick={(_: unknown, callback: () => void) => callback()}
+        onMenuItemClick={(_: unknown, callback: () => void) => {
+          callback()
+        }}
         menuItems={menuItems}
         closeAfterItemClick={closeAfterItemClick}
         popupState={popupState}

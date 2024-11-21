@@ -6,11 +6,11 @@ import {
   isReferenceType,
   isValidReference,
   isMapType,
-  types,
   IAnyType,
   IAnyStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
+import type { types } from 'mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -71,10 +71,13 @@ export async function toUrlSafeB64(str: string) {
 type MSTArray = Instance<ReturnType<typeof types.array>>
 type MSTMap = Instance<ReturnType<typeof types.map>>
 
-// attempts to remove undefined references from the given MST model. can only actually
-// remove them from arrays and maps. throws MST undefined ref error if it encounters
-// undefined refs in model properties
-export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
+// attempts to remove undefined references from the given MST model. can only
+// actually remove them from arrays and maps. throws MST undefined ref error if
+// it encounters undefined refs in model properties
+export function filterSessionInPlace(
+  node: IAnyStateTreeNode | undefined,
+  type: IAnyType,
+) {
   // makes it work with session sharing
   if (node === undefined) {
     return

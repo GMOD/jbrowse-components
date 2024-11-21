@@ -4,10 +4,8 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import {
-  BaseCard,
-  Attributes,
-} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 
 type FileInfo = Record<string, unknown> | string
@@ -47,7 +45,7 @@ export default function FileInfoPanel({
         }
       : info || {}
 
-  return info !== null ? (
+  return (
     <BaseCard title="File info">
       {error ? (
         <ErrorMessage error={error} />
@@ -57,5 +55,5 @@ export default function FileInfoPanel({
         <Attributes attributes={details} />
       )}
     </BaseCard>
-  ) : null
+  )
 }

@@ -7,7 +7,7 @@ export function isEmpty(obj: Record<string, unknown>) {
 }
 
 export function generateTitle(name: unknown, id: unknown, type: unknown) {
-  return [ellipses(`${name}` || `${id}`), `${type}`]
+  return [ellipses(`${name || id || ''}`), `${type}`]
     .filter(f => !!f)
     .join(' - ')
 }
@@ -34,7 +34,7 @@ export function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
   })
   return typeof obj2 === 'string'
     ? obj2
-    : isObject(obj2) && typeof obj2?.Description === 'string'
+    : isObject(obj2) && typeof obj2.Description === 'string'
       ? obj2.Description
       : undefined
 }

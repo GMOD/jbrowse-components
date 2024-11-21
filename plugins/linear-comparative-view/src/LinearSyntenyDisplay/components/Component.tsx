@@ -33,8 +33,12 @@ function LoadingMessage() {
   const [shown, setShown] = useState(false)
   const { classes } = useStyles()
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
+    const timeout = setTimeout(() => {
+      setShown(true)
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+    }
   })
 
   return shown ? (

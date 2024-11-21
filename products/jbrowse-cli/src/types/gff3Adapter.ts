@@ -27,7 +27,7 @@ export async function* indexGff3({
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
   const progressBar = new SingleBar(
     {
-      format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      format: `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
       etaBuffer: 2000,
     },
     Presets.shades_classic,
@@ -51,7 +51,7 @@ export async function* indexGff3({
 
   const rl = readline.createInterface({
     // @ts-expect-error
-    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {
@@ -66,18 +66,20 @@ export async function* indexGff3({
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
     const locStr = `${seq_id}:${start}..${end}`
 
-    if (!typesToExclude.includes(type)) {
+    if (!typesToExclude.includes(type!)) {
       // turns gff3 attrs into a map, and converts the arrays into space
       // separated strings
       const col9attrs = Object.fromEntries(
-        col9
+        col9!
           .split(';')
           .map(f => f.trim())
           .filter(f => !!f)
           .map(f => f.split('='))
           .map(([key, val]) => [
-            key.trim(),
-            decodeURIComponentNoThrow(val).trim().split(',').join(' '),
+            key!.trim(),
+            val
+              ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
+              : undefined,
           ]),
       )
       const attrs = attributesToIndex

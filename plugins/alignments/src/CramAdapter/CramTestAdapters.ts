@@ -11,10 +11,14 @@ export function parseSmallFasta(text: string) {
     .filter(t => /\S/.test(t))
     .map(entryText => {
       const [defLine, ...seqLines] = entryText.split(/\n|\r\n|\r/)
-      const [id, ...descriptionLines] = defLine.split(' ')
+      const [id, ...descriptionLines] = defLine!.split(' ')
       const description = descriptionLines.join(' ')
       const sequence = seqLines.join('').replaceAll(/\s/g, '')
-      return { id, description, sequence }
+      return {
+        id: id!,
+        description,
+        sequence,
+      }
     })
 }
 
@@ -90,7 +94,9 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
           )
           observer.complete()
         })
-        .catch(e => observer.error(e))
+        .catch((e: unknown) => {
+          observer.error(e)
+        })
       return { unsubscribe: () => {} }
     })
   }

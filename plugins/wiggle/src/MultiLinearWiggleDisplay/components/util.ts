@@ -3,7 +3,7 @@ import {
   getContainingView,
   measureText,
 } from '@jbrowse/core/util'
-import { WiggleDisplayModel } from '../models/model'
+import { WiggleDisplayModel } from '../model'
 import { getConf } from '@jbrowse/core/configuration'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -15,7 +15,7 @@ export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
   for (const old of idxs) {
     const idx = Math.max(lastIdx, old - by)
     if (idx >= lastIdx) {
-      arr.splice(idx, 0, arr.splice(old, 1)[0])
+      arr.splice(idx, 0, arr.splice(old, 1)[0]!)
     }
     lastIdx = lastIdx + 1
   }
@@ -31,7 +31,7 @@ export function moveDown(arr: { name: string }[], sel: string[], by = 1) {
   for (const old of idxs) {
     const idx = Math.min(lastIdx, old + by)
     if (idx <= lastIdx) {
-      arr.splice(idx, 0, arr.splice(old, 1)[0])
+      arr.splice(idx, 0, arr.splice(old, 1)[0]!)
     }
     lastIdx = lastIdx - 1
   }

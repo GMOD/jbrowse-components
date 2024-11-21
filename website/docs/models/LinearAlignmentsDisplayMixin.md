@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearAlignmentsDisplay/models/alignmentsModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/alignmentsModel.tsx)
+[plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModel.tsx)
 
 ### LinearAlignmentsDisplayMixin - Properties
 
@@ -22,7 +22,11 @@ refers to LinearPileupDisplay sub-display model
 // type signature
 IMaybe<IAnyType>
 // code
-PileupDisplay: types.maybe(types.union(...lowerPanelDisplays))
+PileupDisplay: types.maybe(
+      types.union(
+        ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
+      ),
+    )
 ```
 
 #### property: SNPCoverageDisplay
@@ -34,7 +38,7 @@ refers to LinearSNPCoverageDisplay sub-display model
 IMaybe<IAnyModelType>
 // code
 SNPCoverageDisplay: types.maybe(
-      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+      pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
     )
 ```
 

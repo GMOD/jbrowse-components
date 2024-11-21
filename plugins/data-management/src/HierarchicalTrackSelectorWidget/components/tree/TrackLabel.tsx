@@ -45,7 +45,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
     onChange,
     selected,
   } = data
-  const description = (conf && readConfObject(conf, 'description')) || ''
+  const description = readConfObject(conf, 'description')
   return (
     <>
       <Tooltip
@@ -58,7 +58,9 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             <Checkbox
               className={classes.compactCheckbox}
               checked={checked}
-              onChange={() => onChange(trackId)}
+              onChange={() => {
+                onChange(trackId)
+              }}
               disabled={isUnsupported(name)}
               inputProps={{
                 // @ts-expect-error

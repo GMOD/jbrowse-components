@@ -1,9 +1,7 @@
-/* eslint-disable no-console */
-'use strict'
-// Makes the script crash on unhandled rejections instead of silently
-// ignoring them. In the future, promise rejections that are not handled will
-// terminate the Node.js process with a non-zero exit code.
-process.on('unhandledRejection', err => {
+// Makes the script crash on unhandled rejections instead of silently ignoring
+// them. In the future, promise rejections that are not handled will terminate
+// the Node.js process with a non-zero exit code.
+process.on('unhandledRion', err => {
   throw err
 })
 
@@ -27,7 +25,7 @@ const useYarn = fs.existsSync(paths.yarnLockFile)
 const isInteractive = process.stdout.isTTY
 
 // Tools like Cloud9 rely on this.
-const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000
+const DEFAULT_PORT = Number.parseInt(process.env.PORT, 10) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
 if (process.env.HOST) {

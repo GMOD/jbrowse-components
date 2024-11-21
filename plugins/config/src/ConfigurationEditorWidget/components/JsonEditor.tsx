@@ -68,11 +68,15 @@ const JsonEditor = observer(function JsonEditor({
           value={contents}
           helperText={slot.description}
           multiline
-          onChange={event => setContents(event.target.value)}
+          onChange={event => {
+            setContents(event.target.value)
+          }}
           style={{ background: error ? '#fdd' : undefined }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />

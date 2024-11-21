@@ -6,14 +6,14 @@ import {
 import { Region } from '../../util'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   assemblyName: string
   regions: Region[]
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
@@ -21,9 +21,6 @@ export function validateRendererType<T>(
   rendererType: string,
   RendererType: T,
 ): ServerSideRendererType {
-  if (!RendererType) {
-    throw new Error(`renderer "${rendererType}" not found`)
-  }
   // @ts-expect-error
   if (!RendererType.ReactComponent) {
     throw new Error(

@@ -16,7 +16,7 @@ const HicTrackConfigFactory = (pluginManager: PluginManager) => {
       /**
        * #slot
        */
-      renderer: pluginManager.getRendererType('HicRenderer').configSchema,
+      renderer: pluginManager.getRendererType('HicRenderer')!.configSchema,
     },
     {
       /**

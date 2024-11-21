@@ -2,7 +2,7 @@ import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
-import JBrowseCommand from '../base'
+import JBrowseCommand, { Config, Track } from '../base'
 
 const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
@@ -72,18 +72,6 @@ function destinationFn({
   return dest
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Track = Record<string, any>
-
-interface Config {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: Record<string, any> }[]
-  configuration?: {}
-  connections?: unknown[]
-  defaultSession?: {}
-  tracks?: Track[]
-}
-
 interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -111,7 +99,7 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track my.bam --load copy --out /path/to/jb2 --subDir bam',
     '',
 
-    `# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai`,
+    '# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai',
     '$ jbrowse add-track my.bam --indexFile my.bai --load copy',
     '',
 
@@ -130,14 +118,14 @@ export default class AddTrack extends JBrowseCommand {
   static args = {
     track: Args.string({
       required: true,
-      description: `Track file or URL`,
+      description: 'Track file or URL',
     }),
   }
 
   static flags = {
     trackType: Flags.string({
       char: 't',
-      description: `Type of track, by default inferred from track file`,
+      description: 'Type of track, by default inferred from track file',
     }),
     name: Flags.string({
       char: 'n',
@@ -319,7 +307,7 @@ export default class AddTrack extends JBrowseCommand {
     trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
-    assemblyNames = assemblyNames || configContents.assemblies[0].name
+    assemblyNames = assemblyNames || configContents.assemblies[0]?.name || ''
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
@@ -339,6 +327,7 @@ export default class AddTrack extends JBrowseCommand {
         asm => asm.name === assemblyNames,
       )
       if (assembly) {
+        // @ts-expect-error
         trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
       } else if (!skipCheck) {
         this.error(`Failed to find assemblyName ${assemblyNames}`)
@@ -654,26 +643,27 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessTrackType(adapterType: string): string {
-    const known: Record<string, string | undefined> = {
-      BamAdapter: 'AlignmentsTrack',
-      CramAdapter: 'AlignmentsTrack',
-      BgzipFastaAdapter: 'ReferenceSequenceTrack',
-      BigWigAdapter: 'QuantitativeTrack',
-      IndexedFastaAdapter: 'ReferenceSequenceTrack',
-      TwoBitAdapter: 'ReferenceSequenceTrack',
-      VcfTabixAdapter: 'VariantTrack',
-      VcfAdapter: 'VariantTrack',
-      BedpeAdapter: 'VariantTrack',
-      BedAdapter: 'FeatureTrack',
-      HicAdapter: 'HicTrack',
-      PAFAdapter: 'SyntenyTrack',
-      DeltaAdapter: 'SyntenyTrack',
-      ChainAdapter: 'SyntenyTrack',
-      MashMapAdapter: 'SyntenyTrack',
-      PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-      MCScanAnchorsAdapter: 'SyntenyTrack',
-      MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-    }
-    return known[adapterType] || 'FeatureTrack'
+    return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
   }
+}
+
+const adapterTypesToTrackTypeMap: Record<string, string> = {
+  BamAdapter: 'AlignmentsTrack',
+  CramAdapter: 'AlignmentsTrack',
+  BgzipFastaAdapter: 'ReferenceSequenceTrack',
+  BigWigAdapter: 'QuantitativeTrack',
+  IndexedFastaAdapter: 'ReferenceSequenceTrack',
+  TwoBitAdapter: 'ReferenceSequenceTrack',
+  VcfTabixAdapter: 'VariantTrack',
+  VcfAdapter: 'VariantTrack',
+  BedpeAdapter: 'VariantTrack',
+  BedAdapter: 'FeatureTrack',
+  HicAdapter: 'HicTrack',
+  PAFAdapter: 'SyntenyTrack',
+  DeltaAdapter: 'SyntenyTrack',
+  ChainAdapter: 'SyntenyTrack',
+  MashMapAdapter: 'SyntenyTrack',
+  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
+  MCScanAnchorsAdapter: 'SyntenyTrack',
+  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
 }

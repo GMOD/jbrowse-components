@@ -32,7 +32,8 @@ export abstract class BaseAdapter {
 
   /**
    * Same as `readConfObject(this.config, arg)`.
-   * @deprecated Does not offer the same TS type checking as `readConfObject`, consider using that instead.
+   * Note: Does not offer the same TS type checking as `readConfObject`,
+   * consider using that instead.
    */
   getConf(arg: string | string[]) {
     return readConfObject(this.config, arg)

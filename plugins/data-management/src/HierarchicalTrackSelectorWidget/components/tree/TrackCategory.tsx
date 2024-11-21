@@ -47,7 +47,7 @@ export default function Category({
         }
       }}
     >
-      <Typography>
+      <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
         <IconButton
@@ -105,7 +105,9 @@ export default function Category({
             setMenuEl(null)
           }}
           open={Boolean(menuEl)}
-          onClose={() => setMenuEl(null)}
+          onClose={() => {
+            setMenuEl(null)
+          }}
         />
       ) : null}
     </div>

@@ -41,7 +41,9 @@ export default function SetColorDialog({
         <Button
           variant="contained"
           style={{ float: 'right' }}
-          onClick={() => setShowTips(!showTips)}
+          onClick={() => {
+            setShowTips(!showTips)
+          }}
         >
           {showTips ? 'Hide tips' : 'Show tips'}
         </Button>

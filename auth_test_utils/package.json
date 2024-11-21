@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "oauth": "tsx OAuthServer/app.ts",
+    "basicauth": "tsx HTTPBasicAuthServer/app.ts"
+  },
+  "packages": {},
+  "dependencies": {
+    "tsx": "^4.19.1"
+  }
+}

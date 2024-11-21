@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, getSnapshot } from 'mobx-state-tree'
+import { cast, types, addDisposer, isAlive } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -14,9 +14,11 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getEnv,
   getSession,
-  isSessionModelWithWidgets,
   getContainingView,
+  getContainingTrack,
+  isSessionModelWithWidgets,
   SimpleFeature,
+  SimpleFeatureSerialized,
   Feature,
 } from '@jbrowse/core/util'
 
@@ -32,18 +34,20 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTagValues, FilterModel, IFilter } from '../shared'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import { createAutorun } from '../util'
-import { ColorByModel, ExtraColorBy } from '../shared/color'
+import { ColorBy, FilterBy } from '../shared/types'
+import { getUniqueTags } from '../shared/getUniqueTags'
+import { defaultFilterFlags } from '../shared/util'
 
-// async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
-const ColorByTagDialog = lazy(() => import('./components/ColorByTag'))
-const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeight'),
+// lazies
+const FilterByTagDialog = lazy(
+  () => import('../shared/components/FilterByTagDialog'),
 )
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeight'))
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog'),
+)
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -89,11 +93,11 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        colorBySetting: ColorByModel,
+        colorBySetting: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        filterBySetting: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
         /**
          * #property
          */
@@ -106,10 +110,19 @@ export function SharedLinearPileupDisplayMixin(
       tagsReady: false,
     }))
     .views(self => ({
+
+      /**
+       * #getter
+       */
       get colorBy() {
-        return self.colorBySetting
-          ? getSnapshot(self.colorBySetting)
-          : getConf(self, 'colorBy')
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
       },
     }))
     .views(self => ({
@@ -133,7 +146,7 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setMaxHeight(n: number) {
+      setMaxHeight(n?: number) {
         self.trackMaxHeight = n
       },
 
@@ -154,13 +167,11 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setColorScheme(colorScheme: {
-        type: string
-        tag?: string
-        extra?: ExtraColorBy
-      }) {
-        self.colorTagMap = observable.map({}) // clear existing mapping
-        self.colorBySetting = cast(colorScheme)
+      setColorScheme(colorScheme: ColorBy) {
+        self.colorTagMap = observable.map({})
+        self.colorBy = {
+          ...colorScheme,
+        }
         if (colorScheme.tag) {
           self.tagsReady = false
         }
@@ -189,7 +200,7 @@ export function SharedLinearPileupDisplayMixin(
         uniqueTag.forEach(value => {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
-            self.colorTagMap.set(value, colorPalette[totalKeys])
+            self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
         })
       },
@@ -210,7 +221,11 @@ export function SharedLinearPileupDisplayMixin(
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
             'alignmentFeature',
-            { featureData: feature.toJSON(), view: getContainingView(self) },
+            {
+              featureData: feature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
           )
           session.showWidget(featureWidget)
         }
@@ -238,8 +253,10 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
+      setFilterBy(filter: FilterBy) {
+        self.filterBy = {
+          ...filter,
+        }
       },
 
       /**
@@ -335,18 +352,14 @@ export function SharedLinearPileupDisplayMixin(
                   icon: MenuOpenIcon,
                   onClick: (): void => {
                     self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
+                    self.selectFeature(feat)
                   },
                 },
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: (): void => {
-                    if (feat) {
-                      self.copyFeatureToClipboard(feat)
-                    }
+                    self.copyFeatureToClipboard(feat)
                   },
                 },
               ]
@@ -364,15 +377,14 @@ export function SharedLinearPileupDisplayMixin(
          */
         renderPropsPre() {
           const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
-
           const superProps = superRenderProps()
           return {
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
             rpcDriverName,
             displayModel: self,
-            colorBy: colorBy,
-            filterBy: JSON.parse(JSON.stringify(filterBy)),
+            colorBy,
+            filterBy,
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,
@@ -396,7 +408,7 @@ export function SharedLinearPileupDisplayMixin(
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
-                  if (feature) {
+                  if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }
@@ -428,7 +440,7 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -449,34 +461,61 @@ export function SharedLinearPileupDisplayMixin(
           return [
             {
               label: 'Normal',
-              onClick: () => self.setColorScheme({ type: 'normal' }),
+              onClick: () => {
+                self.setColorScheme({
+                  type: 'normal',
+                })
+              },
             },
             {
               label: 'Mapping quality',
-              onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
+              onClick: () => {
+                self.setColorScheme({
+                  type: 'mappingQuality',
+                })
+              },
             },
             {
               label: 'Strand',
-              onClick: () => self.setColorScheme({ type: 'strand' }),
+              onClick: () => {
+                self.setColorScheme({
+                  type: 'strand',
+                })
+              },
             },
             {
               label: 'Per-base quality',
-              onClick: () => self.setColorScheme({ type: 'perBaseQuality' }),
+              onClick: () => {
+                self.setColorScheme({
+                  type: 'perBaseQuality',
+                })
+              },
             },
             {
               label: 'Per-base lettering',
-              onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
+              onClick: () => {
+                self.setColorScheme({
+                  type: 'perBaseLettering',
+                })
+              },
             },
             {
               label: 'First-of-pair strand',
-              onClick: () => self.setColorScheme({ type: 'stranded' }),
+              onClick: () => {
+                self.setColorScheme({
+                  type: 'stranded',
+                })
+              },
             },
             {
               label: 'Color by tag...',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   ColorByTagDialog,
-                  { model: self, handleClose: doneCallback },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -489,18 +528,10 @@ export function SharedLinearPileupDisplayMixin(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+
             {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  FilterByTagDialog,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
-            {
-              label: 'Set feature height',
+              label: 'Set feature height...',
+              priority: 1,
               subMenu: [
                 {
                   label: 'Normal',
@@ -519,9 +550,12 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Manually set height',
                   onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
+                    getSession(self).queueDialog(handleClose => [
                       SetFeatureHeightDialog,
-                      { model: self, handleClose: doneCallback },
+                      {
+                        model: self,
+                        handleClose,
+                      },
                     ])
                   },
                 },
@@ -529,10 +563,27 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Set max height...',
+              priority: -1,
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
-                  { model: self, handleClose: doneCallback },
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
+              label: 'Filter by...',
+              icon: FilterListIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  FilterByTagDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -558,10 +609,18 @@ export function SharedLinearPileupDisplayMixin(
             const { colorBy, tagsReady } = self
             const { staticBlocks } = view
             if (colorBy?.tag && !tagsReady) {
-              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
-              self.updateColorTagMap(vals)
+              const vals = await getUniqueTags({
+                self,
+                tag: colorBy.tag,
+                blocks: staticBlocks,
+              })
+              if (isAlive(self)) {
+                self.updateColorTagMap(vals)
+                self.setTagsReady(true)
+              }
+            } else {
+              self.setTagsReady(true)
             }
-            self.setTagsReady(true)
           },
           { delay: 1000 },
         )
@@ -590,13 +649,17 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: view.id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   // check featureIdUnderMouse is still the same as the
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature?.uniqueId) {
+                  if (
+                    isAlive(self) &&
+                    feature &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }

@@ -19,12 +19,18 @@ export function createPluginManager(self: SessionLoaderModel) {
     ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: { url: definition.url },
+      metadata: {
+        // @ts-expect-error
+        url: definition.url,
+      },
     })),
     ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: { url: definition.url },
+      metadata: {
+        // @ts-expect-error
+        url: definition.url,
+      },
     })),
   ])
   pluginManager.createPluggableElements()
@@ -46,7 +52,7 @@ export function createPluginManager(self: SessionLoaderModel) {
   )
 
   // @ts-expect-error
-  if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
+  if (!self.configSnapshot.configuration?.rpc?.defaultDriver) {
     rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
   }
 
@@ -56,6 +62,7 @@ export function createPluginManager(self: SessionLoaderModel) {
   // local session if session in query, or loads the default session
   try {
     if (self.sessionError) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw self.sessionError
     } else if (self.sessionSnapshot) {
       rootModel.setSession(self.sessionSnapshot)

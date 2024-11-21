@@ -42,14 +42,18 @@ const HierarchicalFab = observer(function ({
       <Fab
         color="secondary"
         className={classes.fab}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       >
         <AddIcon />
       </Fab>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
       >
         {hasConnections ? (
           <MenuItem

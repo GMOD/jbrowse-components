@@ -28,10 +28,9 @@ const RowModel = types
   }))
   .views(self => ({
     get cellsWithDerived() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { columns } = getParent<any>(self, 3)
       let i = 0
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return columns.map((column: { isDerived: boolean; expr: any }) => {
         if (column.isDerived) {
           return column.expr.evalSync({

@@ -6,6 +6,7 @@ import { BreakpointViewModel } from '../model'
 import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'
 import Translocations from './Translocations'
+import PairedFeatures from './PairedFeatures'
 
 const Overlay = observer(function (props: {
   parentRef: React.RefObject<SVGSVGElement>
@@ -15,17 +16,24 @@ const Overlay = observer(function (props: {
 }) {
   const { model, trackId } = props
   const tracks = model.getMatchedTracks(trackId)
+
+  // curvy line type arcs
   if (tracks[0]?.type === 'AlignmentsTrack') {
     return <AlignmentConnections {...props} />
   }
-  if (tracks[0]?.type === 'VariantTrack') {
+
+  // translocation type arcs
+  else if (tracks[0]?.type === 'VariantTrack') {
     return model.hasTranslocations(trackId) ? (
       <Translocations {...props} />
+    ) : model.hasPairedFeatures(trackId) ? (
+      <PairedFeatures {...props} />
     ) : (
       <Breakends {...props} />
     )
+  } else {
+    return null
   }
-  return null
 })
 
 export default Overlay

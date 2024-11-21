@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Divider,
-  Grow,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -13,6 +12,7 @@ import {
   Popover,
   PopoverProps,
   SvgIconProps,
+  Grow,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 // icons
@@ -64,12 +64,12 @@ type MenuItemEndDecorationProps =
 export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const { classes } = useStyles()
   const { type } = props
-  let checked
-  let disabled
+  let checked: boolean | undefined
+  let disabled: boolean | undefined
   if ('checked' in props) {
     ;({ checked, disabled } = props)
   }
-  let icon
+  let icon: React.ReactElement
   switch (type) {
     case 'subMenu': {
       icon = <ArrowRightIcon color="action" />
@@ -120,19 +120,19 @@ export interface BaseMenuItem {
 
 export interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
-  onClick: Function
+  onClick: (...args: any[]) => void
 }
 
 export interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
-  onClick: Function
+  onClick: (...args: any[]) => void
 }
 
 export interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
-  onClick: Function
+  onClick: (...args: any[]) => void
 }
 
 export interface SubMenuItem extends BaseMenuItem {
@@ -155,8 +155,8 @@ type OnCloseProp = MUIMenuProps['onClose']
 interface MenuPageProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: Function,
+    event: React.MouseEvent<HTMLLIElement>,
+    callback: (...args: any[]) => void,
   ) => void
   anchorEl?: AnchorElProp
   open: OpenProp
@@ -250,8 +250,8 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
     )
     const menuItemStyle: MenuItemStyleProp = {}
 
-    function handleClick(callback: Function) {
-      return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    function handleClick(callback: (...args: any[]) => void) {
+      return (event: React.MouseEvent<HTMLLIElement>) => {
         onMenuItemClick(event, callback)
       }
     }
@@ -263,7 +263,12 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
             .sort((a, b) => (b.priority || 0) - (a.priority || 0))
             .map((menuItem, idx) => {
               if (menuItem.type === 'divider') {
-                return <Divider key={`divider-${idx}`} component="li" />
+                return (
+                  <Divider
+                    key={`divider-${JSON.stringify(menuItem)}-${idx}`}
+                    component="li"
+                  />
+                )
               }
               if (menuItem.type === 'subHeader') {
                 return (
@@ -325,7 +330,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
                     switch (e.key) {
                       case 'ArrowLeft':
                       case 'Escape': {
-                        onClose && onClose(e, 'escapeKeyDown')
+                        onClose?.(e, 'escapeKeyDown')
 
                         break
                       }
@@ -392,7 +397,8 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
     return top ? (
       ListContents
     ) : (
-      <Grow in={open} style={{ transformOrigin: `0 0 0` }} ref={ref}>
+      // Grow is required for cascading sub-menus
+      <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
         <Paper
           elevation={8}
           ref={paperRef}
@@ -409,8 +415,8 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
 interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: Function,
+    event: React.MouseEvent<HTMLLIElement>,
+    callback: (...args: any[]) => void,
   ) => void
 }
 
@@ -421,7 +427,6 @@ function Menu(props: MenuProps) {
     <Popover
       open={open}
       onClose={onClose}
-      BackdropProps={{ invisible: true }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right',

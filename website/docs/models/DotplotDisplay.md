@@ -54,7 +54,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
+renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions; }) => Promise<Element>
 ```
 
 ### DotplotDisplay - Actions

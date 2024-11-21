@@ -1,4 +1,5 @@
-import { parseLocString } from '@jbrowse/core/util'
+import { ParsedLocString, parseLocString } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf8', { fatal: true }).decode(buffer)
@@ -13,11 +14,11 @@ async function parseWith(buffer: Buffer, options = {}) {
 
 export interface Row {
   id: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   extendedData?: any
   cells: {
     text: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     extendedData?: any
   }[]
 }
@@ -46,11 +47,11 @@ function guessColumnType(
   columnNumber: number,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ) {
-  const text = rowSet.rows[0].cells[columnNumber].text || ''
+  const text = rowSet.rows[0]!.cells[columnNumber]!.text || ''
 
   let guessedType = 'Text'
 
-  let parsedLoc
+  let parsedLoc: ParsedLocString | undefined
   try {
     parsedLoc = parseLocString(text, isValidRefName)
   } catch (error) {
@@ -99,6 +100,7 @@ function dataToSpreadsheetSnapshot(
 
   // process the column names row if present
   const columnNames: Record<string, string> = {}
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (hasColumnNameLine && columnNameLineNumber !== undefined) {
     const [colNamesRow] = rowSet.rows.splice(columnNameLineNumber - 1, 1)
 
@@ -119,13 +121,13 @@ function dataToSpreadsheetSnapshot(
     // store extendeddata for LocString column
     if (guessedType === 'LocString') {
       for (const row of rowSet.rows) {
-        const cell = row.cells[columnNumber]
+        const cell = row.cells[columnNumber]!
         cell.extendedData = parseLocString(cell.text, isValidRefName)
       }
     }
 
     columns[columnNumber] = {
-      name: columnNames[columnNumber],
+      name: columnNames[columnNumber]!,
       dataType: {
         type: guessedType,
       },

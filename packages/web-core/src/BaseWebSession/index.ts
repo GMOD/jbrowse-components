@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -256,9 +255,13 @@ export function BaseWebSession({
         self.sessionPlugins = cast(
           self.sessionPlugins.filter(
             plugin =>
+              // @ts-expect-error
               plugin.url !== pluginDefinition.url ||
+              // @ts-expect-error
               plugin.umdUrl !== pluginDefinition.umdUrl ||
+              // @ts-expect-error
               plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              // @ts-expect-error
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
@@ -353,6 +356,7 @@ export function BaseWebSession({
         return [
           {
             label: 'About track',
+            priority: 1002,
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
@@ -363,18 +367,23 @@ export function BaseWebSession({
           },
           {
             label: 'Settings',
+            priority: 1001,
             disabled: !canEdit,
-            onClick: () => self.editTrackConfiguration(config),
+            onClick: () => {
+              self.editTrackConfiguration(config)
+            },
             icon: SettingsIcon,
           },
           {
             label: 'Delete track',
+            priority: 1000,
             disabled: !canEdit || isRefSeq,
             onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
           },
           {
             label: 'Copy track',
+            priority: 999,
             disabled: isRefSeq,
             onClick: () => {
               interface Display {
@@ -424,17 +433,13 @@ export function BaseWebSession({
   return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
-      if (snapshot) {
-        // @ts-expect-error
-        const { connectionInstances, ...rest } = snapshot || {}
-        // connectionInstances schema changed from object to an array, so any
-        // old connectionInstances as object is in snapshot, filter it out
-        // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (!Array.isArray(connectionInstances)) {
-          return rest
-        }
-      }
-      return snapshot
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const { connectionInstances, ...rest } = snapshot || {}
+      // connectionInstances schema changed from object to an array, so any
+      // old connectionInstances as object is in snapshot, filter it out
+      // https://github.com/GMOD/jbrowse-components/issues/1903
+      return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })
 }

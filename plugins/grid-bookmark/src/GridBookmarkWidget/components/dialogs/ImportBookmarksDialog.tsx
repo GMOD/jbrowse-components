@@ -28,14 +28,14 @@ import { readSessionFromDynamo } from '../../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
   minWidth: {
     minWidth: 500,
   },
 }))
 
-async function getBookmarksFromShareLink(shareLink: string, shareURL: string) {
+async function getBookmarksFromShareLink(shareLink: string, shareURL?: string) {
   const defaultURL = 'https://share.jbrowse.org/api/v1/'
   const urlParams = new URL(shareLink)
   const sessionQueryParam = urlParams.searchParams.get('bookmarks')
@@ -57,7 +57,7 @@ function guessFileType(header: string) {
 }
 
 async function getBookmarksFromTSVFile(lines: string[]) {
-  if (lines[0].startsWith('chrom')) {
+  if (lines[0]!.startsWith('chrom')) {
     lines = lines.slice(1)
   }
 
@@ -66,10 +66,10 @@ async function getBookmarksFromTSVFile(lines: string[]) {
     .map(line => {
       const [refName, start, end, label, assemblyName] = line.split('\t')
       return {
-        assemblyName: assemblyName,
-        refName,
-        start: +start,
-        end: +end,
+        assemblyName: assemblyName!,
+        refName: refName!,
+        start: +start!,
+        end: +end!,
         label: label === '.' ? undefined : label,
       }
     })
@@ -82,9 +82,9 @@ async function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
       const [refName, start, end, label] = line.split('\t')
       return {
         assemblyName: selectedAsm,
-        refName,
-        start: +start,
-        end: +end,
+        refName: refName!,
+        start: +start!,
+        end: +end!,
         label: label === '.' ? undefined : label,
       }
     })
@@ -103,7 +103,7 @@ const ImportBookmarksDialog = observer(function ({
   const [shareLink, setShareLink] = useState('')
   const session = getSession(model)
   const { assemblyNames } = session
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const [expanded, setExpanded] = useState<
     'shareLinkAccordion' | 'fileAccordion'
   >('shareLinkAccordion')
@@ -113,7 +113,9 @@ const ImportBookmarksDialog = observer(function ({
       <DialogContent className={classes.minWidth}>
         <Accordion
           expanded={expanded === 'shareLinkAccordion'}
-          onChange={() => setExpanded('shareLinkAccordion')}
+          onChange={() => {
+            setExpanded('shareLinkAccordion')
+          }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -134,13 +136,17 @@ const ImportBookmarksDialog = observer(function ({
               variant="outlined"
               fullWidth
               value={shareLink}
-              onChange={e => setShareLink(e.target.value)}
+              onChange={e => {
+                setShareLink(e.target.value)
+              }}
             />
           </AccordionDetails>
         </Accordion>
         <Accordion
           expanded={expanded === 'fileAccordion'}
-          onChange={() => setExpanded('fileAccordion')}
+          onChange={() => {
+            setExpanded('fileAccordion')
+          }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -155,8 +161,10 @@ const ImportBookmarksDialog = observer(function ({
               description={`Choose a BED or TSV format file to import. Required TSV column headers are "chrom, start, end, label, assembly_name".`}
             />
             <AssemblySelector
-              onChange={val => setSelectedAsm(val)}
-              helperText={`Select the assembly for BED file.`}
+              onChange={val => {
+                setSelectedAsm(val)
+              }}
+              helperText={'Select the assembly for BED file.'}
               session={session}
               selected={selectedAsm}
             />
@@ -179,7 +187,7 @@ const ImportBookmarksDialog = observer(function ({
               if (expanded === 'fileAccordion' && location) {
                 const data = await openLocation(location).readFile('utf8')
                 const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
-                const fileType = guessFileType(lines[0])
+                const fileType = guessFileType(lines[0]!)
                 if (fileType === 'BED') {
                   model.importBookmarks(
                     await getBookmarksFromBEDFile(lines, selectedAsm),

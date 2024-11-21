@@ -41,7 +41,9 @@ const PanButtons = observer(function PanButtons({
       <div />
       <IconButton
         className={classes.icon}
-        onClick={() => model.vview.scroll(100)}
+        onClick={() => {
+          model.vview.scroll(100)
+        }}
       >
         <ArrowDropUp />
       </IconButton>
@@ -49,14 +51,18 @@ const PanButtons = observer(function PanButtons({
 
       <IconButton
         className={classes.icon}
-        onClick={() => model.hview.scroll(-100)}
+        onClick={() => {
+          model.hview.scroll(-100)
+        }}
       >
         <ArrowLeft />
       </IconButton>
       <div />
       <IconButton
         className={classes.icon}
-        onClick={() => model.hview.scroll(100)}
+        onClick={() => {
+          model.hview.scroll(100)
+        }}
       >
         <ArrowRight />
       </IconButton>
@@ -64,7 +70,9 @@ const PanButtons = observer(function PanButtons({
       <div />
       <IconButton
         className={classes.icon}
-        onClick={() => model.vview.scroll(-100)}
+        onClick={() => {
+          model.vview.scroll(-100)
+        }}
       >
         <ArrowDropDown />
       </IconButton>
@@ -72,8 +80,7 @@ const PanButtons = observer(function PanButtons({
       <IconButton
         className={classes.icon}
         onClick={() => {
-          model.hview.zoomIn()
-          model.vview.zoomIn()
+          model.zoomIn()
         }}
       >
         <ZoomIn />
@@ -82,8 +89,7 @@ const PanButtons = observer(function PanButtons({
       <IconButton
         className={classes.icon}
         onClick={() => {
-          model.hview.zoomOut()
-          model.vview.zoomOut()
+          model.zoomOut()
         }}
       >
         <ZoomOut />

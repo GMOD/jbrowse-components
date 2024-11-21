@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import React from 'react'
 import {
   isStateTreeNode,
@@ -7,28 +8,27 @@ import {
   IStateTreeNode,
   IType,
 } from 'mobx-state-tree'
+import { ThemeOptions } from '@mui/material'
 import { AnyConfigurationModel } from '../../configuration'
-
-import assemblyManager from '../../assemblyManager'
 import TextSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
-import {
+import RpcManager from '../../rpc/RpcManager'
+import { Feature } from '../simpleFeature'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+// types
+import type assemblyManager from '../../assemblyManager'
+import type {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
 } from './mst'
-import RpcManager from '../../rpc/RpcManager'
-import { Feature } from '../simpleFeature'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import { ThemeOptions } from '@mui/material'
 
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
@@ -76,9 +76,7 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.LazyExoticComponent<React.FC<any>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.FC<any>
 
 /** minimum interface that all session state models must implement */
@@ -95,7 +93,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
-  allThemes?: () => Record<string, ThemeOptions | undefined>
+  allThemes?: () => Record<string, ThemeOptions>
   setSelection: (feature: Feature) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
@@ -126,14 +124,14 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   }[]
   makeConnection?: Function
   breakConnection?: Function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
 
   DialogComponent?: DialogComponentType
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   DialogProps: any
   queueDialog<T extends DialogComponentType>(
     callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
@@ -196,8 +194,8 @@ export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
   widgets: Map<string | number, Widget>
-  hideAllWidgets: () => void
   activeWidgets: Map<string | number, Widget>
+  hideAllWidgets: () => void
   addWidget(
     typeName: string,
     id: string,
@@ -316,7 +314,7 @@ export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
   renderDelay: number
-  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  rendererType: any
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
@@ -411,21 +409,26 @@ export function isAbstractMenuManager(
 
 // Empty interfaces required by mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoAssemblyRegion
   extends SnapshotIn<typeof MUNoAssemblyRegion> {}
 
-/** a description of a specific genomic region. assemblyName, refName, start, end, and reversed */
+/**
+ * a description of a specific genomic region. assemblyName, refName, start,
+ * end, and reversed
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
@@ -484,6 +487,7 @@ export function isAuthNeededException(
     exception instanceof Error &&
     // DOMException
     (exception.name === 'AuthNeededError' ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (exception as AuthNeededError).url !== undefined)
   )
 }
@@ -492,10 +496,12 @@ export function isRetryException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'RetryError' ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (exception as RetryError).internetAccountId !== undefined
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
@@ -517,4 +523,4 @@ export type PreFileLocation =
   | PreLocalPathLocation
   | PreBlobLocation
 
-export { type default as TextSearchManager } from '../../TextSearch/TextSearchManager'
+export { default as TextSearchManager } from '../../TextSearch/TextSearchManager'

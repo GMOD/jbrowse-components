@@ -1,13 +1,14 @@
 import {
   addDisposer,
-  cast,
   getParent,
   types,
   Instance,
   IAnyType,
 } from 'mobx-state-tree'
-import { when } from '../util'
 import { reaction } from 'mobx'
+
+// locals
+import { when } from '../util'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
@@ -32,7 +33,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     })
     .views(self => ({
       get assemblyNameMap() {
-        const obj = {} as Record<string, Assembly | undefined>
+        const obj = {} as Record<string, Assembly>
         for (const assembly of self.assemblies) {
           for (const name of assembly.allAliases) {
             obj[name] = assembly
@@ -67,7 +68,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = getParent<any>(self)
         return [
           ...assemblies,
@@ -77,7 +77,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
 
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
@@ -107,10 +106,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         await assembly.load()
         await when(
           () =>
-            !!(assembly?.regions && assembly.refNameAliases) ||
-            !!assembly?.error,
+            !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw assembly.error
         }
         return assembly
@@ -122,7 +121,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: { stopToken?: string; sessionId: string },
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -137,7 +136,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getReverseRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: { stopToken?: string; sessionId: string },
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -166,20 +165,17 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           reaction(
             () => self.assemblyList,
             assemblyConfs => {
-              self.assemblies.forEach(asm => {
+              for (const asm of self.assemblies) {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
                 }
-              })
-              assemblyConfs.forEach(conf => {
-                if (
-                  !self.assemblies.some(
-                    a => a.name === readConfObject(conf, 'name'),
-                  )
-                ) {
+              }
+              for (const conf of assemblyConfs) {
+                const name = readConfObject(conf, 'name')
+                if (!self.assemblies.some(a => a.name === name)) {
                   this.addAssembly(conf)
                 }
-              })
+              }
             },
             { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
           ),
@@ -208,16 +204,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       addAssembly(configuration: Conf) {
         self.assemblies.push({ configuration })
-      },
-
-      /**
-       * #action
-       * private: you would generally want to add to manipulate
-       * jbrowse.assemblies, session.sessionAssemblies, or
-       * session.temporaryAssemblies instead of using this directly
-       */
-      replaceAssembly(idx: number, configuration: Conf) {
-        self.assemblies[idx] = cast({ configuration })
       },
     }))
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { lazy, Suspense, useState } from 'react'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -7,22 +7,24 @@ import { Feature, Region, bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
-import ArcTooltip from '../ArcTooltip'
+const ArcTooltip = lazy(() => import('../ArcTooltip'))
 
 function Arc({
   selectedFeatureId,
   region,
   bpPerPx,
   config,
-  onFeatureClick,
+  height: displayHeight,
   feature,
+  onFeatureClick,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
+  height: number
   feature: Feature
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
 }) {
   const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
@@ -32,15 +34,17 @@ function Arc({
     bpPerPx,
   )
   const featureId = feature.id()
-  let stroke = readConfObject(config, 'color', { feature })
-  let textStroke = 'black'
-  if (selectedFeatureId && String(selectedFeatureId) === String(feature.id())) {
-    stroke = textStroke = 'red'
-  }
+  const selected =
+    selectedFeatureId && String(selectedFeatureId) === String(feature.id())
+  const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
+  const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
-  const height = readConfObject(config, 'height', { feature }) || 100
+  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
+  const height = Math.min(
+    readConfObject(config, 'height', { feature }) || 100,
+    displayHeight,
+  )
   const ref = React.createRef<SVGPathElement>()
 
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
@@ -56,12 +60,23 @@ function Arc({
         d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        onMouseOver={() => setIsMouseOvered(true)}
-        onMouseLeave={() => setIsMouseOvered(false)}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         pointerEvents="stroke"
       />
-      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
+
+      {isMouseOvered ? (
+        <Suspense fallback={null}>
+          <ArcTooltip contents={caption} />
+        </Suspense>
+      ) : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
@@ -104,7 +119,6 @@ function describeArc(
 ) {
   const start = polarToCartesian(x, y, radius, endAngle)
   const end = polarToCartesian(x, y, radius, startAngle)
-
   const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
 
   return [
@@ -130,7 +144,7 @@ function SemiCircles({
   onFeatureClick,
   feature,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
@@ -146,14 +160,13 @@ function SemiCircles({
   )
 
   const featureId = feature.id()
-  let stroke = readConfObject(config, 'color', { feature })
-  let textStroke = 'black'
-  if (selectedFeatureId && String(selectedFeatureId) === String(feature.id())) {
-    stroke = textStroke = 'red'
-  }
+  const selected =
+    selectedFeatureId && String(selectedFeatureId) === String(feature.id())
+  const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
+  const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
+  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
   const ref = React.createRef<SVGPathElement>()
   const textYCoord = (right - left) / 2
 
@@ -170,9 +183,15 @@ function SemiCircles({
         {...getStrokeProps(stroke)}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        onMouseOver={() => setIsMouseOvered(true)}
-        onMouseLeave={() => setIsMouseOvered(false)}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         ref={ref}
         pointerEvents="stroke"
       />
@@ -202,21 +221,22 @@ const ArcRendering = observer(function ({
   bpPerPx,
   height,
   exportSVG,
+  displayModel,
   onFeatureClick,
-  displayModel: { selectedFeatureId },
 }: {
   features: Map<string, Feature>
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
   height: number
-  displayModel: { selectedFeatureId: string }
+  displayModel?: { selectedFeatureId: string }
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
+  const { selectedFeatureId } = displayModel || {}
 
   return (
     <Wrapper exportSVG={exportSVG} width={width} height={height}>
@@ -234,6 +254,7 @@ const ArcRendering = observer(function ({
         ) : (
           <Arc
             key={f.id()}
+            height={height}
             config={config}
             region={region}
             bpPerPx={bpPerPx}

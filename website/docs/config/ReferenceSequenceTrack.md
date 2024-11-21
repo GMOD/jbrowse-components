@@ -45,6 +45,26 @@ name: {
       }
 ```
 
+#### slot: sequenceType
+
+```js
+sequenceType: {
+        type: 'string',
+        description: 'either dna or pep',
+        defaultValue: 'dna',
+      }
+```
+
+#### slot: description
+
+```js
+description: {
+        description: 'a description of the track',
+        type: 'string',
+        defaultValue: '',
+      }
+```
+
 #### slot: metadata
 
 ```js

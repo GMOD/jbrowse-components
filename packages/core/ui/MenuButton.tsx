@@ -26,14 +26,21 @@ const MenuButton = observer(function MenuButton({
   }, [isOpen, setOpen])
   return (
     <>
-      <IconButton {...rest} onClick={event => setAnchorEl(event.currentTarget)}>
+      <IconButton
+        {...rest}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
+      >
         {children}
       </IconButton>
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}
-        onClose={() => setAnchorEl(undefined)}
-        onMenuItemClick={(_: unknown, callback: Function) => {
+        onClose={() => {
+          setAnchorEl(undefined)
+        }}
+        onMenuItemClick={(_: unknown, callback: () => void) => {
           callback()
           if (closeAfterItemClick) {
             setAnchorEl(undefined)

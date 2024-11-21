@@ -18,19 +18,22 @@ interface AdapterCacheEntry {
 let adapterCache: Record<string, AdapterCacheEntry> = {}
 
 /**
- * instantiate a data adapter, or return an already-instantiated one if we have one with the same
- * configuration
+ * instantiate a data adapter, or return an already-instantiated one if we have
+ * one with the same configuration
  *
- * @param pluginManager -
- * @param sessionId - session ID of the associated worker session.
- *   used for reference counting
- * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
+ * @param pluginManager
+ *
+ * @param sessionId - session ID of the associated worker session. used for
+ * reference counting
+ *
+ * @param adapterConfigSnapshot - plain-JS configuration snapshot for the
+ * adapter
  */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
-) {
+): Promise<AdapterCacheEntry> {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
@@ -56,18 +59,7 @@ export async function getAdapter(
     )
 
     const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
-
-    // instantiate the adapter itself with its config schema, and a bound
-    // func that it can use to get any inner adapters
-    // (such as sequence adapters or wrapped subadapters) that it needs
-    //
-    const { AdapterClass, getAdapterClass } = dataAdapterType
-
-    const CLASS = AdapterClass || (await getAdapterClass())
-    if (!CLASS) {
-      throw new Error('Failed to get adapter')
-    }
-
+    const CLASS = await dataAdapterType.getAdapterClass()
     const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
     // store it in our cache
@@ -92,13 +84,12 @@ export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function freeAdapterResources(specification: Record<string, any>) {
   let deleteCount = 0
   const specKeys = Object.keys(specification)
 
-  // if we don't specify a range, delete any adapters that are
-  // only associated with that session
+  // if we don't specify a range, delete any adapters that are only associated
+  // with that session
   if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
     const { sessionId } = specification
     Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
@@ -111,16 +102,12 @@ export function freeAdapterResources(specification: Record<string, any>) {
   } else {
     // otherwise call freeResources on all the cached data adapters
     Object.values(adapterCache).forEach(cacheEntry => {
-      if (!cacheEntry.dataAdapter.freeResources) {
-        console.warn(cacheEntry.dataAdapter, 'does not implement freeResources')
-      } else {
-        const regions =
-          specification.regions ||
-          (specification.region ? [specification.region] : [])
-        for (const region of regions) {
-          if (region.refName !== undefined) {
-            cacheEntry.dataAdapter.freeResources(region)
-          }
+      const regions =
+        specification.regions ||
+        (specification.region ? [specification.region] : [])
+      for (const region of regions) {
+        if (region.refName !== undefined) {
+          cacheEntry.dataAdapter.freeResources(region)
         }
       }
     })

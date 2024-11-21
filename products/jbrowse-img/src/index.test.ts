@@ -17,7 +17,7 @@ function pa(s: string) {
 }
 
 function fp(f: string) {
-  return pa('../data/volvox/' + f)
+  return pa(`../data/volvox/${f}`)
 }
 
 xtest('renders a region with --session and --config args', async () => {
@@ -54,6 +54,21 @@ test('renders volvox with variety of args', async () => {
     loc: 'ctgA:1000-2000',
   })
   fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam.svg'), result)
+  expect(result).toBeTruthy()
+}, 40000)
+
+test('renders volvox with csi index', async () => {
+  const result = await renderRegion({
+    fasta: fp('volvox.fa'),
+    trackList: [
+      [
+        'bam',
+        [fp('volvox-sorted.bam'), `index:${fp('volvox-sorted.bam.csi')}`],
+      ],
+    ],
+    loc: 'ctgA:1000-2000',
+  })
+  fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam_csi.svg'), result)
   expect(result).toBeTruthy()
 }, 40000)
 

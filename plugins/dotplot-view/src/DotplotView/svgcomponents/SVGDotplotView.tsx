@@ -18,7 +18,7 @@ export async function renderToSvg(
 ) {
   await when(() => model.initialized)
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
@@ -55,6 +55,7 @@ export async function renderToSvg(
             </defs>
             <g clipPath="url(#clip-ruler)">
               {displayResults.map(({ result }, i) => (
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <g key={i}>{result}</g>
               ))}
             </g>

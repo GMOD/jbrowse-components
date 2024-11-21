@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   FileLocation,
   isUriLocation,
@@ -73,7 +72,7 @@ export function generateTracks({
       do {
         currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
         if (currentTrackName) {
-          ;[currentTrackName] = currentTrackName.split(' ')
+          currentTrackName = currentTrackName.split(' ')[0]!
           parentTracks.push(trackDb.data[currentTrackName])
         }
       } while (currentTrackName)
@@ -116,7 +115,7 @@ function makeTrackConfig({
   const bigDataUrl = track.data.bigDataUrl || ''
   const bigDataIdx = track.data.bigDataIndex || ''
   const isUri = isUriLocation(trackDbLoc)
-  let baseTrackType = trackType?.split(' ')[0] || ''
+  let baseTrackType = trackType.split(' ')[0] || ''
   if (baseTrackType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseTrackType = 'cram'
   }
@@ -136,8 +135,8 @@ function makeTrackConfig({
           bamLocation: bigDataLocation,
           index: {
             location: isUri
-              ? makeLocAlt(bigDataIdx, bigDataUrl + '.bai', trackDbLoc)
-              : makeLoc2(bigDataIdx, bigDataUrl + '.bai'),
+              ? makeLocAlt(bigDataIdx, `${bigDataUrl}.bai`, trackDbLoc)
+              : makeLoc2(bigDataIdx, `${bigDataUrl}.bai`),
           },
         },
       }
@@ -152,8 +151,8 @@ function makeTrackConfig({
           type: 'CramAdapter',
           cramLocation: bigDataLocation,
           craiLocation: isUri
-            ? makeLocAlt(bigDataIdx, bigDataUrl + '.crai', trackDbLoc)
-            : makeLoc2(bigDataIdx, bigDataUrl + '.crai'),
+            ? makeLocAlt(bigDataIdx, `${bigDataUrl}.crai`, trackDbLoc)
+            : makeLoc2(bigDataIdx, `${bigDataUrl}.crai`),
           sequenceAdapter,
         },
       }
@@ -198,8 +197,8 @@ function makeTrackConfig({
           vcfGzLocation: bigDataLocation,
           index: {
             location: isUri
-              ? makeLocAlt(bigDataIdx, bigDataUrl + '.tbi', trackDbLoc)
-              : makeLoc2(bigDataIdx, bigDataUrl + '.tbi'),
+              ? makeLocAlt(bigDataIdx, `${bigDataUrl}.tbi`, trackDbLoc)
+              : makeLoc2(bigDataIdx, `${bigDataUrl}.tbi`),
           },
         },
       }

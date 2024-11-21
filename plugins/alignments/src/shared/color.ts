@@ -1,5 +1,3 @@
-import { types, Instance } from 'mobx-state-tree'
-
 import { orientationTypes, pairMap } from '../util'
 import { ChainStats } from './fetchChains'
 
@@ -62,41 +60,38 @@ export function getPairedInsertSizeColor(
     return [fillColor.color_shortinsert, strokeColor.color_shortinsert] as const
   } else if (!sameRef) {
     return [fillColor.color_interchrom, strokeColor.color_interchrom] as const
+  } else {
+    return undefined
   }
-  return undefined
 }
 
+const defaultColor = [fillColor.color_unknown, fillColor.color_unknown] as const
+
+// return color scheme with both insert size and orientation coloring,
+// prioritzing orientation coloring
 export function getPairedInsertSizeAndOrientationColor(
   f1: { refName: string; pair_orientation?: string; tlen?: number },
   f2: { refName: string },
   stats?: ChainStats,
 ) {
   return (
-    getPairedInsertSizeColor(f1, f2, stats) || getPairedOrientationColor(f1)
+    getPairedOrientationColorOrDefault(f1) ||
+    getPairedInsertSizeColor(f1, f2, stats) ||
+    defaultColor
   )
 }
 
-export function getPairedOrientationColor(f: { pair_orientation?: string }) {
+export function getPairedOrientationColorOrDefault(f: {
+  pair_orientation?: string
+}) {
   const type = orientationTypes.fr
-  const type2 = pairMap[
-    type[f.pair_orientation || ''] as keyof typeof pairMap
-  ] as keyof typeof fillColor
-  return [
-    fillColor[type2] || fillColor.color_unknown,
-    strokeColor[type2] || strokeColor.color_unknown,
-  ] as const
+  const r = type[f.pair_orientation || ''] as keyof typeof pairMap
+  const type2 = pairMap[r] as keyof typeof fillColor
+  return r === 'LR'
+    ? undefined
+    : ([fillColor[type2], strokeColor[type2]] as const)
 }
 
-export interface ExtraColorBy {
-  custom?: Record<string, string>
+export function getPairedOrientationColor(f: { pair_orientation?: string }) {
+  return getPairedOrientationColorOrDefault(f) || defaultColor
 }
-
-export const ColorByModel = types.maybe(
-  types.model({
-    type: types.string,
-    tag: types.maybe(types.string),
-    extra: types.frozen(),
-  }),
-)
-
-export type IColorByModel = Instance<typeof ColorByModel>

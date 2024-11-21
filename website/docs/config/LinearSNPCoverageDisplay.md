@@ -8,7 +8,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### Source file
 
-[plugins/alignments/src/LinearSNPCoverageDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/configSchema.ts)
+[plugins/alignments/src/LinearSNPCoverageDisplay/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/configSchema.ts)
 
 extends
 
@@ -83,9 +83,10 @@ multiTicks: {
 
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  SNPCoverageRenderer: pluginManager.getRendererType('SNPCoverageRenderer')
-    .configSchema,
-})
+        SNPCoverageRenderer: pluginManager.getRendererType(
+          'SNPCoverageRenderer',
+        )!.configSchema,
+      })
 ```
 
 ### LinearSNPCoverageDisplay - Derives from

@@ -86,7 +86,7 @@ interactToggled: false
 IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
 // code
 views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         )
 ```
@@ -95,11 +95,12 @@ views: types.array(
 
 #### getter: matchedTracks
 
-Find all track ids that match across multiple views
+Find all track ids that match across multiple views, or return just the single
+view's track if only a single row is used
 
 ```js
 // type
-any[]
+(IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>) | { configuration: { trackId: string; }; }[]
 ```
 
 ### BreakpointSplitView - Methods
@@ -132,6 +133,15 @@ e.g. they are one sided
 hasTranslocations: (trackConfigId: string) => any
 ```
 
+#### method: hasPairedFeatures
+
+Paired features similar to breakends, but simpler, like BEDPE
+
+```js
+// type signature
+hasPairedFeatures: (trackConfigId: string) => any
+```
+
 #### method: getTrackFeatures
 
 Get a composite map of featureId-\>feature map for a track across multiple views
@@ -145,14 +155,14 @@ getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
 
 ```js
 // type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; }[][]
+getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipPos: number; }[][]
 ```
 
 #### method: menuItems
 
 ```js
 // type signature
-menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; type: string; checked: boolean; onClick: () => void; icon?: undefined; } | { label: string; type: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; checked: boolean; onClick: () => void; } | { ...; })[]
+menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; type?: undefined; checked?: undefined; icon?: undefined; } | { label: string; type: string; checked: boolean; onClick: () => void; icon?: undefined; } | { ...; } | { ...; })[]
 ```
 
 ### BreakpointSplitView - Actions
@@ -168,14 +178,7 @@ setWidth: (newWidth: number) => void
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
-```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: toggleInteract
@@ -204,4 +207,11 @@ toggleLinkViews: () => void
 ```js
 // type signature
 setMatchedTrackFeatures: (obj: Record<string, Feature[][]>) => void
+```
+
+#### action: reverseViewOrder
+
+```js
+// type signature
+reverseViewOrder: () => void
 ```

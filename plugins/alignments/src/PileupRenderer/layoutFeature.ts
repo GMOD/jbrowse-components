@@ -1,7 +1,7 @@
 import { bpSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { BaseLayout } from '@jbrowse/core/util/layouts'
+import { Mismatch } from '../shared/types'
 // locals
-import { Mismatch } from '../MismatchParser'
 
 export interface LayoutRecord {
   feature: Feature
@@ -38,7 +38,11 @@ export function layoutFeature({
     if (seq) {
       for (const { type, start, cliplen = 0 } of mismatches) {
         if (type === 'softclip') {
-          start === 0 ? (expansionBefore = cliplen) : (expansionAfter = cliplen)
+          if (start === 0) {
+            expansionBefore = cliplen
+          } else {
+            expansionAfter = cliplen
+          }
         }
       }
     }

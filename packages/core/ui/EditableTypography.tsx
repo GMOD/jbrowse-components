@@ -74,7 +74,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
           </Typography>
         </div>
         <InputBase
-          inputRef={node => setInputNode(node)}
+          inputRef={node => {
+            setInputNode(node)
+          }}
           className={classes.inputBase}
           inputProps={{
             style: {
@@ -90,7 +92,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
             focused: classes.inputFocused,
           }}
           value={val}
-          onChange={event => setEditedValue(event.target.value)}
+          onChange={event => {
+            setEditedValue(event.target.value)
+          }}
           onKeyDown={event => {
             if (event.key === 'Enter') {
               inputNode?.blur()

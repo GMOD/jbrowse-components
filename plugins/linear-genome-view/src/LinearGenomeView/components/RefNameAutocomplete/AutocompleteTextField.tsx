@@ -26,28 +26,32 @@ export default function AutocompleteTextField({
   const { helperText, InputProps = {} } = TextFieldProps
   return (
     <TextField
-      onBlur={() =>
-        // this is used to restore a refName or the non-user-typed input
-        // to the box on blurring
+      onBlur={() => {
+        // this is used to restore a refName or the non-user-typed input to the
+        // box on blurring
         setInputValue(inputBoxVal)
-      }
+      }}
       {...params}
       {...TextFieldProps}
       size="small"
       helperText={helperText}
-      InputProps={{
-        ...params.InputProps,
-        ...InputProps,
+      slotProps={{
+        input: {
+          ...params.InputProps,
+          ...InputProps,
 
-        endAdornment: (
-          <EndAdornment
-            showHelp={showHelp}
-            endAdornment={params.InputProps.endAdornment}
-          />
-        ),
+          endAdornment: (
+            <EndAdornment
+              showHelp={showHelp}
+              endAdornment={params.InputProps.endAdornment}
+            />
+          ),
+        },
       }}
       placeholder="Search for location"
-      onChange={e => setCurrentSearch(e.target.value)}
+      onChange={e => {
+        setCurrentSearch(e.target.value)
+      }}
     />
   )
 }

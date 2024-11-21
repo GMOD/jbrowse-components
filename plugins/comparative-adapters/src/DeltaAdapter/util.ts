@@ -1,5 +1,4 @@
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
+import type { Buffer } from 'buffer'
 
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *
@@ -48,20 +47,21 @@ export function paf_delta2paf(buffer: Buffer) {
 
   let blockStart = 0
   let i = 0
+  const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
       break
     }
-    const b = buffer.slice(blockStart, n)
-    const line = (decoder?.decode(b) || b.toString()).trim()
+    const b = buffer.subarray(blockStart, n)
+    const line = decoder.decode(b).trim()
     blockStart = n + 1
     i++
     if (line) {
       const m = regex.exec(line)
       if (m !== null) {
-        rname = m[1]
-        qname = m[2]
+        rname = m[1]!
+        qname = m[2]!
         seen_gt = true
         continue
       }
@@ -70,21 +70,21 @@ export function paf_delta2paf(buffer: Buffer) {
       }
       const t = line.split(' ')
       if (t.length === 7) {
-        const t0 = +t[0]
-        const t1 = +t[1]
-        const t2 = +t[2]
-        const t3 = +t[3]
-        const t4 = +t[4]
+        const t0 = +t[0]!
+        const t1 = +t[1]!
+        const t2 = +t[2]!
+        const t3 = +t[3]!
+        const t4 = +t[4]!
         strand = (t0 < t1 && t2 < t3) || (t0 > t1 && t2 > t3) ? 1 : -1
-        rs = +(t0 < t1 ? t0 : t1) - 1
-        re = +(t1 > t0 ? t1 : t0)
-        qs = +(t2 < t3 ? t2 : t3) - 1
-        qe = +(t3 > t2 ? t3 : t2)
+        rs = +Math.min(t0, t1) - 1
+        re = +Math.max(t1, t0)
+        qs = +Math.min(t2, t3) - 1
+        qe = +Math.max(t3, t2)
         x = y = 0
         NM = t4
         cigar = []
       } else if (t.length === 1) {
-        const d = +t[0]
+        const d = +t[0]!
         if (d === 0) {
           let blen = 0
           const cigar_str = []
@@ -96,7 +96,7 @@ export function paf_delta2paf(buffer: Buffer) {
           for (const entry of cigar) {
             const rlen = entry >> 4
             blen += rlen
-            cigar_str.push(rlen + 'MID'.charAt(cigar[i] & 0xf))
+            cigar_str.push(rlen + 'MID'.charAt(cigar[i]! & 0xf))
           }
 
           records.push({
@@ -122,9 +122,9 @@ export function paf_delta2paf(buffer: Buffer) {
           if (l > 0) {
             cigar.push(l << 4)
           }
-          // eslint-disable-next-line unicorn/prefer-at
-          if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 2) {
-            cigar[cigar.length - 1] += 1 << 4
+
+          if (cigar.length > 0 && (cigar[cigar.length - 1]! & 0xf) === 2) {
+            cigar[cigar.length - 1]! += 1 << 4
           } else {
             cigar.push((1 << 4) | 2)
           } // deletion
@@ -135,9 +135,9 @@ export function paf_delta2paf(buffer: Buffer) {
           if (l > 0) {
             cigar.push(l << 4)
           }
-          // eslint-disable-next-line unicorn/prefer-at
-          if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 1) {
-            cigar[cigar.length - 1] += 1 << 4
+
+          if (cigar.length > 0 && (cigar[cigar.length - 1]! & 0xf) === 1) {
+            cigar[cigar.length - 1]! += 1 << 4
           } else {
             cigar.push((1 << 4) | 1)
           } // insertion

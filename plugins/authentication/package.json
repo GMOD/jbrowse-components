@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "2.11.2",
+  "version": "2.17.0",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/authentication",
+    "test": "cd ../..; jest --passWithNoTests plugins/authentication",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -41,7 +41,7 @@
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

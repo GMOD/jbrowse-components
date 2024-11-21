@@ -54,17 +54,17 @@ export function drawLongReadChains({
 
   // draw split long read 'chains' as connected entities
   for (let i = 0; i < chains.length; i++) {
-    const chain = chains[i]
-    const w = distances[i]
+    const chain = chains[i]!
+    const w = distances[i]!
     const top = (Math.log(w) - minD) * scaler
-    const min = minXs[i]
+    const min = minXs[i]!
     fillRectCtx(min - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
-    const c1 = chain[0]
+    const c1 = chain[0]!
     let primaryStrand: undefined | number
     if (!(c1.flags & 2048)) {
       primaryStrand = c1.strand
     } else {
-      const res = c1.SA?.split(';')[0].split(',')[2]
+      const res = c1.SA?.split(';')[0]!.split(',')[2]
       primaryStrand = res === '-' ? -1 : 1
     }
     for (const v0 of chain) {

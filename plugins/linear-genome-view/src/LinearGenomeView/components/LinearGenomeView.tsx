@@ -1,12 +1,8 @@
-import React, { lazy, useEffect, useRef } from 'react'
-import { Button, Paper, Typography } from '@mui/material'
+import React, { lazy, Suspense, useEffect, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-
-// icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -14,8 +10,7 @@ import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 
 const ImportForm = lazy(() => import('./ImportForm'))
-
-type LGV = LinearGenomeViewModel
+const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 
 const useStyles = makeStyles()(theme => ({
   note: {
@@ -31,32 +26,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
-  const { classes } = useStyles()
-  const { hideNoTracksActive } = model
-  return (
-    <Paper className={classes.note}>
-      {!hideNoTracksActive ? (
-        <>
-          <Typography>No tracks active.</Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => model.activateTrackSelector()}
-            className={classes.top}
-            startIcon={<TrackSelectorIcon />}
-          >
-            Open track selector
-          </Button>
-        </>
-      ) : (
-        <div style={{ height: '48px' }}></div>
-      )}
-    </Paper>
-  )
-}
-
-const LinearGenomeView = observer(({ model }: { model: LGV }) => {
+const LinearGenomeView = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
   const { tracks, error, initialized, hasDisplayedRegions } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
@@ -65,7 +39,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
         session.setFocusedViewId?.(model.id)
       }
     }
@@ -92,7 +66,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     <div
       className={classes.rel}
       ref={ref}
-      onMouseLeave={() => session.setHovered(undefined)}
+      onMouseLeave={() => {
+        session.setHovered(undefined)
+      }}
       onMouseMove={event => {
         const c = ref.current
         if (!c) {
@@ -109,7 +85,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
-          <NoTracksActive model={model} />
+          <Suspense fallback={<React.Fragment />}>
+            <NoTracksActiveButton model={model} />
+          </Suspense>
         ) : (
           tracks.map(track => (
             <TrackContainer key={track.id} model={model} track={track} />

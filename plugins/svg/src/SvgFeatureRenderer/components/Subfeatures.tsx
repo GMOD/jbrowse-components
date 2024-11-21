@@ -13,7 +13,7 @@ import {
   layOutFeature,
 } from './util'
 
-const Subfeatures = observer(function (props: {
+const Subfeatures = observer(function Subfeatures(props: {
   feature: Feature
   featureLayout: SceneGraph
   selected?: boolean
@@ -67,10 +67,11 @@ Subfeatures.layOut = ({
   if (displayMode !== 'reducedRepresentation') {
     let topOffset = 0
     feature.get('subfeatures')?.forEach(subfeature => {
-      const SubfeatureGlyphComponent = chooseGlyphComponent(
-        subfeature,
+      const SubfeatureGlyphComponent = chooseGlyphComponent({
+        feature: subfeature,
         extraGlyphs,
-      )
+        config,
+      })
       const subfeatureHeight = readConfObject(config, 'height', {
         feature: subfeature,
       }) as number

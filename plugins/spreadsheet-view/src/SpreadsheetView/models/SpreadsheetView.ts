@@ -1,11 +1,4 @@
-import {
-  types,
-  getParent,
-  getEnv,
-  cast,
-  SnapshotIn,
-  Instance,
-} from 'mobx-state-tree'
+import { types, getEnv, cast, SnapshotIn, Instance } from 'mobx-state-tree'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -39,7 +32,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
     onClick(_view: unknown, spreadsheet: Spreadsheet) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
       if (rowNumber !== undefined) {
-        spreadsheet.rowSet.rows[+rowNumber - 1].toggleSelect()
+        spreadsheet.rowSet.rows[+rowNumber - 1]!.toggleSelect()
       }
     },
   },
@@ -130,7 +123,7 @@ const model = types
      * #getter
      */
     get outputRows() {
-      if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
+      if (self.spreadsheet?.rowSet.isLoaded) {
         const selected = self.spreadsheet.rowSet.selectedFilteredRows
         if (selected.length) {
           return selected
@@ -146,7 +139,7 @@ const model = types
       const name = self.spreadsheet?.assemblyName
       if (name) {
         const assemblies = getSession(self).assemblies
-        return assemblies?.find(asm => readConfObject(asm, 'name') === name)
+        return assemblies.find(asm => readConfObject(asm, 'name') === name)
       }
       return undefined
     },
@@ -169,7 +162,7 @@ const model = types
      * #action
      */
     setHeight(newHeight: number) {
-      self.height = newHeight > minHeight ? newHeight : minHeight
+      self.height = Math.max(newHeight, minHeight)
       return self.height
     },
     /**
@@ -212,13 +205,6 @@ const model = types
         self.mode = 'display'
       }
     },
-    /**
-     * #action
-     */
-    closeView() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      getParent<any>(self, 2).removeView(self)
-    },
   }))
   .views(self => ({
     /**
@@ -228,7 +214,9 @@ const model = types
       return [
         {
           label: 'Return to import form',
-          onClick: () => self.setImportMode(),
+          onClick: () => {
+            self.setImportMode()
+          },
           icon: FolderOpenIcon,
         },
       ]

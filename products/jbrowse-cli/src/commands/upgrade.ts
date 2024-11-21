@@ -1,5 +1,4 @@
 import { Args, Flags } from '@oclif/core'
-import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
 import decompress from 'decompress'
@@ -32,14 +31,14 @@ export default class Upgrade extends JBrowseCommand {
   static args = {
     localPath: Args.string({
       required: false,
-      description: `Location where JBrowse 2 is installed`,
+      description: 'Location where JBrowse 2 is installed',
       default: '.',
     }),
   }
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    // will need to account for pagenation once there is a lot of releases
+    // will need to account for pagination once there is a lot of releases
     listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
@@ -77,7 +76,7 @@ export default class Upgrade extends JBrowseCommand {
 
     this.debug(`Want to upgrade at: ${argsPath}`)
     if (!argsPath) {
-      this.error(`No directory supplied`, { exit: 100 })
+      this.error('No directory supplied', { exit: 100 })
     }
 
     if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
@@ -112,10 +111,12 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      rimrafSync(path.join(argsPath, 'static'))
+      fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
       fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
-        .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
+        .forEach(f => {
+          fs.unlinkSync(path.join(argsPath, f))
+        })
     }
 
     await decompress(Buffer.from(await response.arrayBuffer()), argsPath)

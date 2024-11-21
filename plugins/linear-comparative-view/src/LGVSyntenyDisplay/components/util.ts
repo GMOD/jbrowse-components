@@ -1,12 +1,6 @@
-import {
-  getSession,
-  getContainingTrack,
-  getContainingView,
-  Feature,
-} from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { when } from 'mobx'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
@@ -23,43 +17,47 @@ function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0
   for (let i = 0; i < cigar.length; i++) {
-    const len = +cigar[i]
-    const op = cigar[i + 1]
+    const len = +cigar[i]!
+    const op = cigar[i + 1]!
     const min = Math.min(len, startX - featX)
 
     if (featX >= startX) {
       break
-    } else if (op === 'I') {
+    }
+    if (op === 'I') {
       mateX += len
     } else if (op === 'D') {
       featX += min
-    } else if (op === 'M') {
+    } else if (op === 'M' || op === '=' || op === 'X') {
       mateX += min
       featX += min
     }
   }
-  return [featX, mateX]
+  return [featX, mateX] as const
 }
 
 export async function navToSynteny({
   feature,
   windowSize: ws,
   model,
+  trackId,
+  view,
   horizontallyFlip,
 }: {
   windowSize: number
+  trackId: string
   horizontallyFlip: boolean
   feature: Feature
+  view?: LinearGenomeViewModel
   model: IAnyStateTreeNode
 }) {
   const session = getSession(model)
-  const track = getContainingTrack(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const reg = view.dynamicBlocks.contentBlocks[0]
+  const reg = view?.dynamicBlocks.contentBlocks[0]
   const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')
-  const regStart = reg.start
-  const regEnd = reg.end
+
+  const featRef = feature.get('refName')
+  const featAsm = feature.get('assemblyName')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
   const mate = feature.get('mate')
@@ -67,15 +65,15 @@ export async function navToSynteny({
   const mateEnd = mate.end
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
-  const featAsm = reg.assemblyName
-  const featRef = reg.refName
 
   let rMateStart: number
   let rMateEnd: number
   let rFeatStart: number
   let rFeatEnd: number
 
-  if (cigar) {
+  if (reg && cigar) {
+    const regStart = reg.start
+    const regEnd = reg.end
     const p = parseCigar(cigar)
     const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
     const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
@@ -92,18 +90,15 @@ export async function navToSynteny({
     rMateStart = mateStart
     rMateEnd = mateEnd
   }
-  const trackId = track.configuration.trackId
 
   const view2 = session.addView('LinearSyntenyView', {
     type: 'LinearSyntenyView',
     views: [
       {
-        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
       },
       {
-        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
       },
@@ -127,9 +122,8 @@ export async function navToSynteny({
   const l2 = `${mateRef}:${f(m1 - ws)}-${f(m2 + ws)}${
     horizontallyFlip ? '[rev]' : ''
   }`
-  await when(() => view2.width !== undefined)
   await Promise.all([
-    view2.views[0].navToLocString(l1, featAsm),
-    view2.views[1].navToLocString(l2, mateAsm),
+    view2.views[0]!.navToLocString(l1, featAsm),
+    view2.views[1]!.navToLocString(l2, mateAsm),
   ])
 }

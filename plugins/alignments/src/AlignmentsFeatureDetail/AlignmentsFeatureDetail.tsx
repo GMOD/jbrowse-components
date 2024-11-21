@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import clone from 'clone'
-import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 
 // locals
 import { getTag } from './util'
@@ -10,24 +10,26 @@ import { tags } from './tagInfo'
 import { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 // local components
-import SuppAlignments from './SuppAlignments'
 import Flags from './Flags'
 import PairLink from './PairLink'
 import Formatter from './Formatter'
 
-const omit = ['clipPos', 'flags']
+// lazies
+const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
+const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
 const AlignmentsFeatureDetails = observer(function (props: {
   model: AlignmentFeatureWidgetModel
 }) {
   const { model } = props
-  const feat = clone(model.featureData)
-  const SA = getTag('SA', feat) as string
+  const { featureData } = model
+  const feat = clone(featureData)
+  const SA = getTag('SA', feat) as string | undefined
+  const { flags } = feat
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
         {...props}
-        omit={omit}
         // @ts-expect-error
         descriptions={{ ...tags, tags: tags }}
         feature={feat}
@@ -39,8 +41,14 @@ const AlignmentsFeatureDetails = observer(function (props: {
           )
         }
       />
-      {SA ? <SuppAlignments model={model} tag={SA} feature={feat} /> : null}
-      {feat.flags !== undefined ? <Flags feature={feat} {...props} /> : null}
+      {SA !== undefined ? (
+        <SupplementaryAlignments model={model} tag={SA} feature={feat} />
+      ) : null}
+      {flags & 1 ? (
+        <LinkedPairedAlignments model={model} feature={feat} />
+      ) : null}
+
+      {flags !== undefined ? <Flags feature={feat} {...props} /> : null}
     </Paper>
   )
 })

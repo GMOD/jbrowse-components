@@ -70,9 +70,9 @@ entire set of chromosomes if your assembly is very fragmented
 
 ```js
 // type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.array(MUIRegion)
+displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
 #### property: tracks
@@ -191,10 +191,10 @@ highlights on the LGV from the URL parameters
 
 ```js
 // type signature
-IOptionalIType<IArrayType<IType<Required<ParsedLocString>, Required<ParsedLocString>, Required<ParsedLocString>>>, [...]>
+IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
 // code
 highlight: types.optional(
-          types.array(types.frozen<Required<ParsedLocString>>()),
+          types.array(types.frozen<HighlightType>()),
           [],
         )
 ```
@@ -209,6 +209,21 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 colorByCDS: types.optional(types.boolean, () =>
           Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+        )
+```
+
+#### property: showTrackOutlines
+
+color by CDS
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showTrackOutlines: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
+          ),
         )
 ```
 
@@ -333,7 +348,7 @@ number
 
 ```js
 // type
-any
+unknown
 ```
 
 #### getter: maxOffset
@@ -455,6 +470,13 @@ any
 
 ### LinearGenomeView - Methods
 
+#### method: scaleBarDisplayPrefix
+
+```js
+// type signature
+scaleBarDisplayPrefix: () => any
+```
+
 #### method: MiniControlsComponent
 
 ```js
@@ -513,7 +535,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; key: string; offsetPx: number; widthPx: number; variant?: string; isLeftEndOfDisplayedRegion?: boolean; }[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; type: string; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; ... 4 more ...; isLeftEndOfDisplayedRegion?: boolean; }[]
 ```
 
 #### method: exportSvg
@@ -562,10 +584,17 @@ centerAt: (coord: number, refName: string, regionNumber?: number) => void
 
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
 ```
 
 ### LinearGenomeView - Actions
+
+#### action: setShowTrackOutlines
+
+```js
+// type signature
+setShowTrackOutlines: (arg: boolean) => void
+```
 
 #### action: setColorByCDS
 
@@ -627,21 +656,21 @@ setShowGridlines: (b: boolean) => void
 
 ```js
 // type signature
-addToHighlights: (highlight: Required<ParsedLocString>) => void
+addToHighlights: (highlight: HighlightType) => void
 ```
 
 #### action: setHighlight
 
 ```js
 // type signature
-setHighlight: (highlight: Required<ParsedLocString>[]) => void
+setHighlight: (highlight?: HighlightType[]) => void
 ```
 
 #### action: removeHighlight
 
 ```js
 // type signature
-removeHighlight: (highlight: Required<ParsedLocString>) => void
+removeHighlight: (highlight: HighlightType) => void
 ```
 
 #### action: scrollTo
@@ -739,13 +768,6 @@ moveTrackToBottom: (id: string) => void
 moveTrack: (movingId: string, targetId: string) => void
 ```
 
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
 #### action: toggleTrack
 
 ```js
@@ -787,7 +809,7 @@ schedule something to be run after the next time displayedRegions is set
 
 ```js
 // type signature
-afterDisplayedRegionsSet: (cb: Function) => void
+afterDisplayedRegionsSet: (cb: () => void) => void
 ```
 
 #### action: horizontalScroll
@@ -893,7 +915,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<....
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undef...
 ```
 
 #### action: navToLocations

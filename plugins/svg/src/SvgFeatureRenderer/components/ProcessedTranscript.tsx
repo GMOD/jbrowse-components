@@ -13,11 +13,11 @@ import { Region, Feature, SimpleFeature } from '@jbrowse/core/util'
 // returns a callback that will filter features features according to the
 // subParts conf var
 function makeSubpartsFilter(
-  confKey = 'subParts',
+  confKey: string | string[],
   config: AnyConfigurationModel,
 ) {
   const filter = readConfObject(config, confKey) as string[] | string
-  const ret = typeof filter == 'string' ? filter.split(/\s*,\s*/) : filter
+  const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
 
   return (feature: Feature) =>
     ret
@@ -36,14 +36,15 @@ function isUTR(feature: Feature) {
 }
 
 function makeUTRs(parent: Feature, subs: Feature[]) {
-  // based on Lincoln's UTR-making code in Bio::Graphics::Glyph::processed_transcript
+  // based on Lincoln's UTR-making code in
+  // Bio::Graphics::Glyph::processed_transcript
   const subparts = [...subs]
 
-  let codeStart = Infinity
-  let codeEnd = -Infinity
+  let codeStart = Number.POSITIVE_INFINITY
+  let codeEnd = Number.NEGATIVE_INFINITY
 
-  let haveLeftUTR
-  let haveRightUTR
+  let haveLeftUTR: boolean | undefined
+  let haveRightUTR: boolean | undefined
 
   // gather exons, find coding start and end, and look for UTRs
   const exons = []
@@ -65,7 +66,13 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   }
 
   // bail if we don't have exons and CDS
-  if (!(exons.length && codeStart < Infinity && codeEnd > -Infinity)) {
+  if (
+    !(
+      exons.length &&
+      codeStart < Number.POSITIVE_INFINITY &&
+      codeEnd > Number.NEGATIVE_INFINITY
+    )
+  ) {
     return subparts
   }
 
@@ -75,15 +82,15 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   const strand = parent.get('strand')
 
   // make the left-hand UTRs
-  let start
-  let end
+  let start: number | undefined
+  let end: number | undefined
   if (!haveLeftUTR) {
     for (let i = 0; i < exons.length; i++) {
-      start = exons[i].get('start')
+      start = exons[i]!.get('start')
       if (start >= codeStart) {
         break
       }
-      end = codeStart > exons[i].get('end') ? exons[i].get('end') : codeStart
+      end = Math.min(codeStart, exons[i]!.get('end'))
       const type = strand >= 0 ? 'five_prime_UTR' : 'three_prime_UTR'
       subparts.unshift(
         new SimpleFeature({
@@ -98,12 +105,12 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   // make the right-hand UTRs
   if (!haveRightUTR) {
     for (let i = exons.length - 1; i >= 0; i--) {
-      end = exons[i].get('end')
+      end = exons[i]!.get('end')
       if (end <= codeEnd) {
         break
       }
 
-      start = codeEnd < exons[i].get('start') ? exons[i].get('start') : codeEnd
+      start = Math.max(codeEnd, exons[i]!.get('start'))
       const type = strand >= 0 ? 'three_prime_UTR' : 'five_prime_UTR'
       subparts.push(
         new SimpleFeature({

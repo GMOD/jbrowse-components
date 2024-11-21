@@ -38,7 +38,9 @@ export default function LauncherPanel({
         variant="contained"
         color="primary"
         className={classes.button}
-        onClick={() => setSequenceDialogOpen(true)}
+        onClick={() => {
+          setSequenceDialogOpen(true)
+        }}
       >
         Open sequence file(s)
       </Button>
@@ -58,7 +60,7 @@ export default function LauncherPanel({
                 {
                   assemblies: conf,
                   defaultSession: {
-                    name: 'New Session ' + new Date().toLocaleString('en-US'),
+                    name: `New Session ${new Date().toLocaleString('en-US')}`,
                   },
                 },
               )

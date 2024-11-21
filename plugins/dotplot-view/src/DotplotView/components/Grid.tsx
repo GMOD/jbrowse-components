@@ -21,8 +21,8 @@ export const GridRaw = observer(function ({
   }
   const htop = hview.displayedRegionsTotalPx - hview.offsetPx
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
-  const hbottom = hblocks[0].offsetPx - hview.offsetPx
-  const vbottom = vblocks[0].offsetPx - vview.offsetPx
+  const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
+  const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
   const theme = useTheme()
   const stroke = theme.palette.divider
 
@@ -33,8 +33,8 @@ export const GridRaw = observer(function ({
   const w = Math.min(htop - hbottom, viewWidth)
   const h = Math.min(viewHeight - vbottom - ry, viewHeight)
 
-  let lastx = Infinity
-  let lasty = Infinity
+  let lastx = Number.POSITIVE_INFINITY
+  let lasty = Number.POSITIVE_INFINITY
   return (
     <>
       <rect

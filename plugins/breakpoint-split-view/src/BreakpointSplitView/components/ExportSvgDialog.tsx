@@ -34,7 +34,7 @@ function TextField2({ children, ...rest }: TextFieldProps) {
   )
 }
 function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage('svg-' + key, val)
+  return useLocalStorage(`svg-${key}`, val)
 }
 
 export default function ExportSvgDialog({
@@ -66,7 +66,9 @@ export default function ExportSvgDialog({
         <TextField2
           helperText="filename"
           value={filename}
-          onChange={event => setFilename(event.target.value)}
+          onChange={event => {
+            setFilename(event.target.value)
+          }}
         />
         <TextField2
           select
@@ -74,7 +76,9 @@ export default function ExportSvgDialog({
           variant="outlined"
           style={{ width: 150 }}
           value={trackLabels}
-          onChange={event => setTrackLabels(event.target.value)}
+          onChange={event => {
+            setTrackLabels(event.target.value)
+          }}
         >
           <MenuItem value="offset">Offset</MenuItem>
           <MenuItem value="overlay">Overlay</MenuItem>
@@ -88,7 +92,9 @@ export default function ExportSvgDialog({
             label="Theme"
             variant="outlined"
             value={themeName}
-            onChange={event => setThemeName(event.target.value)}
+            onChange={event => {
+              setThemeName(event.target.value)
+            }}
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
@@ -106,7 +112,9 @@ export default function ExportSvgDialog({
             control={
               <Checkbox
                 checked={rasterizeLayers}
-                onChange={() => setRasterizeLayers(val => !val)}
+                onChange={() => {
+                  setRasterizeLayers(val => !val)
+                }}
               />
             }
             label="Rasterize canvas based tracks? File may be much larger if this is turned off"
@@ -122,7 +130,9 @@ export default function ExportSvgDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

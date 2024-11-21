@@ -5,30 +5,34 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { FilterBy, SortedBy } from '../shared/types'
 
 export interface PileupLayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
-  filterBy: unknown
-  sortedBy: unknown
-  showSoftClip: unknown
+  filterBy: FilterBy
+  sortedBy: SortedBy
+  showSoftClip: boolean
 }
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+
 interface CachedPileupLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
-  filters: SerializableFilterChain
-  filterBy: unknown
-  sortedBy: unknown
+  filters?: SerializableFilterChain
+  filterBy?: FilterBy
+  sortedBy?: SortedBy
   showSoftClip: boolean
 }
-// Sorting and revealing soft clip changes the layout of Pileup renderer
-// Adds extra conditions to see if cached layout is valid
+
+// The pileup layout session adds
+// - sorting and revealing soft clip changes the layout of pileup renderer
+// - extra conditions to see if cached layout is valid
 export class PileupLayoutSession extends LayoutSession {
-  sortedBy: unknown
-  filterBy: unknown
+  sortedBy?: SortedBy
+  filterBy?: FilterBy
 
   showSoftClip = false
 

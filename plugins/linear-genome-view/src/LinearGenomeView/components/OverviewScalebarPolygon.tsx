@@ -4,10 +4,11 @@ import { observer } from 'mobx-react'
 
 // core
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 
 // locals
-import { HEADER_BAR_HEIGHT, LinearGenomeViewModel } from '..'
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '..'
+import { HEADER_BAR_HEIGHT } from '../consts'
 
 const OverviewScalebarPolygon = observer(function ({
   model,
@@ -23,9 +24,7 @@ const OverviewScalebarPolygon = observer(function ({
   const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
     model
   const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
-
-  const { tertiary, primary } = theme.palette
-  const polygonColor = tertiary ? tertiary.light : primary.light
+  const polygonColor = theme.palette.tertiary.light
 
   // catches possible null from at's below
   if (!contentBlocks.length) {

@@ -1,8 +1,7 @@
-import React, { lazy, useState } from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { TextField } from '@mui/material'
-
-const ColorPicker = lazy(() => import('@jbrowse/core/ui/ColorPicker'))
+import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 
 export const ColorSlot = (props: {
   value: string
@@ -21,13 +20,22 @@ export const ColorSlot = (props: {
       <TextField
         value={value}
         label={label}
-        onClick={() => setDisplayed(!displayed)}
-        onChange={event => onChange(event.target.value)}
+        onClick={() => {
+          setDisplayed(!displayed)
+        }}
+        onChange={event => {
+          onChange(event.target.value)
+        }}
         {...TextFieldProps}
       />
       <div style={{ marginTop: 10 }}>
         <React.Suspense fallback={null}>
-          <ColorPicker color={value} onChange={event => onChange(event)} />
+          <ColorPicker
+            color={value}
+            onChange={event => {
+              onChange(event)
+            }}
+          />
         </React.Suspense>
       </div>
     </div>
@@ -47,7 +55,9 @@ const ColorEditor = observer(function (props: {
     <ColorSlot
       label={slot.name}
       value={slot.value}
-      onChange={color => slot.set(color)}
+      onChange={color => {
+        slot.set(color)
+      }}
       TextFieldProps={{
         helperText: slot.description,
         fullWidth: true,

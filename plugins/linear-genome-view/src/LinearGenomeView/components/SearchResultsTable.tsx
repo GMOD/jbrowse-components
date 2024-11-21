@@ -31,7 +31,7 @@ export default function SearchResultsTable({
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
   const assemblyName =
-    optAssemblyName || model.displayedRegions[0]?.assemblyName
+    optAssemblyName || model.displayedRegions[0]!.assemblyName
 
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {
@@ -80,7 +80,7 @@ export default function SearchResultsTable({
         </TableHead>
         <TableBody>
           {searchResults.map(result => (
-            <TableRow key={`${result.getId()}`}>
+            <TableRow key={result.getId()}>
               <TableCell component="th" scope="row">
                 {result.getLabel()}
               </TableCell>
@@ -92,13 +92,13 @@ export default function SearchResultsTable({
                 <Button
                   onClick={async () => {
                     try {
-                      const location = result.getLocation()
-                      if (location) {
-                        await handleClick(location)
-                        const resultTrackId = result.getTrackId()
-                        if (resultTrackId) {
-                          model.showTrack(resultTrackId)
-                        }
+                      await handleClick(
+                        // label is used if it is a refName, it has no location
+                        result.getLocation() || result.getLabel(),
+                      )
+                      const resultTrackId = result.getTrackId()
+                      if (resultTrackId) {
+                        model.showTrack(resultTrackId)
                       }
                     } catch (e) {
                       console.error(e)

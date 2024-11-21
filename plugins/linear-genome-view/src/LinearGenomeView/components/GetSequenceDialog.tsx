@@ -47,11 +47,7 @@ type LGV = LinearGenomeViewModel
 /**
  * Fetches and returns a list features for a given list of regions
  */
-async function fetchSequence(
-  model: LGV,
-  regions: Region[],
-  signal?: AbortSignal,
-) {
+async function fetchSequence(model: LGV, regions: Region[]) {
   const session = getSession(model)
   const { leftOffset, rightOffset } = model
 
@@ -75,7 +71,6 @@ async function fetchSequence(
     adapterConfig,
     regions,
     sessionId,
-    signal,
   }) as Promise<Feature[]>
 }
 
@@ -87,7 +82,6 @@ const GetSequenceDialog = observer(function ({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
   const [rev, setReverse] = useState(false)
@@ -97,7 +91,6 @@ const GetSequenceDialog = observer(function ({
   const loading = Boolean(sequenceChunks === undefined)
 
   useEffect(() => {
-    let active = true
     const controller = new AbortController()
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -110,53 +103,47 @@ const GetSequenceDialog = observer(function ({
         if (selection.length === 0) {
           throw new Error('Selected region is out of bounds')
         }
-        const chunks = await fetchSequence(model, selection, controller.signal)
-        if (active) {
-          setSequenceChunks(chunks)
-        }
+        // TODO:ABORT
+        const chunks = await fetchSequence(model, selection)
+        setSequenceChunks(chunks)
       } catch (e) {
         console.error(e)
-        if (active) {
-          setError(e)
-        }
+        setError(e)
       }
     })()
 
     return () => {
       controller.abort()
-      active = false
     }
-  }, [model, session, leftOffset, rightOffset])
+  }, [model, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
-        sequenceChunks
-          .filter(f => !!f)
-          .map(chunk => {
-            let chunkSeq = chunk.get('seq')
-            const chunkRefName = chunk.get('refName')
-            const chunkStart = chunk.get('start') + 1
-            const chunkEnd = chunk.get('end')
-            const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-            if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-              throw new Error(
-                `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                  chunkEnd - chunkStart
-                ).toLocaleString()}`,
-              )
-            }
+        sequenceChunks.map(chunk => {
+          let chunkSeq = chunk.get('seq')
+          const chunkRefName = chunk.get('refName')
+          const chunkStart = chunk.get('start') + 1
+          const chunkEnd = chunk.get('end')
+          const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+            throw new Error(
+              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                chunkEnd - chunkStart
+              ).toLocaleString()}`,
+            )
+          }
 
-            if (rev) {
-              chunkSeq = reverse(chunkSeq)
-            }
-            if (comp) {
-              chunkSeq = complement(chunkSeq)
-            }
-            return {
-              header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
-              seq: chunkSeq,
-            }
-          }),
+          if (rev) {
+            chunkSeq = reverse(chunkSeq)
+          }
+          if (comp) {
+            chunkSeq = complement(chunkSeq)
+          }
+          return {
+            header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+            seq: chunkSeq,
+          }
+        }),
       )
     : ''
 
@@ -199,10 +186,12 @@ const GetSequenceDialog = observer(function ({
               ? 'Reference sequence too large to display, use the download FASTA button'
               : sequence
           }
-          InputProps={{
-            readOnly: true,
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              readOnly: true,
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
@@ -211,7 +200,9 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={rev}
-                onChange={event => setReverse(event.target.checked)}
+                onChange={event => {
+                  setReverse(event.target.checked)
+                }}
               />
             }
             label="Reverse sequence"
@@ -220,14 +211,16 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={comp}
-                onChange={event => setComplement(event.target.checked)}
+                onChange={event => {
+                  setComplement(event.target.checked)
+                }}
               />
             }
             label="Complement sequence"
           />
         </FormGroup>
         <Typography style={{ margin: 10 }}>
-          Note: Check both boxes for the "reverse complement"
+          Note: Check both boxes for the &quot;reverse complement&quot;
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -235,7 +228,9 @@ const GetSequenceDialog = observer(function ({
           onClick={() => {
             copy(sequence)
             setCopied(true)
-            setTimeout(() => setCopied(false), 500)
+            setTimeout(() => {
+              setCopied(false)
+            }, 500)
           }}
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"

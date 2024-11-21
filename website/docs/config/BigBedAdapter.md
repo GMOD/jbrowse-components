@@ -30,3 +30,13 @@ scoreColumn: {
       defaultValue: '',
     }
 ```
+
+#### slot: aggregateField
+
+```js
+aggregateField: {
+      type: 'string',
+      description: 'An attribute to aggregate features with',
+      defaultValue: 'geneName',
+    }
+```

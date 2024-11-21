@@ -16,7 +16,6 @@ export default function createModel(
   hydrateFn?: (
     container: Element | Document,
     initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any,
   createRootFn?: (elt: Element | DocumentFragment) => {
     render: (node: React.ReactElement) => unknown

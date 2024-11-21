@@ -62,7 +62,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
-    const r1 = opts.regions?.[0].assemblyName
+    const r1 = opts.regions?.[0]?.assemblyName
     if (!r1) {
       throw new Error('no assembly name provided')
     }
@@ -73,8 +73,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
     } else if (idx === 1) {
       return names.filter(n => n.startsWith('t')).map(n => n.slice(1))
+    } else {
+      return []
     }
-    return []
   }
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
@@ -123,7 +124,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             }),
           )
         },
-        signal: opts.signal,
+        stopToken: opts.stopToken,
       })
 
       observer.complete()

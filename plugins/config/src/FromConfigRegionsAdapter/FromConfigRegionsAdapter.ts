@@ -32,7 +32,7 @@ export default class FromConfigRegionsAdapter
   ) {
     super(config, getSubAdapter, pluginManager)
     const f = readConfObject(config, 'features') as SimpleFeatureSerialized[]
-    this.features = makeFeatures(f || [])
+    this.features = makeFeatures(f)
   }
 
   /**
@@ -43,7 +43,9 @@ export default class FromConfigRegionsAdapter
 
     // recall: features are stored in this object sorted by start coordinate
     for (const [refName, features] of this.features) {
-      let currentRegion
+      let currentRegion:
+        | { refName: string; start: number; end: number }
+        | undefined
       for (const feature of features) {
         if (
           currentRegion &&

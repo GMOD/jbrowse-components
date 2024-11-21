@@ -1,24 +1,22 @@
 import { CraiIndex, IndexedCramFile, CramRecord } from '@gmod/cram'
+import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+// jbrowse
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  checkAbortSignal,
-  Region,
-  Feature,
-  updateStatus,
-  toLocale,
-} from '@jbrowse/core/util'
+import type { Region, Feature } from '@jbrowse/core/util'
+import { updateStatus, toLocale } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
-import { IFilter } from '../shared'
+import { FilterBy } from '../shared/types'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface Header {
   idToName?: string[]
@@ -40,6 +38,14 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     sequenceAdapter: BaseSequenceAdapter
   }>
 
+  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
+  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
+  // of these in memory is fairly intensive but can reduce recomputation on
+  // these objects
+  private ultraLongFeatureCache = new QuickLRU<string, Feature>({
+    maxSize: 500,
+  })
+
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined
 
@@ -56,7 +62,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
       seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
-      fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
     })
 
     if (!this.getSubAdapter) {
@@ -77,7 +82,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   public async configure() {
     if (!this.configureP) {
-      this.configureP = this.configurePre().catch(e => {
+      this.configureP = this.configurePre().catch((e: unknown) => {
         this.configureP = undefined
         throw e
       })
@@ -174,7 +179,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -215,10 +220,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: IFilter
+      filterBy: FilterBy
     },
   ) {
-    const { signal, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
@@ -239,7 +244,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         statusCallback,
         () => cram.getRecordsForRange(refId, start, end),
       )
-      checkAbortSignal(signal)
+      checkStopToken(stopToken)
       await updateStatus('Processing alignments', statusCallback, () => {
         const {
           flagInclude = 0,
@@ -255,14 +260,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           }
 
           if (tagFilter) {
-            const v =
+            const readVal =
               tagFilter.tag === 'RG'
                 ? samHeader.readGroups?.[record.readGroupId]
                 : record.tags[tagFilter.tag]
+            const filterVal = tagFilter.value
             if (
-              !(tagFilter.value === '*'
-                ? v !== undefined
-                : `${v}` === tagFilter.value)
+              filterVal === '*'
+                ? readVal === undefined
+                : `${readVal}` !== `${filterVal}`
             ) {
               continue
             }
@@ -271,12 +277,20 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           if (readName && record.readName !== readName) {
             continue
           }
-          observer.next(this.cramRecordToFeature(record))
+
+          const ret = this.ultraLongFeatureCache.get(`${record.uniqueId}`)
+          if (!ret) {
+            const elt = this.cramRecordToFeature(record)
+            this.ultraLongFeatureCache.set(`${record.uniqueId}`, elt)
+            observer.next(elt)
+          } else {
+            observer.next(ret)
+          }
         }
 
         observer.complete()
       })
-    }, signal)
+    }, stopToken)
   }
 
   freeResources(/* { region } */): void {}

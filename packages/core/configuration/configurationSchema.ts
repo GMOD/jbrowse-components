@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   types,
   isStateTreeNode,
@@ -56,7 +55,9 @@ export interface ConfigurationSchemaOptions<
   actions?: (self: unknown) => any
   views?: (self: unknown) => any
   extend?: (self: unknown) => any
-  preProcessSnapshot?: (snapshot: {}) => {}
+  preProcessSnapshot?: (
+    snapshot: Record<string, unknown>,
+  ) => Record<string, unknown>
 }
 
 function preprocessConfigurationSchemaArguments(
@@ -83,7 +84,7 @@ function preprocessConfigurationSchemaArguments(
       ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
       ...inputOptions,
     }
-    delete options.baseConfiguration
+    options.baseConfiguration = undefined
   }
   return { schemaDefinition, options }
 }
@@ -94,7 +95,7 @@ function makeConfigurationSchemaModel<
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   const modelDefinition: Record<string, any> = {}
-  let identifier
+  let identifier: string | undefined
 
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
@@ -169,7 +170,7 @@ function makeConfigurationSchemaModel<
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
-      setSubschema(slotName: string, data: unknown) {
+      setSubschema(slotName: string, data: Record<string, unknown>) {
         if (!isConfigurationSchemaType(modelDefinition[slotName])) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }

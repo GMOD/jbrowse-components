@@ -40,15 +40,19 @@ test('Open up a UCSC trackhub connection', async () => {
   await user.click(await screen.findByText('Open connection...'))
 
   const elt = await screen.findByText('Next', ...opts)
-  await waitFor(() => expect(elt).toHaveProperty('disabled', false))
+  await waitFor(() => {
+    expect(elt).toHaveProperty('disabled', false)
+  })
   await user.click(elt)
 
   const input = await findByTestId('urlInput', ...opts)
   await user.clear(input)
-  await user.type(input, root + 'hub.txt')
+  await user.type(input, `${root}hub.txt`)
 
   const elt2 = await screen.findByText('Connect', ...opts)
-  await waitFor(() => expect(elt2).toHaveProperty('disabled', false))
+  await waitFor(() => {
+    expect(elt2).toHaveProperty('disabled', false)
+  })
   await user.click(elt2)
 
   await findByText('CRAM - Volvox Sorted', ...opts)

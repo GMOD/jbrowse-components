@@ -31,7 +31,7 @@ composed of
 // type signature
 IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>
 // code
-view: pluginManager.getViewType('LinearGenomeView')
+view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel
 ```
 
@@ -94,7 +94,7 @@ any
 
 ```js
 // type
-({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & ...
+({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>)[]
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Methods
@@ -122,5 +122,5 @@ getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; 
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<...>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }...
+addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<...>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>
 ```

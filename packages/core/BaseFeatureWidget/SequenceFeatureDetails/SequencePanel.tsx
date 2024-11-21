@@ -1,10 +1,13 @@
 import React from 'react'
+import { observer } from 'mobx-react'
 
+// locals
 import {
   SimpleFeatureSerialized,
   defaultCodonTable,
   generateCodonTable,
   revcom,
+  toLocale,
 } from '../../util'
 import {
   SeqState,
@@ -13,22 +16,66 @@ import {
   dedupe,
   revlist,
 } from '../util'
+import { SequenceFeatureDetailsModel } from './model'
+// panel types
 import CDNASequence from './seqtypes/CDNASequence'
 import ProteinSequence from './seqtypes/ProteinSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'
 import CDSSequence from './seqtypes/CDSSequence'
-import { SequenceFeatureDetailsModel } from './model'
 
-interface SeqPanelProps {
+interface SequencePanelProps {
   sequence: SeqState
   feature: SimpleFeatureSerialized
-  mode: string
   model: SequenceFeatureDetailsModel
 }
 
-const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
-  function SeqPanel2(props, ref) {
-    const { model, feature, mode } = props
+function getStrand(strand: number) {
+  if (strand === -1) {
+    return '(-)'
+  } else if (strand === 1) {
+    return '(+)'
+  } else {
+    return ''
+  }
+}
+
+function WordWrap({ children }: { children: React.ReactNode }) {
+  return (
+    <pre
+      style={{
+        /* raw styles instead of className so that html copy works */
+        fontFamily: 'monospace',
+        color: 'black',
+        fontSize: 11,
+      }}
+    >
+      {children}
+    </pre>
+  )
+}
+
+function NoWordWrap({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        /* raw styles instead of className so that html copy works */
+        fontFamily: 'monospace',
+        color: 'black',
+        fontSize: 11,
+        maxWidth: 600,
+        whiteSpace: 'wrap',
+        wordBreak: 'break-all',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+const SequencePanel = observer(
+  React.forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
+    const { model, feature } = props
+    const { showCoordinates, mode } = model
     let {
       sequence: { seq, upstream = '', downstream = '' },
     } = props
@@ -42,10 +89,10 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
         end: sub.end - feature.start,
       }))
 
-    // we filter duplicate entries in cds and exon lists duplicate entries may be
-    // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
-    // probably worth ignoring here (produces broken protein translations if
-    // included)
+    // we filter duplicate entries in cds and exon lists duplicate entries
+    // may be rare but was seen in Gencode v36 track NCList, likely a bug
+    // on GFF3 or probably worth ignoring here (produces broken protein
+    // translations if included)
     //
     // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
     // transcript ENST00000445597.6
@@ -81,52 +128,58 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
     }
     const codonTable = generateCodonTable(defaultCodonTable)
 
+    const Container = showCoordinates ? WordWrap : NoWordWrap
     return (
-      <div ref={ref} data-testid="sequence_panel">
-        <div
-          style={{
-            /* raw styles instead of className so that html copy works */
-            fontFamily: 'monospace',
-            wordWrap: 'break-word',
-            overflow: 'auto',
-            color: 'black',
-            fontSize: 12,
-            maxWidth: 600,
-            maxHeight: 300,
-          }}
-        >
-          <span style={{ background: 'white' }}>
-            {`>${
-              feature.name ||
-              feature.id ||
-              `${feature.refName}:${feature.start + 1}-${feature.end}`
-            }-${mode}\n`}
-          </span>
-          <br />
+      <div
+        data-testid="sequence_panel"
+        ref={ref}
+        style={{ maxHeight: 300, overflow: 'auto' }}
+      >
+        <Container>
+          <div style={{ background: 'white' }}>
+            {`>${[
+              `${feature.name || feature.id}-${mode}`,
+              `${feature.refName}:${toLocale(feature.start + 1)}-${toLocale(feature.end)}${getStrand(feature.strand as number)}`,
+              mode.endsWith('updownstream')
+                ? `+/- ${toLocale(model.upDownBp)} up/downstream bp`
+                : '',
+            ]
+              .filter(f => !!f)
+              .join(' ')}\n`}
+          </div>
           {mode === 'genomic' ? (
-            <GenomicSequence sequence={seq} />
+            <GenomicSequence feature={feature} model={model} sequence={seq} />
           ) : mode === 'genomic_sequence_updownstream' ? (
             <GenomicSequence
+              model={model}
+              feature={feature}
               sequence={seq}
               upstream={upstream}
               downstream={downstream}
             />
           ) : mode === 'cds' ? (
-            <CDSSequence cds={cds} sequence={seq} />
+            <CDSSequence model={model} cds={cds} sequence={seq} />
           ) : mode === 'cdna' ? (
             <CDNASequence
               model={model}
               exons={exons}
+              feature={feature}
               cds={cds}
               utr={utr}
               sequence={seq}
             />
           ) : mode === 'protein' ? (
-            <ProteinSequence cds={cds} codonTable={codonTable} sequence={seq} />
+            <ProteinSequence
+              model={model}
+              cds={cds}
+              codonTable={codonTable}
+              sequence={seq}
+            />
           ) : mode === 'gene' ? (
             <CDNASequence
               model={model}
               exons={exons}
+              feature={feature}
               cds={cds}
               utr={utr}
               sequence={seq}
@@ -136,6 +189,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             <CDNASequence
               model={model}
               exons={exons}
+              feature={feature}
               cds={cds}
               sequence={seq}
               utr={utr}
@@ -146,6 +200,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             <CDNASequence
               model={model}
               exons={exons}
+              feature={feature}
               cds={cds}
               sequence={seq}
               utr={utr}
@@ -157,6 +212,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             <CDNASequence
               model={model}
               exons={exons}
+              feature={feature}
               cds={cds}
               sequence={seq}
               utr={utr}
@@ -168,10 +224,10 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
           ) : (
             <div>Unknown type</div>
           )}
-        </div>
+        </Container>
       </div>
     )
-  },
+  }),
 )
 
-export default SeqPanel
+export default SequencePanel

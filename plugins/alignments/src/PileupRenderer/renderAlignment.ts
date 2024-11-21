@@ -5,8 +5,9 @@ import { renderAlignmentShape } from './renderAlignmentShape'
 import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderModifications } from './renderModifications'
-import { renderMethylation } from './renderMethylation'
 import { RenderArgsWithColor } from './makeImageData'
+import { renderMethylation } from './renderMethylation'
+import { parseCigar } from '../MismatchParser'
 
 export function renderAlignment({
   ctx,
@@ -32,7 +33,7 @@ export function renderAlignment({
   const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = renderArgs
   const { tag = '', type: colorType = '' } = colorBy || {}
   const { feature } = feat
-  const region = regions[0]
+  const region = regions[0]!
 
   ctx.fillStyle = getAlignmentShapeColor({
     feature,
@@ -48,17 +49,21 @@ export function renderAlignment({
   // second pass for color types that render per-base things that go over the
   // existing drawing
   switch (colorType) {
-    case 'perBaseQuality':
+    case 'perBaseQuality': {
+      const cigarOps = parseCigar(feature.get('CIGAR'))
       renderPerBaseQuality({
         ctx,
         feat,
         region,
         bpPerPx,
         canvasWidth,
+        cigarOps,
       })
       break
+    }
 
-    case 'perBaseLettering':
+    case 'perBaseLettering': {
+      const cigarOps = parseCigar(feature.get('CIGAR'))
       renderPerBaseLettering({
         ctx,
         feat,
@@ -69,10 +74,13 @@ export function renderAlignment({
         charWidth,
         charHeight,
         canvasWidth,
+        cigarOps,
       })
       break
+    }
 
-    case 'modifications':
+    case 'modifications': {
+      const cigarOps = parseCigar(feature.get('CIGAR'))
       renderModifications({
         ctx,
         feat,
@@ -80,10 +88,13 @@ export function renderAlignment({
         bpPerPx,
         renderArgs,
         canvasWidth,
+        cigarOps,
       })
       break
+    }
 
-    case 'methylation':
+    case 'methylation': {
+      const cigarOps = parseCigar(feature.get('CIGAR'))
       renderMethylation({
         ctx,
         feat,
@@ -91,7 +102,9 @@ export function renderAlignment({
         bpPerPx,
         renderArgs,
         canvasWidth,
+        cigarOps,
       })
       break
+    }
   }
 }

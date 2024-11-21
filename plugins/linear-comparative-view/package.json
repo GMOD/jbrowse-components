@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-comparative-view",
-  "version": "2.11.2",
+  "version": "2.17.0",
   "description": "JBrowse 2 linear comparative view",
   "keywords": [
     "jbrowse",
@@ -16,15 +16,15 @@
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
-  "srcMain": "src/index.tsx",
-  "main": "src/index.tsx",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
   "files": [
     "dist",
     "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/linear-comparative-view",
+    "test": "cd ../..; jest --passWithNoTests plugins/linear-comparative-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.3",
-    "@mui/icons-material": "^5.0.1",
+    "@mui/icons-material": "^6.0.0",
     "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0"
@@ -46,7 +46,7 @@
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-alignments": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

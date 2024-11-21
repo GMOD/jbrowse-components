@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx)
+[plugins/alignments/src/LinearAlignmentsDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.tsx)
 
 extends
 
@@ -47,7 +47,7 @@ any
 any
 ```
 
-#### getter: DisplayBlurb
+#### getter: alignmentsdisplaymodel
 
 ```js
 // type
@@ -111,7 +111,7 @@ setSNPCoverageHeight: (n: number) => void
 
 ```js
 // type signature
-setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
@@ -125,7 +125,7 @@ setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 
 ```js
 // type signature
-setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setHeight
@@ -133,6 +133,13 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 ```js
 // type signature
 setHeight: (n: number) => number
+```
+
+#### action: setFilterBy
+
+```js
+// type signature
+setFilterBy: (filter: FilterBy) => void
 ```
 
 #### action: setLowerPanelType

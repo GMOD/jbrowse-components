@@ -3,13 +3,11 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export class MultiWiggleGetSources extends RpcMethodType {
   name = 'MultiWiggleGetSources'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
@@ -24,7 +22,7 @@ export class MultiWiggleGetSources extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
+      stopToken?: string
       statusCallback?: (arg: string) => void
     },
     rpcDriverClassName: string,
@@ -46,7 +44,7 @@ export class MultiWiggleGetSources extends RpcMethodType {
   async execute(
     args: {
       adapterConfig: AnyConfigurationModel
-      signal?: RemoteAbortSignal
+      stopToken?: string
       sessionId: string
       headers?: Record<string, string>
       regions: Region[]

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   Feature,
   SimpleFeatureSerialized,
@@ -6,8 +5,9 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getClip, getMismatches } from '../MismatchParser'
+import { getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
+import { cacheGetter } from '../shared/util'
 
 export default class BamSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -18,95 +18,29 @@ export default class BamSlightlyLazyFeature implements Feature {
     private ref?: string,
   ) {}
 
-  _get_name() {
-    return this.record.get('name')
-  }
-
-  _get_type(): string {
-    return 'match'
-  }
-
-  _get_score(): number {
-    return this.record.get('mq')
-  }
-
-  _get_flags(): string {
-    return this.record.flags
-  }
-
-  _get_strand(): number {
-    return this.record.isReverseComplemented() ? -1 : 1
-  }
-
-  _get_pair_orientation() {
-    return this.record.isPaired() ? this.record.getPairOrientation() : undefined
-  }
-
-  _get_next_ref() {
-    return this.record.isPaired()
-      ? this.adapter.refIdToName(this.record._next_refid())
-      : undefined
-  }
-
-  _get_next_pos() {
-    return this.record.isPaired() ? this.record._next_pos() : undefined
-  }
-
-  _get_next_segment_position() {
-    return this.record.isPaired()
-      ? `${this.adapter.refIdToName(this.record._next_refid())}:${
-          this.record._next_pos() + 1
-        }`
-      : undefined
-  }
-
-  _get_seq() {
-    return this.record.getReadBases()
-  }
-
-  qualRaw() {
-    return this.record.qualRaw()
-  }
-
-  set() {}
-
-  tags() {
-    const properties = Object.getOwnPropertyNames(
-      BamSlightlyLazyFeature.prototype,
-    )
-
-    return [
-      ...new Set(
-        properties
-          .filter(
-            prop =>
-              prop.startsWith('_get_') &&
-              prop !== '_get_mismatches' &&
-              prop !== '_get_tags',
-          )
-          .map(methodName => methodName.replace('_get_', ''))
-          .concat(this.record._tags()),
-      ),
-    ]
-  }
-
   id() {
-    return `${this.adapter.id}-${this.record.id()}`
+    return `${this.adapter.id}-${this.record.id}`
+  }
+  get mismatches() {
+    return getMismatches(
+      this.record.CIGAR,
+      this.record.tags.MD as string | undefined,
+      this.record.seq,
+      this.ref,
+      this.record.qual,
+    )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get qual() {
+    return this.record.qual?.join(' ')
+  }
+
   get(field: string): any {
-    const methodName = `_get_${field}`
-    // @ts-expect-error
-    if (this[methodName]) {
-      // @ts-expect-error
-      return this[methodName]()
-    }
-    return this.record.get(field)
-  }
-
-  _get_refName() {
-    return this.adapter.refIdToName(this.record.seq_id())
+    return field === 'mismatches'
+      ? this.mismatches
+      : field === 'qual'
+        ? this.qual
+        : this.fields[field]
   }
 
   parent() {
@@ -117,33 +51,40 @@ export default class BamSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  pairedFeature() {
-    return false
-  }
-
-  toJSON(): SimpleFeatureSerialized {
+  get fields(): SimpleFeatureSerialized {
+    const r = this.record
+    const a = this.adapter
+    const p = r.isPaired()
     return {
-      ...Object.fromEntries(
-        this.tags()
-          .map(t => [t, this.get(t)])
-          .filter(elt => elt[1] !== undefined),
-      ),
+      start: r.start,
+      name: r.name,
+      end: r.end,
+      score: r.score,
+      strand: r.strand,
+      template_length: r.template_length,
+      flags: r.flags,
+      tags: r.tags,
+      refName: a.refIdToName(r.ref_id)!,
+      CIGAR: r.CIGAR,
+      seq: r.seq,
+      type: 'match',
+      pair_orientation: r.pair_orientation,
+      next_ref: p ? a.refIdToName(r.next_refid) : undefined,
+      next_pos: p ? r.next_pos : undefined,
+      next_segment_position: p
+        ? `${a.refIdToName(r.next_refid)}:${r.next_pos + 1}`
+        : undefined,
       uniqueId: this.id(),
     }
   }
 
-  _get_mismatches() {
-    return getMismatches(
-      this.get('CIGAR'),
-      this.get('MD'),
-      this.get('seq'),
-      this.ref,
-      this.qualRaw(),
-    )
-  }
-
-  _get_clipPos() {
-    const cigar = this.get('CIGAR') || ''
-    return getClip(cigar, this.get('strand'))
+  toJSON(): SimpleFeatureSerialized {
+    return {
+      ...this.fields,
+      qual: this.qual,
+    }
   }
 }
+
+cacheGetter(BamSlightlyLazyFeature, 'fields')
+cacheGetter(BamSlightlyLazyFeature, 'mismatches')

@@ -41,7 +41,7 @@ const configSchema = ConfigurationSchema(
      */
     minSize: {
       type: 'number',
-      defaultValue: 0,
+      defaultValue: 0.7,
     },
   },
   {

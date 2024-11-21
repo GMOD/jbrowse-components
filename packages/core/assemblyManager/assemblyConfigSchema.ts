@@ -12,7 +12,8 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
     {
       /**
        * #slot
-       * aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
+       * aliases are "reference name aliases" e.g. aliases for hg38 might be
+       * "GRCh38"
        */
       aliases: {
         type: 'stringArray',
@@ -22,10 +23,11 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
 
       /**
        * #slot
-       * sequence refers to a reference sequence track that has an adapter containing,
-       * importantly, a sequence adapter such as IndexedFastaAdapter
+       * sequence refers to a reference sequence track that has an adapter
+       * containing, importantly, a sequence adapter such as
+       * IndexedFastaAdapter
        */
-      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
+      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')!
         .configSchema,
 
       /**
@@ -43,8 +45,8 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           /**
            * #slot refNameAliases.adapter
-           * refNameAliases help resolve e.g. chr1 and 1 as the same entity
-           * the data for refNameAliases are fetched from an adapter, that is
+           * refNameAliases help resolve e.g. chr1 and 1 as the same entity the
+           * data for refNameAliases are fetched from an adapter, that is
            * commonly a tsv like chromAliases.txt from UCSC or similar
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
@@ -52,7 +54,6 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           preProcessSnapshot: snap => {
             // allow refNameAliases to be unspecified
-            // @ts-expect-error
             if (!snap.adapter) {
               return { adapter: { type: 'RefNameAliasAdapter' } }
             }
@@ -65,19 +66,17 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           /**
            * #slot cytobands.adapter
-           * cytoband data is fetched from an adapter, and can be displayed by a
-           * view type as ideograms
+           * cytoband data is fetched from an adapter, and can be displayed by
+           * a view type as ideograms
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
           preProcessSnapshot: snap => {
             // allow cytoBand to be unspecified
-            // @ts-expect-error
-            if (!snap.adapter) {
-              return { adapter: { type: 'CytobandAdapter' } }
-            }
-            return snap
+            return !snap.adapter
+              ? { adapter: { type: 'CytobandAdapter' } }
+              : snap
           },
         },
       ),
@@ -95,9 +94,9 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
     {
       /**
        * #identifier name
-       * the name acts as a unique identifier in the config, so it cannot be duplicated.
-       * it usually a short human readable "id" like hg38, but you can also optionally
-       * customize the assembly "displayName" config slot
+       * the name acts as a unique identifier in the config, so it cannot be
+       * duplicated. it usually a short human readable "id" like hg38, but you
+       * can also optionally customize the assembly "displayName" config slot
        */
       explicitIdentifier: 'name',
     },

@@ -24,7 +24,7 @@ export interface Glyph
     topLevel?: boolean
     [key: string]: unknown
   }> {
-  layOut?: Function
+  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 
 type LayoutRecord = [number, number, number, number]
@@ -46,46 +46,53 @@ export interface ExtraGlyphValidator {
   validator: (feature: Feature) => boolean
 }
 
-export function chooseGlyphComponent(
-  feature: Feature,
-  extraGlyphs?: ExtraGlyphValidator[],
-): Glyph {
+export function chooseGlyphComponent({
+  feature,
+  extraGlyphs,
+  config,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  extraGlyphs?: ExtraGlyphValidator[]
+}): Glyph {
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
+  const transcriptTypes = readConfObject(config, 'transcriptTypes')
+  const containerTypes = readConfObject(config, 'containerTypes')
 
   if (subfeatures?.length && type !== 'CDS') {
-    const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
-    if (
-      ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
-      subfeatures.some(f => f.get('type') === 'CDS')
-    ) {
+    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
+    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
+    if (transcriptTypes.includes(type) && hasCDS) {
       return ProcessedTranscript
-    } else if (!feature.parent() && hasSubSub) {
-      // only do sub-sub on parent level features like gene
+    } else if (
+      (!feature.parent() && hasSubSub) ||
+      containerTypes.includes(type)
+    ) {
       return Subfeatures
     } else {
       return Segments
     }
+  } else {
+    return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
   }
-
-  return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
 }
 
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  reversed: boolean
+  reversed?: boolean
   config: AnyConfigurationModel
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
   feature: Feature
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 export function layOut({
@@ -124,7 +131,11 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Box
-      : chooseGlyphComponent(feature, extraGlyphs)
+      : chooseGlyphComponent({
+          feature,
+          extraGlyphs,
+          config,
+        })
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
@@ -150,7 +161,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   subfeatures.forEach(feature => {
-    ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
+    ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
       layout,
       feature,
       bpPerPx,

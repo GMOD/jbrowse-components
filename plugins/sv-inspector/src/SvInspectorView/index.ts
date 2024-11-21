@@ -22,9 +22,8 @@ function defaultOnChordClick(
   const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
 
   // try to center the offsetPx
-  viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-  viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-  viewSnapshot.featureData = feature.toJSON()
+  viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100
+  viewSnapshot.views[1]!.offsetPx -= view.width / 2 + 100
 
   session.addView('BreakpointSplitView', viewSnapshot)
 }

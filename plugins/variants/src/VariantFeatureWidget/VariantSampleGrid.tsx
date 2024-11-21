@@ -8,8 +8,8 @@ import {
 } from '@mui/material'
 
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
 interface Entry {
   sample: string
@@ -42,9 +42,9 @@ function SampleFilters({
           key={`filter-${field}`}
           placeholder={`Filter ${field}`}
           value={filter[field] || ''}
-          onChange={event =>
+          onChange={event => {
             setFilter({ ...filter, [field]: event.target.value })
-          }
+          }}
         />
       ))}
     </>
@@ -60,7 +60,7 @@ export default function VariantSamples(props: {
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const preFilteredRows = Object.entries(samples)
 
-  let error
+  let error: unknown
   let rows = [] as Entry[]
   const filters = Object.keys(filter)
 
@@ -83,7 +83,7 @@ export default function VariantSamples(props: {
           ? filters.every(key => {
               const currFilter = filter[key]
               return currFilter
-                ? row[key].match(new RegExp(currFilter, 'i'))
+                ? new RegExp(currFilter, 'i').exec(row[key]!)
                 : true
             })
           : true,
@@ -92,8 +92,8 @@ export default function VariantSamples(props: {
     error = e
   }
 
-  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const [checked, setChecked] = useState(false)
+  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
   const columns = keys.map((field, index) => ({
     field,
@@ -110,7 +110,9 @@ export default function VariantSamples(props: {
         control={
           <Checkbox
             checked={checked}
-            onChange={event => setChecked(event.target.checked)}
+            onChange={event => {
+              setChecked(event.target.checked)
+            }}
           />
         }
         label={<Typography variant="body2">Show options</Typography>}
@@ -124,6 +126,7 @@ export default function VariantSamples(props: {
       ) : null}
 
       <DataGrid
+        autoHeight
         rows={rows}
         hideFooter={rows.length < 100}
         columns={columns}
@@ -133,7 +136,11 @@ export default function VariantSamples(props: {
         disableColumnMenu
         slots={{ toolbar: checked ? GridToolbar : null }}
         slotProps={{
-          toolbar: { printOptions: { disableToolbarButton: true } },
+          toolbar: {
+            printOptions: {
+              disableToolbarButton: true,
+            },
+          },
         }}
       />
     </BaseCard>

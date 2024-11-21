@@ -9,11 +9,11 @@ import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 // locals
 import AppToolbar from './AppToolbar'
-import ViewLauncher from './ViewLauncher'
-import ViewPanel from './ViewPanel'
 import DialogQueue from './DialogQueue'
 import AppFab from './AppFab'
+import ViewsContainer from './ViewsContainer'
 
+// lazies
 const DrawerWidget = lazy(() => import('./DrawerWidget'))
 
 const useStyles = makeStyles()(theme => ({
@@ -29,10 +29,7 @@ const useStyles = makeStyles()(theme => ({
     gridTemplateRows: '[menubar] min-content [components] auto',
     height: '100vh',
   },
-  viewContainer: {
-    overflowY: 'auto',
-    gridRow: 'components',
-  },
+
   appBar: {
     flexGrow: 1,
     gridRow: 'menubar',
@@ -43,9 +40,12 @@ interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
     savedSessionNames: string[]
-    menus: { label: string; menuItems: JBMenuItem[] }[]
-    renameCurrentSession: (arg: string) => void
+    menus: {
+      label: string
+      menuItems: JBMenuItem[]
+    }[]
     snackbarMessages: SnackbarMessage[]
+    renameCurrentSession: (arg: string) => void
     popSnackbarMessage: () => unknown
   }
 }
@@ -56,26 +56,6 @@ const LazyDrawerWidget = observer(function (props: Props) {
     <Suspense fallback={null}>
       <DrawerWidget session={session} />
     </Suspense>
-  )
-})
-
-const ViewContainer = observer(function (props: Props) {
-  const { session } = props
-  const { views } = session
-  const { classes } = useStyles()
-  return (
-    <div className={classes.viewContainer}>
-      {views.length > 0 ? (
-        views.map(view => (
-          <ViewPanel key={`view-${view.id}`} view={view} session={session} />
-        ))
-      ) : (
-        <ViewLauncher {...props} />
-      )}
-
-      {/* blank space at the bottom of screen allows scroll */}
-      <div style={{ height: 300 }} />
-    </div>
   )
 })
 
@@ -91,7 +71,7 @@ const App = observer(function (props: Props) {
   return (
     <div
       className={classes.root}
-      style={{ gridTemplateColumns: grid?.filter(f => !!f).join(' ') }}
+      style={{ gridTemplateColumns: grid.filter(f => !!f).join(' ') }}
     >
       {drawerVisible && drawerPosition === 'left' ? (
         <LazyDrawerWidget session={session} />
@@ -101,7 +81,7 @@ const App = observer(function (props: Props) {
         <AppBar className={classes.appBar} position="static">
           <AppToolbar {...props} />
         </AppBar>
-        <ViewContainer {...props} />
+        <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
 

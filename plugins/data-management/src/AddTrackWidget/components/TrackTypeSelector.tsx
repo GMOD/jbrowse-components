@@ -28,10 +28,14 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
       helperText="Select track type"
       select
       fullWidth
-      onChange={event => model.setTrackType(event.target.value)}
-      SelectProps={{
-        // @ts-expect-error
-        SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+      onChange={event => {
+        model.setTrackType(event.target.value)
+      }}
+      slotProps={{
+        select: {
+          // @ts-expect-error
+          SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+        },
       }}
     >
       {trackTypes.map(({ name, displayName }) => (

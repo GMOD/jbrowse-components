@@ -7,7 +7,7 @@ import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
-import AbortablePromiseCache from 'abortable-promise-cache'
+import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 interface T {
@@ -22,24 +22,27 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   private seqCache = new AbortablePromiseCache<T, string | undefined>({
     cache: new QuickLRU({ maxSize: 200 }),
-    fill: async (args: T, signal?: AbortSignal) => {
+    fill: async (args: T) => {
       const { refName, start, end, fasta } = args
-      return fasta.getSequence(refName, start, end, { ...args, signal })
+      // TODO:ABORT
+      return fasta.getSequence(refName, start, end)
     },
   })
 
-  public async getRefNames(opts?: BaseOptions) {
+  public async getRefNames(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    return fasta.getSequenceNames(opts)
+    // TODO:ABORT
+    return fasta.getSequenceNames()
   }
 
-  public async getRegions(opts?: BaseOptions) {
+  public async getRegions(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    const seqSizes = await fasta.getSequenceSizes(opts)
+    // TODO:ABORT
+    const seqSizes = await fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(refName => ({
       refName,
       start: 0,
-      end: seqSizes[refName],
+      end: seqSizes[refName]!,
     }))
   }
 
@@ -64,7 +67,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   public async setup() {
     if (!this.setupP) {
-      this.setupP = this.setupPre().catch(e => {
+      this.setupP = this.setupPre().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -72,12 +75,13 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     return this.setupP
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion, _opts?: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       const { fasta } = await this.setup()
-      const size = await fasta.getSequenceSize(refName, opts)
-      const regionEnd = size !== undefined ? Math.min(size, end) : end
+      // TODO:ABORT
+      const size = await fasta.getSequenceSize(refName)
+      const regionEnd = Math.min(size, end)
       const chunks = []
       const chunkSize = 128000
 
@@ -89,11 +93,11 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
           start: chunkStart,
           end: chunkStart + chunkSize,
         }
-        chunks.push(
-          this.seqCache.get(JSON.stringify(r), { ...r, fasta }, opts?.signal),
-        )
+        // TODO:ABORT
+        chunks.push(this.seqCache.get(JSON.stringify(r), { ...r, fasta }))
       }
       const seq = (await Promise.all(chunks))
+        .filter(f => !!f)
         .join('')
         .slice(start - s)
         .slice(0, end - start)

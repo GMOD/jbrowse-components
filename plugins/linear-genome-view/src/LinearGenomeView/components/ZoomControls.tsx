@@ -28,13 +28,15 @@ const ZoomControls = observer(function ({
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
-  }, [setValue, bpPerPx])
+  }, [bpPerPx])
 
   return (
     <div className={classes.container}>
       <IconButton
         data-testid="zoom_out"
-        onClick={() => model.zoom(bpPerPx * 2)}
+        onClick={() => {
+          model.zoom(bpPerPx * 2)
+        }}
         disabled={bpPerPx >= maxBpPerPx - 0.0001}
         size="large"
       >
@@ -47,12 +49,16 @@ const ZoomControls = observer(function ({
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
-        onChange={(_, val) => setValue(val as number)}
+        onChange={(_, val) => {
+          setValue(val as number)
+        }}
         onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
       />
       <IconButton
         data-testid="zoom_in"
-        onClick={() => model.zoom(model.bpPerPx / 2)}
+        onClick={() => {
+          model.zoom(model.bpPerPx / 2)
+        }}
         disabled={bpPerPx <= minBpPerPx + 0.0001}
         size="large"
       >

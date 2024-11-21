@@ -48,7 +48,7 @@ export class Slice {
   }
 
   bpToXY(bp: number, radiusPx: number) {
-    let offsetBp
+    let offsetBp: number | undefined
     if (this.region.elided) {
       offsetBp = this.region.widthBp / 2
     } else if (this.flipped) {
@@ -66,7 +66,7 @@ export class Slice {
 }
 
 function calculateStaticSlices(self: {
-  elidedRegions: SliceRegion[]
+  elidedRegions: readonly SliceRegion[]
   bpPerRadian: number
   spacingPx: number
   pxPerRadian: number

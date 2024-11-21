@@ -1,9 +1,8 @@
+import { reaction, autorun } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
-
 import { Feature, getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { reaction, autorun } from 'mobx'
 
 // locals
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -39,7 +38,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         return
       }
 
-      const height = view.middleComparativeHeight
+      const height = self.height
       const width = view.width
       ctx1.clearRect(0, 0, width, height)
       ctx3.clearRect(0, 0, width, height)
@@ -84,6 +83,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         if (!initialized) {
           return
         }
+        const { level } = self
         const { assemblyManager } = getSession(self)
         const view = getContainingView(self) as LSV
         const viewSnaps = view.views.map(view => ({
@@ -107,14 +107,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           if (f.get('strand') === -1) {
             ;[f1e, f1s] = [f1s, f1e]
           }
-          const a1 = assemblyManager?.get(f.get('assemblyName'))
-          const a2 = assemblyManager?.get(mate.assemblyName)
+          const a1 = assemblyManager.get(f.get('assemblyName'))
+          const a2 = assemblyManager.get(mate.assemblyName)
           const r1 = f.get('refName')
           const r2 = mate.refName
           const ref1 = a1?.getCanonicalRefName(r1) || r1
           const ref2 = a2?.getCanonicalRefName(r2) || r2
-          const v1 = viewSnaps[0]
-          const v2 = viewSnaps[1]
+          const v1 = viewSnaps[level]!
+          const v2 = viewSnaps[level + 1]!
           const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
           const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
           const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })

@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`more skip 1`] = `
+[
+  {
+    "altbase": "G",
+    "base": "A",
+    "length": 1,
+    "qual": undefined,
+    "start": 6,
+    "type": "mismatch",
+  },
+  {
+    "altbase": "C",
+    "base": "A",
+    "length": 1,
+    "qual": undefined,
+    "start": 11,
+    "type": "mismatch",
+  },
+  {
+    "base": "1",
+    "length": 0,
+    "start": 31,
+    "type": "insertion",
+  },
+  {
+    "altbase": "G",
+    "base": "C",
+    "length": 1,
+    "qual": undefined,
+    "start": 32,
+    "type": "mismatch",
+  },
+  {
+    "altbase": "A",
+    "base": "C",
+    "length": 1,
+    "qual": undefined,
+    "start": 34,
+    "type": "mismatch",
+  },
+  {
+    "altbase": "C",
+    "base": "C",
+    "length": 1,
+    "qual": undefined,
+    "start": 40,
+    "type": "mismatch",
+  },
+  {
+    "altbase": "A",
+    "base": "C",
+    "length": 1,
+    "qual": undefined,
+    "start": 46,
+    "type": "mismatch",
+  },
+  {
+    "base": "*",
+    "length": 1,
+    "start": 48,
+    "type": "deletion",
+  },
+  {
+    "altbase": "A",
+    "base": "G",
+    "length": 1,
+    "qual": undefined,
+    "start": 52,
+    "type": "mismatch",
+  },
+  {
+    "altbase": "G",
+    "base": "G",
+    "length": 1,
+    "qual": undefined,
+    "start": 68,
+    "type": "mismatch",
+  },
+  {
+    "altbase": "G",
+    "base": "G",
+    "length": 1,
+    "qual": undefined,
+    "start": 70,
+    "type": "mismatch",
+  },
+]
+`;

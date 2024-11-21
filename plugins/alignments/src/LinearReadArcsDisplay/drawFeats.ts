@@ -60,7 +60,7 @@ export function drawFeats(
   const { assemblyManager } = getSession(self)
   const { chains, stats } = chainData
   const hasPaired = hasPairedReads(chainData)
-  const asm = assemblyManager.get(view.assemblyNames[0])
+  const asm = assemblyManager.get(view.assemblyNames[0]!)
   const type = colorBy?.type || 'insertSizeAndOrientation'
   if (!asm) {
     return
@@ -177,7 +177,7 @@ export function drawFeats(
   for (const chain of chains) {
     // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
-      const f = chain[0]
+      const f = chain[0]!
       if (hasPaired && !(f.flags & 8)) {
         const mate = {
           refName: f.next_ref || '',
@@ -191,8 +191,8 @@ export function drawFeats(
           (a, b) => a.clipPos - b.clipPos,
         )
         for (let i = 0; i < features.length - 1; i++) {
-          const f = features[i]
-          const v1 = features[i + 1]
+          const f = features[i]!
+          const v1 = features[i + 1]!
           draw(f, v1, asm, true)
         }
       }
@@ -203,7 +203,7 @@ export function drawFeats(
             .sort((a, b) => a.clipPos - b.clipPos)
             .filter(f => !(f.flags & 256))
       for (let i = 0; i < res.length - 1; i++) {
-        draw(res[i], res[i + 1], asm, false)
+        draw(res[i]!, res[i + 1]!, asm, false)
       }
     }
   }

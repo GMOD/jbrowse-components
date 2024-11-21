@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
 
 const JBrowseApp = observer(function ({ viewState }: { viewState: ViewModel }) {
   const { classes } = useStyles()
-  const session = viewState?.session
+  const session = viewState.session
   const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))
 
   return (

@@ -4,7 +4,6 @@ import {
   isESMPluginDefinition,
   isUMDPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   getPropertyMembers,
   getChildType,
@@ -13,12 +12,11 @@ import {
   isReferenceType,
   isValidReference,
   isMapType,
-  types,
   IAnyType,
   IAnyStateTreeNode,
   Instance,
-  SnapshotOut,
 } from 'mobx-state-tree'
+import type { types } from 'mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -56,7 +54,8 @@ export async function fromUrlSafeB64(b64: string) {
   const { inflate } = await import('pako')
   const bytes = toByteArray(originalB64)
   const inflated = inflate(bytes)
-  return new TextDecoder().decode(inflated)
+  const decoder = new TextDecoder('utf8')
+  return decoder.decode(inflated)
 }
 
 /**
@@ -82,7 +81,10 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 // attempts to remove undefined references from the given MST model. can only actually
 // remove them from arrays and maps. throws MST undefined ref error if it encounters
 // undefined refs in model properties
-export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
+export function filterSessionInPlace(
+  node: IAnyStateTreeNode | undefined,
+  type: IAnyType,
+) {
   // makes it work with session sharing
   if (node === undefined) {
     return
@@ -128,13 +130,14 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   }
 }
 
-type Config = SnapshotOut<AnyConfigurationModel>
-
-export function addRelativeUris(config: Config, base: URL) {
+export function addRelativeUris(
+  config: Record<string, unknown> | null,
+  base: URL,
+) {
   if (typeof config === 'object' && config !== null) {
     for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativeUris(config[key], base)
+      if (typeof config[key] === 'object' && config[key] !== null) {
+        addRelativeUris(config[key] as Record<string, unknown>, base)
       } else if (key === 'uri') {
         config.baseUri = base.href
       }
@@ -143,7 +146,7 @@ export function addRelativeUris(config: Config, base: URL) {
 }
 
 export interface Root {
-  configuration?: Config
+  configuration?: Record<string, unknown>
 }
 
 // raw readConf alternative for before conf is initialized
@@ -178,11 +181,13 @@ export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
     if (isESMPluginDefinition(p)) {
       return storePlugins.plugins.some(
         pp =>
+          // @ts-expect-error
           isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
       )
     }
     if (isCJSPluginDefinition(p)) {
       return storePlugins.plugins.some(
+        // @ts-expect-error
         pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
       )
     }

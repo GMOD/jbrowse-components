@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`one slice 1`] = `
+{
+  "bpPerRadian": 1591.5494309189535,
+  "endRadians": 6.283185307179586,
+  "flipped": false,
+  "key": "toast:1..10,000",
+  "offsetRadians": 0,
+  "radianWidth": 6.288185307179586,
+  "region": {
+    "end": 10000,
+    "refName": "toast",
+    "start": 0,
+    "widthBp": 10000,
+  },
+  "startRadians": 0,
+}
+`;
+
+exports[`two slices 1`] = `
+[
+  {
+    "bpPerRadian": 3183.098861837907,
+    "endRadians": 3.141592653589793,
+    "flipped": false,
+    "key": "{wow}toast:1..10,000",
+    "offsetRadians": 0,
+    "radianWidth": 3.146592653589793,
+    "region": {
+      "assemblyName": "wow",
+      "elided": true,
+      "end": 10000,
+      "refName": "toast",
+      "start": 0,
+      "widthBp": 10000,
+    },
+    "startRadians": 0,
+  },
+  {
+    "bpPerRadian": 3183.098861837907,
+    "endRadians": 6.288185307179586,
+    "flipped": false,
+    "key": "{wow}test:1..10,000",
+    "offsetRadians": 3.146592653589793,
+    "radianWidth": 3.146592653589793,
+    "region": {
+      "assemblyName": "wow",
+      "elided": true,
+      "end": 10000,
+      "refName": "test",
+      "start": 0,
+      "widthBp": 10000,
+    },
+    "startRadians": 3.146592653589793,
+  },
+]
+`;
+
+exports[`volvox 1`] = `
+[
+  {
+    "bpPerRadian": 8925.40920859349,
+    "endRadians": 5.602096086738348,
+    "flipped": false,
+    "key": "{volvox}ctgA:1..50,001",
+    "offsetRadians": 0,
+    "radianWidth": 5.6070960867383475,
+    "region": {
+      "assemblyName": "volvox",
+      "end": 50001,
+      "refName": "ctgA",
+      "start": 0,
+      "widthBp": 50001,
+    },
+    "startRadians": 0,
+  },
+  {
+    "bpPerRadian": 8925.40920859349,
+    "endRadians": 6.288185307179587,
+    "flipped": false,
+    "key": "{volvox}ctgB:1..6,079",
+    "offsetRadians": 5.6070960867383475,
+    "radianWidth": 0.6860892204412394,
+    "region": {
+      "assemblyName": "volvox",
+      "end": 6079,
+      "refName": "ctgB",
+      "start": 0,
+      "widthBp": 6079,
+    },
+    "startRadians": 5.6070960867383475,
+  },
+]
+`;

@@ -49,9 +49,9 @@ export default function ArrayValue({
       <>
         {value.map((val, i) => (
           <Attributes
-            key={JSON.stringify(val) + '-' + i}
+            key={`${JSON.stringify(val)}-${i}`}
             attributes={val as Record<string, unknown>}
-            prefix={[...prefix, name + '-' + i]}
+            prefix={[...prefix, `${name}-${i}`]}
           />
         ))}
       </>
@@ -62,7 +62,7 @@ export default function ArrayValue({
         <FieldName prefix={prefix} description={description} name={name} />
         {value.map((val, i) => (
           <div
-            key={JSON.stringify(val) + '-' + i}
+            key={`${JSON.stringify(val)}-${i}`}
             className={classes.fieldSubvalue}
           >
             <BasicValue value={val} />

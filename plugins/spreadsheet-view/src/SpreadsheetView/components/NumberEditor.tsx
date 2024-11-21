@@ -43,7 +43,9 @@ const NumberEditor = observer(function ({
       value={val}
       disabled={disabled}
       type="number"
-      onChange={evt => setVal(evt.target.value)}
+      onChange={evt => {
+        setVal(evt.target.value)
+      }}
       className={classes.textField}
     />
   )

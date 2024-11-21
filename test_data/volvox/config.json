@@ -265,7 +265,7 @@
       "type": "VariantTrack",
       "trackId": "volvox_sv_test",
       "description": "A uniquely interesting track",
-      "name": "volvox structural variant test (<i>HTML italic</i>)",
+      "name": "volvox structural variant test (<a href=\"https://google.com\"><i>HTML italic+link</i></a>)",
       "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -1204,9 +1204,6 @@
       "type": "FeatureTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
-      "formatDetails": {
-        "maxDepth": 0
-      },
       "assemblyNames": ["volvox"],
       "category": ["Miscellaneous"],
       "adapter": {
@@ -1895,7 +1892,7 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
-      "trackId": "volvox_del.paf-1658813720770",
+      "trackId": "volvox_del.paf",
       "name": "volvox_del.paf",
       "assemblyNames": ["volvox", "volvox_del"],
       "adapter": {
@@ -1910,7 +1907,7 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
-      "trackId": "volvox_ins.paf-1658813720770",
+      "trackId": "volvox_ins.paf",
       "name": "volvox_ins.paf",
       "assemblyNames": ["volvox", "volvox_ins"],
       "adapter": {
@@ -2185,6 +2182,68 @@
           "displayId": "volvox_bedpe-LinearPairedArcDisplay"
         }
       ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_ins.pif",
+      "name": "volvox_ins.pif",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "volvox_ins.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_ins.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["volvox_ins", "volvox"]
+      },
+      "assemblyNames": ["volvox_ins", "volvox"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "test",
+      "name": "Multi-part feature segments",
+      "category": ["Integration test"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "multipart.gff",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"]
+    },
+
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-sorted.noref.cram",
+      "name": "volvox-sorted.cram (noref)",
+      "category": ["Integration test"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted.noref.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted.noref.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [

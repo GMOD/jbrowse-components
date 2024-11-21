@@ -182,13 +182,13 @@ const OverviewRubberband = observer(function OverviewRubberband({
 
   let left = startX || 0
   let width = 0
-  if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
+  if (currentX !== undefined) {
+    left = Math.min(currentX, startX)
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  let leftBpOffset
-  let rightBpOffset
+  let leftBpOffset: ReturnType<typeof overview.pxToBp> | undefined
+  let rightBpOffset: ReturnType<typeof overview.pxToBp> | undefined
   if (startX) {
     leftBpOffset = overview.pxToBp(startX - cytobandOffset)
     rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)

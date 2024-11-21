@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 
@@ -12,24 +12,23 @@ const CellData = observer(function ({
   spreadsheetModel,
   columnNumber,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cell: any
   spreadsheetModel: SpreadsheetModel
   columnNumber: number
 }) {
-  const ret = spreadsheetModel.columns[columnNumber]
-  if (ret && 'dataType' in ret && ret.dataType.DataCellReactComponent) {
-    return (
-      <ret.dataType.DataCellReactComponent
-        cell={cell}
-        dataType={ret.dataType}
-        columnNumber={columnNumber}
-        spreadsheet={spreadsheetModel}
-      />
-    )
-  }
-
-  return cell.text
+  const column = spreadsheetModel.columns[columnNumber]
+  return column &&
+    'dataType' in column &&
+    column.dataType.DataCellReactComponent ? (
+    <column.dataType.DataCellReactComponent
+      cell={cell}
+      dataType={column.dataType}
+      columnNumber={columnNumber}
+      spreadsheet={spreadsheetModel}
+    />
+  ) : (
+    cell.text
+  )
 })
 
 export default CellData

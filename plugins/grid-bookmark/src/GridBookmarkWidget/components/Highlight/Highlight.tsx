@@ -4,6 +4,7 @@ import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { Tooltip } from '@mui/material'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -15,10 +16,15 @@ import { IExtendedLGV } from '../../model'
 type LGV = IExtendedLGV
 
 const useStyles = makeStyles()({
+  bookmarkButton: {
+    overflow: 'hidden',
+    position: 'absolute',
+    zIndex: 1000,
+  },
   highlight: {
+    overflow: 'hidden',
     height: '100%',
     position: 'absolute',
-    overflow: 'hidden',
   },
 })
 
@@ -28,16 +34,13 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { assemblyManager } = session
   const { showBookmarkHighlights, showBookmarkLabels } = model
 
-  const bookmarkWidget = session.widgets.get(
-    'GridBookmark',
-  ) as GridBookmarkModel
+  const bookmarkWidget = session.widgets.get('GridBookmark') as
+    | GridBookmarkModel
+    | undefined
 
   useEffect(() => {
     if (!bookmarkWidget) {
-      session.addWidget(
-        'GridBookmarkWidget',
-        'GridBookmark',
-      ) as GridBookmarkModel
+      session.addWidget('GridBookmarkWidget', 'GridBookmark')
     }
   }, [session, bookmarkWidget])
 
@@ -57,35 +60,56 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
                 highlight: r.highlight,
                 label: r.label,
+                bookmark: r,
               }
             : undefined
         })
         .filter(notEmpty)
-        .map(({ left, width, highlight, label }, idx) => (
-          <div
-            key={`${left}_${width}_${idx}`}
-            className={classes.highlight}
-            style={{
-              left,
-              width,
-              background: highlight,
-            }}
-          >
-            {showBookmarkLabels ? (
-              <Tooltip title={label} arrow>
-                <BookmarkIcon
-                  fontSize="small"
-                  sx={{
-                    color: `${
-                      colord(highlight).alpha() !== 0
-                        ? colord(highlight).alpha(0.8).toRgbString()
-                        : colord(highlight).alpha(0).toRgbString()
-                    }`,
-                  }}
-                />
-              </Tooltip>
+        .map(({ left, width, highlight, label, bookmark }, idx) => (
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
+          <React.Fragment key={`${left}_${width}_${idx}`}>
+            <div
+              className={classes.highlight}
+              id="highlight"
+              style={{
+                left,
+                width,
+                background: highlight,
+              }}
+            />
+            {showBookmarkLabels && width > 20 ? (
+              <div className={classes.bookmarkButton} style={{ left }}>
+                <CascadingMenuButton
+                  menuItems={[
+                    {
+                      label: 'Open bookmark widget',
+                      onClick: () => {
+                        session.showWidget(bookmarkWidget)
+                      },
+                    },
+                    {
+                      label: 'Remove bookmark',
+                      onClick: () => {
+                        bookmarkWidget.removeBookmarkObject(bookmark)
+                      },
+                    },
+                  ]}
+                >
+                  <Tooltip title={label} arrow>
+                    <BookmarkIcon
+                      fontSize="small"
+                      sx={{
+                        color:
+                          colord(highlight).alpha() !== 0
+                            ? colord(highlight).alpha(0.8).toRgbString()
+                            : colord(highlight).alpha(0).toRgbString(),
+                      }}
+                    />
+                  </Tooltip>
+                </CascadingMenuButton>
+              </div>
             ) : null}
-          </div>
+          </React.Fragment>
         ))
     : null
 })

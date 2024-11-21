@@ -65,18 +65,18 @@ trackMaxHeight: types.maybe(types.number)
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
+IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: ColorByModel
+colorBy: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: filterBy
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
 // code
-filterBy: types.optional(FilterModel, {})
+filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
 ```
 
 #### property: jexlFilters
@@ -94,7 +94,7 @@ jexlFilters: types.optional(types.array(types.string), [])
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: maxHeight
@@ -189,7 +189,7 @@ setTagsReady: (flag: boolean) => void
 
 ```js
 // type signature
-setMaxHeight: (n: number) => void
+setMaxHeight: (n?: number) => void
 ```
 
 #### action: setFeatureHeight
@@ -210,7 +210,7 @@ setNoSpacing: (flag?: boolean) => void
 
 ```js
 // type signature
-setColorScheme: (colorScheme: { type: string; tag?: string; extra?: ExtraColorBy; }) => void
+setColorScheme: (colorScheme: ColorBy) => void
 ```
 
 #### action: updateColorTagMap
@@ -247,14 +247,14 @@ copyFeatureToClipboard: (feature: Feature) => void
 
 ```js
 // type signature
-setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```
 
 #### action: setJexlFilters

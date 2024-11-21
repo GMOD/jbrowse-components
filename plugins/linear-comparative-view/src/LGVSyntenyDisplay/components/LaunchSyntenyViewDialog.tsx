@@ -9,8 +9,9 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material'
-import { navToSynteny } from './util'
 import { makeStyles } from 'tss-react/mui'
+// locals
+import { navToSynteny } from './util'
 
 const useStyles = makeStyles()({
   padding: {
@@ -22,10 +23,12 @@ const useStyles = makeStyles()({
 export default function LaunchSyntenyViewDialog({
   model,
   feature,
+  trackId,
   handleClose,
 }: {
   model: unknown
   feature: Feature
+  trackId: string
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -41,7 +44,9 @@ export default function LaunchSyntenyViewDialog({
             control={
               <Checkbox
                 checked={horizontallyFlip}
-                onChange={event => setHorizontallyFlip(event.target.checked)}
+                onChange={event => {
+                  setHorizontallyFlip(event.target.checked)
+                }}
               />
             }
             label="Note: The feature is inverted in orientation on the target
@@ -52,7 +57,9 @@ export default function LaunchSyntenyViewDialog({
         <TextField
           label="Add window size in bp"
           value={windowSize}
-          onChange={event => setWindowSize(event.target.value)}
+          onChange={event => {
+            setWindowSize(event.target.value)
+          }}
         />
       </DialogContent>
       <DialogActions>
@@ -66,6 +73,7 @@ export default function LaunchSyntenyViewDialog({
                   feature,
                   windowSize: +windowSize,
                   horizontallyFlip,
+                  trackId,
                   model,
                 })
               } catch (e) {
@@ -81,7 +89,9 @@ export default function LaunchSyntenyViewDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

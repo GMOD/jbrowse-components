@@ -7,7 +7,6 @@ import { saveAs } from 'file-saver'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { Curves } from './components/Icons'
@@ -76,7 +75,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       showAllRegions() {
         transaction(() => {
-          self.views.forEach(view => view.showAllRegionsInAssembly())
+          for (const view of self.views) {
+            view.showAllRegionsInAssembly()
+          }
         })
       },
     }))
@@ -124,13 +125,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: self.drawCIGAR,
               type: 'checkbox',
               description: 'Draws per-base CIGAR level alignments',
-            },
-            {
-              label: 'Link views',
-              type: 'checkbox',
-              checked: self.linkViews,
-              onClick: self.toggleLinkViews,
-              icon: LinkIcon,
             },
             {
               label: 'Use curved lines',

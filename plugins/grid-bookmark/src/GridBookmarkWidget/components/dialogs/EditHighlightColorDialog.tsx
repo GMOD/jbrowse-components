@@ -40,11 +40,22 @@ const EditHighlightColorDialog = observer(function ({
           )}
         </Alert>
         {!editNone ? (
-          <ColorPicker color={color} onChange={event => setColor(event)} />
+          <ColorPicker
+            color={color}
+            onChange={event => {
+              setColor(event)
+            }}
+          />
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" color="secondary" onClick={() => onClose()}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Cancel
         </Button>
         <Button

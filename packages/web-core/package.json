@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/web-core",
-  "version": "2.11.2",
+  "version": "2.17.0",
   "description": "JBrowse 2 code shared between web-app type products",
   "keywords": [
     "jbrowse",
@@ -32,7 +32,7 @@
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "build": "npm run build:esm && npm run build:commonjs",
-    "test": "cd ../..; jest packages/web-core",
+    "test": "cd ../..; jest --passWithNoTests packages/web-core",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build && yarn useDist",
@@ -42,13 +42,12 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/app-core": "^2.11.2",
-    "@jbrowse/product-core": "^2.11.2",
-    "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.10.17",
+    "@jbrowse/app-core": "^2.17.0",
+    "@jbrowse/product-core": "^2.17.0",
+    "@mui/icons-material": "^6.0.0",
+    "@mui/material": "^6.0.0",
     "clone": "^2.0.0",
-    "copy-to-clipboard": "^3.3.1",
-    "react-error-boundary": "^4.0.3"
+    "copy-to-clipboard": "^3.3.1"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",

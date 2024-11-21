@@ -7,8 +7,9 @@ import { getSession } from '@jbrowse/core/util'
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
-import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
+import { SPACING, WIDGET_HEIGHT } from '../consts'
 
 const useStyles = makeStyles()(() => ({
   headerRefName: {
@@ -29,7 +30,7 @@ const SearchBox = observer(function ({
 
   const { textSearchManager, assemblyManager } = session
   const { assemblyNames, rankSearchResults } = model
-  const assemblyName = assemblyNames[0]
+  const assemblyName = assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 
@@ -69,7 +70,9 @@ const SearchBox = observer(function ({
       TextFieldProps={{
         variant: 'outlined',
         className: classes.headerRefName,
-        style: { margin: SPACING },
+        style: {
+          margin: SPACING,
+        },
         InputProps: {
           style: {
             padding: 0,

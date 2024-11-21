@@ -47,28 +47,28 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: addTrackConf
 
 ```js
 // type signature
-addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+addTrackConf: (trackConf: TrackConf) => any
 ```
 
 #### action: addTrackConfs
 
 ```js
 // type signature
-addTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => any[]
+addTrackConfs: (trackConfs: TrackConf[]) => void
 ```
 
 #### action: setTrackConfs
 
 ```js
 // type signature
-setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => IMSTArray<...> & IStateTreeNode<...>
+setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: clear

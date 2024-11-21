@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   isOptionalType,
   isUnionType,
@@ -20,7 +19,7 @@ export interface ILiteralType<T> extends ISimpleType<T> {
  * get the inner type of an MST optional, array, or late type object
  */
 export function getSubType(type: IAnyType): IAnyType {
-  let t
+  let t: IAnyType
   if (isOptionalType(type)) {
     // @ts-expect-error
     t = type._subtype || type.type
@@ -34,8 +33,8 @@ export function getSubType(type: IAnyType): IAnyType {
   } else {
     throw new TypeError('unsupported mst type')
   }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!t) {
-    // debugger
     throw new Error('failed to get subtype')
   }
   return t
@@ -71,7 +70,7 @@ export function getPropertyType(
   type: IModelReflectionPropertiesData,
   propertyName: string,
 ) {
-  return type.properties[propertyName]
+  return type.properties[propertyName]!
 }
 
 /**

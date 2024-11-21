@@ -28,7 +28,10 @@ function ResizeHandle({
   onMouseDown,
   ...props
 }: {
-  onDrag: (lastFrameDistance: number, totalDistance: number) => number | void
+  onDrag: (
+    lastFrameDistance: number,
+    totalDistance: number,
+  ) => number | undefined
   onMouseDown?: (event: React.MouseEvent) => void
   vertical?: boolean
   flexbox?: boolean
@@ -64,7 +67,7 @@ function ResizeHandle({
     return () => {}
   }, [mouseDragging, onDrag, vertical])
 
-  let className
+  let className: string
   if (flexbox) {
     className = vertical
       ? classes.flexbox_verticalHandle

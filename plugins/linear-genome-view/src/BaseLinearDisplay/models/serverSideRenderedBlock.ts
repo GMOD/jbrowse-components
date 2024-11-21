@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import {
   types,
@@ -31,180 +30,230 @@ import {
 
 // locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
+export interface RenderedProps {
+  reactElement: React.ReactElement
+  features: Map<string, Feature>
+  layout: any
+  maxHeightReached: boolean
+  renderProps: any
+}
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
   .model('BlockState', {
+    /**
+     * #property
+     */
     key: types.string,
+    /**
+     * #property
+     */
     region: Region,
+    /**
+     * #property
+     */
     reloadFlag: 0,
+    /**
+     * #property
+     */
     isLeftEndOfDisplayedRegion: false,
+    /**
+     * #property
+     */
     isRightEndOfDisplayedRegion: false,
   })
-  // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
-    renderInProgress: undefined as AbortController | undefined,
+    stopToken: undefined as string | undefined,
+    /**
+     * #volatile
+     */
     filled: false,
+    /**
+     * #volatile
+     */
     reactElement: undefined as React.ReactElement | undefined,
+    /**
+     * #volatile
+     */
     features: undefined as Map<string, Feature> | undefined,
+    /**
+     * #volatile
+     */
     layout: undefined as any,
+    /**
+     * #volatile
+     */
     status: '',
+    /**
+     * #volatile
+     */
     error: undefined as unknown,
+    /**
+     * #volatile
+     */
     message: undefined as string | undefined,
+    /**
+     * #volatile
+     */
     maxHeightReached: false,
+    /**
+     * #volatile
+     */
     ReactComponent: ServerSideRenderedBlockContent,
+    /**
+     * #volatile
+     */
     renderProps: undefined as any,
   }))
-  .actions(self => {
-    let renderInProgress: undefined | AbortController
-    return {
-      doReload() {
-        self.reloadFlag = self.reloadFlag + 1
-      },
-      afterAttach() {
-        const display = getContainingDisplay(self)
-        setTimeout(() => {
-          if (isAlive(self)) {
-            makeAbortableReaction(
-              self as any,
-              renderBlockData,
-              renderBlockEffect, // reaction doesn't expect async here
-              {
-                name: `${display.id}/${assembleLocString(
-                  self.region,
-                )} rendering`,
-                delay: display.renderDelay,
-                fireImmediately: true,
-              },
-              this.setLoading,
-              this.setRendered,
-              this.setError,
+  .actions(self => ({
+    /**
+     * #action
+     */
+    doReload() {
+      self.reloadFlag = self.reloadFlag + 1
+    },
+    afterAttach() {
+      const display = getContainingDisplay(self)
+      setTimeout(() => {
+        if (isAlive(self)) {
+          makeAbortableReaction(
+            self as any,
+            renderBlockData,
+            renderBlockEffect,
+            {
+              name: `${display.id}/${assembleLocString(self.region)} rendering`,
+              delay: display.renderDelay,
+              fireImmediately: true,
+            },
+            this.setLoading,
+            this.setRendered,
+            this.setError,
+          )
+        }
+      }, display.renderDelay)
+    },
+    /**
+     * #action
+     */
+    setStatus(message: string) {
+      self.status = message
+    },
+    /**
+     * #action
+     */
+    setLoading(newStopToken: string) {
+      if (self.stopToken !== undefined) {
+        stopStopToken(self.stopToken)
+      }
+      self.filled = false
+      self.message = undefined
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.error = undefined
+      self.maxHeightReached = false
+      self.renderProps = undefined
+      self.stopToken = newStopToken
+    },
+    /**
+     * #action
+     */
+    setMessage(messageText: string) {
+      if (self.stopToken !== undefined) {
+        stopStopToken(self.stopToken)
+      }
+      self.filled = false
+      self.message = messageText
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.error = undefined
+      self.maxHeightReached = false
+      self.renderProps = undefined
+      self.stopToken = undefined
+    },
+    /**
+     * #action
+     */
+    setRendered(props: RenderedProps | undefined) {
+      if (!props) {
+        return
+      }
+      const { reactElement, features, layout, maxHeightReached, renderProps } =
+        props
+      self.filled = true
+      self.message = undefined
+      self.reactElement = reactElement
+      self.features = features
+      self.layout = layout
+      self.error = undefined
+      self.maxHeightReached = maxHeightReached
+      self.renderProps = renderProps
+      self.stopToken = undefined
+    },
+    /**
+     * #action
+     */
+    setError(error: unknown) {
+      console.error(error)
+      if (self.stopToken !== undefined) {
+        stopStopToken(self.stopToken)
+      }
+      // the rendering failed for some reason
+      self.filled = false
+      self.message = undefined
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.maxHeightReached = false
+      self.error = error
+      self.renderProps = undefined
+      self.stopToken = undefined
+      if (isRetryException(error as Error)) {
+        this.reload()
+      }
+    },
+    /**
+     * #action
+     */
+    reload() {
+      self.stopToken = undefined
+      self.filled = false
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.error = undefined
+      self.message = undefined
+      self.maxHeightReached = false
+      self.ReactComponent = ServerSideRenderedBlockContent
+      self.renderProps = undefined
+      getParent<any>(self, 2).reload()
+    },
+    beforeDestroy() {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      ;(async () => {
+        try {
+          if (self.stopToken !== undefined) {
+            stopStopToken(self.stopToken)
+          }
+          const display = getContainingDisplay(self)
+          const { rpcManager } = getSession(self)
+          const { rendererType } = display
+          const { renderArgs } = renderBlockData(cast(self))
+          // renderArgs can be undefined if an error occurred in this block
+          if (renderArgs) {
+            await rendererType.freeResourcesInClient(
+              rpcManager,
+              JSON.parse(JSON.stringify(renderArgs)),
             )
           }
-        }, display.renderDelay)
-      },
-      setStatus(message: string) {
-        self.status = message
-      },
-      setLoading(abortController: AbortController) {
-        if (
-          renderInProgress !== undefined &&
-          !renderInProgress.signal.aborted
-        ) {
-          renderInProgress.abort()
+        } catch (e) {
+          console.error('Error while destroying block', e)
         }
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = abortController
-      },
-      setMessage(messageText: string) {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        self.filled = false
-        self.message = messageText
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = undefined
-      },
-      setRendered(
-        props:
-          | {
-              reactElement: React.ReactElement
-              features: Map<string, Feature>
-              layout: any
-              maxHeightReached: boolean
-              renderProps: any
-            }
-          | undefined,
-      ) {
-        if (!props) {
-          return
-        }
-        const {
-          reactElement,
-          features,
-          layout,
-          maxHeightReached,
-          renderProps,
-        } = props
-        self.filled = true
-        self.message = undefined
-        self.reactElement = reactElement
-        self.features = features
-        self.layout = layout
-        self.error = undefined
-        self.maxHeightReached = maxHeightReached
-        self.renderProps = renderProps
-        renderInProgress = undefined
-      },
-      setError(error: unknown) {
-        console.error(error)
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        // the rendering failed for some reason
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.maxHeightReached = false
-        self.error = error
-        self.renderProps = undefined
-        renderInProgress = undefined
-        if (isRetryException(error as Error)) {
-          this.reload()
-        }
-      },
-      reload() {
-        self.renderInProgress = undefined
-        self.filled = false
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.message = undefined
-        self.maxHeightReached = false
-        self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderProps = undefined
-        getParent<any>(self, 2).reload()
-      },
-      beforeDestroy() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            if (renderInProgress && !renderInProgress.signal.aborted) {
-              renderInProgress.abort()
-            }
-            const display = getContainingDisplay(self)
-            const { rpcManager } = getSession(self)
-            const { rendererType } = display
-            const { renderArgs } = renderBlockData(cast(self))
-            // renderArgs can be undefined if an error occurred in this block
-            if (renderArgs) {
-              await rendererType.freeResourcesInClient(
-                rpcManager,
-                JSON.parse(JSON.stringify(renderArgs)),
-              )
-            }
-          } catch (e) {
-            console.error('Error while destroying block', e)
-          }
-        })()
-      },
-    }
-  })
+      })()
+    },
+  }))
 
 export default blockState
 export type BlockStateModel = typeof blockState
@@ -272,7 +321,7 @@ export function renderBlockData(
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  signal: AbortSignal,
+  stopToken: string | undefined,
   self: BlockModel,
 ) {
   if (!props) {
@@ -308,7 +357,7 @@ async function renderBlockEffect(
       ...renderArgs,
       ...renderProps,
       viewParams: getViewParams(self),
-      signal,
+      stopToken,
     })
   return {
     reactElement,

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-config",
-  "version": "2.11.2",
+  "version": "2.17.0",
   "description": "JBrowse 2 config utilities",
   "keywords": [
     "jbrowse",
@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/config",
+    "test": "cd ../..; jest --passWithNoTests plugins/config",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -36,12 +36,12 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@mui/icons-material": "^5.0.1",
+    "@mui/icons-material": "^6.0.0",
     "pluralize": "^8.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

@@ -1,12 +1,11 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { clamp } from '../util'
-import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
-  error?: Error
+  error?: unknown
   on?: (channel: string, callback: (message: unknown) => void) => void
   off?: (channel: string, callback: (message: unknown) => void) => void
   destroy(): void
@@ -25,7 +24,7 @@ export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
 
-function isClonable(thing: unknown) {
+function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
@@ -37,7 +36,8 @@ export async function watchWorker(
   rpcDriverClassName: string,
 ) {
   // after first ping succeeds, apply wait for timeout
-  // eslint-disable-next-line no-constant-condition
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     await worker.call('ping', [], {
       timeout: pingTime * 2,
@@ -66,22 +66,20 @@ class LazyWorker {
         .makeWorker()
         .then(worker => {
           watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-            error => {
-              if (worker) {
-                console.error(
-                  'worker did not respond, killing and generating new one',
-                )
-                console.error(error)
-                worker.destroy()
-                worker.status = 'killed'
-                worker.error = error
-                this.workerP = undefined
-              }
+            (error: unknown) => {
+              console.error(
+                'worker did not respond, killing and generating new one',
+              )
+              console.error(error)
+              worker.destroy()
+              worker.status = 'killed'
+              worker.error = error
+              this.workerP = undefined
             },
           )
           return worker
         })
-        .catch(e => {
+        .catch((e: unknown) => {
           this.workerP = undefined
           throw e
         })
@@ -95,7 +93,8 @@ export default abstract class BaseRpcDriver {
 
   private lastWorkerAssignment = -1
 
-  private workerAssignments = new Map<string, number>() // sessionId -> worker number
+  // sessionId -> worker number
+  private workerAssignments = new Map<string, number>()
 
   abstract makeWorker(): Promise<WorkerHandle>
 
@@ -111,46 +110,38 @@ export default abstract class BaseRpcDriver {
     this.config = args.config
   }
 
-  // filter the given object and just remove any non-clonable things from it
+  // filter the given object and just remove any non-cloneable things from it
   filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
     if (Array.isArray(thing)) {
       return thing
-        .filter(thing => isClonable(thing))
+        .filter(thing => isCloneable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
-    }
-    if (typeof thing === 'object' && thing !== null) {
-      // AbortSignals are specially handled
-      if (thing instanceof AbortSignal) {
-        return serializeAbortSignal(
-          thing,
-          this.remoteAbort.bind(this, sessionId),
-        ) as unknown as THING_TYPE
-      }
-
+    } else if (typeof thing === 'object' && thing !== null) {
       if (isStateTreeNode(thing) && !isAlive(thing)) {
         throw new Error('dead state tree node passed to RPC call')
-      }
-
-      // special case, don't try to iterate the file's subelements as the
-      // object entries below would
-      if (thing instanceof File) {
+      } else if (thing instanceof File) {
         return thing
+      } else {
+        return Object.fromEntries(
+          Object.entries(thing)
+            .filter(e => isCloneable(e[1]))
+            .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
+        ) as THING_TYPE
       }
-
-      return Object.fromEntries(
-        Object.entries(thing)
-          .filter(e => isClonable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
-      ) as THING_TYPE
+    } else {
+      return thing
     }
-    return thing
   }
 
-  async remoteAbort(sessionId: string, functionName: string, signalId: number) {
+  async remoteAbort(
+    sessionId: string,
+    functionName: string,
+    stopTokenId: number,
+  ) {
     const worker = await this.getWorker(sessionId)
     await worker.call(
       functionName,
-      { signalId },
+      { stopTokenId },
       { timeout: 1000000, rpcDriverClassName: this.name },
     )
   }
@@ -188,7 +179,7 @@ export default abstract class BaseRpcDriver {
       workerNumber = workerAssignment
     }
 
-    return workers[workerNumber].getWorker()
+    return workers[workerNumber]!.getWorker()
   }
 
   async call(
@@ -210,6 +201,9 @@ export default abstract class BaseRpcDriver {
       unextendedWorker,
     ) as WorkerHandle
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    if (!rpcMethod) {
+      throw new Error(`unknown RPC method ${functionName}`)
+    }
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 

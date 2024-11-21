@@ -44,11 +44,15 @@ const SessionLoader = types
     sessionError: undefined as unknown,
     configError: undefined as unknown,
     bc1:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_request_session'),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.BroadcastChannel
+        ? new window.BroadcastChannel('jb_request_session')
+        : undefined,
     bc2:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_respond_session'),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.BroadcastChannel
+        ? new window.BroadcastChannel('jb_respond_session')
+        : undefined,
   }))
   .views(self => ({
     get isSharedSession() {
@@ -100,7 +104,6 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
@@ -184,11 +187,11 @@ const SessionLoader = types
 
     async fetchConfig() {
       // @ts-expect-error
-      // eslint-disable-next-line no-underscore-dangle
+
       let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
 
       // @ts-expect-error
-      // eslint-disable-next-line no-underscore-dangle
+
       if (window.__jbrowseCacheBuster) {
         configPath += `?rand=${Math.random()}`
       }
@@ -206,11 +209,12 @@ const SessionLoader = types
         const configPlugins = config.plugins || []
         const configPluginsAllowed = await checkPlugins(configPlugins)
         if (!configPluginsAllowed) {
-          return self.setSessionTriaged({
+          self.setSessionTriaged({
             snap: config,
             origin: 'config',
             reason: configPlugins,
           })
+          return
         }
       }
       await this.fetchPlugins(config)
@@ -239,10 +243,12 @@ const SessionLoader = types
                   resolve(msg.data)
                 }
               }
-              setTimeout(() => reject(), 1000)
+              setTimeout(() => {
+                reject(new Error('timeout'))
+              }, 1000)
             },
           )
-          return this.setSessionSnapshot({ ...result, id: nanoid() })
+          await this.setSessionSnapshot({ ...result, id: nanoid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
@@ -432,7 +438,7 @@ export function loadSessionSpec(
 
       await Promise.all(
         views.map(view =>
-          pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + view.type, {
+          pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {
             ...view,
             session: rootModel.session,
           }),

@@ -1,5 +1,5 @@
 import React from 'react'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession, Feature } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
 // locals
@@ -9,7 +9,7 @@ import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  feature: { f: Feature }
 }
 
 export default function SyntenyContextMenu({
@@ -58,18 +58,24 @@ export default function SyntenyContextMenu({
             const end = f.get('end')
             const refName = f.get('refName')
             const mate = f.get('mate')
-            view.views[0]
-              .navToLocString(`${refName}:${start}-${end}`)
-              .catch(e => {
-                console.error(e)
-                getSession(model).notifyError(`${e}`, e)
-              })
-            view.views[1]
-              .navToLocString(`${mate.refName}:${mate.start}-${mate.end}`)
-              .catch(e => {
-                console.error(e)
-                getSession(model).notifyError(`${e}`, e)
-              })
+
+            const l1 = view.views[model.level]!
+            const l2 = view.views[model.level + 1]!
+            l1.navToLocString(`${refName}:${start}-${end}`).catch(
+              (e: unknown) => {
+                const err = `${l1.assemblyNames[0]}:${e}`
+                console.error(err)
+                getSession(model).notifyError(err, e)
+              },
+            )
+
+            l2.navToLocString(
+              `${mate.refName}:${mate.start}-${mate.end}`,
+            ).catch((e: unknown) => {
+              const err = `${l2.assemblyNames[0]}:${e}`
+              console.error(err)
+              getSession(model).notifyError(err, e)
+            })
           },
         },
       ]}

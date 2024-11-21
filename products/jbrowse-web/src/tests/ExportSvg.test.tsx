@@ -35,7 +35,9 @@ test('export svg of lgv', async () => {
   fireEvent.click(await findByText('Export SVG', ...opts))
   fireEvent.click(await findByText('Submit', ...opts))
 
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
+  await waitFor(() => {
+    expect(FileSaver.saveAs).toHaveBeenCalled()
+  }, delay)
 
   // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
@@ -190,10 +192,12 @@ test('export svg of synteny', async () => {
     })
 
     fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-    fireEvent.click((await findAllByText('Export SVG', ...opts))[0])
+    fireEvent.click((await findAllByText('Export SVG', ...opts))[0]!)
     fireEvent.click(await findByText('Submit', ...opts))
 
-    await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
+    await waitFor(() => {
+      expect(FileSaver.saveAs).toHaveBeenCalled()
+    }, delay)
 
     // @ts-expect-error
     const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
@@ -227,7 +231,9 @@ test('export svg of circular', async () => {
   fireEvent.click(await findByText('Export SVG', ...opts))
   fireEvent.click(await findByText('Submit', ...opts))
 
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
+  await waitFor(() => {
+    expect(FileSaver.saveAs).toHaveBeenCalled()
+  }, delay)
 
   // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
@@ -323,7 +329,9 @@ test('export svg of dotplot', async () => {
   fireEvent.click(await findByText('Export SVG', ...opts))
   fireEvent.click(await findByText('Submit', ...opts))
 
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
+  await waitFor(() => {
+    expect(FileSaver.saveAs).toHaveBeenCalled()
+  }, delay)
 
   // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]

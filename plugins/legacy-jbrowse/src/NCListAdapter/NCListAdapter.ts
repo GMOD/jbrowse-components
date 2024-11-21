@@ -6,15 +6,15 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { RemoteFile } from 'generic-filehandle'
-import NCListFeature from './NCListFeature'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+// locals
+import NCListFeature from './NCListFeature'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
   private configRefNames?: string[]
@@ -48,21 +48,20 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
    * want to verify that the store has features for the given reference sequence
    * before fetching.
    * @param region -
-   * @param opts - [signal] optional signalling object for aborting the fetch
+   * @param opts - [stopToken] optional stopTokenling object for aborting the fetch
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { signal } = opts
+      const { stopToken } = opts
       for await (const feature of this.nclist.getFeatures(region, opts)) {
-        checkAbortSignal(signal)
+        checkStopToken(stopToken)
         observer.next(this.wrapFeature(feature))
       }
       observer.complete()
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wrapFeature(ncFeature: any): NCListFeature {
     return new NCListFeature(
       ncFeature,

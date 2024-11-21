@@ -1,5 +1,6 @@
 import { lazy } from 'react'
-import { types, Instance } from 'mobx-state-tree'
+import { observable } from 'mobx'
+import { types, Instance, isAlive } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -8,24 +9,31 @@ import {
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
-import { getUniqueModificationValues } from '../shared'
-
-import { createAutorun, randomColor, modificationColors } from '../util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import SortIcon from '@mui/icons-material/Sort'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
+import ColorLensIcon from '@mui/icons-material/ColorLens'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { observable } from 'mobx'
+import {
+  createAutorun,
+  getColorForModification,
+  modificationData,
+} from '../util'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
+import {
+  ModificationType,
+  ModificationTypeWithColor,
+  SortedBy,
+} from '../shared/types'
 
-// lzies
-const SortByTagDialog = lazy(() => import('./components/SortByTag'))
-const ModificationsDialog = lazy(
-  () => import('./components/ColorByModifications'),
-)
+// lazies
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
+const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
 
 type LGV = LinearGenomeViewModel
 
@@ -61,21 +69,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        sortedBy: types.maybe(
-          types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
-            assemblyName: types.string,
-          }),
-        ),
+        sortedBy: types.frozen<SortedBy | undefined>(),
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       sortReady: false,
+      /**
+       * #volatile
+       */
       currSortBpPerPx: 0,
-      modificationTagMap: observable.map<string, string>({}),
+      /**
+       * #volatile
+       */
+      visibleModifications: observable.map<string, ModificationTypeWithColor>(
+        {},
+      ),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -88,13 +102,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      updateModificationColorMap(uniqueModifications: string[]) {
+      updateVisibleModifications(uniqueModifications: ModificationType[]) {
         uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(),
-            )
+          if (!self.visibleModifications.has(value.type)) {
+            self.visibleModifications.set(value.type, {
+              ...value,
+              color: getColorForModification(value.type),
+            })
           }
         })
       },
@@ -181,6 +195,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get visibleModificationTypes() {
+        return [...self.visibleModifications.keys()]
+      },
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const {
           featureHeight,
@@ -239,13 +259,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderPropsPre() {
-          const { sortedBy, showSoftClipping, modificationTagMap } = self
+          const { sortedBy, showSoftClipping, visibleModifications } = self
           const superProps = superRenderPropsPre()
           return {
             ...superProps,
             showSoftClip: showSoftClipping,
             sortedBy,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            visibleModifications: Object.fromEntries(
+              visibleModifications.toJSON(),
+            ),
           }
         },
         /**
@@ -266,6 +288,138 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+
+            {
+              label: 'Sort by...',
+              icon: SwapVertIcon,
+              disabled: self.showSoftClipping,
+              subMenu: [
+                ...['Start location', 'Read strand', 'Base pair'].map(
+                  option => ({
+                    label: option,
+                    onClick: () => {
+                      self.setSortedBy(option)
+                    },
+                  }),
+                ),
+                {
+                  label: 'Sort by tag...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SortByTagDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+                {
+                  label: 'Clear sort',
+                  onClick: () => {
+                    self.clearSelected()
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Color by...',
+              icon: ColorLensIcon,
+              subMenu: [
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme({
+                      type: 'pairOrientation',
+                    })
+                  },
+                },
+                {
+                  label: 'Modifications',
+                  type: 'subMenu',
+                  subMenu: self.modificationsReady
+                    ? [
+                        {
+                          label: 'All modifications',
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                            })
+                          },
+                        },
+                        ...self.visibleModificationTypes.map(key => ({
+                          label: `Show only ${modificationData[key]?.name || key}`,
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                              modifications: {
+                                isolatedModification: key,
+                              },
+                            })
+                          },
+                        })),
+                        { type: 'divider' },
+                        {
+                          label: 'All modifications (<50% prob colored blue)',
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                              modifications: {
+                                twoColor: true,
+                              },
+                            })
+                          },
+                        },
+                        ...self.visibleModificationTypes.map(key => ({
+                          label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'modifications',
+                              modifications: {
+                                isolatedModification: key,
+                                twoColor: true,
+                              },
+                            })
+                          },
+                        })),
+                        { type: 'divider' },
+                        {
+                          label: 'All reference CpGs',
+                          onClick: () => {
+                            self.setColorScheme({
+                              type: 'methylation',
+                            })
+                          },
+                        },
+                      ]
+                    : [
+                        {
+                          label: 'Loading modifications...',
+                          onClick: () => {},
+                        },
+                      ],
+                },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme({
+                      type: 'insertSize',
+                    })
+                  },
+                },
+                ...superColorSchemeSubMenuItems(),
+              ],
+            },
+            {
+              label: 'Group by...',
+              icon: WorkspacesIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  GroupByDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
             {
               label: 'Show soft clipping',
               icon: VisibilityIcon,
@@ -281,62 +435,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Sort by',
-              icon: SortIcon,
-              disabled: self.showSoftClipping,
-              subMenu: [
-                ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => ({
-                    label: option,
-                    onClick: () => self.setSortedBy(option),
-                  }),
-                ),
-                {
-                  label: 'Sort by tag...',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      SortByTagDialog,
-                      { model: self, handleClose },
-                    ])
-                  },
-                },
-                {
-                  label: 'Clear sort',
-                  onClick: () => self.clearSelected(),
-                },
-              ],
-            },
-            {
-              label: 'Color scheme',
-              subMenu: [
-                {
-                  label: 'Pair orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'pairOrientation' }),
-                },
-                {
-                  label: 'Modifications or methylation',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ModificationsDialog,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
-                },
-                ...superColorSchemeSubMenuItems(),
-              ],
-            },
-            {
               label: 'Fade mismatches by quality',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
-              onClick: () => self.toggleMismatchAlpha(),
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
             },
-          ]
+          ] as const
         },
       }
     })
@@ -350,9 +456,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               return
             }
 
-            const { bpPerPx } = view
-
-            self.setCurrSortBpPerPx(bpPerPx)
+            self.setCurrSortBpPerPx(view.bpPerPx)
           },
           { delay: 1000 },
         )
@@ -393,8 +497,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ...self.renderPropsPre(),
               })
             }
-            self.setCurrSortBpPerPx(bpPerPx)
-            self.setSortReady(true)
+            if (isAlive(self)) {
+              self.setCurrSortBpPerPx(bpPerPx)
+              self.setSortReady(true)
+            }
           },
           { delay: 1000 },
         )
@@ -403,19 +509,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (!self.autorunReady) {
             return
           }
-          const { parentTrack, colorBy } = self
           const { staticBlocks } = getContainingView(self) as LGV
-          if (colorBy?.type === 'modifications') {
-            const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
-              self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
-            self.updateModificationColorMap(vals)
+          const vals = await getUniqueModifications({
+            self,
+            adapterConfig: getConf(self.parentTrack, 'adapter'),
+            blocks: staticBlocks,
+          })
+          if (isAlive(self)) {
+            self.updateVisibleModifications(vals)
+            self.setModificationsReady(true)
           }
-          self.setModificationsReady(true)
         })
       },
     }))

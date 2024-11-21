@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts)
+[plugins/alignments/src/LinearSNPCoverageDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/model.ts)
 
 extends
 
@@ -58,23 +58,21 @@ drawArcs: types.maybe(types.boolean)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
 // code
-filterBy: types.optional(FilterModel, {})
+filterBy: types.optional(types.frozen<FilterBy>(), {
+          flagInclude: 0,
+          flagExclude: 1540,
+        })
 ```
 
 #### property: colorBy
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>
+IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        )
+colorBy: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: jexlFilters
@@ -92,7 +90,7 @@ jexlFilters: types.optional(types.array(types.string), [])
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: drawArcsSetting
@@ -123,11 +121,25 @@ any
 boolean
 ```
 
+#### getter: renderReady
+
+```js
+// type
+boolean
+```
+
+#### getter: ready
+
+```js
+// type
+any
+```
+
 #### getter: TooltipComponent
 
 ```js
 // type
-(props: { model: { featureUnderMouse: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
 ```
 
 #### getter: adapterConfig
@@ -163,6 +175,13 @@ SerializableFilterChain
 
 ### LinearSNPCoverageDisplay - Methods
 
+#### method: adapterProps
+
+```js
+// type signature
+adapterProps: () => any
+```
+
 #### method: renderProps
 
 ```js
@@ -190,21 +209,21 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```
 
-#### action: setColorBy
+#### action: setColorScheme
 
 ```js
 // type signature
-setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+setColorScheme: (colorBy?: ColorBy) => void
 ```
 
 #### action: setJexlFilters
@@ -214,11 +233,11 @@ setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 setJexlFilters: (filters: string[]) => void
 ```
 
-#### action: updateModificationColorMap
+#### action: updateVisibleModifications
 
 ```js
 // type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
+updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 ```
 
 #### action: setModificationsReady

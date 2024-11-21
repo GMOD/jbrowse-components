@@ -54,7 +54,7 @@ export function drawXY(
     offset = 0,
     colorCallback,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -70,14 +70,16 @@ export function drawXY(
 
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const originY = getOrigin(scaleOpts.scaleType)
-  const [niceMin, niceMax] = scale.domain()
+  const domain = scale.domain()
+  const niceMin = domain[0]!
+  const niceMax = domain[1]!
 
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
   const toOrigin = (n: number) => toY(originY) - toY(n)
   const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
   let hasClipping = false
 
-  let prevLeftPx = -Infinity
+  let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
@@ -85,8 +87,8 @@ export function drawXY(
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
-    let lastCol
-    let lastMix
+    let lastCol: string | undefined
+    let lastMix: string | undefined
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       if (feature.get('summary')) {

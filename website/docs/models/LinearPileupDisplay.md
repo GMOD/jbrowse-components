@@ -58,26 +58,25 @@ mismatchAlpha: types.maybe(types.boolean)
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; pos: ISimpleType<number>; tag: IMaybe<ISimpleType<string>>; refName: ISimpleType<string>; assemblyName: ISimpleType<...>; }, {}, _NotCustomized, _NotCustomized>>
+IType<SortedBy, SortedBy, SortedBy>
 // code
-sortedBy: types.maybe(
-          types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
-            assemblyName: types.string,
-          }),
-        )
+sortedBy: types.frozen<SortedBy | undefined>()
 ```
 
 ### LinearPileupDisplay - Getters
+
+#### getter: visibleModificationTypes
+
+```js
+// type
+any[]
+```
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: mismatchAlphaSetting
@@ -114,7 +113,7 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }, { ...; }, { ...; }]
 ```
 
 ### LinearPileupDisplay - Actions
@@ -126,11 +125,11 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 setCurrSortBpPerPx: (n: number) => void
 ```
 
-#### action: updateModificationColorMap
+#### action: updateVisibleModifications
 
 ```js
 // type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
+updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 ```
 
 #### action: setModificationsReady

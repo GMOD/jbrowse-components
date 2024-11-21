@@ -1,5 +1,4 @@
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
+import type { Buffer } from 'buffer'
 
 /* adapted from chain2paf by Andrea Guarracino, license reproduced below
  *
@@ -68,13 +67,14 @@ export function paf_chain2paf(buffer: Buffer) {
   const records = []
 
   let blockStart = 0
+  const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
       break
     }
-    const b = buffer.slice(blockStart, n)
-    const l = (decoder?.decode(b) || b.toString()).trim()
+    const b = buffer.subarray(blockStart, n)
+    const l = decoder.decode(b).trim()
     blockStart = n + 1
     const l_tab = l.replaceAll(' ', '\t') // There are CHAIN files with space-separated fields
     const l_vec = l_tab.split('\t')
@@ -110,14 +110,14 @@ export function paf_chain2paf(buffer: Buffer) {
       // qStart -- alignment start position (query sequence)
       // qEnd -- alignment end position (query sequence)
       // id -- chain ID
-      t_name = l_vec[2]
-      t_start = +l_vec[5]
-      t_end = +l_vec[6]
-      q_name = l_vec[7]
-      q_size = l_vec[8]
-      q_strand = l_vec[9]
-      q_start = +l_vec[10]
-      q_end = +l_vec[11]
+      t_name = l_vec[2]!
+      t_start = +l_vec[5]!
+      t_end = +l_vec[6]!
+      q_name = l_vec[7]!
+      q_size = l_vec[8]!
+      q_strand = l_vec[9]!
+      q_start = +l_vec[10]!
+      q_end = +l_vec[11]!
       if (q_strand === '-') {
         const tmp = q_start
         q_start = +q_size - q_end
@@ -135,19 +135,19 @@ export function paf_chain2paf(buffer: Buffer) {
       //
       // dq -- the difference between the end of this block and the beginning
       //    of the next block (query sequence)
-      const size_ungapped_alignment = +l_vec[0] || 0
-      const diff_in_target = l_vec.length > 1 ? +l_vec[1] : 0
-      const diff_in_query = l_vec.length > 2 ? +l_vec[2] : 0
+      const size_ungapped_alignment = +l_vec[0]! || 0
+      const diff_in_target = l_vec.length > 1 ? +l_vec[1]! : 0
+      const diff_in_query = l_vec.length > 2 ? +l_vec[2]! : 0
 
       if (size_ungapped_alignment !== 0) {
         num_matches += +size_ungapped_alignment
-        cigar += size_ungapped_alignment + 'M'
+        cigar += `${size_ungapped_alignment}M`
       }
       if (diff_in_query !== 0) {
-        cigar += diff_in_query + 'I'
+        cigar += `${diff_in_query}I`
       }
       if (diff_in_target !== 0) {
-        cigar += diff_in_target + 'D'
+        cigar += `${diff_in_target}D`
       }
     }
   }

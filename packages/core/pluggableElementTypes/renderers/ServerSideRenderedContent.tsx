@@ -11,7 +11,6 @@ import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { rIC } from '../../util'
 
 interface Props extends ResultsSerialized, RenderArgs {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RenderingComponent: React.ComponentType<any>
 }
 
@@ -22,16 +21,13 @@ const NewHydrate = observer(function ServerSideRenderedContent({
   ...rest
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rootRef = useRef<any>()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { hydrateFn } = getRoot<any>(rest.displayModel)
 
   useEffect(() => {
-    // requestIdleCallback here helps to avoid hydration mismatch
-    // because it provides time for dangerouslySetInnerHTML to set the innerHTML
-    // contents of the node, otherwise ref.current.innerHTML can be empty
+    // requestIdleCallback here helps to avoid hydration mismatch because it
+    // provides time for dangerouslySetInnerHTML to set the innerHTML contents
+    // of the node, otherwise ref.current.innerHTML can be empty
     const renderTimeout = rIC(() => {
       if (!ref.current) {
         return
@@ -51,7 +47,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
         )
     })
     return () => {
-      clearTimeout(renderTimeout)
+      if (renderTimeout !== undefined) {
+        clearTimeout(renderTimeout)
+      }
       const root = rootRef.current
       rootRef.current = undefined
 
@@ -59,13 +57,13 @@ const NewHydrate = observer(function ServerSideRenderedContent({
         root?.unmount()
       })
     }
-  }, [html, theme, rest, hydrateFn, RenderingComponent])
+    /* biome-ignore lint/correctness/useExhaustiveDependencies: */
+  }, [theme, rest, hydrateFn, RenderingComponent])
 
   return (
     <div
       data-testid="hydrationContainer"
       ref={ref}
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
@@ -84,9 +82,7 @@ const OldHydrate = observer(function ({
     const domNode = ref.current
     function doHydrate() {
       if (domNode) {
-        if (domNode) {
-          unmountComponentAtNode(domNode)
-        }
+        unmountComponentAtNode(domNode)
         domNode.innerHTML = html
 
         rIC(() => {
@@ -107,13 +103,13 @@ const OldHydrate = observer(function ({
         unmountComponentAtNode(domNode)
       }
     }
+    /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   }, [html, jbrowseTheme, rest, RenderingComponent])
 
   return <div ref={ref} />
 })
 
 const ServerSideRenderedContent = observer(function (props: Props) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = getRoot<any>(props.displayModel)
   return root.hydrateFn ? <NewHydrate {...props} /> : <OldHydrate {...props} />
 })

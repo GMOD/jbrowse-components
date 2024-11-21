@@ -5,7 +5,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // local
 import { LinearReadArcsDisplayModel } from '../model'
-import BaseDisplayComponent from '../../shared/BaseDisplayComponent'
+import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
 type LGV = LinearGenomeViewModel
 
@@ -17,6 +17,7 @@ const Arcs = observer(function ({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.height
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
     (ref: HTMLCanvasElement) => {
       model.setRef(ref)

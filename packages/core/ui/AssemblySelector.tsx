@@ -71,13 +71,17 @@ const AssemblySelector = observer(function ({
       variant="outlined"
       helperText={error || helperText}
       value={selection || ''}
-      inputProps={{ 'data-testid': 'assembly-selector' }}
-      onChange={event => setLastSelected(event.target.value)}
+      onChange={event => {
+        setLastSelected(event.target.value)
+      }}
       error={!!error}
-      InputProps={InputProps}
       disabled={!!error}
       className={classes.importFormEntry}
       {...TextFieldProps}
+      slotProps={{
+        input: InputProps,
+        htmlInput: { 'data-testid': 'assembly-selector' },
+      }}
     >
       {assemblyNames.map(name => {
         const assembly = assemblyManager.get(name)

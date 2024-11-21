@@ -8,6 +8,7 @@ import { getConf } from '../configuration'
 import { getSession } from '../util'
 import { ElementId } from '../util/types/mst'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
+import { replaceUndefinedWithNull } from './util'
 
 interface Feat {
   subfeatures?: Record<string, unknown>[]
@@ -90,6 +91,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {}),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
     }))
 
@@ -154,14 +158,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 })
 
                 if (track) {
-                  // eslint-disable-next-line no-underscore-dangle
                   feature.__jbrowsefmt = combine('feature', feature)
 
                   formatSubfeatures(
                     feature,
                     getConf(track, ['formatDetails', 'depth']),
                     sub => {
-                      // eslint-disable-next-line no-underscore-dangle
                       sub.__jbrowsefmt = combine('subfeatures', sub)
                     },
                   )
@@ -199,9 +201,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // hidden, setting null is not allowed by jexl so we set it to
         // undefined to hide. see config guide. this replacement happens both
         // here and when displaying the featureData in base feature widget
-        finalizedFeatureData: JSON.parse(
-          JSON.stringify(featureData, (_, v) => (v === undefined ? null : v)),
-        ),
+        finalizedFeatureData: replaceUndefinedWithNull(featureData),
         ...rest,
       }
     })

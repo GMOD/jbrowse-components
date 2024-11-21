@@ -8,7 +8,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### Source file
 
-[plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts)
+[plugins/wiggle/src/MultiLinearWiggleDisplay/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/configSchema.ts)
 
 extends
 

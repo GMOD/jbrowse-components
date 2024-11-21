@@ -6,11 +6,11 @@ import { IAnyStateTreeNode, isAlive } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 export interface RenderProps {
-  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  renderArgs: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-  renderProps: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+  rendererType: any
+  renderArgs: Record<string, any>
+  renderProps: Record<string, any>
   displayError: unknown
-  rpcManager: { call: Function }
+  rpcManager: { call: (...args: unknown[]) => void }
   cannotBeRenderedReason: string
 }
 
@@ -19,15 +19,13 @@ export interface ErrorProps {
 }
 
 export function getDisplayStr(totalBytes: number) {
-  let displayBp
   if (Math.floor(totalBytes / 1000000) > 0) {
-    displayBp = `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+    return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
   } else if (Math.floor(totalBytes / 1000) > 0) {
-    displayBp = `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+    return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
   } else {
-    displayBp = `${Math.floor(totalBytes)} bytes`
+    return `${Math.floor(totalBytes)} bytes`
   }
-  return displayBp
 }
 
 // stabilize clipid under test for snapshot

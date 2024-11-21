@@ -31,7 +31,6 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
       tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      chunkSizeLimit: 1000000000,
     })
 
     const header = await vcf.getHeader()
@@ -43,7 +42,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
 
   protected async configure() {
     if (!this.configured) {
-      this.configured = this.configurePre().catch(e => {
+      this.configured = this.configurePre().catch((e: unknown) => {
         this.configured = undefined
         throw e
       })
@@ -83,7 +82,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         ...opts,
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(/* { region } */): void {}

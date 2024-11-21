@@ -5,21 +5,18 @@ import { observer } from 'mobx-react'
 
 // core
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getEnv, getSession, getTickDisplayStr } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // locals
-import {
-  LinearGenomeViewModel,
-  HEADER_BAR_HEIGHT,
-  HEADER_OVERVIEW_HEIGHT,
-} from '..'
-import { chooseGridPitch } from '../util'
+import type { LinearGenomeViewModel } from '..'
 import { getCytobands } from './util'
 import OverviewRubberband from './OverviewRubberband'
 import Cytobands from './Cytobands'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon'
 import OverviewHighlight from './OverviewHighlight'
+import OverviewScalebarTickLabels from './OverviewScalebarTickLabels'
+import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts'
 
 const wholeSeqSpacer = 2
 
@@ -51,13 +48,6 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
-  },
-  scalebarLabel: {
-    height: HEADER_OVERVIEW_HEIGHT,
-    position: 'absolute',
-    display: 'flex',
-    justifyContent: 'center',
-    pointerEvents: 'none',
   },
   scalebarVisibleRegion: {
     position: 'absolute',
@@ -131,62 +121,21 @@ const OverviewBox = observer(function ({
           borderColor: refNameColor,
         }}
       >
-        {!canDisplayCytobands ? (
-          <TickLabels
+        {canDisplayCytobands ? (
+          <svg style={{ width: '100%' }}>
+            <Cytobands overview={overview} assembly={assembly} block={block} />
+          </svg>
+        ) : (
+          <OverviewScalebarTickLabels
             model={model}
             overview={overview}
             scale={scale}
             block={block}
           />
-        ) : null}
-
-        {canDisplayCytobands ? (
-          <svg style={{ width: '100%' }}>
-            <Cytobands overview={overview} assembly={assembly} block={block} />
-          </svg>
-        ) : null}
+        )}
       </div>
     </div>
   )
-})
-
-const TickLabels = observer(function ({
-  block,
-  scale,
-  overview,
-  model,
-}: {
-  model: LGV
-  scale: number
-  block: ContentBlock
-  overview: Base1DViewModel
-}) {
-  const { classes } = useStyles()
-  const { start, end, reversed, refName, assemblyName } = block
-  const { majorPitch } = chooseGridPitch(scale, 120, 15)
-  const { assemblyManager } = getSession(model)
-  const assembly = assemblyManager.get(assemblyName)
-  const refNameColor = assembly?.getRefNameColor(refName)
-
-  const tickLabels = []
-  for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
-    const offsetLabel = (i + 1) * majorPitch
-    tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
-  }
-  return tickLabels.map((tickLabel, labelIdx) => (
-    <Typography
-      key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
-      className={classes.scalebarLabel}
-      variant="body2"
-      style={{
-        left: ((labelIdx + 1) * majorPitch) / scale,
-        pointerEvents: 'none',
-        color: refNameColor,
-      }}
-    >
-      {getTickDisplayStr(tickLabel, overview.bpPerPx)}
-    </Typography>
-  ))
 })
 
 const Scalebar = observer(function ({
@@ -204,9 +153,7 @@ const Scalebar = observer(function ({
   const { pluginManager } = getEnv(model)
   const visibleRegions = dynamicBlocks.contentBlocks
   const overviewVisibleRegions = overview.dynamicBlocks
-
-  const { tertiary, primary } = theme.palette
-  const scalebarColor = tertiary ? tertiary.light : primary.light
+  const scalebarColor = theme.palette.tertiary.light
   // catches possible null from at's below
   if (!visibleRegions.length) {
     return null
@@ -285,25 +232,27 @@ const OverviewScalebar = observer(function ({
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const { totalBp, width, cytobandOffset, displayedRegions } = model
+  const {
+    minimumBlockWidth,
+    totalBp,
+    width,
+    cytobandOffset,
+    displayedRegions,
+  } = model
 
   const modWidth = width - cytobandOffset
+  const str = JSON.stringify(displayedRegions)
   const overview = useMemo(() => {
     const overview = Base1DView.create({
-      displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
+      displayedRegions: JSON.parse(str),
       interRegionPaddingWidth: 0,
-      minimumBlockWidth: model.minimumBlockWidth,
+      minimumBlockWidth,
     })
 
     overview.setVolatileWidth(modWidth)
     overview.showAllRegions()
     return overview
-  }, [
-    JSON.stringify(displayedRegions), // eslint-disable-line react-hooks/exhaustive-deps
-    model.minimumBlockWidth,
-    modWidth,
-    displayedRegions,
-  ])
+  }, [str, minimumBlockWidth, modWidth])
 
   const scale =
     totalBp / (modWidth - (displayedRegions.length - 1) * wholeSeqSpacer)

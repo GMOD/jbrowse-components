@@ -1,7 +1,9 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { types, getEnv } from 'mobx-state-tree'
+import { types, getEnv, addDisposer } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import { autorun } from 'mobx'
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
 
 /**
  * #stateModel LinearHicDisplay
@@ -38,8 +40,18 @@ export default function stateModelFactory(
          * #property
          */
         colorScheme: types.maybe(types.string),
+        /**
+         * #property
+         */
+        activeNormalization: 'KR',
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      availableNormalizations: undefined as string[] | undefined,
+    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
@@ -74,6 +86,7 @@ export default function stateModelFactory(
           return {
             ...superRenderProps(),
             config,
+            normalization: self.activeNormalization,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             resolution: self.resolution,
@@ -102,6 +115,18 @@ export default function stateModelFactory(
       setColorScheme(f?: string) {
         self.colorScheme = f
       },
+      /**
+       * #action
+       */
+      setActiveNormalization(f: string) {
+        self.activeNormalization = f
+      },
+      /**
+       * #action
+       */
+      setAvailableNormalizations(f: string[]) {
+        self.availableNormalizations = f
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
@@ -116,7 +141,9 @@ export default function stateModelFactory(
               label: 'Use log scale',
               type: 'checkbox',
               checked: self.useLogScale,
-              onClick: () => self.setUseLogScale(!self.useLogScale),
+              onClick: () => {
+                self.setUseLogScale(!self.useLogScale)
+              },
             },
             {
               label: 'Color scheme',
@@ -124,19 +151,27 @@ export default function stateModelFactory(
               subMenu: [
                 {
                   label: 'Fall',
-                  onClick: () => self.setColorScheme('fall'),
+                  onClick: () => {
+                    self.setColorScheme('fall')
+                  },
                 },
                 {
                   label: 'Viridis',
-                  onClick: () => self.setColorScheme('viridis'),
+                  onClick: () => {
+                    self.setColorScheme('viridis')
+                  },
                 },
                 {
                   label: 'Juicebox',
-                  onClick: () => self.setColorScheme('juicebox'),
+                  onClick: () => {
+                    self.setColorScheme('juicebox')
+                  },
                 },
                 {
                   label: 'Clear',
-                  onClick: () => self.setColorScheme(undefined),
+                  onClick: () => {
+                    self.setColorScheme(undefined)
+                  },
                 },
               ],
             },
@@ -145,16 +180,62 @@ export default function stateModelFactory(
               subMenu: [
                 {
                   label: 'Finer resolution',
-                  onClick: () => self.setResolution(self.resolution * 2),
+                  onClick: () => {
+                    self.setResolution(self.resolution * 2)
+                  },
                 },
                 {
                   label: 'Coarser resolution',
-                  onClick: () => self.setResolution(self.resolution / 2),
+                  onClick: () => {
+                    self.setResolution(self.resolution / 2)
+                  },
                 },
               ],
             },
+            ...(self.availableNormalizations
+              ? [
+                  {
+                    label: 'Normalization scheme',
+                    subMenu: self.availableNormalizations.map(norm => ({
+                      label: norm,
+                      type: 'checkbox',
+                      checked: norm === self.activeNormalization,
+                      onClick: () => {
+                        self.setActiveNormalization(norm)
+                      },
+                    })),
+                  },
+                ]
+              : []),
           ]
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(async () => {
+            try {
+              const { rpcManager } = getSession(self)
+              const track = getContainingTrack(self)
+              const adapterConfig = getConf(track, 'adapter')
+              const { norms } = (await rpcManager.call(
+                getConf(track, 'trackId'),
+                'CoreGetInfo',
+                {
+                  adapterConfig,
+                },
+              )) as { norms?: string[] }
+              if (norms) {
+                self.setAvailableNormalizations(norms)
+              }
+            } catch (e) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          }),
+        )
+      },
+    }))
 }

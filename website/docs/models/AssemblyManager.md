@@ -21,7 +21,7 @@ session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```js
 // type signature
-IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCus...
+IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undefined; } & ... 5 m...
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
@@ -42,7 +42,7 @@ session.temporaryAssemblies to load from
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 ### AssemblyManager - Methods
@@ -51,7 +51,7 @@ session.temporaryAssemblies to load from
 
 ```js
 // type signature
-get: (asmName: string) => { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>
+get: (asmName: string) => { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undefined; } & ... 6 more ... & IS...
 ```
 
 #### method: waitForAssembly
@@ -61,7 +61,7 @@ with regions loaded
 
 ```js
 // type signature
-waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>>
+waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undefined; } & ... 6 ...
 ```
 
 #### method: getRefNameMapForAdapter
@@ -95,7 +95,7 @@ directly
 
 ```js
 // type signature
-removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>) => void
+removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undefined; } & ... 6 more ... & IStateTreeNode<.....
 ```
 
 #### action: addAssembly
@@ -111,15 +111,4 @@ reference. snapshots cannot be used
 ```js
 // type signature
 addAssembly: (configuration: any) => void
-```
-
-#### action: replaceAssembly
-
-private: you would generally want to add to manipulate jbrowse.assemblies,
-session.sessionAssemblies, or session.temporaryAssemblies instead of using this
-directly
-
-```js
-// type signature
-replaceAssembly: (idx: number, configuration: any) => void
 ```

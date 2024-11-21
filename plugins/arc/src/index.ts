@@ -20,7 +20,7 @@ export default class ArcPlugin extends Plugin {
     )
     pluginManager.jexl.addFunction(
       'defaultPairedArcColor',
-      (_feature: Feature, alt: string) => {
+      (_feature: Feature, alt?: string) => {
         if (alt?.startsWith('<DEL')) {
           return set1[0]
         } else if (alt?.startsWith('<DUP')) {

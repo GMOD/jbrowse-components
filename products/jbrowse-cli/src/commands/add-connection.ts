@@ -5,22 +5,7 @@ import parseJSON from 'json-parse-better-errors'
 
 // locals
 import fetch from '../fetchWithProxy'
-import JBrowseCommand from '../base'
-
-type Connection = Record<string, unknown>
-
-interface Assembly {
-  name: string
-  sequence: Record<string, unknown>
-}
-
-interface Config {
-  assemblies?: Assembly[]
-  configuration?: {}
-  connections?: Connection[]
-  defaultSession?: {}
-  tracks?: unknown[]
-}
+import JBrowseCommand, { Config } from '../base'
 
 export default class AddConnection extends JBrowseCommand {
   // @ts-expect-error
@@ -40,7 +25,8 @@ export default class AddConnection extends JBrowseCommand {
   static args = {
     connectionUrlOrPath: Args.string({
       required: true,
-      description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
+      description:
+        'URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ ',
     }),
   }
 
@@ -181,25 +167,18 @@ export default class AddConnection extends JBrowseCommand {
     } catch (error) {
       this.error('The location provided is not a valid URL', { exit: 160 })
     }
-    if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          // @ts-expect-error
-          response = await fetch(locationUrl, { method: 'HEAD' })
+    try {
+      if (check) {
+        const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
+        if (!response.ok) {
+          this.error(`Response returned with code ${response.status}`)
         }
-        if (!response || response.ok) {
-          return locationUrl.href
-        }
-        this.error(`Response returned with code ${response.status}`)
-      } catch (error) {
-        // ignore
-        this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })
       }
+      return locationUrl.href
+    } catch (error) {
+      // ignore
+      this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })
     }
-    return this.error(`Could not resolve to a URL: "${location}"`, {
-      exit: 180,
-    })
   }
 
   determineConnectionType(url: string) {

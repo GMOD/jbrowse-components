@@ -15,17 +15,15 @@ import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
   const features = new Map<string, Feature[]>()
   for (const entry of fdata) {
-    if (entry) {
-      const f = new SimpleFeature(entry)
-      const refName = f.get('refName') as string
-      let bucket = features.get(refName)
-      if (!bucket) {
-        bucket = []
-        features.set(refName, bucket)
-      }
-
-      bucket.push(f)
+    const f = new SimpleFeature(entry)
+    const refName = f.get('refName') as string
+    let bucket = features.get(refName)
+    if (!bucket) {
+      bucket = []
+      features.set(refName, bucket)
     }
+
+    bucket.push(f)
   }
 
   // sort the features on each reference sequence by start coordinate
@@ -46,7 +44,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   ) {
     super(conf, getSubAdapter, pluginManager)
     const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
-    this.features = makeFeatures(feats || [])
+    this.features = makeFeatures(feats)
   }
 
   async getRefNames() {
@@ -55,8 +53,8 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
 
   async getRefNameAliases() {
     return [...this.features.values()].map(featureArray => ({
-      refName: featureArray[0].get('refName'),
-      aliases: featureArray[0].get('aliases'),
+      refName: featureArray[0]!.get('refName'),
+      aliases: featureArray[0]!.get('aliases'),
     }))
   }
 

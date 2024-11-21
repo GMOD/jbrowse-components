@@ -13,7 +13,7 @@ const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 function getReadline(filename: string) {
   const stream = fs.createReadStream(filename)
   return readline.createInterface({
-    input: filename.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    input: /.b?gz$/.exec(filename) ? stream.pipe(createGunzip()) : stream,
   })
 }
 
@@ -56,7 +56,7 @@ export async function createPIF(
     const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
 
     stream.write(
-      [`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t') + '\n',
+      `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`,
     )
     const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
 
@@ -70,7 +70,7 @@ export async function createPIF(
     }
 
     stream.write(
-      [`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t') + '\n',
+      `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
     )
   }
   rl1.close()
@@ -99,7 +99,7 @@ export default class MakePIF extends JBrowseCommand {
   static args = {
     file: Args.string({
       required: true,
-      description: `PAF file as input`,
+      description: 'PAF file as input',
     }),
   }
 
