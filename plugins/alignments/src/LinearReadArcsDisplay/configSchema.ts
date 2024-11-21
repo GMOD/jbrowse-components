@@ -43,7 +43,7 @@ function configSchemaF(pluginManager: PluginManager) {
        */
       colorBy: {
         type: 'frozen',
-        defaultValue: { type: 'normal' },
+        defaultValue: { type: 'insertSizeAndOrientation' },
       },
       /**
        * #slot

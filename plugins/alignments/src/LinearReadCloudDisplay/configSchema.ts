@@ -30,18 +30,9 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      colorScheme: {
-        type: 'stringEnum',
-        model: types.enumeration('colorScheme', [
-          'strand',
-          'normal',
-          'insertSize',
-          'insertSizeAndOrientation',
-          'mappingQuality',
-          'tag',
-        ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
+      colorBy: {
+        type: 'frozen',
+        defaultValue: { type: 'insertSizeAndOrientation' },
       },
     },
     {
