@@ -6,7 +6,7 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Select from '@mui/material/Select'
 import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-import { types, getType } from 'mobx-state-tree'
+import { types, getPropertyMembers } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 import {
   getPropertyType,
@@ -29,13 +29,13 @@ const OPERATIONS = [
 // NOTE: assembly names, if present, are ignored in all of these predicates
 const OPERATION_PREDICATES = {
   contains: (textInCell, stringToFind) => {
-    return textInCell.toLowerCase().indexOf(stringToFind) !== -1
+    return textInCell.toLowerCase().includes(stringToFind)
   },
   equals: (textInCell, stringToFind) => {
     return textInCell.toLowerCase() === stringToFind
   },
   'starts with': (textInCell, stringToFind) => {
-    return textInCell.toLowerCase().indexOf(stringToFind) === 0
+    return textInCell.toLowerCase().startsWith(stringToFind)
   },
   'ends with': (textInCell, stringToFind) => {
     const index = textInCell.toLowerCase().indexOf(stringToFind)
@@ -44,13 +44,13 @@ const OPERATION_PREDICATES = {
     }
     return index === textInCell.length - stringToFind.length
   },
-} as { [key: string]: (a: string, b: string) => boolean }
+} as Record<string, (a: string, b: string) => boolean>
 
 OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
-  return !OPERATION_PREDICATES.contains(textInCell, stringToFind)
+  return !OPERATION_PREDICATES.contains!(textInCell, stringToFind)
 }
 OPERATION_PREDICATES['does not equal'] = (textInCell, stringToFind) => {
-  return !OPERATION_PREDICATES.equals(textInCell, stringToFind)
+  return !OPERATION_PREDICATES.equals!(textInCell, stringToFind)
 }
 
 const useStyles = makeStyles()({
@@ -71,11 +71,10 @@ const useStyles = makeStyles()({
 
 // React component for the column filter control
 const FilterReactComponent = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
     const operationChoices = getEnumerationValues(
-      getSubType(getPropertyType(getType(filterModel), 'operation')),
+      getSubType(getPropertyType(getPropertyMembers(filterModel), 'operation')),
     )
     return (
       <>
@@ -96,21 +95,22 @@ const FilterReactComponent = observer(
           value={filterModel.stringToFind}
           onChange={evt => filterModel.setString(evt.target.value)}
           className={classes.textFilterControl}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment
-                className={classes.textFilterControlAdornment}
-                position="end"
-              >
-                <IconButton
-                  aria-label="clear filter"
-                  onClick={() => filterModel.setString('')}
-                  color="secondary"
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment
+                  className={classes.textFilterControlAdornment}
+                  position="end"
                 >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
+                  <IconButton
+                    aria-label="clear filter"
+                    onClick={() => filterModel.setString('')}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
           }}
         />
       </>
@@ -124,7 +124,7 @@ const ColumnTextFilter = types
     type: types.literal('Text'),
     columnNumber: types.integer,
     stringToFind: '',
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]!),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -137,11 +137,10 @@ const ColumnTextFilter = types
       }
       const s = stringToFind.toLowerCase() // case insensitive match
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]
-        if (!cell || !cell.text) {
+        if (!cell?.text) {
           return false
         }
         const predicate = OPERATION_PREDICATES[operation]

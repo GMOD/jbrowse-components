@@ -1,63 +1,57 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { Buffer } from 'buffer'
 
 // local
 import { App } from './loaderUtil'
-import { expectCanvasMatch } from './util'
+import { setup, expectCanvasMatch } from './util'
+setup()
 
 const getFile = (url: string) =>
   new LocalFile(
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-const readBuffer = async (url: string, args: RequestInit) => {
-  // this is the analytics
-  if (url.match(/jb2=true/)) {
-    return {
-      ok: true,
-      async json() {
-        return {}
-      },
-    }
-  }
-  try {
-    const file = getFile(url)
-    const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers && 'range' in args.headers) {
-      const range = rangeParser(maxRangeRequest, args.headers.range)
-      if (range === -2 || range === -1) {
-        throw new Error(`Error parsing range "${args.headers.range}"`)
-      }
-      const { start, end } = range[0]
-      const len = end - start + 1
-      const buf = Buffer.alloc(len)
-      const { bytesRead } = await file.read(buf, 0, len, start)
-      const stat = await file.stat()
-      return new Response(buf.slice(0, bytesRead), {
-        status: 206,
-        headers: [['content-range', `${start}-${end}/${stat.size}`]],
-      })
-    }
-    const body = await file.readFile()
-    return new Response(body, { status: 200 })
-  } catch (e) {
-    console.error(e)
-    return new Response(undefined, { status: 404 })
-  }
-}
-
 jest.mock('../makeWorkerInstance', () => () => {})
-
-expect.extend({ toMatchImageSnapshot })
 
 const delay = { timeout: 20000 }
 
-// @ts-ignore
-jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+jest
+  .spyOn(global, 'fetch')
+
+  .mockImplementation(async (url: any, args: any) => {
+    // this is the analytics
+    if (/jb2=true/.exec(`${url}`)) {
+      return new Response('{}')
+    }
+    try {
+      const file = getFile(`${url}`)
+      const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
+      if (args?.headers && 'range' in args.headers) {
+        const range = rangeParser(maxRangeRequest, args.headers.range)
+        if (range === -2 || range === -1) {
+          throw new Error(`Error parsing range "${args.headers.range}"`)
+        }
+        const { start, end } = range[0]!
+        const len = end - start + 1
+        const buf = Buffer.alloc(len)
+        const { bytesRead } = await file.read(buf, 0, len, start)
+        const stat = await file.stat()
+        return new Response(buf.subarray(0, bytesRead), {
+          status: 206,
+          headers: [['content-range', `${start}-${end}/${stat.size}`]],
+        })
+      }
+      const body = await file.readFile()
+      return new Response(body, { status: 200 })
+    } catch (e) {
+      console.error(e)
+      return new Response(undefined, { status: 404 })
+    }
+  })
 
 afterEach(() => {
   localStorage.clear()

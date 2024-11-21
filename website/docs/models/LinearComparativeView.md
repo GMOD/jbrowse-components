@@ -1,7 +1,6 @@
 ---
 id: linearcomparativeview
 title: LinearComparativeView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[plugins/linear-comparative-view/src/LinearComparativeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### LinearComparativeView - Properties
 
@@ -49,15 +54,6 @@ true
 showIntraviewLinks: true
 ```
 
-#### property: linkViews
-
-```js
-// type signature
-false
-// code
-linkViews: false
-```
-
 #### property: interactToggled
 
 ```js
@@ -67,24 +63,13 @@ false
 interactToggled: false
 ```
 
-#### property: middleComparativeHeight
+#### property: levels
 
 ```js
 // type signature
-number
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: IType<string, string, string>; tracks: IArrayType<IAnyType>; height: IType<...>; level: ISimpleType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
 // code
-middleComparativeHeight: 100
-```
-
-#### property: tracks
-
-```js
-// type signature
-IArrayType<IAnyType>
-// code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
+levels: types.array(LinearSyntenyViewHelper)
 ```
 
 #### property: views
@@ -93,10 +78,10 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 14 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
 // code
 views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         )
 ```
@@ -116,13 +101,6 @@ viewTrackConfigs: types.array(
 ```
 
 ### LinearComparativeView - Getters
-
-#### getter: highResolutionScaling
-
-```js
-// type
-number
-```
 
 #### getter: initialized
 
@@ -191,59 +169,42 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
 ```
 
-#### action: closeView
-
-removes the view itself from the state tree entirely by calling the parent
-removeView
+#### action: setLevelHeight
 
 ```js
 // type signature
-closeView: () => void
-```
-
-#### action: setMiddleComparativeHeight
-
-```js
-// type signature
-setMiddleComparativeHeight: (n: number) => number
-```
-
-#### action: toggleLinkViews
-
-```js
-// type signature
-toggleLinkViews: () => void
+setLevelHeight: (newHeight: number, level?: number) => number
 ```
 
 #### action: activateTrackSelector
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: (level: number) => Widget
 ```
 
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string, level?: number) => void
 ```
 
 #### action: showTrack
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, level?: number, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string, level?: number) => void
 ```
 
 #### action: squareView

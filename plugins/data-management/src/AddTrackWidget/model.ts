@@ -21,11 +21,24 @@ interface IndexingAttr {
   attributes: string[]
   exclude: string[]
 }
+
+/**
+ * #stateModel AddTrackModel
+ */
 export default function f(pluginManager: PluginManager) {
   return types
     .model('AddTrackModel', {
+      /**
+       * #property
+       */
       id: ElementId,
+      /**
+       * #property
+       */
       type: types.literal('AddTrackWidget'),
+      /**
+       * #property
+       */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
@@ -45,34 +58,63 @@ export default function f(pluginManager: PluginManager) {
       textIndexingConf: undefined as IndexingAttr | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setAdapterHint(obj: string) {
         self.adapterHint = obj
       },
+      /**
+       * #action
+       */
       setTrackSource(str: string) {
         self.trackSource = str
       },
+      /**
+       * #action
+       */
       setTextIndexingConf(conf: IndexingAttr) {
         self.textIndexingConf = conf
       },
+      /**
+       * #action
+       */
       setTextIndexTrack(flag: boolean) {
         self.textIndexTrack = flag
       },
+      /**
+       * #action
+       */
       setTrackData(obj: FileLocation) {
         self.trackData = obj
       },
+      /**
+       * #action
+       */
       setIndexTrackData(obj: FileLocation) {
         self.indexTrackData = obj
       },
+      /**
+       * #action
+       */
       setAssembly(str: string) {
         self.altAssemblyName = str
       },
+      /**
+       * #action
+       */
       setTrackName(str: string) {
         self.altTrackName = str
       },
+      /**
+       * #action
+       */
       setTrackType(str: string) {
         self.altTrackType = str
       },
-
+      /**
+       * #action
+       */
       clearData() {
         self.trackSource = ''
         self.altTrackName = ''
@@ -86,6 +128,9 @@ export default function f(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get trackAdapter() {
         const { trackData, indexTrackData, adapterHint } = self
 
@@ -94,6 +139,9 @@ export default function f(pluginManager: PluginManager) {
           : undefined
       },
 
+      /**
+       * #getter
+       */
       get trackName() {
         return (
           self.altTrackName ||
@@ -101,37 +149,58 @@ export default function f(pluginManager: PluginManager) {
         )
       },
 
+      /**
+       * #getter
+       */
       get isFtp() {
         const { trackData: track, indexTrackData: index } = self
         return !!(
-          // @ts-ignore
+          // @ts-expect-error
           (index?.uri?.startsWith('ftp://') || track?.uri?.startsWith('ftp://'))
         )
       },
 
+      /**
+       * #getter
+       */
       get isRelativeTrackUrl() {
-        // @ts-ignore
+        // @ts-expect-error
         const uri = self.trackData?.uri
         return uri ? !isAbsoluteUrl(uri) : false
       },
+      /**
+       * #getter
+       */
       get isRelativeIndexUrl() {
-        // @ts-ignore
+        // @ts-expect-error
         const uri = self.indexTrackData?.uri
         return uri ? !isAbsoluteUrl(uri) : false
       },
+      /**
+       * #getter
+       */
       get isRelativeUrl() {
         return this.isRelativeIndexUrl || this.isRelativeTrackUrl
       },
 
+      /**
+       * #getter
+       */
       get trackHttp() {
-        // @ts-ignore
+        // @ts-expect-error
         return self.trackData?.uri?.startsWith('http://')
       },
+      /**
+       * #getter
+       */
       get indexHttp() {
-        // @ts-ignore
+        // @ts-expect-error
         return self.indexTrackData?.uri?.startsWith('http://')
       },
 
+      /**
+       * #getter
+       */
       get wrongProtocol() {
         return (
           window.location.protocol === 'https:' &&
@@ -139,14 +208,23 @@ export default function f(pluginManager: PluginManager) {
         )
       },
 
+      /**
+       * #getter
+       */
       get unsupported() {
         return this.trackAdapter?.type === UNSUPPORTED
       },
 
+      /**
+       * #getter
+       */
       get assembly() {
         return self.altAssemblyName || self.view.assemblyNames?.[0]
       },
 
+      /**
+       * #getter
+       */
       get trackType() {
         return (
           self.altTrackType ||
@@ -157,9 +235,12 @@ export default function f(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get warningMessage() {
         if (self.isFtp) {
-          return `Warning: JBrowse cannot access files using the ftp protocol`
+          return 'Warning: JBrowse cannot access files using the ftp protocol'
         } else if (self.isRelativeUrl) {
           return `Warning: one or more of your files do not provide the protocol e.g.
           https://, please provide an absolute URL unless you are sure a

@@ -1,10 +1,9 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { autorun } from 'mobx'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
-import createModel, {
-  createSessionModel,
-  createConfigModel,
-} from './createModel'
+import createModel from './createModel'
+import type { createSessionModel, createConfigModel } from './createModel'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -20,6 +19,14 @@ interface ViewStateOptions {
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
+  makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+  ) => any
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  }
   defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
@@ -32,9 +39,17 @@ export default function createViewState(opts: ViewStateOptions) {
     configuration,
     aggregateTextSearchAdapters,
     plugins,
+    hydrateFn,
+    createRootFn,
+    makeWorkerInstance,
     onChange,
   } = opts
-  const { model, pluginManager } = createModel(plugins || [])
+  const { model, pluginManager } = createModel(
+    plugins || [],
+    makeWorkerInstance,
+    hydrateFn,
+    createRootFn,
+  )
   let { defaultSession } = opts
   if (!defaultSession) {
     defaultSession = {
@@ -54,7 +69,7 @@ export default function createViewState(opts: ViewStateOptions) {
       aggregateTextSearchAdapters,
       defaultSession,
     },
-    assemblyManager: {},
+
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })
@@ -77,11 +92,11 @@ export default function createViewState(opts: ViewStateOptions) {
     if (!session.view.initialized) {
       return
     }
-    const asm = assemblyManager.get(assembly.name)
-    if (!asm?.regions) {
+    const regions = assemblyManager.get(assembly?.name)?.regions
+    if (!regions) {
       return
     }
-    session.view.setDisplayedRegions(asm.regions)
+    session.view.setDisplayedRegions(regions)
     reaction.dispose()
   })
   if (onChange) {

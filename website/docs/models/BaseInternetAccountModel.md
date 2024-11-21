@@ -1,7 +1,6 @@
 ---
 id: baseinternetaccountmodel
 title: BaseInternetAccountModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[packages/core/pluggableElementTypes/models/InternetAccountModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/InternetAccountModel.ts)
 
 ### BaseInternetAccountModel - Properties
 
@@ -29,6 +30,15 @@ id: ElementId
 ISimpleType<string>
 // code
 type: types.string
+```
+
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; description: { description: string; type: string; defaultValue: string; }; authHeader: { description: string; type: string; defaultValue: string; }; tokenType: { ...; }; domains: { ...; }; }, ConfigurationSchemaOptions<...>>
+// code
+configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```
 
 ### BaseInternetAccountModel - Getters
@@ -133,7 +143,7 @@ token to `resolve`.
 
 ```js
 // type signature
-getTokenFromUser: (resolve: (token: string) => void, reject: (error: Error) => void) => void
+getTokenFromUser: (_resolve: (token: string) => void, _reject: (error: Error) => void) => void
 ```
 
 #### action: storeToken
@@ -168,7 +178,7 @@ invalid. Should throw an error if a token is invalid.
 
 ```js
 // type signature
-validateToken: (token: string, loc: UriLocation) => Promise<string>
+validateToken: (token: string, _loc: UriLocation) => Promise<string>
 ```
 
 #### action: getToken
@@ -185,7 +195,7 @@ getToken: (location?: UriLocation) => Promise<string>
 
 ```js
 // type signature
-addAuthHeaderToInit: (init: RequestInit, token: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 8 more ...; window?: null; }
+addAuthHeaderToInit: (init?: RequestInit, token?: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 9 more ...; window?: null; }
 ```
 
 #### action: getPreAuthorizationInformation

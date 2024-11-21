@@ -1,8 +1,8 @@
 import Trix from '@gmod/trix'
 import {
   BaseTextSearchAdapter,
-  BaseArgs,
   BaseAdapter,
+  BaseTextSearchArgs,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -56,8 +56,8 @@ export default class TrixTextSearchAdapter
       throw new Error('must provide out.ixx')
     }
     this.trixJs = new Trix(
-      openLocation(ixxFilePath),
-      openLocation(ixFilePath),
+      openLocation(ixxFilePath, pluginManager),
+      openLocation(ixFilePath, pluginManager),
       1500,
     )
   }
@@ -67,7 +67,7 @@ export default class TrixTextSearchAdapter
    * @param args - search options/arguments include: search query
    * limit of results to return, searchType...prefix | full | exact", etc.
    */
-  async searchIndex(args: BaseArgs) {
+  async searchIndex(args: BaseTextSearchArgs) {
     const query = args.queryString.toLowerCase()
     const strs = query.split(' ')
     const results = await this.trixJs.search(query)
@@ -79,7 +79,7 @@ export default class TrixTextSearchAdapter
         ),
       )
       .map(([term, data]) => {
-        const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
+        const result = JSON.parse(data.replaceAll('|', ',')) as string[]
         const [loc, trackId, ...rest] = result.map(record =>
           decodeURIComponentNoThrow(record),
         )
@@ -87,10 +87,10 @@ export default class TrixTextSearchAdapter
         const labelFieldIdx = rest.findIndex(elt => !!elt)
         const contextIdx = rest
           .map(elt => elt.toLowerCase())
-          .findIndex(f => f.indexOf(term.toLowerCase()) !== -1)
+          .findIndex(f => f.includes(term.toLowerCase()))
 
-        const labelField = rest[labelFieldIdx]
-        const contextField = rest[contextIdx]
+        const labelField = rest[labelFieldIdx]!
+        const contextField = rest[contextIdx]!
         const context =
           contextIdx !== -1 ? shorten(contextField, term) : undefined
         const label = shorten(labelField, term)
@@ -109,12 +109,11 @@ export default class TrixTextSearchAdapter
         })
       })
 
-    if (args.searchType === 'exact') {
-      return formatted.filter(
-        res => res.getLabel().toLowerCase() === args.queryString.toLowerCase(),
-      )
-    }
-    return formatted
+    return args.searchType === 'exact'
+      ? formatted.filter(
+          r => r.getLabel().toLowerCase() === args.queryString.toLowerCase(),
+        )
+      : formatted
   }
 
   freeResources() {}

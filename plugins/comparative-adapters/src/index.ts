@@ -3,11 +3,13 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 import PAFAdapterF from './PAFAdapter'
+import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
 import DeltaAdapterF from './DeltaAdapter'
 import ChainAdapterF from './ChainAdapter'
+import BlastTabularAdapter from './BlastTabularAdapter'
 
 import {
   getFileName,
@@ -20,11 +22,13 @@ export default class ComparativeAdaptersPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
+    PairwiseIndexedPAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
+    BlastTabularAdapter(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
@@ -50,12 +54,10 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     pluginManager.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          if (adapterName === 'PAFAdapter') {
-            return 'SyntenyTrack'
-          }
-          return trackTypeGuesser(adapterName)
-        }
+        return (adapterName: string) =>
+          adapterName === 'PAFAdapter'
+            ? 'SyntenyTrack'
+            : trackTypeGuesser(adapterName)
       },
     )
   }

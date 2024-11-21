@@ -1,11 +1,13 @@
 import React, { lazy, Suspense } from 'react'
-import { render } from 'react-dom'
-import Loading from './Loading'
+import { createRoot } from 'react-dom/client'
+import Loading from './components/Loading'
 
-const Main = lazy(() => import('./Loader'))
+// eslint-disable-next-line react-refresh/only-export-components
+const Main = lazy(() => import('./components/Loader'))
+
 const initialTimeStamp = Date.now()
 
-if (window?.name.startsWith('JBrowseAuthWindow')) {
+if (window.name.startsWith('JBrowseAuthWindow')) {
   const parent = window.opener
   if (parent) {
     parent.postMessage({
@@ -15,11 +17,13 @@ if (window?.name.startsWith('JBrowseAuthWindow')) {
   }
   window.close()
 }
-const rootElement = document.getElementById('root')
 
-render(
-  <Suspense fallback={<Loading />}>
-    <Main initialTimestamp={initialTimeStamp} />
-  </Suspense>,
-  rootElement,
+const root = createRoot(document.getElementById('root')!)
+
+root.render(
+  <React.StrictMode>
+    <Suspense fallback={<Loading />}>
+      <Main initialTimestamp={initialTimeStamp} />
+    </Suspense>
+  </React.StrictMode>,
 )

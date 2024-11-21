@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
 import { Region } from '../../util/types'
@@ -6,33 +5,28 @@ import ServerSideRenderer, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  RenderResults,
   ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from './ServerSideRendererType'
 import RpcManager from '../../rpc/RpcManager'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import { dedupe } from '../../util'
+import { dedupe, getSerializedSvg } from '../../util'
 import { firstValueFrom } from 'rxjs'
+import { AnyConfigurationModel } from '../../configuration'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: {}
   blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: {}
   blockKey: string
 }
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  displayModel: {}
   blockKey: string
 }
-
-export type { RenderResults }
 
 export type ResultsSerialized = ServerSideResultsSerialized
 
@@ -40,16 +34,21 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
 }
 
+export interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+  reactElement: unknown
+}
+
+function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in e
+}
+
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   /**
-   * directly modifies the render arguments to prepare
-   * them to be serialized and sent to the worker.
-   *
-   * the base class replaces the `displayModel` param
-   * (which on the client is a MST model) with a stub
-   * that only contains the `selectedFeature`, since
-   * this is the only part of the track model that most
-   * renderers read.
+   * directly modifies the render arguments to prepare them to be serialized
+   * and sent to the worker.
    *
    * @param args - the arguments passed to render
    * @returns the same object
@@ -62,7 +61,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   serializeArgsInClient(args: RenderArgs) {
     const deserializedArgs = {
       ...args,
-      displayModel: {},
+      displayModel: undefined,
     }
 
     return super.serializeArgsInClient(deserializedArgs)
@@ -74,7 +73,10 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     args: RenderArgs,
   ): ResultsDeserialized {
     const deserialized = super.deserializeResultsInClient(result, args)
-    return { ...deserialized, blockKey: args.blockKey }
+    return {
+      ...deserialized,
+      blockKey: args.blockKey,
+    }
   }
 
   /**
@@ -82,11 +84,17 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    return rpcManager.call(
+    const results = (await rpcManager.call(
       args.sessionId,
       'ComparativeRender',
       args,
-    ) as Promise<ResultsSerialized>
+    )) as ResultsSerialized
+
+    if (isSvgExport(results)) {
+      results.html = await getSerializedSvg(results)
+      results.reactElement = undefined
+    }
+    return results
   }
 
   /**
@@ -100,21 +108,14 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       : true
   }
 
-  async getFeatures(renderArgs: any) {
+  async getFeatures(renderArgs: {
+    regions: Region[]
+    sessionId: string
+    adapterConfig: AnyConfigurationModel
+  }) {
     const pm = this.pluginManager
-    const { sessionId, adapterConfig } = renderArgs
+    const { regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
-    let regions = [] as Region[]
-
-    // @ts-ignore this is instantiated by the getFeatures call
-    regions = renderArgs.regions
-
-    if (!regions || regions.length === 0) {
-      console.warn('no regions supplied to comparative renderer')
-      return []
-    }
-
     const requestRegions = regions.map(r => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
@@ -133,6 +134,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       (dataAdapter as BaseFeatureDataAdapter)
         .getFeaturesInMultipleRegions(requestRegions, renderArgs)
         .pipe(
+          // @ts-expect-error
           filter(f => this.featurePassesFilters(renderArgs, f)),
           toArray(),
         ),
@@ -142,3 +144,5 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     return dedupe(res, f => f.id())
   }
 }
+
+export { type RenderResults } from './ServerSideRendererType'

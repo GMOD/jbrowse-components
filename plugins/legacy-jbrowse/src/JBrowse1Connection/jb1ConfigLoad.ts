@@ -11,20 +11,25 @@ import {
 } from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as UriLocation).uri !== undefined
 }
 
 function isLocalPathLocation(
   location: JBLocation,
 ): location is LocalPathLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as LocalPathLocation).localPath !== undefined
 }
 
 export async function fetchJb1(
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   dataRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
 ): Promise<Config> {
   const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
@@ -37,10 +42,7 @@ export async function fetchJb1(
     dataRootLocation = dataRoot.localPath
   }
   if (dataRootLocation.endsWith('/')) {
-    dataRootReg[protocol] = dataRootLocation.slice(
-      0,
-      dataRootLocation.length - 1,
-    )
+    dataRootReg[protocol] = dataRootLocation.slice(0, -1)
   }
   if (
     (isUriLocation(baseConfigRoot) && baseConfigRoot.uri) ||
@@ -55,16 +57,13 @@ export async function fetchJb1(
       baseConfigLocation = baseConfigRoot.localPath
     }
     if (baseConfigLocation.endsWith('/')) {
-      baseConfigLocation = baseConfigLocation.slice(
-        0,
-        baseConfigLocation.length - 1,
-      )
+      baseConfigLocation = baseConfigLocation.slice(0, -1)
     }
     let newConfig: Config = {}
     for (const conf of ['jbrowse.conf', 'jbrowse_conf.json']) {
       let fetchedConfig = null
       try {
-        // @ts-ignore
+        // @ts-expect-error
         fetchedConfig = await fetchConfigFile({
           [baseProtocol]: `${baseConfigLocation}/${conf}`,
         })
@@ -133,8 +132,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     if (prop === 'tracks' && prop in a) {
       const aTracks = a[prop] || []
       const bTracks = b[prop] || []
+
       if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
-        a[prop] = mergeTrackConfigs(aTracks || [], bTracks || [])
+        a[prop] = mergeTrackConfigs(aTracks, bTracks)
       } else {
         throw new Error(
           `Track config has not been properly regularized: ${aTracks} ${bTracks}`,
@@ -143,12 +143,12 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     } else if (
       !noRecursiveMerge(prop) &&
       prop in a &&
-      // @ts-ignore
+      // @ts-expect-error
       typeof b[prop] === 'object' &&
-      // @ts-ignore
+      // @ts-expect-error
       typeof a[prop] === 'object'
     ) {
-      // @ts-ignore
+      // @ts-expect-error
       a[prop] = deepUpdate(a[prop], b[prop])
     } else if (prop === 'dataRoot') {
       if (
@@ -157,9 +157,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
       ) {
         a[prop] = b[prop]
       }
-      // @ts-ignore
+      // @ts-expect-error
     } else if (a[prop] === undefined || b[prop] !== undefined) {
-      // @ts-ignore
+      // @ts-expect-error
       a[prop] = b[prop]
     }
   }
@@ -219,7 +219,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       regularizeIncludes(config.include || []),
       newUpstreamConf,
     )
-    delete config.include
+    config.include = undefined
 
     const loads = includes.map(async (include): Promise<Config> => {
       include.cacheBuster = inputConfig.cacheBuster
@@ -268,8 +268,7 @@ function regularizeIncludes(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unnecessary-type-constraint
-function fillTemplates<T extends any>(subconfig: T, config: Config): T {
+function fillTemplates<T>(subconfig: T, config: Config): T {
   if (!subconfig) {
     return subconfig
   }
@@ -278,13 +277,12 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
       subconfig[i] = fillTemplates(subconfig[i], config)
     }
   } else if (typeof subconfig === 'object') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sub = subconfig as Record<string, any>
     for (const name of Object.keys(sub)) {
       sub[name] = fillTemplates(sub[name], config)
     }
   } else if (typeof subconfig === 'string') {
-    // @ts-ignore
+    // @ts-expect-error
     return fillTemplate(subconfig, config)
   }
 

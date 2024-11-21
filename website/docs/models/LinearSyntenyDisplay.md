@@ -1,7 +1,6 @@
 ---
 id: linearsyntenydisplay
 title: LinearSyntenyDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,9 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends `LinearComparativeDisplay` model
+[plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts)
+
+extends
+
+- [LinearComparativeDisplay](../linearcomparativedisplay)
 
 ### LinearSyntenyDisplay - Properties
 
@@ -28,7 +31,7 @@ type: types.literal('LinearSyntenyDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -54,6 +57,15 @@ string[]
 ```js
 // type
 number
+```
+
+#### getter: ready
+
+used for synteny svg rendering
+
+```js
+// type
+boolean
 ```
 
 #### getter: featMap
@@ -104,7 +116,7 @@ setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
 
 ```js
 // type signature
-setMouseoverId: (arg: number) => void
+setMouseoverId: (arg?: string) => void
 ```
 
 #### action: setCigarMouseoverId
@@ -118,5 +130,5 @@ setCigarMouseoverId: (arg: number) => void
 
 ```js
 // type signature
-setClickId: (arg: number) => void
+setClickId: (arg?: string) => void
 ```

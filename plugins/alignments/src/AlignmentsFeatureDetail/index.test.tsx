@@ -5,8 +5,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 // locals
-import { stateModelFactory } from '.'
+import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './AlignmentsFeatureDetail'
+import { ThemeProvider } from '@mui/material'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 test('open up a widget', () => {
   const pluginManager = new PluginManager([])
@@ -18,7 +20,7 @@ test('open up a widget', () => {
   })
   const session = Session.create(
     {
-      // @ts-ignore
+      // @ts-expect-error
       widget: { type: 'AlignmentsFeatureWidget' },
     },
     { pluginManager },
@@ -40,8 +42,10 @@ test('open up a widget', () => {
     type: 'match',
   })
   const { container, getByText } = render(
-    <ReactComponent model={session.widget} />,
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ReactComponent model={session.widget} />,
+    </ThemeProvider>,
   )
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })

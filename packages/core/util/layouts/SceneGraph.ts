@@ -1,5 +1,3 @@
-import { inDevelopment } from '..'
-
 interface AbsoluteCache {
   dirty: boolean
   left?: number
@@ -26,23 +24,9 @@ export default class SceneGraph {
     public top: number,
     public width: number,
     public height: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     public data?: Record<string, any>,
   ) {
-    if (
-      inDevelopment &&
-      (typeof name !== 'string' ||
-        typeof left !== 'number' ||
-        Number.isNaN(left) ||
-        typeof top !== 'number' ||
-        Number.isNaN(top) ||
-        typeof width !== 'number' ||
-        Number.isNaN(width) ||
-        typeof height !== 'number' ||
-        Number.isNaN(height))
-    ) {
-      throw new TypeError('invalid SceneGraph arguments')
-    }
     this.children = new Map()
     this.absoluteCache = { dirty: true }
   }
@@ -53,15 +37,13 @@ export default class SceneGraph {
     top: number,
     width: number,
     height: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     data?: Record<string, any>,
-  ): SceneGraph {
-    let child: SceneGraph
-    if (nameOrSceneGraph instanceof SceneGraph) {
-      child = nameOrSceneGraph
-    } else {
-      child = new SceneGraph(nameOrSceneGraph, left, top, width, height, data)
-    }
+  ) {
+    const child =
+      nameOrSceneGraph instanceof SceneGraph
+        ? nameOrSceneGraph
+        : new SceneGraph(nameOrSceneGraph, left, top, width, height, data)
 
     if (!(child instanceof SceneGraph)) {
       throw new TypeError(
@@ -93,26 +75,22 @@ export default class SceneGraph {
     return child
   }
 
-  getSubRecord(name: string): SceneGraph | undefined {
+  getSubRecord(name: string) {
     return this.children.get(name)
   }
 
   /**
-   * if the record does not already cover the given
-   * absolute extents, extend it to cover them
+   * if the record does not already cover the given absolute extents, extend it
+   * to cover them
    *
    * @param left -
    * @param right -
    * @param top -
    * @param bottom -
    */
-  expand(
-    newLeft: number,
-    newRight: number,
-    newTop: number,
-    newBottom: number,
-  ): void {
+  expand(newLeft: number, newRight: number, newTop: number, newBottom: number) {
     const { left, right, top, bottom } = this.absolute
+
     if (left !== undefined && newLeft < left) {
       const diff = left - newLeft
       this.width += diff
@@ -135,29 +113,29 @@ export default class SceneGraph {
     this.absoluteCache.dirty = true
   }
 
-  get bottom(): number {
+  get bottom() {
     return this.top + this.height
   }
 
-  get right(): number {
+  get right() {
     return this.left + this.width
   }
 
-  walkParents(callback: Function): void {
+  walkParents(callback: (arg: SceneGraph) => void) {
     if (this.parent) {
       callback(this.parent)
       this.parent.walkParents(callback)
     }
   }
 
-  walkChildren(callback: Function): void {
+  walkChildren(callback: (c: SceneGraph) => void) {
     for (const sub of this.children.values()) {
       callback(sub)
       sub.walkChildren(callback)
     }
   }
 
-  get absolute(): AbsoluteCache {
+  get absolute() {
     if (this.absoluteCache.dirty) {
       let xOffset = 0
       let yOffset = 0
@@ -178,12 +156,12 @@ export default class SceneGraph {
     return this.absoluteCache
   }
 
-  move(x: number, y: number): void {
+  move(x: number, y: number) {
     this.left += x
     this.top += y
 
     this.absoluteCache.dirty = true
-    this.walkChildren((c: SceneGraph) => {
+    this.walkChildren(c => {
       c.absoluteCache.dirty = true
     })
     const { left, right, top, bottom } = this.absolute

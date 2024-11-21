@@ -7,7 +7,7 @@ import {
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 
-export default (pluginManager: PluginManager) => {
+export default function ExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
     (adapterGuesser: AdapterGuesser) => {
@@ -25,7 +25,8 @@ export default (pluginManager: PluginManager) => {
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
-        } else if (adapterHint === adapterName) {
+        }
+        if (adapterHint === adapterName) {
           return obj
         }
         return adapterGuesser(file, index, adapterHint)
@@ -63,7 +64,8 @@ export default (pluginManager: PluginManager) => {
 
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
-        } else if (adapterHint === adapterName) {
+        }
+        if (adapterHint === adapterName) {
           return obj
         }
         return adapterGuesser(file, index, adapterHint)
@@ -101,7 +103,8 @@ export default (pluginManager: PluginManager) => {
 
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
-        } else if (adapterHint === adapterName) {
+        }
+        if (adapterHint === adapterName) {
           return obj
         }
         return adapterGuesser(file, index, adapterHint)

@@ -11,7 +11,7 @@ export function locstr(
   return oob
     ? 'out of bounds'
     : `${
-        includeAsm ? '{' + assemblyName + '}' : ''
+        includeAsm ? `{${assemblyName}}` : ''
       }${refName}:${coord.toLocaleString('en-US')}`
 }
 
@@ -21,13 +21,13 @@ export function getBlockLabelKeysToHide(
   viewOffsetPx: number,
 ) {
   const blockLabelKeysToHide = new Set<string>()
-  const sortedBlocks = blocks.slice(0).sort((a, b) => {
+  const sortedBlocks = [...blocks].sort((a, b) => {
     const alen = a.end - a.start
     const blen = b.end - b.start
     return blen - alen
   })
-  const positions = new Array(Math.round(length))
-  sortedBlocks.forEach(({ key, offsetPx }) => {
+  const positions = Array.from({ length: Math.round(length) })
+  for (const { key, offsetPx } of sortedBlocks) {
     const y = Math.round(length - offsetPx + viewOffsetPx)
     const labelBounds = [Math.max(y - 12, 0), y]
     if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
@@ -35,7 +35,7 @@ export function getBlockLabelKeysToHide(
     } else {
       positions.fill(true, ...labelBounds)
     }
-  })
+  }
   return blockLabelKeysToHide
 }
 /**
@@ -50,10 +50,9 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
-    10,
-  )
+  const majorMagnitude = +Number(minMajorPitchBp)
+    .toExponential()
+    .split(/e/i)[1]!
 
   let majorPitch = 10 ** majorMagnitude
   while (majorPitch < minMajorPitchBp) {
@@ -89,25 +88,21 @@ export function makeTicks(
   const ticks = []
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
-  for (let i = 0; i < regions.length; i++) {
-    const region = regions[i]
-    const { start, end, refName } = region
+  for (const { start, end, refName } of regions) {
     let index = 0
 
     const minBase = start
     const maxBase = end
+
     for (
-      let base = Math.ceil(minBase / iterPitch) * iterPitch;
-      base < maxBase;
+      let base = Math.floor(minBase / iterPitch) * iterPitch;
+      base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
       if (emitMinor && base % gridPitch.majorPitch) {
         ticks.push({ type: 'minor', base: base - 1, index, refName })
         index += 1
-      } else if (
-        emitMajor &&
-        Math.abs(base - region.start) > gridPitch.minorPitch
-      ) {
+      } else if (emitMajor && Math.abs(base - start) > gridPitch.minorPitch) {
         ticks.push({ type: 'major', base: base - 1, index, refName })
         index += 1
       }

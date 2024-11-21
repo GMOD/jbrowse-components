@@ -1,4 +1,7 @@
 import { BamFile } from '@gmod/bam'
+import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+// jbrowse
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -7,11 +10,12 @@ import { Region } from '@jbrowse/core/util/types'
 import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { firstValueFrom } from 'rxjs'
+import { FilterBy } from '../shared/types'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 interface Header {
   idToName: string[]
@@ -22,13 +26,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
   private setupP?: Promise<Header>
+
+  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
+  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
+  // of these in memory is memory intensive but can reduce recomputation on
+  // these objects
+  private ultraLongFeatureCache = new QuickLRU<string, Feature>({
+    maxSize: 500,
+  })
+
   private configureP?: Promise<{
     bam: BamFile
     sequenceAdapter?: BaseFeatureDataAdapter
   }>
 
-  // derived classes may not use the same configuration so a custom
-  // configure method allows derived classes to override this behavior
+  // derived classes may not use the same configuration so a custom configure
+  // method allows derived classes to override this behavior
   protected async configurePre() {
     const bamLocation = this.getConf('bamLocation')
     const location = this.getConf(['index', 'location'])
@@ -39,13 +52,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       bamFilehandle: openLocation(bamLocation, pm),
       csiFilehandle: csi ? openLocation(location, pm) : undefined,
       baiFilehandle: !csi ? openLocation(location, pm) : undefined,
-
-      // chunkSizeLimit and fetchSizeLimit are more troublesome than
-      // helpful, and have given overly large values on the ultra long
-      // nanopore reads even with 500MB limits, so disabled with infinity
-      chunkSizeLimit: Infinity,
-      fetchSizeLimit: Infinity,
-      yieldThreadTime: Infinity,
+      yieldThreadTime: Number.POSITIVE_INFINITY,
     })
 
     const adapterConfig = this.getConf('sequenceAdapter')
@@ -55,14 +62,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         bam,
         sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
       }
-    } else {
-      return { bam }
     }
+    return { bam }
   }
 
   protected async configure() {
     if (!this.configureP) {
-      this.configureP = this.configurePre().catch(e => {
+      this.configureP = this.configurePre().catch((e: unknown) => {
         this.configureP = undefined
         throw e
       })
@@ -70,9 +76,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return this.configureP
   }
 
-  async getHeader(opts?: BaseOptions) {
+  async getHeader(_opts?: BaseOptions) {
     const { bam } = await this.configure()
-    return bam.getHeaderText(opts)
+    return bam.getHeaderText()
   }
 
   private async setupPre(opts?: BaseOptions) {
@@ -82,23 +88,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       'Downloading index',
       statusCallback,
       async () => {
-        const samHeader = await bam.getHeader(opts)
+        const samHeader = await bam.getHeader()
 
         // use the @SQ lines in the header to figure out the
         // mapping between ref ref ID numbers and names
         const idToName: string[] = []
         const nameToId: Record<string, number> = {}
         samHeader
-          .filter(l => l.tag === 'SQ')
+          ?.filter(l => l.tag === 'SQ')
           .forEach((sqLine, refId) => {
-            sqLine.data.forEach(item => {
-              if (item.tag === 'SN') {
-                // this is the ref name
-                const refName = item.value
-                nameToId[refName] = refId
-                idToName[refId] = refName
-              }
-            })
+            const SN = sqLine.data.find(item => item.tag === 'SN')
+            if (SN) {
+              // this is the ref name
+              const refName = SN.value
+              nameToId[refName] = refId
+              idToName[refId] = refName
+            }
           })
 
         return { idToName, nameToId }
@@ -109,7 +114,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -151,7 +156,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
         const trimLength = trimEnd - trimStart
         const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        sequence += chunkSeq.substr(trimStart, trimLength)
+        sequence += chunkSeq.slice(trimStart, trimStart + trimLength)
       })
 
     if (sequence.length !== end - start) {
@@ -169,75 +174,90 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: {
-        flagInclude: number
-        flagExclude: number
-        tagFilter: { tag: string; value: unknown }
-        readName: string
-      }
+      filterBy: FilterBy
     },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { signal, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const { bam } = await this.configure()
       await this.setup(opts)
-      statusCallback('Downloading alignments')
-      const records = await bam.getRecordsForRange(refName, start, end, opts)
+      checkStopToken(stopToken)
+      const records = await updateStatus(
+        'Downloading alignments',
+        statusCallback,
+        () => bam.getRecordsForRange(refName, start, end),
+      )
+      checkStopToken(stopToken)
 
-      const {
-        flagInclude = 0,
-        flagExclude = 0,
-        tagFilter,
-        readName,
-      } = filterBy || {}
+      await updateStatus('Processing alignments', statusCallback, async () => {
+        const {
+          flagInclude = 0,
+          flagExclude = 0,
+          tagFilter,
+          readName,
+        } = filterBy || {}
 
-      for (const record of records) {
-        let ref: string | undefined
-        if (!record.get('MD')) {
-          ref = await this.seqFetch(
-            originalRefName || refName,
-            record.get('start'),
-            record.get('end'),
-          )
-        }
+        for (const record of records) {
+          let ref: string | undefined
+          if (!record.tags.MD) {
+            ref = await this.seqFetch(
+              originalRefName || refName,
+              record.start,
+              record.end,
+            )
+          }
 
-        const flags = record.flags
-        if (
-          !((flags & flagInclude) === flagInclude && !(flags & flagExclude))
-        ) {
-          continue
-        }
-
-        if (tagFilter) {
-          const val = record.get(tagFilter.tag)
-          if (!(val === '*' ? val !== undefined : val === tagFilter.value)) {
+          const flags = record.flags
+          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
             continue
           }
-        }
 
-        if (readName && record.get('name') !== readName) {
-          continue
-        }
+          if (tagFilter) {
+            const readVal = record.tags[tagFilter.tag]
+            const filterVal = tagFilter.value
+            if (
+              filterVal === '*'
+                ? readVal === undefined
+                : `${readVal}` !== `${filterVal}`
+            ) {
+              continue
+            }
+          }
 
-        observer.next(new BamSlightlyLazyFeature(record, this, ref))
-      }
-      statusCallback('')
-      observer.complete()
-    }, signal)
+          if (readName && record.name !== readName) {
+            continue
+          }
+
+          // retrieve a feature from our feature cache if it is available, the
+          // features in the cache have pre-computed mismatches objects that
+          // can be re-used across blocks
+          const ret = this.ultraLongFeatureCache.get(`${record.id}`)
+          if (!ret) {
+            const elt = new BamSlightlyLazyFeature(record, this, ref)
+            this.ultraLongFeatureCache.set(`${record.id}`, elt)
+            observer.next(elt)
+          } else {
+            observer.next(ret)
+          }
+        }
+        observer.complete()
+      })
+    })
   }
 
-  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
-    // @ts-ignore
-    if (bam.index.filehandle !== '?') {
+    if (bam.index) {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
-    } else {
-      return super.estimateRegionsStats(regions, opts)
     }
+    return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
   freeResources(/* { region } */): void {}

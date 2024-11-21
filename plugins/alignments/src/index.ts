@@ -14,12 +14,7 @@ import AlignmentsTrackF from './AlignmentsTrack'
 import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail'
 import PileupRPCMethodsF from './PileupRPC'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes'
-import LinearPileupDisplayF, {
-  linearPileupDisplayStateModelFactory,
-  linearPileupDisplayConfigSchemaFactory,
-} from './LinearPileupDisplay'
-import { LinearPileupDisplayModel } from './LinearPileupDisplay/model'
-import * as MismatchParser from './MismatchParser'
+import LinearPileupDisplayF from './LinearPileupDisplay'
 
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
@@ -41,13 +36,16 @@ export default class AlignmentsPlugin extends Plugin {
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
-    ].map(f => f(pluginManager))
+    ].map(f => {
+      f(pluginManager)
+    })
   }
 }
 
 export {
-  linearPileupDisplayConfigSchemaFactory,
   linearPileupDisplayStateModelFactory,
-  MismatchParser,
-}
-export type { LinearPileupDisplayModel }
+  linearPileupDisplayConfigSchemaFactory,
+  SharedLinearPileupDisplayMixin,
+} from './LinearPileupDisplay'
+export { type LinearPileupDisplayModel } from './LinearPileupDisplay/model'
+export * as MismatchParser from './MismatchParser'

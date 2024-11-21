@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { types } from 'mobx-state-tree'
 
@@ -25,7 +24,7 @@ export default function MakeSpreadsheetColumnType(
     })
     .volatile(() => ({
       DataCellReactComponent,
-      FilterModelType: FilterModelType as any,
+      FilterModelType: FilterModelType,
       displayName: displayName || name,
       categoryName,
     }))

@@ -23,7 +23,7 @@ const useStyles = makeStyles()({
       75% {
         content: '...';
       }
-      `} 1.4s infinite ease-in-out`,
+      `} 1.2s infinite ease-in-out`,
     },
   },
 })
@@ -33,14 +33,14 @@ interface Props extends TypographyProps {
 }
 
 export default function LoadingEllipses({
-  message = 'Loading',
+  message,
   variant = 'body2',
   ...rest
 }: Props) {
   const { classes } = useStyles()
   return (
     <Typography className={classes.dots} {...rest} variant={variant}>
-      {`${message || 'Loading'}`}
+      {message || 'Loading'}
     </Typography>
   )
 }

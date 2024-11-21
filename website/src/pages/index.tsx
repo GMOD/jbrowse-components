@@ -2,37 +2,34 @@ import React from 'react'
 import Layout from '@theme/Layout'
 
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import {
-  Link,
-  ThemeProvider,
-  Typography,
-  Button,
-  Box,
-  createTheme,
-} from '@mui/material'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+import GoogleCalendarScheduleFunction from './util'
 
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
-  // @ts-ignore
+  // @ts-expect-error
   const { currentVersion } = siteConfig.customFields
 
   return (
-    // @ts-ignore
+    // @ts-expect-error
     <Layout title={`${siteConfig.title}`}>
+      <GoogleCalendarScheduleFunction />
       <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
         <Box
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'column', md: 'row' },
-            alignItems: 'center',
             marginBottom: 6,
           }}
         >
           <Box sx={{ flex: '50%' }}>
-            <Box sx={{ marginLeft: { xs: 0, sm: 0, md: 4 }, margin: 2 }}>
+            <Box>
               <Typography variant="h3" gutterBottom>
                 JBrowse
               </Typography>
@@ -40,12 +37,11 @@ function Home() {
                 The next-generation genome browser
               </Typography>
               <Typography variant="body1">
-                <p>
-                  JBrowse is a new kind of genome browser that runs on the web,
-                  on your desktop, or embedded in your app.
-                </p>
+                JBrowse is a new kind of genome browser that runs on the web, on
+                your desktop, or embedded in your app.
               </Typography>
             </Box>
+
             <Box
               sx={{
                 display: 'flex',
@@ -74,16 +70,14 @@ function Home() {
               </Button>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="caption">
+              <Typography>
                 Also check out our{' '}
-                <Link href="/jb2/blog">latest release blogpost</Link>, our{' '}
-                <Link href="/jb2/docs/embedded_components/">
-                  embedded components
-                </Link>
+                <a href="/jb2/blog">latest release blogpost</a>, our{' '}
+                <a href="/jb2/docs/embedded_components/">embedded components</a>
                 , and our{' '}
-                <Link href="/jb2/download/#jbrowse-cli-tools">
+                <a href="/jb2/download/#jbrowse-cli-tools">
                   command line tools
-                </Link>
+                </a>
                 .
               </Typography>
             </Box>
@@ -122,7 +116,7 @@ function Home() {
               <ul>
                 <li>
                   Improved <b>structural variant</b> and{' '}
-                  <b>compariative genomics visualization</b> with linear,
+                  <b>comparative genomics visualization</b> with linear,
                   circular, dotplot, and synteny views
                 </li>
                 <li>
@@ -136,9 +130,9 @@ function Home() {
                   more!
                 </li>
                 <li>
-                  <Link href="features">
+                  <a href="features">
                     See a summary of new features and a comparison to JBrowse 1
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </Box>
@@ -164,35 +158,33 @@ function Home() {
         <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Citation</Typography>
           <hr />
-          <Typography variant="body1">
-            <p>
-              We at the JBrowse Consortium are working to make JBrowse a
-              pluggable, open-source computational platform for integrating many
-              kinds of biological data from many different places.
-            </p>
-            <p>
-              Research citations are one of the main metrics the consortium uses
-              to demonstrate our relevance and utility when applying for funding
-              to continue our work. If you use JBrowse in research that you
-              publish, please cite the most recent JBrowse paper:
-            </p>
-            <cite>
-              JBrowse 2: A modular genome browser with views of synteny and
-              structural variation (2022). bioRxiv.{' '}
-              <a href="https://doi.org/10.1101/2022.07.28.501447">
-                https://doi.org/10.1101/2022.07.28.501447
-              </a>
-            </cite>
-          </Typography>
+          <p>
+            We at the JBrowse Consortium are working to make JBrowse a
+            pluggable, open-source computational platform for integrating many
+            kinds of biological data from many different places.
+          </p>
+          <p>
+            Research citations are one of the main metrics the consortium uses
+            to demonstrate our relevance and utility when applying for funding
+            to continue our work. If you use JBrowse in research that you
+            publish, please cite the most recent JBrowse paper:
+          </p>
+          <cite>
+            JBrowse 2: a modular genome browser with views of synteny and
+            structural variation. Genome Biology (2023).{' '}
+            <a href="https://doi.org/10.1186/s13059-023-02914-z">
+              https://doi.org/10.1186/s13059-023-02914-z
+            </a>
+          </cite>
         </Box>
         <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">License</Typography>
           <hr />
           <Typography>
             JBrowse is released under the{' '}
-            <Link href="https://www.apache.org/licenses/LICENSE-2.0">
+            <a href="https://www.apache.org/licenses/LICENSE-2.0">
               Apache License, Version 2.0
-            </Link>
+            </a>
             .
           </Typography>
         </Box>

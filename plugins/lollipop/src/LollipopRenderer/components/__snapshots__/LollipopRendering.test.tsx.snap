@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<div>
+  <svg
+    height="20"
+    style="position: relative;"
+    width="100"
+  />
+</div>
+`;
+
+exports[`one feature 1`] = `
+<div>
+  <svg
+    height="16.286652959662007"
+    style="position: relative;"
+    width="333.3333333333333"
+  >
+    <line
+      stroke="black"
+      stroke-width="2"
+      x1="0.7"
+      x2="0.7"
+      y1="0"
+      y2="16.286652959662007"
+    />
+    <g
+      data-testid="one"
+    >
+      <title />
+      <circle
+        cx="0.7"
+        cy="10.643326479831003"
+        r="5.643326479831003"
+        style="fill: green;"
+      />
+    </g>
+  </svg>
+</div>
+`;

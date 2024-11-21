@@ -5,7 +5,7 @@ import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 import { NewJob } from '../model'
 
-function JobCard({ job }: { job: NewJob }) {
+const JobCard = observer(function JobCard({ job }: { job: NewJob }) {
   return (
     <Card variant="outlined">
       <CardContent>
@@ -13,9 +13,15 @@ function JobCard({ job }: { job: NewJob }) {
           <strong>{'Name: '}</strong>
           {job.name}
         </Typography>
+        {job.statusMessage ? (
+          <Typography variant="body1">
+            <strong>{'Message: '}</strong>
+            {job.statusMessage}
+          </Typography>
+        ) : null}
       </CardContent>
     </Card>
   )
-}
+})
 
-export default observer(JobCard)
+export default JobCard

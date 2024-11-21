@@ -1,21 +1,17 @@
-import React from 'react'
-import Button from '@mui/material/Button'
-import Paper from '@mui/material/Paper'
-import Typography from '@mui/material/Typography'
+import React, { lazy, Suspense, useEffect, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-import ImportForm from './ImportForm'
-import GetSequenceDialog from './GetSequenceDialog'
-import SearchResultsDialog from './SearchResultsDialog'
 
-type LGV = LinearGenomeViewModel
+// lazies
+const ImportForm = lazy(() => import('./ImportForm'))
+const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 
 const useStyles = makeStyles()(theme => ({
   note: {
@@ -23,14 +19,42 @@ const useStyles = makeStyles()(theme => ({
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
+  rel: {
+    position: 'relative',
+  },
+  top: {
+    zIndex: 1000,
+  },
 }))
 
-const LinearGenomeView = observer(({ model }: { model: LGV }) => {
+const LinearGenomeView = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
   const { tracks, error, initialized, hasDisplayedRegions } = model
+  const ref = useRef<HTMLDivElement>(null)
+  const session = getSession(model)
   const { classes } = useStyles()
+  useEffect(() => {
+    // sets the focused view id based on a click within the LGV;
+    // necessary for subviews to be focused properly
+    function handleSelectView(e: Event) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
+        session.setFocusedViewId?.(model.id)
+      }
+    }
+
+    document.addEventListener('mousedown', handleSelectView)
+    document.addEventListener('keydown', handleSelectView)
+    return () => {
+      document.removeEventListener('mousedown', handleSelectView)
+      document.removeEventListener('keydown', handleSelectView)
+    }
+  }, [session, model])
 
   if (!initialized && !error) {
-    return <LoadingEllipses variant="h5" />
+    return <LoadingEllipses variant="h6" />
   }
   if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />
@@ -40,41 +64,31 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const HeaderComponent = model.HeaderComponent()
 
   return (
-    <div style={{ position: 'relative' }}>
-      {model.seqDialogDisplayed ? (
-        <GetSequenceDialog
-          model={model}
-          handleClose={() => model.setGetSequenceDialogOpen(false)}
-        />
-      ) : null}
-      {model.isSearchDialogDisplayed ? (
-        <SearchResultsDialog
-          model={model}
-          handleClose={() => model.setSearchResults(undefined, undefined)}
-        />
-      ) : null}
+    <div
+      className={classes.rel}
+      ref={ref}
+      onMouseLeave={() => {
+        session.setHovered(undefined)
+      }}
+      onMouseMove={event => {
+        const c = ref.current
+        if (!c) {
+          return
+        }
+        const { tracks } = model
+        const leftPx = event.clientX - c.getBoundingClientRect().left
+        const hoverPosition = model.pxToBp(leftPx)
+        const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)
+        session.setHovered({ hoverPosition, hoverFeature })
+      }}
+    >
       <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
-          <Paper variant="outlined" className={classes.note}>
-            {!model.hideNoTracksActive ? (
-              <>
-                <Typography>No tracks active.</Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={model.activateTrackSelector}
-                  style={{ zIndex: 1000 }}
-                  startIcon={<TrackSelectorIcon />}
-                >
-                  Open track selector
-                </Button>
-              </>
-            ) : (
-              <div style={{ height: '48px' }}></div>
-            )}
-          </Paper>
+          <Suspense fallback={<React.Fragment />}>
+            <NoTracksActiveButton model={model} />
+          </Suspense>
         ) : (
           tracks.map(track => (
             <TrackContainer key={track.id} model={model} track={track} />

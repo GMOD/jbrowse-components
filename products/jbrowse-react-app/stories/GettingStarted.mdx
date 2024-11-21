@@ -1,0 +1,64 @@
+import { Meta, Story } from '@storybook/blocks'
+import { BasicExample } from './JBrowseReactApp.stories'
+
+<Meta title="Getting Started" />
+
+# Welcome!
+
+This site contains the [Storybook](https://storybook.js.org/) docs for the
+[JBrowse 2 React App Component](https://www.npmjs.com/package/@jbrowse/react-app).
+The component makes it possible to embed the full JBrowse 2 application (with
+all the bells and whistles) in any React application.
+
+## Using the docs
+
+This is an example of using the @jbrowse/react-app as a component:
+
+<Story of={BasicExample} />
+
+You can test out the various features of the component, and open tracks and
+interact with it as you would in your app. You can also click on the code button
+on the bottom right to see what the code looks like for the component being
+viewed.
+
+## An overview of the @jbrowse/react-app API
+
+The @jbrowse/react-app component (or "app component") relies on the same
+[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app
+
+The createViewState constructor accepts a config object just like a config.json
+that you would pass to @jbrowse/web. It is not programmed to fetch the
+config.json so you can fetch the config.json manually if you want to fetch it
+from a file
+
+Config structure:
+
+```json
+{
+  "configuration": {
+    /* global configs here */
+  },
+  "assemblies": [
+    /* list of assembly configurations, e.g. the genomes being viewed */
+  ],
+  "tracks": [
+    /* array of tracks being loaded, contain reference to which assembl(y/ies)
+    they belong to */
+  ],
+  "defaultSession": {
+    /* optional default session */
+  }
+}
+```
+
+## Additional resources
+
+This overview is intended as a launching point for initial use of the
+@jbrowse/react-app component. Make sure to check out the rest of the stories to
+get a better feel for what is possible with the component.
+
+Here are a few more resources that may help:
+
+- [Source code for all the storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)
+- Examples of using @jbrowse/react-app in create-react-app, vite, and next.js
+  [https://jbrowse.org/jb2/docs/embedded_components/](https://jbrowse.org/jb2/docs/embedded_components/)

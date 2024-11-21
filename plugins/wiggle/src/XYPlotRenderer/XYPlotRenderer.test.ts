@@ -6,13 +6,12 @@ import configSchema from './configSchema'
 import XYPlotRenderer from './XYPlotRenderer'
 import ReactComponent from '../WiggleRendering'
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 test('several features', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pluginManager = {} as any
   const renderer = new XYPlotRenderer({
     name: 'XYPlotRenderer',
@@ -43,7 +42,7 @@ test('several features', async () => {
   }
 
   const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
-    // @ts-ignore
+    // @ts-expect-error
     renderer.draw(ctx, renderProps),
   )
   expect(res).toMatchSnapshot({

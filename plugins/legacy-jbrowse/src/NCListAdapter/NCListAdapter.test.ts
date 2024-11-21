@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs'
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
 
-export function generateReadBuffer(
+function generateReadBuffer(
   getFileFunction: (str: string) => GenericFilehandle,
 ) {
   return (request: Request) => {
@@ -15,9 +15,9 @@ export function generateReadBuffer(
 }
 
 beforeEach(() => {
-  // @ts-ignore
+  // @ts-expect-error
   fetch.resetMocks()
-  // @ts-ignore
+  // @ts-expect-error
   fetch.mockResponse(
     generateReadBuffer(
       (url: string) =>
@@ -44,8 +44,8 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   })
 
   const featArr = await firstValueFrom(features.pipe(toArray()))
-  expect(featArr[0].get('refName')).toBe('21')
-  expect(featArr[0].id()).toBe(`test-21,0,0,19,22,0`)
+  expect(featArr[0]!.get('refName')).toBe('21')
+  expect(featArr[0]!.id()).toBe('test-21,0,0,19,22,0')
   const featJson = featArr.map(f => f.toJSON())
   expect(featJson.length).toEqual(94)
   for (const feature of featJson) {

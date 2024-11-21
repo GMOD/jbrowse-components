@@ -11,18 +11,24 @@ import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
-import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { isSessionModelWithWidgets } from '@jbrowse/core/util'
+import path from 'path'
+import fs from 'fs'
 
-interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+const { ipcRenderer } = window.require('electron')
+
+const ONE_HOUR = 60 * 60 * 1000
+
+type Track = Record<string, any>
+
 interface TrackTextIndexing {
   attributes: string[]
   exclude: string[]
   assemblies: string[]
   tracks: string[] // trackIds
   indexType: string
+  timestamp?: string
+  name?: string
 }
 
 interface JobsEntry {
@@ -32,53 +38,74 @@ interface JobsEntry {
   statusMessage?: string
 }
 export interface TextJobsEntry extends JobsEntry {
-  name: string
   indexingParams: TrackTextIndexing
-  cancelCallback?: () => void
-  progressPct?: number
-  statusMessage?: string
 }
 
-export default function jobsModelFactory(pluginManager: PluginManager) {
+export default function jobsModelFactory(_pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       running: false,
+      /**
+       * #volatile
+       */
       statusMessage: '',
+      /**
+       * #volatile
+       */
       progressPct: 0,
+      /**
+       * #volatile
+       */
       jobName: '',
-      controller: new AbortController(),
-      jobsQueue: observable.array([] as TextJobsEntry[]),
-      finishedJobs: observable.array([] as TextJobsEntry[]),
+      /**
+       * #volatile
+       */
+      jobsQueue: observable.array<TextJobsEntry>([]),
+      /**
+       * #volatile
+       */
+      finishedJobs: observable.array<TextJobsEntry>([]),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get rpcManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.rpcManager
       },
+      /**
+       * #getter
+       */
       get tracks() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.tracks
       },
+      /**
+       * #getter
+       */
       get sessionPath() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).sessionPath
       },
+      /**
+       * #getter
+       */
       get session() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).session
       },
+      /**
+       * #getter
+       */
       get aggregateTextSearchAdapters() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.aggregateTextSearchAdapters
-      },
-      get location() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const path = getParent<any>(self).sessionPath
-        return path.substring(0, path.lastIndexOf('/'))
       },
     }))
     .actions(self => ({
+      /**
+       * #method
+       */
       getJobStatusWidget() {
         const { session } = self
         const { widgets } = session
@@ -90,67 +117,100 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setRunning(running: boolean) {
         self.running = running
       },
+      /**
+       * #action
+       */
       setJobName(name: string) {
         self.jobName = name
       },
+      /**
+       * #action
+       */
       setProgressPct(arg: string) {
         const progress = +arg
-        if (isNaN(progress)) {
+        if (Number.isNaN(progress)) {
           this.setStatusMessage(arg)
         } else {
-          progress === 100 && this.setStatusMessage('Generating ixIxx files.')
+          if (progress === 100) {
+            this.setStatusMessage('Generating ixIxx files.')
+          }
           self.progressPct = progress
         }
         this.setWidgetStatus()
       },
+      /**
+       * #action
+       */
       setWidgetStatus() {
         const jobStatusWidget = self.getJobStatusWidget()
         jobStatusWidget.updateJobStatusMessage(self.jobName, self.statusMessage)
         jobStatusWidget.updateJobProgressPct(self.jobName, self.progressPct)
       },
+      /**
+       * #action
+       */
       setStatusMessage(arg: string) {
         self.statusMessage = arg
       },
-      abortJob() {
-        self.controller.abort()
-      },
+
+      /**
+       * #action
+       */
       addFinishedJob(entry: TextJobsEntry) {
         self.finishedJobs.push(entry)
       },
+      /**
+       * #action
+       */
       queueJob(props: TextJobsEntry) {
         const { session } = self
         if (isSessionModelWithWidgets(session)) {
           const jobStatusWidget = self.getJobStatusWidget()
           session.showWidget(jobStatusWidget)
-          const { name, statusMessage, progressPct, cancelCallback } = props
+          const {
+            name,
+            statusMessage = '',
+            progressPct = 0,
+            cancelCallback,
+          } = props
           jobStatusWidget.addQueuedJob({
             name,
-            statusMessage: statusMessage || '',
-            progressPct: progressPct || 0,
+            statusMessage,
+            progressPct,
             cancelCallback,
           })
         }
         self.jobsQueue.push(props)
       },
+      /**
+       * #action
+       */
       dequeueJob() {
         const { session } = self
         if (isSessionModelWithWidgets(session)) {
           const jobStatusWidget = self.getJobStatusWidget()
           jobStatusWidget.removeJob(self.jobName)
         }
-        const entry = self.jobsQueue.splice(0, 1)[0]
-        return entry
+        return self.jobsQueue.splice(0, 1)[0]
       },
+      /**
+       * #action
+       */
       clear() {
         this.setRunning(false)
         this.setStatusMessage('')
         this.setJobName('')
         self.progressPct = 0
-        self.controller = new AbortController()
       },
+      /**
+       * #action
+       */
       async runIndexingJob(entry: TextJobsEntry) {
         const { session } = self
         const {
@@ -159,41 +219,44 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           attributes,
           assemblies,
           indexType,
-        } = toJS(entry.indexingParams as TrackTextIndexing)
+        } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          conf => {
-            return JSON.parse(JSON.stringify(getSnapshot(conf)))
-          },
+          // @ts-expect-error
+          c => JSON.parse(JSON.stringify(getSnapshot(c))),
         )
         try {
           this.setRunning(true)
           this.setJobName(entry.name)
-          const { signal } = self.controller
+          const userData = await ipcRenderer.invoke('userData')
+          const outLocation = path.join(
+            userData,
+            'nameIndices',
+            `trix-${+Date.now()}`,
+          )
+          fs.mkdirSync(outLocation, { recursive: true })
           await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
             tracks: trackConfigs,
             attributes,
             exclude,
             assemblies,
             indexType,
-            outLocation: self.sessionPath,
+            outLocation,
             sessionId: 'indexTracksSessionId',
             statusCallback: (message: string) => {
               this.setProgressPct(message)
             },
-            signal: signal,
-            timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
+            timeout: 1000 * ONE_HOUR,
           })
-          // await result
           if (indexType === 'perTrack') {
-            // should update the single track conf
             trackIds.forEach(trackId => {
-              this.addTrackTextSearchConf(
+              this.addTrackTextSearchConf({
                 trackId,
                 assemblies,
                 attributes,
                 exclude,
-              )
+                outLocation,
+              })
               self.session?.notify(
                 `Successfully indexed track with trackId: ${trackId} `,
                 'success',
@@ -208,7 +271,11 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
                     : true,
                 )
                 .map(trackConf => trackConf.trackId)
-              this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
+              this.addAggregateTextSearchConf({
+                trackIds: indexedTrackIds,
+                assemblyName,
+                outLocation,
+              })
               self.session?.notify(
                 `Successfully indexed assembly: ${assemblyName} `,
                 'success',
@@ -217,45 +284,45 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           }
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
-          current && this.addFinishedJob(current)
-          if (isSessionModelWithWidgets(session)) {
-            const jobStatusWidget = self.getJobStatusWidget()
-            session.showWidget(jobStatusWidget)
-            const { name, statusMessage, progressPct, cancelCallback } = current
-            jobStatusWidget.addFinishedJob({
-              name,
-              statusMessage: statusMessage || 'done',
-              progressPct: progressPct || 100,
-              cancelCallback,
-            })
+          if (current) {
+            this.addFinishedJob(current)
+            if (isSessionModelWithWidgets(session)) {
+              const jobStatusWidget = self.getJobStatusWidget()
+              session.showWidget(jobStatusWidget)
+              const { name, statusMessage, progressPct, cancelCallback } =
+                current
+              jobStatusWidget.addFinishedJob({
+                name,
+                statusMessage: statusMessage || 'done',
+                progressPct: progressPct || 100,
+                cancelCallback,
+              })
+            }
           }
         } catch (e) {
-          if (isAbortException(e)) {
-            self.session?.notify(`Cancelled job`, 'info')
-          } else {
-            self.session?.notify(
-              `An error occurred while indexing: ${e}`,
-              'error',
-              {
-                name: 'Retry',
-                onClick: () => {
-                  this.queueJob(entry)
-                },
+          console.error(e)
+
+          self.session?.notify(
+            `An error occurred while indexing: ${e}`,
+            'error',
+            {
+              name: 'Retry',
+              onClick: () => {
+                this.queueJob(entry)
               },
-            )
-          }
+            },
+          )
           // remove job from queue but since it was not successful
           // do not add to finished list
           this.dequeueJob()
         }
         // clear
         this.clear()
-        return
       },
       async runJob() {
         const { session } = self
         if (self.jobsQueue.length) {
-          const firstIndexingJob = self.jobsQueue[0] as TextJobsEntry
+          const firstIndexingJob = self.jobsQueue[0]!
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)
@@ -271,24 +338,33 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           }
           await this.runIndexingJob(firstIndexingJob)
         }
-        return
       },
-      addTrackTextSearchConf(
-        trackId: string,
-        assemblies: string[],
-        attributes: string[],
-        exclude: string[],
-      ) {
-        const currentTrackIdx = (self.session?.tracks as Track[]).findIndex(
-          t => trackId === t.trackId,
+      /**
+       * #action
+       */
+      addTrackTextSearchConf({
+        trackId,
+        assemblies,
+        attributes,
+        exclude,
+        outLocation,
+      }: {
+        trackId: string
+        assemblies: string[]
+        attributes: string[]
+        exclude: string[]
+        outLocation: string
+      }) {
+        const currentTrackIdx = self.session.tracks.findIndex(
+          (t: Track) => trackId === t.trackId,
         )
         // name of index
-        const id = trackId + '-index'
+        const id = `${trackId}-index`
         const adapterConf = createTextSearchConf(
           id,
           [trackId],
           assemblies,
-          self.location,
+          outLocation,
         )
         self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
           'textSearchAdapter',
@@ -301,18 +377,25 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           currentTrackIdx
         ].textSearching.indexingFeatureTypesToExclude.set(exclude)
       },
-      addAggregateTextSearchConf(trackIds: string[], asm: string) {
+      addAggregateTextSearchConf({
+        trackIds,
+        assemblyName,
+        outLocation,
+      }: {
+        trackIds: string[]
+        assemblyName: string
+        outLocation: string
+      }) {
         // name of index
-        const id = asm + '-index'
+        const id = `${assemblyName}-index`
         const foundIdx = self.aggregateTextSearchAdapters.findIndex(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (x: any) => x.textSearchAdapterId === id,
         )
         const trixConf = createTextSearchConf(
           id,
           trackIds,
-          [asm],
-          self.location,
+          [assemblyName],
+          outLocation,
         )
         if (foundIdx === -1) {
           self.aggregateTextSearchAdapters.push(trixConf)
@@ -325,7 +408,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             async () => {
-              if (self.jobsQueue?.length > 0 && self.running === false) {
+              if (self.jobsQueue.length > 0 && !self.running) {
                 await this.runJob()
               }
             },

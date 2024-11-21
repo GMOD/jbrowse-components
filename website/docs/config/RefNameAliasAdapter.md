@@ -1,13 +1,14 @@
 ---
 id: refnamealiasadapter
 title: RefNameAliasAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/config/src/RefNameAliasAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts)
 
 can read "chromAliases" type files from UCSC or any tab separated file of
 refName aliases

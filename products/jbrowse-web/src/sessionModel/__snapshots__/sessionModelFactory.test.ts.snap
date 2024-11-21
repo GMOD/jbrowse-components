@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`JBrowseWebSessionModel creates with no parent and just a name 1`] = `
+{
+  "activeWidgets": {},
+  "connectionInstances": [],
+  "drawerPosition": "right",
+  "drawerWidth": 384,
+  "focusedViewId": undefined,
+  "margin": 0,
+  "minimized": false,
+  "name": "testSession",
+  "sessionAssemblies": [],
+  "sessionConnections": [],
+  "sessionPlugins": [],
+  "sessionTracks": [],
+  "temporaryAssemblies": [],
+  "views": [],
+  "widgets": {},
+}
+`;

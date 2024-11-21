@@ -1,42 +1,49 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import { useTheme } from '@mui/material'
 
 // locals
 import { DotplotViewModel } from '../model'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 
-function Grid({
+export const GridRaw = observer(function ({
   model,
   children,
-  stroke = '#0003',
 }: {
   model: DotplotViewModel
-  children: React.ReactNode
-  stroke?: string
+  children?: React.ReactNode
 }) {
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
   const vblocks = vview.dynamicBlocks.contentBlocks
+  if (!hblocks.length || !vblocks.length) {
+    return null
+  }
   const htop = hview.displayedRegionsTotalPx - hview.offsetPx
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
-  const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
-  const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
+  const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
+  const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
+  const theme = useTheme()
+  const stroke = theme.palette.divider
 
-  // Uses math.max/math.min avoid making very large SVG rect offscreen element,
+  // Uses math.max/min avoid making very large SVG rect offscreen element,
   // which can sometimes fail to draw
   const rx = Math.max(hbottom, 0)
   const ry = Math.max(viewHeight - vtop, 0)
   const w = Math.min(htop - hbottom, viewWidth)
   const h = Math.min(viewHeight - vbottom - ry, viewHeight)
 
-  let lastx = Infinity
-  let lasty = Infinity
+  let lastx = Number.POSITIVE_INFINITY
+  let lasty = Number.POSITIVE_INFINITY
   return (
-    <svg
-      style={{ background: 'rgba(0,0,0,0.12)' }}
-      width={viewWidth}
-      height={viewHeight}
-    >
-      <rect x={rx} y={ry} width={w} height={h} fill="#fff" />
+    <>
+      <rect
+        x={rx}
+        y={ry}
+        width={w}
+        height={h}
+        {...getFillProps(theme.palette.background.default)}
+      />
       <g>
         {hblocks.map(region => {
           const x = region.offsetPx - hview.offsetPx
@@ -51,7 +58,7 @@ function Grid({
               y1={0}
               x2={x}
               y2={viewHeight}
-              stroke={stroke}
+              {...getStrokeProps(stroke)}
             />
           ) : null
         })}
@@ -68,21 +75,45 @@ function Grid({
               y1={y}
               x2={viewWidth}
               y2={y}
-              stroke={stroke}
+              {...getStrokeProps(stroke)}
             />
           ) : null
         })}
-        <line x1={htop} y1={0} x2={htop} y2={viewHeight} stroke={stroke} />
+        <line
+          x1={htop}
+          y1={0}
+          x2={htop}
+          y2={viewHeight}
+          {...getStrokeProps(stroke)}
+        />
         <line
           x1={0}
           y1={viewHeight - vtop}
           x2={viewWidth}
           y2={viewHeight - vtop}
-          stroke={stroke}
+          {...getStrokeProps(stroke)}
         />
       </g>
       {children}
+    </>
+  )
+})
+
+export default function Grid({
+  model,
+  children,
+}: {
+  model: DotplotViewModel
+  children?: React.ReactNode
+}) {
+  const { viewWidth, viewHeight } = model
+  return (
+    <svg
+      width={viewWidth}
+      height={viewHeight}
+      style={{ background: 'rgba(0,0,0,0.12)' }}
+    >
+      <GridRaw model={model}>{children}</GridRaw>
     </svg>
   )
 }
-export default observer(Grid)

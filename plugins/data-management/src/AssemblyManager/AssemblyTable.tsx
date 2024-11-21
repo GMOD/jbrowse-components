@@ -69,7 +69,9 @@ const AssemblyTable = observer(function ({
                   </IconButton>
                   <IconButton
                     data-testid={`${name}-delete`}
-                    onClick={() => removeAssembly(name)}
+                    onClick={() => {
+                      removeAssembly(name)
+                    }}
                   >
                     <DeleteIcon color="error" />
                   </IconButton>

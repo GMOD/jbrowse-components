@@ -3,6 +3,8 @@ id: 03_assemblies
 title: About assemblies
 ---
 
+import Figure from '../../figure'
+
 ## What is an assembly?
 
 An assembly in JBrowse 2 is a collection of information that describes the
@@ -47,7 +49,7 @@ The instructions for installing JBrowse CLI are on the
 "[Introduction](../01_introduction)" page. After installing, if you run the
 command `jbrowse --help` in the terminal, you should see something like this:
 
-![The output of `jbrowse --help` in a terminal](./img/jbrowse_help.png)
+<Figure caption="The output of `jbrowse --help` in a terminal" src="/img/embed_linear_genome_view/jbrowse_help.png"/>
 
 :::note
 
@@ -79,9 +81,9 @@ tab-separated list of aliases for that name.
 
 ### Running the `jbrowse` command
 
-We can create a JBrowse CLI to create a JBrowse Web config file, which we can
-use to get the assembly for JBrowse Linear Genome View. We create a config file
-with an assembly (or add an assembly to an existing config file) with the
+We can use JBrowse CLI to create a JBrowse Web config file, which we can use to
+get the assembly for JBrowse Linear Genome View. We create a config file with an
+assembly (or add an assembly to an existing config file) with the
 `jbrowse add-assembly` command. Go ahead and run `jbrowse add-assembly --help`
 to see all the options available.
 
@@ -89,14 +91,16 @@ There are a lot of options, and not all of them are things we need to worry
 about in this case. Now go ahead and run the below command, referring to the
 help to interpret the options as needed:
 
-````sh jbrowse add-assembly
-https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz --name
-GRCh38 --alias hg38 --refNameAliases
-http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt
---skipCheck ```
+```sh
+jbrowse add-assembly https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz \
+--name GRCh38 \
+--alias hg38 \
+--refNameAliases http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt \
+--skipCheck
+```
 
-This will create a file called "config.json". Go ahead and open that file up.
-In it, you will see an entry called "assemblies". The first (and only) entry in
+This will create a file called `config.json`. Go ahead and open that file up. In
+it, you will see an entry called "assemblies". The first (and only) entry in
 that list is our assembly. You can see the name, alias, sequence, and reference
 name aliases we specified in our command. If for some reason the index files
 were unusually named, you could change them in the "faiLocation" and
@@ -137,7 +141,7 @@ export default {
     },
   },
 }
-````
+```
 
 Then add an import to your "index.html" adding this data:
 
@@ -168,4 +172,4 @@ Then add an import to your "index.html" adding this data:
 </html>
 ```
 
-Keep the config.json around for now, as we'll use it in the next step as well.
+Keep the `config.json` around for now, as we'll use it in the next step as well.

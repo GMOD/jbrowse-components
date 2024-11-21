@@ -4,7 +4,7 @@ import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
 import SpreadsheetModel from '../models/Spreadsheet'
 
 describe('vcf file splitter', () => {
-  const cases: [string, {}][] = [
+  const cases = [
     [
       '##fileformat=VCFv4.3\nfogbat\n',
       { header: '##fileformat=VCFv4.3\n', body: 'fogbat\n' },
@@ -16,7 +16,7 @@ describe('vcf file splitter', () => {
         body: 'fogbat\n',
       },
     ],
-  ]
+  ] as const
 
   cases.forEach(([input, output], caseNumber) => {
     test(`case ${caseNumber}`, () => {
@@ -36,7 +36,7 @@ test('vcf file import', async () => {
   const spreadsheetSnap = parseVcfBuffer(buf)
   expect(spreadsheetSnap).toMatchSnapshot()
 
-  // @ts-ignore
+  // @ts-expect-error
   const spreadsheet = SpreadsheetModel.create(spreadsheetSnap)
   expect(spreadsheet.rowSet.rows.length).toBe(101)
 })

@@ -1,7 +1,7 @@
 export interface Feat {
   start: number
   end: number
-  type: string
+  type?: string
   name?: string
   id?: string
 }
@@ -34,7 +34,7 @@ function getItemId(feat: Feat) {
 // filters if successive elements share same start/end
 export function dedupe(list: Feat[]) {
   return list.filter(
-    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]),
+    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )
 }
 
@@ -48,18 +48,23 @@ export function revlist(list: Feat[], seqlen: number) {
     .sort((a, b) => a.start - b.start)
 }
 
-// calculates UTRs using impliedUTRs logic
 export function calculateUTRs(cds: Feat[], exons: Feat[]) {
-  const firstCds = cds[0]
-  const lastCds = cds[cds.length - 1]
+  // checking length ensures the .at below are valid
+  if (!cds.length) {
+    return []
+  }
+
+  const firstCds = cds.at(0)!
+
+  const lastCds = cds.at(-1)!
   const firstCdsIdx = exons.findIndex(
     exon => exon.end >= firstCds.start && exon.start <= firstCds.start,
   )
   const lastCdsIdx = exons.findIndex(
     exon => exon.end >= lastCds.end && exon.start <= lastCds.end,
   )
-  const lastCdsExon = exons[lastCdsIdx]
-  const firstCdsExon = exons[firstCdsIdx]
+  const lastCdsExon = exons[lastCdsIdx]!
+  const firstCdsExon = exons[firstCdsIdx]!
 
   const fiveUTRs = [
     ...exons.slice(0, firstCdsIdx),
@@ -76,8 +81,13 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
 
 // calculates UTRs using impliedUTRs logic, but there are no exon subfeatures
 export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
-  const firstCds = cds[0]
-  const lastCds = cds[cds.length - 1]
+  if (!cds.length) {
+    return []
+  }
+
+  const firstCds = cds.at(0)!
+
+  const lastCds = cds.at(-1)!
 
   const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
     elt => ({ ...elt, type: 'five_prime_UTR' }),
@@ -93,4 +103,8 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 
 export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
+}
+
+export function replaceUndefinedWithNull(obj: Record<string, unknown>) {
+  return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
 }

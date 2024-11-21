@@ -3,22 +3,26 @@ import IconButton from '@mui/material/IconButton'
 import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
+import { observer } from 'mobx-react'
 
 // icons
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
-function ConnectionTypeSelect(props: {
+const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
+  connectionTypeChoices,
+  connectionType,
+  setConnectionType,
+}: {
   connectionTypeChoices: ConnectionType[]
   connectionType?: ConnectionType
   setConnectionType: (c?: ConnectionType) => void
 }) {
-  const { connectionTypeChoices, connectionType, setConnectionType } = props
-
+  const firstChoice = connectionTypeChoices[0]
   useEffect(() => {
     if (!connectionType) {
-      setConnectionType(connectionTypeChoices[0])
+      setConnectionType(firstChoice)
     }
-  })
+  }, [connectionType, firstChoice, setConnectionType])
 
   return (
     <form autoComplete="off">
@@ -35,7 +39,6 @@ function ConnectionTypeSelect(props: {
                     href={connectionType.url}
                     rel="noopener noreferrer"
                     target="_blank"
-                    color="secondary"
                   >
                     <OpenInNewIcon />
                   </IconButton>
@@ -45,11 +48,11 @@ function ConnectionTypeSelect(props: {
           }
           select
           fullWidth
-          onChange={event =>
+          onChange={event => {
             setConnectionType(
               connectionTypeChoices.find(c => c.name === event.target.value),
             )
-          }
+          }}
           variant="outlined"
         >
           {connectionTypeChoices.map(c => (
@@ -61,6 +64,6 @@ function ConnectionTypeSelect(props: {
       ) : null}
     </form>
   )
-}
+})
 
 export default ConnectionTypeSelect

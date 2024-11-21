@@ -1,7 +1,6 @@
 ---
 id: linearreferencesequencedisplay
 title: LinearReferenceSequenceDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts)
 
 base model `BaseLinearDisplay`
 
@@ -28,7 +29,7 @@ type: types.literal('LinearReferenceSequenceDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -60,7 +61,57 @@ true
 showTranslation: true
 ```
 
+#### property: rowHeight
+
+```js
+// type signature
+number
+// code
+rowHeight: 15
+```
+
 ### LinearReferenceSequenceDisplay - Getters
+
+#### getter: sequenceType
+
+```js
+// type
+any
+```
+
+#### getter: showForwardActual
+
+showReverse setting, it is NOT disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: showReverseActual
+
+showReverse setting, is disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: showTranslationActual
+
+showTranslation setting is disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: sequenceHeight
+
+```js
+// type
+number
+```
 
 #### getter: rendererTypeName
 

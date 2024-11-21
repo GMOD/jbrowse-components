@@ -1,14 +1,16 @@
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
-} from '@jbrowse/core/configuration/configurationSchema'
+} from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 /**
  * #stateModel LinearBareDisplay
- * extends `BaseLinearDisplay`
+ * #category display
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

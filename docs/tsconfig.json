@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "outDir": "dist",

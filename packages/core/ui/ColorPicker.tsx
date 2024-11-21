@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import Color from 'color'
+import { colord } from '@jbrowse/core/util/colord'
 import Popover from '@mui/material/Popover'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import * as paletteColors from './colors'
-import { useLocalStorage } from '../util'
+import { useLocalStorage, useDebounce } from '../util'
 
 // we are using a vendored copy of react-colorful because the default uses
 // pure-ESM which is difficult to make pass with jest e.g.
@@ -51,11 +51,15 @@ export const PopoverPicker = ({
       <div
         className={classes.swatch}
         style={{ backgroundColor: color }}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       />
       <ColorPopover
         anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
         color={color}
         onChange={onChange}
       />
@@ -93,17 +97,19 @@ export function ColorPicker({
   const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
   const [text, setText] = useState(color)
-  const rgb = Color(color).rgb().toString()
+  const rgb = colord(color).toRgbString()
+  const rgbDebounced = useDebounce(rgb, 1000)
+
   const handleChange = (val: string) => {
     setText(val)
     try {
-      onChange(Color(val).rgb().toString())
+      onChange(colord(val).toRgbString())
     } catch (e) {}
   }
   return (
     <div style={{ display: 'flex', padding: 10 }}>
       <div style={{ width: 200, margin: 5 }}>
-        <RgbaStringColorPicker color={rgb} onChange={handleChange} />
+        <RgbaStringColorPicker color={rgbDebounced} onChange={handleChange} />
       </div>
       <div style={{ width: 200, margin: 5 }}>
         <Select
@@ -123,17 +129,23 @@ export function ColorPicker({
         <div className={classes.swatches}>
           {presetColors.map((presetColor, idx) => (
             <button
-              key={presetColor + '-' + idx}
+              type="button"
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
+              key={`${presetColor}-${idx}`}
               className={classes.swatch}
               style={{ background: presetColor }}
-              onClick={() => handleChange(presetColor)}
+              onClick={() => {
+                handleChange(presetColor)
+              }}
             />
           ))}
         </div>
         <TextField
           helperText={'Manually set color (hex, rgb, or css color name)'}
           value={text}
-          onChange={event => handleChange(event.target.value)}
+          onChange={event => {
+            handleChange(event.target.value)
+          }}
         />
       </div>
     </div>

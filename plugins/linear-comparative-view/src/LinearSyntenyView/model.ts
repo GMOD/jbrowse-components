@@ -1,26 +1,48 @@
+import React, { lazy } from 'react'
 import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
+import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { saveAs } from 'file-saver'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
-import LinkOffIcon from '@mui/icons-material/LinkOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
 
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  scale?: number
+  filename?: string
+  Wrapper?: React.FC<{ children: React.ReactNode }>
+  fontSize?: number
+  rulerHeight?: number
+  textHeight?: number
+  paddingHeight?: number
+  headerHeight?: number
+  cytobandHeight?: number
+  themeName?: string
+  trackLabels?: string
+}
+
 /**
  * #stateModel LinearSyntenyView
- * extends the `LinearComparativeView` base model
+ * extends
+ * - [LinearComparativeView](../linearcomparativeview)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
+      'LinearSyntenyView',
       baseModel(pluginManager),
-      types.model('LinearSyntenyView', {
+      types.model({
         /**
          * #property
          */
@@ -53,12 +75,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       showAllRegions() {
         transaction(() => {
-          self.views.forEach(view => view.showAllRegionsInAssembly())
+          for (const view of self.views) {
+            view.showAllRegionsInAssembly()
+          }
         })
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      async exportSvg(opts: ExportSvgOptions) {
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGLinearSyntenyView'
+        )
+        const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
+    }))
     .views(self => {
-      const superMenuItems = self.headerMenuItems
+      const superHeaderMenuItems = self.headerMenuItems
+      const superMenuItems = self.menuItems
       return {
         /**
          * #method
@@ -67,7 +105,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         headerMenuItems() {
           return [
-            ...superMenuItems(),
+            ...superHeaderMenuItems(),
             {
               label: 'Square view',
               onClick: self.squareView,
@@ -87,12 +125,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: self.drawCIGAR,
               type: 'checkbox',
               description: 'Draws per-base CIGAR level alignments',
-              icon: VisibilityIcon,
-            },
-            {
-              label: self.linkViews ? 'Unlink views' : 'Link views',
-              onClick: self.toggleLinkViews,
-              icon: self.linkViews ? LinkOffIcon : LinkIcon,
             },
             {
               label: 'Use curved lines',
@@ -100,6 +132,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: self.drawCurves,
               onClick: self.toggleCurves,
               icon: Curves,
+            },
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: (): void => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+          ]
+        },
+        /**
+         * #method
+         */
+        menuItems() {
+          return [
+            ...superMenuItems(),
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDialog,
+                  { model: self, handleClose },
+                ])
+              },
             },
           ]
         },

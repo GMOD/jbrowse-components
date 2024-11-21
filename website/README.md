@@ -16,9 +16,6 @@ We build docusaurus and also create a PDF version with pandoc
 
 - We use markdown and not mdx for pandoc compatibility
 
-- We link to images with ../img/file.png in the markdown, which works on both
-  the website and pdf
-
 - `docs/read_sidebar.js` parses sidebar.json and outputs markdown in order for
   the pandoc
 
@@ -51,10 +48,6 @@ served using any static contents hosting service.
     yarn deploy
 
 Currently deploys to the jbrowse.org amazon s3 bucket
-
-### Deploy pdf
-
-    yarn deploypdf
 
 ## Screenshots
 

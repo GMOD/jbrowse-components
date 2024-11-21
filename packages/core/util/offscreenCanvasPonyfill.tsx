@@ -1,12 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import isNode from 'detect-node'
 
 import { CanvasSequence } from 'canvas-sequencer'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AbstractCanvas = any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type AbstractImageBitmap = any
 
 export let createCanvas: (width: number, height: number) => AbstractCanvas
@@ -15,10 +15,9 @@ export let createImageBitmap: (
 ) => Promise<AbstractImageBitmap>
 
 /** the JS class (constructor) for offscreen-generated image bitmap data */
-export let ImageBitmapType: Function
+export let ImageBitmapType: unknown
 
 export function drawImageOntoCanvasContext(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   imageData: any,
   context: CanvasRenderingContext2D,
 ) {
@@ -37,29 +36,27 @@ const weHave = {
 
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
-  // eslint-disable-next-line no-restricted-globals
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
-  // eslint-disable-next-line no-restricted-globals
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
   createCanvas = (...args) => {
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
+    // @ts-expect-error
     return nodeCreateCanvas(...args)
   }
-  createImageBitmap = async (canvas, ...otherargs) => {
-    if (otherargs.length) {
-      throw new Error(
-        'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
-      )
-    }
+  createImageBitmap = async canvas => {
     const dataUri = canvas.toDataURL()
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
+    // @ts-expect-error
     const img = new nodeImage()
     return new Promise((resolve, reject) => {
-      img.onload = () => resolve(img)
+      // need onload for jest
+      img.onload = () => {
+        resolve(img)
+      }
       img.onerror = reject
       img.src = dataUri
     })

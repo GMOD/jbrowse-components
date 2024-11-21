@@ -3,16 +3,6 @@ import { render } from '@testing-library/react'
 import { createViewState } from '..'
 import JBrowseCircularGenomeView from './JBrowseCircularGenomeView'
 
-window.requestIdleCallback = (
-  cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
-) => {
-  cb({ didTimeout: false, timeRemaining: () => 0 })
-  return 0
-}
-window.cancelIdleCallback = () => {}
-window.requestAnimationFrame = cb => setTimeout(cb)
-window.cancelAnimationFrame = () => {}
-
 const assembly = {
   name: 'volvox',
   sequence: {
@@ -62,21 +52,23 @@ const defaultSession = {
     tracks: [],
   },
 }
+beforeEach(() => jest.useFakeTimers())
 
-describe('<JBrowseCircularGenomeView />', () => {
-  it('renders successfully', async () => {
-    const state = createViewState({
-      assembly,
-      tracks: [],
-      defaultSession,
-    })
-    state.session.view.setWidth(800)
-    const { container, findAllByText } = render(
-      <Suspense fallback={<div>Loading...</div>}>
-        <JBrowseCircularGenomeView viewState={state} />
-      </Suspense>,
-    )
-    await findAllByText('ctgA', {}, { timeout: 10000 })
-    expect(container.firstChild).toMatchSnapshot()
-  }, 10000)
-})
+test('<JBrowseCircularGenomeView />', async () => {
+  const state = createViewState({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
+  state.session.view.setWidth(800)
+  const { container, findAllByText } = render(
+    <Suspense fallback={<div>Loading...</div>}>
+      <JBrowseCircularGenomeView viewState={state} />
+    </Suspense>,
+  )
+  await findAllByText('ctgA', {}, { timeout: 10000 })
+
+  // xref https://stackoverflow.com/a/64875069/2129219 without this ripples non-deterministically show up in snapshot
+  jest.runAllTimers()
+  expect(container).toMatchSnapshot()
+}, 10000)

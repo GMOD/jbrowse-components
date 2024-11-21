@@ -1,17 +1,18 @@
 import React, { useState } from 'react'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
 import Button from '@mui/material/Button'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 
-// locals
 import FactoryResetDialog from './FactoryResetDialog'
-import Dialog from './Dialog'
+import ErrorMessage from './ErrorMessage'
 
 const ResetComponent = ({
   onFactoryReset,
   resetButtonText,
 }: {
-  onFactoryReset: Function
+  onFactoryReset: () => void
   resetButtonText: string
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -22,12 +23,16 @@ const ResetComponent = ({
         data-testid="fatal-error"
         color="primary"
         variant="contained"
-        onClick={() => setDialogOpen(true)}
+        onClick={() => {
+          setDialogOpen(true)
+        }}
       >
         {resetButtonText}
       </Button>
       <FactoryResetDialog
-        onClose={() => setDialogOpen(false)}
+        onClose={() => {
+          setDialogOpen(false)
+        }}
         open={dialogOpen}
         onFactoryReset={onFactoryReset}
       />
@@ -35,7 +40,7 @@ const ResetComponent = ({
   )
 }
 
-const FatalErrorDialog = ({
+export default function FatalErrorDialog({
   componentStack,
   error = 'No error message provided',
   onFactoryReset,
@@ -43,22 +48,23 @@ const FatalErrorDialog = ({
 }: {
   componentStack?: string
   error?: unknown
-  onFactoryReset: Function
+  onFactoryReset: () => void
   resetButtonText?: string
-}) => {
+}) {
   return (
-    <Dialog open title={'Fatal error'}>
+    <Dialog maxWidth="xl" open>
+      <DialogTitle>Fatal error</DialogTitle>
       <DialogContent>
-        <pre>
-          {`${error}`}
-          {componentStack}
-        </pre>
+        <ErrorMessage error={error} />
+        <pre>{componentStack}</pre>
       </DialogContent>
       <DialogActions>
         <Button
           color="secondary"
           variant="contained"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            window.location.reload()
+          }}
         >
           Refresh
         </Button>
@@ -70,5 +76,3 @@ const FatalErrorDialog = ({
     </Dialog>
   )
 }
-
-export default FatalErrorDialog

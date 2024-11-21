@@ -1,13 +1,14 @@
 ---
 id: oauthinternetaccount
 title: OAuthInternetAccount
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/authentication/src/OAuthModel/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/configSchema.ts)
 
 ### OAuthInternetAccount - Slots
 
@@ -85,23 +86,14 @@ state: {
 
 ```js
 responseType: {
-      description: 'the type of response from the authorization endpoint',
+      description:
+        "the type of response from the authorization endpoint. can be 'token' or 'code'",
       type: 'string',
       defaultValue: 'code',
     }
 ```
 
-#### slot: hasRefreshToken
-
-```js
-hasRefreshToken: {
-      description: 'true if the endpoint can supply a refresh token',
-      type: 'boolean',
-      defaultValue: false,
-    }
-```
-
-## OAuthInternetAccount - Derives from
+### OAuthInternetAccount - Derives from
 
 ```js
 baseConfiguration: BaseInternetAccountConfig

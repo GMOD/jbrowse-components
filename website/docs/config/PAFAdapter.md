@@ -1,13 +1,14 @@
 ---
 id: pafadapter
 title: PAFAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/comparative-adapters/src/PAFAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PAFAdapter/configSchema.ts)
 
 ### PAFAdapter - Slots
 
@@ -18,7 +19,7 @@ assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
+        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     }
 ```
 

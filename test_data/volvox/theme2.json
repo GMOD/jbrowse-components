@@ -1,0 +1,410 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
+        "formatAbout": {
+          "hideUris": true,
+          "config": "jexl:{extraField:'important data'}"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "theme": {
+      "palette": {
+        "tertiary": {
+          "main": "#9da9b6"
+        },
+        "secondary": {
+          "main": "#29405F"
+        }
+      }
+    },
+    "extraThemes": {
+      "darkWild": {
+        "name": "Dark (wild)",
+        "palette": {
+          "primary": {
+            "main": "#444"
+          },
+          "secondary": {
+            "main": "#335"
+          },
+          "tertiary": {
+            "main": "#250"
+          },
+          "quaternary": {
+            "main": "#535"
+          },
+          "mode": "dark"
+        }
+      }
+    }
+  },
+  "defaultSession": {
+    "name": "Integration test example",
+    "views": [
+      {
+        "id": "integration_test",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "displayedRegions": [
+          {
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001,
+            "assemblyName": "volvox"
+          }
+        ]
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "filterText": "",
+        "view": "integration_test"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  },
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_sv_test",
+      "name": "volvox structural variant test",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_sv_test_renamed",
+      "name": "volvox structural variant test w/renamed refs",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.renamed.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.renamed.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_alignments",
+      "name": "volvox-sorted.cram (contigA, default display)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted-altname.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted-altname.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_pileup",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
+      "category": ["Integration test"],
+      "metadata": {
+        "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo"
+      },
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted-altname.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted-altname.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        },
+        "fetchSizeLimit": 1000
+      },
+      "displays": [
+        {
+          "type": "LinearPileupDisplay",
+          "displayId": "volvox_cram_pileup_pileup"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_snpcoverage",
+      "name": "volvox-sorted.cram (contigA, LinearSNPCoverageDisplay)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted-altname.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted-altname.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearSNPCoverageDisplay",
+          "displayId": "volvox_cram_snpcoverage_snpcoverage"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_alignments_ctga",
+      "name": "volvox-sorted.cram (ctgA, default display)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_pileup_ctga",
+      "name": "volvox-sorted.cram (ctgA, LinearPileupDisplay)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPileupDisplay",
+          "displayId": "volvox_cram_pileup_ctga_pileup"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_snpcoverage_ctga",
+      "name": "volvox-sorted.cram (ctgA, LinearSNPCoverageDisplay)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearSNPCoverageDisplay",
+          "displayId": "volvox_cram_pileup_ctga_snpcoverage"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_alignments",
+      "name": "volvox-sorted.bam (ctgA)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox", "volvox2"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "volvox_alignments_alignments",
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_altname_alignments_pileup"
+          }
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_bam_snpcoverage",
+      "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted-altname.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted-altname.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearSNPCoverageDisplay",
+          "displayId": "volvox_bam_snpcoverage_snpcoverage"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_bam_pileup",
+      "name": "volvox-sorted.bam (contigA LinearPileupDisplay)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted-altname.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted-altname.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPileupDisplay",
+          "displayId": "volvox_bam_pileup_pileup"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_alignments_pileup_coverage",
+      "name": "volvox-sorted.bam (ctgA, canvas)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ]
+}

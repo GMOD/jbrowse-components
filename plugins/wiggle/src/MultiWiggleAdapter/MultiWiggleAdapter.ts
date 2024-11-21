@@ -19,8 +19,11 @@ function getFilename(uri: string) {
 
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
+  source: string
   [key: string]: unknown
 }
+
+type MaybeStats = { scoreMin: number; scoreMax: number } | undefined
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
@@ -47,7 +50,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
 
     return Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       subConfs.map(async (conf: any) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
@@ -72,10 +74,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
     const stats = (
-      await Promise.all(
-        // @ts-ignore
+      (await Promise.all(
+        // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
-      )
+      )) as MaybeStats[]
     ).filter(f => !!f)
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))
@@ -94,24 +96,26 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
                 ? p
                 : new SimpleFeature({
                     ...p.toJSON(),
-                    uniqueId: adp.source + '-' + p.id(),
+                    uniqueId: `${adp.source}-${p.id()}`,
                     source: adp.source,
                   }),
             ),
           ),
         ),
       ).subscribe(observer)
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   // always render bigwig instead of calculating a feature density for it
-  async estimateRegionsStats(_regions: Region[]) {
-    return { featureDensity: 0 }
+  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
+    return {
+      featureDensity: 0,
+    }
   }
 
   // in another adapter type, this could be dynamic depending on region or
   // something, but it is static for this particular multi-wiggle adapter type
-  async getSources() {
+  async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
     return adapters.map(({ dataAdapter, source, name, ...rest }) => ({
       name: source,

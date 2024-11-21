@@ -11,7 +11,7 @@ import Dialog from '@jbrowse/core/ui/Dialog'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -19,11 +19,14 @@ const useStyles = makeStyles()({
   },
 })
 
-function SequenceDialog({
+const SequenceSearchDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: { assemblyNames: string[]; toggleTrack(trackId: string): void }
+  model: {
+    assemblyNames: string[]
+    showTrack: (trackId: string) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -32,7 +35,7 @@ function SequenceDialog({
   const [searchReverse, setSearchReverse] = useState(true)
   const [caseInsensitive, setCaseInsensitive] = useState(true)
 
-  let error
+  let error: unknown
 
   try {
     new RegExp(value)
@@ -50,7 +53,9 @@ function SequenceDialog({
         </Typography>
         <TextField
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={e => {
+            setValue(e.target.value)
+          }}
           helperText="Sequence search pattern"
         />
         <FormGroup>
@@ -58,7 +63,9 @@ function SequenceDialog({
             control={
               <Checkbox
                 checked={searchForward}
-                onChange={event => setSearchForward(event.target.checked)}
+                onChange={event => {
+                  setSearchForward(event.target.checked)
+                }}
               />
             }
             label="Search forward strand"
@@ -67,7 +74,9 @@ function SequenceDialog({
             control={
               <Checkbox
                 checked={searchReverse}
-                onChange={event => setSearchReverse(event.target.checked)}
+                onChange={event => {
+                  setSearchReverse(event.target.checked)
+                }}
               />
             }
             label="Search reverse strand"
@@ -76,7 +85,9 @@ function SequenceDialog({
             control={
               <Checkbox
                 checked={caseInsensitive}
-                onChange={event => setCaseInsensitive(event.target.checked)}
+                onChange={event => {
+                  setCaseInsensitive(event.target.checked)
+                }}
               />
             }
             label="Case insensitive"
@@ -91,25 +102,27 @@ function SequenceDialog({
               const trackId = `sequence_search_${+Date.now()}`
               const session = getSession(model)
               const { assemblyManager } = session
-              const assemblyName = model.assemblyNames[0]
-              session.addTrackConf({
-                trackId,
-                name: `Sequence search ${value}`,
-                assemblyNames: [assemblyName],
-                type: 'FeatureTrack',
-                adapter: {
-                  type: 'SequenceSearchAdapter',
-                  search: value,
-                  searchForward,
-                  searchReverse,
-                  caseInsensitive,
-                  sequenceAdapter: getSnapshot(
-                    assemblyManager.get(assemblyName)?.configuration.sequence
-                      .adapter,
-                  ),
-                },
-              })
-              model.toggleTrack(trackId)
+              const assemblyName = model.assemblyNames[0]!
+              if (isSessionWithAddTracks(session)) {
+                session.addTrackConf({
+                  trackId,
+                  name: `Sequence search ${value}`,
+                  assemblyNames: [assemblyName],
+                  type: 'FeatureTrack',
+                  adapter: {
+                    type: 'SequenceSearchAdapter',
+                    search: value,
+                    searchForward,
+                    searchReverse,
+                    caseInsensitive,
+                    sequenceAdapter: getSnapshot(
+                      assemblyManager.get(assemblyName)?.configuration.sequence
+                        .adapter,
+                    ),
+                  },
+                })
+                model.showTrack(trackId)
+              }
             }
             handleClose()
           }}
@@ -120,7 +133,9 @@ function SequenceDialog({
         </Button>
 
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="secondary"
         >
@@ -129,6 +144,6 @@ function SequenceDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(SequenceDialog)
+export default SequenceSearchDialog

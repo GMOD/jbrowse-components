@@ -6,9 +6,10 @@ import {
   generateReadBuffer,
   doBeforeEach,
   hts,
-  pc,
+  pv,
   createView,
   mockConsole,
+  mockFile404,
 } from './util'
 
 const readBuffer = generateReadBuffer(
@@ -21,29 +22,21 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 25000 }
 const opts = [{}, delay]
 
 test('reloads bigwig (BW 404)', async () => {
   await mockConsole(async () => {
-    // @ts-ignore
-    fetch.mockResponse(async request => {
-      if (request.url === 'volvox_microarray.bw') {
-        return { status: 404 }
-      }
-      return readBuffer(request)
-    })
-
-    const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
-    await findByText('Help')
+    mockFile404('volvox_microarray.bw', readBuffer)
+    const { view, findByTestId, findAllByTestId, findAllByText } =
+      await createView()
     view.setNewView(10, 0)
     fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
-    expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..8000-0'), ...opts))
+    fireEvent.click(buttons[0]!)
+    expectCanvasMatch(await findByTestId(pv('1..8000-0'), ...opts))
   })
-}, 20000)
+}, 30000)

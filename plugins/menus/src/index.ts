@@ -24,7 +24,7 @@ import {
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
 
-export default class extends Plugin {
+export default class MenusPlugin extends Plugin {
   name = 'MenusPlugin'
 
   install(pluginManager: PluginManager) {

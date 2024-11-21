@@ -1,13 +1,14 @@
 ---
 id: twobitadapter
 title: TwoBitAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/sequence/src/TwoBitAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts)
 
 ### TwoBitAdapter - Slots
 

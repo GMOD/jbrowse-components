@@ -3,6 +3,7 @@ import { types } from 'mobx-state-tree'
 
 /**
  * #config DotplotRenderer
+ * #category renderer
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -16,7 +17,7 @@ export default ConfigurationSchema(
       type: 'color',
       description:
         'the color of each feature in a synteny, used with colorBy:default',
-      defaultValue: 'black',
+      defaultValue: '#f0f',
       contextVariable: ['feature'],
     },
 

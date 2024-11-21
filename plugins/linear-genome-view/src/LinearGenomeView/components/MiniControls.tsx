@@ -1,56 +1,68 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
+import { alpha } from '@mui/system/colorManipulator'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { makeStyles } from 'tss-react/mui'
+import { getSession } from '@jbrowse/core/util'
+
+// icons
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
-import Menu from '@jbrowse/core/ui/Menu'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 
-const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
-  const { model } = props
-  const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor, hideHeader } = model
-  const [anchorEl, setAnchorEl] = useState<HTMLElement>()
+const useStyles = makeStyles()(theme => ({
+  background: {
+    position: 'absolute',
+    right: 0,
+    zIndex: 1001,
+    background: theme.palette.background.paper,
+  },
+  focusedBackground: {
+    background: alpha(theme.palette.secondary.light, 0.2),
+  },
+}))
 
+const MiniControls = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
+  const { classes } = useStyles()
+  const { id, bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor, hideHeader } = model
+  const { focusedViewId } = getSession(model)
   return hideHeader ? (
-    <div style={{ position: 'absolute', right: '0px', zIndex: '1001' }}>
-      <Paper style={{ background: '#aaa7' }}>
-        <IconButton
-          color="secondary"
-          onClick={event => setAnchorEl(event.currentTarget)}
-        >
+    <Paper className={classes.background}>
+      <Paper
+        className={focusedViewId === id ? classes.focusedBackground : undefined}
+      >
+        <CascadingMenuButton menuItems={model.menuItems()}>
           <ArrowDown fontSize="small" />
-        </IconButton>
-
+        </CascadingMenuButton>
         <IconButton
           data-testid="zoom_out"
-          onClick={() => model.zoom(bpPerPx * 2)}
+          onClick={() => {
+            model.zoom(bpPerPx * 2)
+          }}
           disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
-          color="secondary"
         >
           <ZoomOut fontSize="small" />
         </IconButton>
         <IconButton
           data-testid="zoom_in"
-          onClick={() => model.zoom(model.bpPerPx / 2)}
+          onClick={() => {
+            model.zoom(bpPerPx / 2)
+          }}
           disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
-          color="secondary"
         >
           <ZoomIn fontSize="small" />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setAnchorEl(undefined)
-          }}
-          onClose={() => setAnchorEl(undefined)}
-          menuItems={model.menuItems()}
-        />
       </Paper>
-    </div>
+    </Paper>
   ) : null
 })
 

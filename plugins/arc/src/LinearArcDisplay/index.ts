@@ -5,11 +5,12 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearArcDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'LinearArcDisplay',
+      displayName: 'Arc display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',

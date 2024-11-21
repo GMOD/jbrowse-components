@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import {
   RenderResults,
@@ -8,8 +6,8 @@ import {
   RenderArgsSerialized,
   validateRendererType,
 } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { checkAbortSignal, renameRegionsIfNeeded } from '../../util'
+import { renameRegionsIfNeeded } from '../../util'
+import { checkStopToken } from '../../util/stopToken'
 
 /**
  * fetches features from an adapter and call a renderer with them
@@ -41,19 +39,19 @@ export default class CoreRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
     let deserializedArgs = args
     if (rpcDriver !== 'MainThreadRpcDriver') {
       deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
-    const { sessionId, rendererType, signal } = deserializedArgs
+    const { sessionId, rendererType, stopToken } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
 
     const RendererType = validateRendererType(
       rendererType,
@@ -65,7 +63,7 @@ export default class CoreRender extends RpcMethodType {
         ? await RendererType.render(deserializedArgs)
         : await RendererType.renderInWorker(deserializedArgs)
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
     return result
   }
 

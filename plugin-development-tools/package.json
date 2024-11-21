@@ -45,8 +45,7 @@
     "chalk": "^4.1.1",
     "lodash.merge": "^4.6.2",
     "rollup-plugin-external-globals": "^0.6.1",
-    "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-polyfill-node": "^0.12.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-terser": "^7.0.2"
   },
@@ -58,8 +57,7 @@
     "typescript": "^4.0.0"
   },
   "devDependencies": {
-    "@types/rollup-plugin-node-builtins": "^2.1.2",
-    "@types/rollup-plugin-node-globals": "^1.4.1",
+    "rimraf": "^4.1.2",
     "rollup": "^2.77.0",
     "typescript": "^4.7.4"
   },

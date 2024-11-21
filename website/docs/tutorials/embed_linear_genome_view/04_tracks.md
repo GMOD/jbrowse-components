@@ -7,7 +7,7 @@ title: About tracks
 
 A track is the place to display your data files in JBrowse Linear Genome View.
 For this tutorial we're going to add a gene track, an
-[alignments track](/docs/user_guides/alignment_track), and a
+[alignments track](/docs/user_guides/alignments_track), and a
 [variants track](/docs/user_guides/variant_track). We're just going to use basic
 configuration, but check the links for the track types to see what kinds of
 things you can configure in them.

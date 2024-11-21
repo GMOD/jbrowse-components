@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import Box from '@mui/material/Box'
 import FormHelperText from '@mui/material/FormHelperText'
@@ -12,16 +12,18 @@ import ToggleButton, { ToggleButtonProps } from '@mui/material/ToggleButton'
 // locals
 import {
   FileLocation,
-  UriLocation,
   AbstractRootModel,
   isUriLocation,
   isAppRootModel,
 } from '../../util/types'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
+import { notEmpty, useLocalStorage } from '../../util'
 
 // icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+
+const NUM_SHOWN = 2
 
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { title, children, ...other } = props
@@ -34,172 +36,189 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
 
 function shorten(str: string, len: number) {
   if (typeof str === 'string' && str.length > len) {
-    return `${str.substring(0, len)}…`
+    return `${str.slice(0, Math.max(0, len))}…`
   }
   return str
 }
 
-const FileSelector = observer(
-  (props: {
-    location?: FileLocation
-    setLocation: (param: FileLocation) => void
-    setName?: (str: string) => void
-    name?: string
-    description?: string
-    rootModel?: AbstractRootModel
-  }) => {
-    const { location, name, description, rootModel, setLocation } = props
-    const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
-    const [toggleButtonValue, setToggleButtonValue] = useState(
-      location && 'internetAccountId' in location && location.internetAccountId
-        ? location.internetAccountId
-        : fileOrUrl,
-    )
-    const accts = isAppRootModel(rootModel)
-      ? rootModel.internetAccounts.slice()
-      : []
-    const numShown = 2
-    const [shownAccts, setShownAccts] = useState(accts.slice(0, numShown))
-    const [hiddenAccts, setHiddenAccts] = useState(accts.slice(numShown))
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+const FileSelector = observer(function (props: {
+  location?: FileLocation
+  setLocation: (param: FileLocation) => void
+  setName?: (str: string) => void
+  name?: string
+  description?: string
+  rootModel?: AbstractRootModel
+}) {
+  const { location, name, description, rootModel, setLocation } = props
+  const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
+  const [toggleButtonValue, setToggleButtonValue] = useState(
+    location && 'internetAccountId' in location && location.internetAccountId
+      ? location.internetAccountId
+      : fileOrUrl,
+  )
+  const accounts = isAppRootModel(rootModel)
+    ? rootModel.internetAccounts.filter(
+        f => f.type !== 'HTTPBasicInternetAccount',
+      )
+    : []
 
-    const selectedAcct = accts.find(
-      ia => ia.internetAccountId === toggleButtonValue,
-    )
+  const [recentlyUsedInternetAccounts, setRecentlyUsedInternetAccounts] =
+    useLocalStorage('fileSelector-recentlyUsedInternetAccounts', [] as string[])
 
-    const setLocationWithAccount = (location: UriLocation) => {
+  const map = Object.fromEntries(accounts.map(a => [a.internetAccountId, a]))
+  const arr = [...new Set(accounts.map(s => s.internetAccountId))].sort(
+    (a, b) =>
+      recentlyUsedInternetAccounts.indexOf(a) -
+      recentlyUsedInternetAccounts.indexOf(b),
+  )
+  const shownAccounts = arr.slice(0, NUM_SHOWN)
+  const hiddenAccounts = arr.slice(NUM_SHOWN)
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const selectedAccount = map[toggleButtonValue]
+
+  const setLocationWithAccount = useCallback(
+    (location: FileLocation) => {
       setLocation({
         ...location,
-        internetAccountId: selectedAcct
-          ? selectedAcct.internetAccountId
-          : undefined,
+        ...(selectedAccount && isUriLocation(location)
+          ? { internetAccountId: selectedAccount.internetAccountId }
+          : {}),
       })
-    }
+    },
+    [setLocation, selectedAccount],
+  )
 
+  useEffect(() => {
     // if you swap account selection after inputting url
     if (
-      location &&
-      selectedAcct &&
+      selectedAccount &&
       isUriLocation(location) &&
-      location.internetAccountId !== selectedAcct.internetAccountId
+      location.internetAccountId !== selectedAccount.internetAccountId
     ) {
       setLocationWithAccount(location)
     }
+  }, [location, selectedAccount, setLocationWithAccount])
 
-    let locationInput = (
-      <UrlChooser
-        {...props}
-        setLocation={setLocationWithAccount}
-        label={selectedAcct?.selectorLabel}
-      />
+  let locationInput = (
+    <UrlChooser
+      {...props}
+      setLocation={setLocationWithAccount}
+      label={selectedAccount?.selectorLabel}
+    />
+  )
+  if (toggleButtonValue === 'file') {
+    locationInput = <LocalFileChooser {...props} />
+  }
+  if (selectedAccount?.SelectorComponent) {
+    const { SelectorComponent } = selectedAccount
+    locationInput = (
+      <SelectorComponent {...props} setLocation={setLocationWithAccount} />
     )
-    if (toggleButtonValue === 'file') {
-      locationInput = <LocalFileChooser {...props} />
-    }
-    if (selectedAcct?.SelectorComponent) {
-      const { SelectorComponent } = selectedAcct
-      locationInput = (
-        <SelectorComponent {...props} setLocation={setLocationWithAccount} />
-      )
-    }
+  }
 
-    return (
-      <>
-        <Box display="flex">
-          <InputLabel shrink>{name}</InputLabel>
-        </Box>
-        <Box display="flex" flexDirection="row">
-          <Box>
-            <ToggleButtonGroup
-              value={toggleButtonValue}
-              exclusive
-              onChange={(_event, newState) => {
-                if (newState) {
-                  setToggleButtonValue(newState)
-                }
-                if (isUriLocation(location)) {
-                  setLocationWithAccount(location)
-                }
-              }}
-              aria-label="file, url, or account picker"
-            >
-              {new URLSearchParams(window.location.search).get(
-                'adminKey',
-              ) ? null : (
-                <ToggleButton value="file" aria-label="local file">
-                  File
-                </ToggleButton>
-              )}
-              <ToggleButton value="url" aria-label="url">
-                URL
+  return (
+    <>
+      <Box display="flex">
+        <InputLabel shrink>{name}</InputLabel>
+      </Box>
+      <Box display="flex" flexDirection="row">
+        <Box>
+          <ToggleButtonGroup
+            value={toggleButtonValue}
+            exclusive
+            onChange={(_event, newState) => {
+              setRecentlyUsedInternetAccounts([
+                ...new Set(
+                  [newState, ...recentlyUsedInternetAccounts].filter(notEmpty),
+                ),
+              ])
+              if (newState) {
+                setToggleButtonValue(newState)
+              }
+              if (isUriLocation(location)) {
+                setLocationWithAccount(location)
+              }
+            }}
+            aria-label="file, url, or account picker"
+          >
+            {new URLSearchParams(window.location.search).get(
+              'adminKey',
+            ) ? null : (
+              <ToggleButton value="file" aria-label="local file">
+                File
               </ToggleButton>
-              {shownAccts.map(({ internetAccountId, toggleContents, name }) => (
+            )}
+            <ToggleButton value="url" aria-label="url">
+              URL
+            </ToggleButton>
+            {shownAccounts.map(id => {
+              const { internetAccountId, name, toggleContents } = map[id]!
+              return (
                 <ToggleButtonWithTooltip
-                  key={internetAccountId}
+                  key={id}
                   value={internetAccountId}
-                  aria-label={name}
                   title={name}
                 >
                   {typeof toggleContents === 'string'
                     ? shorten(toggleContents, 5)
                     : toggleContents || shorten(name, 5)}
                 </ToggleButtonWithTooltip>
-              ))}
-              {hiddenAccts.length ? (
-                // @ts-ignore
-                <ToggleButton
-                  onClick={event => setAnchorEl(event.target as HTMLElement)}
-                  selected={false}
-                >
-                  More
-                  <ArrowDropDownIcon />
-                </ToggleButton>
-              ) : null}
-            </ToggleButtonGroup>
+              )
+            })}
+            {hiddenAccounts.length > 0 ? (
+              // @ts-expect-error
+              <ToggleButton
+                onClick={event => {
+                  setAnchorEl(event.target as HTMLElement)
+                }}
+                selected={false}
+              >
+                More
+                <ArrowDropDownIcon />
+              </ToggleButton>
+            ) : null}
+          </ToggleButtonGroup>
 
-            <Menu
-              open={Boolean(anchorEl)}
-              anchorEl={anchorEl}
-              onClose={() => setAnchorEl(null)}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-              }}
-            >
-              {hiddenAccts?.map((acct, idx) => (
+          <Menu
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={() => {
+              setAnchorEl(null)
+            }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            {hiddenAccounts.map(id => {
+              const { internetAccountId, name } = map[id]!
+              return (
                 <MenuItem
-                  key={acct.internetAccountId}
-                  value={acct.internetAccountId}
+                  key={id}
+                  value={internetAccountId}
                   onClick={() => {
-                    const prev = shownAccts[shownAccts.length - 1]
-                    setShownAccts([
-                      ...shownAccts.slice(0, shownAccts.length - 1),
-                      acct,
+                    setRecentlyUsedInternetAccounts([
+                      ...new Set(
+                        [
+                          internetAccountId,
+                          ...recentlyUsedInternetAccounts,
+                        ].filter(notEmpty),
+                      ),
                     ])
-                    setHiddenAccts([
-                      prev,
-                      ...hiddenAccts.slice(0, idx),
-                      ...hiddenAccts.slice(idx + 1),
-                    ])
-                    setToggleButtonValue(acct.internetAccountId)
+
+                    setToggleButtonValue(internetAccountId)
                     setAnchorEl(null)
                   }}
                 >
-                  {acct.name}
+                  {name}
                 </MenuItem>
-              ))}
-            </Menu>
-          </Box>
+              )
+            })}
+          </Menu>
         </Box>
-        {locationInput}
-        <FormHelperText>{description}</FormHelperText>
-      </>
-    )
-  },
-)
+      </Box>
+      {locationInput}
+      <FormHelperText>{description}</FormHelperText>
+    </>
+  )
+})
 
 export default FileSelector

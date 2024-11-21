@@ -12,8 +12,8 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { WiggleDisplayModel } from '../models/model'
-import YScaleBar from './YScaleBar'
+import { WiggleDisplayModel } from '../model'
+import YScaleBar from '../../shared/YScaleBar'
 
 type LGV = LinearGenomeViewModel
 
@@ -49,5 +49,3 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
 })
 
 export default LinearWiggleDisplay
-
-export { YScaleBar }

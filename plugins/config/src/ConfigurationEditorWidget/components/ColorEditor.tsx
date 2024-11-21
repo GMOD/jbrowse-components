@@ -21,20 +21,29 @@ export const ColorSlot = (props: {
       <TextField
         value={value}
         label={label}
-        onClick={() => setDisplayed(!displayed)}
-        onChange={event => onChange(event.target.value)}
+        onClick={() => {
+          setDisplayed(!displayed)
+        }}
+        onChange={event => {
+          onChange(event.target.value)
+        }}
         {...TextFieldProps}
       />
       <div style={{ marginTop: 10 }}>
-        <React.Suspense fallback={<div />}>
-          <ColorPicker color={value} onChange={event => onChange(event)} />
+        <React.Suspense fallback={null}>
+          <ColorPicker
+            color={value}
+            onChange={event => {
+              onChange(event)
+            }}
+          />
         </React.Suspense>
       </div>
     </div>
   )
 }
 
-function ColorEditorSlot(props: {
+const ColorEditor = observer(function (props: {
   slot: {
     name: string
     value: string
@@ -47,13 +56,15 @@ function ColorEditorSlot(props: {
     <ColorSlot
       label={slot.name}
       value={slot.value}
-      onChange={color => slot.set(color)}
+      onChange={color => {
+        slot.set(color)
+      }}
       TextFieldProps={{
         helperText: slot.description,
         fullWidth: true,
       }}
     />
   )
-}
+})
 
-export default observer(ColorEditorSlot)
+export default ColorEditor

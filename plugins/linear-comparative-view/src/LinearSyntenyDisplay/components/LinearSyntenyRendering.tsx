@@ -1,192 +1,266 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef, lazy, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import {
-  assembleLocString,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
+import { transaction } from 'mobx'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import SyntenyTooltip from './SyntenyTooltip'
-import { LinearSyntenyDisplayModel } from '../stateModelFactory'
+import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
+import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import SyntenyContextMenu from './SyntenyContextMenu'
+import { ClickCoord, getTooltip, onSynClick, onSynContextClick } from './util'
 
-export default observer(function LinearSyntenyRendering({
+const SyntenyTooltip = lazy(() => import('./SyntenyTooltip'))
+
+type Timer = ReturnType<typeof setTimeout>
+
+const useStyles = makeStyles()({
+  pix: {
+    imageRendering: 'pixelated',
+    pointerEvents: 'none',
+    visibility: 'hidden',
+    position: 'absolute',
+  },
+  rel: {
+    position: 'relative',
+  },
+  mouseoverCanvas: {
+    position: 'absolute',
+    pointEvents: 'none',
+  },
+  mainCanvas: {
+    position: 'absolute',
+  },
+})
+
+const LinearSyntenyRendering = observer(function ({
   model,
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const highResolutionScaling = 1
-  const view = getContainingView(model)
-  const height = view.middleComparativeHeight
+  const { classes } = useStyles()
+  const { mouseoverId, height } = model
+  const xOffset = useRef(0)
+  const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
-
+  const delta = useRef(0)
+  const scheduled = useRef(false)
+  const timeout = useRef<Timer>()
+  const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
   const [currX, setCurrX] = useState<number>()
+  const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
+  const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
+  const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement | null>()
 
-  // these useCallbacks avoid new refs from being created on any mouseover, etc.
-  const k1 = useCallback(
-    (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
+  // these useCallbacks avoid new refs from being created on any mouseover,
+  // etc.
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const mouseoverDetectionCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      model.setMouseoverCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
-  const k2 = useCallback(
-    (ref: HTMLCanvasElement) => model.setMainCanvasRef(ref),
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const mainSyntenyCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      model.setMainCanvasRef(ref)
+      mainSyntenyCanvasRefp.current = ref // this ref is additionally used in useEffect below
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
-  const k3 = useCallback(
-    (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    function onWheel(event: WheelEvent) {
+      event.preventDefault()
+      if (event.ctrlKey) {
+        delta.current += event.deltaY / 500
+        for (const v of view.views) {
+          v.setScaleFactor(
+            delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+          )
+        }
+        if (timeout.current) {
+          clearTimeout(timeout.current)
+        }
+        timeout.current = setTimeout(() => {
+          for (const v of view.views) {
+            v.setScaleFactor(1)
+            v.zoomTo(
+              delta.current > 0
+                ? v.bpPerPx * (1 + delta.current)
+                : v.bpPerPx / (1 - delta.current),
+              event.clientX -
+                (mainSyntenyCanvasRefp.current?.getBoundingClientRect().left ||
+                  0),
+            )
+          }
+          delta.current = 0
+        }, 300)
+      } else {
+        if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+          xOffset.current += event.deltaX / 2
+        }
+        if (!scheduled.current) {
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            transaction(() => {
+              for (const v of view.views) {
+                v.horizontalScroll(xOffset.current)
+              }
+              xOffset.current = 0
+              scheduled.current = false
+            })
+          })
+        }
+      }
+    }
+    mainSyntenyCanvasRefp.current?.addEventListener('wheel', onWheel)
+    return () => {
+      mainSyntenyCanvasRefp.current?.removeEventListener('wheel', onWheel)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, height, width])
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const clickMapCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      model.setClickMapCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
-  const k4 = useCallback(
-    (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const cigarClickMapCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      model.setCigarClickMapCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={classes.rel}>
       <canvas
-        ref={k1}
+        ref={mouseoverDetectionCanvasRef}
         width={width}
         height={height}
-        style={{ width, height, position: 'absolute', pointerEvents: 'none' }}
+        className={classes.mouseoverCanvas}
       />
       <canvas
-        ref={k2}
+        ref={mainSyntenyCanvasRef}
         onMouseMove={event => {
-          const ref1 = model.clickMapCanvas
-          const ref2 = model.cigarClickMapCanvas
-          if (!ref1 || !ref2) {
-            return
-          }
-          const rect = ref1.getBoundingClientRect()
-          const ctx1 = ref1.getContext('2d')
-          const ctx2 = ref2.getContext('2d')
-          if (!ctx1 || !ctx2) {
-            return
-          }
-          const { clientX, clientY } = event
-          const x = clientX - rect.left
-          const y = clientY - rect.top
-          setCurrX(clientX)
-          setCurrY(clientY)
-          const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-          const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
-          const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-          const id = getId(r1, g1, b1, unitMultiplier)
-          model.setMouseoverId(id)
-          if (id === -1) {
-            setTooltip('')
-          } else if (model.featPositions[id]) {
-            const { f, cigar } = model.featPositions[id]
-            // @ts-ignore
-            const f1 = f.toJSON() as {
-              refName: string
-              start: number
-              end: number
-              strand?: number
-              assemblyName: string
-              identity?: number
-              name?: string
+          if (mouseCurrDownX !== undefined) {
+            xOffset.current += mouseCurrDownX - event.clientX
+            setMouseCurrDownX(event.clientX)
+            if (!scheduled.current) {
+              scheduled.current = true
+              window.requestAnimationFrame(() => {
+                transaction(() => {
+                  for (const v of view.views) {
+                    v.horizontalScroll(xOffset.current)
+                  }
+                  xOffset.current = 0
+                  scheduled.current = false
+                })
+              })
             }
-            // @ts-ignore
-            const f2 = f1.mate
-            const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-            const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
-            const l1 = f1.end - f1.start
-            const l2 = f2.end - f2.start
-            const identity = f1.identity
-            const n1 = f1.name
-            const n2 = f2.name
-            const tooltip = []
-            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
-            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
-            tooltip.push(`Inverted: ${f1.strand === -1}`)
-            tooltip.push(`Query len: ${l1}`)
-            tooltip.push(`Target len: ${l2}`)
-            if (identity) {
-              tooltip.push(`Identity: ${identity}`)
+          } else {
+            const ref1 = model.clickMapCanvas
+            const ref2 = model.cigarClickMapCanvas
+            if (!ref1 || !ref2) {
+              return
             }
-
-            if (cigar[cigarIdx]) {
-              tooltip.push(
-                `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
+            const rect = ref1.getBoundingClientRect()
+            const ctx1 = ref1.getContext('2d')
+            const ctx2 = ref2.getContext('2d')
+            if (!ctx1 || !ctx2) {
+              return
+            }
+            const { clientX, clientY } = event
+            const x = clientX - rect.left
+            const y = clientY - rect.top
+            setCurrX(clientX)
+            setCurrY(clientY)
+            const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+            const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
+            const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+            const id = getId(r1!, g1!, b1!, unitMultiplier)
+            model.setMouseoverId(model.featPositions[id]?.f.id())
+            if (id === -1) {
+              setTooltip('')
+            } else if (model.featPositions[id]) {
+              const { f, cigar } = model.featPositions[id]
+              const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+              const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
+              setTooltip(
+                getTooltip({
+                  feature: f,
+                  cigarOp: cigar[cigarIdx],
+                  cigarOpLen: cigar[cigarIdx + 1],
+                }),
               )
             }
-            if (n1 && n2) {
-              tooltip.push(`Name 1: ${n1}`)
-              tooltip.push(`Name 2: ${n2}`)
-            }
-            setTooltip(tooltip.join('<br/>'))
           }
         }}
-        onMouseLeave={() => model.setMouseoverId(-1)}
-        onClick={event => {
-          const ref1 = model.clickMapCanvas
-          const ref2 = model.cigarClickMapCanvas
-          if (!ref1 || !ref2) {
-            return
+        onMouseLeave={() => {
+          model.setMouseoverId(undefined)
+          setMouseInitialDownX(undefined)
+          setMouseCurrDownX(undefined)
+        }}
+        onMouseDown={evt => {
+          setMouseCurrDownX(evt.clientX)
+          setMouseInitialDownX(evt.clientX)
+        }}
+        onMouseUp={evt => {
+          setMouseCurrDownX(undefined)
+          if (
+            mouseInitialDownX !== undefined &&
+            Math.abs(evt.clientX - mouseInitialDownX) < 5
+          ) {
+            onSynClick(evt, model)
           }
-          const rect = ref1.getBoundingClientRect()
-          const ctx1 = ref1.getContext('2d')
-          const ctx2 = ref2.getContext('2d')
-          if (!ctx1 || !ctx2) {
-            return
-          }
-          const x = event.clientX - rect.left
-          const y = event.clientY - rect.top
-          const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-          const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-          const id = getId(r1, g1, b1, unitMultiplier)
-          model.setClickId(id)
-          const f = model.featPositions[id - 1]
-          const session = getSession(model)
-          if (f && isSessionModelWithWidgets(session)) {
-            session.showWidget(
-              session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-                featureData: {
-                  feature1: f.f.toJSON(),
-                  feature2: f.f.get('mate'),
-                },
-              }),
-            )
-          }
+        }}
+        onContextMenu={evt => {
+          onSynContextClick(evt, model, setAnchorEl)
         }}
         data-testid="synteny_canvas"
-        style={{ width, height, position: 'absolute' }}
-        width={width * highResolutionScaling}
-        height={height * highResolutionScaling}
-      />
-      <canvas
-        ref={k3}
-        style={{
-          imageRendering: 'pixelated',
-          pointerEvents: 'none',
-          visibility: 'hidden',
-          position: 'absolute',
-        }}
+        className={classes.mainCanvas}
         width={width}
         height={height}
       />
       <canvas
-        ref={k4}
-        style={{
-          imageRendering: 'pixelated',
-          pointerEvents: 'none',
-          visibility: 'hidden',
-          position: 'absolute',
-        }}
+        ref={clickMapCanvasRef}
+        className={classes.pix}
         width={width}
         height={height}
       />
-      {model.mouseoverId !== -1 && tooltip && currX && currY ? (
-        <SyntenyTooltip x={currX} y={currY} title={tooltip} />
+      <canvas
+        ref={cigarClickMapCanvasRef}
+        className={classes.pix}
+        width={width}
+        height={height}
+      />
+      {mouseoverId && tooltip && currX && currY ? (
+        <SyntenyTooltip title={tooltip} />
+      ) : null}
+      {anchorEl ? (
+        <SyntenyContextMenu
+          model={model}
+          anchorEl={anchorEl}
+          onClose={() => {
+            setAnchorEl(undefined)
+          }}
+        />
       ) : null}
     </div>
   )
 })
+
+export default LinearSyntenyRendering

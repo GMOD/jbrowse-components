@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`base data adapter retrieves features 1`] = `
+[
+  {
+    "end": 200,
+    "refName": "ctgA",
+    "start": 100,
+    "uniqueId": "testFeature",
+  },
+]
+`;
+
+exports[`base data adapter retrieves features 2`] = `[]`;

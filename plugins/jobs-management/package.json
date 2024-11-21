@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-jobs-management",
-  "version": "2.3.3",
+  "version": "2.17.0",
   "description": "JBrowse 2 jobs management",
   "keywords": [
     "jbrowse",
@@ -20,12 +20,11 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
     "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/jobs-management",
+    "test": "cd ../..; jest --passWithNoTests plugins/jobs-management",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -33,24 +32,26 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/text-indexing": "^2.3.3",
-    "@mui/icons-material": "^5.0.0"
+    "@jbrowse/text-indexing": "^2.17.0",
+    "@mui/icons-material": "^6.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0",
     "tss-react": "^4.0.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": ""
+  "module": "",
+  "publishConfig": {
+    "access": "public"
+  }
 }

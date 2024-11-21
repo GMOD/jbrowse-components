@@ -15,8 +15,9 @@ function recordStats(event, context, done) {
   stats.referer = headers.Referer || headers.referer || null
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
+
   stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
-  if (stats.host && stats.host.startsWith('www.')) {
+  if (stats.host?.startsWith('www.')) {
     stats.host = stats.host.slice(4)
   }
   // stats.fullHeaders = event.headers
@@ -25,8 +26,11 @@ function recordStats(event, context, done) {
   const trackTypes = {}
   const trackTypesRe = /^track-types-/
   for (const key in stats) {
-    if (trackTypesRe.test(key)) {
-      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key], 10)
+    if (key.startsWith('track-types-')) {
+      trackTypes[key.replace(trackTypesRe, '')] = Number.parseInt(
+        stats[key],
+        10,
+      )
       delete stats[key]
     }
   }
@@ -37,11 +41,9 @@ function recordStats(event, context, done) {
     const sessionTrackTypes = {}
     const sessionTrackTypesRe = /^sessionTrack-types-/
     for (const key in stats) {
-      if (sessionTrackTypesRe.test(key)) {
-        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
-          stats[key],
-          10,
-        )
+      if (key.startsWith('sessionTrack-types-')) {
+        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] =
+          Number.parseInt(stats[key], 10)
         delete stats[key]
       }
     }
@@ -51,7 +53,7 @@ function recordStats(event, context, done) {
   stats.trackTypes = trackTypes
   const tableName =
     stats.jb2 === 'true' ? 'JB2_Analytics_Events' : 'JB1_Analytics_Events'
-  delete stats.jb2
+  stats.jb2 = undefined
   const params = {
     TableName: tableName,
     Item: stats,
@@ -67,7 +69,7 @@ exports.handler = (event, context, callback) => {
       statusCode: err ? '400' : '200',
       body: err
         ? err.message
-        : '\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\xf0\x01\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x01\x0a\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b',
+        : '\u0047\u0049\u0046\u0038\u0039\u0061\u0001\u0000\u0001\u0000\u00f0\u0001\u0000\u00ff\u00ff\u00ff\u0000\u0000\u0000\u0021\u00f9\u0004\u0001\u000a\u0000\u0000\u0000\u002c\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0002\u0002\u0044\u0001\u0000\u003b',
       headers: {
         'Content-Type': err ? 'application/json' : 'image/gif',
         'Access-Control-Allow-Origin': '*',

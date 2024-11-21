@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 
@@ -6,7 +5,6 @@ import { firstValueFrom } from 'rxjs'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { renameRegionsIfNeeded, Region } from '../../util'
 import SimpleFeature, {
@@ -43,23 +41,23 @@ export default class CoreGetFeatures extends RpcMethodType {
     args: {
       sessionId: string
       regions: Region[]
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      adapterConfig: Record<string, unknown>
+      stopToken?: string
       opts?: any
     },
     rpcDriver: string,
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { signal, sessionId, adapterConfig, regions, opts } = deserializedArgs
+    const { stopToken, sessionId, adapterConfig, regions, opts } =
+      deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
     const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
       ...opts,
-      signal,
+      stopToken,
     })
     const r = await firstValueFrom(ret.pipe(toArray()))
     return r.map(f => f.toJSON())

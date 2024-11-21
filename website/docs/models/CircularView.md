@@ -1,7 +1,6 @@
 ---
 id: circularview
 title: CircularView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,9 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends `BaseViewModel`
+[plugins/circular-view/src/CircularView/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/model.ts)
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### CircularView - Properties
 
@@ -130,6 +133,69 @@ number
 scrollY: 0
 ```
 
+#### property: minimumRadiusPx
+
+```js
+// type signature
+number
+// code
+minimumRadiusPx: 25
+```
+
+#### property: spacingPx
+
+```js
+// type signature
+number
+// code
+spacingPx: 10
+```
+
+#### property: paddingPx
+
+```js
+// type signature
+number
+// code
+paddingPx: 80
+```
+
+#### property: lockedPaddingPx
+
+```js
+// type signature
+number
+// code
+lockedPaddingPx: 100
+```
+
+#### property: minVisibleWidth
+
+```js
+// type signature
+number
+// code
+minVisibleWidth: 6
+```
+
+#### property: minimumBlockWidth
+
+```js
+// type signature
+number
+// code
+minimumBlockWidth: 20
+```
+
+#### property: trackSelectorType
+
+```js
+// type signature
+string
+// code
+trackSelectorType: 'hierarchical'
+```
+
 ### CircularView - Getters
 
 #### getter: width
@@ -137,13 +203,6 @@ scrollY: 0
 ```js
 // type
 number
-```
-
-#### getter: staticSlices
-
-```js
-// type
-any[]
 ```
 
 #### getter: visibleSection
@@ -268,7 +327,7 @@ see reasonably
 
 ```js
 // type
-({ elided: true; widthBp: number; regions: Region[]; } | { elided: false; widthBp: number; start: number; end: number; refName: string; })[]
+SliceRegion[]
 ```
 
 #### getter: assemblyNames
@@ -285,11 +344,29 @@ string[]
 any
 ```
 
+#### getter: staticSlices
+
+```js
+// type
+any[]
+```
+
 #### getter: visibleStaticSlices
 
 ```js
 // type
 any[]
+```
+
+### CircularView - Methods
+
+#### method: menuItems
+
+return the view menu items
+
+```js
+// type signature
+menuItems: () => MenuItem[]
 ```
 
 ### CircularView - Actions
@@ -378,13 +455,6 @@ setBpPerPx: (newVal: number) => void
 setModelViewWhenAdjust: (secondCondition: boolean) => void
 ```
 
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
 #### action: setDisplayedRegions
 
 ```js
@@ -403,7 +473,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setError
@@ -424,7 +494,7 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 ```js
 // type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
+addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
@@ -439,4 +509,13 @@ hideTrack: (trackId: string) => number
 ```js
 // type signature
 toggleFitToWindowLock: () => boolean
+```
+
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```js
+// type signature
+exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 ```

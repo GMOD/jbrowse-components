@@ -25,7 +25,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       type: 'color',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: 'black',
+      defaultValue: '#f0f',
       contextVariable: ['feature'],
     },
     /**
@@ -72,6 +72,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
     },
+
     labels: ConfigurationSchema('SvgFeatureLabels', {
       /**
        * #slot labels.name
@@ -89,7 +90,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       nameColor: {
         type: 'color',
         description: 'the color of the name label, if shown',
-        defaultValue: 'black',
+        defaultValue: '#f0f',
         contextVariable: ['feature'],
       },
       /**
@@ -118,7 +119,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
         type: 'number',
         description:
           'height in pixels of the text to use for names and descriptions',
-        defaultValue: 13,
+        defaultValue: 12,
         contextVariable: ['feature'],
       },
     }),
@@ -154,7 +155,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a svg rendering',
-      defaultValue: 600,
+      defaultValue: 1200,
     },
 
     /**
@@ -173,6 +174,20 @@ const SvgFeatureRenderer = ConfigurationSchema(
       type: 'boolean',
       description: 'imply UTR from the exon and CDS differences',
       defaultValue: false,
+    },
+    /**
+     * #slot
+     */
+    transcriptTypes: {
+      type: 'stringArray',
+      defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+    },
+    /**
+     * #slot
+     */
+    containerTypes: {
+      type: 'stringArray',
+      defaultValue: ['proteoform_orf'],
     },
   },
   { explicitlyTyped: true },

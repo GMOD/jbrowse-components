@@ -1,48 +1,53 @@
 import { useState, useEffect } from 'react'
-import { Instance } from 'mobx-state-tree'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { clamp } from '@jbrowse/core/util'
+
+// locals
 import { LayoutRecord } from './model'
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3]
+type LGV = LinearGenomeViewModel
+
+interface Display {
+  height: number
+  scrollTop: number
+  SNPCoverageDisplay?: { height: number }
+}
+
+interface Track {
+  displays: Display[]
+}
+
+const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
 
 function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
-function heightFromSpecificLevel(
-  views: Instance<LinearGenomeViewStateModel>[],
-  trackConfigId: string,
+
+export function heightFromSpecificLevel(
+  views: LGV[],
+  trackId: string,
   level: number,
+  getYPosOverride?: (trackId: string, level: number) => number,
 ) {
-  const track = views[level].trackRefs[trackConfigId]
-  return track?.getBoundingClientRect().top || 0
+  return getYPosOverride
+    ? getYPosOverride(trackId, level)
+    : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
 }
 
-export function getPxFromCoordinate(
-  view: Instance<LinearGenomeViewStateModel>,
-  refName: string,
-  coord: number,
-) {
-  return ((view.bpToPx({ refName, coord }) || {}).offsetPx || 0) - view.offsetPx
+export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
+  return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
 // get's the yposition of a layout record in a track
 export function yPos(
-  trackConfigId: string,
+  trackId: string,
   level: number,
-  views: Instance<LinearGenomeViewStateModel>[],
-  tracks: {
-    displays: [
-      {
-        height: number
-        scrollTop: number
-        SNPCoverageDisplay?: { height: number }
-      },
-    ]
-  }[], // basic track requirements
+  views: LGV[],
+  tracks: Track[],
   c: LayoutRecord,
+  getYPosOverride?: (trackId: string, level: number) => number,
 ) {
-  const display = tracks[level].displays[0]
+  const display = tracks[level]!.displays[0]!
   const min = 0
   const max = display.height
   let offset = 0
@@ -50,17 +55,18 @@ export function yPos(
   if (SNPCoverageDisplay) {
     offset = SNPCoverageDisplay.height
   }
+  const yPos = getYPosOverride ? 0 : display.scrollTop
   return (
-    clamp(c[TOP] - display.scrollTop + cheight(c) / 2 + offset, min, max) +
-    heightFromSpecificLevel(views, trackConfigId, level) +
+    clamp(c[TOP] - yPos + cheight(c) / 2 + offset, min, max) +
+    heightFromSpecificLevel(views, trackId, level, getYPosOverride) +
     display.scrollTop
   )
 }
 
-// we combo a useEffect and useState combo to force rerender on snap
-// changing. the setup of this being a useEffect+useState makes it
-// re-render once the useEffect is called, which is generally the
-// "next frame". If we removed the below use
+// we combo a useEffect and useState combo to force rerender on snap changing.
+// the setup of this being a useEffect+useState makes it re-render once the
+// useEffect is called, which is generally the "next frame". If we removed the
+// below use
 export const useNextFrame = (variable: unknown) => {
   const [, setNextFrameState] = useState<unknown>()
   useEffect(() => {
@@ -77,7 +83,7 @@ export function intersect<T>(
   a2: T[] = [],
   ...rest: T[][]
 ): T[] {
-  const ids = a2.map(elt => cb(elt))
-  const a12 = a1.filter(value => ids.includes(cb(value)))
+  const ids = new Set(a2.map(elt => cb(elt)))
+  const a12 = a1.filter(value => ids.has(cb(value)))
   return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }

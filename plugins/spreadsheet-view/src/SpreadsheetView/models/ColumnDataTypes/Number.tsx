@@ -33,14 +33,14 @@ const OPERATION_PREDICATES = {
       numberInCell < secondNumber
     )
   },
-} as { [key: string]: (arg0: number, a: number, b?: number) => boolean }
+} as Record<string, (arg0: number, a: number, b?: number) => boolean>
 
 OPERATION_PREDICATES['not between'] = (
   numberInCell,
   firstNumber,
   secondNumber,
 ) => {
-  return !OPERATION_PREDICATES.between(numberInCell, firstNumber, secondNumber)
+  return !OPERATION_PREDICATES.between!(numberInCell, firstNumber, secondNumber)
 }
 
 const useStyles = makeStyles()({
@@ -60,7 +60,6 @@ const useStyles = makeStyles()({
 
 // React component for the column filter control
 const FilterReactComponent = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
 
@@ -85,7 +84,7 @@ const FilterReactComponent = observer(
           error={filterModel.firstNumberIsInvalid}
           defaultValue={filterModel.firstNumber}
           onChange={evt => {
-            filterModel.setFirstNumber(parseFloat(evt.target.value))
+            filterModel.setFirstNumber(Number.parseFloat(evt.target.value))
           }}
           className={classes.textFilterControl}
         />
@@ -100,7 +99,7 @@ const FilterReactComponent = observer(
               error={filterModel.secondNumberIsInvalid}
               defaultValue={filterModel.secondNumber}
               onChange={evt =>
-                filterModel.setSecondNumber(parseFloat(evt.target.value))
+                filterModel.setSecondNumber(Number.parseFloat(evt.target.value))
               }
               className={classes.textFilterControl}
             />
@@ -118,7 +117,7 @@ const FilterModelType = types
     columnNumber: types.integer,
     firstNumber: types.maybe(types.number),
     secondNumber: types.maybe(types.number),
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]!),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -131,16 +130,15 @@ const FilterModelType = types
 
       const { firstNumber, secondNumber, operation, columnNumber } = self // avoid closing over self
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]
 
-        if (!cell || !cell.text) {
+        if (!cell?.text) {
           return false
         }
 
-        const parsedCellText = parseFloat(cell.text)
+        const parsedCellText = Number.parseFloat(cell.text)
         if (typeof parsedCellText !== 'number') {
           return false
         }
@@ -156,18 +154,12 @@ const FilterModelType = types
   }))
   .actions(self => ({
     setFirstNumber(n: number) {
-      if (Number.isNaN(n) || typeof n !== 'number') {
-        self.firstNumber = undefined
-      } else {
-        self.firstNumber = n
-      }
+      self.firstNumber =
+        Number.isNaN(n) || typeof n !== 'number' ? undefined : n
     },
     setSecondNumber(n: number) {
-      if (Number.isNaN(n) || typeof n !== 'number') {
-        self.secondNumber = undefined
-      } else {
-        self.secondNumber = n
-      }
+      self.secondNumber =
+        Number.isNaN(n) || typeof n !== 'number' ? undefined : n
     },
     setOperation(op: string) {
       self.operation = op
@@ -177,7 +169,7 @@ const FilterModelType = types
 
 const NumberColumn = MakeSpreadsheetColumnType('Number', {
   compare(cellA: { text: string }, cellB: { text: string }) {
-    return parseFloat(cellA.text) - parseFloat(cellB.text)
+    return Number.parseFloat(cellA.text) - Number.parseFloat(cellB.text)
   },
   FilterModelType,
 })

@@ -8,14 +8,12 @@ import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
 
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  return 'localPath' in location
+function isLocalPathLocation(loc: FileLocation): loc is LocalPathLocation {
+  return 'localPath' in loc
 }
 
-function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blobId' in location
+function isBlobLocation(loc: FileLocation): loc is BlobLocation {
+  return 'blobId' in loc
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -24,13 +22,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function LocalFileChooser(props: {
+function LocalFileChooser({
+  location,
+  setLocation,
+}: {
   location?: FileLocation
-  setLocation: Function
+  setLocation: (arg: FileLocation) => void
 }) {
   const { classes } = useStyles()
-  const { location, setLocation } = props
-
   const filename =
     location &&
     ((isBlobLocation(location) && location.name) ||
@@ -49,14 +48,16 @@ function LocalFileChooser(props: {
               type="file"
               hidden
               onChange={({ target }) => {
-                const file = target && target.files && target.files[0]
+                const file = target.files?.[0]
                 if (file) {
                   if (isElectron) {
+                    const { webUtils } = window.require('electron')
                     setLocation({
-                      localPath: (file as File & { path: string }).path,
+                      localPath: webUtils.getPathForFile(file),
                       locationType: 'LocalPathLocation',
                     })
                   } else {
+                    // @ts-expect-error
                     setLocation(storeBlobLocation({ blob: file }))
                   }
                 }

@@ -1,27 +1,29 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, CSSProperties } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import Typography from '@mui/material/Typography'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles()({
-  loading: {
-    paddingLeft: '0.6em',
-    backgroundColor: '#f1f1f1',
-    backgroundImage:
-      'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-    textAlign: 'center',
-  },
+const useStyles = makeStyles()(theme => {
+  const bg = theme.palette.action.disabledBackground
+  return {
+    loading: {
+      paddingLeft: '0.6em',
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+      textAlign: 'center',
+    },
 
-  blockMessage: {
-    background: '#f1f1f1',
-    padding: '10px',
-  },
-  blockError: {
-    background: '#f1f1f1',
-    padding: '10px',
-    color: 'red',
-  },
+    blockMessage: {
+      backgroundColor: bg,
+      padding: '10px',
+    },
+    blockError: {
+      backgroundColor: bg,
+      padding: '10px',
+      color: 'red',
+    },
+  }
 })
 
 function LoadingMessage() {
@@ -29,8 +31,12 @@ function LoadingMessage() {
   const [shown, setShown] = useState(false)
   const { classes } = useStyles()
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
+    const timeout = setTimeout(() => {
+      setShown(true)
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+    }
   }, [])
 
   return shown ? (
@@ -49,29 +55,38 @@ function BlockMessage({ messageText }: { messageText: string }) {
   )
 }
 
-function BlockError({ error }: { error: Error }) {
+function BlockError({ error }: { error: unknown }) {
   const { classes } = useStyles()
   return (
     <div className={classes.blockError}>
-      <Typography>{error.message}</Typography>
+      <Typography>{`${error}`}</Typography>
     </div>
   )
 }
 
-const ServerSideRenderedBlockContent = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ model, style }: { model: any; style: any }) => {
-    if (model.error) {
-      return <BlockError error={model.error} data-testid="reload_button" />
-    }
-    if (model.message) {
-      return <BlockMessage messageText={model.message} />
-    }
-    if (!model.filled) {
-      return <LoadingMessage />
-    }
+const ServerSideRenderedDotplotContent = observer(function ({
+  model,
+  style,
+}: {
+  model: {
+    error?: unknown
+    message?: string
+    filled?: boolean
+    shouldDisplay?: boolean
+    reactElement?: React.ReactElement
+  }
+  style: CSSProperties
+}) {
+  if (model.error) {
+    return <BlockError error={model.error} data-testid="reload_button" />
+  } else if (model.message) {
+    return <BlockMessage messageText={model.message} />
+  } else if (!model.filled) {
+    return <LoadingMessage />
+  } else if (model.shouldDisplay) {
     return <div style={style}>{model.reactElement}</div>
-  },
-)
+  }
+  return null
+})
 
-export default ServerSideRenderedBlockContent
+export default ServerSideRenderedDotplotContent

@@ -1,9 +1,10 @@
 import { parseTsvBuffer, ParseOptions } from './ImportUtils'
+import type { Buffer } from 'buffer'
 
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
-  const refName = fields[0]
-  const pos = parseInt(fields[1], 10)
+  const refName = fields[0]!
+  const pos = Number.parseInt(fields[1]!, 10)
   const strand = fields[2] === '-' ? -1 : 1
   return { refName, pos, strand }
 }
@@ -28,7 +29,7 @@ export async function parseSTARFusionBuffer(
   })
 
   // remove the # in #FusionName
-  data.columns[0].name = data.columns[0].name.replace('#', '')
+  data.columns[0]!.name = data.columns[0]!.name.replace('#', '')
   // set some columns to be numeric
   data.columns.forEach(col => {
     if (numericColumns[col.name]) {
@@ -38,10 +39,9 @@ export async function parseSTARFusionBuffer(
 
   // decorate each row with a feature object in its extendedData
   data.rowSet.rows.forEach((row, rowNumber) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const featureData: Record<string, any> = {}
     row.cells.forEach(({ text }, columnNumber) => {
-      const column = data.columns[columnNumber]
+      const column = data.columns[columnNumber]!
       if (column.name === 'LeftBreakpoint' && text) {
         const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
         featureData.refName = refName
@@ -58,7 +58,7 @@ export async function parseSTARFusionBuffer(
         }
       } else if (text && numericColumns[column.name]) {
         // some other column, numeric
-        featureData[column.name] = parseFloat(text)
+        featureData[column.name] = Number.parseFloat(text)
       } else {
         // some other column, text
         featureData[column.name] = text

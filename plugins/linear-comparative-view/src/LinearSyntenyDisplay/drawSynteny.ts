@@ -1,6 +1,7 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+// locals
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import { LinearSyntenyDisplayModel } from './stateModelFactory'
+import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
@@ -29,43 +30,35 @@ export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
-export function drawRef(model: LinearSyntenyDisplayModel) {
-  const highResolutionScaling = 1
-  const ctx1 = model.mainCanvas?.getContext('2d')
-  const ctx3 = model.cigarClickMapCanvas?.getContext('2d')
-
+export function drawRef(
+  model: LinearSyntenyDisplayModel,
+  ctx1: CanvasRenderingContext2D,
+  ctx3?: CanvasRenderingContext2D,
+) {
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
-  const height = view.middleComparativeHeight
+  const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  if (!ctx1 || !ctx3) {
-    return
+  if (ctx3) {
+    ctx3.imageSmoothingEnabled = false
   }
 
-  ctx3.imageSmoothingEnabled = false
-
-  ctx1.resetTransform()
-  ctx1.scale(highResolutionScaling, highResolutionScaling)
-  ctx1.clearRect(0, 0, width, height)
   ctx1.beginPath()
-  const featPos = model.featPositions
   const offsets = view.views.map(v => v.offsetPx)
-
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPos.length)
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
 
   // this loop is optimized to draw many thin lines with a single ctx.stroke
   // call, a separate loop below draws larger boxes
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
-  for (let i = 0; i < featPos.length; i++) {
-    const { p11, p12, p21, p22 } = featPos[i]
-    const x11 = p11.offsetPx - offsets[0]
-    const x12 = p12.offsetPx - offsets[0]
-    const x21 = p21.offsetPx - offsets[1]
-    const x22 = p22.offsetPx - offsets[1]
+  for (const { p11, p12, p21, p22 } of featPositions) {
+    const x11 = p11.offsetPx - offsets[level]!
+    const x12 = p12.offsetPx - offsets[level]!
+    const x21 = p21.offsetPx - offsets[level + 1]!
+    const x22 = p22.offsetPx - offsets[level + 1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const y1 = 0
@@ -74,14 +67,17 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
 
     // drawing a line if the results are thin results in much less pixellation
     // than filling in a thin polygon
-    if (l1 <= lineLimit && l2 <= lineLimit) {
-      if (x21 < width + oobLimit && x21 > -oobLimit) {
-        ctx1.moveTo(x11, y1)
-        if (drawCurves) {
-          ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-        } else {
-          ctx1.lineTo(x21, y2)
-        }
+    if (
+      l1 <= lineLimit &&
+      l2 <= lineLimit &&
+      x21 < width + oobLimit &&
+      x21 > -oobLimit
+    ) {
+      ctx1.moveTo(x11, y1)
+      if (drawCurves) {
+        ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      } else {
+        ctx1.lineTo(x21, y2)
       }
     }
   }
@@ -91,12 +87,11 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   // ctx.stroke once is much more efficient than calling stroke() many times
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
-  for (let i = 0; i < featPos.length; i++) {
-    const { p11, p12, p21, p22, f, cigar } = featPos[i]
-    const x11 = p11.offsetPx - offsets[0]
-    const x12 = p12.offsetPx - offsets[0]
-    const x21 = p21.offsetPx - offsets[1]
-    const x22 = p22.offsetPx - offsets[1]
+  for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
+    const x11 = p11.offsetPx - offsets[level]!
+    const x12 = p12.offsetPx - offsets[level]!
+    const x21 = p21.offsetPx - offsets[level + 1]!
+    const x22 = p22.offsetPx - offsets[level + 1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
@@ -121,7 +116,7 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
       // cx1/cx2 are the current x positions on top and bottom rows
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
-      if (cigar?.length && drawCIGAR) {
+      if (cigar.length && drawCIGAR) {
         // continuingFlag skips drawing commands on very small CIGAR features
         let continuingFlag = false
 
@@ -132,7 +127,7 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
 
-          const len = +cigar[j]
+          const len = +cigar[j]!
           const op = cigar[j + 1] as keyof typeof colorMap
 
           if (!continuingFlag) {
@@ -140,15 +135,17 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
             px2 = cx2
           }
 
-          const d1 = len / bpPerPxs[0]
-          const d2 = len / bpPerPxs[1]
+          const d1 = len / bpPerPxs[level]!
+          const d2 = len / bpPerPxs[level + 1]!
 
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
-          } else if (op === 'I') {
+          }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          else if (op === 'I') {
             cx2 += d2 * rev2
           }
 
@@ -171,22 +168,26 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
             ) {
               continuingFlag = true
             } else {
-              continuingFlag = false
-
               // allow rendering the dominant color when using continuing
               // flag if the last element of continuing was a large
               // feature, else just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
-              ctx3.fillStyle = makeColor(idx)
+              continuingFlag = false
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-              draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              ctx1.fill()
+              if (ctx3) {
+                ctx3.fillStyle = makeColor(idx)
+                draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                ctx3.fill()
+              }
             }
           }
         }
       } else {
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
+        ctx1.fill()
       }
     }
   }
@@ -198,17 +199,20 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   }
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
-  for (let i = 0; i < featPos.length; i++) {
-    const feature = featPos[i]
+  for (let i = 0; i < featPositions.length; i++) {
+    const feature = featPositions[i]!
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 
     // too many click map false positives with colored stroked lines
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
+      cb: ctx => {
+        ctx.fill()
+      },
       feature,
       ctx: ctx2,
       drawCurves,
+      level,
       offsets,
       oobLimit,
       viewWidth: view.width,
@@ -219,11 +223,11 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
 }
 
 export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
-  const { clickId, mouseoverId } = model
+  const { level, clickId, mouseoverId } = model
   const highResolutionScaling = 1
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
-  const height = view.middleComparativeHeight
+  const height = model.height
   const width = view.width
   const ctx = model.mouseoverCanvas?.getContext('2d')
   const offsets = view.views.map(v => v.offsetPx)
@@ -234,12 +238,16 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   ctx.resetTransform()
   ctx.scale(highResolutionScaling, highResolutionScaling)
   ctx.clearRect(0, 0, width, height)
-  if (mouseoverId !== -1 && model.features && model.features[mouseoverId]) {
-    const feature = model.featPositions[mouseoverId]
-    ctx.fillStyle = 'rgb(0,0,0,0.1)'
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)'
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
+  const feature1 = model.featMap[mouseoverId || '']
+  if (feature1) {
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
-      feature,
+      cb: ctx => {
+        ctx.fill()
+      },
+      feature: feature1,
+      level,
       ctx,
       oobLimit,
       viewWidth: view.width,
@@ -248,15 +256,15 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
       height,
     })
   }
-
-  if (clickId !== -1 && model.features && model.featPositions[clickId]) {
-    const feature = model.featPositions[clickId]
-    ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-
+  const feature2 = model.featMap[clickId || '']
+  if (feature2) {
     drawMatchSimple({
-      cb: ctx => ctx.stroke(),
-      feature,
+      cb: ctx => {
+        ctx.stroke()
+      },
+      feature: feature2,
       ctx,
+      level,
       oobLimit,
       viewWidth: view.width,
       drawCurves,

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -8,7 +7,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './components/DotplotDisplay'
 
-export default (pm: PluginManager) => {
+export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {
     const configSchema = configSchemaFactory(pm)
     return new DisplayType({

@@ -7,7 +7,7 @@ import { Config, Track, Source, Store, Names } from './types'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {
-    let parsedConf
+    let parsedConf: Config
     try {
       parsedConf = JSON.parse(config)
     } catch (error) {
@@ -19,7 +19,7 @@ export function parseJB1Json(config: Config | string, url: string): Config {
 }
 
 export function parseJB1Conf(config: string, url: string): Config {
-  let parsedConf
+  let parsedConf: Config
   try {
     parsedConf = parse(config, url)
   } catch (error) {
@@ -54,13 +54,13 @@ function parse(text: string, url: string): Config {
         | boolean[]
       try {
         // parse json
-        const match = value.match(/^json:(.+)/i)
+        const match = /^json:(.+)/i.exec(value)
         if (match) {
-          parsedValue = JSON.parse(match[1])
+          parsedValue = JSON.parse(match[1]!)
         }
         // parse numbers if it looks numeric
         else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value)) {
-          parsedValue = parseFloat(value.replace(/,/g, ''))
+          parsedValue = Number.parseFloat(value.replaceAll(',', ''))
         } else {
           parsedValue = value
         }
@@ -68,7 +68,7 @@ function parse(text: string, url: string): Config {
         if (!keyPath) {
           throw new Error(`Error parsing in section ${section.join(' - ')}`)
         }
-        const path = section.concat(keyPath).join('.')
+        const path = [...section, ...keyPath].join('.')
         if (operation === '+=') {
           let existing = getValue(data, path)
           if (existing) {
@@ -105,13 +105,13 @@ function parse(text: string, url: string): Config {
 
     // new section
     let match: RegExpMatchArray | null
-    if ((match = line.match(/^\s*\[([^\]]+)/))) {
+    if ((match = /^\s*\[([^\]]+)/.exec(line))) {
       // new section
       recordVal()
       keyPath = undefined
       value = undefined
-      section = match[1].trim().split(/\s*\.\s*/)
-      if (section.length === 1 && section[0].toLowerCase() === 'general') {
+      section = match[1]!.trim().split(/\s*\.\s*/)
+      if (section.length === 1 && section[0]!.toLowerCase() === 'general') {
         section = []
       }
     }
@@ -122,25 +122,27 @@ function parse(text: string, url: string): Config {
       ))
     ) {
       recordVal()
-      keyPath = match[1].trim().split(/\s*\.\s*/)
+      keyPath = match[1]!.trim().split(/\s*\.\s*/)
+      // @ts-expect-error
       ;[, , operation] = match
-      if (isAlwaysArray(section.concat(keyPath).join('.'))) {
+      if (isAlwaysArray([...section, ...keyPath].join('.'))) {
         operation = '+='
       }
-      value = match[3].trim()
+      value = match[3]!.trim()
     }
     // add to existing array value
     else if (
       keyPath !== undefined &&
-      (match = line.match(/^\s{0,4}\+\s*(.+)/))
+      (match = /^\s{0,4}\+\s*(.+)/.exec(line))
     ) {
       recordVal()
       operation = '+='
-      value = match[1].trim()
+      value = match[1]!.trim()
     }
     // add to existing value
-    else if (value !== undefined && (match = line.match(/^\s+(\S.*)/))) {
-      value += value.length ? ` ${match[1].trim()}` : match[1].trim()
+    else if (value !== undefined && (match = /^\s+(\S.*)/.exec(line))) {
+      const m = match[1]!
+      value += value.length ? ` ${m.trim()}` : m.trim()
     }
     // done with last value
     else {
@@ -186,7 +188,7 @@ export function regularizeConf(conf: Config, url: string): Config {
 
   // regularize trackMetadata.sources
   const meta = conf.trackMetadata
-  if (meta && meta.sources) {
+  if (meta?.sources) {
     // if it's a single source config, wrap it in an arrayref
     if (typeof meta.sources === 'string') {
       meta.sources = [meta.sources]
@@ -198,7 +200,7 @@ export function regularizeConf(conf: Config, url: string): Config {
     if (!Array.isArray(meta.sources)) {
       const sources: Source[] = []
       for (const name of Object.keys(meta.sources)) {
-        const source = meta.sources[name]
+        const source = meta.sources[name]!
         if (!('name' in source)) {
           source.name = name
         }
@@ -211,9 +213,9 @@ export function regularizeConf(conf: Config, url: string): Config {
     meta.sources = meta.sources.map((sourceDef: string | Source): Source => {
       if (typeof sourceDef === 'string') {
         const newSourceDef: Source = { url: sourceDef }
-        const typeMatch = sourceDef.match(/\.(\w+)$/)
+        const typeMatch = /\.(\w+)$/.exec(sourceDef)
         if (typeMatch) {
-          newSourceDef.type = typeMatch[1].toLowerCase()
+          newSourceDef.type = typeMatch[1]!.toLowerCase()
         }
         return newSourceDef
       }
@@ -265,7 +267,7 @@ export function regularizeConf(conf: Config, url: string): Config {
     // config
     if (trackConfig.config) {
       const c = trackConfig.config
-      delete trackConfig.config
+      trackConfig.config = undefined
       trackConfig = { ...c, ...trackConfig }
     }
 
@@ -325,7 +327,7 @@ function guessStoreClass(
   if (!trackConfig) {
     return ''
   }
-  if (trackConfig.type && trackConfig.type.includes('/FixedImage')) {
+  if (trackConfig.type?.includes('/FixedImage')) {
     return `JBrowse/Store/TiledImage/Fixed${
       trackConfig.backendVersion === 0 ? '_v0' : ''
     }`
@@ -371,7 +373,7 @@ function guessStoreClass(
   if (/\.2bit$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/TwoBit'
   }
-  if (trackConfig.type && trackConfig.type.endsWith('/Sequence')) {
+  if (trackConfig.type?.endsWith('/Sequence')) {
     return 'JBrowse/Store/Sequence/StaticChunked'
   }
   return ''
@@ -385,12 +387,9 @@ function synthesizeTrackStoreConfig(
   // defaults if it is not explicit in the configuration
   const { urlTemplate = '' } = trackConfig
 
-  let storeClass: string
-  if (trackConfig.storeClass) {
-    storeClass = regularizeClass('JBrowse/Store', trackConfig.storeClass)
-  } else {
-    storeClass = guessStoreClass(trackConfig, urlTemplate)
-  }
+  const storeClass = trackConfig.storeClass
+    ? regularizeClass('JBrowse/Store', trackConfig.storeClass)
+    : guessStoreClass(trackConfig, urlTemplate)
 
   if (!storeClass) {
     console.warn(
@@ -404,7 +403,7 @@ function synthesizeTrackStoreConfig(
 
   // if this is the first sequence store we see, and we have no refseqs store
   // defined explicitly, make this the refseqs store.
-  if (
+  storeConf.name =
     (storeClass === 'JBrowse/Store/Sequence/StaticChunked' ||
       storeClass === 'JBrowse/Store/Sequence/IndexedFasta' ||
       storeClass === 'JBrowse/Store/SeqFeature/IndexedFasta' ||
@@ -412,12 +411,9 @@ function synthesizeTrackStoreConfig(
       storeClass === 'JBrowse/Store/SeqFeature/TwoBit' ||
       storeClass === 'JBrowse/Store/Sequence/TwoBit' ||
       trackConfig.useAsRefSeqStore) &&
-    !(mainConf.stores && mainConf.stores.refseqs)
-  ) {
-    storeConf.name = 'refseqs'
-  } else {
-    storeConf.name = `store${objectHash(storeConf)}`
-  }
+    !mainConf.stores?.refseqs
+      ? 'refseqs'
+      : `store${objectHash(storeConf)}`
   // record it
   if (!mainConf.stores) {
     mainConf.stores = {}

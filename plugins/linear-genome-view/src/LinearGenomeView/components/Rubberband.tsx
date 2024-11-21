@@ -6,7 +6,8 @@ import Menu from '@jbrowse/core/ui/Menu'
 // locals
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
-import { useRangeSelect } from './hooks'
+// hooks
+import { useRangeSelect } from './useRangeSelect'
 import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -19,7 +20,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function Rubberband({
+const Rubberband = observer(function ({
   model,
   ControlComponent = <div />,
 }: {
@@ -38,8 +39,8 @@ function Rubberband({
     width,
     left,
     anchorPosition,
-    handleMenuItemClick,
     open,
+    handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown,
@@ -84,6 +85,6 @@ function Rubberband({
       </div>
     </>
   )
-}
+})
 
-export default observer(Rubberband)
+export default Rubberband

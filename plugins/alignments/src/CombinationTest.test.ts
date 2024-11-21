@@ -29,8 +29,9 @@ async function getFeats(f1: string, f2: string) {
         localPath: require.resolve(f1),
       },
       craiLocation: {
-        localPath: require.resolve(f1 + '.crai'),
+        localPath: require.resolve(`${f1}.crai`),
       },
+      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
@@ -43,7 +44,7 @@ async function getFeats(f1: string, f2: string) {
       },
       index: {
         location: {
-          localPath: require.resolve(f2 + '.bai'),
+          localPath: require.resolve(`${f2}.bai`),
         },
       },
     }),
@@ -61,7 +62,9 @@ async function getFeats(f1: string, f2: string) {
   return { bamFeaturesArray, cramFeaturesArray }
 }
 
-type M = { start: number }
+interface M {
+  start: number
+}
 
 async function cigarCheck(f: string) {
   const { cramFeaturesArray, bamFeaturesArray } = await getFeats(
@@ -100,9 +103,9 @@ async function mismatchesCheck(f: string) {
 test('match CIGAR across file types', async () => {
   await cigarCheck('volvox-sorted')
   await cigarCheck('volvox-long-reads.fastq.sorted')
-})
+}, 20000)
 
 test('mismatches same across file types', async () => {
   await mismatchesCheck('volvox-sorted')
   await mismatchesCheck('volvox-long-reads.fastq.sorted')
-})
+}, 20000)

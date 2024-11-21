@@ -11,7 +11,7 @@ adapters, etc), and to modify behavior of the application by adding code that
 watches the application's state.
 
 For the full list of what kinds of pluggable element types plugins can add, see
-the [pluggable elements](/docs/developer_guide/#pluggable-elements) page.
+the [pluggable elements](/docs/developer_guides/pluggable_elements/) page.
 
 The following tutorial will walk you through establishing your developer
 environment, spinning up a plugin, and running a local JBrowse instance with
@@ -137,17 +137,17 @@ However, if you:
 
 You can develop against the latest JBrowse core build by taking a quick detour
 to our
-[developing with JBrowse web and desktop tutorial](../develop_web_and_desktop_tutorial).
+[developing with JBrowse web and desktop tutorial](/docs/tutorials/develop_web_and_desktop_tutorial).
 
 Now that our environment is set up and running, we're going to add our own
 pluggable element to the project and observe it running in JBrowse.
 
 For this tutorial, we're going to be creating a custom
-[widget](/docs/developer_guide/#widgets), and using a
+[widget](/docs/developer_guides/creating_widget), and using a
 [Jexl](https://github.com/TomFrost/Jexl) callback to open it when we click a
 chord on the circular genome view.
 
-<Figure src="../img/plugin-dev-tutorial-final.png" caption="A screenshot of the finished product of this tutorial: a widget with a jexl callback on the circular view." />
+<Figure src="/img/plugin-dev-tutorial-final.png" caption="A screenshot of the finished product of this tutorial: a widget with a jexl callback on the circular view." />
 
 ## Add new files, stubs, and install dependencies
 
@@ -424,9 +424,9 @@ import { getSession } from '@jbrowse/core/util'
         const session = getSession(chordTrack)
 
         if (session) {
-          // @ts-ignore
+          // @ts-expect-error
           session.showWidget(
-            // @ts-ignore
+            // @ts-expect-error
             session.addWidget(
               'CircularViewChordWidget',
               'circularViewChordWidget',
@@ -546,7 +546,7 @@ Take some time to dissect what's being added here:
 - the specified `onChordClick` callback function is that which we defined in our
   plugin class, the jexl function
 
-<Figure src="../img/plugin-dev-tutorial-track-added.png" caption="A screenshot of what it will look like when you add a track to your configuration; that is, it will be available in the add track menu when you open a view." />
+<Figure src="/img/plugin-dev-tutorial-track-added.png" caption="A screenshot of what it will look like when you add a track to your configuration; that is, it will be available in the add track menu when you open a view." />
 
 ## Testing it out
 
@@ -577,7 +577,7 @@ Expected result:
 The widget opens on the right hand side with two panels, one with our editable
 widget byline, and one with our feature data.
 
-<Figure src="../img/plugin-dev-tutorial-final.png" caption="A screenshot of the widget displayed after clicking on the chord." />
+<Figure src="/img/plugin-dev-tutorial-final.png" caption="A screenshot of the widget displayed after clicking on the chord." />
 
 :::info Troubleshooting
 
@@ -639,7 +639,7 @@ Right now our test does two things:
 - visits our JBrowse URL (default configured to `localhost:8999`) with that
   configuration and a circular view open
 
-Notice the use of [URL params](../../../urlparams) to speed up the test setup;
+Notice the use of [URL params](/docs/urlparams) to speed up the test setup;
 using URL params like this can come in handy for larger suites.
 
 Take a moment to add the track specification to `hello_view.json` for testing
@@ -679,7 +679,7 @@ running. Open a third tab in your terminal at your project directory, and run
 `yarn cypress:open`. A cypress browser will open, click on the test you just
 wrote to run it.
 
-<Figure src="../img/plugin-dev-tutorial-cypress.png" caption="A screenshot of the cypress interface when you run yarn cypress:open." />
+<Figure src="/img/plugin-dev-tutorial-cypress.png" caption="A screenshot of the cypress interface when you run yarn cypress:open." />
 
 Now that we have a visual on our test running, let's add some more complexity:
 
@@ -723,7 +723,7 @@ property on the widget model.
 Run your suite again for completeness (you may have to reset your instance of
 cypress, then run `yarn cypress:open` again).
 
-<Figure src="../img/plugin-dev-tutorial-running-cypress.png" caption="A screenshot of a cypress test running with the built-in browser; this is what your test should look like (and pass) when finished here." />
+<Figure src="/img/plugin-dev-tutorial-running-cypress.png" caption="A screenshot of a cypress test running with the built-in browser; this is what your test should look like (and pass) when finished here." />
 
 ## Next steps
 
@@ -858,5 +858,6 @@ thus more that you can do with plugins!) checkout our
 
 If you have further questions about plugin development, or development with
 JBrowse in general, stop by the JBrowse team
-[gitter channel](https://gitter.im/GMOD/jbrowse2), or start a discssion on the
+[gitter channel](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im), or
+start a discssion on the
 [jbrowse-components discussions forum](https://github.com/GMOD/jbrowse-components/discussions).

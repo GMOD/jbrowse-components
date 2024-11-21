@@ -1,40 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
-import { FileLocation, isUriLocation, objectHash } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
 import {
-  generateUnsupportedTrackConf,
-  generateUnknownTrackConf,
-} from '@jbrowse/core/util/tracks'
-import ucscAssemblies from './ucscAssemblies'
-
-export { ucscAssemblies }
-
-export async function fetchHubFile(hubLocation: FileLocation) {
-  try {
-    const hubFileText = await openLocation(hubLocation).readFile('utf8')
-    const { HubFile } = await import('@gmod/ucsc-hub')
-    return new HubFile(hubFileText)
-  } catch (error) {
-    throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
-  }
-}
+  FileLocation,
+  isUriLocation,
+  notEmpty,
+  objectHash,
+} from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
+import { RaStanza, GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 
 export async function fetchGenomesFile(genomesLoc: FileLocation) {
   const genomesFileText = await openLocation(genomesLoc).readFile('utf8')
-  const { GenomesFile } = await import('@gmod/ucsc-hub')
   return new GenomesFile(genomesFileText)
 }
 
 export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
   const text = await openLocation(trackDbLoc).readFile('utf8')
-  const { TrackDbFile } = await import('@gmod/ucsc-hub')
   return new TrackDbFile(text)
 }
 
-export function makeLoc(first: string, base: { uri: string }) {
+export function makeLoc(
+  first: string,
+  base: { uri: string; baseUri?: string },
+) {
   return {
-    uri: new URL(first, base.uri).href,
+    uri: new URL(first, new URL(base.uri, base.baseUri)).href,
     locationType: 'UriLocation',
   }
 }
@@ -55,71 +44,78 @@ export function makeLoc2(first: string, alt?: string) {
       }
 }
 
-export function generateTracks(
-  trackDb: TrackDbFile,
-  trackDbLoc: FileLocation,
-  assemblyName: string,
-  sequenceAdapter: any,
-) {
-  const tracks: any = []
-
-  trackDb.forEach((track, trackName) => {
-    const trackKeys = Array.from(track.keys()) as string[]
-    const parentTrackKeys = [
-      'superTrack',
-      'compositeTrack',
-      'container',
-      'view',
-    ]
-    if (trackKeys.some(key => parentTrackKeys.includes(key))) {
-      return
-    }
-    const parentTracks = []
-    let currentTrackName = trackName
-    do {
-      currentTrackName = trackDb.get(currentTrackName)?.get('parent') || ''
-      if (currentTrackName) {
-        ;[currentTrackName] = currentTrackName.split(' ')
-        parentTracks.push(trackDb.get(currentTrackName))
+export function generateTracks({
+  trackDb,
+  trackDbLoc,
+  assemblyName,
+  sequenceAdapter,
+}: {
+  trackDb: TrackDbFile
+  trackDbLoc: FileLocation
+  assemblyName: string
+  sequenceAdapter: any
+}) {
+  return Object.entries(trackDb.data)
+    .map(([trackName, track]) => {
+      const trackKeys = Object.keys(track!)
+      const parentTrackKeys = new Set([
+        'superTrack',
+        'compositeTrack',
+        'container',
+        'view',
+      ])
+      if (trackKeys.some(key => parentTrackKeys.has(key))) {
+        return undefined
       }
-    } while (currentTrackName)
-    parentTracks.reverse()
-    const categories = parentTracks
-      .map(p => p?.get('shortLabel'))
-      .filter((f): f is string => !!f)
-    const res = makeTrackConfig(
-      track,
-      categories,
-      trackDbLoc,
-      trackDb,
-      sequenceAdapter,
-    )
-    tracks.push({
-      ...res,
-      trackId: `ucsc-trackhub-${objectHash(res)}`,
-      assemblyNames: [assemblyName],
+      const parentTracks = []
+      let currentTrackName = trackName
+      do {
+        currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
+        if (currentTrackName) {
+          currentTrackName = currentTrackName.split(' ')[0]!
+          parentTracks.push(trackDb.data[currentTrackName])
+        }
+      } while (currentTrackName)
+      parentTracks.reverse()
+      const categories = parentTracks
+        .map(p => p?.data.shortLabel)
+        .filter((f): f is string => !!f)
+      const res = makeTrackConfig({
+        track: track!,
+        categories,
+        trackDbLoc,
+        trackDb,
+        sequenceAdapter,
+      })
+      return {
+        ...res,
+        trackId: `ucsc-trackhub-${objectHash(res)}`,
+        assemblyNames: [assemblyName],
+      }
     })
-  })
-
-  return tracks
+    .filter(notEmpty)
 }
 
-function makeTrackConfig(
-  track: RaStanza,
-  categories: string[],
-  trackDbLoc: FileLocation,
-  trackDb: TrackDbFile,
-  sequenceAdapter: any,
-) {
-  let trackType = track.get('type')
-  const name = track.get('shortLabel') || ''
-  const bigDataUrl = track.get('bigDataUrl') || ''
-  const bigDataIdx = track.get('bigDataIndex') || ''
+function makeTrackConfig({
+  track,
+  categories,
+  trackDbLoc,
+  trackDb,
+  sequenceAdapter,
+}: {
+  track: RaStanza
+  categories: string[]
+  trackDbLoc: FileLocation
+  trackDb: TrackDbFile
+  sequenceAdapter: any
+}) {
+  const trackType =
+    track.data.type || trackDb.data[track.data.parent || '']?.data.type || ''
+  const name = track.data.shortLabel || ''
+  const bigDataUrl = track.data.bigDataUrl || ''
+  const bigDataIdx = track.data.bigDataIndex || ''
   const isUri = isUriLocation(trackDbLoc)
-  if (!trackType) {
-    trackType = trackDb.get(track.get('parent') || '')?.get('type')
-  }
-  let baseTrackType = trackType?.split(' ')[0] || ''
+  let baseTrackType = trackType.split(' ')[0] || ''
   if (baseTrackType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseTrackType = 'cram'
   }
@@ -131,121 +127,17 @@ function makeTrackConfig(
     case 'bam':
       return {
         type: 'AlignmentsTrack',
-        name: track.get('shortLabel'),
-        description: track.get('longLabel'),
+        name: track.data.longLabel,
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BamAdapter',
           bamLocation: bigDataLocation,
           index: {
             location: isUri
-              ? makeLocAlt(bigDataIdx, bigDataUrl + '.bai', trackDbLoc)
-              : makeLoc2(bigDataIdx, bigDataUrl + '.bai'),
+              ? makeLocAlt(bigDataIdx, `${bigDataUrl}.bai`, trackDbLoc)
+              : makeLoc2(bigDataIdx, `${bigDataUrl}.bai`),
           },
-        },
-      }
-
-    case 'bigBarChart':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigBed':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-      }
-    case 'bigGenePred':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-      }
-    case 'bigChain':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigInteract':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigMaf':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigPsl':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigWig':
-      return {
-        type: 'QuantitativeTrack',
-        name,
-        description: track.get('longLabel'),
-        category: categories,
-        adapter: {
-          type: 'BigWigAdapter',
-          bigWigLocation: bigDataLocation,
         },
       }
 
@@ -253,44 +145,60 @@ function makeTrackConfig(
       return {
         type: 'AlignmentsTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'CramAdapter',
           cramLocation: bigDataLocation,
           craiLocation: isUri
-            ? makeLocAlt(bigDataIdx, bigDataUrl + '.crai', trackDbLoc)
-            : makeLoc2(bigDataIdx, bigDataUrl + '.crai'),
+            ? makeLocAlt(bigDataIdx, `${bigDataUrl}.crai`, trackDbLoc)
+            : makeLoc2(bigDataIdx, `${bigDataUrl}.crai`),
           sequenceAdapter,
         },
       }
-
+    case 'bigBarChart':
+    case 'bigBed':
+    case 'bigGenePred':
+    case 'bigChain':
+    case 'bigInteract':
+    case 'bigMaf':
     case 'bigNarrowPeak':
+    case 'bigPsl':
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: bigDataLocation,
         },
       }
-    case 'peptideMapping':
-      return generateUnsupportedTrackConf(name, baseTrackType, categories)
+    case 'bigWig':
+      return {
+        type: 'QuantitativeTrack',
+        name,
+        description: track.data.longLabel,
+        category: categories,
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: bigDataLocation,
+        },
+      }
+
     case 'vcfTabix':
       return {
         type: 'VariantTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'VcfTabixAdapter',
           vcfGzLocation: bigDataLocation,
           index: {
             location: isUri
-              ? makeLocAlt(bigDataIdx, bigDataUrl + '.tbi', trackDbLoc)
-              : makeLoc2(bigDataIdx, bigDataUrl + '.tbi'),
+              ? makeLocAlt(bigDataIdx, `${bigDataUrl}.tbi`, trackDbLoc)
+              : makeLoc2(bigDataIdx, `${bigDataUrl}.tbi`),
           },
         },
       }
@@ -299,7 +207,7 @@ function makeTrackConfig(
       return {
         type: 'HicTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'HicAdapter',
@@ -308,6 +216,7 @@ function makeTrackConfig(
       }
 
     // unsupported types
+    //     case 'peptideMapping':
     //     case 'gvf':
     //     case 'ld2':
     //     case 'narrowPeak':
@@ -324,3 +233,5 @@ function makeTrackConfig(
       return generateUnknownTrackConf(name, baseTrackType, categories)
   }
 }
+
+export { default as ucscAssemblies } from './ucscAssemblies'

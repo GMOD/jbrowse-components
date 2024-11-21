@@ -4,12 +4,15 @@ import BigBedAdapterF from './BigBedAdapter'
 import BedpeAdapterF from './BedpeAdapter'
 import BedTabixAdapterF from './BedTabixAdapter'
 import BedAdapterF from './BedAdapter'
+import BedGraphAdapterF from './BedGraphAdapter'
+import BedGraphTabixAdapterF from './BedGraphTabixAdapter'
 import { FileLocation } from '@jbrowse/core/util/types'
 import {
   getFileName,
   makeIndex,
   makeIndexType,
   AdapterGuesser,
+  TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 
 export default class BedPlugin extends Plugin {
@@ -20,6 +23,8 @@ export default class BedPlugin extends Plugin {
     BedAdapterF(pluginManager)
     BedpeAdapterF(pluginManager)
     BedTabixAdapterF(pluginManager)
+    BedGraphAdapterF(pluginManager)
+    BedGraphTabixAdapterF(pluginManager)
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
@@ -38,7 +43,8 @@ export default class BedPlugin extends Plugin {
 
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj
-          } else if (adapterHint === adapterName) {
+          }
+          if (adapterHint === adapterName) {
             return obj
           }
           return adapterGuesser(file, index, adapterHint)
@@ -54,7 +60,7 @@ export default class BedPlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\.bedpe\.gz$/i
+          const regexGuess = /\.bedpe(\.gz)?$/i
           const adapterName = 'BedpeAdapter'
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
@@ -115,6 +121,14 @@ export default class BedPlugin extends Plugin {
           return adapterGuesser(file, index, adapterHint)
         }
       },
+    )
+
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => (adapterName: string) =>
+        adapterName === 'BedpeAdapter'
+          ? 'VariantTrack'
+          : trackTypeGuesser(adapterName),
     )
   }
 }

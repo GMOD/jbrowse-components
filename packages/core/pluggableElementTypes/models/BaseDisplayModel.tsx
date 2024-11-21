@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
 
@@ -11,6 +10,7 @@ import { ElementId } from '../../util/types/mst'
 
 /**
  * #stateModel BaseDisplay
+ * #category display
  */
 function stateModelFactory() {
   return types
@@ -31,6 +31,7 @@ function stateModelFactory() {
     .volatile(() => ({
       rendererTypeName: '',
       error: undefined as unknown,
+      message: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -38,14 +39,14 @@ function stateModelFactory() {
        */
       get RenderingComponent(): React.FC<{
         model: typeof self
-        onHorizontalScroll?: Function
+        onHorizontalScroll?: () => void
         blockState?: Record<string, any>
       }> {
         const { pluginManager } = getEnv(self)
-        const displayType = pluginManager.getDisplayType(self.type)
-        return displayType.ReactComponent as React.FC<{
+        return pluginManager.getDisplayType(self.type)!
+          .ReactComponent as React.FC<{
           model: typeof self
-          onHorizontalScroll?: Function
+          onHorizontalScroll?: () => void
           blockState?: Record<string, any>
         }>
       },
@@ -94,29 +95,17 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * the pluggable element type object for this display's
-       * renderer
+       * the pluggable element type object for this display's renderer
        */
       get rendererType() {
         const { pluginManager } = getEnv(self)
-        const RendererType = pluginManager.getRendererType(
-          self.rendererTypeName,
-        )
-        if (!RendererType) {
-          throw new Error(`renderer "${self.rendererTypeName}" not found`)
-        }
-        if (!RendererType.ReactComponent) {
-          throw new Error(
-            `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
-          )
-        }
-        return RendererType
+        return pluginManager.getRendererType(self.rendererTypeName)!
       },
 
       /**
        * #getter
-       * if a display-level message should be displayed instead,
-       * make this return a react component
+       * if a display-level message should be displayed instead, make this
+       * return a react component
        */
       get DisplayMessageComponent() {
         return undefined as undefined | React.FC<any>
@@ -138,15 +127,21 @@ function stateModelFactory() {
        * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
-       *  return a react node + string of text.
-       *  string of text describes why it cannot be rendered
-       *  react node allows user to force load at current setting
+       * return a react node + string of text. string of text describes why it
+       * cannot be rendered react node allows user to force load at current
+       * setting
        */
       regionCannotBeRendered(/* region */) {
-        return undefined
+        return null
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setMessage(arg?: string) {
+        self.message = arg
+      },
       /**
        * #action
        */

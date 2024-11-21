@@ -6,10 +6,8 @@ import { alpha } from '@mui/system/colorManipulator'
 import { stringify, toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => {
-  const { primary, tertiary } = theme.palette
-  const background = tertiary
-    ? alpha(tertiary.main, 0.7)
-    : alpha(primary.main, 0.7)
+  const { tertiary } = theme.palette
+  const background = alpha(tertiary.light, 0.7)
   return {
     rubberband: {
       height: '100%',
@@ -25,7 +23,7 @@ const useStyles = makeStyles()(theme => {
       minHeight: 8,
     },
     rubberbandText: {
-      color: tertiary ? tertiary.contrastText : primary.contrastText,
+      color: tertiary.contrastText,
     },
     popover: {
       mouseEvents: 'none',
@@ -44,7 +42,7 @@ interface Offset {
   oob?: boolean
 }
 
-function RubberbandSpan({
+export default function RubberbandSpan({
   leftBpOffset,
   rightBpOffset,
   numOfBpSelected,
@@ -57,7 +55,7 @@ function RubberbandSpan({
   left: number
   width: number
 }) {
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   return (
     <>
@@ -68,14 +66,8 @@ function RubberbandSpan({
             classes={{ paper: classes.paper }}
             open
             anchorEl={ref.current}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             keepMounted
             disableRestoreFocus
           >
@@ -83,19 +75,11 @@ function RubberbandSpan({
           </Popover>
           <Popover
             className={classes.popover}
-            classes={{
-              paper: classes.paper,
-            }}
+            classes={{ paper: classes.paper }}
             open
             anchorEl={ref.current}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             keepMounted
             disableRestoreFocus
           >
@@ -113,5 +97,3 @@ function RubberbandSpan({
     </>
   )
 }
-
-export default RubberbandSpan

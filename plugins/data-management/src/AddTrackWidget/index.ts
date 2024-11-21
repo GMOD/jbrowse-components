@@ -6,7 +6,7 @@ import { lazy } from 'react'
 import stateModelFactory from './model'
 const configSchema = ConfigurationSchema('AddTrackWidget', {})
 
-export default (pluginManager: PluginManager) => {
+export default function AddTrackWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'AddTrackWidget',

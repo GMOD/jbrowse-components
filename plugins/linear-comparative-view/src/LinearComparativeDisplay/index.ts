@@ -4,7 +4,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import configSchemaFactory from './configSchemaF'
 import stateModelFactory from './stateModelFactory'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearComparativeDisplayF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({

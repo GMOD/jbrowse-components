@@ -18,8 +18,8 @@ import {
 } from './util'
 
 // used to make features have a little padding for their labels
-const namePadding = 2
-const textPadding = 2
+const xPadding = 3
+const yPadding = 5
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
@@ -30,6 +30,7 @@ function RenderedFeatureGlyph(props: {
   bpPerPx: number
   region: Region
   config: AnyConfigurationModel
+  colorByCDS: boolean
   layout: BaseLayout<unknown>
   extraGlyphs?: ExtraGlyphValidator[]
   displayMode: string
@@ -64,7 +65,7 @@ function RenderedFeatureGlyph(props: {
   const labelAllowed = displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
-  const GlyphComponent = chooseGlyphComponent(feature, extraGlyphs)
+  const GlyphComponent = chooseGlyphComponent({ config, feature, extraGlyphs })
   const featureLayout = (GlyphComponent.layOut || layOut)({
     layout: rootLayout,
     feature,
@@ -90,7 +91,7 @@ function RenderedFeatureGlyph(props: {
     const getWidth = (text: string) => {
       const glyphWidth = rootLayout.width + expansion
       const textWidth = measureText(text, fontHeight)
-      return Math.round(Math.min(textWidth, glyphWidth)) + namePadding
+      return Math.round(Math.min(textWidth, glyphWidth))
     }
 
     description = String(
@@ -102,7 +103,7 @@ function RenderedFeatureGlyph(props: {
       rootLayout.addChild(
         'nameLabel',
         0,
-        featureLayout.bottom + textPadding,
+        featureLayout.bottom,
         getWidth(name),
         fontHeight,
       )
@@ -112,11 +113,14 @@ function RenderedFeatureGlyph(props: {
       const aboveLayout = shouldShowName
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
+      if (!aboveLayout) {
+        throw new Error('failed to layout nameLabel')
+      }
 
       rootLayout.addChild(
         'descriptionLabel',
         0,
-        aboveLayout.bottom + textPadding,
+        aboveLayout.bottom,
         getWidth(description),
         fontHeight,
       )
@@ -126,8 +130,8 @@ function RenderedFeatureGlyph(props: {
   const topPx = layout.addRect(
     feature.id(),
     feature.get('start'),
-    feature.get('start') + rootLayout.width * bpPerPx,
-    rootLayout.height,
+    feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
+    rootLayout.height + yPadding,
   )
   if (topPx === null) {
     return null
@@ -150,52 +154,52 @@ function RenderedFeatureGlyph(props: {
   )
 }
 
-const RenderedFeatures = observer(
-  (props: {
-    features?: Map<string, Feature>
-    isFeatureDisplayed?: (f: Feature) => boolean
-    bpPerPx: number
-    config: AnyConfigurationModel
-    displayMode: string
-    displayModel?: DisplayModel
-    region: Region
-    exportSVG?: unknown
-    extraGlyphs?: ExtraGlyphValidator[]
-    layout: BaseLayout<unknown>
-    viewParams: {
-      start: number
-      end: number
-      offsetPx: number
-      offsetPx1: number
-    }
-    [key: string]: unknown
-  }) => {
-    const { features = new Map(), isFeatureDisplayed } = props
-    return (
-      <>
-        {[...features.values()]
-          .filter(feature =>
-            isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
-          )
-          .map(feature => (
-            <RenderedFeatureGlyph
-              key={feature.id()}
-              feature={feature}
-              {...props}
-            />
-          ))}
-      </>
-    )
-  },
-)
+const RenderedFeatures = observer(function RenderedFeatures(props: {
+  features?: Map<string, Feature>
+  isFeatureDisplayed?: (f: Feature) => boolean
+  bpPerPx: number
+  config: AnyConfigurationModel
+  displayMode: string
+  colorByCDS: boolean
+  displayModel?: DisplayModel
+  region: Region
+  exportSVG?: unknown
+  extraGlyphs?: ExtraGlyphValidator[]
+  layout: BaseLayout<unknown>
+  viewParams: {
+    start: number
+    end: number
+    offsetPx: number
+    offsetPx1: number
+  }
+  [key: string]: unknown
+}) {
+  const { features = new Map(), isFeatureDisplayed } = props
+  return (
+    <>
+      {[...features.values()]
+        .filter(feature =>
+          isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
+        )
+        .map(feature => (
+          <RenderedFeatureGlyph
+            key={feature.id()}
+            feature={feature}
+            {...props}
+          />
+        ))}
+    </>
+  )
+})
 
-function SvgFeatureRendering(props: {
+const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>
   blockKey: string
   regions: Region[]
   bpPerPx: number
   detectRerender?: () => void
   config: AnyConfigurationModel
+  colorByCDS: boolean
   features: Map<string, Feature>
   displayModel?: DisplayModel
   exportSVG?: boolean
@@ -219,7 +223,7 @@ function SvgFeatureRendering(props: {
   const {
     layout,
     blockKey,
-    regions,
+    regions = [],
     bpPerPx,
     config,
     displayModel = {},
@@ -235,13 +239,14 @@ function SvgFeatureRendering(props: {
     onClick,
   } = props
 
-  const [region] = regions || []
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
+  const maxConfHeight = readConfObject(config, 'maxHeight') as number
 
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [height, setHeight] = useState(0)
+  const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
 
@@ -313,22 +318,23 @@ function SvgFeatureRendering(props: {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
-  if (exportSVG) {
-    return (
-      <RenderedFeatures
-        displayMode={displayMode}
-        isFeatureDisplayed={featureDisplayHandler}
-        region={region}
-        {...props}
-      />
-    )
-  }
-  return (
+  return exportSVG ? (
+    <RenderedFeatures
+      displayMode={displayMode}
+      isFeatureDisplayed={featureDisplayHandler}
+      region={region}
+      {...props}
+    />
+  ) : (
     <svg
       ref={ref}
       data-testid="svgfeatures"
       width={width}
       height={height + svgHeightPadding}
+      style={{
+        // use block because svg by default is inline, which adds a margin
+        display: 'block',
+      }}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseEnter={onMouseEnter}
@@ -353,6 +359,6 @@ function SvgFeatureRendering(props: {
       />
     </svg>
   )
-}
+})
 
-export default observer(SvgFeatureRendering)
+export default SvgFeatureRendering

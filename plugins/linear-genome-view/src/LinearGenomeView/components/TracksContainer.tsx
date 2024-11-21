@@ -2,10 +2,10 @@ import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Menu } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 
 // local utils
-import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
-import { useSideScroll, useRangeSelect, useWheelScroll } from './hooks'
+import { LinearGenomeViewModel } from '..'
 
 // local components
 import Rubberband from './Rubberband'
@@ -14,21 +14,24 @@ import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
+import HighlightGroup from './Highlight'
+import { SCALE_BAR_HEIGHT } from '../consts'
+
+// hooks
+import { useSideScroll } from './useSideScroll'
+import { useWheelScroll } from './useWheelScroll'
+import { useRangeSelect } from './useRangeSelect'
 
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     overflow: 'hidden',
   },
-  spacer: {
-    position: 'relative',
-    height: 3,
-  },
 })
 
 type LGV = LinearGenomeViewModel
 
-function TracksContainer({
+const TracksContainer = observer(function TracksContainer({
   children,
   model,
 }: {
@@ -36,7 +39,9 @@ function TracksContainer({
   model: LGV
 }) {
   const { classes } = useStyles()
+  const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
+  const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
   const {
     guideX,
@@ -47,13 +52,19 @@ function TracksContainer({
     width,
     left,
     anchorPosition,
-    handleMenuItemClick,
     open,
+    handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown: mouseDown2,
   } = useRangeSelect(ref, model, true)
   useWheelScroll(ref, model)
+
+  const additional = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-TracksContainerComponent',
+    undefined,
+    { model },
+  ) as React.ReactNode
 
   return (
     <div
@@ -67,8 +78,8 @@ function TracksContainer({
       onMouseMove={mouseMove}
       onMouseUp={mouseUp}
     >
-      {model.showGridlines ? <Gridlines model={model} /> : null}
-      {model.showCenterLine ? <CenterLine model={model} /> : null}
+      {showGridlines ? <Gridlines model={model} /> : null}
+      {showCenterLine ? <CenterLine model={model} /> : null}
       {guideX !== undefined ? (
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (
@@ -99,13 +110,18 @@ function TracksContainer({
         ControlComponent={
           <Scalebar
             model={model}
-            style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+            style={{
+              height: SCALE_BAR_HEIGHT,
+              boxSizing: 'border-box',
+            }}
           />
         }
       />
+      <HighlightGroup model={model} />
+      {additional}
       {children}
     </div>
   )
-}
+})
 
-export default observer(TracksContainer)
+export default TracksContainer

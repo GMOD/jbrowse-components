@@ -1,7 +1,6 @@
 ---
 id: base1dview
 title: Base1DView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[packages/core/util/Base1DViewModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/util/Base1DViewModel.ts)
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
@@ -29,9 +30,9 @@ id: ElementId
 
 ```js
 // type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.array(Region)
+displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
 #### property: bpPerPx
@@ -132,7 +133,7 @@ BlockSet
 
 ```js
 // type
-any
+number
 ```
 
 ### Base1DView - Methods
@@ -141,32 +142,14 @@ any
 
 ```js
 // type signature
-pxToBp: (px: number) => {
-  coord: number
-  index: number
-  refName: string
-  oob: boolean
-  assemblyName: string
-  offset: number
-  start: number
-  end: number
-  reversed: boolean
-}
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
 ```
 
 #### method: bpToPx
 
 ```js
 // type signature
-bpToPx: ({
-  refName,
-  coord,
-  regionNumber,
-}: {
-  refName: string,
-  coord: number,
-  regionNumber?: number,
-}) => number
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => number
 ```
 
 ### Base1DView - Actions
@@ -227,7 +210,7 @@ zoomIn: () => void
 
 ```js
 // type signature
-zoomTo: (newBpPerPx: number, offset?: number) => number
+zoomTo: (bpPerPx: number, offset?: number) => number
 ```
 
 #### action: scrollTo

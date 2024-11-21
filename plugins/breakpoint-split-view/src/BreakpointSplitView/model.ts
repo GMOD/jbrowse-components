@@ -1,12 +1,13 @@
+import React, { lazy } from 'react'
 import {
   types,
-  getParent,
   onAction,
   addDisposer,
   getPath,
   Instance,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
+import { saveAs } from 'file-saver'
 
 // jbrowse
 import {
@@ -15,15 +16,51 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, notEmpty } from '@jbrowse/core/util'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
+
+// icons
+import PhotoCamera from '@mui/icons-material/PhotoCamera'
+import LinkIcon from '@mui/icons-material/Link'
 
 // locals
 import { intersect } from './util'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function calc(track: any, feat: Feature): LayoutRecord {
-  return track.displays[0].searchFeatureByID(feat.id())
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+
+interface Display {
+  searchFeatureByID?: (str: string) => LayoutRecord
+}
+
+interface Track {
+  displays: Display[]
+}
+
+const startClip = new RegExp(/(\d+)[SH]$/)
+const endClip = new RegExp(/^(\d+)([SH])/)
+
+export function getClip(cigar: string, strand: number) {
+  return strand === -1
+    ? +(startClip.exec(cigar) || [])[1]! || 0
+    : +(endClip.exec(cigar) || [])[1]! || 0
+}
+function calc(track: Track, f: Feature) {
+  return track.displays[0]!.searchFeatureByID?.(f.id())
+}
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  filename?: string
+  Wrapper?: React.FC<{ children: React.ReactNode }>
+  fontSize?: number
+  rulerHeight?: number
+  textHeight?: number
+  paddingHeight?: number
+  headerHeight?: number
+  cytobandHeight?: number
+  trackLabels?: string
+  themeName?: string
 }
 
 type LGV = LinearGenomeViewModel
@@ -43,7 +80,10 @@ async function getBlockFeatures(
 ) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0].assemblyNames[0]
+  const assemblyName = model.views[0]?.assemblyNames[0]
+  if (!assemblyName) {
+    return undefined
+  }
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
@@ -62,78 +102,144 @@ async function getBlockFeatures(
   )
 }
 
+/**
+ * #stateModel BreakpointSplitView
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
+ */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const defaultHeight = 400
-  const model = types
-    .model('BreakpointSplitView', {
-      type: types.literal('BreakpointSplitView'),
-      height: types.optional(
-        types.refinement(
-          'viewHeight',
-          types.number,
-          (n: number) => n >= minHeight,
+  return types
+    .compose(
+      'BreakpointSplitView',
+      BaseViewModel,
+      types.model({
+        /**
+         * #property
+         */
+        type: types.literal('BreakpointSplitView'),
+        /**
+         * #property
+         */
+        height: types.optional(
+          types.refinement(
+            'viewHeight',
+            types.number,
+            (n: number) => n >= minHeight,
+          ),
+          defaultHeight,
         ),
-        defaultHeight,
-      ),
-      trackSelectorType: 'hierarchical',
-      showIntraviewLinks: true,
-      linkViews: false,
-      interactToggled: false,
-      views: types.array(
-        pluginManager.getViewType('LinearGenomeView')
-          .stateModel as LinearGenomeViewStateModel,
-      ),
-    })
+        /**
+         * #property
+         */
+        trackSelectorType: 'hierarchical',
+        /**
+         * #property
+         */
+        showIntraviewLinks: true,
+        /**
+         * #property
+         */
+        linkViews: false,
+        /**
+         * #property
+         */
+        interactToggled: false,
+        /**
+         * #property
+         */
+        views: types.array(
+          pluginManager.getViewType('LinearGenomeView')!
+            .stateModel as LinearGenomeViewStateModel,
+        ),
+      }),
+    )
     .volatile(() => ({
       width: 800,
-      matchedTrackFeatures: {} as { [key: string]: Feature[][] },
+      matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
-      // Find all track ids that match across multiple views
-      get matchedTracks() {
-        return intersect(
-          elt => elt.configuration.trackId as string,
-          ...self.views.map(view => view.tracks),
+      /**
+       * #method
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGBreakpointSplitView'
         )
+        const html = await renderToSvg(self as BreakpointViewModel, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Find all track ids that match across multiple views, or return just
+       * the single view's track if only a single row is used
+       */
+      get matchedTracks() {
+        return self.views.length === 1
+          ? self.views[0]!.tracks
+          : intersect(
+              elt => elt.configuration.trackId,
+              ...self.views.map(
+                view => view.tracks as { configuration: { trackId: string } }[],
+              ),
+            )
       },
 
-      menuItems() {
-        self.views
-          .map((view, idx) => [idx, view.menuItems?.()])
-          .filter(f => !!f[1])
-          .map(f => ({ label: `View ${f[0]} Menu`, subMenu: f[1] }))
-      },
-
-      // Get tracks with a given trackId across multiple views
+      /**
+       * #method
+       * Get tracks with a given trackId across multiple views
+       */
       getMatchedTracks(trackConfigId: string) {
         return self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(f => !!f)
       },
 
-      // Translocation features are handled differently
-      // since they do not have a mate e.g. they are one sided
+      /**
+       * #method
+       * Translocation features are handled differently since they do not have
+       * a mate e.g. they are one sided
+       */
       hasTranslocations(trackConfigId: string) {
         return [...this.getTrackFeatures(trackConfigId).values()].find(
           f => f.get('type') === 'translocation',
         )
       },
 
-      // Get a composite map of featureId->feature map for a track across
-      // multiple views
+      /**
+       * #method
+       * Paired features similar to breakends, but simpler, like BEDPE
+       */
+      hasPairedFeatures(trackConfigId: string) {
+        return [...this.getTrackFeatures(trackConfigId).values()].find(
+          f => f.get('type') === 'paired_feature',
+        )
+      },
+
+      /**
+       * #method
+       * Get a composite map of featureId-\>feature map for a track across
+       * multiple views
+       */
       getTrackFeatures(trackConfigId: string) {
         return new Map(
           self.matchedTrackFeatures[trackConfigId]
             ?.flat()
-            .map(f => [f.id(), f]),
+            .map(f => [f.id(), f] as const),
         )
       },
 
+      /**
+       * #method
+       */
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
-
         return features.map(c =>
           c
             .map(feature => {
@@ -143,18 +249,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     feature,
                     layout: calc(tracks[level], feature),
                     level,
+                    clipPos: getClip(
+                      feature.get('CIGAR'),
+                      feature.get('strand'),
+                    ),
                   }
                 : undefined
             })
-            .filter(
-              (
-                f,
-              ): f is {
-                feature: Feature
-                layout: LayoutRecord
-                level: number
-              } => !!f,
-            ),
+            .filter(notEmpty),
         )
       },
     }))
@@ -196,38 +298,62 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
-          if (ret.lastIndexOf(path) !== ret.length - path.length) {
+          if (!ret.endsWith(path)) {
             // @ts-ignore
             view[actionName](args?.[0])
           }
         })
       },
 
+      /**
+       * #action
+       */
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => v.setWidth(newWidth))
+        self.views.forEach(v => {
+          v.setWidth(newWidth)
+        })
       },
 
+      /**
+       * #action
+       */
       removeView(view: LGV) {
         self.views.remove(view)
       },
 
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
+      /**
+       * #action
+       */
       toggleInteract() {
         self.interactToggled = !self.interactToggled
       },
+
+      /**
+       * #action
+       */
       toggleIntraviewLinks() {
         self.showIntraviewLinks = !self.showIntraviewLinks
       },
+
+      /**
+       * #action
+       */
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
-      setMatchedTrackFeatures(obj: { [key: string]: Feature[][] }) {
+
+      /**
+       * #action
+       */
+      setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
         self.matchedTrackFeatures = obj
+      },
+      /**
+       * #action
+       */
+      reverseViewOrder() {
+        self.views.reverse()
       },
     }))
     .actions(self => ({
@@ -244,7 +370,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       await getBlockFeatures(self as any, track),
                     ]),
                   ),
@@ -252,14 +377,69 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               )
             } catch (e) {
               console.error(e)
-              getSession(self).notify(`${e}`, 'error')
+              getSession(self).notifyError(`${e}`, e)
             }
           }),
         )
       },
-    }))
 
-  return types.compose(BaseViewModel, model)
+      /**
+       * #method
+       */
+      menuItems() {
+        return [
+          ...self.views
+            .map((view, idx) => [idx, view.menuItems()] as const)
+            .map(f => ({
+              label: `Row ${f[0] + 1} view menu`,
+              subMenu: f[1],
+            })),
+
+          {
+            label: 'Reverse view order',
+            onClick: () => {
+              self.reverseViewOrder()
+            },
+          },
+          {
+            label: 'Show intra-view links',
+            type: 'checkbox',
+            checked: self.showIntraviewLinks,
+            onClick: () => {
+              self.toggleIntraviewLinks()
+            },
+          },
+          {
+            label: 'Allow clicking alignment squiggles?',
+            type: 'checkbox',
+            checked: self.interactToggled,
+            onClick: () => {
+              self.toggleInteract()
+            },
+          },
+
+          {
+            label: 'Link views',
+            type: 'checkbox',
+            icon: LinkIcon,
+            checked: self.linkViews,
+            onClick: () => {
+              self.toggleLinkViews()
+            },
+          },
+          {
+            label: 'Export SVG',
+            icon: PhotoCamera,
+            onClick: (): void => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDialog,
+                { model: self, handleClose },
+              ])
+            },
+          },
+        ]
+      },
+    }))
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

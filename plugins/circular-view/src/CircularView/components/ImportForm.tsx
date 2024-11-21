@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import { CircularViewModel } from '../models/model'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -14,13 +15,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ImportForm = observer(({ model }: { model: any }) => {
+const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { error } = model
   const { assemblyNames, assemblyManager } = session
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
     ? assembly?.error
@@ -51,7 +51,7 @@ const ImportForm = observer(({ model }: { model: any }) => {
 
         <Grid item>
           <Button
-            disabled={!regions?.length}
+            disabled={!regions.length}
             onClick={() => {
               model.setError(undefined)
               model.setDisplayedRegions(regions)

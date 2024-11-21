@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography'
 import Dialog from '@jbrowse/core/ui/Dialog'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
-function SetColorDialog({
+const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
 }: {
@@ -35,15 +35,19 @@ function SetColorDialog({
         </Typography>
         <FormControlLabel
           checked={!posneg}
-          onClick={() => setPosNeg(false)}
+          onClick={() => {
+            setPosNeg(false)
+          }}
           control={<Radio />}
-          label={'Overall color'}
+          label="Overall color"
         />
         <FormControlLabel
           checked={posneg}
-          onClick={() => setPosNeg(true)}
+          onClick={() => {
+            setPosNeg(true)
+          }}
           control={<Radio />}
-          label={'Positive/negative color'}
+          label="Positive/negative color"
         />
 
         {posneg ? (
@@ -71,7 +75,9 @@ function SetColorDialog({
             <Typography>Overall color</Typography>
             <ColorPicker
               color={model.color || 'black'}
-              onChange={event => model.setColor(event)}
+              onChange={event => {
+                model.setColor(event)
+              }}
             />
           </>
         )}
@@ -93,13 +99,15 @@ function SetColorDialog({
           variant="contained"
           color="primary"
           type="submit"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Submit
         </Button>
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(SetColorDialog)
+export default SetColorDialog

@@ -6,10 +6,7 @@ import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 // locals
-import SpreadsheetViewF, {
-  SpreadsheetViewModel,
-  SpreadsheetViewStateModel,
-} from './SpreadsheetView'
+import SpreadsheetViewF from './SpreadsheetView'
 
 import LaunchSpreadsheetViewF from './LaunchSpreadsheetView'
 
@@ -35,4 +32,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
   }
 }
 
-export type { SpreadsheetViewStateModel, SpreadsheetViewModel }
+export {
+  type SpreadsheetViewModel,
+  type SpreadsheetViewStateModel,
+} from './SpreadsheetView'

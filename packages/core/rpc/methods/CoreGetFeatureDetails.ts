@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { renameRegionsIfNeeded, getLayoutId } from '../../util'
-import { RenderArgsSerialized, validateRendererType } from './util'
+import { RenderArgsSerialized } from './util'
 
 /**
  * fetches features from an adapter and call a renderer with them
@@ -22,19 +20,14 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
     if (rpcDriver === 'MainThreadRpcDriver') {
       return superArgs
     }
-
     const { rendererType } = args
-
-    const RendererType = validateRendererType(
-      rendererType,
-      this.pluginManager.getRendererType(rendererType),
-    )
-
+    const RendererType = this.pluginManager.getRendererType(rendererType)!
+    // @ts-expect-error
     return RendererType.serializeArgsInClient(superArgs)
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
     let deserializedArgs = args
@@ -42,16 +35,13 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
     const { rendererType, featureId } = deserializedArgs
-    const RendererType = validateRendererType(
-      rendererType,
-      this.pluginManager.getRendererType(rendererType),
-    )
+    const RendererType = this.pluginManager.getRendererType(rendererType)!
 
-    // @ts-ignore
-    const sess = RendererType.sessions[getLayoutId(args)]
-    const { layout } = sess.cachedLayout
-    const xref = layout.getDataByID(featureId)
-
-    return { feature: xref.toJSON() }
+    return {
+      // @ts-expect-error
+      feature: RendererType.sessions[getLayoutId(args)]?.cachedLayout.layout
+        .getDataByID(featureId)
+        ?.toJSON(),
+    }
   }
 }

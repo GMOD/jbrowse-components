@@ -1,13 +1,14 @@
 ---
 id: ucsctrackhubconnection
 title: UCSCTrackHubConnection
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/data-management/src/ucsc-trackhub/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/ucsc-trackhub/configSchema.ts)
 
 ### UCSCTrackHubConnection - Slots
 
@@ -35,7 +36,7 @@ assemblyNames: {
     }
 ```
 
-## UCSCTrackHubConnection - Derives from
+### UCSCTrackHubConnection - Derives from
 
 ```js
 baseConfiguration: baseConnectionConfig

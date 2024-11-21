@@ -16,30 +16,32 @@ const useStyles = makeStyles()({
   },
 })
 
-const TextFilter = observer(
-  ({
-    textFilter,
-  }: {
-    textFilter: { stringToFind: string; setString: (arg: string) => void }
-  }) => {
-    const { classes } = useStyles()
-    // this paragraph is silliness to debounce the text filter input
-    const [textFilterValue, setTextFilterValue] = useState(
-      textFilter.stringToFind,
-    )
-    const debouncedTextFilter = useDebounce(textFilterValue, 500)
-    useEffect(() => {
-      textFilter.setString(debouncedTextFilter)
-    }, [debouncedTextFilter, textFilter])
+const TextFilter = observer(function ({
+  textFilter,
+}: {
+  textFilter: { stringToFind: string; setString: (arg: string) => void }
+}) {
+  const { classes } = useStyles()
+  // this paragraph is silliness to debounce the text filter input
+  const [textFilterValue, setTextFilterValue] = useState(
+    textFilter.stringToFind,
+  )
+  const debouncedTextFilter = useDebounce(textFilterValue, 500)
+  useEffect(() => {
+    textFilter.setString(debouncedTextFilter)
+  }, [debouncedTextFilter, textFilter])
 
-    return (
-      <div>
-        <TextField
-          label="text filter"
-          value={textFilterValue}
-          onChange={evt => setTextFilterValue(evt.target.value)}
-          variant="outlined"
-          InputProps={{
+  return (
+    <div>
+      <TextField
+        label="text filter"
+        value={textFilterValue}
+        onChange={evt => {
+          setTextFilterValue(evt.target.value)
+        }}
+        variant="outlined"
+        slotProps={{
+          input: {
             startAdornment: (
               <InputAdornment position="start">
                 <FilterIcon />
@@ -52,21 +54,21 @@ const TextFilter = observer(
               >
                 <IconButton
                   aria-label="clear filter"
-                  onClick={() => setTextFilterValue('')}
-                  color="secondary"
+                  onClick={() => {
+                    setTextFilterValue('')
+                  }}
                 >
                   <ClearIcon />
                 </IconButton>
               </InputAdornment>
             ),
-          }}
-        />
-      </div>
-    )
-  },
-)
+          },
+        }}
+      />
+    </div>
+  )
+})
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GlobalFilterControls = observer(({ model }: { model: any }) => {
   const textFilter = model.filterControls.rowFullText
   return <TextFilter textFilter={textFilter} />

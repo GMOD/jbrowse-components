@@ -3,15 +3,14 @@
 module.exports = {
   roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
+
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
-    '^(?!.*\\.(ts|js|tsx|jsx|css|json)$)':
-      '<rootDir>/config/jest/fileTransform.js',
   },
   transformIgnorePatterns: [
-    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
-    '^.+\\.module\\.(css|sass|scss)$',
+    String.raw`[/\\]node_modules[/\\].+\.(js|jsx)$`,
+    String.raw`^.+\.module\.(css|sass|scss)$`,
   ],
   testMatch: [
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
@@ -33,12 +32,10 @@ module.exports = {
   ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
-    '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
-    '<rootDir>/config/jest/crypto.js',
-    'jest-localstorage-mock',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
+  testTimeout: 15000,
   testEnvironment: 'jsdom',
 }

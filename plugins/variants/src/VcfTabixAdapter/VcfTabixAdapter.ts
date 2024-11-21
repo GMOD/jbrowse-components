@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util'
@@ -12,7 +12,7 @@ import VcfParser from '@gmod/vcf'
 // local
 import VcfFeature from '../VcfFeature'
 
-export default class extends BaseFeatureDataAdapter {
+export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     vcf: TabixIndexedFile
     parser: VcfParser
@@ -24,14 +24,13 @@ export default class extends BaseFeatureDataAdapter {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(vcfGzLocation as FileLocation, pm)
+    const filehandle = openLocation(vcfGzLocation, pm)
     const isCSI = indexType === 'CSI'
     const vcf = new TabixIndexedFile({
       filehandle,
       csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
       tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      chunkSizeLimit: 1000000000,
     })
 
     const header = await vcf.getHeader()
@@ -43,7 +42,7 @@ export default class extends BaseFeatureDataAdapter {
 
   protected async configure() {
     if (!this.configured) {
-      this.configured = this.configurePre().catch(e => {
+      this.configured = this.configurePre().catch((e: unknown) => {
         this.configured = undefined
         throw e
       })
@@ -83,7 +82,7 @@ export default class extends BaseFeatureDataAdapter {
         ...opts,
       })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(/* { region } */): void {}

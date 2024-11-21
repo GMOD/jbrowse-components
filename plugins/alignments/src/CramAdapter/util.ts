@@ -1,17 +1,7 @@
 import { CramRecord } from '@gmod/cram'
+import { Mismatch } from '../shared/types'
 
 type ReadFeatures = CramRecord['readFeatures']
-
-export interface Mismatch {
-  qual?: number
-  start: number
-  length: number
-  type: string
-  base: string | undefined
-  altbase?: string
-  seq?: string
-  cliplen?: number
-}
 
 export function readFeaturesToMismatches(
   readFeatures: ReadFeatures,
@@ -28,9 +18,7 @@ export function readFeaturesToMismatches(
   let sublen = 0
   let lastPos = start
 
-  for (let i = 0; i < readFeatures.length; i++) {
-    const f = readFeatures[i]
-    const { code, pos, data, sub, ref } = f
+  for (const { refPos: p, code, pos, data, sub, ref } of readFeatures) {
     sublen = refPos - lastPos
     lastPos = refPos
 
@@ -43,14 +31,14 @@ export function readFeaturesToMismatches(
       }
       insLen = 0
     }
-    refPos = f.refPos - 1 - start
+    refPos = p - 1 - start
 
     if (code === 'X') {
       // substitution
       mismatches[j++] = {
         start: refPos,
         length: 1,
-        base: sub,
+        base: sub!,
         qual: qual?.[pos - 1],
         altbase: ref?.toUpperCase(),
         type: 'mismatch',
@@ -150,10 +138,9 @@ export function readFeaturesToCIGAR(
   let sublen = 0
   let insLen = 0
   if (readFeatures !== undefined) {
-    for (let i = 0; i < readFeatures.length; i++) {
-      const { code, refPos, sub, data } = readFeatures[i]
+    for (const { code, refPos, sub, data } of readFeatures) {
       sublen = refPos - lastPos
-      seq += ref.substring(lastPos - refStart, refPos - refStart)
+      seq += ref.slice(lastPos - refStart, refPos - refStart)
       lastPos = refPos
 
       if (insLen > 0 && sublen) {
@@ -161,7 +148,7 @@ export function readFeaturesToCIGAR(
         insLen = 0
       }
       if (oplen && op !== 'M') {
-        cigar += oplen + op
+        cigar += `${oplen}${op}`
         oplen = 0
       }
       if (sublen) {
@@ -190,7 +177,7 @@ export function readFeaturesToCIGAR(
         // Deletion or Ref Skip
         lastPos += data
         if (oplen) {
-          cigar += oplen + op
+          cigar += `${oplen}${op}`
         }
         cigar += data + code
         oplen = 0
@@ -198,7 +185,7 @@ export function readFeaturesToCIGAR(
         // Insertion or soft-clip
         seq += data
         if (oplen) {
-          cigar += oplen + op
+          cigar += `${oplen}${op}`
         }
         cigar += data.length + code
         oplen = 0
@@ -206,7 +193,7 @@ export function readFeaturesToCIGAR(
         // Single base insertion
         // seq += data
         if (oplen) {
-          cigar += oplen + op
+          cigar += `${oplen}${op}`
         }
         insLen++
         seq += data
@@ -214,13 +201,13 @@ export function readFeaturesToCIGAR(
       } else if (code === 'P') {
         // Padding
         if (oplen) {
-          cigar += oplen + op
+          cigar += `${oplen}${op}`
         }
         cigar += `${data}P`
       } else if (code === 'H') {
         // Hard clip
         if (oplen) {
-          cigar += oplen + op
+          cigar += `${oplen}${op}`
         }
         cigar += `${data}H`
         oplen = 0
@@ -231,10 +218,10 @@ export function readFeaturesToCIGAR(
   }
   if (seq.length !== readLen) {
     sublen = readLen - seq.length
-    seq += ref.substring(lastPos - refStart, lastPos - refStart + sublen)
+    seq += ref.slice(lastPos - refStart, lastPos - refStart + sublen)
 
     if (oplen && op !== 'M') {
-      cigar += oplen + op
+      cigar += `${oplen}${op}`
       oplen = 0
     }
     op = 'M'
@@ -244,7 +231,7 @@ export function readFeaturesToCIGAR(
     cigar += `${insLen}I`
   }
   if (oplen) {
-    cigar += oplen + op
+    cigar += `${oplen}${op}`
   }
 
   return cigar

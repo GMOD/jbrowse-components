@@ -43,6 +43,9 @@ Example MultiQuantitativeTrack config:
 }
 ```
 
+Note that the "bigWigs" array listed above only works with absolute URLs, if you
+want to use relative URLs, you can use the "subadapters" array listed below:
+
 #### General MultiQuantitativeTrack options
 
 You can pass an array of urls for bigWig files to the "bigWigs" slot for

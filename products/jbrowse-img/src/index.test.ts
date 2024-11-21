@@ -1,58 +1,45 @@
-/* eslint-disable tsdoc/syntax */
 /**
  * @jest-environment node
  */
 
-// the above jest-environment node is important to check true usage as a CLI tool
+// the above jest-environment node is important to check true usage
+// as a CLI tool
 
 import { renderRegion } from './renderRegion'
 import path from 'path'
 import fs from 'fs'
-import { JSDOM } from 'jsdom'
-import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
-import { Image, createCanvas } from 'canvas'
-import fetch, { Headers, Response, Request } from 'node-fetch'
+import setupEnv from './setupEnv'
 
-// @ts-ignore
-global.fetch = fetch
-// @ts-ignore
-global.Headers = Headers
-// @ts-ignore
-global.Response = Response
-// @ts-ignore
-global.Request = Request
+setupEnv()
 
-const { document } = new JSDOM(`...`).window
-global.document = document
+function pa(s: string) {
+  return path.join(__dirname, s)
+}
 
-// @ts-ignore
-global.nodeImage = Image
-// @ts-ignore
-global.nodeCreateCanvas = createCanvas
+function fp(f: string) {
+  return pa(`../data/volvox/${f}`)
+}
 
 xtest('renders a region with --session and --config args', async () => {
-  // @ts-ignore
   const result = await renderRegion({
-    session: path.join(__dirname, '../test/clingen_session.json'),
-    config: path.join(__dirname, '../data/config.json'),
+    session: pa('../test/clingen_session.json'),
+    config: pa('../data/config.json'),
   })
   fs.writeFileSync('svg_from_config_and_session_param.svg', result)
   expect(result).toMatchSnapshot()
 }, 40000)
 
 xtest('renders a region with --session, --tracks, and --assembly args', async () => {
-  // @ts-ignore
   const result = await renderRegion({
-    session: path.join(__dirname, '../test/clingen_session.json'),
-    tracks: path.join(__dirname, '../data/tracks.json'),
-    assembly: path.join(__dirname, '../data/assembly.json'),
+    session: pa('../test/clingen_session.json'),
+    tracks: pa('../data/tracks.json'),
+    assembly: pa('../data/assembly.json'),
   })
   fs.writeFileSync('svg_from_separate_session_and_tracks.svg', result)
   expect(result).toMatchSnapshot()
 }, 40000)
 
 test('renders volvox with variety of args', async () => {
-  const fp = (f: string) => path.join(__dirname, '../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
@@ -66,10 +53,32 @@ test('renders volvox with variety of args', async () => {
     ],
     loc: 'ctgA:1000-2000',
   })
-  fs.writeFileSync(
-    path.join(__dirname, '../test/svg_from_volvox_fasta_and_bam.svg'),
-    result,
-  )
+  fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam.svg'), result)
+  expect(result).toBeTruthy()
+}, 40000)
+
+test('renders volvox with csi index', async () => {
+  const result = await renderRegion({
+    fasta: fp('volvox.fa'),
+    trackList: [
+      [
+        'bam',
+        [fp('volvox-sorted.bam'), `index:${fp('volvox-sorted.bam.csi')}`],
+      ],
+    ],
+    loc: 'ctgA:1000-2000',
+  })
+  fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam_csi.svg'), result)
+  expect(result).toBeTruthy()
+}, 40000)
+
+test('renders volvox alignments as snpcov', async () => {
+  const result = await renderRegion({
+    fasta: fp('volvox.fa'),
+    trackList: [['bam', [fp('volvox-sorted.bam'), 'snpcov', 'height:1000']]],
+    loc: 'ctgA:1000-2000',
+  })
+  fs.writeFileSync(pa('../test/volvox-snpcov.svg'), result)
   expect(result).toBeTruthy()
 }, 40000)
 
@@ -87,10 +96,7 @@ xtest('renders human large region with remote urls', async () => {
     ],
     loc: '1:10,000,000-10,030,000',
   })
-  fs.writeFileSync(
-    path.join(__dirname, '../test/human_remote_urls_large_region.svg'),
-    result,
-  )
+  fs.writeFileSync(pa('../test/human_remote_urls_large_region.svg'), result)
   expect(result).toBeTruthy()
 }, 120000)
 
@@ -107,15 +113,11 @@ xtest('renders volvox with remote urls', async () => {
     ],
     loc: 'ctgA:1-1000',
   })
-  fs.writeFileSync(
-    path.join(__dirname, '../test/volvox_remote_region.svg'),
-    result,
-  )
+  fs.writeFileSync(pa('../test/volvox_remote_region.svg'), result)
   expect(result).toBeTruthy()
 }, 20000)
 
 test('renders volvox with variety of args (noRasterize)', async () => {
-  const fp = (f: string) => path.join(__dirname, '../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
@@ -131,10 +133,7 @@ test('renders volvox with variety of args (noRasterize)', async () => {
     noRasterize: true,
   })
   fs.writeFileSync(
-    path.join(
-      __dirname,
-      '../test/svg_from_volvox_fasta_and_bam_norasterize.svg',
-    ),
+    pa('../test/svg_from_volvox_fasta_and_bam_norasterize.svg'),
     result,
   )
   expect(result).toBeTruthy()
@@ -154,15 +153,12 @@ xtest('configtracks arg with urls', async () => {
 
 test('configtracks arg with local files', async () => {
   const result = await renderRegion({
-    config: path.join(__dirname, '../data/volvox/config.json'),
+    config: pa('../data/volvox/config.json'),
     trackList: [['configtracks', ['volvox_sv']]],
     assembly: 'volvox',
     loc: 'ctgA:1-50,000',
   })
-  fs.writeFileSync(
-    path.join(__dirname, '../test/svg_configtracks_local.svg'),
-    result,
-  )
+  fs.writeFileSync(pa('../test/svg_configtracks_local.svg'), result)
   expect(result).toBeTruthy()
 }, 40000)
 
@@ -179,9 +175,6 @@ xtest('renders --hic', async () => {
     ],
     loc: '1:2,000,000-10,000,000',
   })
-  fs.writeFileSync(
-    path.join(__dirname, '../test/svg_from_human_hic.svg'),
-    result,
-  )
+  fs.writeFileSync(pa('../test/svg_from_human_hic.svg'), result)
   expect(result).toBeTruthy()
 }, 20000)

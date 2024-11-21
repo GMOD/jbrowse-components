@@ -1,7 +1,7 @@
 {
   "title": "JBrowse",
   "tagline": "Next generation genome browser",
-  "url": "https://jbrowse.com",
+  "url": "https://jbrowse.org",
   "baseUrl": "/jb2/",
   "favicon": "img/favicon.ico",
   "trailingSlash": true,
@@ -9,131 +9,6 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentVersion": "v2.3.3"
-  },
-  "themeConfig": {
-    "colorMode": {
-      "disableSwitch": true
-    },
-    "navbar": {
-      "title": "JBrowse",
-      "logo": {
-        "alt": "JBrowse",
-        "src": "img/logo.svg"
-      },
-      "items": [
-        {
-          "to": "docs/",
-          "activeBasePath": "docs",
-          "label": "Docs",
-          "position": "left"
-        },
-        {
-          "to": "blog",
-          "label": "Blog",
-          "position": "left"
-        },
-        {
-          "to": "download",
-          "label": "Download",
-          "position": "left"
-        },
-        {
-          "to": "plugin_store",
-          "label": "Plugins",
-          "position": "left"
-        },
-        {
-          "to": "features",
-          "label": "Features",
-          "position": "left"
-        },
-        {
-          "to": "gallery",
-          "label": "Gallery",
-          "position": "left"
-        },
-        {
-          "to": "demos",
-          "label": "Demos",
-          "position": "left"
-        },
-        {
-          "to": "contact/",
-          "label": "Contact",
-          "position": "left"
-        },
-        {
-          "href": "https://jbrowse.org/jbrowse1.html",
-          "label": "Looking for JBrowse 1?",
-          "position": "right"
-        },
-        {
-          "className": "navbar-social-github",
-          "position": "right",
-          "alt": "Github",
-          "href": "https://github.com/GMOD/jbrowse-components"
-        },
-        {
-          "className": "navbar-social-twitter",
-          "alt": "Twitter",
-          "position": "right",
-          "href": "https://twitter.com/usejbrowse"
-        }
-      ]
-    },
-    "footer": {
-      "style": "dark",
-      "links": [
-        {
-          "title": "Docs",
-          "items": [
-            {
-              "label": "Documentation",
-              "to": "docs/"
-            },
-            {
-              "label": "Cancer resources",
-              "to": "cancer/"
-            }
-          ]
-        },
-        {
-          "title": "Community",
-          "items": [
-            {
-              "label": "Gitter",
-              "href": "https://gitter.im/GMOD/jbrowse2"
-            },
-            {
-              "label": "Twitter",
-              "href": "https://twitter.com/usejbrowse"
-            }
-          ]
-        },
-        {
-          "title": "More",
-          "items": [
-            {
-              "label": "Blog",
-              "to": "blog"
-            },
-            {
-              "label": "Contact",
-              "to": "contact"
-            },
-            {
-              "label": "GitHub",
-              "href": "https://github.com/GMOD/jbrowse-components"
-            },
-            {
-              "label": "Looking for JBrowse 1?",
-              "href": "https://jbrowse.org/jbrowse1.html"
-            }
-          ]
-        }
-      ],
-      "copyright": "Copyright © 2020 Evolutionary Software Foundation, Inc."
-    }
+    "currentVersion": "v2.17.0"
   }
 }

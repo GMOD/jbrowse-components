@@ -9,10 +9,14 @@ import Dialog from '@jbrowse/core/ui/Dialog'
 import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getSession, getContainingView, Feature } from '@jbrowse/core/util'
+import {
+  getSession,
+  getContainingView,
+  gatherOverlaps,
+  Feature,
+} from '@jbrowse/core/util'
 
 // locals
-import { mergeIntervals } from './util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
@@ -41,29 +45,6 @@ const useStyles = makeStyles()({
   },
 })
 
-interface BasicFeature {
-  end: number
-  start: number
-  refName: string
-}
-
-// hashmap of refName->array of features
-type FeaturesPerRef = { [key: string]: BasicFeature[] }
-
-function gatherOverlaps(regions: BasicFeature[]) {
-  const groups = regions.reduce((memo, x) => {
-    if (!memo[x.refName]) {
-      memo[x.refName] = []
-    }
-    memo[x.refName].push(x)
-    return memo
-  }, {} as FeaturesPerRef)
-
-  return Object.values(groups)
-    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
-    .flat()
-}
-
 export default function ReadVsRefDialog({
   track,
   feature: preFeature,
@@ -71,7 +52,7 @@ export default function ReadVsRefDialog({
 }: {
   feature: Feature
   handleClose: () => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   track: any
 }) {
   const { classes } = useStyles()
@@ -92,7 +73,7 @@ export default function ReadVsRefDialog({
       try {
         if (preFeature.get('flags') & 2048) {
           const SA: string = getTag(preFeature, 'SA') || ''
-          const primaryAln = SA.split(';')[0]
+          const primaryAln = SA.split(';')[0]!
           const [saRef, saStart] = primaryAln.split(',')
           const { rpcManager } = getSession(track)
           const adapterConfig = getConf(track, 'adapter')
@@ -104,8 +85,8 @@ export default function ReadVsRefDialog({
             regions: [
               {
                 refName: saRef,
-                start: +saStart - 1,
-                end: +saStart,
+                start: +saStart! - 1,
+                end: +saStart!,
               },
             ],
           })) as Feature[]
@@ -157,6 +138,9 @@ export default function ReadVsRefDialog({
       // tracks can be opened on the top panel of the linear read vs ref
       const { assemblyManager } = session
       const assembly = assemblyManager.get(trackAssembly)
+      if (!assembly) {
+        throw new Error('assembly not found')
+      }
 
       const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
 
@@ -174,27 +158,23 @@ export default function ReadVsRefDialog({
       // CIGAR which is the primary alignments. otherwise it is the primary
       // alignment just use seq.length if primary alignment
       const totalLength =
-        flags & 2048 ? getLength(suppAlns[0].CIGAR) : getLength(cigar)
+        flags & 2048 ? getLength(suppAlns[0]!.CIGAR) : getLength(cigar)
 
       const features = [feat, ...suppAlns] as ReducedFeature[]
 
       features.forEach((f, idx) => {
-        f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
+        f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
         f.syntenyId = idx
         f.mate.syntenyId = idx
         f.mate.uniqueId = `${f.uniqueId}_mate`
       })
       features.sort((a, b) => a.clipPos - b.clipPos)
 
-      const featSeq = feature.get('seq') as string
+      const featSeq = feature.get('seq') as string | undefined
 
       // the config feature store includes synthetic mate features
       // mapped to the read assembly
-      const configFeatureStore = features.concat(
-        // @ts-ignore
-        features.map(f => f.mate),
-      )
-
+      const configFeatureStore = [...features, ...features.map(f => f.mate)]
       const expand = 2 * windowSize
       const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
 
@@ -209,11 +189,11 @@ export default function ReadVsRefDialog({
         })),
       )
 
-      session.addTemporaryAssembly({
-        name: `${readAssembly}`,
+      session.addTemporaryAssembly?.({
+        name: readAssembly,
         sequence: {
           type: 'ReferenceSequenceTrack',
-          name: `Read sequence`,
+          name: 'Read sequence',
           trackId: seqTrackId,
           assemblyNames: [readAssembly],
           adapter: {
@@ -354,7 +334,9 @@ export default function ReadVsRefDialog({
 
             <TextField
               value={windowSize}
-              onChange={event => setWindowSize(event.target.value)}
+              onChange={event => {
+                setWindowSize(event.target.value)
+              }}
               label="Set window size"
             />
           </div>

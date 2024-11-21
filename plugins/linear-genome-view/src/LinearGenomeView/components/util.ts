@@ -55,8 +55,23 @@ export function splitLast(str: string, split: string): [string, string] {
   }
 }
 
-export function getRelativeX<
-  T extends { clientX: number; target: EventTarget | null },
->(event: T, element: HTMLElement | null) {
+export function getRelativeX(
+  event: { clientX: number; target: EventTarget | null },
+  element: HTMLElement | null,
+) {
   return event.clientX - (element?.getBoundingClientRect().left || 0)
+}
+
+export function getCytobands(assembly: Assembly | undefined, refName: string) {
+  return (
+    assembly?.cytobands
+      ?.map(f => ({
+        refName:
+          assembly.getCanonicalRefName(f.get('refName')) || f.get('refName'),
+        start: f.get('start'),
+        end: f.get('end'),
+        type: f.get('gieStain') as string,
+      }))
+      .filter(f => f.refName === refName) || []
+  )
 }

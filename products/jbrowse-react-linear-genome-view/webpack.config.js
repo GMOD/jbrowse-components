@@ -1,4 +1,3 @@
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const path = require('path')
 const webpack = require('webpack')
 
@@ -29,15 +28,11 @@ module.exports = {
     },
   },
   plugins: [
-    new NodePolyfillPlugin({
-      excludeAliases: ['console'],
-    }),
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
   ],
   resolve: {
-    fallback: { fs: false, http: false },
     extensions: [
       '.mjs',
       '.web.js',
@@ -67,10 +62,6 @@ module.exports = {
                 presets: ['@babel/preset-react'],
               },
             },
-          },
-          {
-            loader: require.resolve('file-loader'),
-            exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
           },
         ],
       },

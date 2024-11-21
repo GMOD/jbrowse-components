@@ -9,12 +9,13 @@ import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
 
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 
 test('no features', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       features={new Map()}
       regions={[
         { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
@@ -23,7 +24,6 @@ test('no features', () => {
         new PrecomputedLayout({
           rectangles: {},
           totalHeight: 20,
-          containsNoTransferables: true,
           maxHeightReached: false,
         })
       }
@@ -33,13 +33,14 @@ test('no features', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -47,7 +48,15 @@ test('one feature', () => {
       viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
-          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+          [
+            'one',
+            new SimpleFeature({
+              refName: 'zonk',
+              uniqueId: 'one',
+              start: 1,
+              end: 3,
+            }),
+          ],
         ])
       }
       config={SvgRendererConfigSchema.create({})}
@@ -55,7 +64,7 @@ test('one feature', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('click on one feature, and do not re-render', () => {
@@ -63,6 +72,7 @@ test('click on one feature, and do not re-render', () => {
   const { container, getByTestId } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -70,9 +80,33 @@ test('click on one feature, and do not re-render', () => {
       viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
-          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
-          ['two', new SimpleFeature({ uniqueId: 'two', start: 1, end: 3 })],
-          ['three', new SimpleFeature({ uniqueId: 'three', start: 1, end: 3 })],
+          [
+            'one',
+            new SimpleFeature({
+              refName: 'zonk',
+              uniqueId: 'one',
+              start: 1,
+              end: 3,
+            }),
+          ],
+          [
+            'two',
+            new SimpleFeature({
+              refName: 'zonk',
+              uniqueId: 'two',
+              start: 1,
+              end: 3,
+            }),
+          ],
+          [
+            'three',
+            new SimpleFeature({
+              refName: 'zonk',
+              uniqueId: 'three',
+              start: 1,
+              end: 3,
+            }),
+          ],
         ])
       }
       config={SvgRendererConfigSchema.create({})}
@@ -83,7 +117,7 @@ test('click on one feature, and do not re-render', () => {
   fireEvent.click(getByTestId('box-one'))
   expect(counter).toBe(3)
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature (compact mode)', () => {
@@ -92,6 +126,7 @@ test('one feature (compact mode)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -103,6 +138,7 @@ test('one feature (compact mode)', () => {
             'one',
             new SimpleFeature({
               type: 'mRNA',
+              refName: 'zonk',
               start: 5975,
               end: 9744,
               score: 0.84,
@@ -111,6 +147,7 @@ test('one feature (compact mode)', () => {
               uniqueId: 'one',
               subfeatures: [
                 {
+                  refName: 'zonk',
                   type: 'five_prime_UTR',
                   start: 5975,
                   end: 6109,
@@ -118,6 +155,7 @@ test('one feature (compact mode)', () => {
                   strand: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'start_codon',
                   start: 6110,
                   end: 6112,
@@ -125,6 +163,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 6110,
                   end: 6148,
@@ -133,6 +172,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 6615,
                   end: 6683,
@@ -141,6 +181,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 6758,
                   end: 7040,
@@ -149,6 +190,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7142,
                   end: 7319,
@@ -157,6 +199,7 @@ test('one feature (compact mode)', () => {
                   phase: 2,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7411,
                   end: 7687,
@@ -165,6 +208,7 @@ test('one feature (compact mode)', () => {
                   phase: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7748,
                   end: 7850,
@@ -173,6 +217,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7953,
                   end: 8098,
@@ -181,6 +226,7 @@ test('one feature (compact mode)', () => {
                   phase: 2,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8166,
                   end: 8320,
@@ -189,6 +235,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8419,
                   end: 8614,
@@ -197,6 +244,7 @@ test('one feature (compact mode)', () => {
                   phase: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8708,
                   end: 8811,
@@ -205,6 +253,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8927,
                   end: 9239,
@@ -213,6 +262,7 @@ test('one feature (compact mode)', () => {
                   phase: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 9414,
                   end: 9494,
@@ -221,6 +271,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'stop_codon',
                   start: 9492,
                   end: 9494,
@@ -228,6 +279,7 @@ test('one feature (compact mode)', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'three_prime_UTR',
                   start: 9495,
                   end: 9744,
@@ -245,7 +297,7 @@ test('one feature (compact mode)', () => {
   )
 
   // reducedRepresentation of the transcript is just a box
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript (reducedRepresentation mode)', () => {
@@ -255,28 +307,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
-      regions={[
-        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
-      ]}
-      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
-      features={
-        new Map([
-          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
-        ])
-      }
-      config={config}
-      bpPerPx={3}
-    />,
-  )
-
-  expect(container.firstChild).toMatchSnapshot()
-})
-
-test('processed transcript', () => {
-  const { container } = render(
-    <Rendering
-      blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -287,6 +318,38 @@ test('processed transcript', () => {
           [
             'one',
             new SimpleFeature({
+              refName: 'zonk',
+              uniqueId: 'one',
+              start: 1,
+              end: 3,
+            }),
+          ],
+        ])
+      }
+      config={config}
+      bpPerPx={3}
+    />,
+  )
+
+  expect(container).toMatchSnapshot()
+})
+
+test('processed transcript', () => {
+  const { container } = render(
+    <Rendering
+      blockKey="hello"
+      colorByCDS={false}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
+      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
+      features={
+        new Map([
+          [
+            'one',
+            new SimpleFeature({
+              refName: 'zonk',
               type: 'mRNA',
               start: 5975,
               end: 9744,
@@ -296,6 +359,7 @@ test('processed transcript', () => {
               uniqueId: 'one',
               subfeatures: [
                 {
+                  refName: 'zonk',
                   type: 'five_prime_UTR',
                   start: 5975,
                   end: 6109,
@@ -303,6 +367,7 @@ test('processed transcript', () => {
                   strand: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'start_codon',
                   start: 6110,
                   end: 6112,
@@ -310,6 +375,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 6110,
                   end: 6148,
@@ -318,6 +384,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 6615,
                   end: 6683,
@@ -326,6 +393,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 6758,
                   end: 7040,
@@ -334,6 +402,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7142,
                   end: 7319,
@@ -342,6 +411,7 @@ test('processed transcript', () => {
                   phase: 2,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7411,
                   end: 7687,
@@ -350,6 +420,7 @@ test('processed transcript', () => {
                   phase: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7748,
                   end: 7850,
@@ -358,6 +429,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 7953,
                   end: 8098,
@@ -366,6 +438,7 @@ test('processed transcript', () => {
                   phase: 2,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8166,
                   end: 8320,
@@ -374,6 +447,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8419,
                   end: 8614,
@@ -382,6 +456,7 @@ test('processed transcript', () => {
                   phase: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8708,
                   end: 8811,
@@ -390,6 +465,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 8927,
                   end: 9239,
@@ -398,6 +474,7 @@ test('processed transcript', () => {
                   phase: 1,
                 },
                 {
+                  refName: 'zonk',
                   type: 'CDS',
                   start: 9414,
                   end: 9494,
@@ -406,6 +483,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'stop_codon',
                   start: 9492,
                   end: 9494,
@@ -413,6 +491,7 @@ test('processed transcript', () => {
                   phase: 0,
                 },
                 {
+                  refName: 'zonk',
                   type: 'three_prime_UTR',
                   start: 9495,
                   end: 9744,
@@ -429,13 +508,14 @@ test('processed transcript', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript (exons + impliedUTR)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -1062,7 +1142,7 @@ test('processed transcript (exons + impliedUTR)', () => {
   // finds that the color3 is outputted for impliedUTRs
   expect(container).toContainHTML('#357089')
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 // hacks existence of getFeatureByID
@@ -1078,9 +1158,7 @@ test('svg selected', () => {
           assemblyName: 'volvox',
         }}
         displayModel={{
-          getFeatureByID: () => {
-            return [0, 0, 10, 10]
-          },
+          getFeatureByID: () => [0, 0, 10, 10],
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',
         }}
@@ -1089,5 +1167,5 @@ test('svg selected', () => {
     </svg>,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

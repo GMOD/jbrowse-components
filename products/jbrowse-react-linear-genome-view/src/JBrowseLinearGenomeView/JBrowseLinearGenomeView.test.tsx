@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react'
-import { render } from '@testing-library/react'
+import React from 'react'
+import { render, waitFor } from '@testing-library/react'
 import { createViewState } from '..'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
 jest.mock(
@@ -7,15 +7,7 @@ jest.mock(
   () => () => {},
 )
 
-window.requestIdleCallback = (
-  cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
-) => {
-  cb({ didTimeout: false, timeRemaining: () => 0 })
-  return 0
-}
-window.cancelIdleCallback = () => {}
-window.requestAnimationFrame = cb => setTimeout(cb)
-window.cancelAnimationFrame = () => {}
+const timeout = 30000
 
 const assembly = {
   name: 'volvox',
@@ -67,20 +59,32 @@ const defaultSession = {
   },
 }
 
-describe('<JBrowseLinearGenomeView />', () => {
-  it('renders successfully', async () => {
-    const state = createViewState({
-      assembly,
-      tracks: [],
-      defaultSession,
-    })
-    state.session.view.setWidth(800)
-    const { container, findByTestId } = render(
-      <Suspense fallback={<div>Loading...</div>}>
-        <JBrowseLinearGenomeView viewState={state} />
-      </Suspense>,
-    )
-    await findByTestId('sequence_track', {}, { timeout: 10000 })
-    expect(container.firstChild).toMatchSnapshot()
-  }, 10000)
-})
+test('<JBrowseLinearGenomeView /> renders successfully', async () => {
+  const state = createViewState({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
+  const { container, getAllByTestId, getByPlaceholderText } = render(
+    <JBrowseLinearGenomeView viewState={state} />,
+  )
+
+  const getInputValue = () =>
+    (getByPlaceholderText('Search for location') as HTMLInputElement).value
+  await waitFor(
+    () => {
+      expect(getAllByTestId('sequence_track').length).toBe(2)
+    },
+    {
+      timeout,
+    },
+  )
+  await waitFor(
+    () => {
+      expect(getInputValue()).toBe('ctgA:1..40')
+    },
+    { timeout },
+  )
+
+  expect(container).toMatchSnapshot()
+}, 40000)

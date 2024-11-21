@@ -132,7 +132,7 @@ Screenshot of the Reactome plugin, showing the pathway viewer
 ## Multi-wiggle tracks
 
 We added the ability to have "multi-wiggle" tracks in v2.1.0, which let's you
-see multiple quantitative signals on the same Y-scalebar easily.
+see multiple quantitative stopTokens on the same Y-scalebar easily.
 
 ![](https://user-images.githubusercontent.com/6511937/181639797-69294456-cbe6-403a-9131-98af27c849f3.png)
 

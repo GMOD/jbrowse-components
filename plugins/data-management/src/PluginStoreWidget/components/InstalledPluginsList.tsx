@@ -8,43 +8,31 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
 
-function InstalledPluginsList({
+const InstalledPluginsList = observer(function InstalledPluginsList({
   pluginManager,
   model,
 }: {
   pluginManager: PluginManager
   model: PluginStoreModel
 }) {
-  const { plugins } = pluginManager as PluginManager
-
-  const corePlugins = plugins
-    .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
-    .map(p => p.name)
+  const { plugins } = pluginManager
+  const { filterText } = model
 
   const externalPlugins = plugins.filter(
-    plugin => !corePlugins.includes(plugin.name),
+    p => !pluginManager.pluginMetadata[p.name]?.isCore,
   )
 
   return (
     <List>
-      {externalPlugins.length ? (
+      {externalPlugins.length > 0 ? (
         externalPlugins
-          .filter(plugin =>
-            plugin.name.toLowerCase().includes(model.filterText.toLowerCase()),
-          )
-          .map(plugin => (
-            <InstalledPlugin
-              key={plugin.name}
-              plugin={plugin}
-              model={model}
-              pluginManager={pluginManager}
-            />
-          ))
+          .filter(p => p.name.toLowerCase().includes(filterText.toLowerCase()))
+          .map(p => <InstalledPlugin key={p.name} plugin={p} model={model} />)
       ) : (
         <Typography>No plugins currently installed</Typography>
       )}
     </List>
   )
-}
+})
 
-export default observer(InstalledPluginsList)
+export default InstalledPluginsList

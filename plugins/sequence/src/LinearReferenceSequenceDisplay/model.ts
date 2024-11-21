@@ -6,9 +6,13 @@ import {
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
+  getConf,
 } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
+
+type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
@@ -42,6 +46,65 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         showTranslation: true,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #property
+       */
+      rowHeight: 15,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get sequenceType() {
+        return getConf(getContainingTrack(self), 'sequenceType')
+      },
+
+      /**
+       * #getter
+       * showReverse setting, it is NOT disabled for non-dna sequences
+       */
+      get showForwardActual() {
+        return self.showForward
+      },
+
+      /**
+       * #getter
+       * showReverse setting, is disabled for non-dna sequences
+       */
+      get showReverseActual() {
+        return this.sequenceType === 'dna' ? self.showReverse : false
+      },
+
+      /**
+       * #getter
+       * showTranslation setting is disabled for non-dna sequences
+       */
+      get showTranslationActual() {
+        return this.sequenceType === 'dna' ? self.showTranslation : false
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get sequenceHeight() {
+        const {
+          rowHeight,
+          showTranslationActual,
+          showReverseActual,
+          showForwardActual,
+        } = self
+        const r1 =
+          showReverseActual && showTranslationActual ? rowHeight * 3 : 0
+        const r2 =
+          showForwardActual && showTranslationActual ? rowHeight * 3 : 0
+        const t = r1 + r2
+        const r = showReverseActual ? rowHeight : 0
+        const s = showForwardActual ? rowHeight : 0
+        return t + r + s
+      },
+    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
@@ -49,14 +112,26 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const { showForward, showReverse, showTranslation } = self
+          const {
+            rpcDriverName,
+            showForwardActual,
+            showReverseActual,
+            showTranslationActual,
+            rowHeight,
+            sequenceHeight,
+            sequenceType,
+          } = self
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
+            ...getParentRenderProps(self),
             config: self.configuration.renderer,
-            showForward,
-            showReverse,
-            showTranslation,
+            rpcDriverName,
+            showForward: showForwardActual,
+            showReverse: showReverseActual,
+            showTranslation: showTranslationActual,
+            sequenceType,
+            rowHeight,
+            sequenceHeight,
           }
         },
       }
@@ -66,8 +141,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * #method
        */
       regionCannotBeRendered(/* region */) {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return view?.bpPerPx >= 1 ? 'Zoom in to see sequence' : undefined
+        const view = getContainingView(self) as LGV
+        return view.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
       },
       /**
        * #getter
@@ -96,14 +171,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         self.showTranslation = !self.showTranslation
       },
       afterAttach() {
-        // auto-adjust height depending on settings
         addDisposer(
           self,
           autorun(() => {
-            const t = self.showTranslation ? 100 : 0
-            const r = self.showReverse ? 20 : 0
-            const s = self.showForward ? 20 : 0
-            self.setHeight(t + r + s)
+            const view = getContainingView(self) as LGV
+            if (view.bpPerPx > 3) {
+              self.setHeight(50)
+            } else {
+              self.setHeight(self.sequenceHeight)
+            }
           }),
         )
       },
@@ -114,24 +190,34 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       trackMenuItems() {
         return [
-          {
-            label: 'Show forward',
-            type: 'checkbox',
-            checked: self.showForward,
-            onClick: () => self.toggleShowForward(),
-          },
-          {
-            label: 'Show reverse',
-            type: 'checkbox',
-            checked: self.showReverse,
-            onClick: () => self.toggleShowReverse(),
-          },
-          {
-            label: 'Show translation',
-            type: 'checkbox',
-            checked: self.showTranslation,
-            onClick: () => self.toggleShowTranslation(),
-          },
+          ...(self.sequenceType === 'dna'
+            ? [
+                {
+                  label: 'Show forward',
+                  type: 'checkbox',
+                  checked: self.showForward,
+                  onClick: () => {
+                    self.toggleShowForward()
+                  },
+                },
+                {
+                  label: 'Show reverse',
+                  type: 'checkbox',
+                  checked: self.showReverse,
+                  onClick: () => {
+                    self.toggleShowReverse()
+                  },
+                },
+                {
+                  label: 'Show translation',
+                  type: 'checkbox',
+                  checked: self.showTranslation,
+                  onClick: () => {
+                    self.toggleShowTranslation()
+                  },
+                },
+              ]
+            : []),
         ]
       },
     }))

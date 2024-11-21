@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HelpWidget /> renders 1`] = `
+<div>
+  <div
+    class="css-dpbaeg-root"
+  >
+    <h4
+      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ya2hdm-MuiTypography-root"
+      style="--Typography-textAlign: center;"
+    >
+      JBrowse 2
+    </h4>
+    <h6
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-6je6nr-MuiTypography-root-subtitle"
+      style="--Typography-textAlign: center;"
+    />
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+    >
+      Here are some resources to get help. Please report the version number above when asking questions. Thanks!
+    </p>
+    <ul>
+      <li>
+        <a
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          href="https://github.com/GMOD/jbrowse-components/discussions"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Question & answer forum
+        </a>
+      </li>
+      <li>
+        <a
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Report a bug
+        </a>
+      </li>
+      <li>
+        <a
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          href="https://jbrowse.org/jb2/docs/user_guide"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          User guide
+        </a>
+      </li>
+      <li>
+        <a
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          href="https://jbrowse.org/jb2/docs/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Documentation
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;

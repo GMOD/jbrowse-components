@@ -1,16 +1,19 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
+
+// locals
 import { DotplotDisplayModel } from '../stateModelFactory'
 import { DotplotViewModel } from '../../DotplotView/model'
 
-function DotplotDisplay(props: {
+const DotplotDisplay = observer(function DotplotDisplay(props: {
   model: DotplotDisplayModel
   children?: React.ReactNode
 }) {
   const { model, children } = props
   const { offsetX = 0, offsetY = 0 } = model.data || {}
   const view = getContainingView(model) as DotplotViewModel
+
   const top = view.vview.offsetPx - offsetY
   const left = -(view.hview.offsetPx - offsetX)
   return (
@@ -26,6 +29,6 @@ function DotplotDisplay(props: {
       {children}
     </div>
   )
-}
+})
 
-export default observer(DotplotDisplay)
+export default DotplotDisplay

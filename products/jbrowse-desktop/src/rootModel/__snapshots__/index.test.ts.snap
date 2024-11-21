@@ -1,0 +1,345 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Root MST model adds menus 1`] = `
+[
+  {
+    "label": "File",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Save",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Save as...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": [Function],
+        "label": "Open assembly...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to start screen",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Exit",
+        "onClick": [Function],
+      },
+    ],
+  },
+  {
+    "label": "Add",
+    "menuItems": [],
+  },
+  {
+    "label": "Tools",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Redo",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Preferences",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open assembly manager",
+        "onClick": [Function],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Root MST model adds menus 2`] = `
+[
+  {
+    "label": "File",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Save",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Save as...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": [Function],
+        "label": "Open assembly...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to start screen",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Exit",
+        "onClick": [Function],
+      },
+    ],
+  },
+  {
+    "label": "Add",
+    "menuItems": [],
+  },
+  {
+    "label": "Tools",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Redo",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Preferences",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open assembly manager",
+        "onClick": [Function],
+      },
+    ],
+  },
+  {
+    "label": "Second Menu",
+    "menuItems": [
+      {
+        "label": "First Menu Item",
+        "onClick": [Function],
+      },
+      {
+        "label": "Second Menu Item",
+        "onClick": [Function],
+      },
+      {
+        "label": "First Sub Menu",
+        "subMenu": [
+          {
+            "label": "First Sub Menu Item",
+            "onClick": [Function],
+          },
+          {
+            "label": "Second Sub Menu Item",
+            "onClick": [Function],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "label": "Third Menu",
+    "menuItems": [],
+  },
+]
+`;
+
+exports[`Root MST model creates with defaults 1`] = `{}`;

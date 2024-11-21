@@ -5,7 +5,7 @@ import { reduce } from 'rxjs/operators'
 import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
-export interface UnrectifiedFeatureStats {
+export interface UnrectifiedQuantitativeStats {
   scoreMin: number
   scoreMax: number
   scoreSum: number
@@ -13,7 +13,8 @@ export interface UnrectifiedFeatureStats {
   featureCount: number
   basesCovered: number
 }
-export interface FeatureStats extends UnrectifiedFeatureStats {
+export interface QuantitativeStats extends UnrectifiedQuantitativeStats {
+  currStatsBpPerPx: number
   featureDensity: number
   scoreMean: number
   scoreStdDev: number
@@ -38,7 +39,7 @@ export function calcStdFromSums(
   if (n === 0) {
     return 0
   }
-  let variance
+  let variance: number
   if (population) {
     variance = sumSquares / n - (sum * sum) / (n * n)
   } else {
@@ -58,7 +59,7 @@ export function calcStdFromSums(
  * @returns - a summary stats object with
  * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats) {
+export function rectifyStats(s: UnrectifiedQuantitativeStats) {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
@@ -68,43 +69,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
       s.featureCount || s.basesCovered,
     ),
     featureDensity: (s.featureCount || 1) / s.basesCovered,
-  } as FeatureStats
-}
-
-/**
- * calculates per-base scores for variable width features over a region
- *
- * @param region - object contains start, end
- * @param features - list of features with start, end, score
- * @returns array of numeric scores
- */
-export function calcPerBaseStats(
-  region: NoAssemblyRegion,
-  features: Feature[],
-): number[] {
-  const { start, end } = region
-  const scores = []
-  const feats = features.sort((a, b) => a.get('start') - b.get('start'))
-  let pos = start
-  let currentFeat = 0
-  let i = 0
-
-  while (pos < end) {
-    while (currentFeat < feats.length && pos >= feats[currentFeat].get('end')) {
-      currentFeat += 1
-    }
-    const f = feats[currentFeat]
-    if (!f) {
-      scores[i] = 0
-    } else if (pos >= f.get('start') && pos < f.get('end')) {
-      scores[i] = f.get('score')
-    } else {
-      scores[i] = 0
-    }
-    i += 1
-    pos += 1
-  }
-  return scores
+  } as QuantitativeStats
 }
 
 /**
@@ -146,7 +111,7 @@ export async function scoresToStats(
         }, seed),
       ),
     )
-
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return found
     ? rectifyStats({
         scoreMax,
@@ -170,5 +135,5 @@ export function blankStats() {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-  } as FeatureStats
+  } as QuantitativeStats
 }

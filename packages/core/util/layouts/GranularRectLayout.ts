@@ -26,11 +26,13 @@ function segmentsIntersect(
   return x2 >= y1 && y2 >= x1
 }
 
+type Bit<T> = Record<string, T> | string | undefined
+
 interface RowState<T> {
   min: number
   max: number
   offset: number
-  bits: (Record<string, T> | string | undefined)[]
+  bits: Bit<T>[]
 }
 // a single row in the layout
 class LayoutRow<T> {
@@ -97,7 +99,7 @@ class LayoutRow<T> {
       offset: left - rectWidth,
       min: left,
       max: right,
-      bits: new Array(3 * rectWidth),
+      bits: Array.from({ length: 3 * rectWidth }),
     }
   }
 
@@ -122,9 +124,10 @@ class LayoutRow<T> {
         )
         this.rowState = this.initialize(left, right)
       } else if (additionalLength > 0) {
-        this.rowState.bits = this.rowState.bits.concat(
-          new Array(additionalLength),
-        )
+        this.rowState.bits = [
+          ...this.rowState.bits,
+          ...Array.from<Bit<T>>({ length: additionalLength }),
+        ]
       }
     }
 
@@ -142,9 +145,10 @@ class LayoutRow<T> {
 
         this.rowState = this.initialize(left, right)
       } else {
-        this.rowState.bits = new Array(additionalLength).concat(
-          this.rowState.bits,
-        )
+        this.rowState.bits = [
+          ...Array.from<Bit<T>>({ length: additionalLength }),
+          ...this.rowState.bits,
+        ]
         this.rowState.offset -= additionalLength
       }
     }
@@ -449,15 +453,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    *  the features.
    */
   discardRange(left: number, right: number) {
-    // console.log( 'discard', left, right );
     const pLeft = Math.floor(left / this.pitchX)
     const pRight = Math.floor(right / this.pitchX)
     const { bitmap } = this
-    for (let y = 0; y < bitmap.length; y += 1) {
-      const row = bitmap[y]
-      if (row) {
-        row.discardRange(pLeft, pRight)
-      }
+    for (const row of bitmap) {
+      row.discardRange(pLeft, pRight)
     }
   }
 
@@ -478,7 +478,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getByID(id: string) {
     const r = this.rectangles.get(id)
     if (r) {
-      const t = (r.top as number) * this.pitchY
+      const t = r.top! * this.pitchY
       return [
         r.l * this.pitchX,
         t,
@@ -506,7 +506,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getRectangles(): Map<string, RectTuple> {
     return new Map(
-      Array.from(this.rectangles.entries()).map(([id, rect]) => {
+      [...this.rectangles.entries()].map(([id, rect]) => {
         const { l, r, originalHeight, top } = rect
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
@@ -516,7 +516,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
-    const regionRectangles: { [key: string]: RectTuple } = {}
+    const regionRectangles: Record<string, RectTuple> = {}
     let maxHeightReached = false
     for (const [id, rect] of this.rectangles.entries()) {
       const { l, r, originalHeight, top } = rect

@@ -1,5 +1,6 @@
 import React from 'react'
-import { Alert, AlertTitle } from '@mui/material'
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
 import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
@@ -28,7 +29,7 @@ function Header() {
           <Link
             className="button button--secondary button--lg"
             href={`https://jbrowse.org/code/jb2/${
-              /* @ts-ignore */ siteConfig.customFields.currentVersion
+              /* @ts-expect-error */ siteConfig.customFields.currentVersion
             }/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt`}
           >
             Browse a cancer annotations demo web instance

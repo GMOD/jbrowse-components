@@ -1,7 +1,6 @@
 ---
 id: variant_track
 title: Variant track configuration
-toplevel: true
 ---
 
 - `defaultRendering` - options: 'pileup' or 'svg'. default 'svg'

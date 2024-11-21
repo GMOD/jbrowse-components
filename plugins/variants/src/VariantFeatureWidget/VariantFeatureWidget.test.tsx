@@ -5,8 +5,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import { stateModelFactory } from '.'
+import { stateModelFactory } from './stateModelFactory'
 import VariantFeatureDetails from './VariantFeatureWidget'
+import { ThemeProvider } from '@mui/material'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 test('renders with just the required model elements', () => {
   const pluginManager = new PluginManager([])
@@ -18,7 +20,7 @@ test('renders with just the required model elements', () => {
   const model = Session.create(
     {
       widget: {
-        // @ts-ignore
+        // @ts-expect-error
         type: 'VariantFeatureWidget',
       },
     },
@@ -37,6 +39,10 @@ test('renders with just the required model elements', () => {
     },
   })
 
-  const { container } = render(<VariantFeatureDetails model={model.widget} />)
-  expect(container.firstChild).toMatchSnapshot()
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <VariantFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(container).toMatchSnapshot()
 })

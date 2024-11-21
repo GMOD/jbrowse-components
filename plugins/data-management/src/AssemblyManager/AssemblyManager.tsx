@@ -18,7 +18,6 @@ const AssemblyManager = observer(function ({
   rootModel,
   onClose,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rootModel: any
   onClose: (arg: boolean) => void
 }) {
@@ -30,7 +29,13 @@ const AssemblyManager = observer(function ({
   const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 
   return (
-    <Dialog open onClose={() => onClose(false)} title="Assembly manager">
+    <Dialog
+      open
+      onClose={() => {
+        onClose(false)
+      }}
+      title="Assembly manager"
+    >
       <DialogContent>
         {showAssemblyTable ? (
           <AssemblyTable
@@ -48,14 +53,21 @@ const AssemblyManager = observer(function ({
       </DialogContent>
       <DialogActions>
         {isFormOpen ? (
-          <Button variant="contained" onClick={() => setFormOpen(false)}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setFormOpen(false)
+            }}
+          >
             Back
           </Button>
         ) : null}
         {isAssemblyBeingEdited ? (
           <Button
             variant="contained"
-            onClick={() => setIsAssemblyBeingEdited(false)}
+            onClick={() => {
+              setIsAssemblyBeingEdited(false)
+            }}
           >
             Back
           </Button>
@@ -65,14 +77,18 @@ const AssemblyManager = observer(function ({
             <Button
               color="secondary"
               variant="contained"
-              onClick={() => onClose(false)}
+              onClick={() => {
+                onClose(false)
+              }}
             >
               Close
             </Button>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setFormOpen(true)}
+              onClick={() => {
+                setFormOpen(true)
+              }}
             >
               Add new assembly
             </Button>

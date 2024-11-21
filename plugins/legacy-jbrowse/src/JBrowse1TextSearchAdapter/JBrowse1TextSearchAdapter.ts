@@ -1,12 +1,13 @@
 import {
   BaseTextSearchAdapter,
-  BaseArgs,
+  BaseTextSearchArgs,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
-import MyConfigSchema from './configSchema'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import HttpMap from './HttpMap'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -21,9 +22,10 @@ interface SearchResults {
   exact: [string, number, string, string, number, number][]
 }
 
-export type NamesIndexRecord = string | Array<string | number>
+export type NamesIndexRecord = string | (string | number)[]
 
-//  Jbrowse1 text search adapter
+type IndexFile = Record<string, SearchResults>
+
 // Uses index built by generate-names.pl
 export default class JBrowse1TextSearchAdapter
   extends BaseAdapter
@@ -34,19 +36,15 @@ export default class JBrowse1TextSearchAdapter
   tracksNames?: string[]
 
   constructor(
-    config: Instance<typeof MyConfigSchema>,
+    config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const namesIndexLocation = readConfObject(config, 'namesIndexLocation')
-    if (!namesIndexLocation) {
-      throw new Error('must provide namesIndexLocation')
-    }
+    const namesIndex = readConfObject(config, 'namesIndexLocation')
+    const { baseUri, uri } = namesIndex
     this.httpMap = new HttpMap({
-      url: namesIndexLocation.baseUri
-        ? new URL(namesIndexLocation.uri, namesIndexLocation.baseUri).href
-        : namesIndexLocation.uri,
+      url: baseUri ? new URL(uri, baseUri).href : uri,
     })
   }
 
@@ -55,36 +53,37 @@ export default class JBrowse1TextSearchAdapter
    * else it returns empty
    * @param query - string query
    */
-  async loadIndexFile(query: string): Promise<Record<string, SearchResults>> {
+  async loadIndexFile(query: string): Promise<IndexFile> {
     return this.httpMap.getBucket(query)
   }
 
-  async searchIndex(args: BaseArgs) {
+  async searchIndex(args: BaseTextSearchArgs) {
     const { searchType, queryString } = args
     const tracks = this.tracksNames || (await this.httpMap.getTrackNames())
-    const entries = await this.loadIndexFile(queryString.toLowerCase())
-    if (entries[queryString]) {
-      return this.formatResults(entries[queryString], tracks, searchType)
-    }
-    return []
+    const str = queryString.toLowerCase()
+    const entries = await this.loadIndexFile(str)
+    return entries[str]
+      ? this.formatResults(entries[str], tracks, searchType)
+      : []
   }
   formatResults(results: SearchResults, tracks: string[], searchType?: string) {
     return [
       ...(searchType === 'exact'
         ? []
-        : results.prefix.map(result => {
-            return new BaseResult({
-              label: typeof result === 'object' ? result.name : result,
-              matchedAttribute: 'name',
-              matchedObject: { result: result },
-            })
-          })),
+        : results.prefix.map(
+            result =>
+              new BaseResult({
+                label: typeof result === 'object' ? result.name : result,
+                matchedAttribute: 'name',
+                matchedObject: { result: result },
+              }),
+          )),
       ...results.exact.map(result => {
-        const name = result[0] as string
-        const trackIndex = result[1] as number
-        const refName = result[3] as string
-        const start = result[4] as number
-        const end = result[5] as number
+        const name = result[0]
+        const trackIndex = result[1]
+        const refName = result[3]
+        const start = result[4]
+        const end = result[5]
         const locstring = `${refName || name}:${start}-${end}`
         return new BaseResult({
           locString: locstring,

@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { polarToCartesian, Feature } from '@jbrowse/core/util'
+import { polarToCartesian, Feature, getStrokeProps } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -45,33 +45,30 @@ const Chord = observer(function Chord({
   onClick,
 }: {
   feature: Feature
-  blocksForRefs: { [key: string]: Block }
+  blocksForRefs: Record<string, Block>
   radius: number
   config: AnyConfigurationModel
   bezierRadius: number
   selected: boolean
-  onClick: (
-    feature: Feature,
-    reg: AnyRegion,
-    endBlock: AnyRegion,
-    evt: unknown,
-  ) => void
+  onClick: (feat: Feature, reg: AnyRegion, end: AnyRegion, evt: unknown) => void
 }) {
+  const [hovered, setHovered] = useState(false)
   // find the blocks that our start and end points belong to
   const startBlock = blocksForRefs[feature.get('refName')]
   if (!startBlock) {
     return null
   }
-  let svType
+  let svType: string | undefined
   if (feature.get('INFO')) {
     ;[svType] = feature.get('INFO').SVTYPE || []
   } else if (feature.get('mate')) {
     svType = 'mate'
   }
-  let endPosition
+  let endPosition: number
   let endBlock: Block | undefined
   const alt = feature.get('ALT')?.[0]
   const bnd = alt && parseBreakend(alt)
+  const startPos = feature.get('start')
   if (bnd) {
     // VCF BND
     const matePosition = bnd.MatePosition.split(':')
@@ -81,7 +78,7 @@ const Chord = observer(function Chord({
     // VCF TRA
     const chr2 = feature.get('INFO')?.CHR2?.[0]
     const end = feature.get('INFO')?.END?.[0]
-    endPosition = parseInt(end, 10)
+    endPosition = Number.parseInt(end, 10)
     endBlock = blocksForRefs[chr2]
   } else if (svType === 'mate') {
     // generic simplefeatures arcs
@@ -89,10 +86,12 @@ const Chord = observer(function Chord({
     const chr2 = mate.refName
     endPosition = mate.start
     endBlock = blocksForRefs[chr2]
+  } else {
+    console.warn('unknown sv type', svType)
+    endPosition = startPos + 1
   }
 
   if (endBlock) {
-    const startPos = feature.get('start')
     const startRadians = bpToRadians(startBlock, startPos)
     const endRadians = bpToRadians(endBlock, endPosition)
     const startXY = polarToCartesian(radius, startRadians)
@@ -112,23 +111,22 @@ const Chord = observer(function Chord({
     return (
       <path
         data-testid={`chord-${feature.id()}`}
+        cursor="crosshair"
+        fill="none"
         d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-        style={{ stroke: strokeColor }}
+        {...getStrokeProps(hovered ? hoverStrokeColor : strokeColor)}
+        strokeWidth={hovered ? 3 : 1}
         onClick={evt => {
-          if (endBlock && startBlock) {
-            onClick(feature, startBlock.region, endBlock.region, evt)
+          onClick(feature, startBlock.region, endBlock.region, evt)
+        }}
+        onMouseOver={() => {
+          if (!selected) {
+            setHovered(true)
           }
         }}
-        onMouseOver={evt => {
+        onMouseOut={() => {
           if (!selected) {
-            evt.currentTarget.style.stroke = hoverStrokeColor
-            evt.currentTarget.style.strokeWidth = '3px'
-          }
-        }}
-        onMouseOut={evt => {
-          if (!selected) {
-            evt.currentTarget.style.stroke = strokeColor
-            evt.currentTarget.style.strokeWidth = '1px'
+            setHovered(false)
           }
         }}
       />

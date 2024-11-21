@@ -11,11 +11,8 @@ test('one', () => {
       regions={[{ assemblyName: 'volvox', refName: 'zonk', start: 1, end: 3 }]}
       bpPerPx={3}
       blockKey="test"
-      /*
-      // @ts-ignore */
-      displayModel={{}}
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

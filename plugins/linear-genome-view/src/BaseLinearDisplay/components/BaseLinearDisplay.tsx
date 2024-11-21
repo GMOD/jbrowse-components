@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { useTheme } from '@mui/material/styles'
 import { makeStyles } from 'tss-react/mui'
@@ -6,8 +6,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 
 // locals
-import Tooltip from './Tooltip'
-import BlockMsg from './BlockMsg'
+
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
@@ -22,6 +21,7 @@ const useStyles = makeStyles()({
 })
 
 type Coord = [number, number]
+
 const BaseLinearDisplay = observer(function (props: {
   model: BaseLinearDisplayModel
   children?: React.ReactNode
@@ -34,14 +34,8 @@ const BaseLinearDisplay = observer(function (props: {
   const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
-  const {
-    TooltipComponent,
-    DisplayMessageComponent,
-    contextMenuItems,
-    height,
-    setContextMenuFeature,
-  } = model
-
+  const { TooltipComponent, DisplayMessageComponent, height } = model
+  const items = model.contextMenuItems()
   return (
     <div
       ref={ref}
@@ -74,29 +68,31 @@ const BaseLinearDisplay = observer(function (props: {
       )}
       {children}
 
-      <TooltipComponent
-        model={model}
-        height={height}
-        offsetMouseCoord={offsetMouseCoord}
-        clientMouseCoord={clientMouseCoord}
-        clientRect={clientRect}
-        mouseCoord={offsetMouseCoord}
-      />
+      <Suspense fallback={null}>
+        <TooltipComponent
+          model={model}
+          height={height}
+          offsetMouseCoord={offsetMouseCoord}
+          clientMouseCoord={clientMouseCoord}
+          clientRect={clientRect}
+          mouseCoord={offsetMouseCoord}
+        />
+      </Suspense>
 
       <Menu
-        open={Boolean(contextCoord) && Boolean(contextMenuItems().length)}
+        open={Boolean(contextCoord) && items.length > 0}
         onMenuItemClick={(_, callback) => {
           callback()
           setContextCoord(undefined)
         }}
         onClose={() => {
           setContextCoord(undefined)
-          setContextMenuFeature(undefined)
+          model.setContextMenuFeature(undefined)
         }}
         TransitionProps={{
           onExit: () => {
             setContextCoord(undefined)
-            setContextMenuFeature(undefined)
+            model.setContextMenuFeature(undefined)
           },
         }}
         anchorReference="anchorPosition"
@@ -105,12 +101,16 @@ const BaseLinearDisplay = observer(function (props: {
             ? { top: contextCoord[1], left: contextCoord[0] }
             : undefined
         }
-        style={{ zIndex: theme.zIndex.tooltip }}
-        menuItems={contextMenuItems()}
+        style={{
+          zIndex: theme.zIndex.tooltip,
+        }}
+        menuItems={items}
       />
     </div>
   )
 })
 
 export default BaseLinearDisplay
-export { Tooltip, BlockMsg }
+
+export { default as Tooltip } from './Tooltip'
+export { default as BlockMsg } from './BlockMsg'

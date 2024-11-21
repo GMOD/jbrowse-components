@@ -6,7 +6,7 @@ import { lazy } from 'react'
 import stateModel from './model'
 const configSchema = ConfigurationSchema('AddConnectionWidget', {})
 
-export default (pluginManager: PluginManager) => {
+export default function AddConnectionWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'AddConnectionWidget',

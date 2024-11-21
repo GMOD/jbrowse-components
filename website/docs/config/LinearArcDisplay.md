@@ -1,13 +1,14 @@
 ---
 id: lineararcdisplay
 title: LinearArcDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Docs
+### Source file
+
+[plugins/arc/src/LinearArcDisplay/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/configSchema.ts)
 
 ### LinearArcDisplay - Slots
 
@@ -19,7 +20,7 @@ renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
 })
 ```
 
-## LinearArcDisplay - Derives from
+### LinearArcDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

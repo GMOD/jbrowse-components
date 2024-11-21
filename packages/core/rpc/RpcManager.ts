@@ -5,7 +5,7 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
-type BackendConfigurations = {
+interface BackendConfigurations {
   WebWorkerRpcDriver?: Omit<
     ConstructorParameters<typeof WebWorkerRpcDriver>[0],
     'config'
@@ -15,6 +15,7 @@ type BackendConfigurations = {
     'config'
   >
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DriverClasses = {
   WebWorkerRpcDriver,
   MainThreadRpcDriver,
@@ -30,9 +31,6 @@ export default class RpcManager {
     public mainConfiguration: AnyConfigurationModel,
     public backendConfigurations: BackendConfigurations,
   ) {
-    if (!mainConfiguration) {
-      throw new Error('RpcManager requires at least a main configuration')
-    }
     this.driverObjects = new Map()
   }
 
@@ -41,7 +39,6 @@ export default class RpcManager {
     if (driver) {
       return driver
     }
-    let newDriver
     const config = this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
     if (backendName === 'MainThreadRpcDriver') {
       const backendConfiguration =
@@ -52,26 +49,33 @@ export default class RpcManager {
           `requested RPC driver "${backendName}" is missing config`,
         )
       }
-      newDriver = new MainThreadRpcDriver({ ...backendConfiguration, config })
-    } else if (backendName === 'WebWorkerRpcDriver') {
+      const newDriver = new MainThreadRpcDriver({
+        ...backendConfiguration,
+        config,
+      })
+      this.driverObjects.set(backendName, newDriver)
+      return newDriver
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    else if (backendName === 'WebWorkerRpcDriver') {
       const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
       if (!backendConfiguration) {
         throw new Error(
           `requested RPC driver "${backendName}" is missing config`,
         )
       }
-      newDriver = new WebWorkerRpcDriver(
+      const newDriver = new WebWorkerRpcDriver(
         { ...backendConfiguration, config },
         {
           plugins: this.pluginManager.runtimePluginDefinitions,
           windowHref: window.location.href,
         },
       )
+      this.driverObjects.set(backendName, newDriver)
+      return newDriver
     } else {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
     }
-    this.driverObjects.set(backendName, newDriver)
-    return newDriver
   }
 
   async getDriverForCall(
@@ -86,7 +90,12 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  async call(sessionId: string, functionName: string, args: {}, opts = {}) {
+  async call(
+    sessionId: string,
+    functionName: string,
+    args: Record<string, unknown>,
+    opts = {},
+  ) {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }

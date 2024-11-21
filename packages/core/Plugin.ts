@@ -1,5 +1,5 @@
 import PluginManager from './PluginManager'
-import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from './configuration'
 
 /**
  * base class for a JBrowse plugin
@@ -15,7 +15,7 @@ export default abstract class Plugin {
 
   configure(_pluginManager: PluginManager): void {}
 
-  configurationSchema: AnyConfigurationSchemaType | undefined = undefined
+  configurationSchema?: AnyConfigurationSchemaType
 }
 
 export type PluginConstructor = new (...args: unknown[]) => Plugin

@@ -1,7 +1,6 @@
 ---
 id: from_config
 title: FromConfig adapters
-toplevel: true
 ---
 
 There are two useful adapter types that can be used for more advanced use cases,

@@ -2,10 +2,17 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron, UriLocation } from '@jbrowse/core/util'
 import { Instance, types } from 'mobx-state-tree'
-import jwtDecode, { JwtPayload } from 'jwt-decode'
+import { Buffer } from 'buffer'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
+import {
+  fixup,
+  generateChallenge,
+  processError,
+  processTokenResponse,
+} from './util'
+import { getResponseError } from '../util'
 
 interface OAuthData {
   client_id: string
@@ -18,99 +25,128 @@ interface OAuthData {
   state?: string
 }
 
-function fixup(buf: string) {
-  return buf.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-function getGlobalObject(): Window {
-  // Based on window-or-global
-  // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
-  return (
-    // eslint-disable-next-line no-restricted-globals
-    (typeof self === 'object' && self.self === self && self) ||
-    (typeof global === 'object' && global.global === global && global) ||
-    // @ts-ignore
-    this
-  )
-}
-
+/**
+ * #stateModel OAuthInternetAccount
+ */
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
   return InternetAccount.named('OAuthInternetAccount')
     .props({
+      /**
+       * #property
+       */
       type: types.literal('OAuthInternetAccount'),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => {
       let codeVerifier: string | undefined = undefined
       return {
+        /**
+         * #getter
+         */
         get codeVerifierPKCE() {
           if (codeVerifier) {
             return codeVerifier
           }
-          const global = getGlobalObject()
           const array = new Uint8Array(32)
-          global.crypto.getRandomValues(array)
+          globalThis.crypto.getRandomValues(array)
           codeVerifier = fixup(Buffer.from(array).toString('base64'))
           return codeVerifier
         },
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get authEndpoint(): string {
         return getConf(self, 'authEndpoint')
       },
+      /**
+       * #getter
+       */
       get tokenEndpoint(): string {
         return getConf(self, 'tokenEndpoint')
       },
+      /**
+       * #getter
+       */
       get needsPKCE(): boolean {
         return getConf(self, 'needsPKCE')
       },
+      /**
+       * #getter
+       */
       get clientId(): string {
         return getConf(self, 'clientId')
       },
+      /**
+       * #getter
+       */
       get scopes(): string {
         return getConf(self, 'scopes')
       },
       /**
-       * OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+       * #method
+       * OAuth state parameter:
+       * https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+       *
        * Can override or extend if dynamic state is needed.
        */
       state(): string | undefined {
-        return getConf(self, 'state') || undefined
+        return getConf(self, 'state')
       },
+      /**
+       * #getter
+       */
       get responseType(): 'token' | 'code' {
         return getConf(self, 'responseType')
       },
-      get hasRefreshToken(): boolean {
-        return getConf(self, 'hasRefreshToken')
-      },
+      /**
+       * #getter
+       */
       get refreshTokenKey() {
         return `${self.internetAccountId}-refreshToken`
       },
     }))
+
     .actions(self => ({
+      /**
+       * #action
+       */
       storeRefreshToken(refreshToken: string) {
         localStorage.setItem(self.refreshTokenKey, refreshToken)
       },
+      /**
+       * #action
+       */
       removeRefreshToken() {
         localStorage.removeItem(self.refreshTokenKey)
       },
+      /**
+       * #method
+       */
       retrieveRefreshToken() {
         return localStorage.getItem(self.refreshTokenKey)
       },
+      /**
+       * #action
+       */
       async exchangeAuthorizationForAccessToken(
         token: string,
         redirectUri: string,
       ): Promise<string> {
-        const data = {
-          code: token,
-          grant_type: 'authorization_code',
-          client_id: self.clientId,
-          code_verifier: self.codeVerifierPKCE,
-          redirect_uri: redirectUri,
-        }
-
-        const params = new URLSearchParams(Object.entries(data))
+        const params = new URLSearchParams(
+          Object.entries({
+            code: token,
+            grant_type: 'authorization_code',
+            client_id: self.clientId,
+            redirect_uri: redirectUri,
+            ...(self.needsPKCE ? { code_verifier: self.codeVerifierPKCE } : {}),
+          }),
+        )
 
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
@@ -119,74 +155,63 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         })
 
         if (!response.ok) {
-          let errorMessage
-          try {
-            errorMessage = await response.text()
-          } catch (error) {
-            errorMessage = ''
-          }
           throw new Error(
-            `Failed to obtain token from endpoint: ${response.status} (${
-              response.statusText
-            })${errorMessage ? ` (${errorMessage})` : ''}`,
+            await getResponseError({
+              response,
+              reason: 'Failed to obtain token',
+            }),
           )
         }
 
-        const accessToken = await response.json()
-        if (accessToken.refresh_token) {
-          this.storeRefreshToken(accessToken.refresh_token)
-        }
-        return accessToken.access_token
+        const data = await response.json()
+        return processTokenResponse(data, token => {
+          this.storeRefreshToken(token)
+        })
       },
+      /**
+       * #action
+       */
       async exchangeRefreshForAccessToken(
         refreshToken: string,
       ): Promise<string> {
-        const data = {
-          grant_type: 'refresh_token',
-          refresh_token: refreshToken,
-          client_id: self.clientId,
-        }
-
-        const params = new URLSearchParams(Object.entries(data))
-
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: params.toString(),
+          body: new URLSearchParams(
+            Object.entries({
+              grant_type: 'refresh_token',
+              refresh_token: refreshToken,
+              client_id: self.clientId,
+            }),
+          ).toString(),
         })
 
         if (!response.ok) {
           self.removeToken()
-          let text = await response.text()
-          try {
-            const obj = JSON.parse(text)
-            if (obj.error === 'invalid_grant') {
-              this.removeRefreshToken()
-            }
-            text = obj?.error_description ?? text
-          } catch (e) {
-            /* just use original text as error */
-          }
-
+          const text = await response.text()
           throw new Error(
-            `Network response failure — ${response.status} (${
-              response.statusText
-            }) ${text ? ` (${text})` : ''}`,
+            await getResponseError({
+              response,
+              statusText: processError(text, () => {
+                this.removeRefreshToken()
+              }),
+            }),
           )
         }
-
-        const accessToken = await response.json()
-        if (accessToken.refresh_token) {
-          this.storeRefreshToken(accessToken.refresh_token)
-        }
-        return accessToken.access_token
+        const data = await response.json()
+        return processTokenResponse(data, token => {
+          this.storeRefreshToken(token)
+        })
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => void
-      let refreshTokenPromise: Promise<string> | undefined = undefined
+      let listener: (event: MessageEvent) => undefined
+      let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
-        // used to listen to child window for auth code/token
+        /**
+         * #action
+         * used to listen to child window for auth code/token
+         */
         addMessageChannel(
           resolve: (token: string) => void,
           reject: (error: Error) => void,
@@ -198,9 +223,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           window.addEventListener('message', listener)
         },
+        /**
+         * #action
+         */
         deleteMessageChannel() {
           window.removeEventListener('message', listener)
         },
+        /**
+         * #action
+         */
         async finishOAuthWindow(
           event: MessageEvent,
           resolve: (token: string) => void,
@@ -209,7 +240,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (
             event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            return this.deleteMessageChannel()
+            this.deleteMessageChannel()
+            return
           }
           const redirectUriWithInfo = event.data.redirectUri
           const fixedQueryString = redirectUriWithInfo.replace('#', '?')
@@ -219,15 +251,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (urlParams.has('access_token')) {
             const token = urlParams.get('access_token')
             if (!token) {
-              return reject(new Error('Error with token endpoint'))
+              reject(new Error('Error with token endpoint'))
+              return
             }
             self.storeToken(token)
-            return resolve(token)
+            resolve(token)
+            return
           }
           if (urlParams.has('code')) {
             const code = urlParams.get('code')
             if (!code) {
-              return reject(new Error('Error with authorization endpoint'))
+              reject(new Error('Error with authorization endpoint'))
+              return
             }
             try {
               const token = await self.exchangeAuthorizationForAccessToken(
@@ -235,24 +270,32 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 redirectUrl.origin + redirectUrl.pathname,
               )
               self.storeToken(token)
-              return resolve(token)
-            } catch (error) {
-              if (error instanceof Error) {
-                return reject(error)
+              resolve(token)
+              return
+            } catch (e) {
+              if (e instanceof Error) {
+                reject(e)
               } else {
-                return reject(new Error(String(error)))
+                reject(new Error(String(e)))
               }
+              return
             }
           }
           if (redirectUriWithInfo.includes('access_denied')) {
-            return reject(new Error('OAuth flow was cancelled'))
+            reject(new Error('OAuth flow was cancelled'))
+            return
           }
           if (redirectUriWithInfo.includes('error')) {
-            return reject(new Error('Oauth flow error: ' + queryStringSearch))
+            reject(new Error(`OAuth flow error: ${queryStringSearch}`))
+            return
           }
           this.deleteMessageChannel()
         },
-        // opens external OAuth flow, popup for web and new browser window for desktop
+        /**
+         * #action
+         * opens external OAuth flow, popup for web and new browser window for
+         * desktop
+         */
         async useEndpointForAuthorization(
           resolve: (token: string) => void,
           reject: (error: Error) => void,
@@ -263,7 +306,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const data: OAuthData = {
             client_id: self.clientId,
             redirect_uri: redirectUri,
-            response_type: self.responseType || 'code',
+            response_type: self.responseType,
+            token_access_type: 'offline',
           }
 
           if (self.state()) {
@@ -275,19 +319,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           if (self.needsPKCE) {
-            const { codeVerifierPKCE } = self
-
-            const sha256 = await import('crypto-js/sha256').then(f => f.default)
-            const Base64 = await import('crypto-js/enc-base64')
-            const codeChallenge = fixup(
-              Base64.stringify(sha256(codeVerifierPKCE)),
-            )
-            data.code_challenge = codeChallenge
+            data.code_challenge = await generateChallenge(self.codeVerifierPKCE)
             data.code_challenge_method = 'S256'
-          }
-
-          if (self.hasRefreshToken) {
-            data.token_access_type = 'offline'
           }
 
           const params = new URLSearchParams(Object.entries(data))
@@ -311,48 +344,95 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
-            const options = `width=500,height=600,left=0,top=0`
-            window.open(url, eventName, options)
+            window.open(url, eventName, 'width=500,height=600,left=0,top=0')
           }
         },
+        /**
+         * #action
+         */
         async getTokenFromUser(
           resolve: (token: string) => void,
           reject: (error: Error) => void,
-        ): Promise<void> {
-          const refreshToken =
-            self.hasRefreshToken && self.retrieveRefreshToken()
+        ) {
+          const refreshToken = self.retrieveRefreshToken()
+          let doUserFlow = true
+
+          // if there is a refresh token, then try it out, and only if that
+          // refresh token succeeds, set doUserFlow to false
           if (refreshToken) {
-            resolve(await self.exchangeRefreshForAccessToken(refreshToken))
+            try {
+              const token =
+                await self.exchangeRefreshForAccessToken(refreshToken)
+              resolve(token)
+              doUserFlow = false
+            } catch (e) {
+              console.error(e)
+              self.removeRefreshToken()
+            }
           }
-          this.addMessageChannel(resolve, reject)
-          // may want to improve handling
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.useEndpointForAuthorization(resolve, reject)
+          if (doUserFlow) {
+            this.addMessageChannel(resolve, reject)
+            // may want to improve handling
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.useEndpointForAuthorization(resolve, reject)
+          }
         },
-        async validateToken(
-          token: string,
-          location: UriLocation,
-        ): Promise<string> {
-          const decoded = jwtDecode<JwtPayload>(token)
-          if (decoded.exp && decoded.exp < new Date().getTime() / 1000) {
-            const refreshToken =
-              self.hasRefreshToken && self.retrieveRefreshToken()
+        /**
+         * #action
+         */
+        async validateToken(token: string, location: UriLocation) {
+          const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
+          const response = await fetch(location.uri, newInit)
+          if (!response.ok) {
+            self.removeToken()
+            const refreshToken = self.retrieveRefreshToken()
             if (refreshToken) {
               try {
-                if (!refreshTokenPromise) {
-                  refreshTokenPromise =
+                if (!exchangedTokenPromise) {
+                  exchangedTokenPromise =
                     self.exchangeRefreshForAccessToken(refreshToken)
                 }
-                const newToken = await refreshTokenPromise
-                return this.validateToken(newToken, location)
+                const newToken = await exchangedTokenPromise
+                exchangedTokenPromise = undefined
+                return newToken
               } catch (err) {
-                throw new Error(`Token could not be refreshed. ${err}`)
+                console.error('Token could not be refreshed', err)
+                // let original error be thrown
               }
             }
-          } else {
-            refreshTokenPromise = undefined
+
+            throw new Error(
+              await getResponseError({
+                response,
+                reason: 'Error validating token',
+              }),
+            )
           }
           return token
+        },
+      }
+    })
+    .actions(self => {
+      const superGetFetcher = self.getFetcher
+      return {
+        /**
+         * #action
+         * Get a fetch method that will add any needed authentication headers
+         * to the request before sending it. If location is provided, it will
+         * be checked to see if it includes a token in it's pre-auth
+         * information.
+         *
+         * @param loc - UriLocation of the resource
+         * @returns A function that can be used to fetch
+         */
+        getFetcher(loc?: UriLocation) {
+          const fetcher = superGetFetcher(loc)
+          return async (input: RequestInfo, init?: RequestInit) => {
+            if (loc) {
+              await self.validateToken(await self.getToken(loc), loc)
+            }
+            return fetcher(input, init)
+          }
         },
       }
     })

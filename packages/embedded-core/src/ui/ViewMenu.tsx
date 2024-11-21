@@ -1,0 +1,51 @@
+import React from 'react'
+import {
+  IconButton,
+  IconButtonProps as IconButtonPropsType,
+  SvgIconProps,
+} from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import { observer } from 'mobx-react'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { CascadingMenu } from '@jbrowse/core/ui'
+import {
+  bindTrigger,
+  bindPopover,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
+
+const ViewMenu = observer(function ({
+  model,
+  IconButtonProps,
+  IconProps,
+}: {
+  model: IBaseViewModel
+  IconButtonProps: IconButtonPropsType
+  IconProps: SvgIconProps
+}) {
+  const popupState = usePopupState({
+    popupId: 'viewMenu',
+    variant: 'popover',
+  })
+  return (
+    <>
+      <IconButton
+        {...IconButtonProps}
+        {...bindTrigger(popupState)}
+        data-testid="view_menu_icon"
+      >
+        <MenuIcon {...IconProps} />
+      </IconButton>
+      <CascadingMenu
+        {...bindPopover(popupState)}
+        onMenuItemClick={(_event: unknown, callback: () => void) => {
+          callback()
+        }}
+        menuItems={model.menuItems()}
+        popupState={popupState}
+      />
+    </>
+  )
+})
+
+export default ViewMenu

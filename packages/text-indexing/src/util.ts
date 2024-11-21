@@ -1,3 +1,7 @@
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import sanitize from 'sanitize-filename'
+import path from 'path'
+
 export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -62,33 +66,38 @@ export interface Sequence {
     | ChromeSizesAdapter
     | CustomSequenceAdapter
 }
-
+type Loc = UriLocation | LocalPathLocation
 export interface Gff3TabixAdapter {
   type: 'Gff3TabixAdapter'
-  gffGzLocation: UriLocation | LocalPathLocation
+  gffGzLocation: Loc
 }
 
 export interface Gff3Adapter {
   type: 'Gff3Adapter'
-  gffLocation: UriLocation | LocalPathLocation
+  gffLocation: Loc
 }
 export interface GtfAdapter {
   type: 'GtfAdapter'
-  gtfLocation: UriLocation | LocalPathLocation
+  gtfLocation: Loc
 }
 
 export interface VcfTabixAdapter {
   type: 'VcfTabixAdapter'
-  vcfGzLocation: UriLocation | LocalPathLocation
+  vcfGzLocation: Loc
 }
 export interface VcfAdapter {
   type: 'VcfAdapter'
-  vcfLocation: UriLocation | LocalPathLocation
+  vcfLocation: Loc
 }
+
 export interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  adapter?: { type: string; [key: string]: unknown }
+  textSearching?: TextSearching
+  name: string
+  assemblyNames: string[]
+  trackId: string
 }
+
 export interface TextSearching {
   indexingFeatureTypesToExclude?: string[]
   indexingAttributes?: string[]
@@ -107,25 +116,14 @@ export interface TrixTextSearchAdapter {
 export interface Config {
   assemblies?: Assembly[]
   assembly?: Assembly
-  configuration?: {}
+  configuration?: Record<string, unknown>
   aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
   connections?: unknown[]
-  defaultSession?: {}
+  defaultSession?: Record<string, unknown>
   tracks?: Track[]
 }
 
 export type indexType = 'aggregate' | 'perTrack'
-
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/core/util
-export function supportedIndexingAdapters(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
-}
 
 export function createTextSearchConf(
   name: string,
@@ -133,23 +131,21 @@ export function createTextSearchConf(
   assemblyNames: string[],
   locationPath: string,
 ) {
-  // const locationPath = self.sessionPath.substring(
-  //   0,
-  //   self.sessionPath.lastIndexOf('/'),
-  // )
+  const base = path.join(locationPath, 'trix')
+  const n = sanitize(name)
   return {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: name,
     ixFilePath: {
-      localPath: locationPath + `/trix/${name}.ix`,
+      localPath: path.join(base, `${n}.ix`),
       locationType: 'LocalPathLocation',
     },
     ixxFilePath: {
-      localPath: locationPath + `/trix/${name}.ixx`,
+      localPath: path.join(base, `${n}.ixx`),
       locationType: 'LocalPathLocation',
     },
     metaFilePath: {
-      localPath: locationPath + `/trix/${name}.json`,
+      localPath: path.join(base, `${n}.json`),
       locationType: 'LocalPathLocation',
     },
     tracks: trackIds,
@@ -162,7 +158,7 @@ export function findTrackConfigsToIndex(
   trackIds: string[],
   assemblyName?: string,
 ) {
-  const configs = trackIds
+  return trackIds
     .map(trackId => {
       const currentTrack = tracks.find(t => trackId === t.trackId)
       if (!currentTrack) {
@@ -173,6 +169,14 @@ export function findTrackConfigsToIndex(
     .filter(track =>
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
-    .filter(track => supportedIndexingAdapters(track.adapter.type))
-  return configs
+    .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
+}
+
+export function decodeURIComponentNoThrow(uri: string) {
+  try {
+    return decodeURIComponent(uri)
+  } catch (e) {
+    // avoid throwing exception on a failure to decode URI component
+    return uri
+  }
 }

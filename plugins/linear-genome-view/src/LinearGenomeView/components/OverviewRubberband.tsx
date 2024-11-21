@@ -25,52 +25,48 @@ const useStyles = makeStyles()({
     position: 'absolute',
     zIndex: 10,
   },
+  rel: {
+    position: 'relative',
+  },
 })
 
-const HoverTooltip = observer(
-  ({
-    model,
-    open,
-    guideX,
-    overview,
-  }: {
-    model: LGV
-    open: boolean
-    guideX: number
-    overview: Base1DViewModel
-  }) => {
-    const { classes } = useStyles()
-    const { cytobandOffset } = model
-    const { assemblyManager } = getSession(model)
+const HoverTooltip = observer(function ({
+  model,
+  open,
+  guideX,
+  overview,
+}: {
+  model: LGV
+  open: boolean
+  guideX: number
+  overview: Base1DViewModel
+}) {
+  const { classes } = useStyles()
+  const { cytobandOffset } = model
+  const { assemblyManager } = getSession(model)
 
-    const px = overview.pxToBp(guideX - cytobandOffset)
-    const assembly = assemblyManager.get(px.assemblyName)
-    const cytoband = assembly?.cytobands?.find(
-      f =>
-        px.coord > f.get('start') &&
-        px.coord < f.get('end') &&
-        px.refName === assembly.getCanonicalRefName(f.get('refName')),
-    )
+  const px = overview.pxToBp(guideX - cytobandOffset)
+  const assembly = assemblyManager.get(px.assemblyName)
+  const cytoband = assembly?.cytobands?.find(
+    f =>
+      px.coord > f.get('start') &&
+      px.coord < f.get('end') &&
+      px.refName === assembly.getCanonicalRefName(f.get('refName')),
+  )
 
-    return (
-      <Tooltip
-        open={open}
-        placement="top"
-        title={[stringify(px), cytoband?.get('name')].join(' ')}
-        arrow
-      >
-        <div
-          className={classes.guide}
-          style={{
-            left: guideX,
-          }}
-        />
-      </Tooltip>
-    )
-  },
-)
+  return (
+    <Tooltip
+      open={open}
+      placement="top"
+      title={[stringify(px), cytoband?.get('name')].join(' ')}
+      arrow
+    >
+      <div className={classes.guide} style={{ left: guideX }} />
+    </Tooltip>
+  )
+})
 
-function OverviewRubberband({
+const OverviewRubberband = observer(function OverviewRubberband({
   model,
   overview,
   ControlComponent = <div />,
@@ -162,7 +158,7 @@ function OverviewRubberband({
 
   if (startX === undefined) {
     return (
-      <div style={{ position: 'relative' }}>
+      <div className={classes.rel}>
         {guideX !== undefined ? (
           <HoverTooltip
             model={model}
@@ -173,7 +169,6 @@ function OverviewRubberband({
         ) : null}
         <div
           className={classes.rubberbandControl}
-          role="presentation"
           ref={controlsRef}
           onMouseDown={mouseDown}
           onMouseOut={mouseOut}
@@ -187,35 +182,34 @@ function OverviewRubberband({
 
   let left = startX || 0
   let width = 0
-  if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
+  if (currentX !== undefined) {
+    left = Math.min(currentX, startX)
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  let leftBpOffset
-  let rightBpOffset
+  let leftBpOffset: ReturnType<typeof overview.pxToBp> | undefined
+  let rightBpOffset: ReturnType<typeof overview.pxToBp> | undefined
   if (startX) {
     leftBpOffset = overview.pxToBp(startX - cytobandOffset)
     rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
-    if (currentX && currentX < startX) {
+    if (currentX !== undefined && currentX < startX) {
       ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
     }
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={classes.rel}>
       {leftBpOffset && rightBpOffset ? (
         <RubberbandSpan
           leftBpOffset={leftBpOffset}
           rightBpOffset={rightBpOffset}
-          width={width}
+          width={Math.abs(width)}
           left={left}
         />
       ) : null}
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
-        role="presentation"
         ref={controlsRef}
         onMouseDown={mouseDown}
         onMouseOut={mouseOut}
@@ -225,6 +219,6 @@ function OverviewRubberband({
       </div>
     </div>
   )
-}
+})
 
-export default observer(OverviewRubberband)
+export default OverviewRubberband

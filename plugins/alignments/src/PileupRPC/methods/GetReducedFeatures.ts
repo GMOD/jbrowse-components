@@ -1,14 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { Region, dedupe } from '@jbrowse/core/util'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
+import { Region, dedupe, groupBy } from '@jbrowse/core/util'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 // locals
 import { filterForPairs, getInsertSizeStats } from '../util'
-import { ReducedFeature } from '../../shared/fetchChains'
 import PileupBaseRPC from '../base'
-import { getTag } from '../../util'
+import { getClip } from '../../MismatchParser'
 
 // specialized get features to return limited data about alignments
 export default class PileupGetReducedFeatures extends PileupBaseRPC {
@@ -16,8 +14,8 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
 
   async execute(
     args: {
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
+      adapterConfig: Record<string, unknown>
+      stopToken?: string
       headers?: Record<string, string>
       regions: Region[]
       sessionId: string
@@ -48,23 +46,16 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
         pair_orientation: f.get('pair_orientation'),
         next_ref: f.get('next_ref'),
         next_pos: f.get('next_pos'),
-        clipPos: f.get('clipPos'),
-        SA: getTag(f, 'SA'),
+        clipPos: getClip(f.get('CIGAR'), f.get('strand')),
+        SA: f.get('tags')?.SA,
       })),
       f => f.id,
     )
 
     const filtered = filterForPairs(reduced)
     const stats = filtered.length ? getInsertSizeStats(filtered) : undefined
-    const chains = {} as { [key: string]: ReducedFeature[] }
+    const chains = groupBy(reduced, f => f.name)
 
-    // pair features
-    reduced.forEach(f => {
-      if (!chains[f.name]) {
-        chains[f.name] = []
-      }
-      chains[f.name].push(f)
-    })
     return {
       chains: Object.values(chains),
       stats,

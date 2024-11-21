@@ -7,6 +7,8 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
  * #stateModel Dotplot1DView
  * ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const Dotplot1DView = Base1DView.extend(self => {
   const scaleFactor = observable.box(1)
   return {
@@ -30,7 +32,28 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxBpPerPx() {
-        return self.totalBp / self.width
+        return self.totalBp / (self.width - 50)
+      },
+
+      /**
+       * #getter
+       */
+      get minBpPerPx() {
+        return 1 / 50
+      },
+
+      /**
+       * #getter
+       */
+      get maxOffset() {
+        return self.displayedRegionsTotalPx - self.width * 0.2
+      },
+
+      /**
+       * #getter
+       */
+      get minOffset() {
+        return -self.width * 0.8
       },
     },
     actions: {
@@ -47,7 +70,7 @@ const Dotplot1DView = Base1DView.extend(self => {
       center() {
         const centerBp = self.totalBp / 2
         const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        self.scrollTo(centerPx - self.width / 2)
       },
     },
   }
@@ -56,7 +79,6 @@ const Dotplot1DView = Base1DView.extend(self => {
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).viewWidth
     },
   },
@@ -65,7 +87,6 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).viewHeight
     },
   },

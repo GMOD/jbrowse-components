@@ -1,16 +1,16 @@
+import { sum } from '.'
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
   constructor(public blocks: BaseBlock[] = []) {}
 
   push(block: BaseBlock) {
-    if (block instanceof ElidedBlock) {
-      if (this.blocks.length) {
-        const lastBlock = this.blocks[this.blocks.length - 1]
-        if (lastBlock instanceof ElidedBlock) {
-          lastBlock.push(block)
-          return
-        }
+    if (block.type === 'ElidedBlock' && this.blocks.length > 0) {
+      const lastBlock = this.blocks.at(-1)
+      if (lastBlock?.type === 'ElidedBlock') {
+        ;(lastBlock as ElidedBlock).push(block as ElidedBlock)
+        return
       }
     }
 
@@ -26,11 +26,13 @@ export class BlockSet {
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
     return this.blocks.map(func, thisarg)
   }
 
   forEach<T, U = this>(func: Func<T>, thisarg?: U) {
-    return this.blocks.forEach(func, thisarg)
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
+    this.blocks.forEach(func, thisarg)
   }
 
   get length() {
@@ -38,36 +40,37 @@ export class BlockSet {
   }
 
   get totalWidthPx() {
-    return this.blocks.length
-      ? this.blocks.map(blocks => blocks.widthPx).reduce((a, b) => a + b)
+    return this.blocks.length > 0
+      ? sum(this.blocks.map(blocks => blocks.widthPx))
       : 0
   }
 
   get totalWidthPxWithoutBorders() {
-    return this.blocks.length
-      ? this.blocks
-          .filter(block => block.variant !== 'boundary')
-          .map(blocks => blocks.widthPx)
-          .reduce((a, b) => a + b)
+    return this.blocks.length > 0
+      ? sum(
+          this.blocks
+            .filter(block => block.variant !== 'boundary')
+            .map(blocks => blocks.widthPx),
+        )
       : 0
   }
 
   get offsetPx() {
-    return this.blocks.length ? this.blocks[0].offsetPx : 0
+    return this.blocks.length > 0 ? this.blocks[0]!.offsetPx : 0
   }
 
   get contentBlocks() {
-    return this.blocks.filter(block => block instanceof ContentBlock)
+    return this.blocks.filter(block => block.type === 'ContentBlock')
   }
 
   get totalBp() {
-    return this.contentBlocks
-      .map(block => block.end - block.start)
-      .reduce((a, b) => a + b, 0)
+    return sum(this.contentBlocks.map(block => block.end - block.start))
   }
 }
 
 export class BaseBlock {
+  type = 'BaseBlock'
+
   public regionNumber?: number
 
   public reversed?: boolean
@@ -93,8 +96,8 @@ export class BaseBlock {
   /**
    * a block that should be shown as filled with data
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(data: any) {
+
+  constructor(data: Record<string, any>) {
     Object.assign(this, data)
     this.assemblyName = data.assemblyName
     this.refName = data.refName
@@ -102,21 +105,6 @@ export class BaseBlock {
     this.end = data.end
     this.key = data.key
     this.offsetPx = data.offsetPx
-  }
-
-  /**
-   * rename the reference sequence of this block and return a new one
-   *
-   * @param refName -
-   * @returns either a new block with a renamed reference sequence,
-   * or the same block, if the ref name is not actually different
-   */
-  renameReference(refName: string) {
-    if (this.refName && refName !== this.refName) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return new (this.constructor as any)({ ...this, refName })
-    }
-    return this
   }
 
   toRegion() {
@@ -130,18 +118,21 @@ export class BaseBlock {
   }
 }
 
-export class ContentBlock extends BaseBlock {}
+export class ContentBlock extends BaseBlock {
+  type = 'ContentBlock'
+}
 
 /**
  * marker block representing one or more blocks that are
  * too small to be shown at the current zoom level
  */
 export class ElidedBlock extends BaseBlock {
+  type = 'ElidedBlock'
+
   public widthPx: number
 
   public elidedBlockCount = 0
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     super(data)
     this.widthPx = data.widthPx
@@ -149,13 +140,10 @@ export class ElidedBlock extends BaseBlock {
 
   push(otherBlock: ElidedBlock) {
     this.elidedBlockCount += 1
-
-    if (otherBlock) {
-      this.refName = ''
-      this.start = 0
-      this.end = 0
-      this.widthPx += otherBlock.widthPx
-    }
+    this.refName = ''
+    this.start = 0
+    this.end = 0
+    this.widthPx += otherBlock.widthPx
   }
 }
 
@@ -163,4 +151,6 @@ export class ElidedBlock extends BaseBlock {
  * marker block that sits between two different displayed regions
  * and provides a thick border between them
  */
-export class InterRegionPaddingBlock extends BaseBlock {}
+export class InterRegionPaddingBlock extends BaseBlock {
+  type = 'InterRegionPaddingBlock'
+}

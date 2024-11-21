@@ -30,7 +30,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
+const TextIndexingConfig = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const [value1, setValue1] = useState('')
   const [value2, setValue2] = useState('')
@@ -58,28 +62,32 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
           <CardContent>
             <InputLabel>{section.label}</InputLabel>
             <List disablePadding>
-              {section.values.map((val: string, idx: number) => (
-                <ListItem key={idx} disableGutters>
+              {section.values.map((val, idx) => (
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
+                <ListItem key={`${val}-${idx}`} disableGutters>
                   <TextField
                     value={val}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            color="secondary"
-                            onClick={() => {
-                              const newAttr = section.values.filter((a, i) => {
-                                return i !== idx
-                              })
-                              index === 0
-                                ? setAttributes(newAttr)
-                                : setExclude(newAttr)
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => {
+                                const newAttr = section.values.filter(
+                                  (_, i) => i !== idx,
+                                )
+                                if (index === 0) {
+                                  setAttributes(newAttr)
+                                } else {
+                                  setExclude(newAttr)
+                                }
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
                 </ListItem>
@@ -89,35 +97,36 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
                   value={index === 0 ? value1 : value2}
                   placeholder="add new"
                   onChange={event => {
-                    index === 0
-                      ? setValue1(event.target.value)
-                      : setValue2(event.target.value)
+                    if (index === 0) {
+                      setValue1(event.target.value)
+                    } else {
+                      setValue2(event.target.value)
+                    }
                   }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => {
-                            if (index === 0) {
-                              const newAttr: string[] = attributes
-                              newAttr.push(value1)
-                              setAttributes(newAttr)
-                              setValue1('')
-                            } else {
-                              const newFeat: string[] = exclude
-                              newFeat.push(value2)
-                              setExclude(newFeat)
-                              setValue2('')
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => {
+                              if (index === 0) {
+                                setAttributes([...attributes, value1])
+                                setValue1('')
+                              } else {
+                                setExclude([...exclude, value2])
+                                setValue2('')
+                              }
+                            }}
+                            disabled={
+                              index === 0 ? value1 === '' : value2 === ''
                             }
-                          }}
-                          disabled={index === 0 ? value1 === '' : value2 === ''}
-                          color="secondary"
-                          data-testid={`stringArrayAdd-Feat`}
-                        >
-                          <AddIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                            data-testid="stringArrayAdd-Feat"
+                          >
+                            <AddIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
               </ListItem>

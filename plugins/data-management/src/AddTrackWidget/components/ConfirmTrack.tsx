@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import {
-  supportedIndexingAdapters,
+  isSupportedIndexingAdapter,
   getSession,
   isElectron,
 } from '@jbrowse/core/util'
@@ -80,7 +80,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   )
 }
 
-export default observer(function ConfirmTrack({
+const ConfirmTrack = observer(function ConfirmTrack({
   model,
 }: {
   model: AddTrackModel
@@ -88,8 +88,14 @@ export default observer(function ConfirmTrack({
   const { classes } = useStyles()
   const [check, setCheck] = useState(true)
   const session = getSession(model)
-  const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
-    model
+  const {
+    trackName,
+    unsupported,
+    trackAdapter,
+    trackType,
+    warningMessage,
+    adapterHint,
+  } = model
 
   useEffect(() => {
     if (adapterHint === '' && trackAdapter) {
@@ -97,7 +103,7 @@ export default observer(function ConfirmTrack({
     }
   }, [adapterHint, trackAdapter, trackAdapter?.type, model])
 
-  if (model.unsupported) {
+  if (unsupported) {
     return (
       <Typography className={classes.spacing}>
         This version of JBrowse cannot display data of this type. It is
@@ -130,12 +136,10 @@ export default observer(function ConfirmTrack({
     return <Typography>Could not recognize this data type.</Typography>
   }
 
-  const supportedForIndexing = supportedIndexingAdapters(trackAdapter?.type)
+  const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter.type)
   return (
     <div>
-      {trackAdapter ? (
-        <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
-      ) : null}
+      <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
       {warningMessage ? (
         <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
@@ -145,8 +149,12 @@ export default observer(function ConfirmTrack({
         helperText="A name for this track"
         fullWidth
         value={trackName}
-        onChange={event => model.setTrackName(event.target.value)}
-        inputProps={{ 'data-testid': 'trackNameInput' }}
+        onChange={event => {
+          model.setTrackName(event.target.value)
+        }}
+        slotProps={{
+          htmlInput: { 'data-testid': 'trackNameInput' },
+        }}
       />
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
@@ -154,11 +162,13 @@ export default observer(function ConfirmTrack({
         session={session}
         helperText="Select assembly to add track to"
         selected={model.assembly}
-        onChange={asm => model.setAssembly(asm)}
+        onChange={asm => {
+          model.setAssembly(asm)
+        }}
         TextFieldProps={{
           fullWidth: true,
           SelectProps: {
-            // @ts-ignore
+            // @ts-expect-error
             SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           },
         }}
@@ -185,3 +195,5 @@ export default observer(function ConfirmTrack({
     </div>
   )
 })
+
+export default ConfirmTrack

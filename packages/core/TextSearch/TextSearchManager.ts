@@ -1,21 +1,16 @@
 import BaseResult from './BaseResults'
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
-import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
+import {
+  BaseTextSearchAdapter,
+  BaseTextSearchArgs,
+} from '../data_adapters/BaseAdapter'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
-
-export interface BaseArgs {
-  queryString: string
-  searchType?: SearchType
-  signal?: AbortSignal
-  limit?: number
-  pageNumber?: number
-}
 
 export interface SearchScope {
   includeAggregateIndexes: boolean
   assemblyName: string
-  tracks?: Array<string>
+  tracks?: string[]
 }
 
 export default class TextSearchManager {
@@ -26,26 +21,36 @@ export default class TextSearchManager {
   constructor(public pluginManager: PluginManager) {}
 
   loadTextSearchAdapters(searchScope: SearchScope) {
-    const pm = this.pluginManager
-    return this.relevantAdapters(searchScope).map(conf => {
-      const adapterId = readConfObject(conf, 'textSearchAdapterId')
-      const r = this.adapterCache.get(adapterId)
-      if (r) {
-        return r
-      } else {
-        const { AdapterClass } = pm.getTextSearchAdapterType(conf.type)
-        const a = new AdapterClass(conf, undefined, pm) as BaseTextSearchAdapter
-        this.adapterCache.set(adapterId, a)
-        return a
-      }
-    })
+    return Promise.all(
+      this.relevantAdapters(searchScope).map(async conf => {
+        const adapterId = readConfObject(conf, 'textSearchAdapterId')
+        const r = this.adapterCache.get(adapterId)
+        if (r) {
+          return r
+        } else {
+          const adapterType = this.pluginManager.getTextSearchAdapterType(
+            conf.type,
+          )!
+          const AdapterClass = await adapterType.getAdapterClass()
+          const adapterInstance = new AdapterClass(
+            conf,
+            undefined,
+            this.pluginManager,
+          ) as BaseTextSearchAdapter
+          this.adapterCache.set(adapterId, adapterInstance)
+          return adapterInstance
+        }
+      }),
+    )
   }
 
   relevantAdapters(searchScope: SearchScope) {
-    const pm = this.pluginManager
-    const { aggregateTextSearchAdapters, tracks } = pm.rootModel?.jbrowse as {
-      tracks: AnyConfigurationModel[]
+    const rootModel = this.pluginManager.rootModel
+    const { aggregateTextSearchAdapters } = rootModel?.jbrowse as {
       aggregateTextSearchAdapters: AnyConfigurationModel[]
+    }
+    const { tracks } = rootModel?.session as {
+      tracks: AnyConfigurationModel[]
     }
 
     const { assemblyName } = searchScope
@@ -87,15 +92,16 @@ export default class TextSearchManager {
 
   /**
    * Returns list of relevant results given a search query and options
-   * @param args - search options/arguments include: search query
-   * limit of results to return, searchType...prefix | full | exact", etc.
+   *
+   * @param args - search options/arguments include: search query limit of
+   * results to return, searchType...prefix | full | exact", etc.
    */
   async search(
-    args: BaseArgs,
+    args: BaseTextSearchArgs,
     searchScope: SearchScope,
     rankFn: (results: BaseResult[]) => BaseResult[],
   ) {
-    const adapters = this.loadTextSearchAdapters(searchScope)
+    const adapters = await this.loadTextSearchAdapters(searchScope)
     const results = await Promise.all(adapters.map(a => a.searchIndex(args)))
     return this.sortResults(results.flat(), rankFn)
   }

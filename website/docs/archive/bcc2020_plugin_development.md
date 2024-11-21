@@ -19,12 +19,9 @@ Here is a video recording of the presentation that we made
   allow="autoplay; fullscreen"
   allowfullscreen
 ></iframe>
-<p>
-  <a href="https://vimeo.com/454450171"
-    >How to write a JBrowse 2 plugin. BCC2020 West Training </a
-  > from <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on
-  <a href="https://vimeo.com">Vimeo</a>.
-</p>
+
+[How to write a JBrowse 2 plugin. BCC2020 West Training](https://vimeo.com/454450171)
+on Vimeo
 
 You can also follow along with the text presented below
 
@@ -126,7 +123,7 @@ will create a custom renderer to illustrate this
 
 But what is a renderer? It is code that performs drawing. See the renderer docs
 here for more details
-[on creating renderers](/docs/developer_guides/pluggable_elements/#creating-custom-renderers)
+[on creating renderers](/docs/developer_guides/creating_renderer/)
 
 Let's clone a working arc renderer plugin
 

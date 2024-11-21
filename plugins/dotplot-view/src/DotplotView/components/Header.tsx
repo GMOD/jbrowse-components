@@ -1,30 +1,16 @@
-import React, { lazy, useState } from 'react'
-import Alert from '@mui/material/Alert'
-import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
+import React from 'react'
 import Typography from '@mui/material/Typography'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { Menu } from '@jbrowse/core/ui'
-
-// icons
-import ZoomOut from '@mui/icons-material/ZoomOut'
-import ZoomIn from '@mui/icons-material/ZoomIn'
-import MoreVert from '@mui/icons-material/MoreVert'
-import { CursorMouse, CursorMove } from './CursorIcon'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { DotplotViewModel } from '../model'
-
-// lazy components
-const WarningDialog = lazy(() => import('./WarningDialog'))
+import DotplotWarnings from './DotplotWarnings'
+import PanButtons from './PanButtons'
+import DotplotControls from './DotplotControls'
 
 const useStyles = makeStyles()({
-  iconButton: {
-    margin: 5,
-  },
   bp: {
     display: 'flex',
     alignItems: 'center',
@@ -35,152 +21,42 @@ const useStyles = makeStyles()({
   },
   headerBar: {
     display: 'flex',
+    position: 'relative',
   },
 })
 
-const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotHeader = observer(function ({
+  model,
+  selection,
+}: {
+  model: DotplotViewModel
+  selection?: { width: number; height: number }
+}) {
   const { classes } = useStyles()
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>()
+  const { hview, vview, showPanButtons } = model
   return (
-    <div>
-      <IconButton
-        onClick={model.zoomOutButton}
-        className={classes.iconButton}
-        color="secondary"
-      >
-        <ZoomOut />
-      </IconButton>
-
-      <IconButton
-        onClick={model.zoomInButton}
-        className={classes.iconButton}
-        title="zoom in"
-        color="secondary"
-      >
-        <ZoomIn />
-      </IconButton>
-
-      <IconButton
-        onClick={model.activateTrackSelector}
-        className={classes.iconButton}
-        title="Open track selector"
-        data-testid="circular_track_select"
-        color="secondary"
-      >
-        <TrackSelectorIcon />
-      </IconButton>
-
-      <IconButton
-        onClick={event => setMenuAnchorEl(event.currentTarget)}
-        className={classes.iconButton}
-        color="secondary"
-      >
-        <MoreVert />
-      </IconButton>
-
-      {menuAnchorEl ? (
-        <Menu
-          anchorEl={menuAnchorEl}
-          open
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMenuAnchorEl(undefined)
-          }}
-          menuItems={[
-            {
-              onClick: () => model.squareView(),
-              label: 'Square view - same base pairs per pixel',
-            },
-            {
-              onClick: () => model.squareViewProportional(),
-              label: 'Rectanglular view - same total bp',
-            },
-            {
-              onClick: () => model.showAllRegions(),
-              label: 'Show all regions',
-            },
-            {
-              onClick: () => model.setDrawCigar(!model.drawCigar),
-              type: 'checkbox',
-              label: 'Draw CIGAR',
-              checked: model.drawCigar,
-            },
-            {
-              onClick: () => model.setCursorMode('move'),
-              label: 'Cursor mode - click and drag to move',
-              icon: CursorMove,
-              type: 'radio',
-              checked: model.cursorMode === 'move',
-            },
-            {
-              onClick: () => model.setCursorMode('crosshair'),
-              label: 'Cursor mode - select region',
-              icon: CursorMouse,
-              type: 'radio',
-              checked: model.cursorMode === 'crosshair',
-            },
-          ]}
-          onClose={() => setMenuAnchorEl(undefined)}
-        />
-      ) : null}
-    </div>
-  )
-})
-const Warnings = observer(({ model }: { model: DotplotViewModel }) => {
-  const tracksWithWarnings = model.tracks.filter(
-    t => t.displays[0].warnings?.length,
-  )
-  const [shown, setShown] = useState(false)
-  return tracksWithWarnings.length ? (
-    <Alert severity="warning">
-      Warnings during render{' '}
-      <Button onClick={() => setShown(true)}>More info</Button>
-      {shown ? (
-        <WarningDialog
-          tracksWithWarnings={tracksWithWarnings}
-          handleClose={() => setShown(false)}
-        />
-      ) : null}
-    </Alert>
-  ) : null
-})
-
-const Header = observer(
-  ({
-    model,
-    selection,
-  }: {
-    model: DotplotViewModel
-    selection?: { width: number; height: number }
-  }) => {
-    const { classes } = useStyles()
-    const { hview, vview } = model
-    return (
-      <div className={classes.headerBar}>
-        <DotplotControls model={model} />
+    <div className={classes.headerBar}>
+      <DotplotControls model={model} />
+      <Typography className={classes.bp} variant="body2" color="textSecondary">
+        x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)}
+        <br />
+        y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
+      </Typography>
+      {selection ? (
         <Typography
           className={classes.bp}
           variant="body2"
           color="textSecondary"
         >
-          x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)}
-          <br />
-          y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
+          {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
+          {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
         </Typography>
-        {selection ? (
-          <Typography
-            className={classes.bp}
-            variant="body2"
-            color="textSecondary"
-          >
-            {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
-            {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
-          </Typography>
-        ) : null}
-        <div className={classes.spacer} />
-        <Warnings model={model} />
-      </div>
-    )
-  },
-)
-export default Header
+      ) : null}
+      <div className={classes.spacer} />
+      <DotplotWarnings model={model} />
+      {showPanButtons ? <PanButtons model={model} /> : null}
+    </div>
+  )
+})
+
+export default DotplotHeader

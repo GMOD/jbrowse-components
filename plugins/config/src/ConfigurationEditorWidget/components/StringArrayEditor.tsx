@@ -12,53 +12,60 @@ import TextField from '@mui/material/TextField'
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
 
-const StringArrayEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      value: string[]
-      setAtIndex: Function
-      removeAtIndex: Function
-      add: Function
-      description: string
-    }
-  }) => {
-    const [value, setValue] = useState('')
-    const [addNew, setAddNew] = useState(false)
-    return (
-      <>
-        {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
-        <List disablePadding>
-          {slot.value.map((val, idx) => (
-            <ListItem key={idx} disableGutters>
-              <TextField
-                value={val}
-                onChange={evt => slot.setAtIndex(idx, evt.target.value)}
-                InputProps={{
+const StringArrayEditor = observer(function ({
+  slot,
+}: {
+  slot: {
+    name: string
+    value: string[]
+    setAtIndex: (arg: number, arg2: string) => void
+    removeAtIndex: (arg: number) => void
+    add: (arg: string) => void
+    description: string
+  }
+}) {
+  const [value, setValue] = useState('')
+  const [addNew, setAddNew] = useState(false)
+  return (
+    <>
+      {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
+      <List disablePadding>
+        {slot.value.map((val, idx) => (
+          <ListItem key={`${JSON.stringify(val)}-${idx}`} disableGutters>
+            <TextField
+              value={val}
+              onChange={evt => {
+                slot.setAtIndex(idx, evt.target.value)
+              }}
+              slotProps={{
+                input: {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        color="secondary"
-                        onClick={() => slot.removeAtIndex(idx)}
+                        onClick={() => {
+                          slot.removeAtIndex(idx)
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>
                     </InputAdornment>
                   ),
-                }}
-              />
-            </ListItem>
-          ))}
+                },
+              }}
+            />
+          </ListItem>
+        ))}
 
-          {addNew ? (
-            <ListItem disableGutters>
-              <TextField
-                value={value}
-                placeholder="add new"
-                onChange={event => setValue(event.target.value)}
-                InputProps={{
+        {addNew ? (
+          <ListItem disableGutters>
+            <TextField
+              value={value}
+              placeholder="add new"
+              onChange={event => {
+                setValue(event.target.value)
+              }}
+              slotProps={{
+                input: {
                   endAdornment: (
                     <InputAdornment position="end">
                       <>
@@ -89,24 +96,26 @@ const StringArrayEditor = observer(
                       </>
                     </InputAdornment>
                   ),
-                }}
-              />
-            </ListItem>
-          ) : null}
-          <Button
-            color="primary"
-            variant="contained"
-            style={{ margin: 4 }}
-            disabled={addNew}
-            onClick={() => setAddNew(true)}
-          >
-            Add item
-          </Button>
-        </List>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  },
-)
+                },
+              }}
+            />
+          </ListItem>
+        ) : null}
+        <Button
+          color="primary"
+          variant="contained"
+          style={{ margin: 4 }}
+          disabled={addNew}
+          onClick={() => {
+            setAddNew(true)
+          }}
+        >
+          Add item
+        </Button>
+      </List>
+      <FormHelperText>{slot.description}</FormHelperText>
+    </>
+  )
+})
 
 export default StringArrayEditor

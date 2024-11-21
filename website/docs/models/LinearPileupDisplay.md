@@ -1,7 +1,6 @@
 ---
 id: linearpileupdisplay
 title: LinearPileupDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,9 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends `BaseLinearDisplay`
+[plugins/alignments/src/LinearPileupDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/model.ts)
+
+extends
+
+- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
 
 ### LinearPileupDisplay - Properties
 
@@ -28,7 +31,7 @@ type: types.literal('LinearPileupDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -40,42 +43,6 @@ configuration: ConfigurationReference(configSchema)
 false
 // code
 showSoftClipping: false
-```
-
-#### property: featureHeight
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-featureHeight: types.maybe(types.number)
-```
-
-#### property: noSpacing
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-noSpacing: types.maybe(types.boolean)
-```
-
-#### property: fadeLikelihood
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-fadeLikelihood: types.maybe(types.boolean)
-```
-
-#### property: trackMaxHeight
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-trackMaxHeight: types.maybe(types.number)
 ```
 
 #### property: mismatchAlpha
@@ -91,64 +58,25 @@ mismatchAlpha: types.maybe(types.boolean)
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; pos: ISimpleType<number>; tag: IMaybe<ISimpleType<string>>; refName: ISimpleType<string>; assemblyName: ISimpleType<...>; }, {}, _NotCustomized, _NotCustomized>>
+IType<SortedBy, SortedBy, SortedBy>
 // code
-sortedBy: types.maybe(
-          types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
-            assemblyName: types.string,
-          }),
-        )
-```
-
-#### property: colorBy
-
-```js
-// type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
-// code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
-```
-
-#### property: filterBy
-
-```js
-// type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
-// code
-filterBy: types.optional(FilterModel, {})
+sortedBy: types.frozen<SortedBy | undefined>()
 ```
 
 ### LinearPileupDisplay - Getters
 
-#### getter: maxHeight
+#### getter: visibleModificationTypes
 
 ```js
 // type
-any
+any[]
 ```
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
-```
-
-#### getter: featureHeightSetting
-
-```js
-// type
-any
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: mismatchAlphaSetting
@@ -158,34 +86,20 @@ any
 any
 ```
 
-#### getter: featureUnderMouse
-
-```js
-// type
-Feature
-```
-
-#### getter: rendererTypeName
-
-```js
-// type
-string
-```
-
-#### getter: DisplayBlurb
-
-```js
-// type
-;(props: LinearPileupDisplayBlurbProps) => Element
-```
-
 ### LinearPileupDisplay - Methods
 
-#### method: contextMenuItems
+#### method: renderReady
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: (props: SvgIconProps<"svg", {}>) => Element; onClick: () => void; }[]
+renderReady: () => boolean
+```
+
+#### method: renderPropsPre
+
+```js
+// type signature
+renderPropsPre: () => any
 ```
 
 #### method: renderProps
@@ -199,17 +113,10 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }, { ...; }, { ...; }]
 ```
 
 ### LinearPileupDisplay - Actions
-
-#### action: setReady
-
-```js
-// type signature
-setReady: (flag: boolean) => void
-```
 
 #### action: setCurrSortBpPerPx
 
@@ -218,60 +125,25 @@ setReady: (flag: boolean) => void
 setCurrSortBpPerPx: (n: number) => void
 ```
 
-#### action: setMaxHeight
+#### action: updateVisibleModifications
 
 ```js
 // type signature
-setMaxHeight: (n: number) => void
+updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 ```
 
-#### action: setFeatureHeight
+#### action: setModificationsReady
 
 ```js
 // type signature
-setFeatureHeight: (n?: number) => void
+setModificationsReady: (flag: boolean) => void
 ```
 
-#### action: setNoSpacing
+#### action: setSortReady
 
 ```js
 // type signature
-setNoSpacing: (flag?: boolean) => void
-```
-
-#### action: setColorScheme
-
-```js
-// type signature
-setColorScheme: (colorScheme: { type: string; tag?: string; }) => void
-```
-
-#### action: updateModificationColorMap
-
-```js
-// type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
-```
-
-#### action: updateColorTagMap
-
-```js
-// type signature
-updateColorTagMap: (uniqueTag: string[]) => void
-```
-
-#### action: setFeatureUnderMouse
-
-```js
-// type signature
-setFeatureUnderMouse: (feat?: Feature) => void
-```
-
-#### action: selectFeature
-
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+setSortReady: (flag: boolean) => void
 ```
 
 #### action: clearSelected
@@ -279,15 +151,6 @@ selectFeature: (feature: Feature) => void
 ```js
 // type signature
 clearSelected: () => void
-```
-
-#### action: copyFeatureToClipboard
-
-uses copy-to-clipboard and generates notification
-
-```js
-// type signature
-copyFeatureToClipboard: (feature: Feature) => void
 ```
 
 #### action: toggleSoftClipping
@@ -304,18 +167,21 @@ toggleSoftClipping: () => void
 toggleMismatchAlpha: () => void
 ```
 
-#### action: setConfig
-
-```js
-// type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
-```
-
 #### action: setSortedBy
 
 ```js
 // type signature
 setSortedBy: (type: string, tag?: string) => void
+```
+
+#### action: setFeatureHeight
+
+overrides base from SharedLinearPileupDisplay to make sortReady false since
+changing feature height destroys the sort-induced layout
+
+```js
+// type signature
+setFeatureHeight: (n?: number) => void
 ```
 
 #### action: reload

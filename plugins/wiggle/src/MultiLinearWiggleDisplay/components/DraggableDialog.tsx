@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import Dialog, { DialogProps } from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import IconButton from '@mui/material/IconButton'
@@ -21,36 +21,36 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// draggable dialog demo https://mui.com/material-ui/react-dialog/#draggable-dialog
 function PaperComponent(props: PaperProps) {
+  const ref = useRef<HTMLDivElement>(null)
   return (
     <Draggable
-      handle="#draggable-dialog-title"
+      nodeRef={ref}
       cancel={'[class*="MuiDialogContent-root"]'}
+      // @ts-expect-error
+      onStart={arg => arg.target?.className?.includes('MuiDialogTitle')}
     >
-      <Paper {...props} />
+      <Paper ref={ref} {...props} />
     </Draggable>
   )
 }
 
-function DraggableDialog(props: DialogProps & { title: string }) {
+const DraggableDialog = observer(function DraggableDialog(
+  props: DialogProps & { title: string },
+) {
   const { classes } = useStyles()
   const { title, children, onClose } = props
 
   return (
-    <Dialog
-      {...props}
-      PaperComponent={PaperComponent}
-      aria-labelledby="draggable-dialog-title" // this area is important for the draggable functionality
-    >
+    <Dialog {...props} PaperComponent={PaperComponent}>
       <ScopedCssBaseline>
-        <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+        <DialogTitle style={{ cursor: 'move' }}>
           {title}
           {onClose ? (
             <IconButton
               className={classes.closeButton}
               onClick={() => {
-                // @ts-ignore
+                // @ts-expect-error
                 onClose()
               }}
             >
@@ -63,5 +63,6 @@ function DraggableDialog(props: DialogProps & { title: string }) {
       </ScopedCssBaseline>
     </Dialog>
   )
-}
-export default observer(DraggableDialog)
+})
+
+export default DraggableDialog

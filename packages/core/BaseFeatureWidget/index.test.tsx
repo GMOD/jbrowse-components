@@ -1,12 +1,14 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
 
 // locals
 import { ConfigurationSchema } from '../configuration'
 import PluginManager from '../PluginManager'
 import { stateModelFactory } from '.'
 import BaseFeatureDetails from './BaseFeatureDetail'
+import { createJBrowseTheme } from '../ui'
 
 test('open up a widget', async () => {
   const pluginManager = new PluginManager([])
@@ -18,12 +20,16 @@ test('open up a widget', async () => {
   })
   const model = Session.create(
     {
-      widget: { type: 'BaseFeatureWidget' },
+      widget: {
+        type: 'BaseFeatureWidget',
+      },
     },
     { pluginManager },
   )
   const { container, findByText } = render(
-    <BaseFeatureDetails model={model.widget} />,
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
   )
   model.widget.setFeatureData({
     start: 2,
@@ -33,5 +39,5 @@ test('open up a widget', async () => {
     refName: 'ctgA',
   })
   expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

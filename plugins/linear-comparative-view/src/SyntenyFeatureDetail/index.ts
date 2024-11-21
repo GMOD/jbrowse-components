@@ -2,34 +2,35 @@ import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from 'mobx-state-tree'
+import { stateModelFactory as BaseFeatureWidgetStateModelF } from '@jbrowse/core/BaseFeatureWidget'
 
 const configSchema = ConfigurationSchema('SyntenyFeatureWidget', {})
 
-const stateModel = types
-  .model('SyntenyFeatureWidget', {
-    id: ElementId,
-    type: types.literal('SyntenyFeatureWidget'),
-    featureData: types.frozen(),
-  })
-  .actions(self => ({
-    setFeatureData(data: unknown) {
-      self.featureData = data
-    },
-    clearFeatureData() {
-      self.featureData = undefined
-    },
-  }))
+function stateModelF(pluginManager: PluginManager) {
+  return types.compose(
+    BaseFeatureWidgetStateModelF(pluginManager),
+    types.model('SyntenyFeatureWidget', {
+      /**
+       * #property
+       */
+      type: types.literal('SyntenyFeatureWidget'),
+      /**
+       * #property
+       */
+      level: types.maybe(types.number),
+    }),
+  )
+}
 
-export default (pluginManager: PluginManager) => {
+export default function SyntenyFeatureWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(
     () =>
       new WidgetType({
         name: 'SyntenyFeatureWidget',
         heading: 'Synteny feature details',
         configSchema,
-        stateModel,
+        stateModel: stateModelF(pluginManager),
         ReactComponent: lazy(() => import('./SyntenyFeatureDetail')),
       }),
   )

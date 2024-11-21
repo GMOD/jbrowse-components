@@ -6,7 +6,7 @@ import { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
 const ConfirmDialog = lazy(() => import('./ConfirmDialog'))
 
-export default function (pm: PluginManager) {
+export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   pm.addToExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
     (items: unknown[], props: Record<string, unknown>) => {
@@ -26,25 +26,26 @@ export default function (pm: PluginManager) {
                       .map((c, idx) => ({ ...c, source: trackIds[idx] }))
                     const assemblyNames = [
                       ...new Set(
-                        tracks
-                          .map(c => readConfObject(c, 'assemblyNames'))
-                          .flat(),
+                        tracks.flatMap(c => readConfObject(c, 'assemblyNames')),
                       ),
                     ]
                     const now = +Date.now()
                     const trackId = `multitrack-${now}-sessionTrack`
 
-                    getSession(model).addTrackConf({
-                      type: 'MultiQuantitativeTrack',
-                      trackId,
-                      name: arg.name,
-                      assemblyNames,
-                      adapter: {
-                        type: 'MultiWiggleAdapter',
-                        subadapters,
-                      },
-                    })
-                    model.view.showTrack(trackId)
+                    const session = getSession(model)
+                    if (isSessionWithAddTracks(session)) {
+                      session.addTrackConf({
+                        type: 'MultiQuantitativeTrack',
+                        trackId,
+                        name: arg.name,
+                        assemblyNames,
+                        adapter: {
+                          type: 'MultiWiggleAdapter',
+                          subadapters,
+                        },
+                      })
+                      model.view.showTrack(trackId)
+                    }
                   }
                   getSession(model).queueDialog(handleClose => [
                     ConfirmDialog,

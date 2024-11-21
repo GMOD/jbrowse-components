@@ -37,7 +37,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function CallbackEditor({
+const CallbackEditor = observer(function ({
   slot,
 }: {
   slot: {
@@ -85,11 +85,15 @@ function CallbackEditor({
           multiline
           className={classes.callbackEditor}
           value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-          onChange={event => setCode(event.target.value)}
+          onChange={event => {
+            setCode(event.target.value)
+          }}
           style={{ background: error ? '#fdd' : undefined }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
@@ -123,6 +127,6 @@ function CallbackEditor({
       </div>
     </>
   )
-}
+})
 
-export default observer(CallbackEditor)
+export default CallbackEditor

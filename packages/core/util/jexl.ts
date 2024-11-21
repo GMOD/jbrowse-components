@@ -2,11 +2,11 @@ import jexl from 'jexl'
 import { Feature } from './simpleFeature'
 
 type JexlWithAddFunction = typeof jexl & {
-  addFunction(name: string, func: Function): void
+  addFunction(name: string, func: (...args: unknown[]) => unknown): void
 }
 type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
 
-export default function (/* config?: any*/): JexlNonBuildable {
+export default function JexlF(/* config?: any*/): JexlNonBuildable {
   const j = new jexl.Jexl() as JexlWithAddFunction
   // someday will make sure all of configs callbacks are added in, including
   // ones passed in
@@ -70,10 +70,12 @@ export default function (/* config?: any*/): JexlNonBuildable {
     s.startsWith(search, pos),
   )
   j.addFunction('substring', (s: string, start: number, end?: number) =>
+    // eslint-disable-next-line unicorn/prefer-string-slice
     s.substring(start, end),
   )
   j.addFunction('toLowerCase', (s: string) => s.toLowerCase())
   j.addFunction('toUpperCase', (s: string) => s.toUpperCase())
+  j.addFunction('jsonParse', (s: string) => JSON.parse(s))
   j.addFunction('trim', (s: string) => s.trim())
   j.addFunction('trimEnd', (s: string) => s.trimEnd())
   j.addFunction('trimStart', (s: string) => s.trimStart())

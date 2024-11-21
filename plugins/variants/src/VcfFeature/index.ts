@@ -4,13 +4,10 @@ import VCF from '@gmod/vcf'
 // locals
 import { getSOTermAndDescription } from './util'
 
-/* eslint-disable no-underscore-dangle */
-
-interface Samples {
-  [key: string]: {
-    [key: string]: { values: string[] | number[] | null }
-  }
-}
+type Samples = Record<
+  string,
+  Record<string, { values: string[] | number[] | null }>
+>
 
 interface FeatureData {
   [key: string]: unknown
@@ -25,7 +22,6 @@ interface FeatureData {
 }
 
 export default class VCFFeature implements Feature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private variant: any
 
   private parser: VCF
@@ -34,7 +30,6 @@ export default class VCFFeature implements Feature {
 
   private _id: string
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(args: { variant: any; parser: VCF; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
@@ -42,11 +37,10 @@ export default class VCFFeature implements Feature {
     this._id = args.id
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
     return field === 'samples'
       ? this.variant.SAMPLES
-      : this.data[field] || this.variant[field]
+      : (this.data[field] ?? this.variant[field])
   }
 
   set() {}
@@ -70,16 +64,16 @@ export default class VCFFeature implements Feature {
   dataFromVariant(variant: {
     REF: string
     POS: number
-    ALT: string[]
+    ALT?: string[]
     CHROM: string
-    INFO: any // eslint-disable-line @typescript-eslint/no-explicit-any
-    ID: string[]
+    INFO: any
+    ID?: string[]
   }): FeatureData {
     const { REF, ALT, POS, CHROM, INFO, ID } = variant
     const start = POS - 1
     const [type, description] = getSOTermAndDescription(REF, ALT, this.parser)
-    const isTRA = ALT?.some(f => f === '<TRA>')
-    const isSymbolic = ALT?.some(f => f.indexOf('<') !== -1)
+    const isTRA = ALT?.includes('<TRA>')
+    const isSymbolic = ALT?.some(f => f.includes('<'))
 
     return {
       refName: CHROM,
@@ -88,11 +82,10 @@ export default class VCFFeature implements Feature {
       description,
       type,
       name: ID?.join(','),
-      aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
+      aliases: ID && ID.length > 1 ? ID.slice(1) : undefined,
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): any {
     return {
       uniqueId: this._id,

@@ -1,3 +1,4 @@
+import React, { lazy } from 'react'
 import {
   addDisposer,
   cast,
@@ -9,11 +10,10 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-
-import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { saveAs } from 'file-saver'
 import { autorun, transaction } from 'mobx'
+
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -22,6 +22,9 @@ import {
   isSessionModelWithWidgets,
   minmax,
   measureText,
+  max,
+  localStorageGetItem,
+  getTickDisplayStr,
 } from '@jbrowse/core/util'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -30,25 +33,56 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 // locals
-import {
-  Dotplot1DView,
-  Dotplot1DViewModel,
-  DotplotHView,
-  DotplotVView,
-} from './1dview'
+import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
+import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 type Coord = [number, number]
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  filename?: string
+  Wrapper?: React.FC<{ children: React.ReactNode }>
+  themeName?: string
+}
+
+function stringLenPx(a: string) {
+  return measureText(a.slice(0, 30))
+}
+
+function pxWidthForBlocks(
+  blocks: BaseBlock[],
+  bpPerPx: number,
+  hide: Set<string>,
+) {
+  return max([
+    ...blocks.filter(b => !hide.has(b.key)).map(b => stringLenPx(b.refName)),
+    ...blocks
+      .filter(b => !hide.has(b.key))
+      .map(b => stringLenPx(getTickDisplayStr(b.end, bpPerPx))),
+  ])
+}
 
 /**
  * #stateModel DotplotView
+ * #category view
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pm: PluginManager) {
   return types
     .compose(
+      'DotplotView',
       BaseViewModel,
-      types.model('DotplotView', {
+      types.model({
         /**
          * #property
          */
@@ -101,10 +135,6 @@ export default function stateModelFactory(pm: PluginManager) {
          * #property
          */
         vview: types.optional(DotplotVView, {}),
-        /**
-         * #property
-         */
-        cursorMode: 'crosshair',
 
         /**
          * #property
@@ -125,6 +155,14 @@ export default function stateModelFactory(pm: PluginManager) {
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       volatileError: undefined as unknown,
+
+      // these are 'personal preferences', stored in volatile and
+      // loaded/written to localStorage
+      cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+      showPanButtons: Boolean(
+        JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
+      ),
+      wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
       borderX: 100,
       borderY: 100,
     }))
@@ -154,9 +192,8 @@ export default function stateModelFactory(pm: PluginManager) {
        * #getter
        */
       get assembliesInitialized() {
-        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        return assemblyNames.every(
+        return self.assemblyNames.every(
           n => assemblyManager.get(n)?.initialized ?? true,
         )
       },
@@ -222,17 +259,27 @@ export default function stateModelFactory(pm: PluginManager) {
        * #method
        */
       renderProps() {
+        const session = getSession(self)
         return {
           ...getParentRenderProps(self),
           drawCigar: self.drawCigar,
-          highResolutionScaling: getConf(
-            getSession(self),
-            'highResolutionScaling',
-          ),
+          highResolutionScaling: getConf(session, 'highResolutionScaling'),
         }
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setShowPanButtons(flag: boolean) {
+        self.showPanButtons = flag
+      },
+      /**
+       * #action
+       */
+      setWheelMode(str: string) {
+        self.wheelMode = str
+      },
       /**
        * #action
        */
@@ -291,24 +338,15 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the parent removeView
        */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
-       */
-      zoomOutButton() {
+      zoomOut() {
         self.hview.zoomOut()
         self.vview.zoomOut()
       },
       /**
        * #action
        */
-      zoomInButton() {
+      zoomIn() {
         self.hview.zoomIn()
         self.vview.zoomIn()
       },
@@ -317,15 +355,16 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const session: any = getSession(self)
-          const selector = session.addWidget(
-            'HierarchicalTrackSelectorWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showWidget(selector)
-          return selector
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -340,7 +379,7 @@ export default function stateModelFactory(pm: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${conf.type}`)
         }
-        const viewType = pm.getViewType(self.type)
+        const viewType = pm.getViewType(self.type)!
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
           viewType.displayTypes.find(type => type.name === d.type),
         )
@@ -365,19 +404,21 @@ export default function stateModelFactory(pm: PluginManager) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
       /**
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
-        // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
       /**
        * #action
@@ -413,13 +454,22 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        * zooms into clicked and dragged region
        */
-      zoomIn(mousedown: Coord, mouseup: Coord) {
+      zoomInToMouseCoords(mousedown: Coord, mouseup: Coord) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
           const [x1, x2, y1, y2] = result
           self.hview.moveTo(x1, x2)
           self.vview.moveTo(y2, y1)
         }
+      },
+      /**
+       * #action
+       */
+      showAllRegions() {
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+        self.vview.center()
+        self.hview.center()
       },
       /**
        * #action
@@ -460,8 +510,7 @@ export default function stateModelFactory(pm: PluginManager) {
             )
             .filter(f => !!f)
             .map(displayConf => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const trackConf = getParent<any>(displayConf, 2)
+              const trackConf = getParent<AnyConfigurationModel>(displayConf, 2)
               return {
                 type: trackConf.type,
                 configuration: trackConf,
@@ -497,46 +546,67 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
+        const html = await renderToSvg(self as DotplotViewModel, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(asm => {
-          session.removeTemporaryAssembly(asm)
-        })
+        for (const name in self.assemblyNames) {
+          session.removeTemporaryAssembly?.(name)
+        }
       },
       afterAttach() {
         addDisposer(
           self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { showPanButtons, wheelMode, cursorMode } = self
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
+              localStorage.setItem('dotplot-cursorMode', cursorMode)
+              localStorage.setItem('dotplot-wheelMode', wheelMode)
+            }
+          }),
+        )
+        addDisposer(
+          self,
           autorun(
-            function initializer() {
+            () => {
               const session = getSession(self)
-              if (self.volatileWidth === undefined) {
+
+              // don't operate if width not set yet
+              if (
+                self.volatileWidth === undefined ||
+                !self.assembliesInitialized
+              ) {
                 return
               }
 
-              if (self.initialized) {
+              // also don't operate if displayedRegions already set, this is a
+              // helper autorun to load regions from assembly
+              if (
+                self.hview.displayedRegions.length > 0 &&
+                self.vview.displayedRegions.length > 0
+              ) {
                 return
               }
-              const axis = [self.viewWidth, self.viewHeight]
+
               const views = [self.hview, self.vview]
-              self.assemblyNames.forEach((name, index) => {
-                const assembly = session.assemblyManager.get(name)
-                if (assembly) {
-                  if (assembly.error) {
-                    self.setError(assembly.error)
-                  }
-                  const { regions } = assembly
-                  if (regions && regions.length) {
-                    const regionsSnapshot = regions
-                    if (regionsSnapshot) {
-                      transaction(() => {
-                        const view = views[index]
-                        view.setDisplayedRegions(regionsSnapshot)
-                        view.setBpPerPx(view.totalBp / axis[index])
-                      })
-                    }
-                  }
-                }
+              transaction(() => {
+                self.assemblyNames.forEach((name, index) => {
+                  const assembly = session.assemblyManager.get(name)
+                  const view = views[index]!
+                  view.setDisplayedRegions(assembly?.regions || [])
+                })
+                self.showAllRegions()
               })
             },
             { delay: 1000 },
@@ -558,14 +628,9 @@ export default function stateModelFactory(pm: PluginManager) {
 
             const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
             const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
+            const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
+            const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
 
-            const len = (a: string) => measureText(a.slice(0, 30))
-            const by = hblocks
-              .filter(b => !hhide.has(b.key))
-              .reduce((a, b) => Math.max(a, len(b.refName)), 0)
-            const bx = vblocks
-              .filter(b => !vhide.has(b.key))
-              .reduce((a, b) => Math.max(a, len(b.refName)), 0)
             // these are set via autorun to avoid dependency cycle
             self.setBorderY(Math.max(by + padding, 50))
             self.setBorderX(Math.max(bx + padding, 50))
@@ -599,15 +664,6 @@ export default function stateModelFactory(pm: PluginManager) {
         vview.setBpPerPx(avg)
         vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
-      /**
-       * #action
-       */
-      showAllRegions() {
-        self.hview.zoomTo(self.hview.maxBpPerPx)
-        self.vview.zoomTo(self.vview.maxBpPerPx)
-        self.vview.center()
-        self.hview.center()
-      },
     }))
     .views(self => ({
       /**
@@ -628,17 +684,32 @@ export default function stateModelFactory(pm: PluginManager) {
           },
           {
             label: 'Square view - same bp per pixel',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Rectangular view - same total bp',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Show all regions',
-            onClick: () => self.showAllRegions(),
+            onClick: () => {
+              self.showAllRegions()
+            },
           },
-
+          {
+            label: 'Export SVG',
+            icon: PhotoCameraIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDialog,
+                { model: self, handleClose },
+              ])
+            },
+          },
           ...(isSessionModelWithWidgets(session)
             ? [
                 {
@@ -653,13 +724,13 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
-      get error() {
+      get error(): unknown {
         return self.volatileError || self.assemblyErrors
       },
     }))
 }
 
-export { Dotplot1DView }
-export type { Dotplot1DViewModel }
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
+
+export { type Dotplot1DViewModel, Dotplot1DView } from './1dview'

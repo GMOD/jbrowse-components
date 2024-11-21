@@ -1,90 +1,104 @@
-import React, { useEffect, useState } from 'react'
+import React, { lazy } from 'react'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
+import { getSession } from '@jbrowse/core/util'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 
 // icons
 import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
 
 // locals
 import BlockMsg from './BlockMsg'
 
-const useStyles = makeStyles()(theme => ({
-  loading: {
-    paddingLeft: '0.6em',
-    backgroundColor: theme.palette.action.disabledBackground,
-    backgroundImage:
-      'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-    height: '100%',
-    width: '100%',
-    pointerEvents: 'none',
-    textAlign: 'center',
-  },
-}))
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LoadingMessage = observer(({ model }: { model: any }) => {
-  // only show the loading message after 300ms to prevent excessive flickering
-  const [shown, setShown] = useState(false)
+const useStyles = makeStyles()(theme => {
+  const bg = theme.palette.action.disabledBackground
+  return {
+    loading: {
+      paddingLeft: '0.6em',
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+      textAlign: 'center',
+    },
+  }
+})
+
+const LoadingMessage = observer(({ model }: { model: { status?: string } }) => {
   const { classes } = useStyles()
-  useEffect(() => {
-    let killed = false
-    const timeout = setTimeout(() => {
-      if (!killed) {
-        setShown(true)
-      }
-    }, 300)
-    return () => {
-      clearTimeout(timeout)
-      killed = true
-    }
-  }, [])
-
   const { status: blockStatus } = model
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { message: displayStatus } = getParent<any>(model, 2)
+  const { message: displayStatus } = getParent<{ message?: string }>(model, 2)
   const status = displayStatus || blockStatus
   return (
-    <>
-      {shown ? (
-        <div className={classes.loading}>
-          <LoadingEllipses message={status} />
-        </div>
-      ) : null}
-    </>
+    <div className={classes.loading}>
+      <LoadingEllipses message={status} />
+    </div>
   )
 })
 
 const ServerSideRenderedBlockContent = observer(function ({
   model,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: any
+  model: {
+    error?: unknown
+    reload: () => void
+    message: React.ReactNode
+    filled?: boolean
+    status?: string
+    reactElement?: React.ReactElement
+  }
 }) {
   if (model.error) {
     return (
       <BlockMsg
         message={`${model.error}`}
         severity="error"
-        buttonText="reload"
-        icon={<RefreshIcon />}
-        action={model.reload}
+        action={
+          <>
+            <Tooltip title="Reload track">
+              <IconButton
+                data-testid="reload_button"
+                onClick={() => {
+                  model.reload()
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Show stack trace">
+              <IconButton
+                onClick={() => {
+                  getSession(model).queueDialog(onClose => [
+                    ErrorMessageStackTraceDialog,
+                    { onClose, error: model.error as Error },
+                  ])
+                }}
+              >
+                <ReportIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        }
       />
     )
-  }
-  if (model.message) {
+  } else if (model.message) {
     // the message can be a fully rendered react component, e.g. the region too large message
     return React.isValidElement(model.message) ? (
       model.message
     ) : (
       <BlockMsg message={`${model.message}`} severity="info" />
     )
-  }
-  if (!model.filled) {
+  } else if (!model.filled) {
     return <LoadingMessage model={model} />
+  } else {
+    return model.reactElement
   }
-  return model.reactElement
 })
 
 export default ServerSideRenderedBlockContent

@@ -1,0 +1,64 @@
+{
+  "name": "@jbrowse/web-core",
+  "version": "2.17.0",
+  "description": "JBrowse 2 code shared between web-app type products",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "bionode",
+    "biojs",
+    "genomics"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/web-core"
+  },
+  "author": "JBrowse Team",
+  "distMain": "dist/index.js",
+  "distModule": "esm/index.js",
+  "srcMain": "src/index.ts",
+  "srcModule": "src/index.ts",
+  "main": "src/index.ts",
+  "module": "",
+  "files": [
+    "dist",
+    "esm"
+  ],
+  "scripts": {
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build": "npm run build:esm && npm run build:commonjs",
+    "test": "cd ../..; jest --passWithNoTests packages/web-core",
+    "clean": "rimraf dist esm *.tsbuildinfo",
+    "prebuild": "yarn clean",
+    "prepack": "yarn build && yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.16.3",
+    "@jbrowse/app-core": "^2.17.0",
+    "@jbrowse/product-core": "^2.17.0",
+    "@mui/icons-material": "^6.0.0",
+    "@mui/material": "^6.0.0",
+    "clone": "^2.0.0",
+    "copy-to-clipboard": "^3.3.1"
+  },
+  "peerDependencies": {
+    "mobx": "^6.0.0",
+    "mobx-react": "^9.0.0",
+    "mobx-state-tree": "^5.0.0",
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0",
+    "rxjs": "^7.0.0",
+    "tss-react": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

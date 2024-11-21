@@ -37,7 +37,7 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   })
 
   const featuresArray2 = await firstValueFrom(features2.pipe(toArray()))
-  expect(featuresArray2[0].get('end')).toBe(50001)
+  expect(featuresArray2[0]!.get('end')).toBe(50001)
 
   const features3 = adapter.getFeatures({
     refName: 'ctgC',

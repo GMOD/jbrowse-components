@@ -13,8 +13,7 @@ function findCircleIntersectionX(
     resultArray.push([cx, y])
   }
   const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([cx - solution, y])
-  resultArray.push([cx + solution, y])
+  resultArray.push([cx - solution, y], [cx + solution, y])
 }
 
 function findCircleIntersectionY(
@@ -32,8 +31,7 @@ function findCircleIntersectionY(
     resultArray.push([x, cy])
   }
   const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([x, cy - solution])
-  resultArray.push([x, cy + solution])
+  resultArray.push([x, cy - solution], [x, cy + solution])
 }
 
 function cartesianToTheta(x: number, y: number) {
@@ -51,10 +49,10 @@ function cartesianToTheta(x: number, y: number) {
 export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
   if (rho === 0) {
-    return [0, 0]
+    return [0, 0] as const
   }
   const theta = cartesianToTheta(x, y)
-  return [rho, theta]
+  return [rho, theta] as const
 }
 
 const twoPi = 2 * Math.PI
@@ -114,10 +112,9 @@ export function viewportVisibleSection(
       [viewR, viewT],
       [viewL, viewB],
       [viewR, viewB],
-    ]
-    let maxRho = -Infinity
-    for (let i = 0; i < vertices.length; i += 1) {
-      const [x, y] = vertices[i]
+    ] as const
+    let maxRho = Number.NEGATIVE_INFINITY
+    for (const [x, y] of vertices) {
       const rho = Math.sqrt(x * x + y * y)
       if (rho > maxRho) {
         maxRho = rho
@@ -229,13 +226,12 @@ export function viewportVisibleSection(
   // viewportCenterTheta < Math.PI / 2 || viewportCenterTheta > 1.5 * Math.PI
   //   ? -1
   //   : 1
-  let rhoMin = Infinity
-  let rhoMax = -Infinity
-  let thetaMin = Infinity
-  let thetaMax = -Infinity
-  for (let i = 0; i < vertices.length; i += 1) {
+  let rhoMin = Number.POSITIVE_INFINITY
+  let rhoMax = Number.NEGATIVE_INFINITY
+  let thetaMin = Number.POSITIVE_INFINITY
+  let thetaMax = Number.NEGATIVE_INFINITY
+  for (const [vx, vy] of vertices) {
     // ignore vertex if outside the viewport
-    const [vx, vy] = vertices[i]
     if (vx >= viewL && vx <= viewR && vy >= viewT && vy <= viewB) {
       const [rho, theta] = cartesianToPolar(vx * reflect, vy * reflect)
       // ignore vertex if outside the circle

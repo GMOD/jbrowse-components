@@ -1,69 +1,32 @@
 import fs from 'fs'
 import yargs from 'yargs'
-import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
-import fetch, { Headers, Response, Request } from 'node-fetch'
-import { JSDOM } from 'jsdom'
-import { Image, createCanvas } from 'canvas'
 
 // locals
 import { standardizeArgv, parseArgv } from './parseArgv'
 import { renderRegion, Opts } from './renderRegion'
 import { convert } from './util'
+import setupEnv from './setupEnv'
 
-// @ts-ignore
-global.nodeImage = Image
-// @ts-ignore
-global.nodeCreateCanvas = createCanvas
-
-const { document } = new JSDOM(`...`).window
-global.document = document
-
-// force use of node-fetch polyfill, even if node 18+ fetch is available.
-// native node 18+ fetch currently gives errors related to unidici and
-// Uint8Array:
-//
-//
-// % node --version
-// v18.12.1
-//
-// % jb2export --fasta https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.fa --bam https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam --loc ctgA:1-1000 --out out4.svg
-// [
-//   '(node:1387934) ExperimentalWarning: The Fetch API is an experimental feature. This feature could change at any time\n' +
-//     '(Use `node --trace-warnings ...` to show where the warning was created)'
-// ]
-// [
-//   RangeError: offset is out of bounds
-//       at Uint8Array.set (<anonymous>)
-//       at Response.arrayBuffer (node:internal/deps/undici/undici:6117:23)
-//       at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-// ]
-
-// @ts-ignore
-global.fetch = fetch
-// @ts-ignore
-global.Headers = Headers
-// @ts-ignore
-global.Response = Response
-// @ts-ignore
-global.Request = Request
+setupEnv()
 
 const err = console.error
 console.error = (...p: unknown[]) => {
-  if (!`${p[0]}`.match('useLayoutEffect')) {
+  if (!/useLayoutEffect/.exec(`${p[0]}`)) {
     err(p)
   }
 }
 
 const warn = console.warn
 console.warn = (...p: unknown[]) => {
-  if (!`${p[0]}`.match('estimation reached timeout')) {
+  if (!/estimation reached timeout/.exec(`${p[0]}`)) {
     warn(p)
   }
 }
 
-// note: yargs is actually unused except for printing help
-// we do custom command line parsing, see parseArgv.ts
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
+// note: yargs is actually unused except for printing help we do custom command
+// line parsing, see parseArgv.ts
+//
+// eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-unused-expressions
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {

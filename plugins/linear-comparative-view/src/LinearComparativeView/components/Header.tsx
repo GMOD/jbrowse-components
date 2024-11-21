@@ -1,105 +1,115 @@
 import React, { useState } from 'react'
-import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
-import { makeStyles } from 'tss-react/mui'
-import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-import Menu from '@jbrowse/core/ui/Menu'
+import FormGroup from '@mui/material/FormGroup'
+import { makeStyles } from 'tss-react/mui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import SearchIcon from '@mui/icons-material/Search'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { LinearComparativeViewModel } from '../model'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import HeaderSearchBoxes from './HeaderSearchBoxes'
 
-type LCV = LinearComparativeViewModel
-
-const useStyles = makeStyles()(() => ({
-  headerBar: {
-    gridArea: '1/1/auto/span 2',
-    display: 'flex',
+const useStyles = makeStyles()({
+  inline: {
+    display: 'inline-flex',
   },
-  spacer: {
-    flexGrow: 1,
-  },
-  iconButton: {
-    margin: 5,
-  },
-  bp: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  searchContainer: {
-    marginLeft: 5,
-  },
-  searchBox: {
-    display: 'flex',
-  },
-}))
-
-const TrackSelector = observer(({ model }: { model: LCV }) => {
-  return (
-    <IconButton
-      onClick={model.activateTrackSelector}
-      title="Open track selector"
-    >
-      <TrackSelectorIcon color="primary" />
-    </IconButton>
-  )
 })
 
-const Header = observer(function ({ model }: { model: LCV }) {
+const Header = observer(function ({
+  model,
+}: {
+  model: LinearComparativeViewModel
+}) {
   const { classes } = useStyles()
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>()
-  const anyShowHeaders = model.views.some(view => !view.hideHeader)
+  const { views } = model
+  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
+  const [sideBySide, setSideBySide] = useState(views.length <= 3)
   return (
-    <div className={classes.headerBar}>
-      <TrackSelector model={model} />
+    <FormGroup row>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Synteny track selectors',
+            type: 'subMenu',
+            subMenu: views.slice(0, -1).map((_, idx) => ({
+              label: `Row ${idx + 1}->${idx + 2} (${views[idx]!.assemblyNames.join(',')}->${views[idx + 1]!.assemblyNames.join(',')})`,
+              onClick: () => {
+                model.activateTrackSelector(idx)
+              },
+            })),
+          },
 
-      <IconButton
-        onClick={event => setMenuAnchorEl(event.currentTarget)}
-        className={classes.iconButton}
-        color="secondary"
+          {
+            label: 'Row track selectors',
+            type: 'subMenu',
+            subMenu: views.map((view, idx) => ({
+              label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
+              onClick: () => view.activateTrackSelector(),
+            })),
+          },
+        ]}
+      >
+        <TrackSelectorIcon />
+      </CascadingMenuButton>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Row view menus',
+            type: 'subMenu',
+            subMenu: views.map((view, idx) => ({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuItems(),
+            })),
+          },
+          ...model.headerMenuItems(),
+        ]}
       >
         <MoreVertIcon />
-      </IconButton>
-      {!anyShowHeaders
-        ? model.views.map(view => (
-            <div key={view.id} className={classes.searchBox}>
-              <div className={classes.searchContainer}>
-                <SearchBox model={view} showHelp={false} />
-              </div>
-              <div className={classes.bp}>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  className={classes.bp}
-                >
-                  {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
-                </Typography>
-              </div>
-            </div>
-          ))
-        : null}
+      </CascadingMenuButton>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Show search boxes',
+            type: 'checkbox',
+            checked: showSearchBoxes,
+            onClick: () => {
+              setShowSearchBoxes(!showSearchBoxes)
+            },
+          },
 
-      <div className={classes.spacer} />
+          {
+            label: 'Orientation - Side-by-side',
+            type: 'radio',
+            checked: sideBySide,
+            onClick: () => {
+              setSideBySide(!sideBySide)
+            },
+          },
+          {
+            label: 'Orientation - Vertical',
+            type: 'radio',
+            checked: !sideBySide,
+            onClick: () => {
+              setSideBySide(!sideBySide)
+            },
+          },
+        ]}
+      >
+        <SearchIcon />
+      </CascadingMenuButton>
 
-      {menuAnchorEl ? (
-        <Menu
-          anchorEl={menuAnchorEl}
-          open
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMenuAnchorEl(undefined)
-          }}
-          menuItems={model.headerMenuItems()}
-          onClose={() => setMenuAnchorEl(undefined)}
-        />
+      {showSearchBoxes ? (
+        <span className={sideBySide ? classes.inline : undefined}>
+          {views.map(view => (
+            <HeaderSearchBoxes key={view.id} view={view} />
+          ))}
+        </span>
       ) : null}
-    </div>
+    </FormGroup>
   )
 })
-
 export default Header

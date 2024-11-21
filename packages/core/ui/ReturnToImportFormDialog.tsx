@@ -6,11 +6,11 @@ import DialogContent from '@mui/material/DialogContent'
 import Typography from '@mui/material/Typography'
 import Dialog from './Dialog'
 
-function ReturnToImportFormDialog({
+const ReturnToImportFormDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: { clearView: Function }
+  model: { clearView: () => void }
   handleClose: () => void
 }) {
   return (
@@ -34,7 +34,9 @@ function ReturnToImportFormDialog({
           OK
         </Button>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           color="secondary"
           variant="contained"
         >
@@ -43,6 +45,6 @@ function ReturnToImportFormDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(ReturnToImportFormDialog)
+export default ReturnToImportFormDialog

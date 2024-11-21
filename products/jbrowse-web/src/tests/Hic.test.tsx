@@ -1,5 +1,4 @@
 import { fireEvent } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import {
   setup,
@@ -15,13 +14,12 @@ beforeEach(() => {
   doBeforeEach(url => require.resolve(`../../../../extra_test_data/${url}`))
 })
 
-expect.extend({ toMatchImageSnapshot })
 setup()
 
 const delay = { timeout: 20000 }
 
 test('hic', async () => {
-  const { view, findByTestId } = createView(hicConfig)
+  const { view, findByTestId } = await createView(hicConfig)
 
   view.setNewView(5000, 0)
   fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))

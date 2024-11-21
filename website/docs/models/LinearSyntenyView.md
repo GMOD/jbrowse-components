@@ -1,7 +1,6 @@
 ---
 id: linearsyntenyview
 title: LinearSyntenyView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,9 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
 
-extends the `LinearComparativeView` base model
+[plugins/linear-comparative-view/src/LinearSyntenyView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts)
+
+extends
+
+- [LinearComparativeView](../linearcomparativeview)
 
 ### LinearSyntenyView - Properties
 
@@ -54,6 +57,13 @@ overwhelming
 headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
+#### method: menuItems
+
+```js
+// type signature
+menuItems: () => MenuItem[]
+```
+
 ### LinearSyntenyView - Actions
 
 #### action: toggleCurves
@@ -75,4 +85,11 @@ toggleCIGAR: () => void
 ```js
 // type signature
 showAllRegions: () => void
+```
+
+#### action: exportSvg
+
+```js
+// type signature
+exportSvg: (opts: ExportSvgOptions) => Promise<void>
 ```

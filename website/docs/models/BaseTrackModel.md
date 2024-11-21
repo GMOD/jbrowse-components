@@ -1,7 +1,6 @@
 ---
 id: basetrackmodel
 title: BaseTrackModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,7 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Docs
+### Source file
+
+[packages/core/pluggableElementTypes/models/BaseTrackModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
 
 these MST models only exist for tracks that are _shown_. they should contain
 only UI state for the track, and have a reference to a track configuration. note
@@ -39,7 +40,7 @@ type: types.literal(trackType)
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(baseTrackConfig)
 ```
@@ -105,7 +106,7 @@ MenuItem[]
 
 ```js
 // type
-any
+boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)
 ```
 
 ### BaseTrackModel - Methods
@@ -124,13 +125,6 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```js
 // type signature
 setMinimized: (flag: boolean) => void
-```
-
-#### action: activateConfigurationUI
-
-```js
-// type signature
-activateConfigurationUI: () => void
 ```
 
 #### action: showDisplay

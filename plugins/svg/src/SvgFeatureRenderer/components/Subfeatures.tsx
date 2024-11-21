@@ -13,36 +13,33 @@ import {
   layOutFeature,
 } from './util'
 
-function Subfeatures(props: {
+const Subfeatures = observer(function Subfeatures(props: {
   feature: Feature
   featureLayout: SceneGraph
   selected?: boolean
 }) {
   const { feature, featureLayout, selected } = props
 
-  return (
-    <>
-      {feature.get('subfeatures')?.map(subfeature => {
-        const subfeatureId = String(subfeature.id())
-        const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-        if (!subfeatureLayout) {
-          return null
-        }
-        const { GlyphComponent } = subfeatureLayout.data || {}
-        return (
-          <GlyphComponent
-            key={`glyph-${subfeatureId}`}
-            {...props}
-            feature={subfeature}
-            featureLayout={subfeatureLayout}
-            selected={selected}
-          />
-        )
-      })}
-    </>
-  )
-}
+  return feature.get('subfeatures')?.map(subfeature => {
+    const subfeatureId = String(subfeature.id())
+    const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
+    if (!subfeatureLayout) {
+      return null
+    }
+    const { GlyphComponent } = subfeatureLayout.data || {}
+    return (
+      <GlyphComponent
+        key={`glyph-${subfeatureId}`}
+        {...props}
+        feature={subfeature}
+        featureLayout={subfeatureLayout}
+        selected={selected}
+      />
+    )
+  })
+})
 
+// @ts-expect-error
 Subfeatures.layOut = ({
   layout,
   feature,
@@ -70,10 +67,11 @@ Subfeatures.layOut = ({
   if (displayMode !== 'reducedRepresentation') {
     let topOffset = 0
     feature.get('subfeatures')?.forEach(subfeature => {
-      const SubfeatureGlyphComponent = chooseGlyphComponent(
-        subfeature,
+      const SubfeatureGlyphComponent = chooseGlyphComponent({
+        feature: subfeature,
         extraGlyphs,
-      )
+        config,
+      })
       const subfeatureHeight = readConfObject(config, 'height', {
         feature: subfeature,
       }) as number
@@ -98,4 +96,4 @@ Subfeatures.layOut = ({
   return subLayout
 }
 
-export default observer(Subfeatures)
+export default Subfeatures

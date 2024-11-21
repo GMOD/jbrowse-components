@@ -1,7 +1,6 @@
 ---
 id: plugin_store
 title: Plugin store
-toplevel: true
 ---
 
 import Figure from '../figure'

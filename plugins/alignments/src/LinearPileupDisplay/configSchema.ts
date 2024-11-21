@@ -9,7 +9,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 function configSchemaF(pluginManager: PluginManager) {
-  // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearPileupDisplay',
     {
@@ -26,7 +25,7 @@ function configSchemaF(pluginManager: PluginManager) {
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer:
-          pluginManager.getRendererType('PileupRenderer').configSchema,
+          pluginManager.getRendererType('PileupRenderer')!.configSchema,
       }),
       /**
        * #slot

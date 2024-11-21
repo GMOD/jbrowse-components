@@ -6,18 +6,18 @@ import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { Source } from './util'
 
-function WiggleRendering(props: {
+const MultiWiggleRendering = observer(function (props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number
   width: number
   height: number
-  onMouseLeave: Function
-  onMouseMove: Function
-  onFeatureClick: Function
   blockKey: string
   sources: Source[]
-  displayModel: { isMultiRow: boolean }
+  displayModel?: { isMultiRow: boolean }
+  onMouseLeave?: (event: React.MouseEvent) => void
+  onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
+  onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
   const {
     regions,
@@ -31,8 +31,9 @@ function WiggleRendering(props: {
     onFeatureClick = () => {},
     displayModel,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
+  const { isMultiRow } = displayModel || {}
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     if (!ref.current) {
@@ -47,8 +48,8 @@ function WiggleRendering(props: {
     }
     const px = region.reversed ? width - offsetX : offsetX
     const mouseoverBp = region.start + bpPerPx * px
-    let featureUnderMouse
-    if (displayModel.isMultiRow) {
+    let featureUnderMouse: Feature | undefined
+    if (isMultiRow) {
       for (const feature of features.values()) {
         if (feature.get('source') !== source.name) {
           continue
@@ -97,20 +98,18 @@ function WiggleRendering(props: {
     <div
       ref={ref}
       onMouseMove={event => {
-        const featureUnderMouse = getFeatureUnderMouse(
-          event.clientX,
-          event.clientY,
-        )
+        const { clientX, clientY } = event
+        const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
         onMouseMove(event, featureUnderMouse)
       }}
       onClick={event => {
-        const featureUnderMouse = getFeatureUnderMouse(
-          event.clientX,
-          event.clientY,
-        )
+        const { clientX, clientY } = event
+        const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
         onFeatureClick(event, featureUnderMouse)
       }}
-      onMouseLeave={event => onMouseLeave(event)}
+      onMouseLeave={event => {
+        onMouseLeave(event)
+      }}
       style={{
         overflow: 'visible',
         position: 'relative',
@@ -120,6 +119,6 @@ function WiggleRendering(props: {
       <PrerenderedCanvas {...props} />
     </div>
   )
-}
+})
 
-export default observer(WiggleRendering)
+export default MultiWiggleRendering

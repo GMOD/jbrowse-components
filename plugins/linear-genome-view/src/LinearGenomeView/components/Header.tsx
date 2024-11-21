@@ -1,6 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import FormGroup from '@mui/material/FormGroup'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/system/colorManipulator'
@@ -13,20 +14,15 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
-import {
-  LinearGenomeViewModel,
-  WIDGET_HEIGHT,
-  SPACING,
-  HEADER_BAR_HEIGHT,
-} from '..'
+import { LinearGenomeViewModel } from '..'
 import OverviewScalebar from './OverviewScalebar'
 import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
+import { SPACING } from '../consts'
 
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   headerBar: {
-    height: HEADER_BAR_HEIGHT,
     display: 'flex',
   },
   headerForm: {
@@ -39,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
 
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
-    height: WIDGET_HEIGHT,
+    color: theme.palette.text.primary,
     margin: SPACING,
   },
   bp: {
@@ -50,7 +46,7 @@ const useStyles = makeStyles()(theme => ({
   toggleButton: {
     height: 44,
     border: 'none',
-    margin: theme.spacing(0.5),
+    marginLeft: theme.spacing(4),
   },
   buttonSpacer: {
     marginRight: theme.spacing(2),
@@ -60,15 +56,14 @@ const useStyles = makeStyles()(theme => ({
 const HeaderButtons = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
   return (
-    <Button
+    <IconButton
       onClick={model.activateTrackSelector}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
-      color="secondary"
     >
       <TrackSelectorIcon className={classes.buttonSpacer} />
-    </Button>
+    </IconButton>
   )
 })
 
@@ -79,14 +74,18 @@ function PanControls({ model }: { model: LGV }) {
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(-0.9)}
+        onClick={() => {
+          model.slide(-0.9)
+        }}
       >
         <ArrowBackIcon />
       </Button>
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(0.9)}
+        onClick={() => {
+          model.slide(0.9)
+        }}
       >
         <ArrowForwardIcon />
       </Button>
@@ -94,7 +93,7 @@ function PanControls({ model }: { model: LGV }) {
   )
 }
 
-const RegionWidth = observer(({ model }: { model: LGV }) => {
+const RegionWidth = observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const { coarseTotalBp } = model
   return (
@@ -121,9 +120,10 @@ const Controls = ({ model }: { model: LGV }) => {
   )
 }
 
-const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
-  return !model.hideHeader ? (
-    model.hideHeaderOverview ? (
+const LinearGenomeViewHeader = observer(function ({ model }: { model: LGV }) {
+  const { hideHeader, hideHeaderOverview } = model
+  return !hideHeader ? (
+    hideHeaderOverview ? (
       <Controls model={model} />
     ) : (
       <OverviewScalebar model={model}>

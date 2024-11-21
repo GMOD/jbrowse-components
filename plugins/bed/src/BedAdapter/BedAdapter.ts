@@ -5,14 +5,16 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Region, Feature } from '@jbrowse/core/util'
-import { featureData } from '../util'
+import {
+  Region,
+  Feature,
+  fetchAndMaybeUnzip,
+  SimpleFeature,
+} from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
-import { unzip } from '@gmod/bgzf-filehandle'
 
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+// locals
+import { featureData } from '../util'
 
 export default class BedAdapter extends BaseFeatureDataAdapter {
   protected bedFeatures?: Promise<{
@@ -26,17 +28,17 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     colEnd: number
   }>
 
-  protected intervalTrees: {
-    [key: string]: Promise<IntervalTree | undefined> | undefined
-  } = {}
+  protected intervalTrees: Record<
+    string,
+    Promise<IntervalTree | undefined> | undefined
+  > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts: BaseOptions = {}) {
     const pm = this.pluginManager
     const bedLoc = this.getConf('bedLocation')
-    const buf = await openLocation(bedLoc, pm).readFile(opts)
-    const buffer = isGzip(buf) ? await unzip(buf) : buf
+    const buffer = await fetchAndMaybeUnzip(openLocation(bedLoc, pm), opts)
     // 512MB  max chrome string length is 512MB
     if (buffer.length > 536_870_888) {
       throw new Error('Data exceeds maximum string length (512MB)')
@@ -45,13 +47,13 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
     const headerLines = []
     let i = 0
-    for (; i < lines.length && lines[i].startsWith('#'); i++) {
+    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
     const features = {} as Record<string, string[]>
     for (; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i]!
       const tab = line.indexOf('\t')
       const refName = line.slice(0, tab)
       if (!features[refName]) {
@@ -80,9 +82,9 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  private async loadData(opts: BaseOptions = {}) {
+  async loadData(opts: BaseOptions = {}) {
     if (!this.bedFeatures) {
-      this.bedFeatures = this.loadDataP(opts).catch(e => {
+      this.bedFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.bedFeatures = undefined
         throw e
       })
@@ -107,7 +109,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       return columnNames
     }
     const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs[defs.length - 1]
+    const defline = defs.at(-1)
     return defline?.includes('\t')
       ? defline
           .slice(1)
@@ -126,32 +128,32 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
-    const ret = lines.map((f, i) => {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]!
       const uniqueId = `${this.id}-${refName}-${i}`
-      return featureData(
-        f,
-        colRef,
-        colStart,
-        colEnd,
-        scoreColumn,
-        parser,
-        uniqueId,
-        names,
+      const feat = new SimpleFeature(
+        featureData({
+          line,
+          colRef,
+          colStart,
+          colEnd,
+          scoreColumn,
+          parser,
+          uniqueId,
+          names,
+        }),
       )
-    })
-
-    for (let i = 0; i < ret.length; i++) {
-      const obj = ret[i]
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+      intervalTree.insert([feat.get('start'), feat.get('end')], feat)
     }
+
     return intervalTree
   }
 
-  private async loadFeatureIntervalTree(refName: string) {
+  async loadFeatureIntervalTree(refName: string) {
     if (!this.intervalTrees[refName]) {
       this.intervalTrees[refName] = this.loadFeatureIntervalTreeHelper(
         refName,
-      ).catch(e => {
+      ).catch((e: unknown) => {
         this.intervalTrees[refName] = undefined
         throw e
       })
@@ -163,9 +165,11 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => observer.next(f))
+      intervalTree?.search([start, end]).forEach(f => {
+        observer.next(f)
+      })
       observer.complete()
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   public freeResources(): void {}

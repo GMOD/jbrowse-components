@@ -17,12 +17,14 @@ const ConfirmDialog = ({
   tracks: AnyConfigurationModel[]
   onClose: (arg: boolean, arg1?: { name: string }) => void
 }) => {
-  const [val, setVal] = useState('MultiWiggle ' + Date.now())
+  const [val, setVal] = useState(`MultiWiggle ${Date.now()}`)
   const allQuant = tracks.every(t => t.type === 'QuantitativeTrack')
   return (
     <Dialog
       open
-      onClose={() => onClose(false)}
+      onClose={() => {
+        onClose(false)
+      }}
       title="Confirm multi-wiggle track create"
     >
       <DialogContent>
@@ -41,17 +43,26 @@ const ConfirmDialog = ({
         </ul>
         <TextField
           value={val}
-          onChange={event => setVal(event.target.value)}
+          onChange={event => {
+            setVal(event.target.value)
+          }}
           helperText="Track name"
         />
         <Typography>Confirm creation of track?</Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
+        <Button
+          onClick={() => {
+            onClose(false)
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button
-          onClick={() => onClose(true, { name: val })}
+          onClick={() => {
+            onClose(true, { name: val })
+          }}
           color="primary"
           variant="contained"
           autoFocus

@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "es2018",
+    "module": "commonjs",
+    "composite": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.json" },
+    { "path": "../../plugins/circular-view/tsconfig.build.commonjs.json" },
+    { "path": "../../plugins/config/tsconfig.build.commonjs.json" },
+    { "path": "../../plugins/data-management/tsconfig.build.commonjs.json" },
+    { "path": "../../plugins/sequence/tsconfig.build.commonjs.json" },
+    { "path": "../../plugins/variants/tsconfig.build.commonjs.json" },
+    { "path": "../../plugins/wiggle/tsconfig.build.commonjs.json" }
+  ]
+}

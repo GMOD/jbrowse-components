@@ -1,17 +1,20 @@
 import React from 'react'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { Feature, Region } from '@jbrowse/core/util'
+
+// locals
 import Box from './Box'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
-import { Region } from '@jbrowse/core/util'
 
 export interface Glyph
   extends React.FC<{
-    children: React.ReactNode
+    colorByCDS: boolean
     feature: Feature
     featureLayout: SceneGraph
     selected?: boolean
@@ -21,7 +24,7 @@ export interface Glyph
     topLevel?: boolean
     [key: string]: unknown
   }> {
-  layOut?: Function
+  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 
 type LayoutRecord = [number, number, number, number]
@@ -43,46 +46,53 @@ export interface ExtraGlyphValidator {
   validator: (feature: Feature) => boolean
 }
 
-export function chooseGlyphComponent(
-  feature: Feature,
-  extraGlyphs?: ExtraGlyphValidator[],
-): Glyph {
+export function chooseGlyphComponent({
+  feature,
+  extraGlyphs,
+  config,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  extraGlyphs?: ExtraGlyphValidator[]
+}): Glyph {
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
+  const transcriptTypes = readConfObject(config, 'transcriptTypes')
+  const containerTypes = readConfObject(config, 'containerTypes')
 
-  if (subfeatures && type !== 'CDS') {
-    const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
-    if (
-      ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
-      subfeatures.find(f => f.get('type') === 'CDS')
-    ) {
+  if (subfeatures?.length && type !== 'CDS') {
+    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
+    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
+    if (transcriptTypes.includes(type) && hasCDS) {
       return ProcessedTranscript
-    } else if (!feature.parent() && hasSubSub) {
-      // only do sub-sub on parent level features like gene
+    } else if (
+      (!feature.parent() && hasSubSub) ||
+      containerTypes.includes(type)
+    ) {
       return Subfeatures
     } else {
       return Segments
     }
+  } else {
+    return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
   }
-
-  return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
 }
 
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  reversed: boolean
+  reversed?: boolean
   config: AnyConfigurationModel
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
   feature: Feature
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 export function layOut({
@@ -115,13 +125,17 @@ export function layOut({
   return subLayout
 }
 
-export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
+export function layOutFeature(args: FeatureLayOutArgs) {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Box
-      : chooseGlyphComponent(feature, extraGlyphs)
+      : chooseGlyphComponent({
+          feature,
+          extraGlyphs,
+          config,
+        })
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
@@ -134,7 +148,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0
-  const subLayout = layout.addChild(
+  return layout.addChild(
     String(feature.id()),
     x,
     displayMode === 'collapse' ? 0 : top,
@@ -142,13 +156,12 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     displayMode === 'compact' ? height / 2 : height,
     { GlyphComponent },
   )
-  return subLayout
 }
 
-export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
+export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   subfeatures.forEach(feature => {
-    ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
+    ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
       layout,
       feature,
       bpPerPx,
@@ -159,7 +172,7 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
   })
 }
 
-export function isUTR(feature: Feature): boolean {
+export function isUTR(feature: Feature) {
   return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
     feature.get('type') || '',
   )

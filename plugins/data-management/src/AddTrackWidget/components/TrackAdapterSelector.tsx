@@ -20,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
 // key: category
 // value: array of adapters with that category
 function categorizeAdapters(adaptersList: AdapterType[]) {
-  const map = {} as { [key: string]: AdapterType[] }
+  const map = {} as Record<string, AdapterType[]>
   adaptersList.forEach(adapter => {
     const key = adapter.adapterMetadata?.category || 'Default'
     if (!map[key]) {
@@ -44,10 +44,14 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       helperText="Select an adapter type"
       select
       fullWidth
-      onChange={event => model.setAdapterHint(event.target.value)}
-      SelectProps={{
-        // @ts-ignore
-        SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+      onChange={event => {
+        model.setAdapterHint(event.target.value)
+      }}
+      slotProps={{
+        select: {
+          // @ts-expect-error
+          SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+        },
       }}
     >
       {Object.entries(
@@ -60,7 +64,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
         // returning array avoids needing to use a react fragment which
         // Select/TextField sub-elements disagree with
         return [
-          <ListSubheader>{key}</ListSubheader>,
+          <ListSubheader key={key}>{key}</ListSubheader>,
           val.map(elt => (
             <MenuItem key={elt.name} value={elt.name}>
               {elt.displayName}

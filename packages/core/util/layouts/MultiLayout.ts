@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseLayout, SerializedLayout } from './BaseLayout'
 
 export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
-  subLayouts: Map<string, SUB_LAYOUT_CLASS> = new Map()
+  subLayouts = new Map<string, SUB_LAYOUT_CLASS>()
 
   /**
    * layout class that just keeps a number of named sub-layouts.
@@ -16,7 +15,7 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
 
   getDataByID(id: string): unknown {
     for (const layout of this.subLayouts.values()) {
-      // @ts-ignore
+      // @ts-expect-error
       const r = layout.getDataByID(id)
       if (r) {
         return r

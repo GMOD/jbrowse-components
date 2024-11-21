@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import {
   isModelType,
   isType,
@@ -37,8 +38,8 @@ import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'
 import { PluginDefinition } from './PluginLoader'
 
-/** little helper class that keeps groups of callbacks that are
-then run in a specified order by group */
+// helper class that keeps groups of callbacks that are then run in a specified
+// order by group
 class PhasedScheduler<PhaseName extends string> {
   phaseCallbacks = new Map<PhaseName, Function[]>()
 
@@ -82,12 +83,12 @@ type PluggableElementTypeGroup =
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
-  registeredTypes: { [name: string]: ElementClass } = {}
+  registeredTypes: Record<string, ElementClass> = {}
 
   constructor(
     public typeName: string,
-    public baseClass: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    | { new (...args: any[]): ElementClass }
+    public baseClass:
+      | (new (...args: unknown[]) => ElementClass)
       // covers abstract class case
       | (Function & {
           prototype: ElementClass
@@ -116,15 +117,14 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any) => any
 
 /**
- * free-form string-to-unknown mapping of metadata related to the instance
- * of this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
- * loaded as part of the "core" set of plugins for this application.
- * Can also use this metadata to stash other things about why the plugin is
- * loaded, such as where it came from, what plugin depends on it, etc.
+ * free-form string-to-unknown mapping of metadata related to the instance of
+ * this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
+ * loaded as part of the "core" set of plugins for this application. Can also
+ * use this metadata to stash other things about why the plugin is loaded, such
+ * as where it came from, what plugin depends on it, etc.
  */
 export type PluginMetadata = Record<string, unknown>
 
@@ -139,8 +139,7 @@ export interface RuntimePluginLoadRecord extends PluginLoadRecord {
 export default class PluginManager {
   plugins: Plugin[] = []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jexl: any = createJexlInstance()
+  jexl = createJexlInstance()
 
   pluginMetadata: Record<string, PluginMetadata> = {}
 
@@ -192,11 +191,16 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
-  extensionPoints: Map<string, Function[]> = new Map()
+  extensionPoints = new Map<string, Function[]>()
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
-    this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
+    this.addPlugin({
+      plugin: new CorePlugin(),
+      metadata: {
+        isCore: true,
+      },
+    })
 
     // add all the initial plugins
     initialPlugins.forEach(plugin => {
@@ -205,7 +209,7 @@ export default class PluginManager {
   }
 
   pluginConfigurationSchemas() {
-    const configurationSchemas: { [key: string]: unknown } = {}
+    const configurationSchemas: Record<string, unknown> = {}
     this.plugins.forEach(plugin => {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema
@@ -232,8 +236,7 @@ export default class PluginManager {
 
     this.pluginMetadata[plugin.name] = metadata
     if ('definition' in load) {
-      // @ts-ignore
-      this.runtimePluginDefinitions.push(load.definition as PluginDefinition)
+      this.runtimePluginDefinitions.push(load.definition)
     }
     plugin.install(this)
     this.plugins.push(plugin)
@@ -253,7 +256,7 @@ export default class PluginManager {
     // see elementCreationSchedule above for the creation order
     if (this.elementCreationSchedule) {
       this.elementCreationSchedule.run()
-      delete this.elementCreationSchedule
+      this.elementCreationSchedule = undefined
     }
     return this
   }
@@ -267,7 +270,9 @@ export default class PluginManager {
       throw new Error('already configured')
     }
 
-    this.plugins.forEach(plugin => plugin.configure(this))
+    this.plugins.forEach(plugin => {
+      plugin.configure(this)
+    })
 
     this.configured = true
 
@@ -348,8 +353,16 @@ export default class PluginManager {
     return this.getElementTypeRecord(groupName).all()
   }
 
+  getViewElements() {
+    return this.getElementTypesInGroup('view') as ViewType[]
+  }
+
   getTrackElements() {
     return this.getElementTypesInGroup('track') as TrackType[]
+  }
+
+  getConnectionElements() {
+    return this.getElementTypesInGroup('connection') as ConnectionType[]
   }
 
   getAddTrackWorkflowElements() {
@@ -378,7 +391,7 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(groupName)
       .all()
-      // @ts-ignore
+      // @ts-expect-error
       .map(t => t[fieldName])
       .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
@@ -400,7 +413,7 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      // @ts-ignore
+      // @ts-expect-error
       .map(t => t[fieldName])
       .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
 
@@ -429,10 +442,10 @@ export default class PluginManager {
    */
   jbrequire = (
     lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!pack) {
         throw new TypeError(
           `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
@@ -445,6 +458,7 @@ export default class PluginManager {
       return this.load(lib)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (lib.default) {
       return this.jbrequire(lib.default)
     }
@@ -454,7 +468,7 @@ export default class PluginManager {
     )
   }
 
-  getRendererType(typeName: string): RendererType {
+  getRendererType(typeName: string) {
     return this.rendererTypes.get(typeName)
   }
 
@@ -462,43 +476,43 @@ export default class PluginManager {
     return this.rendererTypes.all()
   }
 
-  getAdapterType(typeName: string): AdapterType {
+  getAdapterType(typeName: string) {
     return this.adapterTypes.get(typeName)
   }
 
-  getTextSearchAdapterType(typeName: string): TextSearchAdapterType {
+  getTextSearchAdapterType(typeName: string) {
     return this.textSearchAdapterTypes.get(typeName)
   }
 
-  getTrackType(typeName: string): TrackType {
+  getTrackType(typeName: string) {
     return this.trackTypes.get(typeName)
   }
 
-  getDisplayType(typeName: string): DisplayType {
+  getDisplayType(typeName: string) {
     return this.displayTypes.get(typeName)
   }
 
-  getViewType(typeName: string): ViewType {
+  getViewType(typeName: string) {
     return this.viewTypes.get(typeName)
   }
 
-  getAddTrackWorkflow(typeName: string): AddTrackWorkflowType {
+  getAddTrackWorkflow(typeName: string) {
     return this.addTrackWidgets.get(typeName)
   }
 
-  getWidgetType(typeName: string): WidgetType {
+  getWidgetType(typeName: string) {
     return this.widgetTypes.get(typeName)
   }
 
-  getConnectionType(typeName: string): ConnectionType {
+  getConnectionType(typeName: string) {
     return this.connectionTypes.get(typeName)
   }
 
-  getRpcMethodType(methodName: string): RpcMethodType {
+  getRpcMethodType(methodName: string) {
     return this.rpcMethods.get(methodName)
   }
 
-  getInternetAccountType(name: string): InternetAccountType {
+  getInternetAccountType(name: string) {
     return this.internetAccountTypes.get(name)
   }
 

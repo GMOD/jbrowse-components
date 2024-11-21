@@ -1,7 +1,26 @@
-import { doesIntersect2, Feature } from '@jbrowse/core/util'
+import React from 'react'
+import {
+  assembleLocString,
+  doesIntersect2,
+  getSession,
+  isSessionModelWithWidgets,
+  Feature,
+  getContainingTrack,
+  getContainingView,
+} from '@jbrowse/core/util'
+
+// locals
+import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
+import { LinearSyntenyDisplayModel } from '../model'
 
 interface Pos {
   offsetPx: number
+}
+
+export interface ClickCoord {
+  clientX: number
+  clientY: number
+  feature: { f: Feature }
 }
 
 interface FeatPos {
@@ -17,6 +36,7 @@ export function drawMatchSimple({
   feature,
   ctx,
   offsets,
+  level,
   cb,
   height,
   drawCurves,
@@ -27,6 +47,7 @@ export function drawMatchSimple({
   feature: FeatPos
   ctx: CanvasRenderingContext2D
   offsets: number[]
+  level: number
   oobLimit: number
   viewWidth: number
   cb: (ctx: CanvasRenderingContext2D) => void
@@ -36,10 +57,10 @@ export function drawMatchSimple({
 }) {
   const { p11, p12, p21, p22 } = feature
 
-  const x11 = p11.offsetPx - offsets[0]
-  const x12 = p12.offsetPx - offsets[0]
-  const x21 = p21.offsetPx - offsets[1]
-  const x22 = p22.offsetPx - offsets[1]
+  const x11 = p11.offsetPx - offsets[level]!
+  const x12 = p12.offsetPx - offsets[level]!
+  const x21 = p21.offsetPx - offsets[level + 1]!
+  const x22 = p22.offsetPx - offsets[level + 1]!
 
   const l1 = Math.abs(x12 - x11)
   const l2 = Math.abs(x22 - x21)
@@ -107,7 +128,6 @@ export function drawBox(
   ctx.lineTo(x3, y2)
   ctx.lineTo(x4, y2)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function drawBezierBox(
@@ -138,5 +158,126 @@ export function drawBezierBox(
   ctx.lineTo(x4, y2)
   ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
   ctx.closePath()
-  ctx.fill()
+}
+
+export function onSynClick(
+  event: React.MouseEvent,
+  model: LinearSyntenyDisplayModel,
+) {
+  const view = getContainingView(model)
+  const track = getContainingTrack(model)
+  const {
+    featPositions,
+    numFeats,
+    clickMapCanvas: ref1,
+    cigarClickMapCanvas: ref2,
+    level,
+  } = model
+  if (!ref1 || !ref2) {
+    return
+  }
+  const rect = ref1.getBoundingClientRect()
+  const ctx1 = ref1.getContext('2d')
+  const ctx2 = ref2.getContext('2d')
+  if (!ctx1 || !ctx2) {
+    return
+  }
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
+  const id = getId(r1!, g1!, b1!, unitMultiplier)
+  const feat = featPositions[id]
+  if (feat) {
+    const { f } = feat
+    model.setClickId(f.id())
+    const session = getSession(model)
+    if (isSessionModelWithWidgets(session)) {
+      session.showWidget(
+        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+          view,
+          track,
+          featureData: f.toJSON(),
+          level,
+        }),
+      )
+    }
+  }
+  return feat
+}
+
+export function onSynContextClick(
+  event: React.MouseEvent,
+  model: LinearSyntenyDisplayModel,
+  setAnchorEl: (arg: ClickCoord) => void,
+) {
+  event.preventDefault()
+  const ref1 = model.clickMapCanvas
+  const ref2 = model.cigarClickMapCanvas
+  if (!ref1 || !ref2) {
+    return
+  }
+  const rect = ref1.getBoundingClientRect()
+  const ctx1 = ref1.getContext('2d')
+  const ctx2 = ref2.getContext('2d')
+  if (!ctx1 || !ctx2) {
+    return
+  }
+  const { clientX, clientY } = event
+  const x = clientX - rect.left
+  const y = clientY - rect.top
+  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+  const id = getId(r1!, g1!, b1!, unitMultiplier)
+  const f = model.featPositions[id]
+  if (f) {
+    model.setClickId(f.f.id())
+    setAnchorEl({ clientX, clientY, feature: f })
+  }
+}
+
+export function getTooltip({
+  feature,
+  cigarOp,
+  cigarOpLen,
+}: {
+  feature: Feature
+  cigarOp?: string
+  cigarOpLen?: string
+}) {
+  // @ts-expect-error
+  const f1 = feature.toJSON() as {
+    refName: string
+    start: number
+    end: number
+    strand?: number
+    assemblyName: string
+    identity?: number
+    name?: string
+    mate: {
+      start: number
+      end: number
+      refName: string
+      name: string
+    }
+  }
+  const f2 = f1.mate
+  const l1 = f1.end - f1.start
+  const l2 = f2.end - f2.start
+  const identity = f1.identity
+  const n1 = f1.name
+  const n2 = f2.name
+  return [
+    `Loc1: ${assembleLocString(f1)}`,
+    `Loc2: ${assembleLocString(f2)}`,
+    `Inverted: ${f1.strand === -1}`,
+    `Query len: ${l1.toLocaleString('en-US')}`,
+    `Target len: ${l2.toLocaleString('en-US')}`,
+    identity ? `Identity: ${identity.toPrecision(2)}` : '',
+    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
+    n1 ? `Name 1: ${n1}` : '',
+    n2 ? `Name 1: ${n2}` : '',
+  ]
+    .filter(f => !!f)
+    .join('<br/>')
 }
