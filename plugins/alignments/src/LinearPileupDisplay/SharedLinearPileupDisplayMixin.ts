@@ -680,6 +680,7 @@ export function SharedLinearPileupDisplayMixin(
       },
     }))
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snap) {
         // @ts-expect-error
         const { colorBy, filterBy, ...rest } = snap

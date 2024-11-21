@@ -330,7 +330,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_pileup",
-      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height)",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height, colorBy mappingQual)",
       "category": ["Integration test"],
       "metadata": {
         "description": "this is a metadata description",
@@ -490,7 +490,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA, larger default height)",
+      "name": "volvox-sorted.bam (ctgA, larger default height, colorBy mappingQual)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox", "volvox2"],
       "adapter": {

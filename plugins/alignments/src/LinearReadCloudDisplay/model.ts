@@ -19,7 +19,6 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import { ColorBy, FilterBy } from '../shared/types'
 import { ChainData } from '../shared/fetchChains'
-import { defaultFilterFlags } from '../shared/util'
 
 // async
 const FilterByTagDialog = lazy(

@@ -62,14 +62,11 @@ function stateModelFactory(
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), {
-          flagInclude: 0,
-          flagExclude: 1540,
-        }),
+        filterBySetting: types.frozen<FilterBy | undefined>(),
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
@@ -88,6 +85,21 @@ function stateModelFactory(
        */
       modificationsReady: false,
     }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -99,7 +111,7 @@ function stateModelFactory(
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },
@@ -107,7 +119,7 @@ function stateModelFactory(
        * #action
        */
       setColorScheme(colorBy?: ColorBy) {
-        self.colorBy = colorBy
+        self.colorBySetting = colorBy
           ? {
               ...colorBy,
             }

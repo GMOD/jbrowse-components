@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  Checkbox,
   DialogActions,
   DialogContent,
-  FormControlLabel,
   MenuItem,
   TextField,
   Typography,
@@ -23,8 +21,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { getUniqueTags } from '../../shared/getUniqueTags'
-import { LinearAlignmentsDisplayModel } from '../../LinearAlignmentsDisplay/model'
-import { defaultFilterFlags } from '../../shared/util'
+import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
 
 function clone(c: unknown) {
   return JSON.parse(JSON.stringify(c))
@@ -42,7 +39,6 @@ const GroupByTagDialog = observer(function (props: {
   const [tagSet, setGroupByTagSet] = useState<string[]>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
-  const [includeUndefined, setIncludeUndefined] = useState(true)
 
   const validTag = /^[A-Za-z][A-Za-z0-9]$/.exec(tag)
   const isInvalid = tag.length === 2 && !validTag
@@ -75,10 +71,16 @@ const GroupByTagDialog = observer(function (props: {
   return (
     <Dialog open onClose={handleClose} title="Group by">
       <DialogContent>
+        <Typography>
+          NOTE: this will create new session tracks with the "filter by" set to
+          the values chosen here rather than affecting the current track state
+        </Typography>
         <TextField
           fullWidth
           value={type}
-          onChange={event => setType(event.target.value)}
+          onChange={event => {
+            setType(event.target.value)
+          }}
           label="Group by..."
           select
         >
@@ -87,25 +89,10 @@ const GroupByTagDialog = observer(function (props: {
         </TextField>
         {type === 'tag' ? (
           <>
-            <Typography>
-              NOTE: this will create new session tracks with the "filter by" set
-              to the values chosen here rather than affecting the current track
-              state
-            </Typography>
             <Typography color="textSecondary">
               Examples: HP for haplotype, RG for read group, etc.
             </Typography>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={includeUndefined}
-                  onChange={() => {
-                    setIncludeUndefined(!includeUndefined)
-                  }}
-                />
-              }
-              label="Make a new subtrack for undefined values of tag as well?"
-            />
+
             <TextField
               value={tag}
               onChange={event => {
@@ -150,10 +137,7 @@ const GroupByTagDialog = observer(function (props: {
             const view = getContainingView(model) as LinearGenomeViewModel
             if (type === 'tag') {
               if (tagSet) {
-                const ret = [...tagSet] as (string | undefined)[]
-                if (includeUndefined) {
-                  ret.push(undefined)
-                }
+                const ret = [...tagSet, undefined] as (string | undefined)[]
                 for (const tagValue of ret) {
                   const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${+Date.now()}-sessionTrack`
                   // @ts-expect-error
@@ -185,6 +169,7 @@ const GroupByTagDialog = observer(function (props: {
             } else if (type === 'strand') {
               const t1 = `${trackConf.trackId}-${tag}:(-)-${+Date.now()}-sessionTrack`
               const t2 = `${trackConf.trackId}-${tag}:(+)-${+Date.now()}-sessionTrack`
+
               // @ts-expect-error
               session.addTrackConf({
                 ...trackConf,
@@ -197,11 +182,13 @@ const GroupByTagDialog = observer(function (props: {
                     pileupDisplay: {
                       displayId: `${t1}-LinearAlignmentsDisplay-LinearPileupDisplay`,
                       type: 'LinearPileupDisplay',
-                      filterBy: {
-                        flagInclude: 16,
-                        flagExclude: 1540,
-                      },
+                      filterBy: negFlags,
                     },
+                  },
+                  {
+                    displayId: `${t1}-LinearSNPCoverageDisplay`,
+                    type: 'LinearSNPCoverageDisplay',
+                    filterBy: negFlags,
                   },
                 ],
               })
@@ -217,11 +204,13 @@ const GroupByTagDialog = observer(function (props: {
                     pileupDisplay: {
                       displayId: `${t2}-LinearAlignmentsDisplay-LinearPileupDisplay`,
                       type: 'LinearPileupDisplay',
-                      filterBy: {
-                        flagInclude: 0,
-                        flagExclude: 1556,
-                      },
+                      filterBy: posFlags,
                     },
+                  },
+                  {
+                    displayId: `${t2}-LinearSNPCoverageDisplay`,
+                    type: 'LinearSNPCoverageDisplay',
+                    filterBy: posFlags,
                   },
                 ],
               })
