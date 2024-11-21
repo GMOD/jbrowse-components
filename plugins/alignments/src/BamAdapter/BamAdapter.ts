@@ -16,6 +16,7 @@ import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { FilterBy } from '../shared/types'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { filterReadFlag, filterTagValue } from '../shared/util'
 
 interface Header {
   idToName: string[]
@@ -208,30 +209,21 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             )
           }
 
-          const flags = record.flags
-          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
+          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
             continue
           }
 
-          if (tagFilter) {
-            const readVal = record.tags[tagFilter.tag]
-            const filterVal = tagFilter.value
-            if (
-              filterVal === '*'
-                ? readVal === undefined
-                : `${readVal}` !== `${filterVal}`
-            ) {
-              continue
-            }
+          if (
+            tagFilter &&
+            filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
+          ) {
+            continue
           }
 
           if (readName && record.name !== readName) {
             continue
           }
 
-          // retrieve a feature from our feature cache if it is available, the
-          // features in the cache have pre-computed mismatches objects that
-          // can be re-used across blocks
           const ret = this.ultraLongFeatureCache.get(`${record.id}`)
           if (!ret) {
             const elt = new BamSlightlyLazyFeature(record, this, ref)

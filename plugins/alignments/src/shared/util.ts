@@ -34,3 +34,23 @@ export function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
     },
   })
 }
+
+export function filterReadFlag(
+  flags: number,
+  flagInclude: number,
+  flagExclude: number,
+) {
+  if ((flags & flagInclude) !== flagInclude) {
+    return true
+  } else if (flags & flagExclude) {
+    return true
+  } else {
+    return false
+  }
+}
+
+export function filterTagValue(readVal: unknown, filterVal?: string) {
+  return filterVal === '*'
+    ? readVal === undefined
+    : `${readVal}` !== `${filterVal}`
+}
