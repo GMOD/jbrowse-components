@@ -31,7 +31,7 @@ const AlignmentsFeatureDetails = observer(function (props: {
       <FeatureDetails
         {...props}
         // @ts-expect-error
-        descriptions={{ ...tags, tags: tags }}
+        descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>
           key === 'next_segment_position' ? (
