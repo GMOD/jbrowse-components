@@ -29,10 +29,10 @@ const AssemblyManager = observer(function ({
   return (
     <Dialog
       open
+      title="Assembly manager"
       onClose={() => {
         onClose(false)
       }}
-      title="Assembly manager"
     >
       <DialogContent>
         {showAssemblyTable ? (

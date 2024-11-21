@@ -1,7 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
 /**
  * #config LinearReadCloudDisplay

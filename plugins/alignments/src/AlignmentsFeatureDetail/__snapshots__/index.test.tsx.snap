@@ -203,9 +203,8 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    aria-label="Mapping quality of the mate/next segment"
-                    class="css-167enf1-fieldDescription-fieldName"
-                    data-mui-internal-clone-element="true"
+                    class="css-ify9vk-fieldName"
+                    style="width: 96px;"
                   >
                     MQ
                   </div>

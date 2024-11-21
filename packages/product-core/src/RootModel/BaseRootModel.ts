@@ -59,6 +59,9 @@ export function BaseRootModelFactory({
       ),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -67,9 +70,21 @@ export function BaseRootModelFactory({
         },
       ),
 
+      /**
+       * #volatile
+       */
       adminMode: false,
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       textSearchManager: new TextSearchManager(pluginManager),
+      /**
+       * #volatile
+       */
       pluginManager,
     }))
     .actions(self => ({

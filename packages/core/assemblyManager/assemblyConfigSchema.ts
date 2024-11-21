@@ -54,10 +54,13 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           preProcessSnapshot: snap => {
             // allow refNameAliases to be unspecified
-            if (!snap.adapter) {
-              return { adapter: { type: 'RefNameAliasAdapter' } }
-            }
-            return snap
+            return !snap.adapter
+              ? {
+                  adapter: {
+                    type: 'RefNameAliasAdapter',
+                  },
+                }
+              : snap
           },
         },
       ),
@@ -75,7 +78,11 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
           preProcessSnapshot: snap => {
             // allow cytoBand to be unspecified
             return !snap.adapter
-              ? { adapter: { type: 'CytobandAdapter' } }
+              ? {
+                  adapter: {
+                    type: 'CytobandAdapter',
+                  },
+                }
               : snap
           },
         },
