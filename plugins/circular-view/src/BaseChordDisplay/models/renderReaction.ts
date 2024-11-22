@@ -52,7 +52,6 @@ export async function renderReactionEffect(props?: any, stopToken?: string) {
   const { html, ...data } = await rendererType.renderInClient(rpcManager, {
     ...renderArgs,
     ...renderProps,
-    stopToken,
     exportSVG,
     stopToken,
   })
