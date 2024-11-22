@@ -26,11 +26,7 @@ export function renderReactionData(self: any) {
   }
 }
 
-export async function renderReactionEffect(
-  props: any,
-  stopToken: string | undefined,
-  self: any,
-) {
+export async function renderReactionEffect(props: any, stopToken?: string) {
   if (!props) {
     throw new Error('cannot render with no props')
   }

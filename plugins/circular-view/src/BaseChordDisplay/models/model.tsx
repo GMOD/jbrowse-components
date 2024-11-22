@@ -5,8 +5,6 @@ import { getParent, isAlive, types } from 'mobx-state-tree'
 // jbrowse
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import CircularChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
-import RendererType from '@jbrowse/core/pluggableElementTypes/renderers/RendererType'
 import {
   getContainingView,
   getSession,
@@ -132,28 +130,16 @@ export const BaseChordDisplayModel = types
     },
 
     /**
-     * #method
-     */
-    isCompatibleWithRenderer(renderer: RendererType) {
-      return !!(renderer instanceof CircularChordRendererType)
-    },
-
-    /**
      * #getter
-     * returns a string feature ID if the globally-selected object
-     * is probably a feature
+     * returns a string feature ID if the globally-selected object is probably
+     * a feature
      */
     get selectedFeatureId() {
       if (!isAlive(self)) {
         return undefined
       }
-      const session = getSession(self)
-      const { selection } = session
-      // does it quack like a feature?
-      if (isFeature(selection)) {
-        return selection.id()
-      }
-      return undefined
+      const { selection } = getSession(self)
+      return isFeature(selection) ? selection.id() : undefined
     },
   }))
   .actions(self => ({
@@ -291,7 +277,6 @@ export const BaseChordDisplayModel = types
           theme: opts.theme || data.renderProps.theme,
         },
         undefined,
-        self,
       )
       return <ReactRendering rendering={rendering} />
     },
