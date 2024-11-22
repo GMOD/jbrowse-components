@@ -33,7 +33,7 @@ const EditGCContentParamsDialog = observer(function ({
           and it is not recommended to make the step size larger than the window
           size as then the sliding window will miss contents.
         </Typography>
-        {windowDelta > windowSize ? (
+        {+windowDelta > +windowSize ? (
           <ErrorMessage error="It is not recommended to make the step size larger than the window size" />
         ) : null}
         <TextField
