@@ -11,7 +11,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const { features, config } = props
+    const { stopToken, features, config } = props
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
     // wiggle display, and makes the height of the actual drawn area add
@@ -30,6 +30,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
               readConfObject(config, 'color', { feature }),
       offset: YSCALEBAR_LABEL_OFFSET,
       features: [...features.values()],
+      stopToken,
     })
   }
 }
