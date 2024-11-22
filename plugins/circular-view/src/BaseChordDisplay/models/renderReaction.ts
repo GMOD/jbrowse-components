@@ -1,6 +1,8 @@
 import clone from 'clone'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
+
+// locals
 import { CircularViewModel } from '../../CircularView/models/model'
 
 export function renderReactionData(self: any) {
@@ -51,16 +53,10 @@ export async function renderReactionEffect(
     return { message: 'Skipping render' }
   }
 
-  // check renderertype compatibility
-  if (!self.isCompatibleWithRenderer(rendererType)) {
-    throw new Error(
-      `renderer ${rendererType.name} is not compatible with this display type`,
-    )
-  }
-
   const { html, ...data } = await rendererType.renderInClient(rpcManager, {
     ...renderArgs,
     ...renderProps,
+    stopToken,
     exportSVG,
   })
 
