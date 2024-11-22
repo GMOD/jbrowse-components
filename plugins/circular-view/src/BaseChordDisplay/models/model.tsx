@@ -59,12 +59,33 @@ export const BaseChordDisplayModel = types
   .volatile(() => ({
     // NOTE: all this volatile stuff has to be filled in at once
     // so that it stays consistent
+    /**
+     * #volatile
+     */
     filled: false,
+    /**
+     * #volatile
+     */
     reactElement: undefined as React.ReactElement | undefined,
+    /**
+     * #volatile
+     */
     data: undefined,
+    /**
+     * #volatile
+     */
     html: undefined as string | undefined,
+    /**
+     * #volatile
+     */
     message: '',
+    /**
+     * #volatile
+     */
     renderingComponent: undefined as undefined | AnyReactComponentType,
+    /**
+     * #volatile
+     */
     refNameMap: undefined as Record<string, string> | undefined,
   }))
   .actions(self => {
@@ -165,11 +186,11 @@ export const BaseChordDisplayModel = types
       html,
       renderingComponent,
     }: {
-      message: string
-      data: any
-      html: string
-      reactElement: React.ReactElement
-      renderingComponent: AnyReactComponentType
+      message?: string
+      data?: any
+      html?: string
+      reactElement?: React.ReactElement
+      renderingComponent?: AnyReactComponentType
     }) {
       if (message) {
         self.filled = false
@@ -216,12 +237,9 @@ export const BaseChordDisplayModel = types
       makeAbortableReaction(
         self,
         renderReactionData,
-
-        // @ts-expect-error
         renderReactionEffect,
         {
           name: `${self.type} ${self.id} rendering`,
-          // delay: self.renderDelay || 300,
           fireImmediately: true,
         },
         self.renderStarted,
@@ -231,19 +249,26 @@ export const BaseChordDisplayModel = types
 
       makeAbortableReaction(
         self,
-        () => ({
-          assemblyNames: getTrackAssemblyNames(self.parentTrack),
-
-          adapter: getConf(getParent<any>(self, 2), 'adapter'),
-          assemblyManager: getSession(self).assemblyManager,
-        }),
-
-        async ({ assemblyNames, adapter, assemblyManager }: any, stopToken) => {
-          return assemblyManager.getRefNameMapForAdapter(
-            adapter,
-            assemblyNames[0],
-            { stopToken, sessionId: getRpcSessionId(self) },
-          )
+        () =>
+          ({
+            assemblyNames: getTrackAssemblyNames(self.parentTrack),
+            adapter: getConf(getParent<any>(self, 2), 'adapter'),
+            assemblyManager: getSession(self).assemblyManager,
+          }) as const,
+        async (args, stopToken) => {
+          if (!args) {
+            return
+          }
+          return args
+            ? args.assemblyManager.getRefNameMapForAdapter(
+                args.adapter,
+                args.assemblyNames[0],
+                {
+                  stopToken,
+                  sessionId: getRpcSessionId(self),
+                },
+              )
+            : undefined
         },
         {
           name: `${self.type} ${self.id} getting refNames`,
@@ -251,7 +276,9 @@ export const BaseChordDisplayModel = types
         },
         () => {},
         refNameMap => {
-          self.setRefNameMap(refNameMap)
+          if (refNameMap) {
+            self.setRefNameMap(refNameMap)
+          }
         },
         error => {
           console.error(error)
@@ -270,14 +297,11 @@ export const BaseChordDisplayModel = types
       },
     ) {
       const data = renderReactionData(self)
-      const rendering = await renderReactionEffect(
-        {
-          ...data,
-          exportSVG: opts,
-          theme: opts.theme || data.renderProps.theme,
-        },
-        undefined,
-      )
+      const rendering = await renderReactionEffect({
+        ...data,
+        exportSVG: opts,
+        theme: opts.theme || data.renderProps.theme,
+      })
       return <ReactRendering rendering={rendering} />
     },
   }))
