@@ -17,7 +17,7 @@ import {
   makeAbortableReaction,
   Feature,
 } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types/mst'
+import { Region } from '@jbrowse/core/util/types'
 import {
   AbstractDisplayModel,
   isRetryException,
@@ -49,7 +49,7 @@ const blockState = types
     /**
      * #property
      */
-    region: Region,
+    region: types.frozen<Region>(),
     /**
      * #property
      */
@@ -64,6 +64,9 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   .volatile(() => ({
+    /**
+     * #volatile
+     */
     stopToken: undefined as string | undefined,
     /**
      * #volatile
@@ -283,8 +286,8 @@ export function renderBlockData(
     const renderProps = display.renderProps()
     const { config } = renderProps
 
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
+    // This line is to trigger the mobx reaction when the config changes It
+    // won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
@@ -304,7 +307,7 @@ export function renderBlockData(
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [getSnapshot(self.region)],
+        regions: [self.region],
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
@@ -337,33 +340,28 @@ async function renderBlockEffect(
   } = props
   if (!isAlive(self)) {
     return undefined
-  }
-
-  if (displayError) {
+  } else if (displayError) {
     self.setError(displayError)
     return undefined
-  }
-  if (cannotBeRenderedReason) {
+  } else if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
     return undefined
-  }
-
-  if (renderProps.notReady) {
+  } else if (renderProps.notReady) {
     return undefined
-  }
-
-  const { reactElement, features, layout, maxHeightReached } =
-    await rendererType.renderInClient(rpcManager, {
-      ...renderArgs,
-      ...renderProps,
-      viewParams: getViewParams(self),
-      stopToken,
-    })
-  return {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
-    renderProps,
+  } else {
+    const { reactElement, features, layout, maxHeightReached } =
+      await rendererType.renderInClient(rpcManager, {
+        ...renderArgs,
+        ...renderProps,
+        viewParams: getViewParams(self),
+        stopToken,
+      })
+    return {
+      reactElement,
+      features,
+      layout,
+      maxHeightReached,
+      renderProps,
+    }
   }
 }
