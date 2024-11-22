@@ -24,6 +24,7 @@ import {
 // locals
 import { getScale, Source, YSCALEBAR_LABEL_OFFSET } from '../util'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
@@ -67,10 +68,26 @@ export function stateModelFactory(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
+      sourcesLoadingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       featureUnderMouseVolatile: undefined as Feature | undefined,
+      /**
+       * #volatile
+       */
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      setSourcesLoading(str: string) {
+        if (self.sourcesLoadingStopToken) {
+          stopStopToken(self.sourcesLoadingStopToken)
+        }
+        self.sourcesLoadingStopToken = str
+      },
       /**
        * #action
        */

@@ -26,12 +26,12 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
     return adapter.dataAdapter as BaseFeatureDataAdapter
   }
 
-  public async getRefNames() {
+  public async getRefNames(opts?: BaseOptions) {
     const adapter = await this.configure()
-    return adapter.getRefNames()
+    return adapter.getRefNames(opts)
   }
 
-  public getFeatures(query: Region, opts: BaseOptions) {
+  public getFeatures(query: Region, opts?: BaseOptions) {
     const { statusCallback = () => {}, stopToken } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()

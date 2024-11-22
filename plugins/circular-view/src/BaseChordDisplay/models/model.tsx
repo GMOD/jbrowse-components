@@ -249,16 +249,14 @@ export const BaseChordDisplayModel = types
 
       makeAbortableReaction(
         self,
-        () =>
-          ({
+        () => {
+          return {
             assemblyNames: getTrackAssemblyNames(self.parentTrack),
             adapter: getConf(getParent<any>(self, 2), 'adapter'),
             assemblyManager: getSession(self).assemblyManager,
-          }) as const,
+          } as const
+        },
         async (args, stopToken) => {
-          if (!args) {
-            return
-          }
           return args
             ? args.assemblyManager.getRefNameMapForAdapter(
                 args.adapter,

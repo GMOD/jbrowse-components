@@ -6,6 +6,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAbortException } from '@jbrowse/core/util/aborting'
+import { createStopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Source {
   name: string
@@ -19,7 +20,7 @@ export function getMultiWiggleSourcesAutorun(self: {
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
   adapterProps: () => Record<string, unknown>
-  setStatsLoading: (aborter: AbortController) => void
+  setSourcesLoading: (aborter: string) => void
   setError: (error: unknown) => void
   setMessage: (str: string) => void
   setSources: (sources: Source[]) => void
@@ -28,13 +29,15 @@ export function getMultiWiggleSourcesAutorun(self: {
     self,
     autorun(async () => {
       try {
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized) {
           return
         }
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const token = createStopToken()
+        self.setSourcesLoading(token)
+        const sessionId = getRpcSessionId(self)
         const sources = (await rpcManager.call(
           sessionId,
           'MultiWiggleGetSources',
@@ -48,8 +51,8 @@ export function getMultiWiggleSourcesAutorun(self: {
           self.setSources(sources)
         }
       } catch (e) {
-        console.error(e)
         if (!isAbortException(e) && isAlive(self)) {
+          console.error(e)
           getSession(self).notifyError(`${e}`, e)
         }
       }

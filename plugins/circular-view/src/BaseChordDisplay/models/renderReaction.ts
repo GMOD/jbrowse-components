@@ -54,6 +54,7 @@ export async function renderReactionEffect(props?: any, stopToken?: string) {
     ...renderProps,
     stopToken,
     exportSVG,
+    stopToken,
   })
 
   return {
