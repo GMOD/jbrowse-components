@@ -16,6 +16,7 @@ import { types } from 'mobx-state-tree'
 // locals
 import { getNiceDomain } from '../util'
 import { lazy } from 'react'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 
 // lazies
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
@@ -155,8 +156,11 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setStatsLoading() {
-        /* do nothing */
+      setStatsLoading(arg?: string) {
+        if (self.statsFetchInProgress) {
+          stopStopToken(self.statsFetchInProgress)
+        }
+        self.statsFetchInProgress = arg
       },
 
       /**
