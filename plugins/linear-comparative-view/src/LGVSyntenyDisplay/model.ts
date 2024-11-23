@@ -119,12 +119,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         session.setSelection(feature)
       },
+      /**
+       * #autorun
+       */
       afterCreate() {
         // use color by stand to help indicate inversions better on first load,
         // otherwise use selected orientation
-        if (self.colorBy) {
-          self.setColorScheme({ ...self.colorBy })
-        } else {
+        if (!self.colorBySetting && self.colorBy.type === 'normal') {
           self.setColorScheme({ type: 'strand' })
         }
       },

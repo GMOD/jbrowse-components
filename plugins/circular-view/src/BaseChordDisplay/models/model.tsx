@@ -5,8 +5,6 @@ import { getParent, isAlive, types } from 'mobx-state-tree'
 // jbrowse
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import CircularChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
-import RendererType from '@jbrowse/core/pluggableElementTypes/renderers/RendererType'
 import {
   getContainingView,
   getSession,
@@ -61,12 +59,33 @@ export const BaseChordDisplayModel = types
   .volatile(() => ({
     // NOTE: all this volatile stuff has to be filled in at once
     // so that it stays consistent
+    /**
+     * #volatile
+     */
     filled: false,
+    /**
+     * #volatile
+     */
     reactElement: undefined as React.ReactElement | undefined,
+    /**
+     * #volatile
+     */
     data: undefined,
+    /**
+     * #volatile
+     */
     html: undefined as string | undefined,
+    /**
+     * #volatile
+     */
     message: '',
+    /**
+     * #volatile
+     */
     renderingComponent: undefined as undefined | AnyReactComponentType,
+    /**
+     * #volatile
+     */
     refNameMap: undefined as Record<string, string> | undefined,
   }))
   .actions(self => {
@@ -132,28 +151,16 @@ export const BaseChordDisplayModel = types
     },
 
     /**
-     * #method
-     */
-    isCompatibleWithRenderer(renderer: RendererType) {
-      return !!(renderer instanceof CircularChordRendererType)
-    },
-
-    /**
      * #getter
-     * returns a string feature ID if the globally-selected object
-     * is probably a feature
+     * returns a string feature ID if the globally-selected object is probably
+     * a feature
      */
     get selectedFeatureId() {
       if (!isAlive(self)) {
         return undefined
       }
-      const session = getSession(self)
-      const { selection } = session
-      // does it quack like a feature?
-      if (isFeature(selection)) {
-        return selection.id()
-      }
-      return undefined
+      const { selection } = getSession(self)
+      return isFeature(selection) ? selection.id() : undefined
     },
   }))
   .actions(self => ({
@@ -179,11 +186,11 @@ export const BaseChordDisplayModel = types
       html,
       renderingComponent,
     }: {
-      message: string
-      data: any
-      html: string
-      reactElement: React.ReactElement
-      renderingComponent: AnyReactComponentType
+      message?: string
+      data?: any
+      html?: string
+      reactElement?: React.ReactElement
+      renderingComponent?: AnyReactComponentType
     }) {
       if (message) {
         self.filled = false
@@ -230,12 +237,9 @@ export const BaseChordDisplayModel = types
       makeAbortableReaction(
         self,
         renderReactionData,
-
-        // @ts-expect-error
         renderReactionEffect,
         {
           name: `${self.type} ${self.id} rendering`,
-          // delay: self.renderDelay || 300,
           fireImmediately: true,
         },
         self.renderStarted,
@@ -245,19 +249,24 @@ export const BaseChordDisplayModel = types
 
       makeAbortableReaction(
         self,
-        () => ({
-          assemblyNames: getTrackAssemblyNames(self.parentTrack),
-
-          adapter: getConf(getParent<any>(self, 2), 'adapter'),
-          assemblyManager: getSession(self).assemblyManager,
-        }),
-
-        async ({ assemblyNames, adapter, assemblyManager }: any, stopToken) => {
-          return assemblyManager.getRefNameMapForAdapter(
-            adapter,
-            assemblyNames[0],
-            { stopToken, sessionId: getRpcSessionId(self) },
-          )
+        () => {
+          return {
+            assemblyNames: getTrackAssemblyNames(self.parentTrack),
+            adapter: getConf(getParent<any>(self, 2), 'adapter'),
+            assemblyManager: getSession(self).assemblyManager,
+          } as const
+        },
+        async (args, stopToken) => {
+          return args
+            ? args.assemblyManager.getRefNameMapForAdapter(
+                args.adapter,
+                args.assemblyNames[0],
+                {
+                  stopToken,
+                  sessionId: getRpcSessionId(self),
+                },
+              )
+            : undefined
         },
         {
           name: `${self.type} ${self.id} getting refNames`,
@@ -265,7 +274,9 @@ export const BaseChordDisplayModel = types
         },
         () => {},
         refNameMap => {
-          self.setRefNameMap(refNameMap)
+          if (refNameMap) {
+            self.setRefNameMap(refNameMap)
+          }
         },
         error => {
           console.error(error)
@@ -284,15 +295,11 @@ export const BaseChordDisplayModel = types
       },
     ) {
       const data = renderReactionData(self)
-      const rendering = await renderReactionEffect(
-        {
-          ...data,
-          exportSVG: opts,
-          theme: opts.theme || data.renderProps.theme,
-        },
-        undefined,
-        self,
-      )
+      const rendering = await renderReactionEffect({
+        ...data,
+        exportSVG: opts,
+        theme: opts.theme || data.renderProps.theme,
+      })
       return <ReactRendering rendering={rendering} />
     },
   }))

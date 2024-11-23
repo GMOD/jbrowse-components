@@ -1,7 +1,7 @@
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 // jbrowse
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { QuantitativeStats } from '@jbrowse/core/util/stats'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -44,8 +44,8 @@ export function getQuantitativeStatsAutorun(self: {
             }
           }
         } catch (e) {
-          console.error(e)
-          if (isAlive(self)) {
+          if (isAlive(self) && !isAbortException(e)) {
+            console.error(e)
             self.setError(e)
           }
         }
