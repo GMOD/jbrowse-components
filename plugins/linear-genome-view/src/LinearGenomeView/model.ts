@@ -158,7 +158,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        type: 'LinearGenomeView',
+        type: types.literal('LinearGenomeView') as unknown as string,
 
         /**
          * #property
@@ -279,19 +279,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       volatileWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       minimumBlockWidth: 3,
+      /**
+       * #volatile
+       */
       draggingTrackId: undefined as undefined | string,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
-      // array of callbacks to run after the next set of the displayedRegions,
-      // which is basically like an onLoad
+      /**
+       * #volatile
+       * array of callbacks to run after the next set of the displayedRegions,
+       * which is basically like an onLoad
+       */
       afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
+      /**
+       * #volatile
+       */
       scaleFactor: 1,
+      /**
+       * #volatile
+       */
       trackRefs: {} as Record<string, HTMLDivElement>,
+      /**
+       * #volatile
+       */
       coarseDynamicBlocks: [] as BaseBlock[],
+      /**
+       * #volatile
+       */
       coarseTotalBp: 0,
+      /**
+       * #volatile
+       */
       leftOffset: undefined as undefined | BpOffset,
+      /**
+       * #volatile
+       */
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({

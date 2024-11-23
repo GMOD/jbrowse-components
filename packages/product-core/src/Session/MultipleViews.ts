@@ -1,19 +1,11 @@
-import {
-  IAnyStateTreeNode,
-  Instance,
-  cast,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
+import { IAnyStateTreeNode, Instance, cast, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Region } from '@jbrowse/core/util'
-import { DrawerWidgetSessionMixin } from './DrawerWidgets'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 // locals
+import { DrawerWidgetSessionMixin } from './DrawerWidgets'
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 
 /**
@@ -134,19 +126,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           ...initialState,
           displayRegionsFromAssemblyName: readConfObject(asm, 'name'),
         })
-      },
-
-      /**
-       * #action
-       */
-      addViewFromAnotherView(
-        viewType: string,
-        otherView: IBaseViewModelWithDisplayedRegions,
-        initialState: { displayedRegions?: Region[] } = {},
-      ) {
-        const state = { ...initialState }
-        state.displayedRegions = getSnapshot(otherView.displayedRegions)
-        return this.addView(viewType, state)
       },
     }))
 }

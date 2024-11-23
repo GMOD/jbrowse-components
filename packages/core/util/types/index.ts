@@ -28,23 +28,18 @@ import type {
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer
-  extends IStateTreeNode<IType<any, any, any>> {
+export interface AbstractViewContainer {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
-    typeName: string,
+    type: string,
     initialState?: Record<string, unknown>,
   ): AbstractViewModel
 }
-export function isViewContainer(
-  thing: unknown,
-): thing is AbstractViewContainer {
+
+export function isViewContainer(t: unknown): t is AbstractViewContainer {
   return (
-    isStateTreeNode(thing) &&
-    'removeView' in thing &&
-    'addView' in thing &&
-    'views' in thing
+    isStateTreeNode(t) && 'removeView' in t && 'addView' in t && 'views' in t
   )
 }
 

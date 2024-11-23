@@ -1,7 +1,6 @@
 import { types, Instance } from 'mobx-state-tree'
 import { ElementId } from '../../util/types/mst'
 import { MenuItem } from '../../ui'
-import { Region } from '../../util/types/mst'
 
 /**
  * #stateModel BaseViewModel
@@ -14,12 +13,16 @@ const BaseViewModel = types
     /**
      * #property
      */
+    type: types.literal('BaseView'),
+    /**
+     * #property
+     */
     id: ElementId,
 
     /**
      * #property
-     * displayName is displayed in the header of the view, or assembly names
-     * being used if none is specified
+     * displayName for header of the view, shows view.assemblyNames if none is
+     * specified
      */
     displayName: types.maybe(types.string),
 
@@ -75,10 +78,3 @@ const BaseViewModel = types
 export default BaseViewModel
 
 export type IBaseViewModel = Instance<typeof BaseViewModel>
-
-export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
-  displayedRegions: types.array(Region),
-})
-export type IBaseViewModelWithDisplayedRegions = Instance<
-  typeof BaseViewModelWithDisplayedRegions
->
