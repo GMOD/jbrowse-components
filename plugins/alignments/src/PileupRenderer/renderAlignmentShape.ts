@@ -17,11 +17,11 @@ export function renderAlignmentShape({
   const region = regions[0]!
   const s = feature.get('start')
   const e = feature.get('end')
-  const CIGAR = feature.get('CIGAR')
+  const CIGAR = feature.get('CIGAR') as string | undefined
   const flip = region.reversed ? -1 : 1
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
-  if (CIGAR.includes('N')) {
+  if (CIGAR?.includes('N')) {
     const cigarOps = parseCigar(CIGAR)
     if (strand === 1) {
       let drawLen = 0
