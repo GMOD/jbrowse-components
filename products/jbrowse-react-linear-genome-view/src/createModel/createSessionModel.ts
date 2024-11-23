@@ -30,8 +30,6 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
  * - [SnackbarModel](../snackbarmodel)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -139,9 +137,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.queueDialog(doneCallback => [
+              self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose: doneCallback },
+                {
+                  config,
+                  handleClose,
+                },
               ])
             },
             icon: InfoIcon,

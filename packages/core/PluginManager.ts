@@ -445,7 +445,6 @@ export default class PluginManager {
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!pack) {
         throw new TypeError(
           `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,

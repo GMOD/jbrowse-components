@@ -63,16 +63,15 @@ export default function createViewState(opts: ViewStateOptions) {
     hydrateFn,
     createRootFn,
   )
-  let { defaultSession } = opts
-  if (!defaultSession) {
+  const {
     defaultSession = {
       name: 'this session',
       view: {
         id: 'linearGenomeView',
-        type: 'LinearGenomeView',
+        type: 'LinearGenomeView' as const,
       },
-    }
-  }
+    },
+  } = opts
   const stateTree = model.create(
     {
       config: {
