@@ -29,7 +29,7 @@ export * from './util'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer
-  extends IStateTreeNode<IType<any, unknown, any>> {
+  extends IStateTreeNode<IType<any, any, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(

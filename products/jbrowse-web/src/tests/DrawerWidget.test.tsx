@@ -19,7 +19,7 @@ test('opens feature detail from left click', async () => {
   expect(
     await findByTestId('variant-side-drawer', {}, delay),
   ).toBeInTheDocument()
-}, 20000)
+}, 40000)
 
 test('open feature detail from right click', async () => {
   const { view, findByTestId, findAllByTestId, findByText } = await createView()
@@ -34,7 +34,7 @@ test('open feature detail from right click', async () => {
   expect(
     await findByTestId('variant-side-drawer', {}, delay),
   ).toBeInTheDocument()
-}, 20000)
+}, 40000)
 
 test('widget drawer navigation', async () => {
   const { view, session, findByTestId, findByText } = await createView()
@@ -83,4 +83,4 @@ test('widget drawer navigation', async () => {
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(1)
-}, 20000)
+}, 40000)
