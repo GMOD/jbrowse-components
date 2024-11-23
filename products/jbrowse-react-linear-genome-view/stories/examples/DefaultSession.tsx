@@ -9,7 +9,7 @@ export const DefaultSession = () => {
     name: 'Integration test example 2/25/2021, 9:11:35 AM',
     view: {
       id: 'integration_test',
-      type: 'LinearGenomeView',
+      type: 'LinearGenomeView' as const,
       offsetPx: 2000,
       bpPerPx: 0.05,
       displayedRegions: [

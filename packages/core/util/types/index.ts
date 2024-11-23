@@ -5,6 +5,8 @@ import {
   Instance,
   SnapshotIn,
   IAnyStateTreeNode,
+  IStateTreeNode,
+  IType,
 } from 'mobx-state-tree'
 import { ThemeOptions } from '@mui/material'
 import { AnyConfigurationModel } from '../../configuration'
@@ -26,7 +28,8 @@ import type {
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer {
+export interface AbstractViewContainer
+  extends IStateTreeNode<IType<any, any, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -68,6 +71,12 @@ export interface JBrowsePlugin {
   image?: string
 }
 
+interface ConnectionInstance {
+  name: string
+  tracks: AnyConfigurationModel[]
+  configuration: AnyConfigurationModel
+}
+
 export type DialogComponentType =
   | React.LazyExoticComponent<React.FC<any>>
   | React.FC<any>
@@ -84,19 +93,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   focusedViewId?: string
   themeName?: string
   hovered: unknown
-  setHovered: (arg: unknown) => void
-  setFocusedViewId?: (id: string) => void
-  allThemes?: () => Record<string, ThemeOptions>
-  setSelection: (feature: Feature) => void
-  setSession?: (arg: { name: string; [key: string]: unknown }) => void
-  clearSelection: () => void
-  duplicateCurrentSession?: () => void
-  notify: (
-    message: string,
-    level?: NotificationLevel,
-    action?: SnackAction,
-  ) => void
-  notifyError: (message: string, error?: unknown, extra?: unknown) => void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
@@ -106,32 +102,35 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   temporaryAssemblies?: unknown[]
-  addTemporaryAssembly?: (arg: Record<string, unknown>) => void
-  removeTemporaryAssembly?: (arg: string) => void
   sessionConnections?: AnyConfigurationModel[]
   sessionTracks?: AnyConfigurationModel[]
-  connectionInstances?: {
-    name: string
-    tracks: AnyConfigurationModel[]
-    configuration: AnyConfigurationModel
-  }[]
+  connectionInstances?: ConnectionInstance[]
   makeConnection?: Function
   breakConnection?: Function
-
-  prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
-
   DialogComponent?: DialogComponentType
-
   DialogProps: any
-  queueDialog<T extends DialogComponentType>(
-    callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
-  ): void
   name: string
   id?: string
   tracks: AnyConfigurationModel[]
+
+  queueDialog<T extends DialogComponentType>(
+    cb: (d: () => void) => [T, React.ComponentProps<T>],
+  ): void
+  prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
+  setHovered: (arg: unknown) => void
+  setFocusedViewId?: (id: string) => void
+  allThemes?: () => Record<string, ThemeOptions>
+  setSelection: (feature: Feature) => void
+  setSession?: (arg: { name: string; [key: string]: unknown }) => void
+  clearSelection: () => void
+  duplicateCurrentSession?: () => void
+  notify: (msg: string, level?: NotificationLevel, action?: SnackAction) => void
+  notifyError: (message: string, error?: unknown, extra?: unknown) => void
+  addTemporaryAssembly?: (arg: Record<string, unknown>) => void
+  removeTemporaryAssembly?: (arg: string) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

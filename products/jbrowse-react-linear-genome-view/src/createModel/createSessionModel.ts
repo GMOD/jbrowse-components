@@ -5,10 +5,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { cast, getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import InfoIcon from '@mui/icons-material/Info'
-import {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -99,7 +96,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get views(): LinearGenomeViewModel[] {
+      get views() {
         return [self.view]
       },
       /**
@@ -116,12 +113,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addView(typeName: string, initialState = {}) {
+      addView(typeName: 'LinearGenomeView', initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) {
           throw new Error(`unknown view type ${typeName}`)
         }
-
         self.view = cast({
           ...initialState,
           type: typeName,

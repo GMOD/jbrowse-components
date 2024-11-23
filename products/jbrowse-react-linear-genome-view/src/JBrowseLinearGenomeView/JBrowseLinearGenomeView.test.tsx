@@ -2,6 +2,7 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { createViewState } from '..'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
+
 jest.mock(
   '@jbrowse/react-linear-genome-view/src/makeWorkerInstance',
   () => () => {},
@@ -27,13 +28,13 @@ const assembly = {
       ],
     },
   },
-}
+} as const
 
 const defaultSession = {
   name: 'Test',
   view: {
     id: 'test_view',
-    type: 'LinearGenomeView',
+    type: 'LinearGenomeView' as const,
     bpPerPx: 0.05,
     displayedRegions: [
       {

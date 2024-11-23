@@ -13,10 +13,6 @@ const BaseViewModel = types
     /**
      * #property
      */
-    type: types.maybe(types.literal('BaseView')),
-    /**
-     * #property
-     */
     id: ElementId,
 
     /**

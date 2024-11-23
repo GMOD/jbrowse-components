@@ -4,7 +4,7 @@ import React from 'react'
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-import nextstrainConfig from '../../public/nextstrain_covid.json'
+import nextstrainConfig from '../../public/nextstrain_covid'
 
 export const NextstrainExample = () => {
   const { assembly, tracks, defaultSession } = nextstrainConfig
