@@ -50,7 +50,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('LinearGenomeView')!.stateModel,
+      view: pluginManager.getViewType('LinearGenomeView')!
+        .stateModel as LinearGenomeViewStateModel,
       /**
        * #property
        */

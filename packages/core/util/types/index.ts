@@ -5,8 +5,6 @@ import {
   Instance,
   SnapshotIn,
   IAnyStateTreeNode,
-  IStateTreeNode,
-  IType,
 } from 'mobx-state-tree'
 import { ThemeOptions } from '@mui/material'
 import { AnyConfigurationModel } from '../../configuration'
