@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
-import React, { lazy, LazyExoticComponent, Suspense } from 'react'
+import React, { lazy, Suspense } from 'react'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
@@ -49,131 +49,156 @@ import * as mstTypes from '../util/types/mst'
 
 import reExportsList from './list'
 
-const Entries = {
-  Accordion: lazy(() => import('@mui/material/Accordion')),
-  AccordionActions: lazy(() => import('@mui/material/AccordionActions')),
-  AccordionDetails: lazy(() => import('@mui/material/AccordionDetails')),
-  Alert: lazy(() => import('@mui/material/Alert')),
-  AlertTitle: lazy(() => import('@mui/material/AlertTitle')),
-  Autocomplete: lazy(() => import('@mui/material/Autocomplete')),
-  Avatar: lazy(() => import('@mui/material/Avatar')),
-  AvatarGroup: lazy(() => import('@mui/material/AvatarGroup')),
-  Backdrop: lazy(() => import('@mui/material/Backdrop')),
-  Badge: lazy(() => import('@mui/material/Badge')),
-  Box: lazy(() => import('@mui/material/Box')),
-  Breadcrumbs: lazy(() => import('@mui/material/Breadcrumbs')),
-  Button: lazy(() => import('@mui/material/Button')),
-  ButtonGroup: lazy(() => import('@mui/material/ButtonGroup')),
-  Card: lazy(() => import('@mui/material/Card')),
-  CardActions: lazy(() => import('@mui/material/CardActions')),
-  CardActionArea: lazy(() => import('@mui/material/CardActionArea')),
-  CardContent: lazy(() => import('@mui/material/CardContent')),
-  CardHeader: lazy(() => import('@mui/material/CardHeader')),
-  CardMedia: lazy(() => import('@mui/material/CardMedia')),
-  CircularProgress: lazy(() => import('@mui/material/CircularProgress')),
-  Collapse: lazy(() => import('@mui/material/Collapse')),
-  ClickAwayListener: lazy(() => import('@mui/material/ClickAwayListener')),
-  Chip: lazy(() => import('@mui/material/Chip')),
-  Checkbox: lazy(() => import('@mui/material/Checkbox')),
-  Container: lazy(() => import('@mui/material/Container')),
-  Dialog: lazy(() => import('@mui/material/Dialog')),
-  DialogActions: lazy(() => import('@mui/material/DialogActions')),
-  DialogTitle: lazy(() => import('@mui/material/DialogTitle')),
-  DialogContent: lazy(() => import('@mui/material/DialogContent')),
-  DialogContentText: lazy(() => import('@mui/material/DialogContentText')),
-  Divider: lazy(() => import('@mui/material/Divider')),
-  Drawer: lazy(() => import('@mui/material/Drawer')),
-  Fab: lazy(() => import('@mui/material/Fab')),
-  Fade: lazy(() => import('@mui/material/Fade')),
-  FilledInput: lazy(() => import('@mui/material/FilledInput')),
-  FormLabel: lazy(() => import('@mui/material/FormLabel')),
-  FormControl: lazy(() => import('@mui/material/FormControl')),
-  FormControlLabel: lazy(() => import('@mui/material/FormControlLabel')),
-  FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
-  FormGroup: lazy(() => import('@mui/material/FormGroup')),
-  Grid: lazy(() => import('@mui/material/Grid')),
-  Grow: lazy(() => import('@mui/material/Grow')),
-  Icon: lazy(() => import('@mui/material/Icon')),
-  IconButton: lazy(() => import('@mui/material/IconButton')),
-  Input: lazy(() => import('@mui/material/Input')),
-  InputBase: lazy(() => import('@mui/material/InputBase')),
-  InputLabel: lazy(() => import('@mui/material/InputLabel')),
-  InputAdornment: lazy(() => import('@mui/material/InputAdornment')),
-  Link: lazy(() => import('@mui/material/Link')),
-  LinearProgress: lazy(() => import('@mui/material/LinearProgress')),
-  List: lazy(() => import('@mui/material/List')),
-  ListItem: lazy(() => import('@mui/material/ListItem')),
-  ListItemAvatar: lazy(() => import('@mui/material/ListItemAvatar')),
-  ListItemSecondaryAction: lazy(
-    () => import('@mui/material/ListItemSecondaryAction'),
+const LazyMUICore: Record<string, React.FC<any>> = {
+  Accordion: withLazy(lazy(() => import('@mui/material/Accordion'))),
+  AccordionActions: withLazy(
+    lazy(() => import('@mui/material/AccordionActions')),
   ),
-  ListItemIcon: lazy(() => import('@mui/material/ListItemIcon')),
-  ListSubheader: lazy(() => import('@mui/material/ListSubheader')),
-  ListItemText: lazy(() => import('@mui/material/ListItemText')),
-  Menu: lazy(() => import('@mui/material/Menu')),
-  MenuItem: lazy(() => import('@mui/material/MenuItem')),
-  MenuList: lazy(() => import('@mui/material/MenuList')),
-  Modal: lazy(() => import('@mui/material/Modal')),
-  NativeSelect: lazy(() => import('@mui/material/NativeSelect')),
-  OutlinedInput: lazy(() => import('@mui/material/OutlinedInput')),
-  Pagination: lazy(() => import('@mui/material/Pagination')),
-  PaginationItem: lazy(() => import('@mui/material/PaginationItem')),
-  Paper: lazy(() => import('@mui/material/Paper')),
-  Popover: lazy(() => import('@mui/material/Popover')),
-  Popper: lazy(() => import('@mui/material/Popper')),
-  Portal: lazy(() => import('@mui/material/Portal')),
-  Radio: lazy(() => import('@mui/material/Radio')),
-  RadioGroup: lazy(() => import('@mui/material/RadioGroup')),
-  Rating: lazy(() => import('@mui/material/Rating')),
-  ScopedCssBaseline: lazy(() => import('@mui/material/ScopedCssBaseline')),
-  Select: lazy(() => import('@mui/material/Select')),
-  Skeleton: lazy(() => import('@mui/material/Skeleton')),
-  Slider: lazy(() => import('@mui/material/Slider')),
-  Snackbar: lazy(() => import('@mui/material/Snackbar')),
-  SnackbarContent: lazy(() => import('@mui/material/SnackbarContent')),
-  SpeedDial: lazy(() => import('@mui/material/SpeedDial')),
-  SpeedDialAction: lazy(() => import('@mui/material/SpeedDialAction')),
-  SpeedDialIcon: lazy(() => import('@mui/material/SpeedDialIcon')),
-  Stack: lazy(() => import('@mui/material/Stack')),
-  Step: lazy(() => import('@mui/material/Step')),
-  StepButton: lazy(() => import('@mui/material/StepButton')),
-  StepConnector: lazy(() => import('@mui/material/StepConnector')),
-  StepLabel: lazy(() => import('@mui/material/StepLabel')),
-  StepIcon: lazy(() => import('@mui/material/StepIcon')),
-  Stepper: lazy(() => import('@mui/material/Stepper')),
-  SvgIcon: lazy(() => import('@mui/material/SvgIcon')),
-  Switch: lazy(() => import('@mui/material/Switch')),
-  Tab: lazy(() => import('@mui/material/Tab')),
-  Table: lazy(() => import('@mui/material/Table')),
-  TableBody: lazy(() => import('@mui/material/TableBody')),
-  TableCell: lazy(() => import('@mui/material/TableCell')),
-  TableContainer: lazy(() => import('@mui/material/TableContainer')),
-  TableFooter: lazy(() => import('@mui/material/TableFooter')),
-  TableHead: lazy(() => import('@mui/material/TableHead')),
-  TablePagination: lazy(() => import('@mui/material/TablePagination')),
-  TableRow: lazy(() => import('@mui/material/TableRow')),
-  TableSortLabel: lazy(() => import('@mui/material/TableSortLabel')),
-  Tabs: lazy(() => import('@mui/material/Tabs')),
-  TextField: lazy(() => import('@mui/material/TextField')),
-  TextareaAutosize: lazy(() => import('@mui/material/TextareaAutosize')),
-  ToggleButton: lazy(() => import('@mui/material/ToggleButton')),
-  ToggleButtonGroup: lazy(() => import('@mui/material/ToggleButtonGroup')),
-  Toolbar: lazy(() => import('@mui/material/Toolbar')),
-  Tooltip: lazy(() => import('@mui/material/Tooltip')),
-  Typography: lazy(() => import('@mui/material/Typography')),
-}
+  AccordionDetails: withLazy(
+    lazy(() => import('@mui/material/AccordionDetails')),
+  ),
+  Alert: withLazy(lazy(() => import('@mui/material/Alert'))),
+  AlertTitle: withLazy(lazy(() => import('@mui/material/AlertTitle'))),
+  Autocomplete: withLazy(lazy(() => import('@mui/material/Autocomplete'))),
+  Avatar: withLazy(lazy(() => import('@mui/material/Avatar'))),
+  AvatarGroup: withLazy(lazy(() => import('@mui/material/AvatarGroup'))),
+  Backdrop: withLazy(lazy(() => import('@mui/material/Backdrop'))),
+  Badge: withLazy(lazy(() => import('@mui/material/Badge'))),
+  Box: withLazy(lazy(() => import('@mui/material/Box'))),
+  Breadcrumbs: withLazy(lazy(() => import('@mui/material/Breadcrumbs'))),
+  Button: withLazy(lazy(() => import('@mui/material/Button'))),
+  ButtonGroup: withLazy(lazy(() => import('@mui/material/ButtonGroup'))),
+  Card: withLazy(lazy(() => import('@mui/material/Card'))),
+  CardActions: withLazy(lazy(() => import('@mui/material/CardActions'))),
+  CardActionArea: withLazy(lazy(() => import('@mui/material/CardActionArea'))),
+  CardContent: withLazy(lazy(() => import('@mui/material/CardContent'))),
+  CardHeader: withLazy(lazy(() => import('@mui/material/CardHeader'))),
+  CardMedia: withLazy(lazy(() => import('@mui/material/CardMedia'))),
+  CircularProgress: withLazy(
+    lazy(() => import('@mui/material/CircularProgress')),
+  ),
+  Collapse: withLazy(lazy(() => import('@mui/material/Collapse'))),
+  ClickAwayListener: withLazy(
+    lazy(() => import('@mui/material/ClickAwayListener')),
+  ),
+  Chip: withLazy(lazy(() => import('@mui/material/Chip'))),
+  Checkbox: withLazy(lazy(() => import('@mui/material/Checkbox'))),
+  Container: withLazy(lazy(() => import('@mui/material/Container'))),
+  Dialog: withLazy(lazy(() => import('@mui/material/Dialog'))),
+  DialogActions: withLazy(lazy(() => import('@mui/material/DialogActions'))),
+  DialogTitle: withLazy(lazy(() => import('@mui/material/DialogTitle'))),
+  DialogContent: withLazy(lazy(() => import('@mui/material/DialogContent'))),
+  DialogContentText: withLazy(
+    lazy(() => import('@mui/material/DialogContentText')),
+  ),
+  Divider: withLazy(lazy(() => import('@mui/material/Divider'))),
+  Drawer: withLazy(lazy(() => import('@mui/material/Drawer'))),
+  Fab: withLazy(lazy(() => import('@mui/material/Fab'))),
+  Fade: withLazy(lazy(() => import('@mui/material/Fade'))),
+  FilledInput: withLazy(lazy(() => import('@mui/material/FilledInput'))),
+  FormLabel: withLazy(lazy(() => import('@mui/material/FormLabel'))),
+  FormControl: withLazy(lazy(() => import('@mui/material/FormControl'))),
+  FormControlLabel: withLazy(
+    lazy(() => import('@mui/material/FormControlLabel')),
+  ),
+  FormHelperText: withLazy(lazy(() => import('@mui/material/FormHelperText'))),
+  FormGroup: withLazy(lazy(() => import('@mui/material/FormGroup'))),
+  Grid: withLazy(lazy(() => import('@mui/material/Grid'))),
+  Grow: withLazy(lazy(() => import('@mui/material/Grow'))),
+  Icon: withLazy(lazy(() => import('@mui/material/Icon'))),
+  IconButton: withLazy(lazy(() => import('@mui/material/IconButton'))),
+  Input: withLazy(lazy(() => import('@mui/material/Input'))),
+  InputBase: withLazy(lazy(() => import('@mui/material/InputBase'))),
+  InputLabel: withLazy(lazy(() => import('@mui/material/InputLabel'))),
+  InputAdornment: withLazy(lazy(() => import('@mui/material/InputAdornment'))),
+  Link: withLazy(lazy(() => import('@mui/material/Link'))),
+  LinearProgress: withLazy(lazy(() => import('@mui/material/LinearProgress'))),
+  List: withLazy(lazy(() => import('@mui/material/List'))),
+  ListItem: withLazy(lazy(() => import('@mui/material/ListItem'))),
+  ListItemAvatar: withLazy(lazy(() => import('@mui/material/ListItemAvatar'))),
+  ListItemSecondaryAction: withLazy(
+    lazy(() => import('@mui/material/ListItemSecondaryAction')),
+  ),
+  ListItemIcon: withLazy(lazy(() => import('@mui/material/ListItemIcon'))),
+  ListSubheader: withLazy(lazy(() => import('@mui/material/ListSubheader'))),
+  ListItemText: withLazy(lazy(() => import('@mui/material/ListItemText'))),
+  Menu: withLazy(lazy(() => import('@mui/material/Menu'))),
+  MenuItem: withLazy(lazy(() => import('@mui/material/MenuItem'))),
+  MenuList: withLazy(lazy(() => import('@mui/material/MenuList'))),
+  Modal: withLazy(lazy(() => import('@mui/material/Modal'))),
+  NativeSelect: withLazy(lazy(() => import('@mui/material/NativeSelect'))),
+  OutlinedInput: withLazy(lazy(() => import('@mui/material/OutlinedInput'))),
+  Pagination: withLazy(lazy(() => import('@mui/material/Pagination'))),
+  PaginationItem: withLazy(lazy(() => import('@mui/material/PaginationItem'))),
+  Paper: withLazy(lazy(() => import('@mui/material/Paper'))),
+  Popover: withLazy(lazy(() => import('@mui/material/Popover'))),
+  Popper: withLazy(lazy(() => import('@mui/material/Popper'))),
+  Portal: withLazy(lazy(() => import('@mui/material/Portal'))),
+  Radio: withLazy(lazy(() => import('@mui/material/Radio'))),
+  RadioGroup: withLazy(lazy(() => import('@mui/material/RadioGroup'))),
+  Rating: withLazy(lazy(() => import('@mui/material/Rating'))),
+  ScopedCssBaseline: withLazy(
+    lazy(() => import('@mui/material/ScopedCssBaseline')),
+  ),
+  Select: withLazy(lazy(() => import('@mui/material/Select'))),
+  Skeleton: withLazy(lazy(() => import('@mui/material/Skeleton'))),
+  Slider: withLazy(lazy(() => import('@mui/material/Slider'))),
+  Snackbar: withLazy(lazy(() => import('@mui/material/Snackbar'))),
+  SnackbarContent: withLazy(
+    lazy(() => import('@mui/material/SnackbarContent')),
+  ),
+  SpeedDial: withLazy(lazy(() => import('@mui/material/SpeedDial'))),
+  SpeedDialAction: withLazy(
+    lazy(() => import('@mui/material/SpeedDialAction')),
+  ),
+  SpeedDialIcon: withLazy(lazy(() => import('@mui/material/SpeedDialIcon'))),
+  Stack: withLazy(lazy(() => import('@mui/material/Stack'))),
+  Step: withLazy(lazy(() => import('@mui/material/Step'))),
+  StepButton: withLazy(lazy(() => import('@mui/material/StepButton'))),
+  StepConnector: withLazy(lazy(() => import('@mui/material/StepConnector'))),
+  StepLabel: withLazy(lazy(() => import('@mui/material/StepLabel'))),
+  StepIcon: withLazy(lazy(() => import('@mui/material/StepIcon'))),
+  Stepper: withLazy(lazy(() => import('@mui/material/Stepper'))),
+  SvgIcon: withLazy(lazy(() => import('@mui/material/SvgIcon'))),
+  Switch: withLazy(lazy(() => import('@mui/material/Switch'))),
+  Tab: withLazy(lazy(() => import('@mui/material/Tab'))),
+  Table: withLazy(lazy(() => import('@mui/material/Table'))),
+  TableBody: withLazy(lazy(() => import('@mui/material/TableBody'))),
+  TableCell: withLazy(lazy(() => import('@mui/material/TableCell'))),
+  TableContainer: withLazy(lazy(() => import('@mui/material/TableContainer'))),
+  TableFooter: withLazy(lazy(() => import('@mui/material/TableFooter'))),
+  TableHead: withLazy(lazy(() => import('@mui/material/TableHead'))),
+  TablePagination: withLazy(
+    lazy(() => import('@mui/material/TablePagination')),
+  ),
+  TableRow: withLazy(lazy(() => import('@mui/material/TableRow'))),
+  TableSortLabel: withLazy(lazy(() => import('@mui/material/TableSortLabel'))),
+  Tabs: withLazy(lazy(() => import('@mui/material/Tabs'))),
+  TextField: withLazy(lazy(() => import('@mui/material/TextField'))),
+  TextareaAutosize: withLazy(
+    lazy(() => import('@mui/material/TextareaAutosize')),
+  ),
+  ToggleButton: withLazy(lazy(() => import('@mui/material/ToggleButton'))),
+  ToggleButtonGroup: withLazy(
+    lazy(() => import('@mui/material/ToggleButtonGroup')),
+  ),
+  Toolbar: withLazy(lazy(() => import('@mui/material/Toolbar'))),
+  Tooltip: withLazy(lazy(() => import('@mui/material/Tooltip'))),
+  Typography: withLazy(lazy(() => import('@mui/material/Typography'))),
+} as const
 
-const LazyMUICore = Object.fromEntries(
-  Object.entries(Entries).map(([key, ReactComponent]) => {
-    const Component = React.forwardRef((props: any, ref) => (
+export function withLazy<P extends React.FC<any>>(WrappedComponent: P) {
+  const Component = function (props: React.ComponentProps<P>) {
+    return (
       <Suspense fallback={null}>
-        <ReactComponent {...props} ref={ref} />
+        <WrappedComponent {...props} />
       </Suspense>
-    ))
-    Component.displayName = key
-    return [key, Component]
-  }),
-)
+    )
+  }
+
+  Component.displayName = `withLazy(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`
+  return Component
+}
 
 const MaterialPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
@@ -189,306 +214,375 @@ const MuiPrefixMUI = Object.fromEntries(
   ]),
 )
 
-const Attributes = lazy(
-  () => import('../BaseFeatureWidget/BaseFeatureDetail/Attributes'),
-)
-const FeatureDetails = lazy(
-  () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'),
-)
-const BaseCard = lazy(
-  () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard'),
-)
-
-const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
-  DataGrid: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({ default: module.DataGrid })),
+const DataGridEntries: Record<string, React.FC<any>> = {
+  DataGrid: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({ default: module.DataGrid })),
+    ),
   ),
-  GridActionsCellItem: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridActionsCellItem,
-    })),
+  GridActionsCellItem: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridActionsCellItem,
+      })),
+    ),
   ),
-  GridAddIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridAddIcon,
-    })),
+  GridAddIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridAddIcon,
+      })),
+    ),
   ),
-  GridArrowDownwardIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridArrowDownwardIcon,
-    })),
+  GridArrowDownwardIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridArrowDownwardIcon,
+      })),
+    ),
   ),
-  GridArrowUpwardIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridArrowUpwardIcon,
-    })),
+  GridArrowUpwardIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridArrowUpwardIcon,
+      })),
+    ),
   ),
-  GridCellCheckboxForwardRef: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridCellCheckboxForwardRef,
-    })),
+  GridCellCheckboxForwardRef: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridCellCheckboxForwardRef,
+      })),
+    ),
   ),
-  GridCellCheckboxRenderer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridCellCheckboxRenderer,
-    })),
+  GridCellCheckboxRenderer: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridCellCheckboxRenderer,
+      })),
+    ),
   ),
-  GridCheckCircleIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridCheckCircleIcon,
-    })),
+  GridCheckCircleIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridCheckCircleIcon,
+      })),
+    ),
   ),
-  GridCheckIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridCheckIcon,
-    })),
+  GridCheckIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridCheckIcon,
+      })),
+    ),
   ),
-  GridCloseIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridCloseIcon,
-    })),
+  GridCloseIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridCloseIcon,
+      })),
+    ),
   ),
-  GridColumnHeaderSeparator: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridColumnHeaderSeparator,
-    })),
+  GridColumnHeaderSeparator: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridColumnHeaderSeparator,
+      })),
+    ),
   ),
-  GridColumnHeaderSortIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridColumnHeaderSortIcon,
-    })),
+  GridColumnHeaderSortIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridColumnHeaderSortIcon,
+      })),
+    ),
   ),
-  GridColumnIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridColumnIcon,
-    })),
+  GridColumnIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridColumnIcon,
+      })),
+    ),
   ),
-  GridColumnMenu: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridColumnMenu,
-    })),
+  GridColumnMenu: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridColumnMenu,
+      })),
+    ),
   ),
-  GridColumnMenuContainer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridColumnMenuContainer,
-    })),
+  GridColumnMenuContainer: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridColumnMenuContainer,
+      })),
+    ),
   ),
-  GridDragIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridDragIcon,
-    })),
+  GridDragIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridDragIcon,
+      })),
+    ),
   ),
-  GridExpandMoreIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridExpandMoreIcon,
-    })),
+  GridExpandMoreIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridExpandMoreIcon,
+      })),
+    ),
   ),
-  GridFilterAltIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridFilterAltIcon,
-    })),
+  GridFilterAltIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridFilterAltIcon,
+      })),
+    ),
   ),
-  GridFilterForm: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridFilterForm,
-    })),
+  GridFilterForm: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridFilterForm,
+      })),
+    ),
   ),
-  GridFilterListIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridFilterListIcon,
-    })),
+  GridFilterListIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridFilterListIcon,
+      })),
+    ),
   ),
-  GridFilterPanel: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridFilterPanel,
-    })),
+  GridFilterPanel: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridFilterPanel,
+      })),
+    ),
   ),
-  GridFooter: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({ default: module.GridFooter })),
+  GridFooter: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridFooter,
+      })),
+    ),
   ),
-  GridFooterContainer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridFooterContainer,
-    })),
+  GridFooterContainer: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridFooterContainer,
+      })),
+    ),
   ),
-  GridHeader: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({ default: module.GridHeader })),
+  GridHeader: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridHeader,
+      })),
+    ),
   ),
-  GridHeaderCheckbox: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridHeaderCheckbox,
-    })),
+  GridHeaderCheckbox: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridHeaderCheckbox,
+      })),
+    ),
   ),
-  GridKeyboardArrowRight: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridKeyboardArrowRight,
-    })),
+  GridKeyboardArrowRight: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridKeyboardArrowRight,
+      })),
+    ),
   ),
-  GridLoadIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridLoadIcon,
-    })),
+  GridLoadIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridLoadIcon,
+      })),
+    ),
   ),
-  GridLoadingOverlay: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridLoadingOverlay,
-    })),
+  GridLoadingOverlay: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridLoadingOverlay,
+      })),
+    ),
   ),
-  GridMenuIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridMenuIcon,
-    })),
+  GridMenuIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridMenuIcon,
+      })),
+    ),
   ),
-  GridMoreVertIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridMoreVertIcon,
-    })),
+  GridMoreVertIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridMoreVertIcon,
+      })),
+    ),
   ),
-  GridNoRowsOverlay: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridNoRowsOverlay,
-    })),
+  GridNoRowsOverlay: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridNoRowsOverlay,
+      })),
+    ),
   ),
-  GridOverlay: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridOverlay,
-    })),
+  GridOverlay: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridOverlay,
+      })),
+    ),
   ),
-  GridPagination: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridPagination,
-    })),
+  GridPagination: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridPagination,
+      })),
+    ),
   ),
-  GridPanel: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({ default: module.GridPanel })),
+  GridPanel: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridPanel,
+      })),
+    ),
   ),
-  GridPanelWrapper: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridPanelWrapper,
-    })),
+  GridPanelWrapper: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridPanelWrapper,
+      })),
+    ),
   ),
-  GridRemoveIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridRemoveIcon,
-    })),
+  GridRemoveIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridRemoveIcon,
+      })),
+    ),
   ),
-  GridRoot: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({ default: module.GridRoot })),
+  GridRoot: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({ default: module.GridRoot })),
+    ),
   ),
-  GridRowCount: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridRowCount,
-    })),
+  GridRowCount: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridRowCount,
+      })),
+    ),
   ),
-  GridSaveAltIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSaveAltIcon,
-    })),
+  GridSaveAltIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridSaveAltIcon,
+      })),
+    ),
   ),
-  GridSearchIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSearchIcon,
-    })),
+  GridSearchIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridSearchIcon,
+      })),
+    ),
   ),
-  GridSelectedRowCount: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSelectedRowCount,
-    })),
+  GridSelectedRowCount: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridSelectedRowCount,
+      })),
+    ),
   ),
-  GridSeparatorIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSeparatorIcon,
-    })),
+  GridSeparatorIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridSeparatorIcon,
+      })),
+    ),
   ),
-  GridTableRowsIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridTableRowsIcon,
-    })),
+  GridTableRowsIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridTableRowsIcon,
+      })),
+    ),
   ),
-  GridToolbar: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbar,
-    })),
+  GridToolbar: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbar,
+      })),
+    ),
   ),
-  GridToolbarColumnsButton: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarColumnsButton,
-    })),
+  GridToolbarColumnsButton: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbarColumnsButton,
+      })),
+    ),
   ),
-  GridToolbarContainer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarContainer,
-    })),
+  GridToolbarContainer: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbarContainer,
+      })),
+    ),
   ),
-  GridToolbarDensitySelector: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarDensitySelector,
-    })),
+  GridToolbarDensitySelector: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbarDensitySelector,
+      })),
+    ),
   ),
-  GridToolbarExport: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarExport,
-    })),
+  GridToolbarExport: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbarExport,
+      })),
+    ),
   ),
-  GridToolbarExportContainer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarExportContainer,
-    })),
+  GridToolbarExportContainer: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbarExportContainer,
+      })),
+    ),
   ),
-  GridToolbarFilterButton: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarFilterButton,
-    })),
+  GridToolbarFilterButton: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridToolbarFilterButton,
+      })),
+    ),
   ),
-  GridTripleDotsVerticalIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridTripleDotsVerticalIcon,
-    })),
+  GridTripleDotsVerticalIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridTripleDotsVerticalIcon,
+      })),
+    ),
   ),
-  GridViewHeadlineIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridViewHeadlineIcon,
-    })),
+  GridViewHeadlineIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridViewHeadlineIcon,
+      })),
+    ),
   ),
-  GridViewStreamIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridViewStreamIcon,
-    })),
+  GridViewStreamIcon: withLazy(
+    lazy(() =>
+      import('@mui/x-data-grid').then(module => ({
+        default: module.GridViewStreamIcon,
+      })),
+    ),
   ),
-}
-
-const LazyDataGridComponents = Object.fromEntries(
-  Object.entries(DataGridEntries).map(([key, ReactComponent]) => {
-    const Component = React.forwardRef((props: any, ref) => (
-      <Suspense fallback={null}>
-        <ReactComponent {...props} ref={ref} />
-      </Suspense>
-    ))
-    Component.displayName = key
-    return [key, Component]
-  }),
-)
-
-const LazyAttributes = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={null}>
-    <Attributes {...props} ref={ref} />
-  </Suspense>
-))
-LazyAttributes.displayName = 'Attributes'
-
-const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={null}>
-    <FeatureDetails {...props} ref={ref} />
-  </Suspense>
-))
-LazyFeatureDetails.displayName = 'FeatureDetails'
-
-const LazyBaseCard = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={null}>
-    <BaseCard {...props} ref={ref} />
-  </Suspense>
-))
-LazyBaseCard.displayName = 'BaseCard'
+} as const
 
 const libs = {
   mobx,
@@ -501,7 +595,7 @@ const libs = {
     useGridApiContext,
     useGridApiRef,
     useGridRootProps,
-    ...LazyDataGridComponents,
+    ...DataGridEntries,
   },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
@@ -547,15 +641,15 @@ const libs = {
   ...MuiPrefixMUI,
 
   // these are core in @mui/material, but used to be in @material-ui/lab
-  '@material-ui/lab/ToggleButton': Entries.ToggleButton,
-  '@material-ui/lab/ToggleButtonGroup': Entries.ToggleButtonGroup,
-  '@material-ui/lab/Autocomplete': Entries.Autocomplete,
-  '@material-ui/lab/Alert': Entries.Alert,
+  '@material-ui/lab/ToggleButton': LazyMUICore.ToggleButton,
+  '@material-ui/lab/ToggleButtonGroup': LazyMUICore.ToggleButtonGroup,
+  '@material-ui/lab/Autocomplete': LazyMUICore.Autocomplete,
+  '@material-ui/lab/Alert': LazyMUICore.Alert,
   '@material-ui/lab': {
-    Alert: Entries.Alert,
-    Autocomplete: Entries.Autocomplete,
-    ToggleButton: Entries.ToggleButton,
-    ToggleButtonGroup: Entries.ToggleButtonGroup,
+    Alert: LazyMUICore.Alert,
+    Autocomplete: LazyMUICore.Autocomplete,
+    ToggleButton: LazyMUICore.ToggleButton,
+    ToggleButtonGroup: LazyMUICore.ToggleButtonGroup,
   },
 
   '@jbrowse/core/Plugin': Plugin,
@@ -588,9 +682,17 @@ const libs = {
   '@jbrowse/core/util/rxjs': rxjs,
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': {
-    Attributes: LazyAttributes,
-    FeatureDetails: LazyFeatureDetails,
-    BaseCard: LazyBaseCard,
+    Attributes: withLazy(
+      lazy(() => import('../BaseFeatureWidget/BaseFeatureDetail/Attributes')),
+    ),
+    FeatureDetails: withLazy(
+      lazy(
+        () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'),
+      ),
+    ),
+    BaseCard: withLazy(
+      lazy(() => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard')),
+    ),
   },
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
