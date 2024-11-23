@@ -167,7 +167,6 @@ const LazyMUICore = Object.fromEntries(
   Object.entries(Entries).map(([key, ReactComponent]) => {
     const Component = React.forwardRef((props: any, ref) => (
       <Suspense fallback={null}>
-        {/* @ts-expect-error */}
         <ReactComponent {...props} ref={ref} />
       </Suspense>
     ))
