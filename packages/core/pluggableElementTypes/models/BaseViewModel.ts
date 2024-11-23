@@ -13,7 +13,7 @@ const BaseViewModel = types
     /**
      * #property
      */
-    type: types.literal('BaseView'),
+    type: types.literal('BaseView') as unknown as string,
     /**
      * #property
      */
