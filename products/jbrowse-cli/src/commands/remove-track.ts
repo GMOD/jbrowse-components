@@ -1,6 +1,8 @@
 import { promises as fsPromises } from 'fs'
 import { Args, Flags } from '@oclif/core'
+
 import JBrowseCommand from '../base'
+
 import type { Config } from '../base'
 
 export default class RemoveTrackJson extends JBrowseCommand {

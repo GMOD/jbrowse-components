@@ -1,8 +1,10 @@
 import type React from 'react'
 import { lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
+// types
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -18,7 +20,7 @@ import {
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
-import { moveTo, pxToBp, bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
@@ -33,23 +35,23 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import clone from 'clone'
+
 import { saveAs } from 'file-saver'
-import { when, transaction, autorun } from 'mobx'
+import { autorun, transaction, when } from 'mobx'
 import {
   addDisposer,
   cast,
-  getSnapshot,
+  getParent,
   getRoot,
+  getSnapshot,
   resolveIdentifier,
   types,
-  getParent,
 } from 'mobx-state-tree'
 
 import Header from './components/Header'
-import MiniControls from './components/MiniControls'
 import { generateLocations, parseLocStrings } from './util'
 import { handleSelectedRegion } from '../searchUtils'
+import MiniControls from './components/MiniControls'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
@@ -63,8 +65,8 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
-import type { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { Region as IRegion, Region } from '@jbrowse/core/util/types'
+import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
+import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
@@ -282,19 +284,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       volatileWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       minimumBlockWidth: 3,
+      /**
+       * #volatile
+       */
       draggingTrackId: undefined as undefined | string,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
-      // array of callbacks to run after the next set of the displayedRegions,
-      // which is basically like an onLoad
+      /**
+       * #volatile
+       * array of callbacks to run after the next set of the displayedRegions,
+       * which is basically like an onLoad
+       */
       afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
+      /**
+       * #volatile
+       */
       scaleFactor: 1,
+      /**
+       * #volatile
+       */
       trackRefs: {} as Record<string, HTMLDivElement>,
+      /**
+       * #volatile
+       */
       coarseDynamicBlocks: [] as BaseBlock[],
+      /**
+       * #volatile
+       */
       coarseTotalBp: 0,
+      /**
+       * #volatile
+       */
       leftOffset: undefined as undefined | BpOffset,
+      /**
+       * #volatile
+       */
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
@@ -569,7 +604,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
-            const viewMenuActions = clone(track.viewMenuActions)
+            const viewMenuActions = structuredClone(track.viewMenuActions)
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }

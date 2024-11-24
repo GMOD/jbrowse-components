@@ -1,20 +1,19 @@
 import { lazy } from 'react'
+
 import {
   ConfigurationReference,
-  readConfObject,
   getConf,
+  readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-
-// icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
+  SimpleFeature,
+  getContainingTrack,
+  getContainingView,
   getEnv,
   getSession,
-  getContainingView,
-  getContainingTrack,
   isSessionModelWithWidgets,
-  SimpleFeature,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
@@ -22,19 +21,23 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import copy from 'copy-to-clipboard'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, isAlive } from 'mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from 'mobx-state-tree'
 
-// locals
-import { getUniqueTags } from '../shared/getUniqueTags'
 import { createAutorun } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+import { getUniqueTags } from '../shared/getUniqueTags'
+
 import type { ColorBy, FilterBy } from '../shared/types'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import type { SimpleFeatureSerialized, Feature } from '@jbrowse/core/util'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// icons
+
+// locals
 
 // lazies
 const FilterByTagDialog = lazy(

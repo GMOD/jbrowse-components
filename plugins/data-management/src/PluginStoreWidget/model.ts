@@ -1,5 +1,6 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 

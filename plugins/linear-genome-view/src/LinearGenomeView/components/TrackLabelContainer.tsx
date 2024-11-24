@@ -1,9 +1,11 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // jbrowse core
 import TrackLabel from './TrackLabel'
+
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 

@@ -1,14 +1,17 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, bpSpanPx } from '@jbrowse/core/util'
+import { bpSpanPx, featureSpanPx } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import {
-  getOrigin,
-  getScale,
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
+  getOrigin,
+  getScale,
 } from '@jbrowse/plugin-wiggle'
+
+// locals
 import { alphaColor } from '../shared/util'
+
 import type {
   BaseCoverageBin,
   ModificationTypeWithColor,
@@ -16,8 +19,6 @@ import type {
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
-
-// locals
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number

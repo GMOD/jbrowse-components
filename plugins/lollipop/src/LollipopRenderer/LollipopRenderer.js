@@ -2,6 +2,7 @@ import BoxRendererType, {
   LayoutSession,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
+
 import { FloatingLayout, PrecomputedFloatingLayout } from './Layout'
 
 class FloatingLayoutSession extends LayoutSession {

@@ -1,12 +1,13 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
-
 import { makeTicks } from '../util'
 import type { LinearGenomeViewModel } from '..'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'

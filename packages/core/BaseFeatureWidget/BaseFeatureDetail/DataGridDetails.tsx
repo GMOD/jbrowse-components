@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
@@ -6,7 +7,8 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
-import { measureGridWidth, getStr } from '../../util'
+import { getStr, measureGridWidth } from '../../util'
+
 import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({

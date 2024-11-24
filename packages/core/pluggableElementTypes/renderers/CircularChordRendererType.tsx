@@ -1,7 +1,9 @@
 import React from 'react'
+
 import FeatureRenderer from './FeatureRendererType'
 import RpcRenderedSvgGroup from './RpcRenderedSvgGroup'
 import { SimpleFeature } from '../../util'
+
 import type { SimpleFeatureSerialized } from '../../util'
 import type { ThemeOptions } from '@mui/material'
 

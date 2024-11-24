@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
 // utils
@@ -11,6 +12,7 @@ import BaseCard from './BaseCard'
 import CoreDetails from './CoreDetails'
 import FeatureDetails from './FeatureDetails'
 import { ErrorMessage } from '../../ui'
+
 import type { BaseCardProps, BaseProps } from '../types'
 
 export const BaseCoreDetails = (props: BaseProps) => {

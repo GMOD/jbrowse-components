@@ -1,7 +1,8 @@
 import { lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
-import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
@@ -9,17 +10,19 @@ import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 // jbrowse imports
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+
 import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature, AnyReactComponentType } from '@jbrowse/core/util'
+import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
+
 import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>

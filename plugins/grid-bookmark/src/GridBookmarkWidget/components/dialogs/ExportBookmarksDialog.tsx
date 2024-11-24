@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
+  Alert,
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   MenuItem,
   Select,
   Typography,
-  Alert,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-
 import { makeStyles } from 'tss-react/mui'
 
 // Icons

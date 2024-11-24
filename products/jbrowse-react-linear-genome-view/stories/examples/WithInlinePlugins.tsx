@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import React from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
 import { getVolvoxConfig } from './util'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'

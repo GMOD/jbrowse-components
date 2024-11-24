@@ -1,4 +1,5 @@
 import React, { lazy } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import Delete from '@mui/icons-material/Delete'
@@ -15,6 +16,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import AssemblySelector from './AssemblySelector'
 import BookmarkGrid from './BookmarkGrid'
+
 import type { GridBookmarkModel } from '../model'
 
 // icons

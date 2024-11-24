@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+
 import type { GridColDef, GridValidRowModel } from '@mui/x-data-grid'
 
 export default function VariantAnnotPanel({

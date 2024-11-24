@@ -1,10 +1,12 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
 import { getVolvoxConfig } from './util'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+
 import type { Region } from '@jbrowse/core/util'
 
 function loc(r: Region) {

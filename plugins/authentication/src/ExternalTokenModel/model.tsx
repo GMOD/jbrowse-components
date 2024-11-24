@@ -1,6 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { types, getRoot } from 'mobx-state-tree'
+import { getRoot, types } from 'mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm'
 import type { ExternalTokenInternetAccountConfigModel } from './configSchema'

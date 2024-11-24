@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -20,6 +21,7 @@ import { SCALE_BAR_HEIGHT } from '../consts'
 import { useRangeSelect } from './useRangeSelect'
 import { useSideScroll } from './useSideScroll'
 import { useWheelScroll } from './useWheelScroll'
+
 import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()({

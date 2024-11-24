@@ -1,12 +1,16 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
-import { getSession, gatherOverlaps, useLocalStorage } from '@jbrowse/core/util'
+import { gatherOverlaps, useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
+
+// types
 import Checkbox2 from './Checkbox2'
+
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { Feature } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
@@ -29,17 +33,19 @@ function stripIds(arr: Track[]) {
 }
 
 const BreakendSingleLevelOptionDialog = observer(function ({
-  model,
+  session,
   handleClose,
   feature,
+  stableViewId,
   assemblyName,
   viewType,
   view,
 }: {
-  model: unknown
+  session: AbstractSessionModel
   handleClose: () => void
+  stableViewId?: string
   feature: Feature
-  view: LinearGenomeViewModel
+  view?: LinearGenomeViewModel
   assemblyName: string
   viewType: {
     getBreakendCoveringRegions: (arg: {
@@ -66,13 +72,15 @@ const BreakendSingleLevelOptionDialog = observer(function ({
       title="Single-level breakpoint split view options"
     >
       <DialogContent>
-        <Checkbox2
-          checked={copyTracks}
-          label="Copy tracks into the new view"
-          onChange={event => {
-            setCopyTracks(event.target.checked)
-          }}
-        />
+        {view ? (
+          <Checkbox2
+            checked={copyTracks}
+            label="Copy tracks into the new view"
+            onChange={event => {
+              setCopyTracks(event.target.checked)
+            }}
+          />
+        ) : null}
 
         <TextField
           label="Window size (bp)"
@@ -85,36 +93,47 @@ const BreakendSingleLevelOptionDialog = observer(function ({
       <DialogActions>
         <Button
           onClick={() => {
-            const session = getSession(model)
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
               try {
-                const assembly = session.assemblyManager.get(assemblyName)
+                const { assemblyManager } = session
+                const assembly =
+                  await assemblyManager.waitForAssembly(assemblyName)
+                if (!assembly) {
+                  throw new Error(`assembly ${assemblyName} not found`)
+                }
                 const w = +windowSize
                 if (Number.isNaN(w)) {
                   throw new Error('windowSize not a number')
                 }
                 const { refName, pos, mateRefName, matePos } =
-                  // @ts-expect-error
                   viewType.getBreakendCoveringRegions({ feature, assembly })
+                let viewInStack = session.views.find(
+                  f => f.id === stableViewId,
+                ) as { views: LinearGenomeViewModel[] } | undefined
 
-                const breakpointSplitView = session.addView(
-                  'BreakpointSplitView',
-                  {
+                const displayName = `${
+                  feature.get('name') || feature.get('id') || 'breakend'
+                } split detail`
+                if (!viewInStack) {
+                  viewInStack = session.addView('BreakpointSplitView', {
+                    id: stableViewId,
                     type: 'BreakpointSplitView',
-                    displayName: `${
-                      feature.get('name') || feature.get('id') || 'breakend'
-                    } split detail`,
+                    displayName,
                     views: [
                       {
                         type: 'LinearGenomeView',
-                        tracks: stripIds(getSnapshot(view.tracks)),
+                        tracks: view?.tracks
+                          ? stripIds(getSnapshot(view.tracks))
+                          : [],
                       },
                     ],
-                  },
-                ) as unknown as { views: LinearGenomeViewModel[] }
+                  }) as unknown as { views: LinearGenomeViewModel[] }
+                }
+                // @ts-expect-error
+                viewInStack.setDisplayName(displayName)
 
-                await breakpointSplitView.views[0]!.navToLocations(
+                await viewInStack.views[0]!.navToLocations(
                   gatherOverlaps(
                     [
                       {
@@ -135,7 +154,7 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                 )
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             })()
             handleClose()

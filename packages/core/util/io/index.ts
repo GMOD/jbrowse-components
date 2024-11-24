@@ -6,19 +6,20 @@ import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import { isElectron } from '../'
 import { getBlob } from '../tracks'
 import {
+  AuthNeededError,
   isRootModelWithInternetAccounts,
   isUriLocation,
-  AuthNeededError,
 } from '../types'
+
 import type PluginManager from '../../PluginManager'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import type {
+  BlobLocation,
   FileLocation,
   LocalPathLocation,
-  BlobLocation,
   UriLocation,
 } from '../types'
-import type { GenericFilehandle, Fetcher } from 'generic-filehandle'
+import type { Fetcher, GenericFilehandle } from 'generic-filehandle'
 
 function isLocalPathLocation(
   location: FileLocation,

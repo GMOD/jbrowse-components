@@ -5,10 +5,10 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import {
   JBrowse,
   createView,
-  setup,
-  getPluginManager,
   doBeforeEach,
+  getPluginManager,
   mockConsoleWarn,
+  setup,
 } from './util'
 import masterConfig from '../../test_data/volvox/connection_test.json'
 

@@ -1,11 +1,12 @@
 import React from 'react'
+
 import {
+  assembleLocString,
+  getFillProps,
   getSession,
+  getStrokeProps,
   polarToCartesian,
   radToDeg,
-  assembleLocString,
-  getStrokeProps,
-  getFillProps,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
@@ -13,12 +14,8 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import type { CircularViewModel } from '../models/model'
-import type {
-  Slice,
-  SliceElidedRegion,
-  SliceNonElidedRegion,
-} from '../models/slices'
+import type { CircularViewModel } from '../model'
+import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'
 
 const useStyles = makeStyles()({
   rulerLabel: {

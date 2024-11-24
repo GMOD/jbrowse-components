@@ -1,8 +1,10 @@
 import React, { lazy } from 'react'
+
 import { observer } from 'mobx-react'
 
 // locals
 import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView'
+
 import type { LinearSyntenyViewModel } from '../model'
 
 const LinearSyntenyImportForm = lazy(

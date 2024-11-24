@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { FileSelector } from '@jbrowse/core/ui'
 
-// icons
+import { FileSelector } from '@jbrowse/core/ui'
 import AddIcon from '@mui/icons-material/Add'
 import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+
 import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util/types'
+
+// icons
 
 const AdapterSelector = observer(function ({
   adapterSelection,

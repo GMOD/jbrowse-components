@@ -1,6 +1,6 @@
 import type {
-  ConfigurationSchemaType,
   ConfigurationSchemaOptions,
+  ConfigurationSchemaType,
 } from './configurationSchema'
 import type ConfigSlot from './configurationSlot'
 import type { IStateTreeNode, Instance, SnapshotOut } from 'mobx-state-tree'

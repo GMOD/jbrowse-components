@@ -1,9 +1,11 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
 // locals
-import { splitString, cdsColor, updownstreamColor, utrColor } from '../util'
+import { cdsColor, splitString, updownstreamColor, utrColor } from '../util'
 import SequenceDisplay from './SequenceDisplay'
+
 import type { SimpleFeatureSerialized } from '../../../util'
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'

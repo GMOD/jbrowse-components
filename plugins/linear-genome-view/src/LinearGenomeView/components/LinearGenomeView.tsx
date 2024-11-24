@@ -1,4 +1,5 @@
-import React, { lazy, Suspense, useEffect, useRef } from 'react'
+import React, { Suspense, lazy, useEffect, useRef } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

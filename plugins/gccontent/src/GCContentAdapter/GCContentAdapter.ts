@@ -4,6 +4,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 

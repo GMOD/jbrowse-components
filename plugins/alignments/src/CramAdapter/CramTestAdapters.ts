@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Observable } from 'rxjs'
+
 import type { GenericFilehandle } from 'generic-filehandle'
 
 // setup for Cram Adapter Testing

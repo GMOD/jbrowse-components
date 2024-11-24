@@ -1,8 +1,9 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, revcom, doesIntersect2 } from '@jbrowse/core/util'
+import { SimpleFeature, doesIntersect2, revcom } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 

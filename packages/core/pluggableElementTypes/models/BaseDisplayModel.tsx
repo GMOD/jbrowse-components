@@ -1,5 +1,6 @@
 import type React from 'react'
-import { getParent, types, isRoot } from 'mobx-state-tree'
+
+import { getParent, isRoot, types } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../../configuration'

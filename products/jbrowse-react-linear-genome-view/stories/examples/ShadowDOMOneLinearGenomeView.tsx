@@ -1,14 +1,18 @@
 // @ts-nocheck
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
 import r2wc from '@r2wc/react-to-web-component'
 import { createPortal } from 'react-dom'
+
+import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+
+import type { EmotionCache } from '@emotion/cache'
+
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { getVolvoxConfig } from './util'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-import type { EmotionCache } from '@emotion/cache'
 
 type ViewState = ReturnType<typeof createViewState>
 

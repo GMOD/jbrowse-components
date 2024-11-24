@@ -11,7 +11,6 @@ import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay'
-
 import MultiDensityRendererF from './MultiDensityRenderer'
 import MultiLineRendererF from './MultiLineRenderer'
 import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
@@ -24,17 +23,17 @@ import MultiXYPlotRendererF from './MultiXYPlotRenderer'
 import QuantitativeTrackF from './QuantitativeTrack'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import {
+  MultiWiggleGetSources,
   WiggleGetGlobalQuantitativeStats,
   WiggleGetMultiRegionQuantitativeStats,
-  MultiWiggleGetSources,
 } from './WiggleRPC/rpcMethods'
 import XYPlotRendererF, {
+  XYPlotRenderer,
   ReactComponent as XYPlotRendererReactComponent,
   configSchema as xyPlotRendererConfigSchema,
-  XYPlotRenderer,
 } from './XYPlotRenderer'
-
 import * as utils from './util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AdapterGuesser,

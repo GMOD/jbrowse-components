@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
@@ -7,6 +8,7 @@ import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
+
 import type { ViewModel } from '../createModel/createModel'
 
 const JBrowseLinearGenomeView = observer(function ({

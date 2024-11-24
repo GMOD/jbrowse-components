@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 

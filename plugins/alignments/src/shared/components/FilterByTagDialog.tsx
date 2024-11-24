@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
@@ -11,6 +12,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 // locals
 import type { FilterBy } from '../types'
 

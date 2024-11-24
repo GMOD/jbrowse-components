@@ -1,8 +1,8 @@
-import clone from 'clone'
 import { autorun } from 'mobx'
 import { addDisposer, getSnapshot, types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseSession, BaseRootModel } from '@jbrowse/product-core'
+import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 import type { SnapshotIn } from 'mobx-state-tree'
 
 const { ipcRenderer } = window.require('electron')
@@ -49,7 +49,7 @@ export function DesktopSessionManagementMixin(_pluginManager: PluginManager) {
           if (!self.session) {
             return
           }
-          const snapshot = clone(getSnapshot(self.session))
+          const snapshot = structuredClone(getSnapshot(self.session))
           let newSnapshotName = `${self.session.name} (copy)`
           if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
             let newSnapshotCopyNumber = 2

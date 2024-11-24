@@ -1,17 +1,18 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-// jbrowse
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
+
+// types
 
 // icons
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
-import { types, onAction, addDisposer, getPath } from 'mobx-state-tree'
+import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
 // locals
 import { intersect } from './util'

@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
 import {
   Alert,
-  DialogContent,
-  DialogActions,
   Button,
+  DialogActions,
+  DialogContent,
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'

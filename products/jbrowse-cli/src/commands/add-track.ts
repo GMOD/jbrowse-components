@@ -2,7 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import { Args, Flags } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
+
 import JBrowseCommand from '../base'
+
 import type { Config, Track } from '../base'
 
 const { copyFile, rename, symlink } = fs.promises

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
@@ -20,6 +21,7 @@ import NumberMapEditor from './NumberMapEditor'
 import StringArrayEditor from './StringArrayEditor'
 import StringArrayMapEditor from './StringArrayMapEditor'
 import { useSlotEditorStyles } from './useSlotEditorStyles'
+
 import type {
   AnyConfigurationSlot,
   AnyConfigurationSlotType,

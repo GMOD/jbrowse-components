@@ -1,7 +1,7 @@
 import {
-  viewportVisibleSection,
   cartesianToPolar,
   thetaRangesOverlap,
+  viewportVisibleSection,
 } from './viewportVisibleRegion'
 
 describe('viewportVisibleSection', () => {

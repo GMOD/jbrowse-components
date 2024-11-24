@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import assemblyConfigSchemasFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { getSnapshot } from 'mobx-state-tree'
+
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
 import configSnapshot from '../test_data/volvox/config.json'

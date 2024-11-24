@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import deepEqual from 'fast-deep-equal'
-// types
+
 import type { FilterBy, SortedBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'

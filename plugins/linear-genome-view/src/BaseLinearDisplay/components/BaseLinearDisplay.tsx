@@ -1,4 +1,5 @@
-import React, { useState, useRef, Suspense } from 'react'
+import React, { Suspense, useRef, useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { useTheme } from '@mui/material'
@@ -8,6 +9,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 
 import LinearBlocks from './LinearBlocks'
+
 import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 const useStyles = makeStyles()({

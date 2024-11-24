@@ -1,4 +1,5 @@
 import { groupBy } from '@jbrowse/core/util'
+
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawDensity } from '../drawDensity'
 import type { MultiRenderArgsDeserialized as MultiArgs } from '../WiggleBaseRenderer'

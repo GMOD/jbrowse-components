@@ -1,4 +1,5 @@
 import { BamFile } from '@gmod/bam'
+
 // jbrowse
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
@@ -10,6 +11,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 import type { FilterBy } from '../shared/types'

@@ -1,6 +1,7 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
+
 import corePlugins from '../corePlugins'
 import rootModelFactory from './rootModel'
 import sessionModelFactory from '../sessionModel'

@@ -6,6 +6,7 @@ import { loadSessionSpec } from './SessionLoader'
 import corePlugins from './corePlugins'
 import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
+
 import type { SessionLoaderModel } from './SessionLoader'
 
 export function createPluginManager(self: SessionLoaderModel) {

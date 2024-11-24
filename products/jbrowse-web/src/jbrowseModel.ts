@@ -1,5 +1,4 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
-import clone from 'clone'
 import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
 
 // locals
@@ -29,7 +28,7 @@ export default function JBrowseWeb({
     JBrowseModelF({ pluginManager, assemblyConfigSchema }),
     {
       postProcessor(snapshot: Record<string, any>) {
-        return removeAttr(clone(snapshot), 'baseUri')
+        return removeAttr(structuredClone(snapshot), 'baseUri')
       },
     },
   )

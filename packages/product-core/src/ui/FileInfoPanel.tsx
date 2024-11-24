@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 type FileInfo = Record<string, unknown> | string

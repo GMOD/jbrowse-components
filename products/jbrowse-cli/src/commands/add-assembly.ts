@@ -1,8 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import { Args, Flags } from '@oclif/core'
+
 import JBrowseCommand from '../base'
-import type { Assembly, Sequence, Config } from '../base'
+
+import type { Assembly, Config, Sequence } from '../base'
 
 const { rename, copyFile, mkdir, symlink } = fs.promises
 

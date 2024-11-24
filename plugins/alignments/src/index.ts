@@ -1,4 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
+
 import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail'
 import AlignmentsTrackF from './AlignmentsTrack'
 import CramAdapterF from './BamAdapter'
@@ -14,6 +15,7 @@ import PileupRPCMethodsF from './PileupRPC'
 import PileupRendererF from './PileupRenderer'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
 import SNPCoverageRendererF from './SNPCoverageRenderer'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class AlignmentsPlugin extends Plugin {

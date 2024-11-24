@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import {
@@ -6,8 +7,8 @@ import {
   Checkbox,
   DialogActions,
   DialogContent,
-  FormGroup,
   FormControlLabel,
+  FormGroup,
   TextField,
   Typography,
 } from '@mui/material'

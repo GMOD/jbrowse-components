@@ -121,73 +121,77 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </label>
                   </div>
                   <div
-                    class="MuiBox-root css-1xhj18k"
+                    class="MuiFormGroup-root css-1mac7pt-MuiFormGroup-root"
                   >
                     <div
-                      class="MuiBox-root css-0"
+                      class="MuiBox-root css-1xhj18k"
                     >
                       <div
-                        aria-label="file, url, or account picker"
-                        class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal css-1qb8o-MuiToggleButtonGroup-root"
-                        role="group"
+                        class="MuiBox-root css-0"
                       >
-                        <button
-                          aria-label="local file"
-                          aria-pressed="false"
-                          class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-1ra2ms4-MuiButtonBase-root-MuiToggleButton-root"
-                          tabindex="0"
-                          type="button"
-                          value="file"
+                        <div
+                          aria-label="file, url, or account picker"
+                          class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal css-1qb8o-MuiToggleButtonGroup-root"
+                          role="group"
                         >
-                          File
-                        </button>
-                        <button
-                          aria-label="url"
-                          aria-pressed="true"
-                          class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-1ra2ms4-MuiButtonBase-root-MuiToggleButton-root"
-                          tabindex="0"
-                          type="button"
-                          value="url"
-                        >
-                          URL
-                        </button>
+                          <button
+                            aria-label="local file"
+                            aria-pressed="false"
+                            class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-1ra2ms4-MuiButtonBase-root-MuiToggleButton-root"
+                            tabindex="0"
+                            type="button"
+                            value="file"
+                          >
+                            File
+                          </button>
+                          <button
+                            aria-label="url"
+                            aria-pressed="true"
+                            class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-1ra2ms4-MuiButtonBase-root-MuiToggleButton-root"
+                            tabindex="0"
+                            type="button"
+                            value="url"
+                          >
+                            URL
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined css-9unr12-MuiFormLabel-root-MuiInputLabel-root"
-                      data-shrink="true"
-                      for=":r2:"
-                      id=":r2:-label"
-                    >
-                      Enter URL
-                    </label>
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-b32mwt-MuiInputBase-root-MuiOutlinedInput-root"
+                      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                     >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                        data-testid="urlInput"
-                        id=":r2:"
-                        type="text"
-                        value="/path/to/my.file"
-                      />
-                      <fieldset
-                        aria-hidden="true"
-                        class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
+                      <label
+                        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined css-9unr12-MuiFormLabel-root-MuiInputLabel-root"
+                        data-shrink="true"
+                        for=":r2:"
+                        id=":r2:-label"
                       >
-                        <legend
-                          class="css-w1u3ce"
+                        Enter URL
+                      </label>
+                      <div
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-b32mwt-MuiInputBase-root-MuiOutlinedInput-root"
+                      >
+                        <input
+                          aria-invalid="false"
+                          class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
+                          data-testid="urlInput"
+                          id=":r2:"
+                          type="text"
+                          value="/path/to/my.file"
+                        />
+                        <fieldset
+                          aria-hidden="true"
+                          class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                         >
-                          <span>
-                            Enter URL
-                          </span>
-                        </legend>
-                      </fieldset>
+                          <legend
+                            class="css-w1u3ce"
+                          >
+                            <span>
+                              Enter URL
+                            </span>
+                          </legend>
+                        </fieldset>
+                      </div>
                     </div>
                   </div>
                   <p

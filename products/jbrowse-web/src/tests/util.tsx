@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import React from 'react'
 
+import React from 'react'
 import { Buffer } from 'buffer'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -10,19 +10,18 @@ import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
-import { QueryParamProvider } from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+// types
 
-// jbrowse
+// locals
 import configSnapshot from '../../test_data/volvox/config.json'
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
+import JBrowse from './TestingJBrowse'
+
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// locals
 import type { GenericFilehandle } from 'generic-filehandle'
 
 type LGV = LinearGenomeViewModel
@@ -38,8 +37,9 @@ export function getPluginManager(
   initialState?: Record<string, unknown>,
   adminMode = true,
 ) {
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
 
   const rootModel = JBrowseRootModelFactory({
     pluginManager,
@@ -109,14 +109,6 @@ export function expectCanvasMatch(
   })
 }
 
-export function JBrowse(props: any) {
-  return (
-    <QueryParamProvider adapter={WindowHistoryAdapter}>
-      <JBrowseWithoutQueryParamProvider {...props} />
-    </QueryParamProvider>
-  )
-}
-
 export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
@@ -134,11 +126,13 @@ export async function createView(args?: any, adminMode?: boolean) {
   }
   return ret
 }
+
 interface Results extends ReturnType<typeof render> {
   view: LGV
   session: AbstractSessionModel
   rootModel: AppRootModel
 }
+
 export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
@@ -222,3 +216,5 @@ export function mockFile404(
     return readBuffer(request)
   })
 }
+
+export { default as JBrowse } from './TestingJBrowse'

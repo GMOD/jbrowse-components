@@ -1,17 +1,17 @@
 import '@testing-library/jest-dom'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject, getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { fireEvent } from '@testing-library/react'
 
 // locals
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
-import TestPlugin from './TestPlugin'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
-import * as sessionSharing from '../sessionSharing'
-import { doBeforeEach, setup, createView, hts } from './util'
 import sessionModelFactory from '../sessionModel'
+import * as sessionSharing from '../sessionSharing'
+import TestPlugin from './TestPlugin'
+import { createView, doBeforeEach, hts, setup } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

@@ -1,12 +1,12 @@
 import { fireEvent } from '@testing-library/react'
 
 import {
-  setup,
+  createView,
   doBeforeEach,
   expectCanvasMatch,
-  createView,
   hts,
   pv,
+  setup,
 } from './util'
 
 setup()

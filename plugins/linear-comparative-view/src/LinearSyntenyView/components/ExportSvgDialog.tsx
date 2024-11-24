@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
@@ -12,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+
 import type { ExportSvgOptions } from '../model'
 import type { TextFieldProps } from '@mui/material'
 

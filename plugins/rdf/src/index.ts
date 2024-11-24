@@ -1,10 +1,12 @@
 import Plugin from '@jbrowse/core/Plugin'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { getFileName } from '@jbrowse/core/util/tracks'
+
 import {
   AdapterClass as SPARQLAdapterClass,
   configSchema as sparqlAdapterConfigSchema,
 } from './SPARQLAdapter'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AdapterGuesser } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'

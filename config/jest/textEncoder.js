@@ -1,4 +1,4 @@
-import { TextEncoder, TextDecoder } from 'util'
+import { TextDecoder, TextEncoder } from 'util'
 
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder

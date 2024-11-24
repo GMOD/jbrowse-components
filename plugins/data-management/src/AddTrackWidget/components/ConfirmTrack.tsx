@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
+
 import { AssemblySelector } from '@jbrowse/core/ui'
 import {
-  isSupportedIndexingAdapter,
   getSession,
   isElectron,
+  isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import {
@@ -21,6 +22,7 @@ import { makeStyles } from 'tss-react/mui'
 import TextIndexingConfig from './TextIndexingConfig'
 import TrackAdapterSelector from './TrackAdapterSelector'
 import TrackTypeSelector from './TrackTypeSelector'
+
 import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

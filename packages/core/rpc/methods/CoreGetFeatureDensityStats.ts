@@ -2,6 +2,7 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '../../util'
+
 import type { RenderArgs } from './util'
 import type { Region } from '../../util'
 

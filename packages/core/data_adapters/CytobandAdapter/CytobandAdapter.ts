@@ -1,7 +1,8 @@
 // locals
-import { fetchAndMaybeUnzip, SimpleFeature } from '../../util'
+import { SimpleFeature, fetchAndMaybeUnzip } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
+
 import type { BaseOptions } from '../BaseAdapter/BaseOptions'
 
 export default class CytobandAdapter extends BaseAdapter {

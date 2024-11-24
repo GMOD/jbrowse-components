@@ -4,6 +4,7 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

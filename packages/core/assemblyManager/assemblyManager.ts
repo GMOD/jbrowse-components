@@ -5,11 +5,12 @@ import { addDisposer, getParent, types } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 import { when } from '../util'
 import assemblyFactory from './assembly'
+
+import type { AnyConfigurationModel } from '../configuration'
 import type { Assembly } from './assembly'
 import type PluginManager from '../PluginManager'
-import type { AnyConfigurationModel } from '../configuration'
 import type RpcManager from '../rpc/RpcManager'
-import type { Instance, IAnyType } from 'mobx-state-tree'
+import type { IAnyType, Instance } from 'mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 

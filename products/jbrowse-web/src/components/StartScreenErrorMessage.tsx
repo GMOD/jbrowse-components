@@ -1,5 +1,6 @@
 import React from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
+
 import NoConfigMessage from './NoConfigMessage'
 
 export default function StartScreenErrorMessage({ error }: { error: unknown }) {

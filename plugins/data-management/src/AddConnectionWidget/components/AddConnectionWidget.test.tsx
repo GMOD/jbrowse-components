@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ThemeProvider } from '@emotion/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'

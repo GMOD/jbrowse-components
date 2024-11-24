@@ -1,4 +1,5 @@
 import type React from 'react'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
@@ -6,6 +7,7 @@ import assemblyManagerFactory, {
 } from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { cast, getSnapshot, types } from 'mobx-state-tree'
+
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'

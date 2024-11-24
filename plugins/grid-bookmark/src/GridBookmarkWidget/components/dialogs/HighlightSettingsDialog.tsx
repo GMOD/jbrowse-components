@@ -1,12 +1,13 @@
 import React from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   Stack,
-  Typography,
   Switch,
+  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 

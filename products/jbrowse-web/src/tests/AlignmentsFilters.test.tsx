@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event'
 
 // locals
 import {
-  setup,
-  expectCanvasMatch,
-  doBeforeEach,
   createView,
+  doBeforeEach,
+  expectCanvasMatch,
   hts,
   pv,
+  setup,
 } from './util'
 
 setup()

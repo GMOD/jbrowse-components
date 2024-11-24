@@ -1,5 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
 import type {
   RenderArgs as ComparativeRenderArgs,
   RenderArgsSerialized as ComparativeRenderArgsSerialized,

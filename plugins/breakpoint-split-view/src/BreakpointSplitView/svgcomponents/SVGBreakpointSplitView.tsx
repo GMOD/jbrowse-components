@@ -1,9 +1,10 @@
 import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import {
-  SVGTracks,
   SVGRuler,
+  SVGTracks,
   totalHeight,
 } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
@@ -14,7 +15,8 @@ import { getRoot } from 'mobx-state-tree'
 import SVGBackground from './SVGBackground'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
 import Overlay from '../components/Overlay'
-import type { ExportSvgOptions, BreakpointViewModel } from '../model'
+
+import type { BreakpointViewModel, ExportSvgOptions } from '../model'
 
 type BSV = BreakpointViewModel
 

@@ -1,4 +1,5 @@
 import React from 'react'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'

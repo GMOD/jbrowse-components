@@ -4,6 +4,7 @@ import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 

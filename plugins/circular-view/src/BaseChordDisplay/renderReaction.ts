@@ -1,9 +1,8 @@
-import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import clone from 'clone'
 
 // locals
-import type { CircularViewModel } from '../../CircularView/models/model'
+import type { CircularViewModel } from '../CircularView/model'
 
 export function renderReactionData(self: any) {
   const view = getContainingView(self) as CircularViewModel
@@ -16,9 +15,9 @@ export function renderReactionData(self: any) {
     renderProps: self.renderProps(),
     renderArgs: {
       assemblyName: view.displayedRegions[0]!.assemblyName,
-      adapterConfig: clone(self.adapterConfig),
+      adapterConfig: structuredClone(self.adapterConfig),
       rendererType: rendererType.name,
-      regions: clone(view.displayedRegions),
+      regions: structuredClone(view.displayedRegions),
       blockDefinitions: self.blockDefinitions,
       sessionId: getRpcSessionId(self),
       timeout: 1000000,

@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // Note: this is primarily a copy of createBaseTrackConfig, except with a

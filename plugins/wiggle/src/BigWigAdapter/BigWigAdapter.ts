@@ -4,6 +4,7 @@ import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'

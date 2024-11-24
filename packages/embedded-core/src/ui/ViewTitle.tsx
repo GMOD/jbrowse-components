@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react'
+
 import { Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { IconButton, Typography, alpha } from '@mui/material'

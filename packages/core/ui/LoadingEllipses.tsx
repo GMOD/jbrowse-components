@@ -1,7 +1,9 @@
 import React from 'react'
+
 import { Typography } from '@mui/material'
 import { keyframes } from 'tss-react'
 import { makeStyles } from 'tss-react/mui'
+
 import type { TypographyProps } from '@mui/material'
 
 const useStyles = makeStyles()({

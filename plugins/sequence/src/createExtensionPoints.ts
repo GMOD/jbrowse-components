@@ -1,4 +1,5 @@
-import { makeIndex, getFileName } from '@jbrowse/core/util/tracks'
+import { getFileName, makeIndex } from '@jbrowse/core/util/tracks'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AdapterGuesser,

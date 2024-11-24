@@ -1,6 +1,7 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types, getParent } from 'mobx-state-tree'
+import { getParent, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

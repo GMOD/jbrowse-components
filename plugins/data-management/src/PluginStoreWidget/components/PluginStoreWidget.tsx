@@ -1,4 +1,5 @@
-import React, { useState, lazy, Suspense } from 'react'
+import React, { Suspense, lazy, useState } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 

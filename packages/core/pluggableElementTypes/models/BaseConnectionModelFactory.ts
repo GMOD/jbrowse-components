@@ -1,6 +1,8 @@
 import { cast, types } from 'mobx-state-tree'
+
 import configSchema from './baseConnectionConfig'
 import { ConfigurationReference } from '../../configuration'
+
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationModel } from '../../configuration'
 

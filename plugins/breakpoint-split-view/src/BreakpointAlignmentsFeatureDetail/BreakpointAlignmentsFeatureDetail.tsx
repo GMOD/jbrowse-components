@@ -1,7 +1,8 @@
 import React from 'react'
+
 import {
-  BaseCoreDetails,
   BaseAttributes,
+  BaseCoreDetails,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'

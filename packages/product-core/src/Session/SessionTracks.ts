@@ -2,6 +2,7 @@ import { types } from 'mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 import { TracksManagerSessionMixin } from './Tracks'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,
@@ -9,6 +10,7 @@ import type {
 } from '@jbrowse/core/configuration'
 
 // locals
+
 import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 /**

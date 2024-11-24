@@ -1,10 +1,13 @@
 import React, { Suspense } from 'react'
+
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-// locals
+
 import { YSCALEBAR_LABEL_OFFSET } from './util'
+
 import type { Feature } from '@jbrowse/core/util'
+// locals
 
 const useStyles = makeStyles()({
   hoverVertical: {

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { Tooltip } from '@mui/material'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 // icons
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import type { GridBookmarkModel, IExtendedLGV } from '../../model'

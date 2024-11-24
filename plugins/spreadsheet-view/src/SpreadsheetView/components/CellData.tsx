@@ -1,5 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import type SpreadsheetStateModel from '../Spreadsheet'
 import type SpreadsheetStateModel from '../models/Spreadsheet'
 import type { Instance } from 'mobx-state-tree'
 
@@ -17,18 +18,7 @@ const CellData = observer(function ({
   columnNumber: number
 }) {
   const column = spreadsheetModel.columns[columnNumber]
-  return column &&
-    'dataType' in column &&
-    column.dataType.DataCellReactComponent ? (
-    <column.dataType.DataCellReactComponent
-      cell={cell}
-      dataType={column.dataType}
-      columnNumber={columnNumber}
-      spreadsheet={spreadsheetModel}
-    />
-  ) : (
-    cell.text
-  )
+  return cell.text
 })
 
 export default CellData

@@ -3,18 +3,18 @@ import path from 'path'
 import url from 'url'
 import { generateFastaIndex } from '@gmod/faidx'
 import electron, {
-  dialog,
-  app,
-  ipcMain,
-  shell,
   BrowserWindow,
   Menu,
+  app,
+  dialog,
+  ipcMain,
+  shell,
 } from 'electron'
 import debug from 'electron-debug'
 import { autoUpdater } from 'electron-updater'
 import windowStateKeeper from 'electron-window-state'
-// @ts-ignore
 import parseJson from 'json-parse-even-better-errors'
+// @ts-ignore
 
 // locals
 import { getFileStream } from './generateFastaIndex'

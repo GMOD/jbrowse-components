@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
@@ -7,6 +8,7 @@ import { render } from '@testing-library/react'
 // locals
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 import conf from '../../../../../test_data/test_order/config.json'
+
 import type { HierarchicalTrackSelectorModel } from '../model'
 
 // test data

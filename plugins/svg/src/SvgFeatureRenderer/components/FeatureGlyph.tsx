@@ -1,13 +1,16 @@
 import React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 
-// locals
 import FeatureLabel from './FeatureLabel'
+
 import type { DisplayModel } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
+
+// locals
 
 const FeatureGlyph = observer(function (props: {
   feature: Feature

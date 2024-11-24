@@ -1,13 +1,15 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
-// locals
 import { fillRectCtx, strokeRectCtx } from './util'
 import { fillColor, strokeColor } from '../shared/color'
+
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ChainData } from '../shared/fetchChains'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// locals
 
 export function drawLongReadChains({
   ctx,

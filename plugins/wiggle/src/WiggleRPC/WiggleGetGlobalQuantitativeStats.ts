@@ -1,6 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
 

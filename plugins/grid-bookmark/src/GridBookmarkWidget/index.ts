@@ -1,11 +1,14 @@
 import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 
-// locals
 import AddHighlightModelF from './components/Highlight'
 import stateModelFactory from './model'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
 
 const configSchema = ConfigurationSchema('GridBookmarkWidget', {})
 

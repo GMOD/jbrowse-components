@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
@@ -6,6 +7,7 @@ import { DialogContent, DialogContentText } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({

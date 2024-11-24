@@ -7,6 +7,7 @@ import HicAdapterF from './HicAdapter'
 import HicRendererF from './HicRenderer'
 import HicTrackF from './HicTrack'
 import LinearHicDisplayF from './LinearHicDisplay'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Colord } from '@jbrowse/core/util/colord'
 import type {

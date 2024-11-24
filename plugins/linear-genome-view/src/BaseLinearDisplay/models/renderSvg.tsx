@@ -1,8 +1,9 @@
 import React from 'react'
+
 import {
+  ReactRendering,
   getContainingView,
   getViewParams,
-  ReactRendering,
 } from '@jbrowse/core/util'
 
 // locals

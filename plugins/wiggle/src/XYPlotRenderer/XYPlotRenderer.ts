@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawXY } from '../drawXY'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'

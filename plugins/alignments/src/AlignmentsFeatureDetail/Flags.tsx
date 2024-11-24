@@ -1,4 +1,5 @@
 import React from 'react'
+
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField'
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'

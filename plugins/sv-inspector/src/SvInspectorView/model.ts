@@ -2,25 +2,27 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-
-// icons
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import clone from 'clone'
-import { autorun, reaction } from 'mobx'
-import { types, addDisposer } from 'mobx-state-tree'
 
-// locals
+import { autorun, reaction } from 'mobx'
+import { addDisposer, types } from 'mobx-state-tree'
+
+// types
 import {
   canOpenBreakpointSplitViewFromTableRow,
   openBreakpointSplitViewFromTableRow,
-  getFeatureForRow,
 } from './breakpointSplitViewFromTableRow'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 import type { Instance } from 'mobx-state-tree'
+
+// icons
+
+// locals
 
 /**
  * #stateModel SvInspectorView
@@ -61,27 +63,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement(
-            'SvInspectorViewHeight',
-            types.number,
-            n => n >= minHeight,
-          ),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */
         onlyDisplayRelevantRegionsInCircularView: false,
-        /**
-         * #property
-         * switch specifying whether we are showing the import wizard or the
-         * spreadsheet in our viewing area
-         */
-        mode: types.optional(
-          types.enumeration('SvInspectorViewMode', ['import', 'display']),
-          'import',
-        ),
         /**
          * #property
          */
@@ -105,15 +91,24 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: 800,
+      /**
+       * #volatile
+       */
+      SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent,
+      /**
+       * #volatile
+       */
+      CircularViewReactComponent: CircularViewType.ReactComponent,
+      /**
+       * #volatile
+       */
+      circularViewOptionsBarHeight,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get selectedRows() {
-        return self.spreadsheetView.spreadsheet?.rowSet.selectedRows
-      },
       /**
        * #getter
        */
@@ -127,19 +122,18 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get showCircularView() {
-        return self.spreadsheetView.mode === 'display'
+        return !!self.spreadsheetView.spreadsheet
       },
 
       /**
        * #getter
        */
       get features() {
-        const session = getSession(self)
-        const { spreadsheetView } = self
-        const { outputRows = [] } = spreadsheetView
-        return outputRows
-          .map((r, i) => getFeatureForRow(session, spreadsheetView, r, i))
-          .filter(f => !!f)
+        return (
+          structuredClone(self.spreadsheetView.spreadsheet?.visibleRows)
+            ?.map(row => row.feature)
+            .filter(f => !!f) || []
+        )
       },
       /**
        * #getter
@@ -154,9 +148,35 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get featureRefNames() {
-        const refs = this.features.map(r => r.refName)
-        const CHR2 = this.features.flatMap(r => r.INFO?.CHR2).filter(f => !!f)
-        return [...refs, ...CHR2]
+        return [
+          ...new Set(
+            [
+              ...this.features.map(r => r.refName),
+              // @ts-expect-error
+              ...this.features.flatMap(r => r.INFO?.CHR2),
+              // @ts-expect-error
+              ...this.features.flatMap(r => r.mate?.refName),
+            ].filter(f => !!f),
+          ),
+        ]
+      },
+      get currentAssembly() {
+        const { assemblyManager } = getSession(self)
+        return this.assemblyName
+          ? assemblyManager.get(this.assemblyName)
+          : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get canonicalFeatureRefNameSet() {
+        const asm = this.currentAssembly
+        return new Set(
+          asm?.initialized
+            ? this.featureRefNames.map(r => asm.getCanonicalRefName(r) || r)
+            : [],
+        )
       },
       /**
        * #getter
@@ -174,17 +194,15 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
               onChordClick:
                 'jexl:defaultOnChordClick(feature, track, pluginManager)',
-              renderer: { type: 'StructuralVariantChordRenderer' },
+              renderer: {
+                type: 'StructuralVariantChordRenderer',
+              },
             },
           ],
         }
       },
     }))
-    .volatile(() => ({
-      SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent,
-      CircularViewReactComponent: CircularViewType.ReactComponent,
-      circularViewOptionsBarHeight,
-    }))
+
     .actions(self => ({
       /**
        * #action
@@ -198,18 +216,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       setHeight(newHeight: number) {
         self.height = Math.max(newHeight, minHeight)
         return self.height
-      },
-      /**
-       * #action
-       */
-      setImportMode() {
-        self.spreadsheetView.setImportMode()
-      },
-      /**
-       * #action
-       */
-      setDisplayMode() {
-        self.spreadsheetView.setDisplayMode()
       },
 
       /**
@@ -233,10 +239,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return [
           {
             label: 'Return to import form',
-            onClick: () => {
-              self.setImportMode()
-            },
             icon: FolderOpenIcon,
+            onClick: () => {
+              self.spreadsheetView.displaySpreadsheet(undefined)
+            },
           },
         ]
       },
@@ -290,39 +296,31 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           autorun(
             async () => {
               const {
-                assemblyName,
                 onlyDisplayRelevantRegionsInCircularView,
                 circularView,
-                featureRefNames,
+                canonicalFeatureRefNameSet,
+                currentAssembly,
               } = self
-              const { tracks } = circularView
-              const { assemblyManager } = getSession(self)
-              if (!assemblyName) {
+              if (!circularView.initialized || !currentAssembly?.regions) {
                 return
               }
-              const asm = await assemblyManager.waitForAssembly(assemblyName)
-              if (!asm) {
-                return
-              }
-
-              const { getCanonicalRefName, regions = [] } = asm
               if (onlyDisplayRelevantRegionsInCircularView) {
-                if (tracks.length === 1) {
+                if (circularView.tracks.length === 1) {
                   try {
-                    // canonicalize the store's ref names if necessary
-                    const refSet = new Set(
-                      featureRefNames.map(r => getCanonicalRefName(r) || r),
-                    )
-
                     circularView.setDisplayedRegions(
-                      clone(regions.filter(r => refSet.has(r.refName))),
+                      structuredClone(
+                        currentAssembly.regions.filter(r =>
+                          canonicalFeatureRefNameSet.has(r.refName),
+                        ),
+                      ),
                     )
                   } catch (e) {
-                    circularView.setError(e)
+                    console.error(e)
+                    getSession(self).notifyError(`${e}`, e)
                   }
                 }
               } else {
-                circularView.setDisplayedRegions(regions)
+                circularView.setDisplayedRegions(currentAssembly.regions)
               }
             },
             { name: 'SvInspectorView displayed regions bind' },
@@ -338,6 +336,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               assemblyName: self.assemblyName,
             }),
             data => {
+              if (!data) {
+                return
+              }
               const { assemblyName, generatedTrackConf } = data
               const { circularView } = self
               // hide any visible tracks
@@ -399,6 +400,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         )
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { circularView, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>

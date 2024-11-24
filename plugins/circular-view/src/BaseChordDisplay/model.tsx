@@ -4,28 +4,25 @@ import React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
+  ReactRendering,
   getContainingView,
-  getSession,
   getEnv,
+  getSession,
   isFeature,
   makeAbortableReaction,
-  ReactRendering,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
+import { getParent, isAlive, types } from 'mobx-state-tree'
 
 // locals
-import clone from 'clone'
-import { getParent, isAlive, types } from 'mobx-state-tree'
 import { baseChordDisplayConfig } from './configSchema'
 import { renderReactionData, renderReactionEffect } from './renderReaction'
-import type {
-  CircularViewModel,
-  ExportSvgOptions,
-} from '../../CircularView/models/model'
+
+import type { CircularViewModel, ExportSvgOptions } from '../CircularView/model'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
 
@@ -110,19 +107,19 @@ export const BaseChordDisplayModel = types
         return origSlices
       }
 
-      const slices = clone(origSlices)
+      const slices = structuredClone(origSlices)
 
-      slices.forEach(slice => {
+      for (const slice of slices) {
         const regions = slice.region.elided
           ? slice.region.regions
           : [slice.region]
-        regions.forEach(region => {
-          const renamed = self.refNameMap?.[region.refName]
+        for (const region of regions) {
+          const renamed = self.refNameMap[region.refName]
           if (renamed && region.refName !== renamed) {
             region.refName = renamed
           }
-        })
-      })
+        }
+      }
       return slices
     },
 

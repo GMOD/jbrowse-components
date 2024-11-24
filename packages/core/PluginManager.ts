@@ -19,18 +19,17 @@ import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
-
 import createJexlInstance from './util/jexl'
-import type Plugin from './Plugin'
 
+import type Plugin from './Plugin'
 import type { PluginDefinition } from './PluginLoader'
 import type {
-  PluggableElementType,
   PluggableElementMember,
+  PluggableElementType,
 } from './pluggableElementTypes'
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
-import type { IAnyType, IAnyModelType } from 'mobx-state-tree'
+import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
 
 // helper class that keeps groups of callbacks that are then run in a specified
 // order by group

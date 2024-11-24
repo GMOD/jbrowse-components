@@ -4,6 +4,7 @@ import { bpSpanPx } from '@jbrowse/core/util'
 // locals
 import { fillRect, getCharWidthHeight } from './util'
 import { parseCigar } from '../MismatchParser'
+
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import type { LayoutFeature } from './util'
 import type { Mismatch } from '../shared/types'

@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react'
+
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import CloseIcon from '@mui/icons-material/Close'

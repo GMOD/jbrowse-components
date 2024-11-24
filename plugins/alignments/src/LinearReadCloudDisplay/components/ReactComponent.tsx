@@ -1,11 +1,14 @@
 import React, { useCallback } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// local
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
+
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// local
 
 type LGV = LinearGenomeViewModel
 

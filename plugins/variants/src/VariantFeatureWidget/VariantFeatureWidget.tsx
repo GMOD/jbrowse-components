@@ -1,4 +1,5 @@
-import React, { lazy, Suspense } from 'react'
+import React, { Suspense, lazy } from 'react'
+
 import { parseBreakend } from '@gmod/vcf'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import { Paper } from '@mui/material'

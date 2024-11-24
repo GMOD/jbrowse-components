@@ -1,9 +1,10 @@
 import React from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import {
-  measureText,
-  getContainingView,
   getContainingTrack,
+  getContainingView,
+  measureText,
 } from '@jbrowse/core/util'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'

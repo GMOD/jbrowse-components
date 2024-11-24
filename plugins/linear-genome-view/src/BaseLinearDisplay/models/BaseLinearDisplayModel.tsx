@@ -1,14 +1,15 @@
 import type React from 'react'
 import { lazy } from 'react'
+
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  getContainingView,
   getContainingTrack,
+  getContainingView,
   getSession,
+  isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
-  isFeature,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -24,12 +25,13 @@ import FeatureDensityMixin from './FeatureDensityMixin'
 import TrackHeightMixin from './TrackHeightMixin'
 import configSchema from './configSchema'
 import BlockState from './serverSideRenderedBlock'
+
 import type {
-  LinearGenomeViewModel,
   ExportSvgOptions,
+  LinearGenomeViewModel,
 } from '../../LinearGenomeView'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, AnyReactComponentType } from '@jbrowse/core/util'
+import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 import type { Instance } from 'mobx-state-tree'

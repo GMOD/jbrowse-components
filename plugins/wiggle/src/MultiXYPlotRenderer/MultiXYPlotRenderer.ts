@@ -1,7 +1,9 @@
 import { groupBy } from '@jbrowse/core/util'
+
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawXY } from '../drawXY'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
+
 import type { MultiRenderArgsDeserialized as MultiArgs } from '../WiggleBaseRenderer'
 import type { Feature } from '@jbrowse/core/util'
 

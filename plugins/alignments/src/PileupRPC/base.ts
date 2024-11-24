@@ -1,5 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 
 // specialized get features to return limited data about alignments

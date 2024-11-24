@@ -10,6 +10,7 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const webpack = require('webpack')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
+
 const getClientEnvironment = require('./env')
 const modules = require('./modules')
 const paths = require('./paths')

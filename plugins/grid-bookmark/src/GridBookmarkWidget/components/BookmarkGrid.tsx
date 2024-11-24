@@ -1,8 +1,9 @@
 import React, { lazy } from 'react'
+
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
-  getSession,
   assembleLocString,
+  getSession,
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
@@ -13,6 +14,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { navToBookmark } from '../utils'
+
 import type { GridBookmarkModel } from '../model'
 
 const EditBookmarkLabelDialog = lazy(

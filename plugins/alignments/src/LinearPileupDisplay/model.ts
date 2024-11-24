@@ -1,10 +1,11 @@
 import { lazy } from 'react'
+
 import {
   ConfigurationReference,
-  readConfObject,
   getConf,
+  readConfObject,
 } from '@jbrowse/core/configuration'
-import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 // icons
@@ -13,7 +14,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { observable } from 'mobx'
-import { types, isAlive } from 'mobx-state-tree'
+import { isAlive, types } from 'mobx-state-tree'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
@@ -23,6 +24,7 @@ import {
   getColorForModification,
   modificationData,
 } from '../util'
+
 import type {
   ModificationType,
   ModificationTypeWithColor,

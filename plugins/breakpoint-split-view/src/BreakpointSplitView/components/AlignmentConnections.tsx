@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -11,10 +12,10 @@ import {
   hasPairedReads,
 } from './util'
 import {
-  yPos,
-  useNextFrame,
   getPxFromCoordinate,
   heightFromSpecificLevel,
+  useNextFrame,
+  yPos,
 } from '../util'
 import {
   getLongReadOrientationAbnormal,

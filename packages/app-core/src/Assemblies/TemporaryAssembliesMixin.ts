@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { BaseSession } from '@jbrowse/product-core'

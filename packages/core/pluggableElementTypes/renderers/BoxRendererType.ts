@@ -11,19 +11,19 @@ import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
 // other
 import type {
   RenderArgs as FeatureRenderArgs,
-  RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
+  RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderResults as FeatureRenderResults,
-  ResultsSerialized as FeatureResultsSerialized,
   ResultsDeserialized as FeatureResultsDeserialized,
+  ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
 import type { AnyConfigurationModel } from '../../configuration'
-import type { Region, Feature } from '../../util'
+import type { Feature, Region } from '../../util'
 import type SerializableFilterChain from './util/serializableFilterChain'
 import type RpcManager from '../../rpc/RpcManager'
 import type {
-  SerializedLayout,
   BaseLayout,
+  SerializedLayout,
 } from '../../util/layouts/BaseLayout'
 
 export interface LayoutSessionProps {

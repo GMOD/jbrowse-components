@@ -1,6 +1,9 @@
 import type React from 'react'
+
 import { onPatch } from 'mobx-state-tree'
+
 import createModel from './createModel'
+
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { IJsonPatch, SnapshotIn } from 'mobx-state-tree'

@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { LocalFile } from 'generic-filehandle'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Adapter from './CramAdapter'
 import { SequenceAdapter } from './CramTestAdapters'
 import configSchema from './configSchema'

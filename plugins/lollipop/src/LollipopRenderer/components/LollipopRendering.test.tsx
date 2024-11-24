@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 

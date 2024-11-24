@@ -1,24 +1,31 @@
 import React from 'react'
+
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+
 import { isUriLocation } from '../../util/types'
+
+// types
 import type { FileLocation } from '../../util/types'
 
 const UrlChooser = observer(function ({
   location,
-  setLocation,
   label,
+  style,
+  setLocation,
 }: {
   location?: FileLocation
-  setLocation: (arg: FileLocation) => void
   label?: string
+  style?: Record<string, unknown>
+  setLocation: (arg: FileLocation) => void
 }) {
   return (
     <TextField
-      fullWidth
       variant="outlined"
+      fullWidth
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       label={label || 'Enter URL'}
+      style={style}
       onChange={event => {
         setLocation({
           uri: event.target.value.trim(),
@@ -26,7 +33,9 @@ const UrlChooser = observer(function ({
         })
       }}
       slotProps={{
-        htmlInput: { 'data-testid': 'urlInput' },
+        htmlInput: {
+          'data-testid': 'urlInput',
+        },
       }}
     />
   )

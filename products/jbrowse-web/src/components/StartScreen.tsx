@@ -1,5 +1,5 @@
 import React, { lazy, useEffect, useState } from 'react'
-import { LogoFull, ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorMessage, LogoFull } from '@jbrowse/core/ui'
 import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
 
 // icons
@@ -25,6 +25,7 @@ import {
   NewSVInspectorSession,
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
+
 import type { WebRootModel } from '../rootModel/rootModel'
 
 // lazies

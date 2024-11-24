@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
@@ -14,7 +15,7 @@ import {
 } from '@mui/material'
 
 // locals
-import type { ExportSvgOptions } from '../models/model'
+import type { ExportSvgOptions } from '../model'
 import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage() {

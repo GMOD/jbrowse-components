@@ -3,8 +3,9 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const svTypes = new Set(['DUP', 'TRA', 'INV', 'CNV', 'DEL'])
 

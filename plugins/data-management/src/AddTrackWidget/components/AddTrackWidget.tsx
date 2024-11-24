@@ -1,6 +1,7 @@
 import React, { Suspense, useState } from 'react'
+
 import { getEnv } from '@jbrowse/core/util'
-import { FormControl, FormHelperText, Select, MenuItem } from '@mui/material'
+import { FormControl, FormHelperText, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // locals

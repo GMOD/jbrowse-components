@@ -1,4 +1,5 @@
 import idMaker from '../util/idMaker'
+
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationSchemaType } from '../configuration'
 import type { AnyDataAdapter } from './BaseAdapter'

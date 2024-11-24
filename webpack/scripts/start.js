@@ -20,6 +20,7 @@ const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
+
 const paths = require('../config/paths')
 
 const useYarn = fs.existsSync(paths.yarnLockFile)

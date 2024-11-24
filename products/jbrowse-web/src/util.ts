@@ -4,20 +4,21 @@ import {
   isUMDPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
 import {
-  getPropertyMembers,
   getChildType,
+  getPropertyMembers,
   isArrayType,
+  isMapType,
   isModelType,
   isReferenceType,
   isValidReference,
-  isMapType,
 } from 'mobx-state-tree'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+
 import type {
-  types,
-  IAnyType,
   IAnyStateTreeNode,
+  IAnyType,
   Instance,
+  types,
 } from 'mobx-state-tree'
 
 /**

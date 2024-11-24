@@ -6,7 +6,9 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { parseStringSync } from 'gff-nostream'
+
 import { featureData } from '../featureData'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

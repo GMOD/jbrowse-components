@@ -1,4 +1,5 @@
 import { colord } from '@jbrowse/core/util/colord'
+
 import type { ChainData } from './fetchChains'
 
 export function hasPairedReads(features: ChainData) {

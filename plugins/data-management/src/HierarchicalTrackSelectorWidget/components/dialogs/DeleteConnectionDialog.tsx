@@ -1,12 +1,14 @@
 import React from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
+  Button,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  Button,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

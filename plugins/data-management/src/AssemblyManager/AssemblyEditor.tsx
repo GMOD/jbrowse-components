@@ -1,7 +1,9 @@
 import React from 'react'
+
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({

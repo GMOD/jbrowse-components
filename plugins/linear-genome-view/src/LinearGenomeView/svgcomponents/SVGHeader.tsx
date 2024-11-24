@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { getSession, stripAlpha } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'

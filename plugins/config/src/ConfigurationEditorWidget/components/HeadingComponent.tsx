@@ -1,6 +1,7 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
-import { isStateTreeNode, getType } from 'mobx-state-tree'
+import { getType, isStateTreeNode } from 'mobx-state-tree'
 
 const HeadingComponent = observer(function ({
   model,

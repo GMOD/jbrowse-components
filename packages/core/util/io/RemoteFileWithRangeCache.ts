@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
 import { RemoteFile } from 'generic-filehandle'
+
 import type { PolyfilledResponse } from 'generic-filehandle'
 
 type BinaryRangeFetch = (

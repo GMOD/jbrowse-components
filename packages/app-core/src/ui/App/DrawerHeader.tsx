@@ -1,13 +1,16 @@
 import React from 'react'
+
 import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import DrawerControls from './DrawerControls'
 import DrawerWidgetSelector from './DrawerWidgetSelector'
+
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+
+// locals
 
 // icons
 

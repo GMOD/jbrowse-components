@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { Divider, Typography } from '@mui/material'
 
@@ -10,6 +11,7 @@ import BaseCard from './BaseCard'
 import CoreDetails from './CoreDetails'
 import { ErrorMessage } from '../../ui'
 import { getEnv, getSession } from '../../util'
+
 import type { SimpleFeatureSerialized } from '../../util'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 

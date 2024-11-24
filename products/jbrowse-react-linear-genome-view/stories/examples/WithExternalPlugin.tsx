@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
+
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
 import {
+  JBrowseLinearGenomeView,
   createViewState,
   loadPlugins,
-  JBrowseLinearGenomeView,
 } from '../../src'
 
 const hg19Assembly = {

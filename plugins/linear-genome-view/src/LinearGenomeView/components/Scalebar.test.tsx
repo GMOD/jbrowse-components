@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { render } from '@testing-library/react'
+
 import Scalebar from './Scalebar'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

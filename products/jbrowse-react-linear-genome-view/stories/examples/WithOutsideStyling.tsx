@@ -1,6 +1,7 @@
 import React from 'react'
+
 import { getVolvoxConfig } from './util'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 export const WithOutsideStyling = () => {
   const { assembly, tracks } = getVolvoxConfig()

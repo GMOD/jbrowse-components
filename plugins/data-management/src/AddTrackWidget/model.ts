@@ -1,11 +1,12 @@
 import {
+  UNSUPPORTED,
+  getFileName,
   guessAdapter,
   guessTrackType,
-  getFileName,
-  UNSUPPORTED,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'

@@ -1,6 +1,7 @@
 import React from 'react'
+
 import { getSession } from '@jbrowse/core/util'
-import { useTheme, alpha } from '@mui/material'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

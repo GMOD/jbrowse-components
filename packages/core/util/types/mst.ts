@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+
 import { nanoid } from '../nanoid'
 
 export const ElementId = types.optional(types.identifier, () => nanoid())

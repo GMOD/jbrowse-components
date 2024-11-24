@@ -1,4 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
+
 import type { AnyConfigurationSchemaType } from '../configuration'
 import type DisplayType from './DisplayType'
 import type { IAnyModelType } from 'mobx-state-tree'

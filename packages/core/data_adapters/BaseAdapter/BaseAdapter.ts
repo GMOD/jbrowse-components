@@ -1,8 +1,9 @@
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
 // locals
 import { readConfObject, ConfigurationSchema } from '../../configuration'
 import idMaker from '../../util/idMaker'
+
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { AugmentedRegion as Region } from '../../util/types'

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import { getSession, reverse, complement } from '@jbrowse/core/util'
+import { complement, getSession, reverse } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
@@ -14,8 +15,8 @@ import {
   Container,
   DialogActions,
   DialogContent,
-  FormGroup,
   FormControlLabel,
+  FormGroup,
   TextField,
   Typography,
 } from '@mui/material'

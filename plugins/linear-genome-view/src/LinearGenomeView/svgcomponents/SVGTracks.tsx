@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+
 // locals
 import SVGRegionSeparators from './SVGRegionSeparators'
 import SVGTrackLabel from './SVGTrackLabel'

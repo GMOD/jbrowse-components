@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import type { Region } from '@jbrowse/core/util/types'

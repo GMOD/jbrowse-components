@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 

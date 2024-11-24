@@ -6,6 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature'
 import { parseLineByLine } from '../util'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 

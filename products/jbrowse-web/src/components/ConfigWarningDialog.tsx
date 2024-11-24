@@ -9,9 +9,10 @@ import {
   DialogContent,
   DialogContentText,
 } from '@mui/material'
-import factoryReset from '../factoryReset'
-import type { SessionLoaderModel } from '../SessionLoader'
 
+import factoryReset from '../factoryReset'
+
+import type { SessionLoaderModel } from '../SessionLoader'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 function ConfigWarningDialog({

@@ -1,26 +1,29 @@
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
+
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import isObject from 'is-object'
 import {
+  getEnv as getEnvMST,
   getParent,
   getSnapshot,
-  getEnv as getEnvMST,
+  hasParent,
   isAlive,
   isStateTreeNode,
-  hasParent,
 } from 'mobx-state-tree'
 import { flushSync, render } from 'react-dom' // eslint-disable-line react/no-deprecated
+
 import { colord } from './colord'
 import { checkStopToken } from './stopToken'
 import {
-  isSessionModel,
   isDisplayModel,
-  isViewModel,
+  isSessionModel,
   isTrackModel,
+  isViewModel,
   isUriLocation,
 } from './types'
+
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
@@ -37,6 +40,7 @@ import type {
   IStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
+
 export * from './types'
 export * from './when'
 export * from './range'

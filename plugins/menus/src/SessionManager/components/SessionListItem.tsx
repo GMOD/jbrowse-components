@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { sum } from '@jbrowse/core/util'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import {
@@ -7,15 +8,14 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material'
-
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
 
 // icons
-
-// locals
 import type { SessionSnap } from './util'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+// locals
 
 const SessionListItem = observer(function ({
   session,

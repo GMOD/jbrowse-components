@@ -3,9 +3,9 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 // locals
 import { featurizeSA } from '../MismatchParser'
 import {
-  getPairedOrientationColor,
-  getPairedInsertSizeColor,
   getPairedInsertSizeAndOrientationColor,
+  getPairedInsertSizeColor,
+  getPairedOrientationColor,
 } from '../shared/color'
 import { hasPairedReads } from '../shared/util'
 import type { LinearReadArcsDisplayModel } from './model'

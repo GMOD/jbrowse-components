@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react'
+
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 

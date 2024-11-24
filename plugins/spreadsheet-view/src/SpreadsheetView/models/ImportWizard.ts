@@ -6,21 +6,18 @@ import type { Instance } from 'mobx-state-tree'
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
 
-const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
+const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion']
 const fileTypeParsers = {
-  CSV: () =>
-    import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
-  TSV: () =>
-    import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
-  VCF: () => import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
-  BED: () => import('../importAdapters/BedImport').then(r => r.parseBedBuffer),
+  VCF: () => import('./importAdapters/VcfImport').then(r => r.parseVcfBuffer),
+  BED: () => import('./importAdapters/BedImport').then(r => r.parseBedBuffer),
   BEDPE: () =>
-    import('../importAdapters/BedImport').then(r => r.parseBedPEBuffer),
+    import('./importAdapters/BedpeImport').then(r => r.parseBedPEBuffer),
   'STAR-Fusion': () =>
-    import('../importAdapters/STARFusionImport').then(
+    import('./importAdapters/STARFusionImport').then(
       r => r.parseSTARFusionBuffer,
     ),
 }
+
 // regexp used to guess the type of a file or URL from its file extension
 const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
 
@@ -35,7 +32,7 @@ const ImportWizard = types
     /**
      * #property
      */
-    fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
+    fileType: types.optional(types.enumeration(fileTypes), 'VCF'),
     /**
      * #property
      */
@@ -50,13 +47,27 @@ const ImportWizard = types
     selectedAssemblyName: types.maybe(types.string),
   })
   .volatile(() => ({
+    /**
+     * #volatile
+     */
     fileTypes,
-
+    /**
+     * #volatile
+     */
     fileSource: undefined as any,
+    /**
+     * #volatile
+     */
     error: undefined as unknown,
+    /**
+     * #volatile
+     */
     loading: false,
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
     get isReadyToOpen() {
       return (
         !self.error &&
@@ -66,10 +77,16 @@ const ImportWizard = types
           self.fileSource.uri)
       )
     },
+    /**
+     * #getter
+     */
     get canCancel() {
       return getParent<any>(self).readyToDisplay
     },
 
+    /**
+     * #getter
+     */
     get fileName() {
       return (
         self.fileSource.uri ||
@@ -78,22 +95,33 @@ const ImportWizard = types
       )
     },
 
+    /**
+     * #getter
+     */
     get requiresUnzip() {
       return this.fileName.endsWith('gz')
     },
 
+    /**
+     * #method
+     */
     isValidRefName(refName: string, assemblyName?: string) {
       const { assemblyManager } = getSession(self)
-      if (!assemblyName) {
-        return false
-      }
-      return assemblyManager.isValidRefName(refName, assemblyName)
+      return !assemblyName
+        ? false
+        : assemblyManager.isValidRefName(refName, assemblyName)
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
     setSelectedAssemblyName(s: string) {
       self.selectedAssemblyName = s
     },
+    /**
+     * #action
+     */
     setFileSource(newSource: unknown) {
       self.fileSource = newSource
       self.error = undefined
@@ -114,39 +142,52 @@ const ImportWizard = types
       }
     },
 
-    toggleHasColumnNameLine() {
-      self.hasColumnNameLine = !self.hasColumnNameLine
-    },
-
+    /**
+     * #action
+     */
     setColumnNameLineNumber(newnumber: number) {
       if (newnumber > 0) {
         self.columnNameLineNumber = newnumber
       }
     },
 
+    /**
+     * #action
+     */
     setFileType(typeName: string) {
       self.fileType = typeName
     },
 
+    /**
+     * #action
+     */
     setError(error: unknown) {
       console.error(error)
       self.loading = false
       self.error = error
     },
 
+    /**
+     * #action
+     */
     setLoaded() {
       self.loading = false
       self.error = undefined
     },
 
+    /**
+     * #action
+     */
     cancelButton() {
       self.error = undefined
-
       getParent<any>(self).setDisplayMode()
     },
 
-    // fetch and parse the file, make a new Spreadsheet model for it,
-    // then set the parent to display it
+    /**
+     * #action
+     * fetch and parse the file, make a new Spreadsheet model for it, then set
+     * the parent to display it
+     */
     async import(assemblyName: string) {
       if (!self.fileSource) {
         return
@@ -161,7 +202,7 @@ const ImportWizard = types
       const type = self.fileType as keyof typeof fileTypeParsers
       const typeParser = await fileTypeParsers[type]()
 
-      const { unzip } = await import('@gmod/bgzf-filehandle')
+      const { fetchAndMaybeUnzip } = await import('@jbrowse/core/util')
       const { pluginManager } = getEnv(self)
       const filehandle = openLocation(self.fileSource, pluginManager)
       try {
@@ -179,16 +220,14 @@ const ImportWizard = types
       }
 
       try {
-        await filehandle
-          .readFile()
-          .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
-          .then(buffer => typeParser(buffer, self))
-          .then(spreadsheet => {
-            this.setLoaded()
-
-            getParent<any>(self).displaySpreadsheet(spreadsheet)
-          })
+        const data = await fetchAndMaybeUnzip(filehandle)
+        this.setLoaded()
+        getParent<any>(self).displaySpreadsheet({
+          ...typeParser(data),
+          assemblyName,
+        })
       } catch (e) {
+        console.error(e)
         this.setError(e)
       }
     },

@@ -2,6 +2,7 @@ import path from 'path'
 import { LocalFile } from 'generic-filehandle'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
 import type { GenericFilehandle } from 'generic-filehandle'

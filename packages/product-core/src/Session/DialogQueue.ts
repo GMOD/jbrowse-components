@@ -1,7 +1,9 @@
 /** MST mixin for managing a queue of dialogs at the level of the session */
 
 import { types } from 'mobx-state-tree'
+
 import { isBaseSession } from './BaseSession'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DialogComponentType } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'

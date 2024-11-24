@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
@@ -23,10 +24,6 @@ import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
-
-function clone(c: unknown) {
-  return JSON.parse(JSON.stringify(c))
-}
 
 const GroupByTagDialog = observer(function (props: {
   model: {
@@ -133,7 +130,7 @@ const GroupByTagDialog = observer(function (props: {
           autoFocus
           onClick={() => {
             const track = getContainingTrack(model)
-            const trackConf = clone(getSnapshot(track.configuration))
+            const trackConf = structuredClone(getSnapshot(track.configuration))
             const session = getSession(model)
             const view = getContainingView(model) as LinearGenomeViewModel
             if (type === 'tag') {

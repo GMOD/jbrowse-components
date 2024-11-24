@@ -1,4 +1,5 @@
 import { measureText } from '@jbrowse/core/util'
+
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 

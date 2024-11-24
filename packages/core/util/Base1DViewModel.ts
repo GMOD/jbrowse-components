@@ -1,9 +1,11 @@
-import { types, cast } from 'mobx-state-tree'
-import { moveTo, pxToBp, bpToPx } from './Base1DUtils'
+import { cast, types } from 'mobx-state-tree'
+
+import { bpToPx, moveTo, pxToBp } from './Base1DUtils'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 import { clamp, sum } from './index'
 import { ElementId } from './types/mst'
+
 import type { BpOffset } from './Base1DUtils'
 import type { Feature } from './simpleFeature'
 import type { Region as IRegion } from './types'

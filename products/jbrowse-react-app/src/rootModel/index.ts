@@ -1,4 +1,5 @@
 import type React from 'react'
+
 import { RootAppMenuMixin } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -17,20 +18,20 @@ import StorageIcon from '@mui/icons-material/Storage'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
-import jbrowseWebFactory from '../jbrowseModel'
 
 // other
 import { filterSessionInPlace } from '../util'
 import { version } from '../version'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { BaseSessionType } from '@jbrowse/product-core'
 import type {
   IAnyStateTreeNode,
-  SnapshotIn,
-  Instance,
   IAnyType,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 
 export interface Menu {

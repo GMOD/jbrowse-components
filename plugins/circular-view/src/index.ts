@@ -1,13 +1,13 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-
-// locals
-
 import DataUsageIcon from '@mui/icons-material/DataUsage'
+
 import CircularViewF from './CircularView'
 import LaunchCircularViewF from './LaunchCircularView'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+// locals
 
 // icons
 
@@ -41,4 +41,4 @@ export {
 export {
   type CircularViewModel,
   type CircularViewStateModel,
-} from './CircularView/models/model'
+} from './CircularView/model'

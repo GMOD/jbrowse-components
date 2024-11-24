@@ -3,10 +3,11 @@ import { toArray } from 'rxjs/operators'
 
 // locals
 import { BaseAdapter } from './BaseAdapter'
-import { sum, max, min } from '../../util'
+import { max, min, sum } from '../../util'
 import { ObservableCreate } from '../../util/rxjs'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
 import { checkStopToken } from '../../util/stopToken'
+
 import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
 import type { Feature } from '../../util/simpleFeature'

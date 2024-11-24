@@ -9,6 +9,7 @@ import {
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
 import { getParent, types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType } from 'mobx-state-tree'
 

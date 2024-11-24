@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 

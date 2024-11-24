@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
@@ -9,6 +10,7 @@ import {
 } from '@mui/material'
 
 import SearchResultsTable from './SearchResultsTable'
+
 import type { LinearGenomeViewModel } from '../..'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 

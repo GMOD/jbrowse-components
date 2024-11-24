@@ -1,4 +1,5 @@
 import React from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
@@ -7,6 +8,7 @@ import Hic from '@jbrowse/plugin-hic'
 import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
 import { types } from 'mobx-state-tree'
+
 import stateModelFactory from './model'
 
 function standardInitializer() {

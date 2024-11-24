@@ -1,4 +1,5 @@
 import React from 'react'
+
 import isObject from 'is-object'
 
 // locals

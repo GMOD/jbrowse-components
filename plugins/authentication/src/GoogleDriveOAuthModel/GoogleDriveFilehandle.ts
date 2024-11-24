@@ -1,8 +1,9 @@
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
+
 import type {
   FilehandleOptions,
-  Stats,
   PolyfilledResponse,
+  Stats,
 } from 'generic-filehandle'
 
 export interface RequestInitWithMetadata extends RequestInit {

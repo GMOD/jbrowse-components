@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
 export function HTTPBasicLoginForm({
   internetAccountId,

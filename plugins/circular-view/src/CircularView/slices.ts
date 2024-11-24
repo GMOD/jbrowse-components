@@ -1,4 +1,5 @@
-import { polarToCartesian, assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, polarToCartesian } from '@jbrowse/core/util'
+
 import { thetaRangesOverlap } from './viewportVisibleRegion'
 import type { Region } from '@jbrowse/core/util'
 

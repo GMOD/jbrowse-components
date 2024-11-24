@@ -1,15 +1,17 @@
 import type React from 'react'
+
 import {
   assembleLocString,
   doesIntersect2,
-  getSession,
-  isSessionModelWithWidgets,
   getContainingTrack,
   getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 
 // locals
-import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
+import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
+
 import type { LinearSyntenyDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
 

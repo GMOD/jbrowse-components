@@ -1,12 +1,14 @@
 import React, { lazy } from 'react'
+
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { getEnv, getSession, SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
-// locals
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
 import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+
+// locals
 
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(
@@ -73,6 +75,7 @@ function LaunchBreakpointSplitViewPanel({
 }) {
   const session = getSession(model)
   const simpleFeature = new SimpleFeature(feature)
+  const assemblyName = model.view?.displayedRegions[0]?.assemblyName
   return (
     <div>
       <Typography>Launch split view</Typography>
@@ -90,10 +93,11 @@ function LaunchBreakpointSplitViewPanel({
                     handleClose,
                     model,
                     feature: simpleFeature,
+                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_multilevel`,
                     // @ts-expect-error
                     viewType,
                     view: model.view,
-                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                    assemblyName,
                   },
                 ])
               }}
@@ -110,10 +114,11 @@ function LaunchBreakpointSplitViewPanel({
                     handleClose,
                     model,
                     feature: simpleFeature,
+                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_singlelevel`,
                     // @ts-expect-error
                     viewType,
                     view: model.view,
-                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                    assemblyName,
                   },
                 ])
               }}

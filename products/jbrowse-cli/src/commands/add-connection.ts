@@ -6,6 +6,7 @@ import parseJSON from 'json-parse-better-errors'
 // locals
 import JBrowseCommand from '../base'
 import fetch from '../fetchWithProxy'
+
 import type { Config } from '../base'
 
 export default class AddConnection extends JBrowseCommand {

@@ -1,14 +1,15 @@
 import {
-  types,
+  getSnapshot,
+  isLateType,
   isStateTreeNode,
   isType,
-  isLateType,
-  getSnapshot,
+  types,
 } from 'mobx-state-tree'
 
 import ConfigSlot from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
 import { ElementId } from '../util/types/mst'
+
 import type { ConfigSlotDefinition } from './configurationSlot'
 import type { AnyConfigurationSchemaType } from './types'
 import type { IAnyType, SnapshotOut } from 'mobx-state-tree'

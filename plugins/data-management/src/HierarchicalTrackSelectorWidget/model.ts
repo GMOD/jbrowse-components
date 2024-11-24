@@ -8,13 +8,14 @@ import {
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { autorun, observable } from 'mobx'
-import { types, addDisposer } from 'mobx-state-tree'
+import { addDisposer, types } from 'mobx-state-tree'
 
 // locals
 import { facetedStateTreeF } from './facetedModel'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'

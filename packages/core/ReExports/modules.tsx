@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import type { LazyExoticComponent } from 'react'
-import React, { lazy, Suspense } from 'react'
+import React, { Suspense, lazy } from 'react'
+
 import { useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
@@ -21,7 +22,6 @@ import { makeStyles } from 'tss-react/mui'
 import Plugin from '../Plugin'
 import * as Configuration from '../configuration'
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
-
 import * as pluggableElementTypes from '../pluggableElementTypes'
 import reExportsList from './list'
 import AdapterType from '../pluggableElementTypes/AdapterType'
@@ -29,14 +29,12 @@ import DisplayType from '../pluggableElementTypes/DisplayType'
 import TrackType from '../pluggableElementTypes/TrackType'
 import ViewType from '../pluggableElementTypes/ViewType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
-
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
 import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
 import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
-
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import Base1DView from '../util/Base1DViewModel'

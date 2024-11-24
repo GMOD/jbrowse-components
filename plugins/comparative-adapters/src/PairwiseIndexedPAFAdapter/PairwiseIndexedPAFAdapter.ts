@@ -3,15 +3,17 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-// locals
 import SyntenyFeature from '../SyntenyFeature'
 import { parsePAFLine } from '../util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
+
+// locals
 
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel

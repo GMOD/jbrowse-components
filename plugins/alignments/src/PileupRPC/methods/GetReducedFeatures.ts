@@ -2,10 +2,12 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, groupBy } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 // locals
 import { getClip } from '../../MismatchParser'
 import PileupBaseRPC from '../base'
 import { filterForPairs, getInsertSizeStats } from '../util'
+
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 

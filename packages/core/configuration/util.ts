@@ -1,27 +1,28 @@
 import {
-  isStateTreeNode,
   getSnapshot,
   getType,
+  isArrayType,
+  isLateType,
   isMapType,
+  isModelType,
+  isOptionalType,
+  isStateTreeNode,
   isType,
   isUnionType,
-  isOptionalType,
-  isArrayType,
-  isModelType,
-  isLateType,
 } from 'mobx-state-tree'
 
 import {
-  getUnionSubTypes,
   getDefaultValue,
   getSubType,
+  getUnionSubTypes,
   resolveLateType,
 } from '../util/mst-reflection'
+
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  ConfigurationSlotName,
   ConfigurationSchemaForModel,
+  ConfigurationSlotName,
 } from './types'
 
 /**

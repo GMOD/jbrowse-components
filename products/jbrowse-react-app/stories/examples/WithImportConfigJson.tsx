@@ -4,7 +4,7 @@ import React from 'react'
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app'
 import { addRelativeUris } from './util'
 import config from '../../public/test_data/volvox/config.json'
-import { createViewState, JBrowseApp } from '../../src'
+import { JBrowseApp, createViewState } from '../../src'
 
 const configPath = 'test_data/volvox/config.json'
 addRelativeUris(config, new URL(configPath, window.location.href).href)

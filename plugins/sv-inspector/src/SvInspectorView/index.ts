@@ -1,11 +1,14 @@
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-
 import { getContainingView, getSession } from '@jbrowse/core/util'
+
+// locals
 import ReactComponent from './components/SvInspectorView'
-import stateModelFactory from './models/SvInspectorView'
+import stateModelFactory from './model'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+// types
 import type { Feature } from '@jbrowse/core/util'
-import type BreakpointSplitViewType from '@jbrowse/plugin-breakpoint-split-view/src/BreakpointSplitView/BreakpointSplitView'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
@@ -17,16 +20,34 @@ function defaultOnChordClick(
   const session = getSession(chordTrack)
   session.setSelection(feature)
   const view = getContainingView(chordTrack) as CircularViewModel
-  const viewType = pluginManager.getViewType(
-    'BreakpointSplitView',
-  ) as BreakpointSplitViewType
+  const viewType = pluginManager.getViewType('BreakpointSplitView') as any
   const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
 
   // try to center the offsetPx
   viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100
   viewSnapshot.views[1]!.offsetPx -= view.width / 2 + 100
 
-  session.addView('BreakpointSplitView', viewSnapshot)
+  const newViewId = `${chordTrack.id}_spawned`
+  const viewInStack = session.views.find(v => v.id === newViewId)
+
+  // new viw
+  if (!viewInStack) {
+    session.addView('BreakpointSplitView', {
+      ...viewSnapshot,
+      id: newViewId,
+    })
+  }
+
+  // re-nav existing view
+  else {
+    // @ts-expect-error
+    const { views } = viewInStack
+    for (let i = 0; i < views.length; i++) {
+      views[i].setDisplayedRegions(viewSnapshot.views[i]?.displayedRegions)
+      views[i].scrollTo(viewSnapshot.views[0]?.offsetPx)
+      views[i].zoom(viewSnapshot.views[0]?.bpPerPx)
+    }
+  }
 }
 
 export default function SvInspectorViewF(pluginManager: PluginManager) {

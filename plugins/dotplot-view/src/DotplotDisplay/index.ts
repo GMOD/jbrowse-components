@@ -2,10 +2,12 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { types } from 'mobx-state-tree'
 
-// locals
 import ReactComponent from './components/DotplotDisplay'
 import { stateModelFactory } from './stateModelFactory'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
 
 export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {

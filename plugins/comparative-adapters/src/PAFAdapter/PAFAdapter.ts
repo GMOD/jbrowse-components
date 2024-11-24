@@ -10,11 +10,12 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import SyntenyFeature from '../SyntenyFeature'
 import {
   flipCigar,
-  swapIndelCigar,
-  parsePAFLine,
   parseLineByLine,
+  parsePAFLine,
+  swapIndelCigar,
 } from '../util'
 import { getWeightedMeans } from './util'
+
 import type { PAFRecord } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

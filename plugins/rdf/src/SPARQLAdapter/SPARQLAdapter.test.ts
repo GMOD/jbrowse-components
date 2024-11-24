@@ -1,5 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Adapter from './SPARQLAdapter'
 import configSchema from './configSchema'
 import emptyQueryResponse from './test_data/emptyQueryResponse.json'

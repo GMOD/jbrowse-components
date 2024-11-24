@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+
+import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { Button, Container, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import type { CircularViewModel } from '../models/model'
+
+import type { CircularViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

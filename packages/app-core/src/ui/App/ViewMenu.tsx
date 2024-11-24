@@ -1,8 +1,7 @@
 import React from 'react'
+
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession } from '@jbrowse/core/util'
-
-// icons
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
@@ -10,16 +9,20 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton } from '@mui/material'
 import {
-  bindTrigger,
   bindPopover,
+  bindTrigger,
   usePopupState,
 } from 'material-ui-popup-state/hooks'
 import { observer } from 'mobx-react'
+
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+// icons
+
 import type {
-  SvgIconProps,
   IconButtonProps as IconButtonPropsType,
+  SvgIconProps,
 } from '@mui/material'
 
 const ViewMenu = observer(function ({

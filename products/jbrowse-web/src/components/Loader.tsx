@@ -1,13 +1,14 @@
-import React, { lazy, useEffect, useState, Suspense } from 'react'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 import {
-  StringParam,
   QueryParamProvider,
+  StringParam,
   useQueryParam,
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+
 import '@fontsource/roboto'
 
 // locals
@@ -17,6 +18,8 @@ import SessionLoader from '../SessionLoader'
 import factoryReset from '../factoryReset'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
 import { createPluginManager } from '../createPluginManager'
+
+// types
 import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
 import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'

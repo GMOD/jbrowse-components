@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'

@@ -1,6 +1,7 @@
 import { parseBreakend } from '@gmod/vcf'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getSession } from '@jbrowse/core/util'
+
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from 'mobx-state-tree'
@@ -17,39 +18,39 @@ export default class BreakpointSplitViewType extends ViewType {
     const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
     const refName = feature.get('refName')
-    let endPos: number
+    const f = (ref: string) => assembly.getCanonicalRefName(ref) || ref
 
-    let mateRefName: string | undefined
-
-    // a VCF breakend feature
     if (alt === '<TRA>') {
       const INFO = feature.get('INFO')
-      endPos = INFO.END[0] - 1
-      mateRefName = INFO.CHR2[0]
+      return {
+        pos: startPos,
+        refName: f(refName),
+        mateRefName: f(INFO.CHR2[0]),
+        matePos: INFO.END[0] - 1,
+      }
     } else if (bnd?.MatePosition) {
       const matePosition = bnd.MatePosition.split(':')
-      endPos = +matePosition[1]! - 1
-      mateRefName = matePosition[0]!
+      return {
+        pos: startPos,
+        refName: f(refName),
+        mateRefName: f(matePosition[0]!),
+        matePos: +matePosition[1]! - 1,
+      }
     } else if (feature.get('mate')) {
-      // a generic 'mate' feature
       const mate = feature.get('mate')
-      mateRefName = mate.refName
-      endPos = mate.start
+      return {
+        pos: startPos,
+        refName: f(refName),
+        mateRefName: f(mate.refName),
+        matePos: mate.start,
+      }
     } else {
-      endPos = startPos + 1
-    }
-
-    if (!mateRefName) {
-      throw new Error(
-        `unable to resolve mate refName ${mateRefName} in reference genome`,
-      )
-    }
-
-    return {
-      pos: startPos,
-      refName: assembly.getCanonicalRefName(refName),
-      mateRefName: assembly.getCanonicalRefName(mateRefName),
-      matePos: endPos,
+      return {
+        pos: startPos,
+        refName: f(refName),
+        mateRefName: f(refName),
+        matePos: startPos + 1,
+      }
     }
   }
 
@@ -60,7 +61,6 @@ export default class BreakpointSplitViewType extends ViewType {
     const session = getSession(view)
     const bpPerPx = 10
     const { assemblyName } = view.displayedRegions[0]!
-
     const { assemblyManager } = session
     const assembly = assemblyManager.get(assemblyName)
     if (!assembly) {
@@ -112,7 +112,6 @@ export default class BreakpointSplitViewType extends ViewType {
     const session = getSession(view)
     const bpPerPx = 10
     const { assemblyName } = view.displayedRegions[0]!
-
     const { assemblyManager } = session
     const assembly = assemblyManager.get(assemblyName)
     if (!assembly) {

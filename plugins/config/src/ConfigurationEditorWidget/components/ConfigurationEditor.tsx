@@ -1,28 +1,27 @@
 import React from 'react'
 
+// jbrowse
 import {
-  readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
+  readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+
+// icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
-  FormGroup,
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  FormGroup,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
 import { makeStyles } from 'tss-react/mui'
-
-// jbrowse
-
-// icons
 
 // locals
 import SlotEditor from './SlotEditor'

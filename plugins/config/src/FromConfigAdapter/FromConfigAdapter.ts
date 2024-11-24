@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'

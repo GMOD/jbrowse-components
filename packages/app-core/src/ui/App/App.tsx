@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react'
+
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'

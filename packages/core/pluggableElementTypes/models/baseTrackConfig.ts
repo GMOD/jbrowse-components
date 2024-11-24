@@ -1,5 +1,7 @@
 import { types } from 'mobx-state-tree'
+
 import { ConfigurationSchema } from '../../configuration'
+
 import type PluginManager from '../../PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
@@ -148,7 +150,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       preProcessSnapshot: s2 => {
         const snap = pluginManager.evaluateExtensionPoint(
           'Core-preProcessTrackConfig',
-          JSON.parse(JSON.stringify(s2)),
+          structuredClone(s2),
         ) as {
           trackId: string
           name: string

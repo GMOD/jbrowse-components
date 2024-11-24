@@ -1,43 +1,15 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
-import DoneIcon from '@mui/icons-material/Done'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { types, getEnv, cast } from 'mobx-state-tree'
 
-import FilterControlsModel from './FilterControls'
+// locals
 import ImportWizardModel from './ImportWizard'
 import SpreadsheetModel from './Spreadsheet'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SnapshotIn, Instance } from 'mobx-state-tree'
-
-type Spreadsheet = Instance<typeof SpreadsheetModel>
-
-export type MenuItemWithDisabledCallback = MenuItem & {
-  disabled?:
-    | boolean
-    | ((
-        viewModel: unknown,
-        spreadsheetModel: Spreadsheet,
-        rowNumber: number,
-        row: Spreadsheet['rowSet']['rows'][0],
-      ) => boolean)
-}
-
-const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
-  {
-    label: 'Toggle select',
-    icon: DoneIcon,
-    onClick(_view: unknown, spreadsheet: Spreadsheet) {
-      const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
-      if (rowNumber !== undefined) {
-        spreadsheet.rowSet.rows[+rowNumber - 1]!.toggleSelect()
-      }
-    },
-  },
-]
 
 const minHeight = 40
 const defaultHeight = 440
@@ -61,14 +33,7 @@ const model = types
     /**
      * #property
      */
-    height: types.optional(
-      types.refinement(
-        'SpreadsheetViewHeight',
-        types.number,
-        n => n >= minHeight,
-      ),
-      defaultHeight,
-    ),
+    height: types.optional(types.number, defaultHeight),
     /**
      * #property
      */
@@ -77,12 +42,7 @@ const model = types
      * #property
      */
     hideFilterControls: false,
-    /**
-     * #property
-     */
-    filterControls: types.optional(FilterControlsModel, () =>
-      FilterControlsModel.create({}),
-    ),
+
     /**
      * #property
      * switch specifying whether we are showing the import wizard or the
@@ -104,8 +64,14 @@ const model = types
     spreadsheet: types.maybe(SpreadsheetModel),
   })
   .volatile(() => ({
+    /**
+     * #volatile
+     */
     width: 400,
-    rowMenuItems: defaultRowMenuItems,
+    /**
+     * #volatile
+     */
+    rowMenuItems: [] as MenuItem[],
   }))
   .views(self => ({
     /**
@@ -120,29 +86,15 @@ const model = types
     get hideRowSelection() {
       return !!getEnv(self).hideRowSelection
     },
-    /**
-     * #getter
-     */
-    get outputRows() {
-      if (self.spreadsheet?.rowSet.isLoaded) {
-        const selected = self.spreadsheet.rowSet.selectedFilteredRows
-        if (selected.length) {
-          return selected
-        }
-        return self.spreadsheet.rowSet.sortedFilteredRows
-      }
-      return undefined
-    },
+
     /**
      * #getter
      */
     get assembly() {
       const name = self.spreadsheet?.assemblyName
-      if (name) {
-        const assemblies = getSession(self).assemblies
-        return assemblies.find(asm => readConfObject(asm, 'name') === name)
-      }
-      return undefined
+      return name
+        ? getSession(self).assemblyManager.get(name)?.configuration
+        : undefined
     },
   }))
   .actions(self => ({
@@ -188,7 +140,6 @@ const model = types
      * load a new spreadsheet and set our mode to display it
      */
     displaySpreadsheet(spreadsheet: SnapshotIn<typeof SpreadsheetModel>) {
-      self.filterControls.clearAllFilters()
       self.spreadsheet = cast(spreadsheet)
       self.mode = 'display'
     },
@@ -215,10 +166,10 @@ const model = types
       return [
         {
           label: 'Return to import form',
+          icon: FolderOpenIcon,
           onClick: () => {
             self.setImportMode()
           },
-          icon: FolderOpenIcon,
         },
       ]
     },

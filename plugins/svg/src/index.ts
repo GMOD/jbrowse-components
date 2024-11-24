@@ -1,8 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+
 import {
-  configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
+  configSchema as svgFeatureRendererConfigSchema,
 } from './SvgFeatureRenderer'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

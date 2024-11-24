@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
@@ -9,11 +10,12 @@ import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import type { LinearGenomeViewModel } from '../model'
+import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
+
 // icons
 
 // locals
-import type { LinearGenomeViewModel } from '../model'
-import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 

@@ -1,6 +1,7 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from 'mobx-state-tree'
+
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'

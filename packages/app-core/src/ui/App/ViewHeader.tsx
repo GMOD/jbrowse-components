@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
@@ -8,12 +9,14 @@ import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import ViewContainerTitle from './ViewContainerTitle'
+import ViewMenu from './ViewMenu'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+
 // icons
 
 // locals
-import ViewContainerTitle from './ViewContainerTitle'
-import ViewMenu from './ViewMenu'
-import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
   icon: {

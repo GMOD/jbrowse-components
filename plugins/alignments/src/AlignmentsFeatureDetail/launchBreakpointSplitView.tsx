@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+
 import type { ReducedFeature } from './getSAFeatures'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

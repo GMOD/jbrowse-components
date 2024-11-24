@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 import {
-  Button,
-  DialogContent,
-  DialogActions,
   Alert,
+  Button,
+  DialogActions,
+  DialogContent,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'

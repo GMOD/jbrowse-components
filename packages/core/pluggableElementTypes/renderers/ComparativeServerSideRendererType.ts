@@ -1,14 +1,16 @@
 import { firstValueFrom } from 'rxjs'
 import { filter, toArray } from 'rxjs/operators'
+
 import ServerSideRenderer from './ServerSideRendererType'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { dedupe, getSerializedSvg } from '../../util'
+
 import type {
   RenderArgs as ServerSideRenderArgs,
-  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  ResultsSerialized as ServerSideResultsSerialized,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
+  ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { Typography, useTheme, alpha } from '@mui/material'
+import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

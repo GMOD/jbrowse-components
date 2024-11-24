@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 
 // icons
@@ -10,6 +11,7 @@ import { observer } from 'mobx-react'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
 import AssemblyTable from './AssemblyTable'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const AssemblyManager = observer(function ({

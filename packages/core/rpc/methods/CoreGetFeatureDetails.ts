@@ -1,5 +1,6 @@
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded, getLayoutId } from '../../util'
+import { getLayoutId, renameRegionsIfNeeded } from '../../util'
+
 import type { RenderArgs, RenderArgsSerialized } from './util'
 
 /**

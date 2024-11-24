@@ -6,6 +6,7 @@ import { processDepth } from './processDepth'
 import { processMismatches } from './processMismatches'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
+
 import type { Opts } from './util'
 import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'

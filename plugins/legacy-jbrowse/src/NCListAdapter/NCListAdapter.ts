@@ -3,10 +3,12 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { RemoteFile } from 'generic-filehandle'
-// locals
+
 import NCListFeature from './NCListFeature'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+// locals
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'

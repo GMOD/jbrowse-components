@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -14,6 +15,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import CurrentJobCard from './CurrentJobCard'
 import JobCard from './JobCard'
+
 import type { JobsListModel, NewJob } from '../model'
 
 const useStyles = makeStyles()(theme => ({

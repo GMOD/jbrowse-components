@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import React, { useEffect, useState } from 'react'
+
+import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import {
   Button,
   Container,
   FormControl,
-  FormLabel,
   FormControlLabel,
+  FormLabel,
   Grid,
   Paper,
   Radio,
@@ -18,6 +19,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
+
 import ImportCustomTrack from './ImportCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 import type { DotplotViewModel } from '../../model'

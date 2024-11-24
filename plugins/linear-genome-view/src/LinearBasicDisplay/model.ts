@@ -1,17 +1,20 @@
 import { lazy } from 'react'
-import { getConf, ConfigurationReference } from '@jbrowse/core/configuration'
+
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { types, getEnv, cast } from 'mobx-state-tree'
+import { cast, getEnv, types } from 'mobx-state-tree'
+
+import { BaseLinearDisplay } from '../BaseLinearDisplay'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance } from 'mobx-state-tree'
 
 // icons
 
 // locals
-import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance } from 'mobx-state-tree'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))

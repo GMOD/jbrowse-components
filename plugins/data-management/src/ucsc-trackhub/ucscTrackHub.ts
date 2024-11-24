@@ -2,6 +2,7 @@ import { GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { isUriLocation, notEmpty, objectHash } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
+
 import type { RaStanza } from '@gmod/ucsc-hub'
 import type { FileLocation } from '@jbrowse/core/util'
 

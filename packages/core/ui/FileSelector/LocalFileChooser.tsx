@@ -1,12 +1,15 @@
 import React from 'react'
-import { Box, Button, Typography, FormControl } from '@mui/material'
+
+import { Box, Button, FormControl, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 import { isElectron } from '../../util'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
+
 import type {
-  LocalPathLocation,
-  FileLocation,
   BlobLocation,
+  FileLocation,
+  LocalPathLocation,
 } from '../../util/types'
 
 function isLocalPathLocation(loc: FileLocation): loc is LocalPathLocation {

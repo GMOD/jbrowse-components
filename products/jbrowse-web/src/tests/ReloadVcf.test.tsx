@@ -1,13 +1,14 @@
 import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
+
 import {
-  setup,
-  generateReadBuffer,
-  doBeforeEach,
-  hts,
   createView,
+  doBeforeEach,
+  generateReadBuffer,
+  hts,
   mockConsole,
   mockFile404,
+  setup,
 } from './util'
 
 const readBuffer = generateReadBuffer(

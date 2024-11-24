@@ -1,4 +1,5 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+
 import { BaseLinearDisplayComponent } from '../BaseLinearDisplay'
 
 // locals

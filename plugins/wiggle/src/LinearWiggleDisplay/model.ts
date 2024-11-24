@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
@@ -6,7 +7,8 @@ import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 // locals
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType } from '@jbrowse/core/util'

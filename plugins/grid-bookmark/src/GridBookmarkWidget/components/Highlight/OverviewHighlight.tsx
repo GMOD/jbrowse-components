@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react'
+
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { GridBookmarkModel, IExtendedLGV } from '../../model'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+
+// locals
 
 type LGV = IExtendedLGV
 

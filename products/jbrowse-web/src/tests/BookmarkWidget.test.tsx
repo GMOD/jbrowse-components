@@ -1,7 +1,8 @@
-import { waitFor, fireEvent, within } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { saveAs } from 'file-saver'
-import { createView, setup, doBeforeEach } from './util'
+
+import { createView, doBeforeEach, setup } from './util'
 
 jest.mock('file-saver', () => {
   return {

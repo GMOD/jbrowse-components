@@ -1,30 +1,15 @@
 // @ts-nocheck
 import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
-import { makeAdHocSvFeature } from './adhocFeatureUtils'
-
-export function getFeatureForRow(session, spreadsheetView, row, rowNumber) {
-  return (
-    row.extendedData?.vcfFeature ||
-    row.extendedData?.feature ||
-    makeAdHocSvFeature(
-      spreadsheetView.spreadsheet,
-      rowNumber,
-      row,
-      session.assemblyManager.isValidRefName,
-    )
-  )
-}
 
 export function breakpointSplitViewSnapshotFromTableRow(
   svInspectorView,
   spreadsheetView,
   spreadsheet,
   row,
-  rowNumber,
 ) {
   const { pluginManager } = getEnv(svInspectorView)
   const session = getSession(spreadsheetView)
-  const featureData = getFeatureForRow(session, spreadsheet, row, rowNumber)
+  const featureData = row.feature
 
   if (featureData) {
     const feature = new SimpleFeature(featureData)

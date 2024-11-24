@@ -1,7 +1,7 @@
 import {
   PileupGetGlobalValueForTag,
-  PileupGetVisibleModifications,
   PileupGetReducedFeatures,
+  PileupGetVisibleModifications,
 } from './rpcMethods'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

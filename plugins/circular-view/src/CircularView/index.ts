@@ -1,6 +1,9 @@
 import { lazy } from 'react'
+
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import stateModelFactory from './models/model'
+
+import stateModelFactory from './model'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function CircularViewF(pluginManager: PluginManager) {

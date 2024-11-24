@@ -1,6 +1,8 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
+
 import { fillRect } from './util'
+
 import type { RenderArgsWithColor } from './makeImageData'
 import type { LayoutFeature } from './util'
 import type { Mismatch } from '../shared/types'

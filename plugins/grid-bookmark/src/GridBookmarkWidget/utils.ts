@@ -1,5 +1,6 @@
-import { getSession, assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { saveAs } from 'file-saver'
+
 import type { GridBookmarkModel } from './model'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

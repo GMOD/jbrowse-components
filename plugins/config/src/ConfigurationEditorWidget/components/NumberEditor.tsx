@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
+
 import { observer } from 'mobx-react'
+
 import ConfigurationTextField from './ConfigurationTextField'
 
 const NumberEditor = observer(function ({

@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+
 import ThisPlugin from '.'
 
 test("won't add if already added", () => {

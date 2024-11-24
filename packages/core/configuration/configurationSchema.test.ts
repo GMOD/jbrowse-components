@@ -1,4 +1,5 @@
-import { types, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, types } from 'mobx-state-tree'
+
 import { getConf, readConfObject } from '.'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'

@@ -12,6 +12,7 @@ import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
+
 import type { GridBookmarkModel } from './GridBookmarkWidget/model'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {

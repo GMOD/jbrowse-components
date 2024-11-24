@@ -1,4 +1,5 @@
 import React from 'react'
+
 import {
   getFillProps,
   getStrokeProps,
@@ -12,6 +13,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { getBlockLabelKeysToHide } from './util'
+
 import type { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
