@@ -21,10 +21,10 @@ export default function SupplementaryAlignments(props: {
   const { model, tag, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  let viewType: ViewType | undefined
+  let hasBreakendSplitView = false
 
   try {
-    viewType = pluginManager.getViewType('BreakpointSplitView')
+    hasBreakendSplitView = !!pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // ignore
   }
@@ -32,12 +32,8 @@ export default function SupplementaryAlignments(props: {
   return (
     <BaseCard {...props} title="Supplementary alignments">
       <SupplementaryAlignmentsLocStrings model={model} tag={tag} />
-      {viewType ? (
-        <LaunchBreakpointSplitViewPanel
-          viewType={viewType}
-          model={model}
-          feature={feature}
-        />
+      {hasBreakendSplitView ? (
+        <LaunchBreakpointSplitViewPanel model={model} feature={feature} />
       ) : null}
     </BaseCard>
   )

@@ -11,24 +11,20 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import { singleLevelSnapshotFromBreakendFeature } from '@jbrowse/sv-core'
 
-function defaultOnChordClick(
-  feature: Feature,
-  chordTrack: IAnyStateTreeNode,
-  pluginManager: PluginManager,
-) {
+function defaultOnChordClick(feature: Feature, chordTrack: IAnyStateTreeNode) {
   const session = getSession(chordTrack)
   session.setSelection(feature)
   const view = getContainingView(chordTrack) as CircularViewModel
-  const viewType = pluginManager.getViewType('BreakpointSplitView') as any
-  const viewSnapshot = viewType.singleLevelSnapshotFromBreakendFeature({
+  const { coverage, snap } = singleLevelSnapshotFromBreakendFeature({
     feature,
     view,
   })
 
   // try to center the offsetPx
-  viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100
-  viewSnapshot.views[1]!.offsetPx -= view.width / 2 + 100
+  snap.views[0]!.offsetPx -= view.width / 2 + 100
+  snap.views[1]!.offsetPx -= view.width / 2 + 100
 
   const newViewId = `${chordTrack.id}_spawned`
   const viewInStack = session.views.find(v => v.id === newViewId)

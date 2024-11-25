@@ -91,11 +91,9 @@ function LaunchBreakpointSplitViewPanel({
                   BreakendMultiLevelOptionDialog,
                   {
                     handleClose,
-                    model,
+                    session,
                     feature: simpleFeature,
                     stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_multilevel`,
-                    // @ts-expect-error
-                    viewType,
                     view: model.view,
                     assemblyName,
                   },
@@ -112,11 +110,9 @@ function LaunchBreakpointSplitViewPanel({
                   BreakendSingleLevelOptionDialog,
                   {
                     handleClose,
-                    model,
+                    session,
                     feature: simpleFeature,
                     stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_singlelevel`,
-                    // @ts-expect-error
-                    viewType,
                     view: model.view,
                     assemblyName,
                   },

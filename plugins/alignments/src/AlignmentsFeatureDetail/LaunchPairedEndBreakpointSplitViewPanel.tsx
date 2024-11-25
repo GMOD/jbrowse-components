@@ -3,11 +3,10 @@ import React, { lazy } from 'react'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
+// types
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-
-// locals
 
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(
@@ -20,11 +19,9 @@ const BreakendSingleLevelOptionDialog = lazy(
 export default function LaunchPairedEndBreakpointSplitViewPanel({
   model,
   feature,
-  viewType,
 }: {
   model: AlignmentFeatureWidgetModel
   feature: SimpleFeatureSerialized
-  viewType: ViewType
 }) {
   const session = getSession(model)
   const f1 = {
@@ -56,10 +53,8 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
                 BreakendMultiLevelOptionDialog,
                 {
                   handleClose,
-                  model,
+                  session,
                   feature: new SimpleFeature({ ...f1, mate: f2 }),
-                  // @ts-expect-error
-                  viewType,
                   view: model.view,
                   assemblyName: model.view.displayedRegions[0].assemblyName,
                 },
@@ -76,10 +71,8 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
                 BreakendSingleLevelOptionDialog,
                 {
                   handleClose,
-                  model,
+                  session,
                   feature: new SimpleFeature({ ...f1, mate: f2 }),
-                  // @ts-expect-error
-                  viewType,
                   view: model.view,
                   assemblyName: model.view.displayedRegions[0].assemblyName,
                 },

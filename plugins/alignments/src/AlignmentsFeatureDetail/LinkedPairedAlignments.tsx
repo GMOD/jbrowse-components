@@ -5,11 +5,8 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 
 import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpointSplitViewPanel'
 
+// types
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
-
-// locals
-
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SuppAlignments(props: {
@@ -19,19 +16,17 @@ export default function SuppAlignments(props: {
   const { model, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  let viewType: ViewType | undefined
+  let hasBreakendSplitView = false
 
   try {
-    viewType = pluginManager.getViewType('BreakpointSplitView')
+    hasBreakendSplitView = !!pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // ignore
   }
-
   return (
     <BaseCard {...props} title="Supplementary alignments">
-      {viewType ? (
+      {hasBreakendSplitView ? (
         <LaunchPairedEndBreakpointSplitViewPanel
-          viewType={viewType}
           model={model}
           feature={feature}
         />

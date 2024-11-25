@@ -1342,12 +1342,11 @@ export interface BasicFeature {
   end: number
   start: number
   refName: string
-  assemblyName?: string
 }
 
 // returns new array non-overlapping features
-export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
-  const memo = {} as Record<string, BasicFeature[]>
+export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
+  const memo = {} as Record<string, T[]>
   for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []

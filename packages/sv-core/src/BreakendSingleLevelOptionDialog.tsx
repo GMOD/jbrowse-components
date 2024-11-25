@@ -12,6 +12,7 @@ import Checkbox2 from './Checkbox2'
 // types
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { singleLevelSnapshotFromBreakendFeature } from './util'
 
 interface Display {
   id: string
@@ -36,7 +37,6 @@ const BreakendSingleLevelOptionDialog = observer(function ({
   feature,
   stableViewId,
   assemblyName,
-  viewType,
   view,
 }: {
   session: AbstractSessionModel
@@ -45,13 +45,6 @@ const BreakendSingleLevelOptionDialog = observer(function ({
   feature: Feature
   view?: LinearGenomeViewModel
   assemblyName: string
-  viewType: {
-    singleLevelSnapshotFromBreakendFeature: (arg: {
-      feature: Feature
-      assemblyName: string
-      session: AbstractSessionModel
-    }) => any
-  }
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
   const [windowSize, setWindowSize] = useLocalStorage(
@@ -101,7 +94,7 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                   throw new Error('windowSize not a number')
                 }
                 const { snap, coverage } =
-                  viewType.singleLevelSnapshotFromBreakendFeature({
+                  singleLevelSnapshotFromBreakendFeature({
                     feature,
                     assemblyName,
                     session,
@@ -130,7 +123,7 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                   }) as unknown as { views: LinearGenomeViewModel[] }
                 } else {
                   viewInStack.views[0]?.setDisplayedRegions(
-                    snap.views[0].displayedRegions,
+                    snap.views[0]!.displayedRegions,
                   )
                   // @ts-expect-error
                   viewInStack.setDisplayName(snap.displayName)

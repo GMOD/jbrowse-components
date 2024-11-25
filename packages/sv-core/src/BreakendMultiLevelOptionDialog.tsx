@@ -6,10 +6,10 @@ import { when } from 'mobx'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 
-// types
 import Checkbox2 from './Checkbox2'
+import { getBreakendCoveringRegions } from './util'
 
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+// types
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -38,7 +38,6 @@ const BreakendMultiLevelOptionDialog = observer(function ({
   feature,
   assemblyName,
   stableViewId,
-  viewType,
   view,
 }: {
   session: AbstractSessionModel
@@ -47,17 +46,6 @@ const BreakendMultiLevelOptionDialog = observer(function ({
   view?: LinearGenomeViewModel
   assemblyName: string
   stableViewId?: string
-  viewType: {
-    getBreakendCoveringRegions: (arg: {
-      feature: Feature
-      assembly: Assembly
-    }) => {
-      pos: number
-      refName: string
-      mateRefName: string
-      matePos: number
-    }
-  }
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirror, setMirror] = useState(true)
@@ -107,7 +95,7 @@ const BreakendMultiLevelOptionDialog = observer(function ({
                 }
 
                 const { refName, pos, mateRefName, matePos } =
-                  viewType.getBreakendCoveringRegions({
+                  getBreakendCoveringRegions({
                     feature,
                     assembly: assembly,
                   })
