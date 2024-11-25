@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { JBrowsePlugin } from '@jbrowse/core/util/types'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 export function useFetchPlugins() {
   const [plugins, setPlugins] = useState<JBrowsePlugin[]>()

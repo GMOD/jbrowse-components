@@ -1,14 +1,12 @@
+import { ConnectionManagementSessionMixin } from '@jbrowse/product-core'
 import { types } from 'mobx-state-tree'
-
-import {
-  ConnectionManagementSessionMixin,
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type {
+  BaseSession,
   SessionWithSessionTracks,
 } from '@jbrowse/product-core'
-import type { BaseSession } from '@jbrowse/product-core'
-
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
 /**
  * #stateModel WebSessionConnectionsMixin

@@ -1,12 +1,13 @@
 import React from 'react'
+import { getSession, notEmpty } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { colord } from '@jbrowse/core/util/colord'
-import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { LinearGenomeViewModel } from '../model'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 // locals
-import { LinearGenomeViewModel } from '../model'
 
 type LGV = LinearGenomeViewModel
 

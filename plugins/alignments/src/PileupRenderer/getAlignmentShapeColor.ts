@@ -1,9 +1,4 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util'
-import { fillColor } from '../shared/color'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   colorByInsertSize,
   colorByMappingQuality,
@@ -11,6 +6,9 @@ import {
   colorByStrand,
   colorByStrandedRnaSeq,
 } from './colorBy'
+import { fillColor } from '../shared/color'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 export function getAlignmentShapeColor({
   colorType,

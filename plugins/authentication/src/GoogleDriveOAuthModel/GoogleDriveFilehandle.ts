@@ -1,5 +1,5 @@
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
-import {
+import type {
   FilehandleOptions,
   Stats,
   PolyfilledResponse,

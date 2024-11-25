@@ -1,16 +1,13 @@
 import { BigWig } from '@gmod/bbi'
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { updateStatus, Feature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  rectifyStats,
-  UnrectifiedQuantitativeStats,
-} from '@jbrowse/core/util/stats'
+import { rectifyStats } from '@jbrowse/core/util/stats'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number

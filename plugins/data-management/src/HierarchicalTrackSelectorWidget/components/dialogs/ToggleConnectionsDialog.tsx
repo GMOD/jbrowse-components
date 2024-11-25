@@ -1,4 +1,6 @@
 import React from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   Checkbox,
@@ -7,14 +9,10 @@ import {
   FormControlLabel,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { makeStyles } from 'tss-react/mui'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug

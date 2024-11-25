@@ -1,18 +1,17 @@
 import React from 'react'
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import { Checkbox, IconButton, FormControlLabel } from '@mui/material'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import { indigo } from '@mui/material/colors'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 // locals
-import type SpreadsheetStateModel from '../models/Spreadsheet'
-import type RowStateModel from '../models/Row'
-
 import CellData from './CellData'
+import type RowStateModel from '../models/Row'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type { Instance } from 'mobx-state-tree'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type RowModel = Instance<typeof RowStateModel>

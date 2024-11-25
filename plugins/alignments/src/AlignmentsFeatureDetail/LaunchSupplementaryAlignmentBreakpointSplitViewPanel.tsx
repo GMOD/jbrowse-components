@@ -1,17 +1,14 @@
 import React, { lazy, useEffect, useState } from 'react'
-import { Typography, Link } from '@mui/material'
-import {
-  SimpleFeature,
-  SimpleFeatureSerialized,
-  getSession,
-  toLocale,
-} from '@jbrowse/core/util'
 import { ErrorMessage } from '@jbrowse/core/ui'
-import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import { Typography, Link } from '@mui/material'
+import { getSAFeatures } from './getSAFeatures'
+import type { ReducedFeature } from './getSAFeatures'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import { ReducedFeature, getSAFeatures } from './getSAFeatures'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(

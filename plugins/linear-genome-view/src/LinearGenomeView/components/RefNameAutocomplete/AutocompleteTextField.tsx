@@ -1,12 +1,12 @@
 import React from 'react'
-import {
-  AutocompleteRenderInputParams,
-  TextField,
-  TextFieldProps as TFP,
-} from '@mui/material'
+import { TextField } from '@mui/material'
 
 // locals
 import EndAdornment from './EndAdornment'
+import type {
+  AutocompleteRenderInputParams,
+  TextFieldProps as TFP,
+} from '@mui/material'
 
 export default function AutocompleteTextField({
   TextFieldProps,

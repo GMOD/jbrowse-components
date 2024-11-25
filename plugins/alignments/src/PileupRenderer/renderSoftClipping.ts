@@ -1,15 +1,14 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
-import { Theme } from '@mui/material'
 
 // locals
-import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
-import { fillRect, getCharWidthHeight, LayoutFeature } from './util'
-import { Mismatch } from '../shared/types'
+import { fillRect, getCharWidthHeight } from './util'
 import { parseCigar } from '../MismatchParser'
+import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
+import type { LayoutFeature } from './util'
+import type { Mismatch } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Theme } from '@mui/material'
 
 export function renderSoftClipping({
   ctx,

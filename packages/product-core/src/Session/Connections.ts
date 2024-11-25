@@ -1,16 +1,15 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
+import { isBaseSession } from './BaseSession'
+import type { SessionWithReferenceManagementType } from './ReferenceManagement'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 // locals
-import type { BaseRootModelType } from '../RootModel/BaseRootModel'
-import type { SessionWithReferenceManagementType } from './ReferenceManagement'
-import { isBaseSession } from './BaseSession'
 
 /**
  * #stateModel ConnectionManagementSessionMixin

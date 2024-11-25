@@ -1,14 +1,13 @@
 import React from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { Feature, Region, bpToPx } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
 import Lollipop from './Lollipop'
 import Stick from './Stick'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 function layoutFeat(args: {
   feature: Feature

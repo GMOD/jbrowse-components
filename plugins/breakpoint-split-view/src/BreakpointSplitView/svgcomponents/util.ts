@@ -1,10 +1,11 @@
-import { AbstractSessionModel, max, measureText } from '@jbrowse/core/util'
-
-// locals
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { max, measureText } from '@jbrowse/core/util'
 
 // locals
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// locals
 
 export function getTrackNameMaxLen(
   views: LinearGenomeViewModel[],

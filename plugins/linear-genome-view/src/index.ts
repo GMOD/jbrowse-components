@@ -1,11 +1,10 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { isAbstractMenuManager } from '@jbrowse/core/util'
+import LineStyleIcon from '@mui/icons-material/LineStyle'
 import { types } from 'mobx-state-tree'
 
 // icons
-import LineStyleIcon from '@mui/icons-material/LineStyle'
 
 // locals
 import {
@@ -13,17 +12,19 @@ import {
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
+import BasicTrackF from './BasicTrack'
+import FeatureTrackF from './FeatureTrack'
+import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
 import LinearBareDisplayF from './LinearBareDisplay'
+import LinearBasicDisplayF from './LinearBasicDisplay'
 import LinearGenomeViewF, {
   SearchBox,
   ZoomControls,
   LinearGenomeView,
 } from './LinearGenomeView'
 
-import LinearBasicDisplayF from './LinearBasicDisplay'
-import FeatureTrackF from './FeatureTrack'
-import BasicTrackF from './BasicTrack'
-import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'

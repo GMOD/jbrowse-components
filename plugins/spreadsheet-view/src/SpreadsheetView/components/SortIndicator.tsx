@@ -1,10 +1,10 @@
 import React from 'react'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { SpreadsheetModel } from '../models/Spreadsheet'
+import type { SpreadsheetModel } from '../models/Spreadsheet'
 
 const useStyles = makeStyles()({
   sortIndicator: {

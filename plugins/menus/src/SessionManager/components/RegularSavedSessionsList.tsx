@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   IconButton,
   List,
@@ -6,17 +7,15 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import { observer } from 'mobx-react'
-
 // icons
-import DeleteIcon from '@mui/icons-material/Delete'
 
 // locals
-import { SessionModel } from './util'
 import DeleteSavedSessionDialog from './DeleteSavedSessionDialog'
 import SessionListItem from './SessionListItem'
+import type { SessionModel } from './util'
 
 const useStyles = makeStyles()(theme => ({
   root: {

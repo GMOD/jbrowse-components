@@ -1,16 +1,16 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
 
-import TwoBitAdapterF from './TwoBitAdapter'
-import DivSequenceRendererF from './DivSequenceRenderer'
 import BgzipFastaAdapterF from './BgzipFastaAdapter'
 import ChromSizesAdapterF from './ChromSizesAdapter'
+import DivSequenceRendererF from './DivSequenceRenderer'
 import IndexedFastaAdapterF from './IndexedFastaAdapter'
-import UnindexedFastaAdapterF from './UnindexedFastaAdapter'
-import SequenceSearchAdapterF from './SequenceSearchAdapter'
-import ReferenceSequenceTrackF from './ReferenceSequenceTrack'
 import LinearReferenceSequenceDisplayF from './LinearReferenceSequenceDisplay'
+import ReferenceSequenceTrackF from './ReferenceSequenceTrack'
+import SequenceSearchAdapterF from './SequenceSearchAdapter'
+import TwoBitAdapterF from './TwoBitAdapter'
+import UnindexedFastaAdapterF from './UnindexedFastaAdapter'
 import createExtensionPoints from './createExtensionPoints'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class SequencePlugin extends Plugin {
   name = 'SequencePlugin'

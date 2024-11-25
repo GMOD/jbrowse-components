@@ -1,5 +1,5 @@
-import { getMismatches, parseCigar } from './index'
 import { cigarToMismatches } from './cigarToMismatches'
+import { getMismatches, parseCigar } from './index'
 import { mdToMismatches } from './mdToMismatches'
 
 const seq =

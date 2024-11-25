@@ -1,12 +1,12 @@
 import React from 'react'
-import { render } from '@testing-library/react'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
-import Alignments from '@jbrowse/plugin-alignments'
-import SVG from '@jbrowse/plugin-svg'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { ThemeProvider } from '@mui/material'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import Alignments from '@jbrowse/plugin-alignments'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import SVG from '@jbrowse/plugin-svg'
+import { ThemeProvider } from '@mui/material'
+import { render } from '@testing-library/react'
 
 import ConfigurationEditor from './ConfigurationEditor'
 

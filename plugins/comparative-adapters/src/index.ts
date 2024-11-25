@@ -1,21 +1,20 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { getFileName } from '@jbrowse/core/util/tracks'
 
-import PAFAdapterF from './PAFAdapter'
-import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
+import BlastTabularAdapter from './BlastTabularAdapter'
+import ChainAdapterF from './ChainAdapter'
+import DeltaAdapterF from './DeltaAdapter'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
-import DeltaAdapterF from './DeltaAdapter'
-import ChainAdapterF from './ChainAdapter'
-import BlastTabularAdapter from './BlastTabularAdapter'
-
-import {
-  getFileName,
+import PAFAdapterF from './PAFAdapter'
+import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
   AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class ComparativeAdaptersPlugin extends Plugin {
   name = 'ComparativeAdaptersPlugin'

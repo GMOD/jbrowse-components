@@ -1,20 +1,18 @@
 import React from 'react'
+import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
+import { nanoid } from '@jbrowse/core/util/nanoid'
+
+import WarningIcon from '@mui/icons-material/Warning'
 import {
   Button,
   DialogContent,
   DialogContentText,
   DialogActions,
 } from '@mui/material'
-import { nanoid } from '@jbrowse/core/util/nanoid'
 
-import WarningIcon from '@mui/icons-material/Warning'
-import {
-  PluginDefinition,
-  pluginDescriptionString,
-} from '@jbrowse/core/PluginLoader'
-
-import { SessionLoaderModel } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 function SessionWarningDialog({
   onConfirm,

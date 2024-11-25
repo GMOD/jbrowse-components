@@ -1,10 +1,11 @@
-import { observer } from 'mobx-react'
 import React, { useRef } from 'react'
 
-import { Region } from '@jbrowse/core/util/types'
-import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { Source } from './util'
+import { SimpleFeature } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+import type { Source } from './util'
+import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
 
 const MultiWiggleRendering = observer(function (props: {
   regions: Region[]

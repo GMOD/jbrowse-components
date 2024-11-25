@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { Dialog } from '@jbrowse/core/ui'
+import { assembleLocString } from '@jbrowse/core/util'
 import {
   Alert,
   DialogContent,
@@ -6,11 +8,12 @@ import {
   Button,
   TextField,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import { assembleLocString } from '@jbrowse/core/util'
 
-import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../../model'
+import type {
+  GridBookmarkModel,
+  IExtendedLabeledRegionModel,
+} from '../../model'
 
 const EditBookmarkLabelDialog = observer(function ({
   model,

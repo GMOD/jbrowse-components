@@ -1,6 +1,7 @@
-import { types, Instance } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
-import PluginManager from '../../PluginManager'
+import type PluginManager from '../../PluginManager'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #config BaseTrack

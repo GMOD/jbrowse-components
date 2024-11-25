@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
 import { Dialog } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+
+// icons
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Button,
   Collapse,
@@ -9,15 +12,12 @@ import {
   DialogContentText,
   TextField,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
-
-// icons
 import IconButton from '@mui/material/IconButton'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   dialogContent: {

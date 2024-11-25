@@ -1,11 +1,11 @@
-import { fireEvent, waitFor } from '@testing-library/react'
 import fs from 'fs'
 import path from 'path'
+import { fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
-import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 // locals
 import { createView, setup, doBeforeEach } from './util'
+import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

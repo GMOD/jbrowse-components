@@ -1,9 +1,10 @@
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import { getFileName } from '@jbrowse/core/util/tracks'
 import { configSchema as gtfAdapterConfigSchema } from './GtfAdapter'
-import { FileLocation } from '@jbrowse/core/util/types'
-import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AdapterGuesser } from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class GtfPlugin extends Plugin {
   name = 'GTFPlugin'

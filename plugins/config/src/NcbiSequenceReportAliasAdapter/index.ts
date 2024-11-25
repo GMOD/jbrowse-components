@@ -1,7 +1,7 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 import configSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function NcbiSequenceReportAliasAdapterF(
   pluginManager: PluginManager,

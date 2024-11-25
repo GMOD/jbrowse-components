@@ -1,22 +1,23 @@
 import React, { useMemo } from 'react'
-import { Typography, useTheme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 
 // core
-import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getEnv, getSession } from '@jbrowse/core/util'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { Typography, useTheme, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import type { LinearGenomeViewModel } from '..'
-import { getCytobands } from './util'
-import OverviewRubberband from './OverviewRubberband'
 import Cytobands from './Cytobands'
-import OverviewScalebarPolygon from './OverviewScalebarPolygon'
 import OverviewHighlight from './OverviewHighlight'
+import OverviewRubberband from './OverviewRubberband'
+import OverviewScalebarPolygon from './OverviewScalebarPolygon'
 import OverviewScalebarTickLabels from './OverviewScalebarTickLabels'
+import { getCytobands } from './util'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts'
+import type { LinearGenomeViewModel } from '..'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 const wholeSeqSpacer = 2
 

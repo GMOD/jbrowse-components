@@ -1,10 +1,12 @@
-import { bpSpanPx, Region } from '@jbrowse/core/util'
+import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 // locals
-import { fillRect, LayoutFeature } from './util'
-import { RenderArgsWithColor } from './makeImageData'
+import { fillRect } from './util'
 import { getMethBins } from '../ModificationParser'
+import type { RenderArgsWithColor } from './makeImageData'
+import type { LayoutFeature } from './util'
+import type { Region } from '@jbrowse/core/util'
 
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the

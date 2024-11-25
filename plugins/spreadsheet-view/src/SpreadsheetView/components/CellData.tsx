@@ -1,9 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type { Instance } from 'mobx-state-tree'
 
 // locals
-import type SpreadsheetStateModel from '../models/Spreadsheet'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 

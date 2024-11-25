@@ -1,11 +1,6 @@
 import { lazy } from 'react'
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { getConf } from '@jbrowse/core/configuration'
-import { cast, getParent, types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import InfoIcon from '@mui/icons-material/Info'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -15,6 +10,12 @@ import {
   SessionTracksManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
+import InfoIcon from '@mui/icons-material/Info'
+import { cast, getParent, types } from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Instance } from 'mobx-state-tree'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 

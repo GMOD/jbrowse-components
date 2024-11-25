@@ -1,15 +1,15 @@
 import React from 'react'
+import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import DrawerWidgetSelector from './DrawerWidgetSelector'
 import DrawerControls from './DrawerControls'
+import DrawerWidgetSelector from './DrawerWidgetSelector'
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 // icons
-import LaunchIcon from '@mui/icons-material/Launch'
 
 const useStyles = makeStyles()(theme => ({
   spacer: {

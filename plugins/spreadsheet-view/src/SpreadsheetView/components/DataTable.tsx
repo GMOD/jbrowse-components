@@ -1,14 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getParent, Instance } from 'mobx-state-tree'
+import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import type SpreadsheetStateModel from '../models/Spreadsheet'
-import type RowStateModel from '../models/Row'
-import RowMenu from './RowMenu'
 import DataRow from './DataRow'
 import DataTableHeader from './DataTableHeader'
+import RowMenu from './RowMenu'
+import type RowStateModel from '../models/Row'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type { Instance } from 'mobx-state-tree'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type RowModel = Instance<typeof RowStateModel>

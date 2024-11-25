@@ -1,10 +1,10 @@
 import React from 'react'
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
+import { createRoot, hydrateRoot } from 'react-dom/client'
+import { getVolvoxConfig } from './util'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import makeWorkerInstance from '../../src/makeWorkerInstance'
-import { getVolvoxConfig } from './util'
-import { createRoot, hydrateRoot } from 'react-dom/client'
 
 export const WithReact18 = () => {
   const { assembly, tracks } = getVolvoxConfig()

@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react'
-import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 import ViewTitle from './ViewTitle'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const useStyles = makeStyles()(theme => ({
   // avoid parent styles getting into this div

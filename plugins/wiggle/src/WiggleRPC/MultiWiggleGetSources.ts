@@ -1,9 +1,10 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
-import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
+import type { Region } from '@jbrowse/core/util'
 
 export class MultiWiggleGetSources extends RpcMethodType {
   name = 'MultiWiggleGetSources'

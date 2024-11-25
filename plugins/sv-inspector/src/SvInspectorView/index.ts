@@ -1,12 +1,13 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import ReactComponent from './components/SvInspectorView'
 import stateModelFactory from './models/SvInspectorView'
-import { Feature, getContainingView, getSession } from '@jbrowse/core/util'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import BreakpointSplitViewType from '@jbrowse/plugin-breakpoint-split-view/src/BreakpointSplitView/BreakpointSplitView'
-import { CircularViewModel } from '@jbrowse/plugin-circular-view'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Feature } from '@jbrowse/core/util'
+import type BreakpointSplitViewType from '@jbrowse/plugin-breakpoint-split-view/src/BreakpointSplitView/BreakpointSplitView'
+import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 function defaultOnChordClick(
   feature: Feature,

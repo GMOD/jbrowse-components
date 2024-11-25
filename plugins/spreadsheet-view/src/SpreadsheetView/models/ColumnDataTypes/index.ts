@@ -1,10 +1,11 @@
-import LocString from './LocString'
+import { types } from 'mobx-state-tree'
+import LocEnd from './LocEnd'
 import LocRef from './LocRef'
 import LocStart from './LocStart'
-import LocEnd from './LocEnd'
+import LocString from './LocString'
 import { NumberColumn } from './Number'
 import { TextColumn as Text } from './Text'
-import { types, IAnyModelType } from 'mobx-state-tree'
+import type { IAnyModelType } from 'mobx-state-tree'
 
 const ColumnTypes = {
   Number: NumberColumn,

@@ -1,15 +1,15 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { useTheme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
+import { useTheme, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
-import { LinearGenomeViewModel } from '..'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import { SPACING, WIDGET_HEIGHT } from '../consts'
+import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(() => ({
   headerRefName: {

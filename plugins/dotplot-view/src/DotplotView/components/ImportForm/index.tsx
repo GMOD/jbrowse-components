@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import {
   Button,
   Container,
@@ -11,18 +13,16 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
-import { SnapshotIn } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { DotplotViewModel } from '../../model'
 import ImportCustomTrack from './ImportCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
+import type { DotplotViewModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

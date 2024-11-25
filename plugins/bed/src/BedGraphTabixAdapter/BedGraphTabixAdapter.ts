@@ -1,11 +1,10 @@
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature, Region, SimpleFeature } from '@jbrowse/core/util'
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { openLocation } from '@jbrowse/core/util/io'
 import { TabixIndexedFile } from '@gmod/tabix'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{

@@ -1,24 +1,24 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
-
-// icons
-import ZoomOutIcon from '@mui/icons-material/ZoomOut'
-import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import { getSession } from '@jbrowse/core/util'
+import LockIcon from '@mui/icons-material/Lock'
+import LockOpenIcon from '@mui/icons-material/LockOpen'
+import MoreVert from '@mui/icons-material/MoreVert'
+import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import RotateRightIcon from '@mui/icons-material/RotateRight'
-import LockOpenIcon from '@mui/icons-material/LockOpen'
-import LockIcon from '@mui/icons-material/Lock'
-import PhotoCamera from '@mui/icons-material/PhotoCamera'
-import MoreVert from '@mui/icons-material/MoreVert'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import ZoomOutIcon from '@mui/icons-material/ZoomOut'
+import { IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+// icons
 
 // locals
-import { CircularViewModel } from '../models/model'
-import { getSession } from '@jbrowse/core/util'
 import ExportSvgDialog from './ExportSvgDialog'
+import type { CircularViewModel } from '../models/model'
 
 const useStyles = makeStyles()(theme => ({
   controls: {

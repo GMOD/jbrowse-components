@@ -1,12 +1,12 @@
 import {
   dedupe,
-  Feature,
   getContainingTrack,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { LinearArcDisplayModel } from './model'
+import type { LinearArcDisplayModel } from './model'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

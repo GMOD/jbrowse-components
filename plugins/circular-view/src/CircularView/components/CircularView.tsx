@@ -1,14 +1,14 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import Ruler from './Ruler'
 import Controls from './Controls'
 import ImportForm from './ImportForm'
-import { CircularViewModel } from '../models/model'
+import Ruler from './Ruler'
+import type { CircularViewModel } from '../models/model'
 
 const dragHandleHeight = 3
 

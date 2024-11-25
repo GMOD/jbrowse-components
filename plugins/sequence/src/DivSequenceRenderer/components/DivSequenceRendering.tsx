@@ -1,10 +1,6 @@
 import React from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
 import {
-  Feature,
-  Region,
   bpSpanPx,
   revcom,
   complement,
@@ -12,9 +8,11 @@ import {
   defaultStops,
   defaultCodonTable,
   generateCodonTable,
-  Frame,
 } from '@jbrowse/core/util'
-import { Theme } from '@mui/material'
+import { observer } from 'mobx-react'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region, Frame } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 function Translation({
   codonTable,

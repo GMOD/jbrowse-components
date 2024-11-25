@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { defaultFilterFlags } from '../shared/util'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearPileupDisplay

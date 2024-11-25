@@ -1,5 +1,5 @@
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { freeAdapterResources } from '../../data_adapters/dataAdapterCache'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 
 /**
  * free up any resources (e.g. cached adapter objects)

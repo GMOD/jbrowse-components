@@ -1,16 +1,11 @@
-import { addDisposer, types } from 'mobx-state-tree'
-import {
-  BaseLinearDisplay,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
+import { addDisposer, types } from 'mobx-state-tree'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

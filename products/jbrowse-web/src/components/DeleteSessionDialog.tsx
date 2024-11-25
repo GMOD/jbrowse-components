@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import type { WebRootModel } from '../rootModel/rootModel'
 
 const DeleteSessionDialog = ({

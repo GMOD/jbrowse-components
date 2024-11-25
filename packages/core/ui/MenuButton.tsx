@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Menu from '@jbrowse/core/ui/Menu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const MenuButton = observer(function MenuButton({
   children,

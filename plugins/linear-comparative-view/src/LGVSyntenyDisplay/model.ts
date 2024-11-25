@@ -1,11 +1,6 @@
 import { lazy } from 'react'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
-  getConf,
-} from '@jbrowse/core/configuration'
-import {
-  Feature,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -13,6 +8,8 @@ import {
 } from '@jbrowse/core/util'
 import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
 import { types } from 'mobx-state-tree'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('./components/LaunchSyntenyViewDialog'),

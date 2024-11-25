@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { MenuItem } from '@jbrowse/core/ui/Menu'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { observer } from 'mobx-react'
 
 // locals
-import { HierarchicalTrackSelectorModel } from '../../model'
 import TrackLabelMenu from './TrackLabelMenu'
+import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const DropdownTrackSelector = observer(function ({
   model,

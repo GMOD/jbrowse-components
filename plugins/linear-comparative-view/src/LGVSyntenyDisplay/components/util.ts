@@ -1,10 +1,11 @@
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // locals
-import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 
 type LSV = LinearSyntenyViewModel
 

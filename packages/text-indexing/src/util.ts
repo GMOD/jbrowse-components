@@ -1,6 +1,6 @@
+import path from 'path'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import sanitize from 'sanitize-filename'
-import path from 'path'
 
 export interface UriLocation {
   uri: string

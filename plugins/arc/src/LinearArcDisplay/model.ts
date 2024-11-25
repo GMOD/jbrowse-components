@@ -1,11 +1,8 @@
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { types } from 'mobx-state-tree'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearArcDisplay

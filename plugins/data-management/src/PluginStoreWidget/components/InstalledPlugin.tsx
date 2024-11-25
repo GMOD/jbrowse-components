@@ -1,19 +1,16 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { observer } from 'mobx-react'
-import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
+import { getEnv, getSession } from '@jbrowse/core/util'
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import CloseIcon from '@mui/icons-material/Close'
 import LockIcon from '@mui/icons-material/Lock'
+import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-import { getEnv, getSession } from '@jbrowse/core/util'
-import {
-  BasePlugin,
-  isSessionWithSessionPlugins,
-} from '@jbrowse/core/util/types'
+import type { PluginStoreModel } from '../model'
+import type { BasePlugin } from '@jbrowse/core/util/types'
 
 // locals
-import { PluginStoreModel } from '../model'
 
 // lazies
 const DeletePluginDialog = lazy(() => import('./DeletePluginDialog'))

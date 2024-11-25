@@ -1,12 +1,12 @@
 import React, { lazy } from 'react'
-import { types } from 'mobx-state-tree'
+import Report from '@mui/icons-material/Report'
 import { observable } from 'mobx'
+import { types } from 'mobx-state-tree'
 
 // locals
-import { NotificationLevel, SnackAction } from '../util/types'
+import type { NotificationLevel, SnackAction } from '../util/types'
 
 // icons
-import Report from '@mui/icons-material/Report'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(

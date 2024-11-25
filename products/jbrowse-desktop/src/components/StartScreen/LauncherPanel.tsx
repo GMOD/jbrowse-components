@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { Button, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from '../OpenSequenceDialog'
 import { loadPluginManager } from './util'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')
 

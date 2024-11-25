@@ -1,9 +1,9 @@
 import { when } from 'mobx'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
+import type { CircularViewModel } from '../CircularView/models/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // locals
-import { CircularViewModel } from '../CircularView/models/model'
 
 type CGV = CircularViewModel
 

@@ -1,13 +1,13 @@
 import React from 'react'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { Button, Paper, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
   note: {

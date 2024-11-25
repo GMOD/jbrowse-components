@@ -1,5 +1,6 @@
-import { Feature, measureText } from '@jbrowse/core/util'
-import { Theme } from '@mui/material'
+import { measureText } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 export function fillRect(
   ctx: CanvasRenderingContext2D,

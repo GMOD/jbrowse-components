@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -6,7 +7,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 
 export default function SetMinMaxDialog(props: {
   model: {

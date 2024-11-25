@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '../configuration'
-import PluginManager from '../PluginManager'
+import type PluginManager from '../PluginManager'
 
 /**
  * #config BaseAssembly

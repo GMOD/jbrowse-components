@@ -1,9 +1,9 @@
-import { BaseAdapter } from './BaseAdapter'
-import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter'
-import { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter'
-import { BaseSequenceAdapter } from './BaseSequenceAdapter'
-import { BaseTextSearchAdapter } from './BaseTextSearchAdapter'
-import { RegionsAdapter } from './RegionsAdapter'
+import type { BaseAdapter } from './BaseAdapter'
+import type { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter'
+import type { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter'
+import type { BaseSequenceAdapter } from './BaseSequenceAdapter'
+import type { BaseTextSearchAdapter } from './BaseTextSearchAdapter'
+import type { RegionsAdapter } from './RegionsAdapter'
 
 export type AnyDataAdapter =
   | BaseAdapter

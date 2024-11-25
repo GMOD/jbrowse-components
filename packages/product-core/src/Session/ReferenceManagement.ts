@@ -1,14 +1,10 @@
 /** MST props, views, actions, etc related to managing connections */
 
-import PluginManager from '@jbrowse/core/PluginManager'
 import {
-  TrackViewModel,
   getContainingView,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import {
-  IAnyStateTreeNode,
-  Instance,
   getMembers,
   getParent,
   getSnapshot,
@@ -19,9 +15,12 @@ import {
   walk,
 } from 'mobx-state-tree'
 
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-// locals
 import { isBaseSession } from './BaseSession'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { TrackViewModel } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+// locals
 
 export interface ReferringNode {
   node: IAnyStateTreeNode

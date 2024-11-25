@@ -17,8 +17,7 @@ import {
   getSubType,
   resolveLateType,
 } from '../util/mst-reflection'
-
-import {
+import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   ConfigurationSlotName,

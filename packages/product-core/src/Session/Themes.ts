@@ -1,19 +1,14 @@
-import {
-  IAnyStateTreeNode,
-  Instance,
-  addDisposer,
-  types,
-} from 'mobx-state-tree'
-
-import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { ThemeOptions } from '@mui/material'
 import { autorun } from 'mobx'
+import { addDisposer, types } from 'mobx-state-tree'
 
 // locals
-import { BaseSession } from './BaseSession'
+import type { BaseSession } from './BaseSession'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ThemeOptions } from '@mui/material'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 type ThemeMap = Record<string, ThemeOptions>
 

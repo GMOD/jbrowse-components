@@ -1,14 +1,14 @@
 import React from 'react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getRoot } from 'mobx-state-tree'
 
 // locals
-import { ExportSvgOptions, CircularViewModel } from '../models/model'
 import SVGBackground from './SVGBackground'
 import Ruler from '../components/Ruler'
+import type { ExportSvgOptions, CircularViewModel } from '../models/model'
 
 type CGV = CircularViewModel
 

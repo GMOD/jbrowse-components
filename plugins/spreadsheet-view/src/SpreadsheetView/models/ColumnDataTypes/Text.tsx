@@ -1,23 +1,23 @@
 import React from 'react'
 import {
+  getPropertyType,
+  getEnumerationValues,
+  getSubType,
+} from '@jbrowse/core/util/mst-reflection'
+import ClearIcon from '@mui/icons-material/Clear'
+import {
   IconButton,
   TextField,
   MenuItem,
   InputAdornment,
   Select,
 } from '@mui/material'
+import { observer } from 'mobx-react'
+import { types, getPropertyMembers } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-import { types, getPropertyMembers } from 'mobx-state-tree'
-import { observer } from 'mobx-react'
-import {
-  getPropertyType,
-  getEnumerationValues,
-  getSubType,
-} from '@jbrowse/core/util/mst-reflection'
 
 // icons
-import ClearIcon from '@mui/icons-material/Clear'
 
 const OPERATIONS = [
   'equals',

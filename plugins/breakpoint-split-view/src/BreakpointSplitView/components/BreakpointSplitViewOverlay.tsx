@@ -1,10 +1,10 @@
 import React, { useRef } from 'react'
 
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import Overlay from './Overlay'
-import { BreakpointViewModel } from '../model'
-import { observer } from 'mobx-react'
+import type { BreakpointViewModel } from '../model'
 
 const useStyles = makeStyles()({
   overlay: {

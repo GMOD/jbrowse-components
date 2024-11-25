@@ -1,13 +1,13 @@
 import React from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
-import {
+// locals
+import YScaleBar from '../shared/YScaleBar'
+import type { WiggleDisplayModel } from './model'
+import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-// locals
-import YScaleBar from '../shared/YScaleBar'
-import { WiggleDisplayModel } from './model'
 
 export async function renderSvg(
   self: WiggleDisplayModel,

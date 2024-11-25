@@ -1,7 +1,7 @@
 import { bpSpanPx } from '@jbrowse/core/util'
-import { RenderArgsDeserialized } from './PileupRenderer'
-import { LayoutFeature } from './util'
 import { parseCigar } from '../MismatchParser'
+import type { RenderArgsDeserialized } from './PileupRenderer'
+import type { LayoutFeature } from './util'
 
 export function renderAlignmentShape({
   ctx,

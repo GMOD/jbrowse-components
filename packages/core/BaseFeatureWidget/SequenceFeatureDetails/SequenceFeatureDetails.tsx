@@ -5,12 +5,12 @@ import { observer } from 'mobx-react'
 // locals
 import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
-import { SimpleFeatureSerialized } from '../../util'
-import { BaseFeatureWidgetModel } from '../stateModelFactory'
-
-// icons
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
+import type { SimpleFeatureSerialized } from '../../util'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory'
+
+// icons
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))

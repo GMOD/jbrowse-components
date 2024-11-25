@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { LoadingEllipses } from '@jbrowse/core/ui'
+import MoreIcon from '@mui/icons-material/MoreHoriz'
+import SearchIcon from '@mui/icons-material/Search'
 import {
   Button,
   Checkbox,
@@ -10,17 +13,14 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { LoadingEllipses } from '@jbrowse/core/ui'
-import SearchIcon from '@mui/icons-material/Search'
-import MoreIcon from '@mui/icons-material/MoreHoriz'
 import deepmerge from 'deepmerge'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
 import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
 import { loadPluginManager } from './util'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')
 

@@ -1,7 +1,7 @@
-import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration'
-import { AnyReactComponentType } from '../util'
+import type { AnyConfigurationSchemaType } from '../configuration'
+import type { AnyReactComponentType } from '../util'
+import type { IAnyModelType } from 'mobx-state-tree'
 
 export default class ConnectionType extends PluggableElementBase {
   stateModel: IAnyModelType

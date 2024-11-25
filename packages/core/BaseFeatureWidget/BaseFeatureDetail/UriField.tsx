@@ -1,7 +1,7 @@
 import React from 'react'
-import FieldName from './FieldName'
 import { makeStyles } from 'tss-react/mui'
 import BasicValue from './BasicValue'
+import FieldName from './FieldName'
 
 const useStyles = makeStyles()({
   field: {

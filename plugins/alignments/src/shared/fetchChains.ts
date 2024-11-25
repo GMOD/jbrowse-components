@@ -3,9 +3,9 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
-import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
+import type { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
+import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

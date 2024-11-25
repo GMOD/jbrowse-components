@@ -1,7 +1,7 @@
 import React from 'react'
+import { sequence, feature } from './util'
 import SequencePanel from '.././../BaseFeatureWidget/SequenceFeatureDetails/SequencePanel'
 import { SequenceFeatureDetailsF } from '.././../BaseFeatureWidget/SequenceFeatureDetails/model'
-import { sequence, feature } from './util'
 
 function GeneCollapsedIntronCoords() {
   const model = SequenceFeatureDetailsF().create()

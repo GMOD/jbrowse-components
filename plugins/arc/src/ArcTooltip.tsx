@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { observer } from 'mobx-react'
 
 interface Props {
   message: React.ReactNode | string

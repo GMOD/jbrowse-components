@@ -1,16 +1,20 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-import { ChainData, ChainStats, ReducedFeature } from '../shared/fetchChains'
-import { LinearReadCloudDisplayModel } from './model'
 import { fillRectCtx, strokeRectCtx } from './util'
 import {
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
   getPairedOrientationColor,
 } from '../shared/color'
+import type { LinearReadCloudDisplayModel } from './model'
+import type {
+  ChainData,
+  ChainStats,
+  ReducedFeature,
+} from '../shared/fetchChains'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface ChainCoord {
   distance: number

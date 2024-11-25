@@ -1,10 +1,10 @@
+import { lazy } from 'react'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import configSchemaF from './configSchemaF'
 import stateModelFactory from './model'
-import { lazy } from 'react'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

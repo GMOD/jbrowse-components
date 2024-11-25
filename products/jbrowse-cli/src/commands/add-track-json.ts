@@ -1,6 +1,7 @@
-import { Args, Flags } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
-import JBrowseCommand, { Config, Track } from '../base'
+import { Args, Flags } from '@oclif/core'
+import JBrowseCommand from '../base'
+import type { Config, Track } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
   // @ts-expect-error

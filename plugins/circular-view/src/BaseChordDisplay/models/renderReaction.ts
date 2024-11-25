@@ -1,9 +1,9 @@
-import clone from 'clone'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import clone from 'clone'
 
 // locals
-import { CircularViewModel } from '../../CircularView/models/model'
+import type { CircularViewModel } from '../../CircularView/models/model'
 
 export function renderReactionData(self: any) {
   const view = getContainingView(self) as CircularViewModel

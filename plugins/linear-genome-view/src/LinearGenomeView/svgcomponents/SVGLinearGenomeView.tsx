@@ -1,23 +1,23 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
-import { when } from 'mobx'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   getSession,
   max,
   measureText,
   renderToStaticMarkup,
 } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { ThemeProvider } from '@mui/material'
+import { when } from 'mobx'
 import { getRoot } from 'mobx-state-tree'
 
 // locals
-import { LinearGenomeViewModel, ExportSvgOptions } from '..'
 import SVGBackground from './SVGBackground'
-import SVGTracks from './SVGTracks'
 import SVGHeader from './SVGHeader'
+import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
+import type { LinearGenomeViewModel, ExportSvgOptions } from '..'
 
 type LGV = LinearGenomeViewModel
 

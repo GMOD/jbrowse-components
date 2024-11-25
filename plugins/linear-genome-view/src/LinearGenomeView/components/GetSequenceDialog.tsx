@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
+import { getConf } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import { getSession, reverse, complement } from '@jbrowse/core/util'
+import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+
+// icons
+import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
   Checkbox,
@@ -12,26 +19,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { observer } from 'mobx-react'
-import { saveAs } from 'file-saver'
-import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  getSession,
-  reverse,
-  complement,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
-import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
-
-// icons
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import GetAppIcon from '@mui/icons-material/GetApp'
+import { saveAs } from 'file-saver'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {

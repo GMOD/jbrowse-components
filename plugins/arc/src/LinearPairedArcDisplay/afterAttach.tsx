@@ -1,6 +1,6 @@
-import { createAutorun } from './util'
 import { fetchChains } from './fetchChains'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { createAutorun } from './util'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 export function doAfterAttach<T extends IAnyStateTreeNode>(self: T) {
   createAutorun(

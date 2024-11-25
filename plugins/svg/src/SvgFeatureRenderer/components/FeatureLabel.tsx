@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react'
+import { measureText, getViewParams, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
-import {
-  measureText,
-  getViewParams,
-  Feature,
-  Region,
-  stripAlpha,
-} from '@jbrowse/core/util'
-import { DisplayModel } from './util'
+import type { DisplayModel } from './util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 interface ViewParams {
   start: number

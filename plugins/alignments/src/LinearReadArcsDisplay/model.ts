@@ -1,24 +1,23 @@
-import React, { lazy } from 'react'
-import { types, Instance } from 'mobx-state-tree'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import type React from 'react'
+import { lazy } from 'react'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { getSession } from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
-import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import PaletteIcon from '@mui/icons-material/Palette'
+import { types } from 'mobx-state-tree'
 
 // locals
-import { ColorBy, FilterBy } from '../shared/types'
-import { ChainData } from '../shared/fetchChains'
+import type { ChainData } from '../shared/fetchChains'
+import type { ColorBy, FilterBy } from '../shared/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const FilterByTagDialog = lazy(

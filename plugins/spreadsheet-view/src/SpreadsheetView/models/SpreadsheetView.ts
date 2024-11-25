@@ -1,16 +1,17 @@
-import { types, getEnv, cast, SnapshotIn, Instance } from 'mobx-state-tree'
-import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { MenuItem } from '@jbrowse/core/ui'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
 import DoneIcon from '@mui/icons-material/Done'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import { types, getEnv, cast } from 'mobx-state-tree'
 
-import SpreadsheetModel from './Spreadsheet'
-import ImportWizardModel from './ImportWizard'
 import FilterControlsModel from './FilterControls'
+import ImportWizardModel from './ImportWizard'
+import SpreadsheetModel from './Spreadsheet'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { SnapshotIn, Instance } from 'mobx-state-tree'
 
 type Spreadsheet = Instance<typeof SpreadsheetModel>
 

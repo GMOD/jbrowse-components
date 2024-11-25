@@ -3,8 +3,8 @@ import { iterMap } from '@jbrowse/core/util'
 
 // locals
 import { layoutFeature } from './layoutFeature'
-import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { sortFeature } from './sortUtil'
+import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 
 // layout determines the height of the canvas that we use to render
 export function layoutFeats(

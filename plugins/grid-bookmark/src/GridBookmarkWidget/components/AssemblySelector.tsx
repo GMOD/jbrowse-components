@@ -1,6 +1,4 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-
 import {
   Checkbox,
   FormControl,
@@ -10,9 +8,10 @@ import {
   OutlinedInput,
   Select,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // locals
-import { GridBookmarkModel } from '../model'
+import type { GridBookmarkModel } from '../model'
 
 const AssemblySelector = observer(function ({
   model,

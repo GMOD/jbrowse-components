@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 const EditGCContentParamsDialog = observer(function ({
   model,

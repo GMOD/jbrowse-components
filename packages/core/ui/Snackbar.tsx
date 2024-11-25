@@ -1,4 +1,5 @@
 import React from 'react'
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Alert,
   Button,
@@ -8,11 +9,10 @@ import {
 import { observer } from 'mobx-react'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
 
 // locals
-import { AbstractSessionModel } from '../util'
-import { SnackbarMessage } from './SnackbarModel'
+import type { AbstractSessionModel } from '../util'
+import type { SnackbarMessage } from './SnackbarModel'
 
 interface SnackbarSession extends AbstractSessionModel {
   snackbarMessages: SnackbarMessage[]

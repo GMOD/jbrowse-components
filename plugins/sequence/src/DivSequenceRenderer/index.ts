@@ -1,9 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-
-import { Region } from '@jbrowse/core/util/types'
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import ReactComponent from './components/DivSequenceRendering'
 import configSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Region } from '@jbrowse/core/util/types'
 
 /* adjust in both directions */
 class DivSequenceRenderer extends FeatureRendererType {

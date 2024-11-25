@@ -1,18 +1,20 @@
-import React, { lazy } from 'react'
-import { types, Instance } from 'mobx-state-tree'
-import { transaction } from 'mobx'
+import type React from 'react'
+import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { saveAs } from 'file-saver'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import { saveAs } from 'file-saver'
+import { transaction } from 'mobx'
+import { types } from 'mobx-state-tree'
 import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

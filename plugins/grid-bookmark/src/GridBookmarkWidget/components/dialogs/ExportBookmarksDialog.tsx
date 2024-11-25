@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-
+import { Dialog } from '@jbrowse/core/ui'
+import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
   DialogContent,
@@ -10,15 +10,15 @@ import {
   Typography,
   Alert,
 } from '@mui/material'
+import { observer } from 'mobx-react'
+
 import { makeStyles } from 'tss-react/mui'
-import { Dialog } from '@jbrowse/core/ui'
 
 // Icons
-import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
-import { GridBookmarkModel } from '../../model'
 import { downloadBookmarkFile } from '../../utils'
+import type { GridBookmarkModel } from '../../model'
 
 const useStyles = makeStyles()({
   flexItem: {

@@ -1,11 +1,12 @@
 import React from 'react'
+import { Menu } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import { Menu, MenuItem } from '@jbrowse/core/ui'
-import { Instance } from 'mobx-state-tree'
 
 // locals
 import type SpreadsheetModel from '../models/Spreadsheet'
 import type ViewModel from '../models/SpreadsheetView'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance } from 'mobx-state-tree'
 
 const RowMenu = observer(function ({
   viewModel,

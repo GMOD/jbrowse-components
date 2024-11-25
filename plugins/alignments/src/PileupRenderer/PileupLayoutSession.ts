@@ -1,11 +1,12 @@
-import deepEqual from 'fast-deep-equal'
-import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
-import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { FilterBy, SortedBy } from '../shared/types'
+import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import deepEqual from 'fast-deep-equal'
+// types
+import type { FilterBy, SortedBy } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import type MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 
 export interface PileupLayoutSessionProps {
   config: AnyConfigurationModel

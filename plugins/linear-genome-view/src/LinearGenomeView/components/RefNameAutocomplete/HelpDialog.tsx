@@ -1,6 +1,6 @@
 import React from 'react'
-import { Button, DialogActions, DialogContent, Divider } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, Divider } from '@mui/material'
 
 export default function HelpDialog({
   handleClose,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogContent,
@@ -9,14 +10,13 @@ import {
   Radio,
   RadioGroup,
   TextField,
-  TextFieldProps,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { SequenceFeatureDetailsModel } from '../model'
+import type { SequenceFeatureDetailsModel } from '../model'
+import type { TextFieldProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   formElt: {

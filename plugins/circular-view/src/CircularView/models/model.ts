@@ -1,36 +1,30 @@
-import React, { lazy } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  cast,
-  getRoot,
-  resolveIdentifier,
-  types,
-  SnapshotOrInstance,
-  Instance,
-} from 'mobx-state-tree'
-import { Region } from '@jbrowse/core/util/types/mst'
-import { transaction } from 'mobx'
-import { saveAs } from 'file-saver'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { MenuItem } from '@jbrowse/core/ui'
+import type React from 'react'
+import { lazy } from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
   clamp,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { Region } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { saveAs } from 'file-saver'
+import { transaction } from 'mobx'
+import { cast, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
 // locals
-import { calculateStaticSlices, sliceIsVisible, SliceRegion } from './slices'
+import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
+import type { SliceRegion } from './slices'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { SnapshotOrInstance, Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('../components/ExportSvgDialog'))

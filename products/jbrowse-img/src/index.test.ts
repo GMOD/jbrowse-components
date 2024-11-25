@@ -5,9 +5,9 @@
 // the above jest-environment node is important to check true usage
 // as a CLI tool
 
-import { renderRegion } from './renderRegion'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
+import { renderRegion } from './renderRegion'
 import setupEnv from './setupEnv'
 
 setupEnv()

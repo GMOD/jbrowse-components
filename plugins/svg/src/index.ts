@@ -1,10 +1,10 @@
-import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
 } from './SvgFeatureRenderer'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 class SvgFeatureRenderer extends BoxRendererType {
   supportsSVG = true

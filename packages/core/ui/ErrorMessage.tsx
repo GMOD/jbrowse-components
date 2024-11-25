@@ -1,4 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -6,8 +8,6 @@ import { makeStyles } from 'tss-react/mui'
 import RedErrorMessageBox from './RedErrorMessageBox'
 
 // icons
-import RefreshIcon from '@mui/icons-material/Refresh'
-import ReportIcon from '@mui/icons-material/Report'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(

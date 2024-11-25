@@ -1,17 +1,17 @@
-import BED from '@gmod/bed'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import {
   generateBedMethylFeature,
   isBedMethylFeature,
 } from './generateBedMethylFeature'
 import {
-  generateUcscTranscript,
-  isUcscTranscript,
-} from './generateUcscTranscript'
-import {
   generateRepeatMaskerFeature,
   isRepeatMaskerDescriptionField,
 } from './generateRepeatMaskerFeature'
+import {
+  generateUcscTranscript,
+  isUcscTranscript,
+} from './generateUcscTranscript'
+import type BED from '@gmod/bed'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 function stringToStrand(f: string) {
   if (f === '-1') {

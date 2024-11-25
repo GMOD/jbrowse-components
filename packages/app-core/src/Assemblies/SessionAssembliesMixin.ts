@@ -1,9 +1,8 @@
 import { types } from 'mobx-state-tree'
-
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfiguration } from '@jbrowse/core/configuration'
-import { BaseSession } from '@jbrowse/product-core'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { AnyConfiguration } from '@jbrowse/core/configuration'
+import type { BaseSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel SessionAssembliesMixin

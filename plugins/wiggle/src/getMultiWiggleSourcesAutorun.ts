@@ -1,12 +1,12 @@
-import { autorun } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
 // jbrowse
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { autorun } from 'mobx'
+import { addDisposer, isAlive } from 'mobx-state-tree'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Source {
   name: string

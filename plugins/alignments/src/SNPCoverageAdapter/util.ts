@@ -1,4 +1,4 @@
-import {
+import type {
   ColorBy,
   Mismatch,
   PreBaseCoverageBin,

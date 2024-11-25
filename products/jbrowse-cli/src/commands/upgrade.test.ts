@@ -4,9 +4,9 @@
 
 import fs, { mkdirSync } from 'fs'
 import path from 'path'
-import { runInTmpDir } from '../testUtil'
 import { runCommand } from '@oclif/test'
 import nock from 'nock'
+import { runInTmpDir } from '../testUtil'
 
 const { stat, readdir, writeFile } = fs.promises
 

@@ -1,5 +1,5 @@
-import { Mismatch } from '../shared/types'
-import { Buffer } from 'buffer'
+import type { Mismatch } from '../shared/types'
+import type { Buffer } from 'buffer'
 
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 

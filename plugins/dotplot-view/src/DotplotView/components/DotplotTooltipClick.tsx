@@ -1,10 +1,10 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { observer } from 'mobx-react'
 
 // locals
-import { DotplotViewModel } from '../model'
 import { locstr } from './util'
+import type { DotplotViewModel } from '../model'
 
 type Coord = [number, number] | undefined
 export const DotplotTooltipClick = observer(function ({

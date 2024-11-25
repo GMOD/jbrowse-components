@@ -1,10 +1,10 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // locals
-import { DotplotViewModel } from '../model'
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import type { DotplotViewModel } from '../model'
 
 export const GridRaw = observer(function ({
   model,

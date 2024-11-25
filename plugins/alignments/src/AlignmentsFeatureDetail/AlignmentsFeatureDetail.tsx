@@ -1,18 +1,18 @@
 import React, { lazy } from 'react'
-import { Paper } from '@mui/material'
-import { observer } from 'mobx-react'
-import clone from 'clone'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import { Paper } from '@mui/material'
+import clone from 'clone'
+import { observer } from 'mobx-react'
 
 // locals
-import { getTag } from './util'
+import Flags from './Flags'
+import Formatter from './Formatter'
+import PairLink from './PairLink'
 import { tags } from './tagInfo'
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import { getTag } from './util'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 // local components
-import Flags from './Flags'
-import PairLink from './PairLink'
-import Formatter from './Formatter'
 
 // lazies
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))

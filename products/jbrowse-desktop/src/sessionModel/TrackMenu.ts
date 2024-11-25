@@ -1,23 +1,23 @@
 import { lazy } from 'react'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
-import clone from 'clone'
 
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import DeleteIcon from '@mui/icons-material/Delete'
-import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import InfoIcon from '@mui/icons-material/Info'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import SettingsIcon from '@mui/icons-material/Settings'
+import clone from 'clone'
+import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
+import type { DesktopRootModel } from '../rootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type {
   SessionWithDialogs,
   SessionWithTracks,
   SessionWithDrawerWidgets,
 } from '@jbrowse/product-core'
-import { DesktopRootModel } from '../rootModel'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 

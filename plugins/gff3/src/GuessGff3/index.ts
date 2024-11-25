@@ -1,11 +1,11 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation } from '@jbrowse/core/util/types'
 import {
   makeIndex,
   makeIndexType,
   getFileName,
-  AdapterGuesser,
 } from '@jbrowse/core/util/tracks'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AdapterGuesser } from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessGff3F(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(

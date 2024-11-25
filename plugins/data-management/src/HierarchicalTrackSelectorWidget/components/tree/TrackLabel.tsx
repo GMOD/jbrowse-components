@@ -1,14 +1,13 @@
 import React from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
 // locals
-import { isUnsupported, NodeData } from '../util'
+import { isUnsupported } from '../util'
 import TrackLabelMenu from './TrackLabelMenu'
+import type { NodeData } from '../util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {

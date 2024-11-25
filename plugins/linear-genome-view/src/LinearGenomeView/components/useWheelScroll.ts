@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react'
+import type React from 'react'
+import { useRef, useEffect } from 'react'
 
 type Timer = ReturnType<typeof setTimeout>
 

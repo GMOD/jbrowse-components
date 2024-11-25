@@ -1,16 +1,15 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import SimpleFeature, {
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
   const features = new Map<string, Feature[]>()

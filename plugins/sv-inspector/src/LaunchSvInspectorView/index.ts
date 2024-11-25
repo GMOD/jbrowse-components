@@ -1,6 +1,6 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import { SvInspectorViewModel } from '../SvInspectorView/models/SvInspectorView'
+import type { SvInspectorViewModel } from '../SvInspectorView/models/SvInspectorView'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(

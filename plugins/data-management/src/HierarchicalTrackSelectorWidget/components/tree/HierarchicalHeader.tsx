@@ -1,17 +1,17 @@
 import React from 'react'
+import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import ClearIcon from '@mui/icons-material/Clear'
 
 // locals
-import { HierarchicalTrackSelectorModel } from '../../model'
 import HamburgerMenu from './HamburgerMenu'
 import ShoppingCart from '../ShoppingCart'
 import FavoriteTracks from './FavoriteTracks'
 import RecentlyUsedTracks from './RecentlyUsedTracks'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {

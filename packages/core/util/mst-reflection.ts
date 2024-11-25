@@ -4,6 +4,8 @@ import {
   isArrayType,
   isMapType,
   isLateType,
+} from 'mobx-state-tree'
+import type {
   IAnyType,
   IModelReflectionPropertiesData,
   IAnyComplexType,

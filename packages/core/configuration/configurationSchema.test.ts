@@ -1,7 +1,7 @@
 import { types, getSnapshot } from 'mobx-state-tree'
+import { getConf, readConfObject } from '.'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
-import { getConf, readConfObject } from '.'
 // import { ConfigurationSchemaForModel, GetOptions, GetBase, ConfigurationSlotName } from './types'
 
 describe('configuration schemas', () => {

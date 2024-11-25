@@ -1,6 +1,6 @@
 import React from 'react'
-import escapeHTML from 'escape-html'
 import dompurify from 'dompurify'
+import escapeHTML from 'escape-html'
 import { linkify } from '../util'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json

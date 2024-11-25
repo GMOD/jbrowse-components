@@ -1,9 +1,9 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { types, getEnv, addDisposer } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import { autorun } from 'mobx'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
+import { types, getEnv, addDisposer } from 'mobx-state-tree'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearHicDisplay

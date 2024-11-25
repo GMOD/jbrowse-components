@@ -1,30 +1,26 @@
 import { lazy } from 'react'
-import { isAlive, types, Instance } from 'mobx-state-tree'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
+import { getConf } from '@jbrowse/core/configuration'
+import { set1 as colors } from '@jbrowse/core/ui/colors'
+import { getSession, getContainingView } from '@jbrowse/core/util'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import deepEqual from 'fast-deep-equal'
+import { isAlive, types } from 'mobx-state-tree'
+import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 // jbrowse imports
-import {
-  AnyConfigurationSchemaType,
-  getConf,
-} from '@jbrowse/core/configuration'
-import {
-  getSession,
-  Feature,
-  AnyReactComponentType,
-  getContainingView,
-} from '@jbrowse/core/util'
-import { set1 as colors } from '@jbrowse/core/ui/colors'
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
+import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import type { Source } from '../util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature, AnyReactComponentType } from '@jbrowse/core/util'
+import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { getScale, Source, YSCALEBAR_LABEL_OFFSET } from '../util'
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))

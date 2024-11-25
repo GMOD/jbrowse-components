@@ -1,5 +1,4 @@
 import { fireEvent } from '@testing-library/react'
-import config from '../../test_data/volvox/config_auth.json'
 import {
   setup,
   pv,
@@ -8,6 +7,7 @@ import {
   expectCanvasMatch,
   doBeforeEach,
 } from './util'
+import config from '../../test_data/volvox/config_auth.json'
 
 setup()
 

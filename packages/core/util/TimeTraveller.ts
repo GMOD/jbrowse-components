@@ -6,9 +6,8 @@ import {
   onSnapshot,
   getSnapshot,
   applySnapshot,
-  IDisposer,
-  IAnyStateTreeNode,
 } from 'mobx-state-tree'
+import type { IDisposer, IAnyStateTreeNode } from 'mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 

@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react'
 import { observer } from 'mobx-react'
-import { Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import Chord from './Chord'
+import type { Block, AnyRegion } from './Chord'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // locals
-import Chord, { Block, AnyRegion } from './Chord'
+import type { Feature } from '@jbrowse/core/util'
 
 const StructuralVariantChordsReactComponent = observer(function ({
   features,

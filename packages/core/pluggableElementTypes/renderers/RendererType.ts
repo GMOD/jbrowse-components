@@ -1,8 +1,9 @@
-import React, { ReactElement } from 'react'
+import type { ReactElement } from 'react'
+import React from 'react'
 import PluggableElementBase from '../PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../../configuration'
-import { AnyReactComponentType } from '../../util'
-import PluginManager from '../../PluginManager'
+import type PluginManager from '../../PluginManager'
+import type { AnyConfigurationSchemaType } from '../../configuration'
+import type { AnyReactComponentType } from '../../util'
 
 export type RenderProps = Record<string, unknown>
 

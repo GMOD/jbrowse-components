@@ -1,13 +1,13 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getEnv } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { LinearComparativeViewModel } from '../model'
-import { getConf } from '@jbrowse/core/configuration'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearComparativeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
   container: {

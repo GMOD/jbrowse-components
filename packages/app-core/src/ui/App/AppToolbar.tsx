@@ -1,13 +1,13 @@
 import React from 'react'
-import { Toolbar, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import AppLogo from '@jbrowse/core/ui/AppLogo'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
-import AppLogo from '@jbrowse/core/ui/AppLogo'
-import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import { Toolbar, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   grow: {

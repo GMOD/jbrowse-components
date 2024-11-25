@@ -1,10 +1,10 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from 'mobx-state-tree'
 
 // locals
 import configSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel UCSCTrackHubConnection

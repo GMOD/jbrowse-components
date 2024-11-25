@@ -4,8 +4,8 @@
 
 import fs from 'fs'
 import path from 'path'
-import nock from 'nock'
 import { runCommand } from '@oclif/test'
+import nock from 'nock'
 
 // locals
 import { runInTmpDir } from '../testUtil'

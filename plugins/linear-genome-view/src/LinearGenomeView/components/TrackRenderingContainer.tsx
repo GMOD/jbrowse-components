@@ -1,14 +1,14 @@
 import React, { Suspense, useEffect, useRef } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 
 // jbrowse core
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   // aligns with block boundaries. check for example the breakpoint split view

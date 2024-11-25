@@ -1,19 +1,19 @@
 import React, { useEffect, useRef } from 'react'
+import { getSession } from '@jbrowse/core/util'
+import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
+import MinimizeIcon from '@mui/icons-material/Minimize'
 import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import AddIcon from '@mui/icons-material/Add'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 
 // locals
-import ViewMenu from './ViewMenu'
 import ViewContainerTitle from './ViewContainerTitle'
-import { getSession } from '@jbrowse/core/util'
+import ViewMenu from './ViewMenu'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
   icon: {

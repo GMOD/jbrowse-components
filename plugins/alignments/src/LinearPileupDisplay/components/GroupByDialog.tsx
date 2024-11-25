@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
+import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  useDebounce,
+} from '@jbrowse/core/util'
 import {
   Button,
   DialogActions,
@@ -8,20 +14,15 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSnapshot, IAnyStateTreeNode } from 'mobx-state-tree'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  useDebounce,
-} from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 
 // locals
 import { getUniqueTags } from '../../shared/getUniqueTags'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 function clone(c: unknown) {
   return JSON.parse(JSON.stringify(c))

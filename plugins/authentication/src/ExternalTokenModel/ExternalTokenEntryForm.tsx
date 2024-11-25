@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
 
 export const ExternalTokenEntryForm = ({
   internetAccountId,

@@ -1,4 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useLocalStorage } from '@jbrowse/core/util'
+
+// icons
+import DeleteIcon from '@mui/icons-material/Delete'
+import ListIcon from '@mui/icons-material/List'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
   Button,
   Checkbox,
@@ -8,25 +15,19 @@ import {
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
-  ToggleButtonProps,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { useLocalStorage } from '@jbrowse/core/util'
-
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
-import ViewComfyIcon from '@mui/icons-material/ViewComfy'
-import ListIcon from '@mui/icons-material/List'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 
 // locals
-import RenameSessionDialog from './dialogs/RenameSessionDialog'
-import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
-import { loadPluginManager, RecentSessionData } from './util'
 import RecentSessionsCards from './RecentSessionCards'
 import RecentSessionsList from './RecentSessionList'
+import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
+import RenameSessionDialog from './dialogs/RenameSessionDialog'
+import { loadPluginManager } from './util'
+import type { RecentSessionData } from './util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ToggleButtonProps } from '@mui/material'
 
 const { ipcRenderer } = window.require('electron')
 

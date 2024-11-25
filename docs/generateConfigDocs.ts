@@ -1,3 +1,4 @@
+import fs from 'fs'
 import slugify from 'slugify'
 import {
   rm,
@@ -6,7 +7,6 @@ import {
   extractWithComment,
   getAllFiles,
 } from './util'
-import fs from 'fs'
 
 interface Derives {
   name: string

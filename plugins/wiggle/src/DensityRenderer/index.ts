@@ -1,8 +1,7 @@
-import configSchema from './configSchema'
-
-import PluginManager from '@jbrowse/core/PluginManager'
 import DensityRenderer from './DensityRenderer'
+import configSchema from './configSchema'
 import ReactComponent from '../WiggleRendering'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function DensityRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(

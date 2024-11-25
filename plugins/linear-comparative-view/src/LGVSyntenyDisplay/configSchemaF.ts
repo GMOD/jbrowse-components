@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LGVSyntenyDisplay

@@ -1,17 +1,18 @@
-import ServerSideRendererType, {
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import { Region } from '@jbrowse/core/util/types'
-import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { toArray } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { firstValueFrom } from 'rxjs'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface HicFeature {
   bin1: number

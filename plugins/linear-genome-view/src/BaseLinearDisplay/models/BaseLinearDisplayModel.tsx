@@ -1,8 +1,7 @@
-import React, { lazy } from 'react'
-import { ThemeOptions } from '@mui/material'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import type React from 'react'
+import { lazy } from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { MenuItem } from '@jbrowse/core/ui'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
   getContainingTrack,
@@ -10,25 +9,30 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
   isFeature,
-  Feature,
-  AnyReactComponentType,
 } from '@jbrowse/core/util'
-import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { autorun } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 
 // icons
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { autorun } from 'mobx'
+import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
 // locals
-import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
-import BlockState from './serverSideRenderedBlock'
-import configSchema from './configSchema'
-import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
+import TrackHeightMixin from './TrackHeightMixin'
+import configSchema from './configSchema'
+import BlockState from './serverSideRenderedBlock'
+import type {
+  LinearGenomeViewModel,
+  ExportSvgOptions,
+} from '../../LinearGenomeView'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Feature, AnyReactComponentType } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ThemeOptions } from '@mui/material'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('../components/Tooltip'))

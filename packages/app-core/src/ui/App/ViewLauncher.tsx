@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { getEnv } from '@jbrowse/core/util'
 import {
   Button,
   FormControl,
@@ -11,11 +12,11 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { getEnv, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 // ui elements
-import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]

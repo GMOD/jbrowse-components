@@ -1,4 +1,8 @@
 import React, { useState } from 'react'
+import { coarseStripHTML } from '@jbrowse/core/util'
+import AddIcon from '@mui/icons-material/Add'
+import ClearIcon from '@mui/icons-material/Clear'
+import MinimizeIcon from '@mui/icons-material/Minimize'
 import {
   Typography,
   FormControl,
@@ -6,15 +10,11 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // icon
-import ClearIcon from '@mui/icons-material/Clear'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import AddIcon from '@mui/icons-material/Add'
-import { coarseStripHTML } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
-import { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   facet: {

@@ -1,19 +1,21 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import BigBedAdapterF from './BigBedAdapter'
-import BedpeAdapterF from './BedpeAdapter'
-import BedTabixAdapterF from './BedTabixAdapter'
-import BedAdapterF from './BedAdapter'
-import BedGraphAdapterF from './BedGraphAdapter'
-import BedGraphTabixAdapterF from './BedGraphTabixAdapter'
-import { FileLocation } from '@jbrowse/core/util/types'
 import {
   getFileName,
   makeIndex,
   makeIndexType,
+} from '@jbrowse/core/util/tracks'
+import BedAdapterF from './BedAdapter'
+import BedGraphAdapterF from './BedGraphAdapter'
+import BedGraphTabixAdapterF from './BedGraphTabixAdapter'
+import BedTabixAdapterF from './BedTabixAdapter'
+import BedpeAdapterF from './BedpeAdapter'
+import BigBedAdapterF from './BigBedAdapter'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
   AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class BedPlugin extends Plugin {
   name = 'BedPlugin'

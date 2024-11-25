@@ -1,11 +1,11 @@
 import React from 'react'
 import { FormGroup, TablePagination } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import RowCountMessage from './RowCountMessage'
-import { SpreadsheetModel } from '../models/Spreadsheet'
-import { observer } from 'mobx-react'
+import type { SpreadsheetModel } from '../models/Spreadsheet'
 
 const statusBarHeight = 40
 

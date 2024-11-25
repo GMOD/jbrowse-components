@@ -1,6 +1,6 @@
-import React from 'react'
-import { IAnyModelType } from 'mobx-state-tree'
+import type React from 'react'
 import PluggableElementBase from './PluggableElementBase'
+import type { IAnyModelType } from 'mobx-state-tree'
 
 type BasicComponent = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?

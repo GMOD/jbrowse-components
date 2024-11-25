@@ -1,4 +1,5 @@
-import VCF, { parseBreakend } from '@gmod/vcf'
+import { parseBreakend } from '@gmod/vcf'
+import type VCF from '@gmod/vcf'
 
 const altTypeToSO: Record<string, string> = {
   DEL: 'deletion',

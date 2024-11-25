@@ -1,12 +1,13 @@
 import React from 'react'
-import { SimpleFeatureSerialized, getEnv, getSession } from '@jbrowse/core/util'
-import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { getEnv, getSession } from '@jbrowse/core/util'
+import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel'
+import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings'
-import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SupplementaryAlignments(props: {
   tag: string

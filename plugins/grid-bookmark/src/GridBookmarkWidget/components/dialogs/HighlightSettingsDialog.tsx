@@ -1,5 +1,5 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogContent,
@@ -8,10 +8,10 @@ import {
   Typography,
   Switch,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 // locals
-import { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model'
 
 const HighlightSettingsDialog = observer(function ({
   onClose,

@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from 'react'
+import { getConf } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import {
+  getSession,
+  getContainingView,
+  gatherOverlaps,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+
+// locals
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   Button,
   CircularProgress,
@@ -7,19 +18,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import { getConf } from '@jbrowse/core/configuration'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  getSession,
-  getContainingView,
-  gatherOverlaps,
-  Feature,
-} from '@jbrowse/core/util'
-
-// locals
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import type { Feature } from '@jbrowse/core/util'
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
 

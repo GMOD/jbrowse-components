@@ -1,8 +1,8 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   container: {

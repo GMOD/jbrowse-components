@@ -1,14 +1,15 @@
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
+import { isAbstractMenuManager } from '@jbrowse/core/util'
 
 // locals
 
+import DataUsageIcon from '@mui/icons-material/DataUsage'
 import CircularViewF from './CircularView'
 import LaunchCircularViewF from './LaunchCircularView'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // icons
-import DataUsageIcon from '@mui/icons-material/DataUsage'
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'

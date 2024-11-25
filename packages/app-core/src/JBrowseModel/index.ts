@@ -1,16 +1,16 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import { cast, getParent, getSnapshot } from 'mobx-state-tree'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { toJS } from 'mobx'
+import { cast, getParent, getSnapshot } from 'mobx-state-tree'
 
 // locals
 import { JBrowseConfigF } from '../JBrowseConfig'
+
+// types
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 /**
  * #stateModel AppCoreJBrowseModel

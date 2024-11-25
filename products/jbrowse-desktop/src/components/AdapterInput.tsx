@@ -1,7 +1,7 @@
 import React from 'react'
-import { Grid } from '@mui/material'
 import { FileSelector } from '@jbrowse/core/ui'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { Grid } from '@mui/material'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function AdapterInput({
   adapterSelection,

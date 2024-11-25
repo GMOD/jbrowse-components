@@ -2,8 +2,8 @@ import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
 import { Image, createCanvas } from 'canvas'
 
 // locals
-import configSchema from './configSchema'
 import XYPlotRenderer from './XYPlotRenderer'
+import configSchema from './configSchema'
 import ReactComponent from '../WiggleRendering'
 
 // @ts-expect-error

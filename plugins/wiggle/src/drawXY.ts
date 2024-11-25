@@ -1,17 +1,16 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { colord, Colord } from '@jbrowse/core/util/colord'
-// required to import this for typescript purposes
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import mix from 'colord/plugins/mix'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 
-import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 // locals
-import { fillRectCtx, getOrigin, getScale, ScaleOpts } from './util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { fillRectCtx, getOrigin, getScale } from './util'
+import type { ScaleOpts } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { Colord } from '@jbrowse/core/util/colord'
 
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()

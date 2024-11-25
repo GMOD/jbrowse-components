@@ -1,8 +1,8 @@
 const fs = require('fs')
 const path = require('path')
-const paths = require('./paths')
 const chalk = require('chalk')
 const resolve = require('resolve')
+const paths = require('./paths')
 
 /**
  * Get additional module paths based on the baseUrl of a compilerOptions object.

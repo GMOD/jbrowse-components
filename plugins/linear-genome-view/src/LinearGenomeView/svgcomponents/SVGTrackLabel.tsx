@@ -1,6 +1,6 @@
 import React from 'react'
-import { useTheme } from '@mui/material'
 import { coarseStripHTML, stripAlpha } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 
 export default function SVGTrackLabel({
   trackLabels,

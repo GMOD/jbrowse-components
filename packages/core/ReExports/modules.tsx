@@ -1,53 +1,52 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
-import React, { lazy, LazyExoticComponent, Suspense } from 'react'
-import * as ReactJSXRuntime from 'react/jsx-runtime'
-import * as ReactDom from 'react-dom'
-import * as mobx from 'mobx'
-import * as mst from 'mobx-state-tree'
-import * as mxreact from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-
+import type { LazyExoticComponent } from 'react'
+import React, { lazy, Suspense } from 'react'
+import { useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
-import { useTheme } from '@mui/material'
 import {
   useGridApiContext,
   useGridApiRef,
   useGridRootProps,
 } from '@mui/x-data-grid'
+import * as mobx from 'mobx'
+import * as mxreact from 'mobx-react'
+import * as mst from 'mobx-state-tree'
+import * as ReactJSXRuntime from 'react/jsx-runtime'
+import * as ReactDom from 'react-dom'
+import { makeStyles } from 'tss-react/mui'
 
 // material-ui lab
+import Plugin from '../Plugin'
+import * as Configuration from '../configuration'
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 
-import Base1DView from '../util/Base1DViewModel'
 import * as pluggableElementTypes from '../pluggableElementTypes'
-import ViewType from '../pluggableElementTypes/ViewType'
+import reExportsList from './list'
 import AdapterType from '../pluggableElementTypes/AdapterType'
 import DisplayType from '../pluggableElementTypes/DisplayType'
 import TrackType from '../pluggableElementTypes/TrackType'
+import ViewType from '../pluggableElementTypes/ViewType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
 
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
-import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
-import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
 import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
 import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
+import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 
-import * as Configuration from '../configuration'
-import Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
+import Base1DView from '../util/Base1DViewModel'
 import * as coreColor from '../util/color'
-import * as coreLayouts from '../util/layouts'
-import * as trackUtils from '../util/tracks'
 import * as coreIo from '../util/io'
+import * as coreLayouts from '../util/layouts'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
+import * as trackUtils from '../util/tracks'
 import * as mstTypes from '../util/types/mst'
-
-import reExportsList from './list'
 
 const Entries = {
   Accordion: lazy(() => import('@mui/material/Accordion')),

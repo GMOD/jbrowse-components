@@ -1,16 +1,16 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
+import { featurizeSA } from '../MismatchParser'
 import {
   getPairedOrientationColor,
   getPairedInsertSizeColor,
   getPairedInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { featurizeSA } from '../MismatchParser'
-import { LinearReadArcsDisplayModel } from './model'
 import { hasPairedReads } from '../shared/util'
+import type { LinearReadArcsDisplayModel } from './model'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

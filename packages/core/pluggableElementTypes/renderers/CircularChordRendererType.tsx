@@ -1,8 +1,9 @@
 import React from 'react'
-import { SimpleFeature, SimpleFeatureSerialized } from '../../util'
 import FeatureRenderer from './FeatureRendererType'
 import RpcRenderedSvgGroup from './RpcRenderedSvgGroup'
-import { ThemeOptions } from '@mui/material'
+import { SimpleFeature } from '../../util'
+import type { SimpleFeatureSerialized } from '../../util'
+import type { ThemeOptions } from '@mui/material'
 
 export default class CircularChordRendererType extends FeatureRenderer {
   supportsSVG = true

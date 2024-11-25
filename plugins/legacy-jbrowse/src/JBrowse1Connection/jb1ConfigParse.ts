@@ -1,9 +1,9 @@
 /* eslint no-cond-assign: ["error", "except-parens"] */
+import { objectHash } from '@jbrowse/core/util'
 import getValue from 'get-value'
 import setValue from 'set-value'
-import { objectHash } from '@jbrowse/core/util'
 import { isSource, isTrack } from './util'
-import { Config, Track, Source, Store, Names } from './types'
+import type { Config, Track, Source, Store, Names } from './types'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {

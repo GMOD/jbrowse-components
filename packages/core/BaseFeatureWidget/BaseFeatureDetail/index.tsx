@@ -2,8 +2,6 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 // utils
-import { ErrorMessage } from '../../ui'
-import { BaseCardProps, BaseProps } from '../types'
 import { isEmpty } from './util'
 import { replaceUndefinedWithNull } from '../util'
 
@@ -12,6 +10,8 @@ import Attributes from './Attributes'
 import BaseCard from './BaseCard'
 import CoreDetails from './CoreDetails'
 import FeatureDetails from './FeatureDetails'
+import { ErrorMessage } from '../../ui'
+import type { BaseCardProps, BaseProps } from '../types'
 
 export const BaseCoreDetails = (props: BaseProps) => {
   const { title = 'Primary data' } = props

@@ -1,3 +1,7 @@
+import fs from 'fs'
+import path from 'path'
+import url from 'url'
+import { generateFastaIndex } from '@gmod/faidx'
 import electron, {
   dialog,
   app,
@@ -6,13 +10,9 @@ import electron, {
   BrowserWindow,
   Menu,
 } from 'electron'
-import fs from 'fs'
 import debug from 'electron-debug'
-import path from 'path'
-import url from 'url'
-import windowStateKeeper from 'electron-window-state'
-import { generateFastaIndex } from '@gmod/faidx'
 import { autoUpdater } from 'electron-updater'
+import windowStateKeeper from 'electron-window-state'
 // @ts-ignore
 import parseJson from 'json-parse-even-better-errors'
 

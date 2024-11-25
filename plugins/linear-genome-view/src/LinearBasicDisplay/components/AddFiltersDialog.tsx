@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
 import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   dialogContent: {

@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom'
-import userEvent from '@testing-library/user-event'
-
 import { waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts } from './util'
 jest.mock('../makeWorkerInstance', () => () => {})

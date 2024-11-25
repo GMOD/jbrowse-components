@@ -1,12 +1,12 @@
 import React from 'react'
+import CloseIcon from '@mui/icons-material/Close'
+import FilterIcon from '@mui/icons-material/FilterList'
 import { Grid, IconButton, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import FilterIcon from '@mui/icons-material/FilterList'
-import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   columnName: {

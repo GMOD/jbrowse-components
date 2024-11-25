@@ -1,4 +1,4 @@
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export interface SessionSnap {
   name: string

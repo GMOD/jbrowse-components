@@ -1,8 +1,7 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-
 import ReactComponent from '../MultiWiggleRendering'
 import MultiLineRenderer from './MultiLineRenderer'
 import configSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function MultiLineRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(

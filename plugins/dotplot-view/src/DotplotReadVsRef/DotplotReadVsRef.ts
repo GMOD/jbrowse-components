@@ -1,12 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession, Feature, gatherOverlaps } from '@jbrowse/core/util'
-import {
-  LinearPileupDisplayModel,
-  MismatchParser,
-} from '@jbrowse/plugin-alignments'
+import { getSession, gatherOverlaps } from '@jbrowse/core/util'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
-import { ReducedFeature } from '../util'
+import type { ReducedFeature } from '../util'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
 const { featurizeSA, getClip, getLength, getLengthSansClipping } =
   MismatchParser

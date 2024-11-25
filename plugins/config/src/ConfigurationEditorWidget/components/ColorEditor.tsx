@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { TextField } from '@mui/material'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 export const ColorSlot = (props: {
   value: string

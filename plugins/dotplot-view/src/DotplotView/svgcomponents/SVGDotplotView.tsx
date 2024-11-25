@@ -1,15 +1,15 @@
 import React from 'react'
-import { when } from 'mobx'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { when } from 'mobx'
 import { getRoot } from 'mobx-state-tree'
 
 // locals
-import { DotplotViewModel, ExportSvgOptions } from '../model'
-import { GridRaw } from '../components/Grid'
-import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
 import SVGBackground from './SVGBackground'
+import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
+import { GridRaw } from '../components/Grid'
+import type { DotplotViewModel, ExportSvgOptions } from '../model'
 
 // render LGV to SVG
 export async function renderToSvg(

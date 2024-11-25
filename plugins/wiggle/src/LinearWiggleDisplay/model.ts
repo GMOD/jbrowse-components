@@ -1,24 +1,20 @@
 import { lazy } from 'react'
-import {
-  AnyConfigurationSchemaType,
-  getConf,
-} from '@jbrowse/core/configuration'
-import {
-  AnyReactComponentType,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
-import { types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import {
+
+// locals
+import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { AnyReactComponentType } from '@jbrowse/core/util'
+import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// locals
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))

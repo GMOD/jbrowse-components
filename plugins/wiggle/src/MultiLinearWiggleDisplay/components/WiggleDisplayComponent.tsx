@@ -3,8 +3,8 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 // locals
-import { WiggleDisplayModel } from '../model'
 import YScaleBars from './YScaleBars'
+import type { WiggleDisplayModel } from '../model'
 
 const MultiLinearWiggleDisplayComponent = observer(function (props: {
   model: WiggleDisplayModel

@@ -1,4 +1,5 @@
 import React from 'react'
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
   AccordionDetails,
@@ -8,9 +9,8 @@ import {
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import ExpandMore from '@mui/icons-material/ExpandMore'
 
-import { BaseCardProps } from '../types'
+import type { BaseCardProps } from '../types'
 
 const useStyles = makeStyles()(theme => ({
   expansionPanelDetails: {

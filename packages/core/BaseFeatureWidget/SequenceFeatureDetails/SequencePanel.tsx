@@ -3,25 +3,20 @@ import { observer } from 'mobx-react'
 
 // locals
 import {
-  SimpleFeatureSerialized,
   defaultCodonTable,
   generateCodonTable,
   revcom,
   toLocale,
 } from '../../util'
-import {
-  SeqState,
-  calculateUTRs,
-  calculateUTRs2,
-  dedupe,
-  revlist,
-} from '../util'
-import { SequenceFeatureDetailsModel } from './model'
+import { calculateUTRs, calculateUTRs2, dedupe, revlist } from '../util'
 // panel types
 import CDNASequence from './seqtypes/CDNASequence'
-import ProteinSequence from './seqtypes/ProteinSequence'
-import GenomicSequence from './seqtypes/GenomicSequence'
 import CDSSequence from './seqtypes/CDSSequence'
+import GenomicSequence from './seqtypes/GenomicSequence'
+import ProteinSequence from './seqtypes/ProteinSequence'
+import type { SequenceFeatureDetailsModel } from './model'
+import type { SimpleFeatureSerialized } from '../../util'
+import type { SeqState } from '../util'
 
 interface SequencePanelProps {
   sequence: SeqState

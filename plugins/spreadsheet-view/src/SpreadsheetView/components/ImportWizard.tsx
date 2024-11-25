@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import {
   Button,
   Checkbox,
@@ -11,13 +13,12 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import { AbstractRootModel, getSession } from '@jbrowse/core/util'
-import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
 // locals
-import { ImportWizardModel } from '../models/ImportWizard'
-import NumberEditor from './NumberEditor'
 import { makeStyles } from 'tss-react/mui'
+import NumberEditor from './NumberEditor'
+import type { ImportWizardModel } from '../models/ImportWizard'
+import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {

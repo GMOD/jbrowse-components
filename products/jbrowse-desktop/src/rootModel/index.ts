@@ -1,24 +1,23 @@
-import { types, Instance, IAnyType } from 'mobx-state-tree'
-import makeWorkerInstance from '../makeWorkerInstance'
-import assemblyConfigSchemaF, {
-  BaseAssemblyConfigSchema,
-} from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import { types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
+import packageJSON from '../../package.json'
+import jobsModelFactory from '../indexJobsModel'
 
 // locals
-import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
+import makeWorkerInstance from '../makeWorkerInstance'
 import { DesktopMenusMixin } from './Menus'
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
-import packageJSON from '../../package.json'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import type { Instance, IAnyType } from 'mobx-state-tree'
 
 type SessionModelFactory = (args: {
   pluginManager: PluginManager

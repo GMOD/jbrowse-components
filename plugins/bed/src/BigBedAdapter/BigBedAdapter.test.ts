@@ -1,5 +1,5 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 import BigBedAdapter from './BigBedAdapter'
 import configSchema from './configSchema'
 

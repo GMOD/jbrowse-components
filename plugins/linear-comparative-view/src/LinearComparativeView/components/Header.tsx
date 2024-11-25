@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { FormGroup } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-
-// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { FormGroup } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+// icons
 
 // locals
-import { LinearComparativeViewModel } from '../model'
 import HeaderSearchBoxes from './HeaderSearchBoxes'
+import type { LinearComparativeViewModel } from '../model'
 
 const useStyles = makeStyles()({
   inline: {

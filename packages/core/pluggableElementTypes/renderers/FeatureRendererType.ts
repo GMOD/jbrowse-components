@@ -1,16 +1,15 @@
-import { toArray } from 'rxjs/operators'
 import clone from 'clone'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 // locals
-import { iterMap } from '../../util'
-import SimpleFeature, {
-  Feature,
-  SimpleFeatureSerialized,
-} from '../../util/simpleFeature'
-import { AugmentedRegion as Region } from '../../util/types'
+import ServerSideRendererType from './ServerSideRendererType'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import ServerSideRendererType, {
+import { iterMap } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
+import { checkStopToken } from '../../util/stopToken'
+import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
@@ -18,9 +17,9 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { AnyConfigurationModel } from '../../configuration'
-import { checkStopToken } from '../../util/stopToken'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { Feature, SimpleFeatureSerialized } from '../../util/simpleFeature'
+import type { AugmentedRegion as Region } from '../../util/types'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel?: {

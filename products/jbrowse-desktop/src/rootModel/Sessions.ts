@@ -1,8 +1,9 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { autorun } from 'mobx'
-import { SnapshotIn, addDisposer, getSnapshot, types } from 'mobx-state-tree'
-import { BaseSession, BaseRootModel } from '@jbrowse/product-core'
 import clone from 'clone'
+import { autorun } from 'mobx'
+import { addDisposer, getSnapshot, types } from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseSession, BaseRootModel } from '@jbrowse/product-core'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 const { ipcRenderer } = window.require('electron')
 

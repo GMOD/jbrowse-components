@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
   Checkbox,
@@ -8,14 +10,12 @@ import {
   FormControlLabel,
   MenuItem,
   TextField,
-  TextFieldProps,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { getSession, useLocalStorage } from '@jbrowse/core/util'
 
 // locals
-import { ExportSvgOptions } from '../model'
+import type { ExportSvgOptions } from '../model'
+import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage() {
   return (

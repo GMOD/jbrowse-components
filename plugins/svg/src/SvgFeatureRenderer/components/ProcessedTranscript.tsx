@@ -1,14 +1,14 @@
 import React from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
 
 import Segments from './Segments'
-import { ExtraGlyphValidator, layOutFeature, layOutSubfeatures } from './util'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
-import { Region, Feature, SimpleFeature } from '@jbrowse/core/util'
+import { layOutFeature, layOutSubfeatures } from './util'
+import type { ExtraGlyphValidator } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Region, Feature } from '@jbrowse/core/util'
+import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 // returns a callback that will filter features features according to the
 // subParts conf var

@@ -1,12 +1,12 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import type SpreadsheetStateModel from '../models/Spreadsheet'
 import DataTable from './DataTable'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type { Instance } from 'mobx-state-tree'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 

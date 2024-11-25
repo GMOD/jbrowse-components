@@ -1,28 +1,29 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance, types } from 'mobx-state-tree'
 import { lazy } from 'react'
 
 // icons
-import OpenIcon from '@mui/icons-material/FolderOpen'
-import ExtensionIcon from '@mui/icons-material/Extension'
-import AppsIcon from '@mui/icons-material/Apps'
-import StorageIcon from '@mui/icons-material/Storage'
-import SettingsIcon from '@mui/icons-material/Settings'
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
-import UndoIcon from '@mui/icons-material/Undo'
-import RedoIcon from '@mui/icons-material/Redo'
 
-import type { MenuItem } from '@jbrowse/core/ui'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { SessionWithDialogs } from '@jbrowse/product-core'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
+import AppsIcon from '@mui/icons-material/Apps'
+import ExtensionIcon from '@mui/icons-material/Extension'
+import OpenIcon from '@mui/icons-material/FolderOpen'
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
+import RedoIcon from '@mui/icons-material/Redo'
+import SettingsIcon from '@mui/icons-material/Settings'
+import StorageIcon from '@mui/icons-material/Storage'
+import UndoIcon from '@mui/icons-material/Undo'
+import { types } from 'mobx-state-tree'
 
 // locals
 import { getSaveSession } from './Sessions'
-import { DesktopRootModel } from '.'
 import OpenSequenceDialog from '../components/OpenSequenceDialog'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import type { DesktopRootModel } from '.'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SessionWithDialogs } from '@jbrowse/product-core'
+import type { Instance } from 'mobx-state-tree'
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 const { ipcRenderer } = window.require('electron')
 

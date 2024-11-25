@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-import express from 'express'
 import path from 'path'
-import expressBasicAuth from 'express-basic-auth'
 import cors from 'cors'
+import express from 'express'
+import expressBasicAuth from 'express-basic-auth'
 
 const app = express()
 const port = 3040

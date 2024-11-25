@@ -1,13 +1,12 @@
-import {
+// locals
+import { getMismatches } from '../MismatchParser'
+import { cacheGetter } from '../shared/util'
+import type BamAdapter from './BamAdapter'
+import type { BamRecord } from '@gmod/bam'
+import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import { BamRecord } from '@gmod/bam'
-
-// locals
-import { getMismatches } from '../MismatchParser'
-import BamAdapter from './BamAdapter'
-import { cacheGetter } from '../shared/util'
 
 export default class BamSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class

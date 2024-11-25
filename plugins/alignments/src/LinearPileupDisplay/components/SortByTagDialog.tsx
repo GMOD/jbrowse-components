@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 const SortByTagDialog = observer(function (props: {
   model: {

@@ -1,14 +1,14 @@
 import React from 'react'
-import { getSnapshot, getParent } from 'mobx-state-tree'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { getSnapshot, getParent } from 'mobx-state-tree'
 
 // locals
 import PluginStoreWidget from './PluginStoreWidget'
-import { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

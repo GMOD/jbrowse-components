@@ -1,14 +1,11 @@
-import {
-  BaseChordDisplayModel,
-  CircularViewModel,
-} from '@jbrowse/plugin-circular-view'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
-import { Feature, getContainingView } from '@jbrowse/core/util'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
+import { types } from 'mobx-state-tree'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
 /**
  * #stateModel ChordVariantDisplay

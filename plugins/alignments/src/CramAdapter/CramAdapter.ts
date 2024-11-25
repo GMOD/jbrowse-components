@@ -1,23 +1,24 @@
-import { CraiIndex, IndexedCramFile, CramRecord } from '@gmod/cram'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
+import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 // jbrowse
-import {
-  BaseFeatureDataAdapter,
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus, toLocale } from '@jbrowse/core/util'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+
+// locals
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
+import { filterReadFlag, filterTagValue } from '../shared/util'
+import type { FilterBy } from '../shared/types'
+import type { CramRecord } from '@gmod/cram'
+import type {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, Feature } from '@jbrowse/core/util'
-import { updateStatus, toLocale } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
-
-// locals
-import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
-import { FilterBy } from '../shared/types'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { filterReadFlag, filterTagValue } from '../shared/util'
 
 interface Header {
   idToName?: string[]

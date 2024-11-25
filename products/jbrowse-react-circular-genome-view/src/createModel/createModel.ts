@@ -1,17 +1,18 @@
-import React from 'react'
+import type React from 'react'
+import PluginManager from '@jbrowse/core/PluginManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { UriLocation } from '@jbrowse/core/util'
-import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
+import { cast, getSnapshot, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewRootModel

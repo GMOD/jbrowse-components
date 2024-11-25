@@ -1,8 +1,7 @@
 import { lazy } from 'react'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { isAbstractMenuManager } from '@jbrowse/core/util'
 
 import HelpIcon from '@mui/icons-material/Help'
 import InfoIcon from '@mui/icons-material/Info'
@@ -23,6 +22,8 @@ import {
   configSchema as sessionManagerConfigSchema,
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 export default class MenusPlugin extends Plugin {
   name = 'MenusPlugin'

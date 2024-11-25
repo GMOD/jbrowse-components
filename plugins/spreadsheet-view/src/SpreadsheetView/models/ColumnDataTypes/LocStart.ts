@@ -1,5 +1,5 @@
-import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 import { types } from 'mobx-state-tree'
+import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 import { FilterModelType as NumberFilterModel } from './Number'
 
 const FilterModelType = types.compose(

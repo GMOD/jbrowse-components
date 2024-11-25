@@ -1,14 +1,14 @@
 import React, { useRef } from 'react'
+import { Menu } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { Menu } from '@jbrowse/core/ui'
 
 // locals
-import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
+import VerticalGuide from './VerticalGuide'
 // hooks
 import { useRangeSelect } from './useRangeSelect'
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 

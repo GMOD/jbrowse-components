@@ -6,11 +6,13 @@ import {
   isReferenceType,
   isValidReference,
   isMapType,
+} from 'mobx-state-tree'
+import type {
+  types,
   IAnyType,
   IAnyStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
-import type { types } from 'mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid

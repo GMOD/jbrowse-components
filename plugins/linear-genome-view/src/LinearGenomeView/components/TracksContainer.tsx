@@ -1,26 +1,26 @@
 import React, { useRef } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // local utils
-import { LinearGenomeViewModel } from '..'
 
 // local components
-import Rubberband from './Rubberband'
-import Scalebar from './Scalebar'
-import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
-import VerticalGuide from './VerticalGuide'
-import RubberbandSpan from './RubberbandSpan'
+import Gridlines from './Gridlines'
 import HighlightGroup from './Highlight'
+import Rubberband from './Rubberband'
+import RubberbandSpan from './RubberbandSpan'
+import Scalebar from './Scalebar'
+import VerticalGuide from './VerticalGuide'
 import { SCALE_BAR_HEIGHT } from '../consts'
 
 // hooks
+import { useRangeSelect } from './useRangeSelect'
 import { useSideScroll } from './useSideScroll'
 import { useWheelScroll } from './useWheelScroll'
-import { useRangeSelect } from './useRangeSelect'
+import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()({
   tracksContainer: {

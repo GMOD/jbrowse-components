@@ -1,18 +1,18 @@
 import React, { useState } from 'react'
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import CropFreeIcon from '@mui/icons-material/CropFree'
-import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 // locals
-import { SpreadsheetModel } from '../models/Spreadsheet'
 import ColumnMenu from './ColumnMenu'
 import SortIndicator from './SortIndicator'
 import { numToColName } from './util'
+import type { SpreadsheetModel } from '../models/Spreadsheet'
 
 interface ColMenu {
   colNumber: number

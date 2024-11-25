@@ -1,16 +1,16 @@
 import React, { lazy, useState } from 'react'
-import { observer } from 'mobx-react'
+import MoreVert from '@mui/icons-material/MoreVert'
+import Settings from '@mui/icons-material/Settings'
 import copy from 'copy-to-clipboard'
 import { saveAs } from 'file-saver'
+import { observer } from 'mobx-react'
 
 // locals
 import CascadingMenuButton from '../../../ui/CascadingMenuButton'
-import { SequenceFeatureDetailsModel } from '../model'
-import { MenuItem } from '../../../ui'
+import type { MenuItem } from '../../../ui'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 // icons
-import MoreVert from '@mui/icons-material/MoreVert'
-import Settings from '@mui/icons-material/Settings'
 
 // lazies
 const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog'))

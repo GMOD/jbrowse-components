@@ -1,12 +1,8 @@
 import React, { useState } from 'react'
-import {
-  DataGrid,
-  GridColDef,
-  GridToolbar,
-  GridValidRowModel,
-} from '@mui/x-data-grid'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { measureGridWidth } from '@jbrowse/core/util'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import type { GridColDef, GridValidRowModel } from '@mui/x-data-grid'
 
 export default function VariantAnnotPanel({
   rows,

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { LinearGenomeViewModel } from '..'
+import { makeStyles } from 'tss-react/mui'
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 

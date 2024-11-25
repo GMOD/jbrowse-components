@@ -1,9 +1,9 @@
-import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { GenericFilehandle } from 'generic-filehandle'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
-import type { Buffer } from 'buffer'
 
-import { PAFRecord } from './PAFAdapter/util'
+import type { PAFRecord } from './PAFAdapter/util'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Buffer } from 'buffer'
+import type { GenericFilehandle } from 'generic-filehandle'
 
 export function parseBed(text: string) {
   return new Map(

@@ -1,9 +1,11 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature, AugmentedRegion } from '@jbrowse/core/util'
-import { toArray } from 'rxjs/operators'
+import { autorun } from 'mobx'
+import { addDisposer, isAlive } from 'mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
-import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
-import { IAutorunOptions, autorun } from 'mobx'
+import { toArray } from 'rxjs/operators'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, AugmentedRegion } from '@jbrowse/core/util'
+import type { IAutorunOptions } from 'mobx'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not

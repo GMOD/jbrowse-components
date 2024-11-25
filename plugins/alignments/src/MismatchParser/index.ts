@@ -1,8 +1,8 @@
-import { Feature } from '@jbrowse/core/util'
-import type { Buffer } from 'buffer'
-import { Mismatch } from '../shared/types'
-import { mdToMismatches } from './mdToMismatches'
 import { cigarToMismatches } from './cigarToMismatches'
+import { mdToMismatches } from './mdToMismatches'
+import type { Mismatch } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+import type { Buffer } from 'buffer'
 
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 const startClip = new RegExp(/(\d+)[SH]$/)

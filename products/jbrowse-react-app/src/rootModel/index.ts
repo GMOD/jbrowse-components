@@ -1,28 +1,12 @@
-import React from 'react'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types,
-  IAnyStateTreeNode,
-  SnapshotIn,
-  Instance,
-  IAnyType,
-} from 'mobx-state-tree'
-import { saveAs } from 'file-saver'
-import { autorun } from 'mobx'
-import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type React from 'react'
+import { RootAppMenuMixin } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { SessionWithWidgets } from '@jbrowse/core/util'
-import { version } from '../version'
-import { MenuItem } from '@jbrowse/core/ui'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { Cable } from '@jbrowse/core/ui/Icons'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  BaseSessionType,
 } from '@jbrowse/product-core'
 
 // icons
@@ -30,12 +14,24 @@ import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
-import { Cable } from '@jbrowse/core/ui/Icons'
+import { saveAs } from 'file-saver'
+import { autorun } from 'mobx'
+import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import jbrowseWebFactory from '../jbrowseModel'
 
 // other
-import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
-import { RootAppMenuMixin } from '@jbrowse/app-core'
+import { version } from '../version'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { BaseSessionType } from '@jbrowse/product-core'
+import type {
+  IAnyStateTreeNode,
+  SnapshotIn,
+  Instance,
+  IAnyType,
+} from 'mobx-state-tree'
 
 export interface Menu {
   label: string

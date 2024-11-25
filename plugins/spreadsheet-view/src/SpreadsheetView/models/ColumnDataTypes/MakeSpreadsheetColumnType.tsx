@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { types } from 'mobx-state-tree'
 
 /** utility function for assembling the MST model of a column data type */

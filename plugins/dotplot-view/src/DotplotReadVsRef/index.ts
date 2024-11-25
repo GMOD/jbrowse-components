@@ -1,15 +1,15 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
+import AddIcon from '@mui/icons-material/Add'
+import { onClick } from './DotplotReadVsRef'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
   DisplayType,
   PluggableElementType,
 } from '@jbrowse/core/pluggableElementTypes'
-import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
+import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
 // icons
-import AddIcon from '@mui/icons-material/Add'
 
 // local
-import { onClick } from './DotplotReadVsRef'
 
 export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
