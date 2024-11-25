@@ -6,7 +6,6 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import { getVolvoxConfig } from './util'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-
 type ViewState = ReturnType<typeof createViewState>
 
 export const WithErrorHandler = () => {

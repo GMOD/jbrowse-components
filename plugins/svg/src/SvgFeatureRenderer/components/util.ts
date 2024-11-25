@@ -1,15 +1,12 @@
 import type React from 'react'
-import {
-  readConfObject
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 
 // locals
 import Box from './Box'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 

@@ -1,9 +1,6 @@
 import type React from 'react'
 import { lazy } from 'react'
-import {
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -19,8 +16,7 @@ import { types } from 'mobx-state-tree'
 // locals
 import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies

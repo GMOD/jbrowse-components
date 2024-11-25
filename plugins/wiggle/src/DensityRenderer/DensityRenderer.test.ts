@@ -5,7 +5,6 @@ import DensityRenderer from './DensityRenderer'
 import configSchema from './configSchema'
 import ReactComponent from '../WiggleRendering'
 
-
 // @ts-expect-error
 global.nodeImage = Image
 

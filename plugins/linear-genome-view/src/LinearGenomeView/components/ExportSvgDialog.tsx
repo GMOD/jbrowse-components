@@ -15,8 +15,7 @@ import {
 
 // locals
 import type { ExportSvgOptions } from '..'
-import type {
-  TextFieldProps} from '@mui/material'
+import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage() {
   return (

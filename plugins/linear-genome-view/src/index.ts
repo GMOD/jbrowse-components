@@ -24,7 +24,7 @@ import LinearGenomeViewF, {
 } from './LinearGenomeView'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel} from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'

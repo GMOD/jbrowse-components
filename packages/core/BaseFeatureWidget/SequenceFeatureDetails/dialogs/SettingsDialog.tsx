@@ -9,15 +9,14 @@ import {
   FormLabel,
   Radio,
   RadioGroup,
-  TextField
+  TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import type { SequenceFeatureDetailsModel } from '../model'
-import type {
-  TextFieldProps} from '@mui/material'
+import type { TextFieldProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   formElt: {

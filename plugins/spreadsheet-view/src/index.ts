@@ -8,8 +8,7 @@ import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import LaunchSpreadsheetViewF from './LaunchSpreadsheetView'
 import SpreadsheetViewF from './SpreadsheetView'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel} from '@jbrowse/core/util'
-
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class SpreadsheetViewPlugin extends Plugin {
   name = 'SpreadsheetViewPlugin'

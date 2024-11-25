@@ -1,6 +1,6 @@
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded, getLayoutId } from '../../util'
-import type { RenderArgs , RenderArgsSerialized } from './util'
+import type { RenderArgs, RenderArgsSerialized } from './util'
 
 /**
  * fetches features from an adapter and call a renderer with them

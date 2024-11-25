@@ -1,8 +1,7 @@
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
 // locals
-import { readConfObject } from '../../configuration'
-import { ConfigurationSchema } from '../../configuration'
+import { readConfObject, ConfigurationSchema } from '../../configuration'
 import idMaker from '../../util/idMaker'
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationModel } from '../../configuration'

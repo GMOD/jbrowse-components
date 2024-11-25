@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/core/util/analytics'
 import deepmerge from 'deepmerge'
 
-
 // locals
 import corePlugins from '../../corePlugins'
 import JBrowseRootModelFactory from '../../rootModel'

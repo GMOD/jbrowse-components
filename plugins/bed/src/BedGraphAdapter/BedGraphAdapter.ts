@@ -1,18 +1,10 @@
 import IntervalTree from '@flatten-js/interval-tree'
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  fetchAndMaybeUnzip,
-  SimpleFeature,
-} from '@jbrowse/core/util'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip, SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
-import type {
-  Feature,
-  Region} from '@jbrowse/core/util'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   protected bedFeatures?: Promise<{

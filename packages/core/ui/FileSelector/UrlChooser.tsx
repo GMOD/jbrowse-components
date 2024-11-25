@@ -2,7 +2,7 @@ import React from 'react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isUriLocation } from '../../util/types'
-import type { FileLocation} from '../../util/types'
+import type { FileLocation } from '../../util/types'
 
 const UrlChooser = observer(function ({
   location,

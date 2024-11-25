@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
-import type { LazyExoticComponent} from 'react'
+import type { LazyExoticComponent } from 'react'
 import React, { lazy, Suspense } from 'react'
 import { useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
@@ -16,7 +16,6 @@ import * as mst from 'mobx-state-tree'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import { makeStyles } from 'tss-react/mui'
-
 
 // material-ui lab
 import Plugin from '../Plugin'
@@ -48,7 +47,6 @@ import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
 import * as trackUtils from '../util/tracks'
 import * as mstTypes from '../util/types/mst'
-
 
 const Entries = {
   Accordion: lazy(() => import('@mui/material/Accordion')),

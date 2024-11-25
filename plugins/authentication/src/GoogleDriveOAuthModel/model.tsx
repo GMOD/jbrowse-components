@@ -10,7 +10,7 @@ import { getDescriptiveErrorMessage } from './util'
 import baseModel from '../OAuthModel/model'
 import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean

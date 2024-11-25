@@ -4,7 +4,7 @@ import { max, sum } from '@jbrowse/core/util'
 import { incWithProbabilities } from './util'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
-import type { Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 export function processModifications({

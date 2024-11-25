@@ -1,5 +1,10 @@
 import React, { useState } from 'react'
-import { ErrorMessage, FileSelector , Dialog, AssemblySelector } from '@jbrowse/core/ui'
+import {
+  ErrorMessage,
+  FileSelector,
+  Dialog,
+  AssemblySelector,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { isSessionWithShareURL } from '@jbrowse/core/util/types'
@@ -24,7 +29,7 @@ import { makeStyles } from 'tss-react/mui'
 import { readSessionFromDynamo } from '../../sessionSharing'
 import { fromUrlSafeB64 } from '../../utils'
 import type { GridBookmarkModel } from '../../model'
-import type { FileLocation} from '@jbrowse/core/util/types'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {

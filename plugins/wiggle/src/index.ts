@@ -1,31 +1,26 @@
 import Plugin from '@jbrowse/core/Plugin'
-import {
-  getFileName,
-} from '@jbrowse/core/util/tracks'
+import { getFileName } from '@jbrowse/core/util/tracks'
 
 // locals
 
 import BigWigAdapterF from './BigWigAdapter'
-import LinearWiggleDisplayF from './LinearWiggleDisplay'
-import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
-import MultiXYPlotRendererF from './MultiXYPlotRenderer'
-import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
-import MultiDensityRendererF from './MultiDensityRenderer'
-import MultiLineRendererF from './MultiLineRenderer'
-import MultiRowLineRendererF from './MultiRowLineRenderer'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
 import DensityRendererF from './DensityRenderer'
 import LinePlotRendererF from './LinePlotRenderer'
-import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
-
-
-
-import {
+import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay'
+
+import MultiDensityRendererF from './MultiDensityRenderer'
+import MultiLineRendererF from './MultiLineRenderer'
+import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack'
+import MultiRowLineRendererF from './MultiRowLineRenderer'
+import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
 import MultiWiggleAdapterF from './MultiWiggleAdapter'
+import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
+import MultiXYPlotRendererF from './MultiXYPlotRenderer'
 import QuantitativeTrackF from './QuantitativeTrack'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import {
@@ -43,7 +38,8 @@ import * as utils from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AdapterGuesser,
-  TrackTypeGuesser} from '@jbrowse/core/util/tracks'
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class WigglePlugin extends Plugin {

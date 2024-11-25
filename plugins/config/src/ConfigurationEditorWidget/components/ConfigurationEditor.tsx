@@ -4,7 +4,7 @@ import {
   readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
-  isConfigurationSlotType
+  isConfigurationSlotType,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -27,8 +27,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType } from 'mobx-state-tree'
 

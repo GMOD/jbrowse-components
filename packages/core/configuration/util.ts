@@ -24,7 +24,6 @@ import type {
   ConfigurationSchemaForModel,
 } from './types'
 
-
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
  * read the configuration variable at the given path

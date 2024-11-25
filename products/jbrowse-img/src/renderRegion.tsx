@@ -1,16 +1,13 @@
 import fs from 'fs'
 import path from 'path'
-import {
-  renderToSvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import { createRoot } from 'react-dom/client'
 
 // local
 import { booleanize } from './util'
 import type { Entry } from './parseArgv'
-import type {
-  LinearGenomeViewModel} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Opts {
   noRasterize?: boolean

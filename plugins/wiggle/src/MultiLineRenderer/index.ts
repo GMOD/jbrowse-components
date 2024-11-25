@@ -1,4 +1,3 @@
-
 import ReactComponent from '../MultiWiggleRendering'
 import MultiLineRenderer from './MultiLineRenderer'
 import configSchema from './configSchema'

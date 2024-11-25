@@ -1,7 +1,5 @@
 import IntervalTree from '@flatten-js/interval-tree'
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -9,10 +7,9 @@ import { parseStringSync } from 'gtf-nostream'
 
 // locals
 import { featureData } from '../util'
-import type { FeatureLoc} from '../util'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature} from '@jbrowse/core/util'
+import type { FeatureLoc } from '../util'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 type StatusCallback = (arg: string) => void

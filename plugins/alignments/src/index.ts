@@ -10,10 +10,10 @@ import LinearPileupDisplayF from './LinearPileupDisplay'
 import LinearReadArcsDisplayF from './LinearReadArcsDisplay'
 import LinearReadCloudDisplayF from './LinearReadCloudDisplay'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay'
+import PileupRPCMethodsF from './PileupRPC'
 import PileupRendererF from './PileupRenderer'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
 import SNPCoverageRendererF from './SNPCoverageRenderer'
-import PileupRPCMethodsF from './PileupRPC'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class AlignmentsPlugin extends Plugin {

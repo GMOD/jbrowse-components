@@ -1,17 +1,12 @@
 import React, { lazy } from 'react'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import {
-  getEnv,
-  getSession,
-  SimpleFeature
-} from '@jbrowse/core/util'
+import { getEnv, getSession, SimpleFeature } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
 // locals
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
 import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
-import type {
-  SimpleFeatureSerialized} from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(

@@ -1,10 +1,7 @@
 import { lazy } from 'react'
 
 // jbrowse
-import {
-  getConf,
-  readConfObject
-} from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
@@ -14,11 +11,17 @@ import { types, cast, getEnv, isAlive } from 'mobx-state-tree'
 // locals
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun, getColorForModification } from '../util'
-import type { ColorBy, FilterBy , ModificationType, ModificationTypeWithColor } from '../shared/types'
+import type {
+  ColorBy,
+  FilterBy,
+  ModificationType,
+  ModificationTypeWithColor,
+} from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationSchemaType,
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies

@@ -23,7 +23,7 @@ import {
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SessionWithWidgets} from '@jbrowse/core/util'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 export default class MenusPlugin extends Plugin {
   name = 'MenusPlugin'

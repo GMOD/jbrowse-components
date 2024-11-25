@@ -7,7 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import { LoadingEllipses } from '../../ui'
 import { getSession } from '../../util'
-import type { SimpleFeatureSerialized} from '../../util'
+import type { SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // icons

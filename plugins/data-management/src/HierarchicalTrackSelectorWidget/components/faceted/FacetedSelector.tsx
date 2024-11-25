@@ -16,7 +16,7 @@ import FacetedHeader from './FacetedHeader'
 import TrackLabelMenu from '../tree/TrackLabelMenu'
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { GridColDef} from '@mui/x-data-grid'
+import type { GridColDef } from '@mui/x-data-grid'
 
 export interface InfoArgs {
   target: HTMLElement

@@ -5,7 +5,6 @@ import React from 'react'
 import nextstrainConfig from '../../public/nextstrain_covid.json'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-
 export const NextstrainExample = () => {
   const { assembly, tracks, defaultSession } = nextstrainConfig
   const state = createViewState({

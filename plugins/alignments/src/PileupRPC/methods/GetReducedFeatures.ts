@@ -7,7 +7,7 @@ import { getClip } from '../../MismatchParser'
 import PileupBaseRPC from '../base'
 import { filterForPairs, getInsertSizeStats } from '../util'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region} from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 // specialized get features to return limited data about alignments
 export default class PileupGetReducedFeatures extends PileupBaseRPC {

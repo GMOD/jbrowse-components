@@ -1,5 +1,5 @@
 import { parseLocString } from '@jbrowse/core/util'
-import type { ParsedLocString} from '@jbrowse/core/util'
+import type { ParsedLocString } from '@jbrowse/core/util'
 import type { Buffer } from 'buffer'
 
 export function bufferToString(buffer: Buffer) {

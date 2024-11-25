@@ -1,9 +1,5 @@
 import { reaction } from 'mobx'
-import {
-  addDisposer,
-  getParent,
-  types
-} from 'mobx-state-tree'
+import { addDisposer, getParent, types } from 'mobx-state-tree'
 
 // locals
 import { readConfObject } from '../configuration'
@@ -13,9 +9,7 @@ import type { Assembly } from './assembly'
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationModel } from '../configuration'
 import type RpcManager from '../rpc/RpcManager'
-import type {
-  Instance,
-  IAnyType} from 'mobx-state-tree'
+import type { Instance, IAnyType } from 'mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 

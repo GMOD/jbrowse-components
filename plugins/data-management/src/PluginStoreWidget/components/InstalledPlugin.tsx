@@ -1,18 +1,14 @@
 import React, { Suspense, lazy, useState } from 'react'
 import { getEnv, getSession } from '@jbrowse/core/util'
-import {
-  isSessionWithSessionPlugins,
-} from '@jbrowse/core/util/types'
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import CloseIcon from '@mui/icons-material/Close'
 import LockIcon from '@mui/icons-material/Lock'
 import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-
 import type { PluginStoreModel } from '../model'
-import type {
-  BasePlugin} from '@jbrowse/core/util/types'
+import type { BasePlugin } from '@jbrowse/core/util/types'
 
 // locals
 

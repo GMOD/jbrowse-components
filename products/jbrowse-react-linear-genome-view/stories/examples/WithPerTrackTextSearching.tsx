@@ -4,7 +4,6 @@ import React from 'react'
 import { addRelativeUris, getVolvoxConfig } from './util'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-
 export const WithPerTrackTextSearching = () => {
   const { assembly } = getVolvoxConfig()
   const textSearchConfig = {

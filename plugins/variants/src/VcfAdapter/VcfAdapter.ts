@@ -1,17 +1,14 @@
 import IntervalTree from '@flatten-js/interval-tree'
 import VCF from '@gmod/vcf'
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 // local
 import VcfFeature from '../VcfFeature'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, Feature} from '@jbrowse/core/util'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region, Feature } from '@jbrowse/core/util'
 
 type StatusCallback = (arg: string) => void
 

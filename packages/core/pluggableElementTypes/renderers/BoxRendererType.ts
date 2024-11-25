@@ -21,7 +21,10 @@ import type { AnyConfigurationModel } from '../../configuration'
 import type { Region, Feature } from '../../util'
 import type SerializableFilterChain from './util/serializableFilterChain'
 import type RpcManager from '../../rpc/RpcManager'
-import type { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
+import type {
+  SerializedLayout,
+  BaseLayout,
+} from '../../util/layouts/BaseLayout'
 
 export interface LayoutSessionProps {
   config: AnyConfigurationModel

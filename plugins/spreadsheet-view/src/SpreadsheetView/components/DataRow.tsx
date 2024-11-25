@@ -13,7 +13,6 @@ import type RowStateModel from '../models/Row'
 import type SpreadsheetStateModel from '../models/Spreadsheet'
 import type { Instance } from 'mobx-state-tree'
 
-
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type RowModel = Instance<typeof RowStateModel>
 

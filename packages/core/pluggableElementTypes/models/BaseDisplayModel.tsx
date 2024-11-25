@@ -7,7 +7,7 @@ import { getContainingView, getEnv } from '../../util'
 import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
 import type { MenuItem } from '../../ui'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel BaseDisplay

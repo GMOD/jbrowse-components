@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { getSession, getEnv } from '@jbrowse/core/util'
-import {
-  isSessionWithSessionPlugins,
-} from '@jbrowse/core/util/types'
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -22,8 +20,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import type { PluginStoreModel } from '../model'
-import type {
-  JBrowsePlugin} from '@jbrowse/core/util/types'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()({
   card: {

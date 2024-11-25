@@ -11,9 +11,7 @@ import { observer } from 'mobx-react'
 import { makeFeaturePair, makeSummary } from './util'
 import type { LinearArcDisplayModel } from '../model'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type {
-  AbstractSessionModel,
-  Feature} from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ArcTooltip = lazy(() => import('../../ArcTooltip'))

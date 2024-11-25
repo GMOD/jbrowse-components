@@ -15,7 +15,7 @@ import pluralize from 'pluralize'
 
 // locals
 import type { SessionSnap } from './util'
-import type { AbstractSessionModel} from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const SessionListItem = observer(function ({
   session,

@@ -5,16 +5,13 @@ import {
   getContainingView,
   getContainingTrack,
 } from '@jbrowse/core/util'
-import {
-  BaseLinearDisplayComponent
-} from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 // locals
 import YScaleBar from '../../shared/YScaleBar'
 import type { WiggleDisplayModel } from '../model'
-import type {
-  LinearGenomeViewModel} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

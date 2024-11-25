@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ElementId , Region } from '../../util/types/mst'
+import { ElementId, Region } from '../../util/types/mst'
 import type { MenuItem } from '../../ui'
 import type { Instance } from 'mobx-state-tree'
 

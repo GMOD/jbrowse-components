@@ -1,11 +1,7 @@
 import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  SimpleFeature,
-} from '@jbrowse/core/util'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -13,13 +9,9 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { featureData } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import type {
-  FileLocation,
-  Region,
-  Feature} from '@jbrowse/core/util'
+import type { FileLocation, Region, Feature } from '@jbrowse/core/util'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: BED

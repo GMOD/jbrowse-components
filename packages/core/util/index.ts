@@ -10,14 +10,10 @@ import {
   isAlive,
   isStateTreeNode,
   hasParent,
-  IAnyStateTreeNode,
-  IStateTreeNode,
-  Instance,
 } from 'mobx-state-tree'
-import PluginManager from '../PluginManager'
-import type { Buffer } from 'buffer'
-import type { Feature } from './simpleFeature'
-import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
+import { flushSync, render } from 'react-dom' // eslint-disable-line react/no-deprecated
+import { colord } from './colord'
+import { checkStopToken } from './stopToken'
 import {
   isSessionModel,
   isDisplayModel,
@@ -25,16 +21,22 @@ import {
   isTrackModel,
   isUriLocation,
 } from './types'
+import type PluginManager from '../PluginManager'
+import type { BaseBlock } from './blockTypes'
+import type { Feature } from './simpleFeature'
+import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
-import { BaseBlock } from './blockTypes'
 
 // has to be the full path and not the relative path to get the jest mock
-import { colord } from './colord'
-// eslint-disable-next-line react/no-deprecated
-import { flushSync, render } from 'react-dom'
-import type { GenericFilehandle } from 'generic-filehandle'
+
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
-import { checkStopToken } from './stopToken'
+import type { Buffer } from 'buffer'
+import type { GenericFilehandle } from 'generic-filehandle'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+  Instance,
+} from 'mobx-state-tree'
 export * from './types'
 export * from './when'
 export * from './range'

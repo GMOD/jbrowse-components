@@ -1,4 +1,3 @@
-
 // locals
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 import { cacheGetter } from '../shared/util'

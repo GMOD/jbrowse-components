@@ -1,8 +1,6 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 // jbrowse
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus, toLocale } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -18,7 +16,8 @@ import type { FilterBy } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 import type {
   BaseOptions,
-  BaseSequenceAdapter} from '@jbrowse/core/data_adapters/BaseAdapter'
+  BaseSequenceAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, Feature } from '@jbrowse/core/util'
 
 interface Header {

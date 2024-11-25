@@ -4,8 +4,8 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, AugmentedRegion } from '@jbrowse/core/util'
-import type { IAutorunOptions} from 'mobx'
-import type { IAnyStateTreeNode} from 'mobx-state-tree'
+import type { IAutorunOptions } from 'mobx'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not

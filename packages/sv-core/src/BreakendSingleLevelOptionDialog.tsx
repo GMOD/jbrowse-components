@@ -1,17 +1,12 @@
 import React, { useState } from 'react'
 import { Dialog } from '@jbrowse/core/ui'
-import {
-  getSession,
-  gatherOverlaps,
-  useLocalStorage,
-} from '@jbrowse/core/util'
+import { getSession, gatherOverlaps, useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import Checkbox2 from './Checkbox2'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type {
-  Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals

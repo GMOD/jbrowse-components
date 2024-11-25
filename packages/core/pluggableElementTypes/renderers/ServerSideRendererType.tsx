@@ -1,9 +1,6 @@
 import React from 'react'
 import { ThemeProvider } from '@mui/material/styles'
-import {
-  getSnapshot,
-  isStateTreeNode,
-} from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { renderToString } from 'react-dom/server'
 
 // locals
@@ -16,14 +13,10 @@ import { createJBrowseTheme } from '../../ui'
 import { checkStopToken } from '../../util/stopToken'
 import type { RenderProps, RenderResults } from './RendererType'
 import type { AnyConfigurationModel } from '../../configuration'
-import type {
-  SerializedFilterChain,
-} from './util/serializableFilterChain'
+import type { SerializedFilterChain } from './util/serializableFilterChain'
 import type RpcManager from '../../rpc/RpcManager'
 import type { ThemeOptions } from '@mui/material'
-import type {
-  SnapshotOrInstance,
-  SnapshotIn} from 'mobx-state-tree'
+import type { SnapshotOrInstance, SnapshotIn } from 'mobx-state-tree'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string

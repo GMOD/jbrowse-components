@@ -9,9 +9,7 @@ import { renameRegionsIfNeeded } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 import type { RenderArgs } from './util'
 import type { Region } from '../../util'
-import type {
-  SimpleFeatureSerialized,
-} from '../../util/simpleFeature'
+import type { SimpleFeatureSerialized } from '../../util/simpleFeature'
 
 export default class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'

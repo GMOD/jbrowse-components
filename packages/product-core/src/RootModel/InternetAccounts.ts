@@ -4,7 +4,7 @@ import type { BaseRootModel } from './BaseRootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel InternetAccountsMixin

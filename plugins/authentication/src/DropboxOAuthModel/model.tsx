@@ -9,7 +9,7 @@ import { getDescriptiveErrorMessage } from './util'
 import baseModel from '../OAuthModel/model'
 import type { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel DropboxOAuthInternetAccount

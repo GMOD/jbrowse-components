@@ -27,8 +27,7 @@ import RenameSessionDialog from './dialogs/RenameSessionDialog'
 import { loadPluginManager } from './util'
 import type { RecentSessionData } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  ToggleButtonProps} from '@mui/material'
+import type { ToggleButtonProps } from '@mui/material'
 
 const { ipcRenderer } = window.require('electron')
 

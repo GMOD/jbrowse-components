@@ -1,14 +1,9 @@
 import React, { lazy } from 'react'
-import {
-  SimpleFeature,
-  getSession,
-  toLocale,
-} from '@jbrowse/core/util'
+import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { Typography, Link } from '@mui/material'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
-import type {
-  SimpleFeatureSerialized} from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // locals
 

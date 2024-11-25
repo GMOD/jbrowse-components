@@ -4,7 +4,6 @@
 import { CanvasSequence } from 'canvas-sequencer'
 import isNode from 'detect-node'
 
-
 type AbstractCanvas = any
 
 type AbstractImageBitmap = any

@@ -1,4 +1,3 @@
-
 import { getAlignmentShapeColor } from './getAlignmentShapeColor'
 import { renderAlignmentShape } from './renderAlignmentShape'
 import { renderMethylation } from './renderMethylation'

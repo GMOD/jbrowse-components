@@ -1,11 +1,8 @@
-import {
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearBareDisplay

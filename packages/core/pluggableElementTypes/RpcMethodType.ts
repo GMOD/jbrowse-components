@@ -5,11 +5,10 @@ import {
   isAppRootModel,
   isUriLocation,
   isAuthNeededException,
-  RetryError
+  RetryError,
 } from '../util/types'
 import type PluginManager from '../PluginManager'
-import type {
-  UriLocation} from '../util/types'
+import type { UriLocation } from '../util/types'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 

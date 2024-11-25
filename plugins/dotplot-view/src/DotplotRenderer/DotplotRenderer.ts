@@ -1,7 +1,7 @@
 import ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import {
   renameRegionsIfNeeded,
-  renderToAbstractCanvas
+  renderToAbstractCanvas,
 } from '@jbrowse/core/util'
 import { Dotplot1DView } from '../DotplotView/model'
 import type { Dotplot1DViewModel } from '../DotplotView/model'
@@ -10,8 +10,7 @@ import type {
   RenderArgsDeserialized,
   RenderArgs,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import type {
-  Region} from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 // locals
 

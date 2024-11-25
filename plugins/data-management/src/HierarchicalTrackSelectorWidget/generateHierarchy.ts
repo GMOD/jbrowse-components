@@ -1,13 +1,10 @@
-import {
-  readConfObject
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 // locals
 import { matches } from './util'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 function sortConfs(

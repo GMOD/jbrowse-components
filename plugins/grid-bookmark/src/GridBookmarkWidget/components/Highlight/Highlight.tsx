@@ -10,9 +10,8 @@ import { makeStyles } from 'tss-react/mui'
 // icons
 
 // locals
-import type { GridBookmarkModel } from '../../model'
-import type { IExtendedLGV } from '../../model'
-import type { SessionWithWidgets} from '@jbrowse/core/util'
+import type { GridBookmarkModel, IExtendedLGV } from '../../model'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = IExtendedLGV
 

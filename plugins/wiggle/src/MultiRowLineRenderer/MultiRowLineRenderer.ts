@@ -1,11 +1,8 @@
 import { groupBy } from '@jbrowse/core/util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawLine } from '../drawLine'
-import type {
-  MultiRenderArgsDeserialized as MultiArgs,
-} from '../WiggleBaseRenderer'
+import type { MultiRenderArgsDeserialized as MultiArgs } from '../WiggleBaseRenderer'
 import type { Feature } from '@jbrowse/core/util'
-
 
 export default class MultiRowLineRenderer extends WiggleBaseRenderer {
   // @ts-expect-error

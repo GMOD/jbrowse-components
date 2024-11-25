@@ -26,9 +26,7 @@ import type {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/models/model'
-import type {
-  AnyReactComponentType,
-  Feature} from '@jbrowse/core/util'
+import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
 
 /**

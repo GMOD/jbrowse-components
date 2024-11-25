@@ -1,7 +1,5 @@
 import React from 'react'
-import {
-  readConfObject
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 
 import CreateIcon from '@mui/icons-material/Create'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -16,8 +14,7 @@ import {
   Paper,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const AssemblyTable = observer(function ({
   rootModel,

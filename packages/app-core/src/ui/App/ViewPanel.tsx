@@ -6,9 +6,7 @@ import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 // ui elements
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
-import {
-  getEnv
-} from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
@@ -17,7 +15,8 @@ import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {
   AbstractViewModel,
-  SessionWithDrawerWidgets} from '@jbrowse/core/util'
+  SessionWithDrawerWidgets,
+} from '@jbrowse/core/util'
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]

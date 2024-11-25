@@ -11,7 +11,7 @@ import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
 import type { Feature } from '../../util/simpleFeature'
 import type { AugmentedRegion as Region } from '../../util/types'
-import type { Observable} from 'rxjs'
+import type { Observable } from 'rxjs'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that

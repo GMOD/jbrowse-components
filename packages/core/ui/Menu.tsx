@@ -24,7 +24,8 @@ import type {
   MenuProps as MUIMenuProps,
   MenuItemProps,
   PopoverProps,
-  SvgIconProps} from '@mui/material'
+  SvgIconProps,
+} from '@mui/material'
 
 const useStyles = makeStyles()({
   paper: {

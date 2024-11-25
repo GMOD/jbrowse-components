@@ -10,7 +10,7 @@ import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
-import type { ClickCoord} from './util'
+import type { ClickCoord } from './util'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip'))
 

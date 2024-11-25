@@ -1,16 +1,13 @@
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import { isBaseSession } from './BaseSession'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement'
 import type { BaseRootModelType } from '../RootModel/BaseRootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { IAnyStateTreeNode, Instance} from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 // locals
 

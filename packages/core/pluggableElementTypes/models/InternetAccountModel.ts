@@ -5,7 +5,7 @@ import { ConfigurationReference, getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
 import type { UriLocation, AnyReactComponentType } from '../../util/types'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 

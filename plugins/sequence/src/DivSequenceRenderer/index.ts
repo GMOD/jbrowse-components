@@ -1,4 +1,3 @@
-
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import ReactComponent from './components/DivSequenceRendering'
 import configSchema from './configSchema'

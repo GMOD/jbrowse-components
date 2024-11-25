@@ -1,7 +1,4 @@
-import {
-  getConf,
-  readConfObject
-} from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   dedupe,
   getSession,
@@ -19,8 +16,7 @@ import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined

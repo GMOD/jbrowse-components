@@ -4,7 +4,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import type { LinearGenomeViewModel } from '../model'
-import type { SessionWithWidgets} from '@jbrowse/core/util'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 // locals

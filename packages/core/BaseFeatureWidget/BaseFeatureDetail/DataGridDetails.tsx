@@ -7,7 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
 import { measureGridWidth, getStr } from '../../util'
-import type { GridColDef} from '@mui/x-data-grid'
+import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   margin: {

@@ -3,10 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcServer from 'librpc-web-mod'
 import { serializeError } from 'serialize-error'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type {
-  LoadedPlugin,
-  PluginDefinition,
-} from '@jbrowse/core/PluginLoader'
+import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]

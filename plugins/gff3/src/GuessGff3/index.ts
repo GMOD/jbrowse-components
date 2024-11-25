@@ -1,11 +1,10 @@
 import {
   makeIndex,
   makeIndexType,
-  getFileName
+  getFileName,
 } from '@jbrowse/core/util/tracks'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AdapterGuesser} from '@jbrowse/core/util/tracks'
+import type { AdapterGuesser } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessGff3F(pluginManager: PluginManager) {

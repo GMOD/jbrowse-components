@@ -6,28 +6,8 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
 import {
   BaseRootModelFactory,
-  InternetAccountsRootModelMixin
+  InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types
-} from 'mobx-state-tree'
-import type {
-  IAnyStateTreeNode,
-  SnapshotIn,
-  Instance,
-  IAnyType} from 'mobx-state-tree';
-import { autorun } from 'mobx'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
-import jbrowseWebFactory from '../jbrowseModel'
-import { version } from '../version'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  BaseSessionType} from '@jbrowse/product-core'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -35,9 +15,23 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
 import { saveAs } from 'file-saver'
+import { autorun } from 'mobx'
+import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import jbrowseWebFactory from '../jbrowseModel'
 
 // other
 import { filterSessionInPlace } from '../util'
+import { version } from '../version'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { BaseSessionType } from '@jbrowse/product-core'
+import type {
+  IAnyStateTreeNode,
+  SnapshotIn,
+  Instance,
+  IAnyType,
+} from 'mobx-state-tree'
 
 export interface Menu {
   label: string

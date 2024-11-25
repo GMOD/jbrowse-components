@@ -8,12 +8,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 // icons
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getPath,
-  types
-} from 'mobx-state-tree'
+import { addDisposer, cast, getPath, types } from 'mobx-state-tree'
 
 // locals
 import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
@@ -23,9 +18,7 @@ import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type {
-  Instance,
-  SnapshotIn} from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(

@@ -1,7 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react'
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import {
   getSession,
@@ -17,8 +15,7 @@ import { observer } from 'mobx-react'
 
 // locals
 import type { HierarchicalTrackSelectorModel } from '../../model'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // lazies
 const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))

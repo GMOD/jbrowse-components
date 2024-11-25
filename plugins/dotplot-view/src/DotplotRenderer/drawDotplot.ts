@@ -1,6 +1,4 @@
-import {
-  readConfObject
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
@@ -8,8 +6,7 @@ import { getSnapshot } from 'mobx-state-tree'
 
 // locals
 import type { Dotplot1DViewModel } from '../DotplotView/model'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import type { Feature } from '@jbrowse/core/util'
 

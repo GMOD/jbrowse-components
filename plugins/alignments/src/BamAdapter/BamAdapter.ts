@@ -1,8 +1,6 @@
 import { BamFile } from '@gmod/bam'
 // jbrowse
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -15,8 +13,7 @@ import { toArray } from 'rxjs/operators'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 import type { FilterBy } from '../shared/types'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 

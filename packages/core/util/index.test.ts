@@ -4,8 +4,7 @@ import {
   compareLocStrings,
   stringify,
 } from './index'
-import type {
-  ParsedLocString} from './index'
+import type { ParsedLocString } from './index'
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [

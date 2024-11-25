@@ -1,9 +1,5 @@
-import {
-  parseLocString,
-} from '@jbrowse/core/util'
-import type {
-  AssemblyManager,
-  ParsedLocString} from '@jbrowse/core/util'
+import { parseLocString } from '@jbrowse/core/util'
+import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor

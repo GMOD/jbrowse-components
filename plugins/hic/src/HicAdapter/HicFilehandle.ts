@@ -4,7 +4,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { GenericFilehandle } from 'generic-filehandle'
 
-
 // wraps generic-filehandle so the read function only takes a position and
 // length
 //

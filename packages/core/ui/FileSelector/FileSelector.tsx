@@ -8,7 +8,7 @@ import {
   MenuItem,
   Tooltip,
   ToggleButtonGroup,
-  ToggleButton
+  ToggleButton,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -16,15 +16,9 @@ import { observer } from 'mobx-react'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
 import { notEmpty, useLocalStorage } from '../../util'
-import {
-  isUriLocation,
-  isAppRootModel,
-} from '../../util/types'
-import type {
-  FileLocation,
-  AbstractRootModel} from '../../util/types'
-import type {
-  ToggleButtonProps} from '@mui/material'
+import { isUriLocation, isAppRootModel } from '../../util/types'
+import type { FileLocation, AbstractRootModel } from '../../util/types'
+import type { ToggleButtonProps } from '@mui/material'
 
 // icons
 

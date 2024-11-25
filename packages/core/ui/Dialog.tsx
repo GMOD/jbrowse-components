@@ -18,8 +18,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'
-import type {
-  DialogProps} from '@mui/material'
+import type { DialogProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {

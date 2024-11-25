@@ -1,11 +1,7 @@
-import {
-  getConf,
-  ConfigurationReference
-} from '@jbrowse/core/configuration'
+import { getConf, ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 // locals

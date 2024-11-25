@@ -1,5 +1,5 @@
 import { parseTsvBuffer } from './ImportUtils'
-import type { ParseOptions} from './ImportUtils'
+import type { ParseOptions } from './ImportUtils'
 import type { Buffer } from 'buffer'
 
 const browserBytes = 'browser '.split('').map(c => c.charCodeAt(0))

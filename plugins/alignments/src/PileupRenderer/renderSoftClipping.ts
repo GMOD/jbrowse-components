@@ -1,6 +1,4 @@
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
 // locals
@@ -9,8 +7,7 @@ import { parseCigar } from '../MismatchParser'
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import type { LayoutFeature } from './util'
 import type { Mismatch } from '../shared/types'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Theme } from '@mui/material'
 
 export function renderSoftClipping({

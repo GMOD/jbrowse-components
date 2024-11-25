@@ -3,14 +3,15 @@ import {
   isUnionType,
   isArrayType,
   isMapType,
-  isLateType
+  isLateType,
 } from 'mobx-state-tree'
 import type {
   IAnyType,
   IModelReflectionPropertiesData,
   IAnyComplexType,
   ISimpleType,
-  UnionStringArray} from 'mobx-state-tree'
+  UnionStringArray,
+} from 'mobx-state-tree'
 
 export interface ILiteralType<T> extends ISimpleType<T> {
   value: T

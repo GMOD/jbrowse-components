@@ -7,7 +7,7 @@ import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals
-import type { SimpleFeatureSerialized} from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SupplementaryAlignments(props: {
   tag: string

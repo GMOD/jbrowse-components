@@ -18,10 +18,7 @@ import type {
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
 import type { AnyConfigurationModel } from '../../configuration'
-import type {
-  Feature,
-  SimpleFeatureSerialized,
-} from '../../util/simpleFeature'
+import type { Feature, SimpleFeatureSerialized } from '../../util/simpleFeature'
 import type { AugmentedRegion as Region } from '../../util/types'
 
 export interface RenderArgs extends ServerSideRenderArgs {

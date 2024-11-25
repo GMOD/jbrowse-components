@@ -13,7 +13,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import type { LinearGenomeViewModel } from '../model'
-import type { Region, SessionWithWidgets} from '@jbrowse/core/util'
+import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 

@@ -1,14 +1,9 @@
 import { GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
-import {
-  isUriLocation,
-  notEmpty,
-  objectHash,
-} from '@jbrowse/core/util'
+import { isUriLocation, notEmpty, objectHash } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
-import type { RaStanza} from '@gmod/ucsc-hub'
-import type {
-  FileLocation} from '@jbrowse/core/util'
+import type { RaStanza } from '@gmod/ucsc-hub'
+import type { FileLocation } from '@jbrowse/core/util'
 
 export async function fetchGenomesFile(genomesLoc: FileLocation) {
   const genomesFileText = await openLocation(genomesLoc).readFile('utf8')

@@ -7,7 +7,7 @@ import DataUsageIcon from '@mui/icons-material/DataUsage'
 import CircularViewF from './CircularView'
 import LaunchCircularViewF from './LaunchCircularView'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel} from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // icons
 

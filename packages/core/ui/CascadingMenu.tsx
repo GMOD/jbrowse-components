@@ -7,22 +7,19 @@ import {
   ListItemText,
   ListSubheader,
   Menu,
-  MenuItem
+  MenuItem,
 } from '@mui/material'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
 import {
   bindHover,
   bindFocus,
   bindMenu,
-  usePopupState
+  usePopupState,
 } from 'material-ui-popup-state/hooks'
 import { MenuItemEndDecoration } from './Menu'
-import type { MenuItem as JBMenuItem} from './Menu'
-import type {
-  PopoverOrigin,
-  SvgIconProps} from '@mui/material'
-import type {
-  PopupState} from 'material-ui-popup-state/hooks'
+import type { MenuItem as JBMenuItem } from './Menu'
+import type { PopoverOrigin, SvgIconProps } from '@mui/material'
+import type { PopupState } from 'material-ui-popup-state/hooks'
 
 const CascadingContext = React.createContext({
   parentPopupState: null,

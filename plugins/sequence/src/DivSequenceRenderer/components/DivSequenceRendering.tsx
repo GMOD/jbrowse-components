@@ -7,14 +7,11 @@ import {
   defaultStarts,
   defaultStops,
   defaultCodonTable,
-  generateCodonTable
+  generateCodonTable,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  Feature,
-  Region,
-  Frame} from '@jbrowse/core/util'
+import type { Feature, Region, Frame } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
 function Translation({

@@ -6,7 +6,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import type { BaseCoverageBin } from '../../shared/types'
-import type { Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(() => ({
   td: {

@@ -4,7 +4,6 @@ import React from 'react'
 import { getVolvoxConfig } from './util'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-
 export const WithTwoLinearGenomeViews = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state1 = createViewState({

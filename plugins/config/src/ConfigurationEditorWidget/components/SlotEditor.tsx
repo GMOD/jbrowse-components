@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
-import {
-  getSubType,
-  getUnionSubTypes
-} from '@jbrowse/core/util/mst-reflection'
+import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
 
 // icons
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
@@ -13,13 +10,13 @@ import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
 
 // locals
-import NumberMapEditor from './NumberMapEditor'
-import NumberEditor from './NumberEditor'
 import BooleanEditor from './BooleanEditor'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import ConfigurationTextField from './ConfigurationTextField'
 import JsonEditor from './JsonEditor'
+import NumberEditor from './NumberEditor'
+import NumberMapEditor from './NumberMapEditor'
 import StringArrayEditor from './StringArrayEditor'
 import StringArrayMapEditor from './StringArrayMapEditor'
 import { useSlotEditorStyles } from './useSlotEditorStyles'
@@ -28,8 +25,7 @@ import type {
   AnyConfigurationSlotType,
 } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-import type {
-  ILiteralType} from '@jbrowse/core/util/mst-reflection'
+import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
 import type { IAnyType } from 'mobx-state-tree'
 
 const StringEditor = observer(function ({

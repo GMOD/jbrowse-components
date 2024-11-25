@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import {
-  isModelType,
-  isType,
-  types
-} from 'mobx-state-tree'
+import { isModelType, isType, types } from 'mobx-state-tree'
 
 // Pluggable elements
 import CorePlugin from './CorePlugin'
@@ -17,14 +13,12 @@ import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import DisplayType from './pluggableElementTypes/DisplayType'
 import InternetAccountType from './pluggableElementTypes/InternetAccountType'
-import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
+import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
-import RpcMethodType from './pluggableElementTypes/RpcMethodType'
-import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
-
 
 import createJexlInstance from './util/jexl'
 import type Plugin from './Plugin'
@@ -34,10 +28,9 @@ import type {
   PluggableElementType,
   PluggableElementMember,
 } from './pluggableElementTypes'
+import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
-import type {
-  IAnyType,
-  IAnyModelType} from 'mobx-state-tree'
+import type { IAnyType, IAnyModelType } from 'mobx-state-tree'
 
 // helper class that keeps groups of callbacks that are then run in a specified
 // order by group

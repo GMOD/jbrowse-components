@@ -1,12 +1,7 @@
 import { from } from 'rxjs'
 import SimpleFeature from './simpleFeature'
-import {
-  calcStdFromSums,
-  rectifyStats,
-  scoresToStats
-} from './stats'
-import type {
-  UnrectifiedQuantitativeStats} from './stats'
+import { calcStdFromSums, rectifyStats, scoresToStats } from './stats'
+import type { UnrectifiedQuantitativeStats } from './stats'
 
 test('calc std', () => {
   const s = [1, 2, 3]

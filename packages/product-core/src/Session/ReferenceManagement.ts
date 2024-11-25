@@ -18,11 +18,8 @@ import {
 import { isBaseSession } from './BaseSession'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import type {
-  TrackViewModel} from '@jbrowse/core/util'
-import type {
-  IAnyStateTreeNode,
-  Instance} from 'mobx-state-tree'
+import type { TrackViewModel } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 // locals
 
 export interface ReferringNode {

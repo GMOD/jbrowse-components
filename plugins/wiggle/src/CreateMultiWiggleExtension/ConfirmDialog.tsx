@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import Dialog from '@jbrowse/core/ui/Dialog'
 import {
   Button,
@@ -10,8 +8,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ConfirmDialog = ({
   tracks,

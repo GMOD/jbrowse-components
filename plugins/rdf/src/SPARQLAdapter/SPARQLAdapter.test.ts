@@ -6,7 +6,6 @@ import emptyQueryResponse from './test_data/emptyQueryResponse.json'
 import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'
 
-
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {

@@ -1,4 +1,3 @@
-
 import ReactComponent from '../MultiWiggleRendering'
 import MultiXYPlotRenderer from './MultiXYPlotRenderer'
 import configSchema from './configSchema'

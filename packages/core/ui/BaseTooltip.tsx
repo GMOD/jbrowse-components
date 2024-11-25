@@ -7,7 +7,6 @@ import {
 import { alpha, Portal, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-
 function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }

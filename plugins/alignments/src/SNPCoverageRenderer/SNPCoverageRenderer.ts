@@ -9,11 +9,13 @@ import {
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
 import { alphaColor } from '../shared/util'
-import type { BaseCoverageBin, ModificationTypeWithColor } from '../shared/types'
+import type {
+  BaseCoverageBin,
+  ModificationTypeWithColor,
+} from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
-import type {
-  ScaleOpts} from '@jbrowse/plugin-wiggle'
+import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
 // locals
 

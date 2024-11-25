@@ -1,6 +1,4 @@
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
@@ -9,8 +7,7 @@ import { toArray } from 'rxjs/operators'
 // locals
 import { fetchSequence } from '../util'
 import { generateCoverageBins } from './generateCoverageBins'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 

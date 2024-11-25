@@ -1,9 +1,6 @@
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {

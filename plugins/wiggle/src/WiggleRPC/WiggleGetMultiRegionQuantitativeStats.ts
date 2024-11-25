@@ -3,7 +3,7 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
-import type { Region} from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionQuantitativeStats'

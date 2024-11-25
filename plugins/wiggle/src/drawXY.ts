@@ -1,19 +1,14 @@
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-// required to import this for typescript purposes
- 
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import mix from 'colord/plugins/mix'
 
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 // locals
 import { fillRectCtx, getOrigin, getScale } from './util'
 import type { ScaleOpts } from './util'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Colord } from '@jbrowse/core/util/colord'
 

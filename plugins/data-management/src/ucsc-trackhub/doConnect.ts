@@ -9,8 +9,8 @@ import {
   fetchGenomesFile,
   fetchTrackDbFile,
 } from './ucscTrackHub'
-import type { AnyConfigurationModel} from '@jbrowse/core/configuration'
-import type { FileLocation} from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FileLocation } from '@jbrowse/core/util'
 
 function resolve(uri: string, baseUri: string) {
   return new URL(uri, baseUri).href

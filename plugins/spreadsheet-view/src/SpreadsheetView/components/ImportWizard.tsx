@@ -18,7 +18,7 @@ import { getRoot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import NumberEditor from './NumberEditor'
 import type { ImportWizardModel } from '../models/ImportWizard'
-import type { AbstractRootModel} from '@jbrowse/core/util'
+import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {

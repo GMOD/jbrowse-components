@@ -1,8 +1,5 @@
 import isNode from 'detect-node'
-import {
-  BlobFile,
-  LocalFile
-} from 'generic-filehandle'
+import { BlobFile, LocalFile } from 'generic-filehandle'
 
 // locals
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
@@ -11,7 +8,7 @@ import { getBlob } from '../tracks'
 import {
   isRootModelWithInternetAccounts,
   isUriLocation,
-  AuthNeededError
+  AuthNeededError,
 } from '../types'
 import type PluginManager from '../../PluginManager'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
@@ -19,10 +16,9 @@ import type {
   FileLocation,
   LocalPathLocation,
   BlobLocation,
-  UriLocation} from '../types'
-import type {
-  GenericFilehandle,
-  Fetcher} from 'generic-filehandle'
+  UriLocation,
+} from '../types'
+import type { GenericFilehandle, Fetcher } from 'generic-filehandle'
 
 function isLocalPathLocation(
   location: FileLocation,

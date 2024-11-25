@@ -10,14 +10,15 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
-  isMapType
+  isMapType,
 } from 'mobx-state-tree'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type {
-  PluginDefinition} from '@jbrowse/core/PluginLoader'
-import type { types ,
+  types,
   IAnyType,
   IAnyStateTreeNode,
-  Instance} from 'mobx-state-tree'
+  Instance,
+} from 'mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid

@@ -12,7 +12,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-
 // icons
 
 const StringArrayEditor = observer(function ({

@@ -1,7 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
-import {
-  getFileName
-} from '@jbrowse/core/util/tracks'
+import { getFileName } from '@jbrowse/core/util/tracks'
 
 import BlastTabularAdapter from './BlastTabularAdapter'
 import ChainAdapterF from './ChainAdapter'
@@ -14,9 +12,9 @@ import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AdapterGuesser,
-  TrackTypeGuesser} from '@jbrowse/core/util/tracks'
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
-
 
 export default class ComparativeAdaptersPlugin extends Plugin {
   name = 'ComparativeAdaptersPlugin'

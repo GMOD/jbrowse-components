@@ -4,21 +4,15 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import {
-  getEnv,
-  getSession,
-  isSelectionContainer,
-} from '@jbrowse/core/util'
+import { getEnv, getSession, isSelectionContainer } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 // locals
 import { getNiceDomain } from '../util'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
-import type {
-  Feature} from '@jbrowse/core/util'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 // lazies
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))

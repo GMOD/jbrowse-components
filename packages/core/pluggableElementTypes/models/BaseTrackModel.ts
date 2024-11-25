@@ -1,26 +1,18 @@
 import { transaction } from 'mobx'
-import {
-  getRoot,
-  resolveIdentifier,
-  types
-} from 'mobx-state-tree'
+import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
 // locals
-import {
-  getConf,
-  ConfigurationReference,
-} from '../../configuration'
+import { getConf, ConfigurationReference } from '../../configuration'
 import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 import type PluginManager from '../../PluginManager'
 import type {
   AnyConfigurationModel,
-  AnyConfigurationSchemaType} from '../../configuration'
+  AnyConfigurationSchemaType,
+} from '../../configuration'
 import type { MenuItem } from '../../ui'
-import type {
-  Instance,
-  IAnyStateTreeNode} from 'mobx-state-tree'
+import type { Instance, IAnyStateTreeNode } from 'mobx-state-tree'
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)

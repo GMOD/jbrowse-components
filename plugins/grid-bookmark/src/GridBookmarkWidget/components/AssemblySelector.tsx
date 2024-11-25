@@ -10,7 +10,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-
 // locals
 import type { GridBookmarkModel } from '../model'
 

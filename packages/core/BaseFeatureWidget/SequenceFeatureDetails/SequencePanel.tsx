@@ -8,22 +8,15 @@ import {
   revcom,
   toLocale,
 } from '../../util'
-import {
-  calculateUTRs,
-  calculateUTRs2,
-  dedupe,
-  revlist,
-} from '../util'
+import { calculateUTRs, calculateUTRs2, dedupe, revlist } from '../util'
 // panel types
 import CDNASequence from './seqtypes/CDNASequence'
 import CDSSequence from './seqtypes/CDSSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'
 import ProteinSequence from './seqtypes/ProteinSequence'
 import type { SequenceFeatureDetailsModel } from './model'
-import type {
-  SimpleFeatureSerialized} from '../../util'
-import type {
-  SeqState} from '../util'
+import type { SimpleFeatureSerialized } from '../../util'
+import type { SeqState } from '../util'
 
 interface SequencePanelProps {
   sequence: SeqState

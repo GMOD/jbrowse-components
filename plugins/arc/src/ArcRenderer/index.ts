@@ -1,4 +1,3 @@
-
 import ArcRenderer from './ArcRenderer'
 import ReactComponent from './ArcRendering'
 import configSchema from './configSchema'

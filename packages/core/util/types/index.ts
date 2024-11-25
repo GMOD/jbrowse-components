@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
-import {
-  isStateTreeNode
-} from 'mobx-state-tree'
+import { isStateTreeNode } from 'mobx-state-tree'
 import type {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
@@ -24,7 +22,8 @@ import type {
   SnapshotIn,
   IAnyStateTreeNode,
   IStateTreeNode,
-  IType} from 'mobx-state-tree'
+  IType,
+} from 'mobx-state-tree'
 
 export * from './util'
 
@@ -151,24 +150,24 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 }
 
 /** abstract interface for a session allows editing configurations */
-export interface SessionWithConfigEditing extends AbstractSessionModel {
+export interface SessionWithConfigEditingModel extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
   thing: unknown,
-): thing is SessionWithConfigEditing {
+): thing is SessionWithConfigEditingModel {
   return isSessionModel(thing) && 'editConfiguration' in thing
 }
 
 /** abstract interface for a session allows adding tracks */
-export interface SessionWithConfigEditing extends AbstractSessionModel {
+export interface SessionWithAddTracks extends AbstractSessionModel {
   addTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): void
 }
 export function isSessionWithAddTracks(
   thing: unknown,
-): thing is SessionWithConfigEditing {
+): thing is SessionWithAddTracks {
   return (
     // @ts-expect-error
     isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks

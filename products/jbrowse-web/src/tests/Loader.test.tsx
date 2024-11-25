@@ -9,7 +9,6 @@ import rangeParser from 'range-parser'
 // local
 import { App } from './loaderUtil'
 
-
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // @ts-ignore

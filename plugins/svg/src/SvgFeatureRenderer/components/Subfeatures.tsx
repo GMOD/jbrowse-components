@@ -1,17 +1,9 @@
 import React from 'react'
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import {
-  chooseGlyphComponent,
-  layOut,
-  layOutFeature,
-} from './util'
-import type {
-  ExtraGlyphValidator} from './util'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import { chooseGlyphComponent, layOut, layOutFeature } from './util'
+import type { ExtraGlyphValidator } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 

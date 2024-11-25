@@ -6,14 +6,12 @@ import {
   IconButton,
   Divider,
   Paper,
-  ScopedCssBaseline
+  ScopedCssBaseline,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import Draggable from 'react-draggable'
 import { makeStyles } from 'tss-react/mui'
-import type {
-  DialogProps,
-  PaperProps} from '@mui/material'
+import type { DialogProps, PaperProps } from '@mui/material'
 
 // icons
 

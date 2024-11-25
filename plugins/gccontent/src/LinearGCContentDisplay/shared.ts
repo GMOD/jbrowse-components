@@ -1,13 +1,10 @@
 import { lazy } from 'react'
-import {
-  getConf
-} from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { types } from 'mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 const EditGCContentParamsDialog = lazy(
   () => import('./components/EditGCContentParams'),

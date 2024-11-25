@@ -1,10 +1,7 @@
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { fillColor } from '../shared/color'
 import { orientationTypes } from '../util'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 export function colorByInsertSize(feature: Feature) {

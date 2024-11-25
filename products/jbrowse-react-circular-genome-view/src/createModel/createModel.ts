@@ -12,7 +12,7 @@ import createSessionModel from './createSessionModel'
 import { version } from '../version'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance, SnapshotIn} from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewRootModel

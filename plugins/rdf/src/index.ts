@@ -6,7 +6,7 @@ import {
   configSchema as sparqlAdapterConfigSchema,
 } from './SPARQLAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AdapterGuesser} from '@jbrowse/core/util/tracks'
+import type { AdapterGuesser } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class RdfPlugin extends Plugin {

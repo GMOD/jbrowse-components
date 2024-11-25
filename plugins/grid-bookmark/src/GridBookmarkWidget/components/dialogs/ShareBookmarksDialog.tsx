@@ -17,7 +17,6 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import { makeStyles } from 'tss-react/mui'
 
-
 // locals
 import { shareSessionToDynamo } from '../../sessionSharing'
 import type { GridBookmarkModel } from '../../model'

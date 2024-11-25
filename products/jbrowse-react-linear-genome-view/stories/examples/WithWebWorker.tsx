@@ -8,7 +8,6 @@ import { createViewState, JBrowseLinearGenomeView } from '../../src'
 // import {makeWorkerInstance} from '@jbrowse/react-linear-genome-view/esm/makeWorkerInstance'
 import makeWorkerInstance from '../../src/makeWorkerInstance'
 
-
 export const WithWebWorker = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({

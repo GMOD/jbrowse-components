@@ -7,7 +7,7 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance} from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel TracksManagerSessionMixin

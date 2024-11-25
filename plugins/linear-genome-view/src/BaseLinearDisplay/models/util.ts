@@ -4,7 +4,7 @@ import { isAlive } from 'mobx-state-tree'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { IAnyStateTreeNode} from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 export interface RenderProps {
   rendererType: any

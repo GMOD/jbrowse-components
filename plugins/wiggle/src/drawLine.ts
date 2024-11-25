@@ -1,13 +1,10 @@
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx } from '@jbrowse/core/util'
 
 // locals
 import { getScale } from './util'
 import type { ScaleOpts } from './util'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.3

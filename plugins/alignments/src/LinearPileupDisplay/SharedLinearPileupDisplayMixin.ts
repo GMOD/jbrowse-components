@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
-
 // icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -15,12 +14,10 @@ import {
   getContainingView,
   getContainingTrack,
   isSessionModelWithWidgets,
-  SimpleFeature
+  SimpleFeature,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  BaseLinearDisplay,
-} from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import copy from 'copy-to-clipboard'
@@ -34,12 +31,10 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type {
   AnyConfigurationModel,
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
-import type {
-  SimpleFeatureSerialized,
-  Feature} from '@jbrowse/core/util'
-import type {
-  LinearGenomeViewModel} from '@jbrowse/plugin-linear-genome-view'
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
+import type { SimpleFeatureSerialized, Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const FilterByTagDialog = lazy(

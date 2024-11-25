@@ -8,7 +8,7 @@ import { addDisposer, getSnapshot } from 'mobx-state-tree'
 import { drawMouseoverSynteny, drawRef } from './drawSynteny'
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import type { Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 interface Pos {
   offsetPx: number

@@ -17,10 +17,7 @@ import SessionLoader from '../SessionLoader'
 import factoryReset from '../factoryReset'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
 import { createPluginManager } from '../createPluginManager'
-import type {
-  SessionLoaderModel,
-  SessionTriagedInfo,
-} from '../SessionLoader'
+import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
 import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

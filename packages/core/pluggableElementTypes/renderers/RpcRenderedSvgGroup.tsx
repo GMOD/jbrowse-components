@@ -8,8 +8,8 @@ import { getRoot } from 'mobx-state-tree'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { createJBrowseTheme } from '../../ui'
 import { rIC } from '../../util'
-import type { AnyReactComponentType, Feature} from '../../util'
-import type { ThemeOptions} from '@mui/material'
+import type { AnyReactComponentType, Feature } from '../../util'
+import type { ThemeOptions } from '@mui/material'
 
 interface Props {
   html: string

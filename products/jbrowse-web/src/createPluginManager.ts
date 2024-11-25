@@ -6,7 +6,7 @@ import { loadSessionSpec } from './SessionLoader'
 import corePlugins from './corePlugins'
 import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
-import type { SessionLoaderModel} from './SessionLoader'
+import type { SessionLoaderModel } from './SessionLoader'
 
 export function createPluginManager(self: SessionLoaderModel) {
   // it is ready when a session has loaded and when there is no config

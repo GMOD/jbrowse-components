@@ -1,12 +1,8 @@
 import React from 'react'
 import { getFillProps } from '@jbrowse/core/util'
-import {
-  SVGTracks,
-  SVGRuler
-} from '@jbrowse/plugin-linear-genome-view'
+import { SVGTracks, SVGRuler } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
-import type {
-  LinearGenomeViewModel} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default function SVGLinearGenomeView({
   trackLabelOffset,

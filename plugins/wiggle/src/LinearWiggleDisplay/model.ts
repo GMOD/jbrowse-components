@@ -1,11 +1,6 @@
 import { lazy } from 'react'
-import {
-  getConf,
-} from '@jbrowse/core/configuration'
-import {
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
@@ -13,10 +8,8 @@ import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
-import type {
-  AnyReactComponentType} from '@jbrowse/core/util'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { AnyReactComponentType } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

@@ -10,7 +10,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel, IExtendedLabeledRegionModel } from '../../model'
+import type {
+  GridBookmarkModel,
+  IExtendedLabeledRegionModel,
+} from '../../model'
 
 const EditBookmarkLabelDialog = observer(function ({
   model,

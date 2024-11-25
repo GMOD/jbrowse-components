@@ -1,4 +1,3 @@
-
 import { types } from 'mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'

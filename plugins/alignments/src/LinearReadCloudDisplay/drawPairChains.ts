@@ -8,7 +8,11 @@ import {
   getPairedOrientationColor,
 } from '../shared/color'
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ChainData, ChainStats, ReducedFeature } from '../shared/fetchChains'
+import type {
+  ChainData,
+  ChainStats,
+  ReducedFeature,
+} from '../shared/fetchChains'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

@@ -7,7 +7,7 @@ import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
 import { getResponseError } from '../util'
 import type { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel HTTPBasicInternetAccount

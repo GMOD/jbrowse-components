@@ -15,7 +15,7 @@ import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
-import type { LinearGenomeViewModel} from '.'
+import type { LinearGenomeViewModel } from '.'
 
 type LGV = LinearGenomeViewModel
 

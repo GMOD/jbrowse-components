@@ -4,7 +4,7 @@ import { Dialog } from '@jbrowse/core/ui'
 import {
   getSession,
   getContainingView,
-  gatherOverlaps
+  gatherOverlaps,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
@@ -19,8 +19,7 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import type {
-  Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
 

@@ -11,8 +11,7 @@ import {
 // locals
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 import type { LinearSyntenyDisplayModel } from '../model'
-import type {
-  Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 interface Pos {
   offsetPx: number

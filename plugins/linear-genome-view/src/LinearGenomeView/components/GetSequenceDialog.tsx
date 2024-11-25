@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import {
-  getSession,
-  reverse,
-  complement
-} from '@jbrowse/core/util'
+import { getSession, reverse, complement } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
@@ -30,9 +26,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import type { LinearGenomeViewModel } from '..'
-import type {
-  Feature,
-  Region} from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {

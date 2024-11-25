@@ -18,8 +18,7 @@ import type {
   PluggableElementType,
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
-import type {
-  SessionWithWidgets} from '@jbrowse/core/util'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default class GridBookmarkPlugin extends Plugin {

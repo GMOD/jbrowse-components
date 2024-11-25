@@ -14,7 +14,7 @@ import {
 import { getResponseError } from '../util'
 import type { OAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 interface OAuthData {
   client_id: string

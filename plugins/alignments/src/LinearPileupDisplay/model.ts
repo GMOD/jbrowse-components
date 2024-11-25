@@ -28,10 +28,9 @@ import type {
   ModificationTypeWithColor,
   SortedBy,
 } from '../shared/types'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))

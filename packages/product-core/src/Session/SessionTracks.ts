@@ -9,7 +9,7 @@ import type {
 } from '@jbrowse/core/configuration'
 
 // locals
-import type { IAnyStateTreeNode, Instance} from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel SessionTracksManagerSessionMixin

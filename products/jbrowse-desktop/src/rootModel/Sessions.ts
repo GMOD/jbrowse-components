@@ -3,7 +3,7 @@ import { autorun } from 'mobx'
 import { addDisposer, getSnapshot, types } from 'mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseSession, BaseRootModel } from '@jbrowse/product-core'
-import type { SnapshotIn} from 'mobx-state-tree'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 const { ipcRenderer } = window.require('electron')
 

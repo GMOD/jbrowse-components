@@ -1,8 +1,5 @@
 import React from 'react'
-import {
-  getConf,
-  ConfigurationReference
-} from '@jbrowse/core/configuration'
+import { getConf, ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
@@ -16,8 +13,7 @@ import { types } from 'mobx-state-tree'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
-import type {
-  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { ThemeOptions } from '@mui/material'
 import type { Instance } from 'mobx-state-tree'
 

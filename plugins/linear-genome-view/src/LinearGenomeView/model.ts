@@ -2,26 +2,6 @@ import type React from 'react'
 import { lazy } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { saveAs } from 'file-saver'
-import { when, transaction, autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getRoot,
-  resolveIdentifier,
-  types,
-  Instance,
-  getParent,
-} from 'mobx-state-tree'
-
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { moveTo, pxToBp, bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import clone from 'clone'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -36,19 +16,35 @@ import {
   localStorageSetItem,
   measureText,
   springAnimate,
-  sum
+  sum,
 } from '@jbrowse/core/util'
-import type { Region as IRegion } from '@jbrowse/core/util/types'
+import { moveTo, pxToBp, bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import clone from 'clone'
+import { saveAs } from 'file-saver'
+import { when, transaction, autorun } from 'mobx'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getRoot,
+  resolveIdentifier,
+  types,
+  getParent,
+} from 'mobx-state-tree'
 
 import Header from './components/Header'
 import MiniControls from './components/MiniControls'
@@ -61,14 +57,15 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  ParsedLocString} from '@jbrowse/core/util';
+import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { Region } from '@jbrowse/core/util/types'
+import type { Region as IRegion, Region } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(

@@ -5,11 +5,10 @@ import {
   DialogActions,
   DialogContent,
   MenuItem,
-  TextField
+  TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import type {
-  ThemeOptions} from '@mui/material'
+import type { ThemeOptions } from '@mui/material'
 
 const useStyles = makeStyles()(() => ({
   container: {

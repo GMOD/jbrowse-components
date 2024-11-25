@@ -9,17 +9,14 @@ import { types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import packageJSON from '../../package.json'
 import jobsModelFactory from '../indexJobsModel'
-import type PluginManager from '@jbrowse/core/PluginManager'
-
 
 // locals
 import JBrowseDesktop from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 import { DesktopMenusMixin } from './Menus'
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
-import type {
-  BaseAssemblyConfigSchema,
-} from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { Instance, IAnyType } from 'mobx-state-tree'
 
 type SessionModelFactory = (args: {

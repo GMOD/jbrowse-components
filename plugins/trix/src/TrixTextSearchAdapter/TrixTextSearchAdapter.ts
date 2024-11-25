@@ -1,18 +1,14 @@
 import Trix from '@gmod/trix'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import {
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import {
-  BaseAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseTextSearchAdapter,
-  BaseTextSearchArgs} from '@jbrowse/core/data_adapters/BaseAdapter'
+  BaseTextSearchArgs,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 function decodeURIComponentNoThrow(uri: string) {

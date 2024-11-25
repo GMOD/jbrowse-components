@@ -6,15 +6,9 @@ import {
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
-import {
-  addDisposer,
-  getParent,
-  types,
-  getSnapshot,
-} from 'mobx-state-tree'
+import { addDisposer, getParent, types, getSnapshot } from 'mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 const { ipcRenderer } = window.require('electron')
 

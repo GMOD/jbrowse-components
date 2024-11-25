@@ -4,54 +4,53 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   InternetAccountsRootModelMixin,
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import { saveAs } from 'file-saver'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types
-} from 'mobx-state-tree'
-
-import { observable, autorun } from 'mobx'
-import jbrowseWebFactory from '../jbrowseModel'
-import makeWorkerInstance from '../makeWorkerInstance'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
-import type { MenuItem } from '@jbrowse/core/ui'
-
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
 import AppsIcon from '@mui/icons-material/Apps'
+import ExtensionIcon from '@mui/icons-material/Extension'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
-import ExtensionIcon from '@mui/icons-material/Extension'
-import StorageIcon from '@mui/icons-material/Storage'
-import SaveIcon from '@mui/icons-material/Save'
-import UndoIcon from '@mui/icons-material/Undo'
 import RedoIcon from '@mui/icons-material/Redo'
+import SaveIcon from '@mui/icons-material/Save'
+import SettingsIcon from '@mui/icons-material/Settings'
+import StorageIcon from '@mui/icons-material/Storage'
+import UndoIcon from '@mui/icons-material/Undo'
+import { saveAs } from 'file-saver'
+import { observable, autorun } from 'mobx'
+import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+
+import { hydrateRoot, createRoot } from 'react-dom/client'
+import packageJSON from '../../package.json'
+import jbrowseWebFactory from '../jbrowseModel'
+import makeWorkerInstance from '../makeWorkerInstance'
+import { filterSessionInPlace } from '../util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type {
+  AbstractSessionModel,
+  SessionWithWidgets,
+} from '@jbrowse/core/util'
+
+// icons
 
 // other
-import { filterSessionInPlace } from '../util'
-import packageJSON from '../../package.json'
 import type {
   BaseSession,
   BaseSessionType,
-  SessionWithDialogs} from '@jbrowse/product-core'
-import { hydrateRoot, createRoot } from 'react-dom/client'
-import { AssemblyManager } from '@jbrowse/plugin-data-management'
+  SessionWithDialogs,
+} from '@jbrowse/product-core'
 import type {
   IAnyStateTreeNode,
   SnapshotIn,
   Instance,
-  IAnyType} from 'mobx-state-tree'
+  IAnyType,
+} from 'mobx-state-tree'
 
 // locals
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))

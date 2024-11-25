@@ -5,8 +5,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import type { LinearArcDisplayModel } from './model'
-import type {
-  Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

@@ -11,24 +11,18 @@ import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
-import {
-  types,
-  onAction,
-  addDisposer,
-  getPath
-} from 'mobx-state-tree'
+import { types, onAction, addDisposer, getPath } from 'mobx-state-tree'
 
 // locals
 import { intersect } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel} from '@jbrowse/core/configuration';
-import type { Feature} from '@jbrowse/core/util';
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type {
-  Instance} from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

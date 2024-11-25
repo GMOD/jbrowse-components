@@ -1,5 +1,12 @@
 import { lazy } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
+import {
+  AppFocusMixin,
+  SessionAssembliesMixin,
+  TemporaryAssembliesMixin,
+} from '@jbrowse/app-core'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
@@ -8,21 +15,6 @@ import {
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
-import {
-  AppFocusMixin,
-  SessionAssembliesMixin,
-  TemporaryAssembliesMixin,
-} from '@jbrowse/app-core'
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import {
-  getConf,
-  readConfObject
-} from '@jbrowse/core/configuration'
-import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -36,19 +28,23 @@ import {
   cast,
   getParent,
   getSnapshot,
-  types
+  types,
 } from 'mobx-state-tree'
 
 // locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfigurationModel,
-  AnyConfiguration} from '@jbrowse/core/configuration'
+  AnyConfiguration,
+} from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import type {
-  SnapshotIn,
-  Instance} from 'mobx-state-tree'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
+import type { SnapshotIn, Instance } from 'mobx-state-tree'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))

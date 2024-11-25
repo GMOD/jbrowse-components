@@ -4,15 +4,14 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import {
   assembleLocString,
   getSession,
-  SimpleFeature
+  SimpleFeature,
 } from '@jbrowse/core/util'
 import { Link, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // locals
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import type {
-  SimpleFeatureSerialized} from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const LaunchSyntenyViewDialog = lazy(

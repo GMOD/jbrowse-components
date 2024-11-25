@@ -1,9 +1,6 @@
-import {
-  BaseAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import type {
-  RegionsAdapter} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class ChromSizesAdapter
   extends BaseAdapter

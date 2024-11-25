@@ -8,9 +8,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MenuIcon from '@mui/icons-material/Menu'
-import {
-  IconButton
-} from '@mui/material'
+import { IconButton } from '@mui/material'
 import {
   bindTrigger,
   bindPopover,
@@ -18,10 +16,11 @@ import {
 } from 'material-ui-popup-state/hooks'
 import { observer } from 'mobx-react'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import type { AbstractSessionModel} from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type {
   SvgIconProps,
-  IconButtonProps as IconButtonPropsType} from '@mui/material'
+  IconButtonProps as IconButtonPropsType,
+} from '@mui/material'
 
 const ViewMenu = observer(function ({
   model,

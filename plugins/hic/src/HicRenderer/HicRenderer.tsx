@@ -1,4 +1,4 @@
-import { readConfObject  } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
