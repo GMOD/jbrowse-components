@@ -1,7 +1,7 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { parseJB1Conf, parseJB1Json, regularizeConf } from './jb1ConfigParse'
-import { clone, deepUpdate, fillTemplate } from './util'
+import { deepUpdate, fillTemplate } from './util'
 
 import type {
   Config,

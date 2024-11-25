@@ -14,7 +14,6 @@ import debug from 'electron-debug'
 import { autoUpdater } from 'electron-updater'
 import windowStateKeeper from 'electron-window-state'
 import parseJson from 'json-parse-even-better-errors'
-// @ts-ignore
 
 // locals
 import { getFileStream } from './generateFastaIndex'

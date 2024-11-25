@@ -126,7 +126,6 @@ export default function stateModelFactory() {
                   rows.map(r =>
                     r.feature ? toLocale(r.feature.end - r.feature.start) : 0,
                   ),
-                  { minWidth: 0, padding: 0 },
                 ),
                 valueGetter: (
                   _val: unknown,
@@ -136,6 +135,7 @@ export default function stateModelFactory() {
                     ? row.feature.end - row.feature.start
                     : undefined
                 },
+                valueFormatter: arg => toLocale(arg),
               } satisfies GridColDef<(typeof rows)[0]>,
 
               ...self.columns.map(

@@ -49,7 +49,7 @@ export default class BreakpointSplitViewType extends ViewType {
         pos: startPos,
         refName: f(refName),
         mateRefName: f(refName),
-        matePos: startPos + 1,
+        matePos: feature.get('end'),
       }
     }
   }
@@ -92,7 +92,7 @@ export default class BreakpointSplitViewType extends ViewType {
       views: [
         {
           type: 'LinearGenomeView',
-          displayedRegions: topMarkedRegion,
+          displayedRegions: [...topMarkedRegion, ...bottomMarkedRegion],
           hideHeader: true,
           bpPerPx,
           offsetPx: (topRegion.start + feature.get('start')) / bpPerPx,

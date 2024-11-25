@@ -103,7 +103,7 @@ export function structuredClone(src: any): any {
     // generic objects
     r = src.constructor ? new src.constructor() : {}
   }
-  return mixin(r, src, clone)
+  return mixin(r, src, a => structuredClone(a))
 }
 
 /**

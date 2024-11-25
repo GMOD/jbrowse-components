@@ -9,6 +9,7 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+import jbrowseWebFactory from '../jbrowseModel'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'

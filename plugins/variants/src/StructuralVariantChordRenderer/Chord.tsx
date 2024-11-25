@@ -89,7 +89,7 @@ const Chord = observer(function Chord({
     endBlock = blocksForRefs[chr2]
   } else {
     endBlock = startBlock
-    endPosition = startPos + 1
+    endPosition = feature.get('end')
   }
 
   if (endBlock) {
