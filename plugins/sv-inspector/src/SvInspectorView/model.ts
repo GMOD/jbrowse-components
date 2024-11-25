@@ -3,16 +3,11 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
 import { autorun, reaction } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
 // types
-import {
-  canOpenBreakpointSplitViewFromTableRow,
-  openBreakpointSplitViewFromTableRow,
-} from './breakpointSplitViewFromTableRow'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
@@ -359,44 +354,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               fireImmediately: true,
             },
           ),
-        )
-
-        // bind spreadsheetView row menu actions to us
-        addDisposer(
-          self,
-          autorun(() => {
-            self.spreadsheetView.setRowMenuItems(
-              // these are the MenuItem entries for the row menu actions in the
-              // spreadsheet view.  these are installed into the child
-              // SpreadsheetView using an autorun below
-              [
-                {
-                  label: 'Open split detail view',
-                  icon: OpenInNewIcon,
-                  // @ts-expect-error
-                  disabled(spreadsheetView, spreadsheet, rowNumber, row) {
-                    return !canOpenBreakpointSplitViewFromTableRow(
-                      self,
-                      spreadsheetView,
-                      spreadsheet,
-                      row,
-                      rowNumber,
-                    )
-                  },
-
-                  onClick(spreadsheetView, spreadsheet, rowNumber, row) {
-                    openBreakpointSplitViewFromTableRow(
-                      self,
-                      spreadsheetView,
-                      spreadsheet,
-                      row,
-                      rowNumber,
-                    )
-                  },
-                },
-              ],
-            )
-          }),
         )
       },
     }))

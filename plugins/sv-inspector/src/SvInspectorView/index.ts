@@ -30,7 +30,7 @@ function defaultOnChordClick(
   const newViewId = `${chordTrack.id}_spawned`
   const viewInStack = session.views.find(v => v.id === newViewId)
 
-  // new viw
+  // new view
   if (!viewInStack) {
     session.addView('BreakpointSplitView', {
       ...viewSnapshot,
