@@ -1338,7 +1338,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   return stack
 }
 
-interface BasicFeature {
+export interface BasicFeature {
   end: number
   start: number
   refName: string

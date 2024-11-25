@@ -42,8 +42,10 @@
   },
   "dependencies": {
     "@jbrowse/plugin-linear-genome-view": "^2.17.0",
+    "@jbrowse/core": "^2.17.0",
     "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0"
+    "@mui/material": "^6.0.0",
+    "@gmod/vcf": "^5.0.0"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",

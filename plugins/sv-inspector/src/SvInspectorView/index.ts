@@ -21,7 +21,10 @@ function defaultOnChordClick(
   session.setSelection(feature)
   const view = getContainingView(chordTrack) as CircularViewModel
   const viewType = pluginManager.getViewType('BreakpointSplitView') as any
-  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
+  const viewSnapshot = viewType.singleLevelSnapshotFromBreakendFeature({
+    feature,
+    view,
+  })
 
   // try to center the offsetPx
   viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100
