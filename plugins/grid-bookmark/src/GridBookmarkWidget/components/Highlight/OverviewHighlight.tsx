@@ -31,7 +31,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const session = getSession(model) as SessionWithWidgets
   const { classes } = useStyles()
   const { assemblyManager } = session
-  const { showBookmarkHighlights, showBookmarkLabels } = model
+  const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
     | undefined
@@ -43,7 +43,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   }, [session, bookmarkWidget])
 
   const assemblyNames = new Set(model.assemblyNames)
-  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+  return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(r => assemblyNames.has(r.assemblyName))
         .map(r => {
@@ -67,7 +67,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
           return (
             <Tooltip
               key={`${JSON.stringify(obj)}-${idx}`}
-              title={showBookmarkLabels ? label : ''}
+              title={bookmarkLabelsVisible ? label : ''}
               arrow
             >
               <div

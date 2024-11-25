@@ -17,10 +17,6 @@ import { navToBookmark } from '../utils'
 
 import type { GridBookmarkModel } from '../model'
 
-const EditBookmarkLabelDialog = lazy(
-  () => import('./dialogs/EditBookmarkLabelDialog'),
-)
-
 const useStyles = makeStyles()(() => ({
   cell: {
     whiteSpace: 'nowrap',
@@ -127,12 +123,6 @@ const BookmarkGrid = observer(function ({
           ),
         },
       ]}
-      onCellDoubleClick={({ row }) => {
-        getSession(model).queueDialog(onClose => [
-          EditBookmarkLabelDialog,
-          { onClose, model, dialogRow: row },
-        ])
-      }}
       processRowUpdate={row => {
         const target = rows[row.id]!
         model.updateBookmarkLabel(target, row.label)

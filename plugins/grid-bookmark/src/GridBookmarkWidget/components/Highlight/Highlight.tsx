@@ -33,7 +33,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const session = getSession(model) as SessionWithWidgets
   const { assemblyManager } = session
-  const { showBookmarkHighlights, showBookmarkLabels } = model
+  const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
 
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
@@ -47,7 +47,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   const set = new Set(model.assemblyNames)
 
-  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+  return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(value => set.has(value.assemblyName))
         .map(r => {
@@ -78,7 +78,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 background: highlight,
               }}
             />
-            {showBookmarkLabels && width > 20 ? (
+            {bookmarkLabelsVisible && width > 20 ? (
               <div className={classes.bookmarkButton} style={{ left }}>
                 <CascadingMenuButton
                   menuItems={[
@@ -88,6 +88,13 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                         session.showWidget(bookmarkWidget)
                       },
                     },
+                    {
+                      label: 'Turn off highlights',
+                      onClick: () => {
+                        bookmarkWidget.setBookmarkHighlightsVisible(false)
+                      },
+                    },
+
                     {
                       label: 'Remove bookmark',
                       onClick: () => {

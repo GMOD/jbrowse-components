@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { gatherOverlaps, useLocalStorage } from '@jbrowse/core/util'
+import {
+  gatherOverlaps,
+  getSession,
+  useLocalStorage,
+  when,
+} from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -48,15 +53,11 @@ const BreakendSingleLevelOptionDialog = observer(function ({
   view?: LinearGenomeViewModel
   assemblyName: string
   viewType: {
-    getBreakendCoveringRegions: (arg: {
+    singleLevelSnapshotFromBreakendFeature: (arg: {
       feature: Feature
-      assembly: Assembly
-    }) => {
-      pos: number
-      refName: string
-      mateRefName: string
-      matePos: number
-    }
+      assemblyName: string
+      session: AbstractSessionModel
+    }) => any
   }
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
@@ -106,52 +107,69 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                 if (Number.isNaN(w)) {
                   throw new Error('windowSize not a number')
                 }
-                const { refName, pos, mateRefName, matePos } =
-                  viewType.getBreakendCoveringRegions({ feature, assembly })
+                const { snap, coverage } =
+                  viewType.singleLevelSnapshotFromBreakendFeature({
+                    feature,
+                    assemblyName,
+                    session,
+                  })
+                const {
+                  refName,
+                  pos: startPos,
+                  mateRefName,
+                  matePos: endPos,
+                } = coverage
                 let viewInStack = session.views.find(
                   f => f.id === stableViewId,
                 ) as { views: LinearGenomeViewModel[] } | undefined
 
-                const displayName = `${
-                  feature.get('name') || feature.get('id') || 'breakend'
-                } split detail`
                 if (!viewInStack) {
                   viewInStack = session.addView('BreakpointSplitView', {
-                    id: stableViewId,
-                    type: 'BreakpointSplitView',
-                    displayName,
+                    ...snap,
                     views: [
                       {
-                        type: 'LinearGenomeView',
+                        ...snap.views[0],
                         tracks: view?.tracks
                           ? stripIds(getSnapshot(view.tracks))
                           : [],
                       },
                     ],
                   }) as unknown as { views: LinearGenomeViewModel[] }
+                } else {
+                  viewInStack.views[0]?.setDisplayedRegions(
+                    snap.views[0].displayedRegions,
+                  )
+                  // @ts-expect-error
+                  viewInStack.setDisplayName(snap.displayName)
                 }
-                // @ts-expect-error
-                viewInStack.setDisplayName(displayName)
-
-                await viewInStack.views[0]!.navToLocations(
-                  gatherOverlaps(
-                    [
-                      {
-                        refName,
-                        start: Math.max(0, pos - w),
-                        end: pos + w,
-                        assemblyName,
-                      },
-                      {
-                        refName: mateRefName,
-                        start: Math.max(0, matePos - w),
-                        end: matePos + w,
-                        assemblyName,
-                      },
-                    ],
-                    w,
-                  ),
+                const lgv = viewInStack.views[0]!
+                await when(() => lgv.initialized)
+                console.log(
+                  'wtf',
+                  snap,
+                  view?.displayedRegions,
+                  startPos,
+                  endPos,
+                  refName,
+                  mateRefName,
                 )
+                const l0 = lgv.bpToPx({
+                  coord: Math.max(0, startPos - w),
+                  refName,
+                })
+                const r0 = lgv.bpToPx({
+                  coord: endPos + w,
+                  refName: mateRefName,
+                })
+                console.log({ l0, r0 })
+                if (l0 && r0) {
+                  lgv.moveTo(
+                    { ...l0, offset: l0.offsetPx },
+                    { ...r0, offset: r0.offsetPx },
+                  )
+                } else {
+                  getSession(lgv).notify('Unable to navigate to breakpoint')
+                }
               } catch (e) {
                 console.error(e)
                 session.notifyError(`${e}`, e)

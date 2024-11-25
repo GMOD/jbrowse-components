@@ -55,7 +55,7 @@ const FeatureLabel = observer(function ({
 
   const viewLeft = reversed ? params.end : params.start
 
-  const [labelVisible, setLabelVisible] = useState(exportSVG)
+  const [featureLabelsVisible, setFeatureLabelsVisible] = useState(exportSVG)
   const theme = useTheme()
 
   // we use an effect to set the label visible because there can be a
@@ -63,7 +63,7 @@ const FeatureLabel = observer(function ({
   // floating labels. if we are exporting an SVG we allow it as is though and
   // do not use the effect
   useEffect(() => {
-    setLabelVisible(true)
+    setFeatureLabelsVisible(true)
   }, [])
 
   if (isStateTreeNode(region) && !isAlive(region)) {
@@ -98,7 +98,7 @@ const FeatureLabel = observer(function ({
     x = params.offsetPx1
   }
 
-  return labelVisible ? (
+  return featureLabelsVisible ? (
     <text
       x={x}
       y={y + fontHeight}
