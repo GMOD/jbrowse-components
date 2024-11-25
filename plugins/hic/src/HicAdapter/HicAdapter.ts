@@ -1,17 +1,18 @@
 import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
+  BaseFeatureDataAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import HicStraw from 'hic-straw'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { updateStatus } from '@jbrowse/core/util'
+import { openHicFilehandle } from './HicFilehandle'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // locals
-import { openHicFilehandle } from './HicFilehandle'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface ContactRecord {
   bin1: number

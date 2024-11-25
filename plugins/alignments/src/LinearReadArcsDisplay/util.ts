@@ -1,4 +1,4 @@
-import { ChainData } from '../shared/fetchChains'
+import type { ChainData } from '../shared/fetchChains'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {

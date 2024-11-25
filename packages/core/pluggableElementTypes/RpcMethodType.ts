@@ -1,14 +1,15 @@
-import mapObject from '../util/map-obj'
-import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
+import mapObject from '../util/map-obj'
 import { setBlobMap, getBlobMap } from '../util/tracks'
 import {
   isAppRootModel,
   isUriLocation,
   isAuthNeededException,
-  RetryError,
-  UriLocation,
+  RetryError
 } from '../util/types'
+import type PluginManager from '../PluginManager'
+import type {
+  UriLocation} from '../util/types'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 

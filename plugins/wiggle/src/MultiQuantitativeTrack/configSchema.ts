@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
-import PluginManager from '@jbrowse/core/PluginManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config MultiQuantitativeTrack

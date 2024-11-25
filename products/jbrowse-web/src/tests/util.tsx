@@ -1,28 +1,29 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
-import { render, waitFor } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { LocalFile, GenericFilehandle } from 'generic-filehandle'
-import rangeParser from 'range-parser'
 import { Buffer } from 'buffer'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { render, waitFor } from '@testing-library/react'
+import { Image, createCanvas } from 'canvas'
+import { LocalFile } from 'generic-filehandle'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import rangeParser from 'range-parser'
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-import { Image, createCanvas } from 'canvas'
 
 // jbrowse
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
+import configSnapshot from '../../test_data/volvox/config.json'
+import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
+import corePlugins from '../corePlugins'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
+import sessionModelFactory from '../sessionModel'
+import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
-import JBrowseRootModelFactory from '../rootModel/rootModel'
-import configSnapshot from '../../test_data/volvox/config.json'
-import corePlugins from '../corePlugins'
-import sessionModelFactory from '../sessionModel'
+import type { GenericFilehandle } from 'generic-filehandle'
 
 type LGV = LinearGenomeViewModel
 

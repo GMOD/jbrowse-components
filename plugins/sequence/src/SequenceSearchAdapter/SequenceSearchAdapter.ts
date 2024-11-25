@@ -1,17 +1,19 @@
 import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
+  BaseFeatureDataAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   SimpleFeature,
-  Feature,
-  Region,
   revcom,
   doesIntersect2,
 } from '@jbrowse/core/util'
-import { toArray } from 'rxjs/operators'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  Feature,
+  Region} from '@jbrowse/core/util'
 
 export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
   public async configure() {

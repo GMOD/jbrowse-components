@@ -1,18 +1,19 @@
 import NCListStore from '@gmod/nclist'
-import { Region } from '@jbrowse/core/util/types'
 import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
+  BaseFeatureDataAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { RemoteFile } from 'generic-filehandle'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 // locals
 import NCListFeature from './NCListFeature'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Region } from '@jbrowse/core/util/types'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
   private nclist: any

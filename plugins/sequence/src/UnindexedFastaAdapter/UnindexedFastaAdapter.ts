@@ -1,12 +1,14 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
-  BaseSequenceAdapter,
-  BaseOptions,
+  BaseSequenceAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 function parseSmallFasta(text: string) {
   return new Map(

@@ -1,10 +1,6 @@
 import { lazy } from 'react'
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import { getParent, types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { getConf } from '@jbrowse/core/configuration'
-import InfoIcon from '@mui/icons-material/Info'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -13,6 +9,11 @@ import {
   ReferenceManagementSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
+import InfoIcon from '@mui/icons-material/Info'
+import { getParent, types } from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 

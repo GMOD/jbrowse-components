@@ -1,13 +1,13 @@
-import VcfAdapterF from './VcfAdapter'
-import VcfTabixAdapterF from './VcfTabixAdapter'
-import ExtensionPointsF from './extensionPoints'
-import VariantTrackF from './VariantTrack'
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
 import ChordVariantDisplayF from './ChordVariantDisplay'
 import LinearVariantDisplayF from './LinearVariantDisplay'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
 import VariantFeatureWidgetF from './VariantFeatureWidget'
+import VariantTrackF from './VariantTrack'
+import VcfAdapterF from './VcfAdapter'
+import VcfTabixAdapterF from './VcfTabixAdapter'
+import ExtensionPointsF from './extensionPoints'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'

@@ -1,4 +1,4 @@
-import { Region, ViewSnap } from './index'
+import type { Region, ViewSnap } from './index'
 
 export interface BpOffset {
   refName?: string

@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { ErrorMessage, FileSelector , Dialog, AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { FileLocation, isSessionWithShareURL } from '@jbrowse/core/util/types'
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import { openLocation } from '@jbrowse/core/util/io'
+import { isSessionWithShareURL } from '@jbrowse/core/util/types'
+
+// icons
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ImportIcon from '@mui/icons-material/Publish'
 import {
   Accordion,
   AccordionSummary,
@@ -13,18 +17,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { openLocation } from '@jbrowse/core/util/io'
-import { Dialog, AssemblySelector } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-import ImportIcon from '@mui/icons-material/Publish'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-
 // locals
-import { GridBookmarkModel } from '../../model'
-import { fromUrlSafeB64 } from '../../utils'
 import { readSessionFromDynamo } from '../../sessionSharing'
+import { fromUrlSafeB64 } from '../../utils'
+import type { GridBookmarkModel } from '../../model'
+import type { FileLocation} from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {

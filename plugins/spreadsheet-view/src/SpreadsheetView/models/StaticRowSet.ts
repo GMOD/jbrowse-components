@@ -1,5 +1,5 @@
-import RowModel from './Row'
 import { types, getParent } from 'mobx-state-tree'
+import RowModel from './Row'
 
 const StaticRowModel = types
   .model('StaticRowSet', {

@@ -1,14 +1,14 @@
 import React from 'react'
+import HistoryIcon from '@mui/icons-material/History'
 import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // icons
-import HistoryIcon from '@mui/icons-material/History'
 
 // locals
-import { HierarchicalTrackSelectorModel } from '../../model'
-import DropdownTrackSelector from './DropdownTrackSelector'
 import { makeStyles } from 'tss-react/mui'
+import DropdownTrackSelector from './DropdownTrackSelector'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()({
   smallBadge: {

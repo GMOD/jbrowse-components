@@ -1,12 +1,12 @@
-import { Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import React from 'react'
 import { getTickDisplayStr } from '@jbrowse/core/util'
+import { Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { ContentBlock as ContentBlockComponent } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 const useStyles = makeStyles()(theme => ({
   majorTickLabel: {

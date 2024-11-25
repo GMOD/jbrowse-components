@@ -1,23 +1,25 @@
 import React from 'react'
-import { ThemeOptions } from '@mui/material'
-import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
+  ConfigurationReference
 } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
   makeAbortableReaction,
   ReactRendering,
 } from '@jbrowse/core/util'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { types } from 'mobx-state-tree'
 
 // locals
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
-import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+import type {
+  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { ThemeOptions } from '@mui/material'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel DotplotDisplay

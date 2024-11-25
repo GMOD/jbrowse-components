@@ -1,4 +1,5 @@
 import React from 'react'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import {
   Button,
   Paper,
@@ -9,12 +10,11 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
-import { getEnv, getSession } from '@jbrowse/core/util'
 
 // locals
-import { LinearGenomeViewModel } from '../..'
+import type { LinearGenomeViewModel } from '../..'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 export default function SearchResultsTable({
   searchResults,

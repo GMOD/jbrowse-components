@@ -1,16 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import {
-  SessionWithWidgets,
   getSession,
   isAbstractMenuManager,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import {
-  PluggableElementType,
-  ViewType,
-} from '@jbrowse/core/pluggableElementTypes'
 
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -19,7 +12,15 @@ import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
-import { GridBookmarkModel } from './GridBookmarkWidget/model'
+import type { GridBookmarkModel } from './GridBookmarkWidget/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  PluggableElementType,
+  ViewType,
+} from '@jbrowse/core/pluggableElementTypes'
+import type {
+  SessionWithWidgets} from '@jbrowse/core/util'
+import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default class GridBookmarkPlugin extends Plugin {
   name = 'GridBookmarkPlugin'

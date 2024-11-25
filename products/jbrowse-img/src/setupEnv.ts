@@ -1,7 +1,7 @@
-import fetch, { Headers, Response, Request } from 'node-fetch'
-import { JSDOM } from 'jsdom'
-import { Image, createCanvas } from 'canvas'
 import { TextEncoder, TextDecoder } from 'util'
+import { Image, createCanvas } from 'canvas'
+import { JSDOM } from 'jsdom'
+import fetch, { Headers, Response, Request } from 'node-fetch'
 
 export default function setupEnv() {
   addGlobalCanvasUtils()

@@ -1,13 +1,13 @@
 import React, { lazy, Suspense, useEffect, useRef } from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
+import type { LinearGenomeViewModel } from '..'
 
 const ImportForm = lazy(() => import('./ImportForm'))
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))

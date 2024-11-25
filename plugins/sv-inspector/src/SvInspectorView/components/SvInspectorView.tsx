@@ -1,11 +1,11 @@
 import React from 'react'
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
-import { SvInspectorViewModel } from '../models/SvInspectorView'
 import CircularViewOptions from './CircularViewOptions'
+import type { SvInspectorViewModel } from '../models/SvInspectorView'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandleVert: {

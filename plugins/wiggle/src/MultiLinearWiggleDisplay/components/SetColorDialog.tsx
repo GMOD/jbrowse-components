@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { useLocalStorage } from '@jbrowse/core/util'
+import { Button, DialogContent, DialogActions } from '@mui/material'
 import clone from 'clone'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import DraggableDialog from './DraggableDialog'
-import { Source } from '../../util'
 import SourcesGrid from './SourcesGrid'
+import type { Source } from '../../util'
 
 const useStyles = makeStyles()({
   content: {

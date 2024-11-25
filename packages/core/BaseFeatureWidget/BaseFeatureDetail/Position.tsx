@@ -1,6 +1,6 @@
 import React from 'react'
 import { assembleLocString } from '../../util'
-import { BaseProps } from '../types'
+import type { BaseProps } from '../types'
 
 export default function Position(props: BaseProps) {
   const { feature } = props

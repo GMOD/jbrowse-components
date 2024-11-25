@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 
-import {
+import type {
   Client,
   RefreshToken,
   RefreshTokenModel,

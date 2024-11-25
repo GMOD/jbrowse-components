@@ -1,9 +1,9 @@
 import { lazy } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import BreakpointSplitView from './BreakpointSplitView'
 import stateModelFactory from './model'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function BreakpointSplitViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

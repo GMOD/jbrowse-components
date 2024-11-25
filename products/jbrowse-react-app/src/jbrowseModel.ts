@@ -1,6 +1,6 @@
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { JBrowseModelF } from '@jbrowse/app-core'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel JBrowseReactAppConfigModel

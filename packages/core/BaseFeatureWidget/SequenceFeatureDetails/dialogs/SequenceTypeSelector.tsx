@@ -3,7 +3,7 @@ import { FormControl, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 // locals
-import { SequenceFeatureDetailsModel } from '../model'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const useStyles = makeStyles()({
   formControl: {

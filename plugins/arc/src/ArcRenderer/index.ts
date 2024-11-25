@@ -1,8 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 
+import ArcRenderer from './ArcRenderer'
 import ReactComponent from './ArcRendering'
 import configSchema from './configSchema'
-import ArcRenderer from './ArcRenderer'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function ArcRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(

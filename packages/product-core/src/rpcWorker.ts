@@ -1,11 +1,12 @@
-import RpcServer from 'librpc-web-mod'
+import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
-import PluginLoader, {
+import RpcServer from 'librpc-web-mod'
+import { serializeError } from 'serialize-error'
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type {
   LoadedPlugin,
   PluginDefinition,
 } from '@jbrowse/core/PluginLoader'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { serializeError } from 'serialize-error'
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]

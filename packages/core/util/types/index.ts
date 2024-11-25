@@ -1,22 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import React from 'react'
+import type React from 'react'
 import {
-  isStateTreeNode,
-  Instance,
-  SnapshotIn,
-  IAnyStateTreeNode,
-  IStateTreeNode,
-  IType,
+  isStateTreeNode
 } from 'mobx-state-tree'
-import { ThemeOptions } from '@mui/material'
-import { AnyConfigurationModel } from '../../configuration'
-import TextSearchManager from '../../TextSearch/TextSearchManager'
-import { MenuItem } from '../../ui'
-import RpcManager from '../../rpc/RpcManager'
-import { Feature } from '../simpleFeature'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-// types
-import type assemblyManager from '../../assemblyManager'
 import type {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
@@ -24,6 +10,21 @@ import type {
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
 } from './mst'
+import type TextSearchManager from '../../TextSearch/TextSearchManager'
+import type assemblyManager from '../../assemblyManager'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+import type RpcManager from '../../rpc/RpcManager'
+import type { MenuItem } from '../../ui'
+import type { Feature } from '../simpleFeature'
+// types
+import type { ThemeOptions } from '@mui/material'
+import type {
+  Instance,
+  SnapshotIn,
+  IAnyStateTreeNode,
+  IStateTreeNode,
+  IType} from 'mobx-state-tree'
 
 export * from './util'
 

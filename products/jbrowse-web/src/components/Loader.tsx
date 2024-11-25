@@ -1,27 +1,28 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
-import { observer } from 'mobx-react'
+import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { observer } from 'mobx-react'
 import {
   StringParam,
   QueryParamProvider,
   useQueryParam,
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
-import PluginManager from '@jbrowse/core/PluginManager'
 import '@fontsource/roboto'
 
 // locals
-import Loading from './Loading'
 import JBrowse from './JBrowse'
+import Loading from './Loading'
+import SessionLoader from '../SessionLoader'
 import factoryReset from '../factoryReset'
-import SessionLoader, {
+import StartScreenErrorMessage from './StartScreenErrorMessage'
+import { createPluginManager } from '../createPluginManager'
+import type {
   SessionLoaderModel,
   SessionTriagedInfo,
 } from '../SessionLoader'
-import StartScreenErrorMessage from './StartScreenErrorMessage'
-import { createPluginManager } from '../createPluginManager'
 import type { WebRootModel } from '../rootModel/rootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))

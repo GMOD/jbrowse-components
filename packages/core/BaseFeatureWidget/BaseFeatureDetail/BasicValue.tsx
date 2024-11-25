@@ -1,7 +1,7 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import isObject from 'is-object'
 import { Link } from '@mui/material'
+import isObject from 'is-object'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { SanitizedHTML } from '../../ui'

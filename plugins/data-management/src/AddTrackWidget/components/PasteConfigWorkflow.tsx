@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import { Button, TextField } from '@mui/material'
 import { ErrorMessage } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { Button, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()({
   textbox: {

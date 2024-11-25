@@ -2,8 +2,8 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 // locals
-import Loading from './Loading'
 import DisplayError from './DisplayError'
+import Loading from './Loading'
 
 const BaseChordDisplay = observer(function ({
   display,

@@ -1,9 +1,10 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { UriLocation } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-import { Instance, addDisposer, types } from 'mobx-state-tree'
-import { BaseRootModel } from './BaseRootModel'
+import { addDisposer, types } from 'mobx-state-tree'
+import type { BaseRootModel } from './BaseRootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance} from 'mobx-state-tree'
 
 /**
  * #stateModel InternetAccountsMixin

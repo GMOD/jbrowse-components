@@ -1,7 +1,7 @@
 import React from 'react'
-import { types } from 'mobx-state-tree'
-import { observer } from 'mobx-react'
 import { MenuItem, Select, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+import { types } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { Dialog } from '@jbrowse/core/ui'
+import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 import {
   Button,
   DialogContent,
@@ -7,11 +8,10 @@ import {
   Alert,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
+import { observer } from 'mobx-react'
 
 // locals
-import { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model'
 
 const EditHighlightColorDialog = observer(function ({
   onClose,

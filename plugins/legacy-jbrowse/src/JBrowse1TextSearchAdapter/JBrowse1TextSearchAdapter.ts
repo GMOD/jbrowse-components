@@ -1,16 +1,18 @@
-import {
-  BaseTextSearchAdapter,
-  BaseTextSearchArgs,
-  BaseAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
-  AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import {
+  BaseAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import HttpMap from './HttpMap'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type {
+  BaseTextSearchAdapter,
+  BaseTextSearchArgs} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export interface TooManyHits {
   name: string

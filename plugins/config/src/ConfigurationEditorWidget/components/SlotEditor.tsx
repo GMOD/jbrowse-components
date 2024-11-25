@@ -1,33 +1,36 @@
 import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
-import { getEnv, FileLocation } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import {
   getSubType,
-  getUnionSubTypes,
-  ILiteralType,
+  getUnionSubTypes
 } from '@jbrowse/core/util/mst-reflection'
-import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 
 // icons
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
+import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+import { getPropertyMembers } from 'mobx-state-tree'
 
 // locals
-import StringArrayEditor from './StringArrayEditor'
-import CallbackEditor from './CallbackEditor'
-import ColorEditor from './ColorEditor'
-import JsonEditor from './JsonEditor'
-import StringArrayMapEditor from './StringArrayMapEditor'
-import ConfigurationTextField from './ConfigurationTextField'
 import NumberMapEditor from './NumberMapEditor'
 import NumberEditor from './NumberEditor'
 import BooleanEditor from './BooleanEditor'
-import {
+import CallbackEditor from './CallbackEditor'
+import ColorEditor from './ColorEditor'
+import ConfigurationTextField from './ConfigurationTextField'
+import JsonEditor from './JsonEditor'
+import StringArrayEditor from './StringArrayEditor'
+import StringArrayMapEditor from './StringArrayMapEditor'
+import { useSlotEditorStyles } from './useSlotEditorStyles'
+import type {
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
 } from '@jbrowse/core/configuration'
-import { useSlotEditorStyles } from './useSlotEditorStyles'
+import type { FileLocation } from '@jbrowse/core/util'
+import type {
+  ILiteralType} from '@jbrowse/core/util/mst-reflection'
+import type { IAnyType } from 'mobx-state-tree'
 
 const StringEditor = observer(function ({
   slot,

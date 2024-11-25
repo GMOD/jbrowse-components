@@ -1,7 +1,7 @@
 import ChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
-import PluginManager from '@jbrowse/core/PluginManager'
-import configSchema from './configSchema'
 import ReactComponent from './ReactComponent'
+import configSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function StructuralVariantChordRendererF(
   pluginManager: PluginManager,

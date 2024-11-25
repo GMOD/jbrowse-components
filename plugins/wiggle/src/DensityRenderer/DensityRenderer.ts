@@ -1,8 +1,9 @@
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawDensity } from '../drawDensity'
-
-import WiggleBaseRenderer, {
+import type {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
+
 
 export default class DensityRenderer extends WiggleBaseRenderer {
   async draw(

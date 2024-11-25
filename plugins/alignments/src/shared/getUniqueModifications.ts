@@ -1,9 +1,9 @@
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { ModificationType } from './types'
+import type { ModificationType } from './types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BlockSet } from '@jbrowse/core/util/blockTypes'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 export async function getUniqueModifications({
   self,

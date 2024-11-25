@@ -1,13 +1,13 @@
-import { LayoutFeature } from './util'
 
 import { getAlignmentShapeColor } from './getAlignmentShapeColor'
 import { renderAlignmentShape } from './renderAlignmentShape'
-import { renderPerBaseQuality } from './renderPerBaseQuality'
-import { renderPerBaseLettering } from './renderPerBaseLettering'
-import { renderModifications } from './renderModifications'
-import { RenderArgsWithColor } from './makeImageData'
 import { renderMethylation } from './renderMethylation'
+import { renderModifications } from './renderModifications'
+import { renderPerBaseLettering } from './renderPerBaseLettering'
+import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { parseCigar } from '../MismatchParser'
+import type { RenderArgsWithColor } from './makeImageData'
+import type { LayoutFeature } from './util'
 
 export function renderAlignment({
   ctx,

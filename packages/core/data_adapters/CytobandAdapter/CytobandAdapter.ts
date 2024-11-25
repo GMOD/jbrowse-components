@@ -2,7 +2,7 @@
 import { fetchAndMaybeUnzip, SimpleFeature } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
-import { BaseOptions } from '../BaseAdapter/BaseOptions'
+import type { BaseOptions } from '../BaseAdapter/BaseOptions'
 
 export default class CytobandAdapter extends BaseAdapter {
   async getData(opts?: BaseOptions) {

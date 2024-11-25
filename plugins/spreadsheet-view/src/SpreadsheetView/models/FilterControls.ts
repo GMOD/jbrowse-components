@@ -1,5 +1,6 @@
-import { types, getParent, SnapshotIn } from 'mobx-state-tree'
+import { types, getParent } from 'mobx-state-tree'
 import { AnyFilterModelType as AnyColumnFilter } from './ColumnDataTypes'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 // filter that finds a simple string in any of the cells of a row
 const RowFullTextFilter = types

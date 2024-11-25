@@ -1,8 +1,9 @@
-import { getSession, Feature, Region } from '@jbrowse/core/util'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { parseBreakend } from '@gmod/vcf'
-import { IStateTreeNode } from 'mobx-state-tree'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { getSession } from '@jbrowse/core/util'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { IStateTreeNode } from 'mobx-state-tree'
 
 export default class BreakpointSplitViewType extends ViewType {
   getBreakendCoveringRegions({

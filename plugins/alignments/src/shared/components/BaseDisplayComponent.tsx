@@ -1,17 +1,18 @@
 import React from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import {
-  BlockMsg,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
+import {
+  BlockMsg
+} from '@jbrowse/plugin-linear-genome-view'
 import { Button, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // local
-import { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
-import { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
+import type { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
+import type { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
+import type {
+  LinearGenomeViewModel} from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
   loading: {

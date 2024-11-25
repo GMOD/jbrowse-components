@@ -1,17 +1,18 @@
-import React from 'react'
+import type React from 'react'
 import {
   assembleLocString,
   doesIntersect2,
   getSession,
   isSessionModelWithWidgets,
-  Feature,
   getContainingTrack,
   getContainingView,
 } from '@jbrowse/core/util'
 
 // locals
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
-import { LinearSyntenyDisplayModel } from '../model'
+import type { LinearSyntenyDisplayModel } from '../model'
+import type {
+  Feature} from '@jbrowse/core/util'
 
 interface Pos {
   offsetPx: number

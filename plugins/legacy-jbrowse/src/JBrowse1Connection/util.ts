@@ -1,5 +1,5 @@
 import getValue from 'get-value'
-import { Track, Source } from './types'
+import type { Track, Source } from './types'
 
 export function isTrack(arg: any): arg is Track {
   return arg?.label && typeof arg.label === 'string'

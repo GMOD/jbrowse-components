@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react'
+import { getSession, getStrokeProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { useTheme } from '@mui/material'
-import { getSession, getStrokeProps } from '@jbrowse/core/util'
 
 // locals
 import {
@@ -16,13 +16,13 @@ import {
   getPxFromCoordinate,
   heightFromSpecificLevel,
 } from '../util'
-import { BreakpointViewModel } from '../model'
 import {
   getLongReadOrientationAbnormal,
   getLongReadOrientationColorOrDefault,
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor'
+import type { BreakpointViewModel } from '../model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 

@@ -1,4 +1,5 @@
-import { parseTsvBuffer, ParseOptions } from './ImportUtils'
+import { parseTsvBuffer } from './ImportUtils'
+import type { ParseOptions } from './ImportUtils'
 import type { Buffer } from 'buffer'
 
 function parseSTARFusionBreakpointString(str: string) {

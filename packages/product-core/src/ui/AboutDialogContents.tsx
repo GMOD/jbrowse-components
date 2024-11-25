@@ -1,21 +1,22 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import clone from 'clone'
-import copy from 'copy-to-clipboard'
-import { Button } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import {
-  getConf,
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import { getSession, getEnv } from '@jbrowse/core/util'
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-
-// locals
+import {
+  getConf,
+  readConfObject
+} from '@jbrowse/core/configuration'
+import { getSession, getEnv } from '@jbrowse/core/util'
+import { Button } from '@mui/material'
+import clone from 'clone'
+import copy from 'copy-to-clipboard'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 import FileInfoPanel from './FileInfoPanel'
 import RefNameInfoDialog from './RefNameInfoDialog'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+
+// locals
 
 const useStyles = makeStyles()({
   content: {

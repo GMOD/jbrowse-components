@@ -1,6 +1,6 @@
 import React from 'react'
 import { getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // stabilize clipid under test for snapshot
 function getId(id: string) {

@@ -1,17 +1,17 @@
 import React from 'react'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import MoreVert from '@mui/icons-material/MoreVert'
+import ZoomIn from '@mui/icons-material/ZoomIn'
+import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
-import ZoomOut from '@mui/icons-material/ZoomOut'
-import ZoomIn from '@mui/icons-material/ZoomIn'
-import MoreVert from '@mui/icons-material/MoreVert'
 import { CursorMouse, CursorMove } from './CursorIcon'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model'
 
 const DotplotControls = observer(function ({
   model,

@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 import React from 'react'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
+import { getVolvoxConfig } from './util'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 // in your code
 // import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-import { getVolvoxConfig } from './util'
 
 // I call this small class a 'locally defined' plugin
 class HighlightRegionPlugin extends Plugin {

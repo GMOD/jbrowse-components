@@ -7,10 +7,10 @@ import {
   Typography,
   alpha,
 } from '@mui/material'
+import copy from 'copy-to-clipboard'
+import { SourceMapConsumer } from 'source-map-js'
 import { makeStyles } from 'tss-react/mui'
 
-import { SourceMapConsumer } from 'source-map-js'
-import copy from 'copy-to-clipboard'
 
 // locals
 import Dialog from './Dialog'

@@ -1,29 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  MenuProps as MUIMenuProps,
-  MenuItem as MUIMenuItem,
-  MenuItemProps,
-  MenuList,
-  Paper,
-  Popover,
-  PopoverProps,
-  SvgIconProps,
-  Grow,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 // icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
+import {
+  Divider,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  MenuItem as MUIMenuItem,
+  MenuList,
+  Paper,
+  Popover,
+  Grow,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // other
 import { findLastIndex } from '../util'
+import type {
+  MenuProps as MUIMenuProps,
+  MenuItemProps,
+  PopoverProps,
+  SvgIconProps} from '@mui/material'
 
 const useStyles = makeStyles()({
   paper: {

@@ -1,10 +1,11 @@
 import eslint from '@eslint/js'
+import importPlugin from 'eslint-plugin-import'
 import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
-import tseslint from 'typescript-eslint'
 import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
@@ -40,10 +41,12 @@ export default tseslint.config(
       },
     },
   },
+
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
+  importPlugin.flatConfigs.recommended,
   eslintPluginReact.configs.flat.recommended,
   {
     plugins: {
@@ -79,6 +82,7 @@ export default tseslint.config(
           markers: ['/'],
         },
       ],
+
       'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
@@ -132,6 +136,34 @@ export default tseslint.config(
       'unicorn/no-array-reduce': 'off',
       'unicorn/expiring-todo-comments': 'off',
 
+      'import/no-unresolved': 'off',
+      'import/order': [
+        'warn',
+        {
+          alphabetize: { order: 'asc' },
+          groups: [
+            'builtin',
+            ['external', 'internal'],
+            ['parent', 'sibling', 'index', 'object'],
+            'type',
+          ],
+          pathGroups: [
+            {
+              group: 'builtin',
+              pattern: 'react',
+              position: 'before',
+            },
+            {
+              group: 'external',
+              pattern: '@mui/icons-material',
+              position: 'after',
+            },
+          ],
+
+          pathGroupsExcludedImportTypes: ['react'],
+        },
+      ],
+
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -147,6 +179,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-empty-function': 'off',

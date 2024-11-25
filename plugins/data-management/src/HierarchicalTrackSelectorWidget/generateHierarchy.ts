@@ -1,13 +1,14 @@
 import {
-  readConfObject,
-  AnyConfigurationModel,
+  readConfObject
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 // locals
 import { matches } from './util'
-import { MenuItem } from '@jbrowse/core/ui'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 function sortConfs(
   confs: AnyConfigurationModel[],

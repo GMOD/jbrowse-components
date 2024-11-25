@@ -1,20 +1,21 @@
 import React, { useState } from 'react'
-import { Button } from '@mui/material'
-import { getStr, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
-import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { SanitizedHTML } from '@jbrowse/core/ui'
+import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { getStr, measureGridWidth } from '@jbrowse/core/util'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import { Button } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { moveUp, moveDown } from './util'
-import { Source } from '../../util'
+import type { Source } from '../../util'
+import type { GridColDef } from '@mui/x-data-grid'
 
 // icons
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 
 const useStyles = makeStyles()({
   cell: {

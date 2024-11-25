@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 
-import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { useDebounce } from '@jbrowse/core/util'
 import ClearIcon from '@mui/icons-material/Clear'
 import FilterIcon from '@mui/icons-material/FilterList'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
 
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { useDebounce } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   textFilterControlEndAdornment: {

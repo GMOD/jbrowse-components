@@ -1,14 +1,15 @@
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature, sum } from '@jbrowse/core/util'
+import { sum } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 // locals
-import { PreBaseCoverageBin, SkipMap } from '../shared/types'
-import { processReferenceCpGs } from './processReferenceCpGs'
-import { processModifications } from './processModifications'
 import { processDepth } from './processDepth'
 import { processMismatches } from './processMismatches'
-import { Opts } from './util'
+import { processModifications } from './processModifications'
+import { processReferenceCpGs } from './processReferenceCpGs'
+import type { Opts } from './util'
+import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { Feature} from '@jbrowse/core/util'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 export async function generateCoverageBins({
   fetchSequence,

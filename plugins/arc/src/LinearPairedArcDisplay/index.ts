@@ -1,9 +1,9 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
 import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
-import { lazy } from 'react'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearPairedArcDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

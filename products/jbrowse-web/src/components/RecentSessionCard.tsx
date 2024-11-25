@@ -1,4 +1,8 @@
 import React, { useState } from 'react'
+
+// icons
+import DeleteIcon from '@mui/icons-material/Delete'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import {
   IconButton,
   ListItem,
@@ -9,10 +13,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 function RecentSessionCard({
   sessionName,

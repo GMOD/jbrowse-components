@@ -1,11 +1,11 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // icons
 import DragIcon from '@mui/icons-material/DragIndicator'
+import { makeStyles } from 'tss-react/mui'
 
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   dragHandle: {

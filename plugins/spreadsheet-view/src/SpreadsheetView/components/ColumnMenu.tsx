@@ -1,16 +1,16 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { iterMap } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { MenuItem } from '@jbrowse/core/ui/Menu'
-import { SpreadsheetModel } from '../models/Spreadsheet'
-import { SpreadsheetViewModel } from '../models/SpreadsheetView'
+import { iterMap } from '@jbrowse/core/util'
 
 // icons
 import CheckIcon from '@mui/icons-material/Check'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import PermDataSettingIcon from '@mui/icons-material/PermDataSetting'
 import SortIcon from '@mui/icons-material/Sort'
+import { observer } from 'mobx-react'
+import type { SpreadsheetModel } from '../models/Spreadsheet'
+import type { SpreadsheetViewModel } from '../models/SpreadsheetView'
+import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const ColumnMenu = observer(function ({
   viewModel,

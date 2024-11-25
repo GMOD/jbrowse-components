@@ -1,22 +1,23 @@
 import {
-  types,
-  cast,
-  Instance,
-  SnapshotIn,
-  IMSTArray,
-  addDisposer,
-} from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { Region } from '@jbrowse/core/util/types'
-import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-import {
   getSession,
   localStorageGetItem,
   localStorageSetItem,
 } from '@jbrowse/core/util'
+import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
+
 import { autorun } from 'mobx'
+import {
+  types,
+  cast,
+  addDisposer,
+} from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Region } from '@jbrowse/core/util/types'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  Instance,
+  SnapshotIn,
+  IMSTArray} from 'mobx-state-tree'
 
 const LabeledRegionModel = types
   .compose(

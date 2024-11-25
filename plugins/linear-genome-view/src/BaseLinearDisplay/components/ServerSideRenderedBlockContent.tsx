@@ -1,14 +1,14 @@
 import React, { lazy } from 'react'
-import { Tooltip, IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'
+import { Tooltip, IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
+import { getParent } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import BlockMsg from './BlockMsg'

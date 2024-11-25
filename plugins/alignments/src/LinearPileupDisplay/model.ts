@@ -1,35 +1,37 @@
 import { lazy } from 'react'
-import { observable } from 'mobx'
-import { types, Instance, isAlive } from 'mobx-state-tree'
 import {
-  AnyConfigurationSchemaType,
   ConfigurationReference,
   readConfObject,
   getConf,
 } from '@jbrowse/core/configuration'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 // icons
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import SwapVertIcon from '@mui/icons-material/SwapVert'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
+import { observable } from 'mobx'
+import { types, isAlive } from 'mobx-state-tree'
 
 // locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
 import {
   createAutorun,
   getColorForModification,
   modificationData,
 } from '../util'
-import { getUniqueModifications } from '../shared/getUniqueModifications'
-import {
+import type {
   ModificationType,
   ModificationTypeWithColor,
   SortedBy,
 } from '../shared/types'
+import type {
+  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Instance} from 'mobx-state-tree'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))

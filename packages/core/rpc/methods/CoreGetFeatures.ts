@@ -1,13 +1,15 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 // locals
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { RenderArgs } from './util'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { renameRegionsIfNeeded, Region } from '../../util'
-import SimpleFeature, {
+import { renameRegionsIfNeeded } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
+import type { RenderArgs } from './util'
+import type { Region } from '../../util'
+import type {
   SimpleFeatureSerialized,
 } from '../../util/simpleFeature'
 

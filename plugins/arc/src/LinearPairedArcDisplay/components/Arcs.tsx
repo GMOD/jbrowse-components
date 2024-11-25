@@ -1,19 +1,20 @@
 import React, { lazy, Suspense, useRef, useState } from 'react'
-import { observer } from 'mobx-react'
+import { getConf } from '@jbrowse/core/configuration'
 import {
-  AbstractSessionModel,
-  Feature,
   getContainingView,
   getSession,
   getStrokeProps,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import { getConf } from '@jbrowse/core/configuration'
+import { observer } from 'mobx-react'
 
 // local
-import { LinearArcDisplayModel } from '../model'
 import { makeFeaturePair, makeSummary } from './util'
+import type { LinearArcDisplayModel } from '../model'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type {
+  AbstractSessionModel,
+  Feature} from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ArcTooltip = lazy(() => import('../../ArcTooltip'))
 

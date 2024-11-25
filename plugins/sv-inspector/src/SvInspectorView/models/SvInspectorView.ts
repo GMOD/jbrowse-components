@@ -1,18 +1,15 @@
-import clone from 'clone'
-import { autorun, reaction } from 'mobx'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSession, Region } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
-import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
+import { getSession } from '@jbrowse/core/util'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
 // icons
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import clone from 'clone'
+import { autorun, reaction } from 'mobx'
+import { types, addDisposer } from 'mobx-state-tree'
 
 // locals
 import {
@@ -20,6 +17,11 @@ import {
   openBreakpointSplitViewFromTableRow,
   getFeatureForRow,
 } from './breakpointSplitViewFromTableRow'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Region } from '@jbrowse/core/util'
+import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
+import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel SvInspectorView

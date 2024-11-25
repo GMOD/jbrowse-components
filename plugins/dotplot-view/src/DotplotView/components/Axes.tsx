@@ -1,7 +1,4 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import {
   getFillProps,
   getStrokeProps,
@@ -9,10 +6,13 @@ import {
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { getBlockLabelKeysToHide } from './util'
-import { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
   vtext: {

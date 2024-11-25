@@ -1,11 +1,11 @@
 import React from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({

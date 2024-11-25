@@ -1,12 +1,13 @@
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation } from '@jbrowse/core/util/types'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import { getFileName } from '@jbrowse/core/util/tracks'
 import {
   AdapterClass as SPARQLAdapterClass,
   configSchema as sparqlAdapterConfigSchema,
 } from './SPARQLAdapter'
-import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AdapterGuesser} from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class RdfPlugin extends Plugin {
   name = 'RdfPlugin'

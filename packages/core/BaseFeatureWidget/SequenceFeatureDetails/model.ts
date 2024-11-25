@@ -1,12 +1,14 @@
-import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
+import { types, addDisposer } from 'mobx-state-tree'
 
 // locals
 import {
-  SimpleFeatureSerialized,
   localStorageGetItem,
   localStorageSetItem,
 } from '../../util'
+import type {
+  SimpleFeatureSerialized} from '../../util'
+import type { Instance } from 'mobx-state-tree'
 
 function localStorageGetNumber(key: string, defaultVal: number) {
   return +(localStorageGetItem(key) ?? defaultVal)

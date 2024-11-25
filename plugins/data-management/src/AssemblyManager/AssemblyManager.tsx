@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { Button, DialogActions, DialogContent } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
+import { Button, DialogActions, DialogContent } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // locals
-import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
+import AssemblyTable from './AssemblyTable'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const AssemblyManager = observer(function ({
   rootModel,

@@ -1,12 +1,12 @@
 import React from 'react'
-import userEvent from '@testing-library/user-event'
-import { render } from '@testing-library/react'
+import { ThemeProvider } from '@emotion/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 // locals
 import AddConnectionWidget2 from './AddConnectionWidget'
-import { ThemeProvider } from '@emotion/react'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

@@ -1,10 +1,11 @@
 import React from 'react'
 import {
-  AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
-import { Feature } from '@jbrowse/core/util'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 export default function ScoreText({
   feature,

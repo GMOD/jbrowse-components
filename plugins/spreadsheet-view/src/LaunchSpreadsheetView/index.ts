@@ -1,6 +1,6 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import { SpreadsheetViewModel } from '../SpreadsheetView'
+import type { SpreadsheetViewModel } from '../SpreadsheetView'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(

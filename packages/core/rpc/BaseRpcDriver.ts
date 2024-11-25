@@ -1,7 +1,8 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+import { readConfObject } from '../configuration'
 import { clamp } from '../util'
-import PluginManager from '../PluginManager'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string

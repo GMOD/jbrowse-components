@@ -1,6 +1,4 @@
 import React from 'react'
-import clone from 'clone'
-import { getParent, isAlive, types } from 'mobx-state-tree'
 
 // jbrowse
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
@@ -11,8 +9,6 @@ import {
   getEnv,
   isFeature,
   makeAbortableReaction,
-  AnyReactComponentType,
-  Feature,
   ReactRendering,
 } from '@jbrowse/core/util'
 import {
@@ -22,13 +18,18 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 // locals
+import clone from 'clone'
+import { getParent, isAlive, types } from 'mobx-state-tree'
+import { baseChordDisplayConfig } from './configSchema'
 import { renderReactionData, renderReactionEffect } from './renderReaction'
-import {
+import type {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/models/model'
-import { ThemeOptions } from '@mui/material'
-import { baseChordDisplayConfig } from './configSchema'
+import type {
+  AnyReactComponentType,
+  Feature} from '@jbrowse/core/util'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel BaseChordDisplay

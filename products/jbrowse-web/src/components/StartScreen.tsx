@@ -1,4 +1,10 @@
 import React, { lazy, useEffect, useState } from 'react'
+import { LogoFull, ErrorMessage } from '@jbrowse/core/ui'
+import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
+
+// icons
+import SettingsIcon from '@mui/icons-material/Settings'
+import WarningIcon from '@mui/icons-material/Warning'
 import {
   Container,
   Grid,
@@ -11,12 +17,6 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { LogoFull, ErrorMessage } from '@jbrowse/core/ui'
-import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
-
-// icons
-import WarningIcon from '@mui/icons-material/Warning'
-import SettingsIcon from '@mui/icons-material/Settings'
 
 // locals
 import {

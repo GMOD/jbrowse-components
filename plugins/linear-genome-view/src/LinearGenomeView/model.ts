@@ -1,29 +1,11 @@
-import React, { lazy } from 'react'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type React from 'react'
+import { lazy } from 'react'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { Region } from '@jbrowse/core/util/types'
-import { ElementId } from '@jbrowse/core/util/types/mst'
-import { Region as IRegion } from '@jbrowse/core/util/types'
-import { MenuItem } from '@jbrowse/core/ui'
-import {
-  assembleLocString,
-  clamp,
-  findLast,
-  getSession,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
-  localStorageGetItem,
-  localStorageSetItem,
-  measureText,
-  springAnimate,
-  sum,
-  ParsedLocString,
-} from '@jbrowse/core/util'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { saveAs } from 'file-saver'
 import { when, transaction, autorun } from 'mobx'
 import {
   addDisposer,
@@ -38,26 +20,39 @@ import {
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { moveTo, pxToBp, bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { saveAs } from 'file-saver'
 import clone from 'clone'
-import PluginManager from '@jbrowse/core/PluginManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import SyncAltIcon from '@mui/icons-material/SyncAlt'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import LabelIcon from '@mui/icons-material/Label'
+import {
+  assembleLocString,
+  clamp,
+  findLast,
+  getSession,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+  localStorageGetItem,
+  localStorageSetItem,
+  measureText,
+  springAnimate,
+  sum
+} from '@jbrowse/core/util'
+import type { Region as IRegion } from '@jbrowse/core/util/types'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import LabelIcon from '@mui/icons-material/Label'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SearchIcon from '@mui/icons-material/Search'
+import SyncAltIcon from '@mui/icons-material/SyncAlt'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
-import MiniControls from './components/MiniControls'
 import Header from './components/Header'
+import MiniControls from './components/MiniControls'
 import { generateLocations, parseLocStrings } from './util'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { handleSelectedRegion } from '../searchUtils'
 import {
   HEADER_BAR_HEIGHT,
@@ -66,6 +61,14 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type {
+  ParsedLocString} from '@jbrowse/core/util';
+import type { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { Region } from '@jbrowse/core/util/types'
 
 // lazies
 const ReturnToImportFormDialog = lazy(

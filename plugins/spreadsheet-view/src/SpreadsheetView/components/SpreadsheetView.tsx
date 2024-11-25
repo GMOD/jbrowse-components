@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import { Grid } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { Grid } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
+import ColumnFilterControls from './ColumnFilterControls'
+import GlobalFilterControls from './GlobalFilterControls'
 import ImportWizard from './ImportWizard'
 import Spreadsheet from './Spreadsheet'
-import GlobalFilterControls from './GlobalFilterControls'
-import ColumnFilterControls from './ColumnFilterControls'
-import { SpreadsheetViewModel } from '../models/SpreadsheetView'
 import StatusBar from './StatusBar'
+import type { SpreadsheetViewModel } from '../models/SpreadsheetView'
 
 const headerHeight = 52
 const colFilterHeight = 46

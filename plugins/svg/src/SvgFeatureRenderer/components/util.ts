@@ -1,16 +1,17 @@
-import React from 'react'
+import type React from 'react'
 import {
-  readConfObject,
-  AnyConfigurationModel,
+  readConfObject
 } from '@jbrowse/core/configuration'
-import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
-import { Feature, Region } from '@jbrowse/core/util'
 
 // locals
 import Box from './Box'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 
 export interface Glyph
   extends React.FC<{

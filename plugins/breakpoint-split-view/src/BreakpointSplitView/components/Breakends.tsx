@@ -6,7 +6,7 @@ import { getSnapshot } from 'mobx-state-tree'
 // locals
 import { findMatchingAlt, getMatchedBreakendFeatures } from './util'
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
-import { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model'
 
 const [LEFT] = [0, 1, 2, 3] as const
 

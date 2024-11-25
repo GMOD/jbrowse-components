@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
 import {
   Alert,
   Button,
@@ -11,16 +11,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'
+import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 
-import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import { makeStyles } from 'tss-react/mui'
+
 
 // locals
 import { shareSessionToDynamo } from '../../sessionSharing'
-import { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model'
 
 const useStyles = makeStyles()(() => ({
   flexItem: {

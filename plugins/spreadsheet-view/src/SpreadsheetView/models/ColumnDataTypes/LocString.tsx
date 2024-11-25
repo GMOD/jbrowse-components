@@ -1,35 +1,35 @@
 import React from 'react'
 import {
-  IconButton,
-  TextField,
-  MenuItem,
-  InputAdornment,
-  Select,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { types, getParent, getPropertyMembers } from 'mobx-state-tree'
-
-// jbrowse imports
-import {
-  getPropertyType,
-  getEnumerationValues,
-  getSubType,
-} from '@jbrowse/core/util/mst-reflection'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import {
   doesIntersect2,
   isContainedWithin,
   compareLocs,
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
+import {
+  getPropertyType,
+  getEnumerationValues,
+  getSubType,
+} from '@jbrowse/core/util/mst-reflection'
+import ClearIcon from '@mui/icons-material/Clear'
+import {
+  IconButton,
+  TextField,
+  MenuItem,
+  InputAdornment,
+  Select,
+} from '@mui/material'
+import { observer } from 'mobx-react'
+import { types, getParent, getPropertyMembers } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
+
+// jbrowse imports
 
 // icons
-import ClearIcon from '@mui/icons-material/Clear'
 
 // locals
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

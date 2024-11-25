@@ -3,7 +3,7 @@ import { Typography, Link } from '@mui/material'
 // locals
 import { getLengthOnRef } from '../MismatchParser'
 import { navToLoc } from './util'
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 export default function SupplementaryAlignmentsLocStrings({
   tag,

@@ -1,11 +1,11 @@
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
-import { LocalFile } from 'generic-filehandle'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { LocalFile } from 'generic-filehandle'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 import Adapter from './CramAdapter'
 import { SequenceAdapter } from './CramTestAdapters'
 import configSchema from './configSchema'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()
 

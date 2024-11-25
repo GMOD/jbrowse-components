@@ -1,12 +1,13 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { UriLocation } from '@jbrowse/core/util/types'
-import { Instance, types, getRoot } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 
 // locals
-import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
 import { getResponseError } from '../util'
+import type { HTTPBasicInternetAccountConfigModel } from './configSchema'
+import type { UriLocation } from '@jbrowse/core/util/types'
+import type { Instance} from 'mobx-state-tree'
 
 /**
  * #stateModel HTTPBasicInternetAccount

@@ -1,16 +1,18 @@
 import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
+  BaseFeatureDataAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { toArray } from 'rxjs/operators'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 // locals
 import { fetchSequence } from '../util'
 import { generateCoverageBins } from './generateCoverageBins'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {

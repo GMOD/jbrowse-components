@@ -1,13 +1,13 @@
 import React, { Suspense } from 'react'
-import { AppBar, IconButton, Paper, Toolbar, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
-import { SessionWithWidgets } from '@jbrowse/core/util'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
+import { AppBar, IconButton, Paper, Toolbar, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

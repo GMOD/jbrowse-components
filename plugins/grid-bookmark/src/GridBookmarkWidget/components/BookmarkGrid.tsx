@@ -1,19 +1,19 @@
 import React, { lazy } from 'react'
-import { observer } from 'mobx-react'
-import { Link } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
+import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
   getSession,
   assembleLocString,
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
-import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import { Link } from '@mui/material'
+import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { navToBookmark } from '../utils'
-import { GridBookmarkModel } from '../model'
+import type { GridBookmarkModel } from '../model'
 
 const EditBookmarkLabelDialog = lazy(
   () => import('./dialogs/EditBookmarkLabelDialog'),

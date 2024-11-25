@@ -1,13 +1,13 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // jbrowse core
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import TrackLabel from './TrackLabel'
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // locals
-import { LinearGenomeViewModel } from '..'
-import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles()({
   trackLabel: {

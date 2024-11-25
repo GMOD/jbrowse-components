@@ -1,10 +1,10 @@
 import { lazy } from 'react'
 import { configSchema, stateModelFactory } from './BaseFeatureWidget'
 import Plugin from './Plugin'
-import PluginManager from './PluginManager'
-import * as coreRpcMethods from './rpc/coreRpcMethods'
-import WidgetType from './pluggableElementTypes/WidgetType'
 import CytobandAdapterF from './data_adapters/CytobandAdapter'
+import WidgetType from './pluggableElementTypes/WidgetType'
+import * as coreRpcMethods from './rpc/coreRpcMethods'
+import type PluginManager from './PluginManager'
 
 // the core plugin, which registers types that ALL JBrowse applications are
 // expected to need.

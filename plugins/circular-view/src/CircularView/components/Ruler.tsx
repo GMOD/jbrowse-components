@@ -1,5 +1,4 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import {
   getSession,
   polarToCartesian,
@@ -10,15 +9,16 @@ import {
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import {
+import type { CircularViewModel } from '../models/model'
+import type {
   Slice,
   SliceElidedRegion,
   SliceNonElidedRegion,
 } from '../models/slices'
-import { CircularViewModel } from '../models/model'
 
 const useStyles = makeStyles()({
   rulerLabel: {

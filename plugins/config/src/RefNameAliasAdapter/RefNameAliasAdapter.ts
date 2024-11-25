@@ -1,8 +1,9 @@
 import {
-  BaseRefNameAliasAdapter,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
+import type {
+  BaseRefNameAliasAdapter} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter

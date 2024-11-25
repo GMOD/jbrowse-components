@@ -1,20 +1,21 @@
 import React, { useRef } from 'react'
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Dialog,
   DialogTitle,
   IconButton,
   Divider,
-  DialogProps,
   Paper,
-  ScopedCssBaseline,
-  PaperProps,
+  ScopedCssBaseline
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 import Draggable from 'react-draggable'
+import { makeStyles } from 'tss-react/mui'
+import type {
+  DialogProps,
+  PaperProps} from '@mui/material'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {

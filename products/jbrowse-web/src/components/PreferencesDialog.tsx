@@ -1,14 +1,15 @@
 import React from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
   DialogContent,
   MenuItem,
-  TextField,
-  ThemeOptions,
+  TextField
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { Dialog } from '@jbrowse/core/ui'
+import type {
+  ThemeOptions} from '@mui/material'
 
 const useStyles = makeStyles()(() => ({
   container: {

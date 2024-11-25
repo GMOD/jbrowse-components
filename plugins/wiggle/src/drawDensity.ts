@@ -1,11 +1,14 @@
 import {
-  AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+import { featureSpanPx } from '@jbrowse/core/util'
 
 // locals
-import { fillRectCtx, getScale, ScaleOpts } from './util'
+import { fillRectCtx, getScale } from './util'
+import type { ScaleOpts } from './util'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.3
 const clipHeight = 2

@@ -1,12 +1,12 @@
 import React, { Suspense, useState } from 'react'
-import { observer } from 'mobx-react'
-import { FormControl, FormHelperText, Select, MenuItem } from '@mui/material'
 import { getEnv } from '@jbrowse/core/util'
+import { FormControl, FormHelperText, Select, MenuItem } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // locals
-import { AddTrackModel } from '../model'
 import DefaultAddTrackWorkflow from './DefaultAddTrackWorkflow'
 import PasteConfigWorkflow from './PasteConfigWorkflow'
+import type { AddTrackModel } from '../model'
 
 const AddTrackSelector = observer(function ({
   model,

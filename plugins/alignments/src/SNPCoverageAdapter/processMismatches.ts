@@ -1,9 +1,9 @@
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util'
+import { inc, isInterbase, mismatchLen } from './util'
+import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 // locals
-import { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
-import { inc, isInterbase, mismatchLen } from './util'
 
 export function processMismatches({
   feature,

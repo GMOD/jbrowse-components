@@ -1,11 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util'
-import WiggleBaseRenderer, {
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
+
+import { drawLine } from '../drawLine'
+import { YSCALEBAR_LABEL_OFFSET } from '../util'
+import type {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
-
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
-import { drawLine } from '../drawLine'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class LinePlotRenderer extends WiggleBaseRenderer {
   async draw(

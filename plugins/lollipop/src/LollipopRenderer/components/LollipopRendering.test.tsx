@@ -3,8 +3,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
 // locals
-import ConfigSchema from '../configSchema'
 import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
+import ConfigSchema from '../configSchema'
 import Rendering from './LollipopRendering'
 
 // these tests do very little, let's try to expand them at some point

@@ -1,14 +1,14 @@
 import React from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   DialogContent,
   DialogContentText,
   DialogActions,
   Button,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
   deleteDialogDetails,

@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearGCContentTrackDisplay

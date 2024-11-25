@@ -1,8 +1,8 @@
-import { Feature } from '@jbrowse/core/util'
-import VCF from '@gmod/vcf'
+import { getSOTermAndDescription } from './util'
+import type VCF from '@gmod/vcf'
+import type { Feature } from '@jbrowse/core/util'
 
 // locals
-import { getSOTermAndDescription } from './util'
 
 type Samples = Record<
   string,

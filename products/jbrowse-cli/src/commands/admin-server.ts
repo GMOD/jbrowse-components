@@ -1,12 +1,12 @@
-import { Flags } from '@oclif/core'
-import path from 'path'
-import fs from 'fs'
 import crypto from 'crypto'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import { Flags } from '@oclif/core'
 import boxen from 'boxen'
 import chalk from 'chalk'
-import os from 'os'
-import express from 'express'
 import cors from 'cors'
+import express from 'express'
 import JBrowseCommand from '../base'
 
 function isValidPort(port: number) {

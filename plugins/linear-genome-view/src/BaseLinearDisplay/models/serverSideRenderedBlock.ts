@@ -1,5 +1,4 @@
-import React from 'react'
-import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
+import type React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
@@ -7,23 +6,26 @@ import {
   getContainingDisplay,
   getContainingView,
   getViewParams,
-  makeAbortableReaction,
-  Feature,
+  makeAbortableReaction
 } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
-import {
-  AbstractDisplayModel,
-  isRetryException,
-} from '@jbrowse/core/util/types'
-
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getTrackAssemblyNames,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
+import {
+  isRetryException } from '@jbrowse/core/util/types'
+
 
 // locals
+import { types, getParent, isAlive, cast } from 'mobx-state-tree'
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import type {
+  Feature} from '@jbrowse/core/util'
+import type {
+  AbstractDisplayModel,
+ Region } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 export interface RenderedProps {
   reactElement: React.ReactElement

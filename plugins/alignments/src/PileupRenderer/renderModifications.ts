@@ -1,11 +1,12 @@
-import type { Region } from '@jbrowse/core/util'
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
 // locals
-import { fillRect, LayoutFeature } from './util'
-import { RenderArgsWithColor } from './makeImageData'
-import { alphaColor } from '../shared/util'
+import { fillRect } from './util'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { alphaColor } from '../shared/util'
+import type { RenderArgsWithColor } from './makeImageData'
+import type { LayoutFeature } from './util'
+import type { Region } from '@jbrowse/core/util'
 
 // render modifications stored in MM tag in BAM
 export function renderModifications({

@@ -1,23 +1,26 @@
-import React from 'react'
+import type React from 'react'
 import {
-  AnyConfigurationSchemaType,
   ConfigurationReference,
   getConf,
 } from '@jbrowse/core/configuration'
-import { Instance, types } from 'mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
-  Feature,
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
   getContainingTrack,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { types } from 'mobx-state-tree'
+import type {
+  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type {
+  Feature} from '@jbrowse/core/util'
+import type { Instance} from 'mobx-state-tree'
 
 /**
  * #stateModel LinearPairedArcDisplay

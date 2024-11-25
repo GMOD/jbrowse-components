@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
-import { Autocomplete, TextFieldProps as TFP } from '@mui/material'
+import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
+import { Autocomplete } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // locals
-import { LinearGenomeViewModel } from '../../model'
-import { getDeduplicatedResult, getFiltered, Option } from './util'
 import AutocompleteTextField from './AutocompleteTextField'
+import { getDeduplicatedResult, getFiltered } from './util'
+import type { Option } from './util'
+import type { LinearGenomeViewModel } from '../../model'
+import type { TextFieldProps as TFP } from '@mui/material'
 
 const RefNameAutocomplete = observer(function ({
   model,

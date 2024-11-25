@@ -1,8 +1,9 @@
 import React from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
-import SessionCard from './SessionCard'
-import { loadPluginManager, RecentSessionData } from './util'
 import { Grid } from '@mui/material'
+import SessionCard from './SessionCard'
+import { loadPluginManager } from './util'
+import type { RecentSessionData } from './util'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function RecentSessionsCards({
   sessions,

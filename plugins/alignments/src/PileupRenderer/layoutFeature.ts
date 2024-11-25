@@ -1,6 +1,7 @@
-import { bpSpanPx, Feature, Region } from '@jbrowse/core/util'
-import { BaseLayout } from '@jbrowse/core/util/layouts'
-import { Mismatch } from '../shared/types'
+import { bpSpanPx } from '@jbrowse/core/util'
+import type { Mismatch } from '../shared/types'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
 // locals
 
 export interface LayoutRecord {

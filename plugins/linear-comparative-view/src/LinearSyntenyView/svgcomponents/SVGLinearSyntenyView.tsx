@@ -1,7 +1,5 @@
 import React from 'react'
-import { ThemeProvider } from '@mui/material'
-import { getRoot } from 'mobx-state-tree'
-import { when } from 'mobx'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   getSession,
   getSerializedSvg,
@@ -13,14 +11,16 @@ import {
   sum,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
+import { ThemeProvider } from '@mui/material'
+import { when } from 'mobx'
+import { getRoot } from 'mobx-state-tree'
 
 // locals
 import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
-import { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
+import type { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
 
 // render LGV to SVG
 export async function renderToSvg(

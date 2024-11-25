@@ -1,6 +1,6 @@
-import { types } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { types } from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types

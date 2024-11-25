@@ -3,8 +3,8 @@
 import 'electron'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
-import corePlugins from '../corePlugins'
 import rootModelFactory from '.'
+import corePlugins from '../corePlugins'
 import sessionModelFactory from '../sessionModel'
 
 jest.mock('../makeWorkerInstance', () => () => {})

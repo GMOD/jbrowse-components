@@ -1,5 +1,5 @@
-import { CramRecord } from '@gmod/cram'
-import { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types'
+import type { CramRecord } from '@gmod/cram'
 
 type ReadFeatures = CramRecord['readFeatures']
 

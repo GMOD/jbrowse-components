@@ -1,12 +1,13 @@
 import VCF from '@gmod/vcf'
 import { VcfFeature } from '@jbrowse/plugin-variants'
 import {
-  bufferToString,
+  bufferToString
+} from './ImportUtils'
+import type {
   Row,
   RowSet,
   Column,
-  ParseOptions,
-} from './ImportUtils'
+  ParseOptions} from './ImportUtils'
 import type { Buffer } from 'buffer'
 
 const vcfCoreColumns: { name: string; type: string }[] = [

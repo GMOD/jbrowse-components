@@ -1,4 +1,8 @@
 import React from 'react'
+import { getEnv } from '@jbrowse/core/util'
+
+// icons
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   FormControl,
   IconButton,
@@ -6,13 +10,9 @@ import {
   Select,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getEnv } from '@jbrowse/core/util'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
-
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
+import { makeStyles } from 'tss-react/mui'
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {

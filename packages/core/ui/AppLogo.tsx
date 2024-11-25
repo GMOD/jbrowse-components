@@ -2,10 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 // locals
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import { readConfObject } from '../configuration'
 
 // ui elements
 import { LogoFull } from './Logo'
+import type { AnyConfigurationModel } from '../configuration'
 
 const Logo = observer(function ({
   session,

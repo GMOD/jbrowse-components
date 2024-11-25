@@ -1,14 +1,16 @@
 import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
+
+import { getConf } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import {
   generateTracks,
   fetchGenomesFile,
   fetchTrackDbFile,
 } from './ucscTrackHub'
-
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-import { FileLocation, getSession } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
-import { nanoid } from '@jbrowse/core/util/nanoid'
+import type { AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { FileLocation} from '@jbrowse/core/util'
 
 function resolve(uri: string, baseUri: string) {
   return new URL(uri, baseUri).href

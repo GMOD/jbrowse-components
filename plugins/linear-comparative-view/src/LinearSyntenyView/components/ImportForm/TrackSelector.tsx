@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { Select, MenuItem, Paper, Typography } from '@mui/material'
-import { getSession } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
-import { ErrorMessage } from '@jbrowse/core/ui'
 import {
-  AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { Select, MenuItem, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // locals
-import { LinearSyntenyViewModel } from '../../model'
+import type { LinearSyntenyViewModel } from '../../model'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(function ({
   model,

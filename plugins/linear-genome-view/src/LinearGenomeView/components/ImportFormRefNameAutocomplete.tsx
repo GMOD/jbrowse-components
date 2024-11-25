@@ -1,12 +1,12 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { observer } from 'mobx-react'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 type LGV = LinearGenomeViewModel
 

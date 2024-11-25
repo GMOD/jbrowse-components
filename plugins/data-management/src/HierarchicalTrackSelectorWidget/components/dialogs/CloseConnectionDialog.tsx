@@ -1,4 +1,5 @@
 import React from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   DialogContent,
   DialogContentText,
@@ -7,7 +8,6 @@ import {
   ListItem,
   DialogActions,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 const CloseConnectionDialog = observer(function CloseConnectionDialog({

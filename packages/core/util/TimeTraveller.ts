@@ -5,10 +5,11 @@ import {
   getEnv,
   onSnapshot,
   getSnapshot,
-  applySnapshot,
-  IDisposer,
-  IAnyStateTreeNode,
+  applySnapshot
 } from 'mobx-state-tree'
+import type {
+  IDisposer,
+  IAnyStateTreeNode} from 'mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 

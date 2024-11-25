@@ -1,8 +1,8 @@
-import { SnapshotIn } from 'mobx-state-tree'
-import PluginManager from '../PluginManager'
-import { AnyConfigurationSchemaType } from '../configuration'
-import { AnyDataAdapter } from './BaseAdapter'
 import idMaker from '../util/idMaker'
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationSchemaType } from '../configuration'
+import type { AnyDataAdapter } from './BaseAdapter'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 

@@ -1,5 +1,5 @@
-import { getFillProps } from '@jbrowse/core/util'
 import React from 'react'
+import { getFillProps } from '@jbrowse/core/util'
 
 const RectBg = (props: {
   x: number

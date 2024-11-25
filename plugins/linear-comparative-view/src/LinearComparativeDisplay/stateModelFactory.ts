@@ -1,20 +1,23 @@
 import {
   readConfObject,
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
+  ConfigurationReference
 } from '@jbrowse/core/configuration'
-import { types, getSnapshot, Instance, getParent } from 'mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   dedupe,
-  Feature,
   getContainingView,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { types, getSnapshot, getParent } from 'mobx-state-tree'
+import type { LinearComparativeViewModel } from '../LinearComparativeView/model'
+import type {
+  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
+import type {
+  Feature} from '@jbrowse/core/util'
+import type { Instance} from 'mobx-state-tree'
 
 /**
  * #stateModel LinearComparativeDisplay

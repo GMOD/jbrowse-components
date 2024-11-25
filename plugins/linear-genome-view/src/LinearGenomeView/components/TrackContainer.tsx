@@ -1,18 +1,18 @@
 import React, { useRef } from 'react'
+import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { makeStyles } from 'tss-react/mui'
 
 // jbrowse core
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 
 // locals
-import { LinearGenomeViewModel } from '..'
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   root: {

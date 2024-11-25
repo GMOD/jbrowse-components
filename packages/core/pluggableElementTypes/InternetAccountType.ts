@@ -1,6 +1,6 @@
-import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration/types'
+import type { AnyConfigurationSchemaType } from '../configuration/types'
+import type { IAnyModelType } from 'mobx-state-tree'
 
 export default class InternetAccountType extends PluggableElementBase {
   stateModel: IAnyModelType

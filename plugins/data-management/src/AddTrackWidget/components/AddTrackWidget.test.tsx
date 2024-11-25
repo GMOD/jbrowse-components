@@ -1,6 +1,6 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { render, fireEvent } from '@testing-library/react'
 import AddTrackWidget from './AddTrackWidget'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

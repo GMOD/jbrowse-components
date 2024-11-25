@@ -1,5 +1,4 @@
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
-import { intersection2 } from './range'
 import { assembleLocStringFast } from '.'
 import {
   BlockSet,
@@ -7,7 +6,8 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
-import { Base1DViewModel } from './calculateStaticBlocks'
+import { intersection2 } from './range'
+import type { Base1DViewModel } from './calculateStaticBlocks'
 
 /**
  * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic

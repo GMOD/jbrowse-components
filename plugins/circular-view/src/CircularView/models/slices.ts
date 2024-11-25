@@ -1,5 +1,6 @@
-import { polarToCartesian, assembleLocString, Region } from '@jbrowse/core/util'
+import { polarToCartesian, assembleLocString } from '@jbrowse/core/util'
 import { thetaRangesOverlap } from './viewportVisibleRegion'
+import type { Region } from '@jbrowse/core/util'
 
 export interface SliceElidedRegion {
   elided: true

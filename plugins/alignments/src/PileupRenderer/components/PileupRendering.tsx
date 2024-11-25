@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Region } from '@jbrowse/core/util/types'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 const PileupRendering = observer(function (props: {

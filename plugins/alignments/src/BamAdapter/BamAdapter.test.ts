@@ -1,5 +1,5 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter'
 import configSchema from './configSchema'
 

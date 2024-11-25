@@ -1,4 +1,12 @@
 import React, { useState } from 'react'
+import { getConf } from '@jbrowse/core/configuration'
+import {
+  getSession,
+  isElectron,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+  isSupportedIndexingAdapter,
+} from '@jbrowse/core/util'
 import {
   Alert,
   Button,
@@ -8,23 +16,15 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getRoot } from 'mobx-state-tree'
-
-import {
-  getSession,
-  isElectron,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
-  isSupportedIndexingAdapter,
-} from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
+
 
 // locals
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
-import { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   root: {

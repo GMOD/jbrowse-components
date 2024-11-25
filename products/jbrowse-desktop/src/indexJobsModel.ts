@@ -1,19 +1,20 @@
-import {
-  addDisposer,
-  getParent,
-  types,
-  Instance,
-  getSnapshot,
-} from 'mobx-state-tree'
-import { autorun, observable, toJS } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
+import fs from 'fs'
+import path from 'path'
+import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
-import { isSessionModelWithWidgets } from '@jbrowse/core/util'
-import path from 'path'
-import fs from 'fs'
+import { autorun, observable, toJS } from 'mobx'
+import {
+  addDisposer,
+  getParent,
+  types,
+  getSnapshot,
+} from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  Instance} from 'mobx-state-tree'
 
 const { ipcRenderer } = window.require('electron')
 

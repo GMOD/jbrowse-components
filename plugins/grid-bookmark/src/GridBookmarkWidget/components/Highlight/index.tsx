@@ -1,11 +1,11 @@
 import React from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 // locals
 import Highlight from './Highlight'
 import OverviewHighlight from './OverviewHighlight'
-import { IExtendedLGV } from '../../model'
+import type { IExtendedLGV } from '../../model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 export default function AddHighlightModelF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(

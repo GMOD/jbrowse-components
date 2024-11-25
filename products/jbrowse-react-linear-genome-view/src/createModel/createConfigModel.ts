@@ -2,14 +2,15 @@ import {
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
-import { getParent, IAnyType, types } from 'mobx-state-tree'
+import { getParent, types } from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IAnyType} from 'mobx-state-tree'
 
 /**
  * #config JBrowseReactLinearGenomeViewConfig

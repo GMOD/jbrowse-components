@@ -1,16 +1,17 @@
 import React from 'react'
+import { measureGridWidth } from '@jbrowse/core/util'
+import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Link, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { DataGrid } from '@mui/x-data-grid'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { formatDistance } from 'date-fns'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import EditIcon from '@mui/icons-material/Edit'
 
 // locals
-import { loadPluginManager, RecentSessionData } from './util'
-import { measureGridWidth } from '@jbrowse/core/util'
+import { loadPluginManager } from './util'
+import type { RecentSessionData } from './util'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
   cell: {

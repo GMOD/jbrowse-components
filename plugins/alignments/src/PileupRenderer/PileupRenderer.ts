@@ -1,25 +1,28 @@
-import BoxRendererType, {
-  RenderArgsDeserialized as BoxRenderArgsDeserialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import {
-  Feature,
-  Region,
   notEmpty,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
-  PileupLayoutSession,
-  PileupLayoutSessionProps,
+  PileupLayoutSession
 } from './PileupLayoutSession'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
 import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
-import { ColorBy, ModificationTypeWithColor, SortedBy } from '../shared/types'
+import type {
+  PileupLayoutSessionProps} from './PileupLayoutSession'
+import type { ColorBy, ModificationTypeWithColor, SortedBy } from '../shared/types'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  RenderArgsDeserialized as BoxRenderArgsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import type {
+  Feature,
+  Region} from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: ColorBy

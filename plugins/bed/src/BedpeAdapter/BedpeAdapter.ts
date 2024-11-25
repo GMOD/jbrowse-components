@@ -1,16 +1,18 @@
+import IntervalTree from '@flatten-js/interval-tree'
 import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
+  BaseFeatureDataAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
-  Region,
-  Feature,
   SimpleFeature,
   fetchAndMaybeUnzip,
 } from '@jbrowse/core/util'
-import IntervalTree from '@flatten-js/interval-tree'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  Region,
+  Feature} from '@jbrowse/core/util'
 
 const svTypes = new Set(['DUP', 'TRA', 'INV', 'CNV', 'DEL'])
 

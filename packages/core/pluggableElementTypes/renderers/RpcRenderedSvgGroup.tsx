@@ -1,13 +1,15 @@
 import React, { useEffect, useRef } from 'react'
-import { observer } from 'mobx-react'
 
 // locals
-import { AnyReactComponentType, Feature, rIC } from '../../util'
-import { ThemeOptions, ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '../../ui'
+import { ThemeProvider } from '@mui/material'
+import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 // eslint-disable-next-line react/no-deprecated
 import { hydrate, unmountComponentAtNode } from 'react-dom'
+import { createJBrowseTheme } from '../../ui'
+import { rIC } from '../../util'
+import type { AnyReactComponentType, Feature} from '../../util'
+import type { ThemeOptions} from '@mui/material'
 
 interface Props {
   html: string

@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { measureGridWidth, getStr } from '../../util'
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
+import { measureGridWidth, getStr } from '../../util'
+import type { GridColDef} from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   margin: {

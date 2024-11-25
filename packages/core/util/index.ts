@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react'
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { unzip } from '@gmod/bgzf-filehandle'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import isObject from 'is-object'
-import PluginManager from '../PluginManager'
-import type { Buffer } from 'buffer'
 import {
   getParent,
   getSnapshot,
@@ -13,28 +14,26 @@ import {
   IStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
-import { Feature } from './simpleFeature'
+import PluginManager from '../PluginManager'
+import type { Buffer } from 'buffer'
+import type { Feature } from './simpleFeature'
+import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import {
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  AssemblyManager,
-  Region,
-  TypeTestedByPredicate,
+  isUriLocation,
 } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import { BaseBlock } from './blockTypes'
-import { isUriLocation } from './types'
 
 // has to be the full path and not the relative path to get the jest mock
-import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
 // eslint-disable-next-line react/no-deprecated
 import { flushSync, render } from 'react-dom'
-import { GenericFilehandle } from 'generic-filehandle'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { BaseOptions } from '../data_adapters/BaseAdapter'
+import type { GenericFilehandle } from 'generic-filehandle'
+import type { BaseOptions } from '../data_adapters/BaseAdapter'
 import { checkStopToken } from './stopToken'
 export * from './types'
 export * from './when'

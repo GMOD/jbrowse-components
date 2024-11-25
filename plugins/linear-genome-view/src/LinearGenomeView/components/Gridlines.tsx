@@ -1,8 +1,6 @@
 import React from 'react'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { LinearGenomeViewModel } from '..'
+import { makeStyles } from 'tss-react/mui'
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
@@ -10,6 +8,8 @@ import {
 } from '../../BaseLinearDisplay/components/Block'
 
 import { makeTicks } from '../util'
+import type { LinearGenomeViewModel } from '..'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 

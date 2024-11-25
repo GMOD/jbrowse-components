@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom'
 import { waitFor } from '@testing-library/react'
 
-import breakpointConfig from '../../test_data/breakpoint/config.json'
 import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 setup()
 

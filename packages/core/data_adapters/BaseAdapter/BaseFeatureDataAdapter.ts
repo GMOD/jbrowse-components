@@ -1,16 +1,17 @@
-import { Observable, firstValueFrom, merge } from 'rxjs'
+import { firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 // locals
 import { BaseAdapter } from './BaseAdapter'
-import { BaseOptions } from './BaseOptions'
-import { FeatureDensityStats } from './types'
-import { ObservableCreate } from '../../util/rxjs'
 import { sum, max, min } from '../../util'
-import { Feature } from '../../util/simpleFeature'
-import { AugmentedRegion as Region } from '../../util/types'
+import { ObservableCreate } from '../../util/rxjs'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
 import { checkStopToken } from '../../util/stopToken'
+import type { BaseOptions } from './BaseOptions'
+import type { FeatureDensityStats } from './types'
+import type { Feature } from '../../util/simpleFeature'
+import type { AugmentedRegion as Region } from '../../util/types'
+import type { Observable} from 'rxjs'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that

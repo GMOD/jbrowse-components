@@ -1,5 +1,4 @@
 import React from 'react'
-import { ThemeOptions } from '@mui/material'
 import {
   getContainingView,
   getViewParams,
@@ -7,11 +6,12 @@ import {
 } from '@jbrowse/core/util'
 
 // locals
-import { ExportSvgOptions, LinearGenomeViewModel } from '../../LinearGenomeView'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { getId } from './util'
+import type { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
+import type { ExportSvgOptions, LinearGenomeViewModel } from '../../LinearGenomeView'
 
-import { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
+import type { ThemeOptions } from '@mui/material'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,

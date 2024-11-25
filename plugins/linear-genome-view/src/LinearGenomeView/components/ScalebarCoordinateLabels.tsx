@@ -2,12 +2,12 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import ScalebarCoordinateTicks from './ScalebarCoordinateTicks'
 import {
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
-import ScalebarCoordinateTicks from './ScalebarCoordinateTicks'
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 

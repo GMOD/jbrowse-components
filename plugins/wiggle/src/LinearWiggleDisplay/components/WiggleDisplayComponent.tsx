@@ -1,19 +1,20 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+import { getConf } from '@jbrowse/core/configuration'
 import {
   measureText,
   getContainingView,
   getContainingTrack,
 } from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
 import {
-  BaseLinearDisplayComponent,
-  LinearGenomeViewModel,
+  BaseLinearDisplayComponent
 } from '@jbrowse/plugin-linear-genome-view'
+import { observer } from 'mobx-react'
 
 // locals
-import { WiggleDisplayModel } from '../model'
 import YScaleBar from '../../shared/YScaleBar'
+import type { WiggleDisplayModel } from '../model'
+import type {
+  LinearGenomeViewModel} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

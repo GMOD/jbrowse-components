@@ -1,19 +1,19 @@
 import React, { useState } from 'react'
-import { Fab, Menu, MenuItem } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import {
   getSession,
   isSessionModelWithWidgets,
   isSessionModelWithConnections,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import AddIcon from '@mui/icons-material/Add'
+import { Fab, Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import AddIcon from '@mui/icons-material/Add'
 
 // locals
-import { HierarchicalTrackSelectorModel } from '../model'
+import type { HierarchicalTrackSelectorModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   fab: {

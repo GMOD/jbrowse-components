@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { measureGridWidth } from '@jbrowse/core/util'
 import {
   FormControlLabel,
   Checkbox,
@@ -8,8 +10,7 @@ import {
 } from '@mui/material'
 
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 interface Entry {
   sample: string

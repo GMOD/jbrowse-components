@@ -1,10 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util'
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawXY } from '../drawXY'
-import WiggleBaseRenderer, {
+import { YSCALEBAR_LABEL_OFFSET } from '../util'
+import type {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   async draw(

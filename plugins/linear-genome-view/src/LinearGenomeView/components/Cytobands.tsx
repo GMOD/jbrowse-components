@@ -1,15 +1,15 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 
 // core
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { getFillProps } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
 // locals
 import { getCytobands } from './util'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
 function rightRoundedRect(

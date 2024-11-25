@@ -1,10 +1,10 @@
 import React from 'react'
-import { Paper } from '@mui/material'
-import { observer } from 'mobx-react'
 import {
   BaseCoreDetails,
   BaseAttributes,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { Paper } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const BreakpointAlignmentsFeatureDetail = observer(function ({
   model,

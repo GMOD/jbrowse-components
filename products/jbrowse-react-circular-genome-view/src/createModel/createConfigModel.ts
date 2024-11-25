@@ -1,9 +1,7 @@
 import {
-  AnyConfigurationSchemaType,
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   FormatAboutConfigSchemaFactory,
@@ -11,6 +9,9 @@ import {
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
 import { getParent, types } from 'mobx-state-tree'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  AnyConfigurationSchemaType} from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseReactCircularGenomeViewConfig

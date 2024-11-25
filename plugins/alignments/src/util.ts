@@ -1,9 +1,11 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature, AugmentedRegion } from '@jbrowse/core/util'
-import { toArray } from 'rxjs/operators'
+import { autorun } from 'mobx'
+import { addDisposer, isAlive } from 'mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
-import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
-import { IAutorunOptions, autorun } from 'mobx'
+import { toArray } from 'rxjs/operators'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, AugmentedRegion } from '@jbrowse/core/util'
+import type { IAutorunOptions} from 'mobx'
+import type { IAnyStateTreeNode} from 'mobx-state-tree'
 
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications

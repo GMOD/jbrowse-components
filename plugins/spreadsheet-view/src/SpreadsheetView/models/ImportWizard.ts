@@ -1,6 +1,7 @@
-import { types, getParent, Instance } from 'mobx-state-tree'
-import { openLocation } from '@jbrowse/core/util/io'
 import { getSession, getEnv } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { types, getParent } from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000

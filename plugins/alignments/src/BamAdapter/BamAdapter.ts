@@ -1,22 +1,24 @@
 import { BamFile } from '@gmod/bam'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
 // jbrowse
 import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
+  BaseFeatureDataAdapter
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
-import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
 // locals
-import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { FilterBy } from '../shared/types'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
+import type { FilterBy } from '../shared/types'
+import type {
+  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface Header {
   idToName: string[]

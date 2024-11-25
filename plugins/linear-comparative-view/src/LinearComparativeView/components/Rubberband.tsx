@@ -1,14 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { Popover, Typography, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { stringify } from '@jbrowse/core/util'
+import { Popover, Typography, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+import VerticalGuide from './VerticalGuide'
+import type { LinearComparativeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { LinearComparativeViewModel } from '../model'
-import VerticalGuide from './VerticalGuide'
 
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel

@@ -1,8 +1,8 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { QuantitativeStats } from '@jbrowse/core/util/stats'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { QuantitativeStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalQuantitativeStats extends RpcMethodType {
   name = 'WiggleGetGlobalQuantitativeStats'

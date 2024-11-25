@@ -1,5 +1,5 @@
 import { colord } from '@jbrowse/core/util/colord'
-import { ChainData } from './fetchChains'
+import type { ChainData } from './fetchChains'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {

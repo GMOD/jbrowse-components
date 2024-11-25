@@ -1,6 +1,7 @@
 import React from 'react'
-import { Tooltip, Alert, AlertColor } from '@mui/material'
+import { Tooltip, Alert } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import type { AlertColor } from '@mui/material'
 
 const useStyles = makeStyles()({
   ellipses: {

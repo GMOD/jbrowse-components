@@ -1,9 +1,10 @@
-import React from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
+import type React from 'react'
 import { autorun } from 'mobx'
-import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
+import { onPatch } from 'mobx-state-tree'
 import createModel from './createModel'
 import type { createSessionModel, createConfigModel } from './createModel'
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { SnapshotIn, IJsonPatch } from 'mobx-state-tree'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>

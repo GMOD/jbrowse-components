@@ -1,8 +1,8 @@
-import { Feature } from '@jbrowse/core/util'
 // locals
-import { getModPositions, getModProbabilities } from '../ModificationParser'
 import { getNextRefPos, parseCigar } from '../MismatchParser'
+import { getModPositions, getModProbabilities } from '../ModificationParser'
 import { getTagAlt } from '../util'
+import type { Feature } from '@jbrowse/core/util'
 
 interface MaximumProbabilityMod {
   type: string

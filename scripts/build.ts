@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import spawn from 'cross-spawn'
-import workspaceRoot from 'find-yarn-workspace-root'
 import { DepGraph } from 'dependency-graph'
+import workspaceRoot from 'find-yarn-workspace-root'
 
 const DEPENDENCY_TYPES = [
   'devDependencies',

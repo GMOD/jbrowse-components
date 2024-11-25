@@ -1,4 +1,4 @@
-import { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types'
 import type { Buffer } from 'buffer'
 
 export function cigarToMismatches(

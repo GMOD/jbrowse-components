@@ -1,18 +1,19 @@
 import React from 'react'
-import {
-  IconButton,
-  IconButtonProps as IconButtonPropsType,
-  SvgIconProps,
-} from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
-import { observer } from 'mobx-react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { CascadingMenu } from '@jbrowse/core/ui'
+import MenuIcon from '@mui/icons-material/Menu'
+import {
+  IconButton
+} from '@mui/material'
 import {
   bindTrigger,
   bindPopover,
   usePopupState,
 } from 'material-ui-popup-state/hooks'
+import { observer } from 'mobx-react'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import type {
+  IconButtonProps as IconButtonPropsType,
+  SvgIconProps} from '@mui/material'
 
 const ViewMenu = observer(function ({
   model,

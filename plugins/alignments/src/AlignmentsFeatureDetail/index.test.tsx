@@ -1,14 +1,14 @@
 import React from 'react'
-import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { ThemeProvider } from '@mui/material'
+import { render } from '@testing-library/react'
+import { types } from 'mobx-state-tree'
 
 // locals
-import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './AlignmentsFeatureDetail'
-import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { stateModelFactory } from './stateModelFactory'
 
 test('open up a widget', () => {
   const pluginManager = new PluginManager([])

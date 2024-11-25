@@ -1,18 +1,18 @@
 import React, { lazy } from 'react'
-import { IconButton, Tooltip } from '@mui/material'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-
-// local
-import { LinearArcDisplayModel } from '../model'
-
-// icons
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'
+import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-import { getSession } from '@jbrowse/core/util'
+// local
+import type { LinearArcDisplayModel } from '../model'
+
+// icons
+
 
 const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),

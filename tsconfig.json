@@ -24,6 +24,7 @@
     "**/dist/",
     "**/lib/",
     "**/umd/",
+    "**/esm/",
     "**/tmp/",
     "**/embedded_demos/",
     "**/component_tests/",

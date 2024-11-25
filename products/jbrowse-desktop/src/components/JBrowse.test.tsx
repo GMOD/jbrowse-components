@@ -1,18 +1,18 @@
 import React from 'react'
 
 // must import first to create window.require as side effect
-import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { render, fireEvent } from '@testing-library/react'
-import { SnapshotIn } from 'mobx-state-tree'
 
 // locals
 import JBrowse from './JBrowse'
+import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
+import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel'
-import configSnapshot from '../../test_data/volvox/config.json'
 import sessionModelFactory from '../sessionModel'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

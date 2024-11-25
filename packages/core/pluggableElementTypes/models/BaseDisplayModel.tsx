@@ -1,12 +1,13 @@
-import React from 'react'
-import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
+import type React from 'react'
+import { getParent, types, isRoot } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../../configuration'
-import { MenuItem } from '../../ui'
-import { getParentRenderProps } from '../../util/tracks'
 import { getContainingView, getEnv } from '../../util'
+import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
+import type { MenuItem } from '../../ui'
+import type { Instance} from 'mobx-state-tree'
 
 /**
  * #stateModel BaseDisplay

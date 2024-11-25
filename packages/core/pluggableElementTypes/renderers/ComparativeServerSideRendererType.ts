@@ -1,19 +1,20 @@
+import { firstValueFrom } from 'rxjs'
 import { filter, toArray } from 'rxjs/operators'
-import { Feature } from '../../util/simpleFeature'
-import { Region } from '../../util/types'
-import ServerSideRenderer, {
+import ServerSideRenderer from './ServerSideRendererType'
+import { getAdapter } from '../../data_adapters/dataAdapterCache'
+import { dedupe, getSerializedSvg } from '../../util'
+import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from './ServerSideRendererType'
-import RpcManager from '../../rpc/RpcManager'
-import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import { dedupe, getSerializedSvg } from '../../util'
-import { firstValueFrom } from 'rxjs'
-import { AnyConfigurationModel } from '../../configuration'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import type RpcManager from '../../rpc/RpcManager'
+import type { Feature } from '../../util/simpleFeature'
+import type { Region } from '../../util/types'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   blockKey: string

@@ -1,18 +1,19 @@
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { getSession, getEnv } from '@jbrowse/core/util'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { autorun } from 'mobx'
 import {
   addDisposer,
   types,
-  getParent,
-  SnapshotIn,
-  Instance,
+  getParent
 } from 'mobx-state-tree'
 
 // locals
 import { ColumnTypes, AnyColumnType } from './ColumnDataTypes'
 import StaticRowSetModel from './StaticRowSet'
 import type RowModel from './Row'
+import type {
+  SnapshotIn,
+  Instance} from 'mobx-state-tree'
 
 type Row = Instance<typeof RowModel>
 

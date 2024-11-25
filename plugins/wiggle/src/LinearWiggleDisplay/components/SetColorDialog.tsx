@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { Dialog } from '@jbrowse/core/ui'
+import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 import {
   Button,
   DialogContent,
@@ -8,8 +9,7 @@ import {
   Radio,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
+import { observer } from 'mobx-react'
 
 const SetColorDialog = observer(function SetColorDialog({
   model,

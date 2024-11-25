@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import {
   TextField,
-  MenuItem,
-  InputProps as IIP,
-  TextFieldProps as TFP,
+  MenuItem
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { getConf } from '../configuration'
-import { useLocalStorage, AbstractSessionModel } from '../util'
+import { useLocalStorage } from '../util'
+import type { AbstractSessionModel } from '../util'
+import type {
+  InputProps as IIP,
+  TextFieldProps as TFP} from '@mui/material'
 
 const useStyles = makeStyles()({
   importFormEntry: {

@@ -1,12 +1,12 @@
 import React, { Suspense, lazy } from 'react'
-import { observer } from 'mobx-react'
-import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
-import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getConf } from '@jbrowse/core/configuration'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { ViewModel } from '../createModel'
+import type { ViewModel } from '../createModel'
 
 const App = lazy(() => import('./AppReExport'))
 

@@ -1,11 +1,11 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { BreakpointViewModel } from '../model'
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
+import type { BreakpointViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   viewDivider: {

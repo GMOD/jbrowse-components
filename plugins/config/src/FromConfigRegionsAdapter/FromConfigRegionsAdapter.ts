@@ -1,18 +1,20 @@
 import {
-  BaseAdapter,
-  RegionsAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import {
+  BaseAdapter
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type {
+  RegionsAdapter} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { polarToCartesian, Feature, getStrokeProps } from '@jbrowse/core/util'
+import { parseBreakend } from '@gmod/vcf'
 import {
-  AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { parseBreakend } from '@gmod/vcf'
+import { polarToCartesian, getStrokeProps } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { Feature} from '@jbrowse/core/util'
 
 export interface Region {
   end: number

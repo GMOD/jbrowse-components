@@ -3,9 +3,10 @@ import yargs from 'yargs'
 
 // locals
 import { standardizeArgv, parseArgv } from './parseArgv'
-import { renderRegion, Opts } from './renderRegion'
-import { convert } from './util'
+import { renderRegion } from './renderRegion'
 import setupEnv from './setupEnv'
+import { convert } from './util'
+import type { Opts } from './renderRegion'
 
 setupEnv()
 

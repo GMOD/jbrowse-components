@@ -1,11 +1,11 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { drawLongReadChains } from './drawLongReadChains'
+import { drawPairChains } from './drawPairChains'
+import { hasPairedReads } from '../shared/util'
+import type { LinearReadCloudDisplayModel } from './model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { LinearReadCloudDisplayModel } from './model'
-import { hasPairedReads } from '../shared/util'
-import { drawPairChains } from './drawPairChains'
-import { drawLongReadChains } from './drawLongReadChains'
 
 type LGV = LinearGenomeViewModel
 

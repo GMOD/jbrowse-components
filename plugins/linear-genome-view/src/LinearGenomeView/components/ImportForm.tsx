@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+
+// icons
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
   FormControl,
@@ -9,16 +11,14 @@ import {
   Grid,
   CircularProgress,
 } from '@mui/material'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-
-// icons
-import CloseIcon from '@mui/icons-material/Close'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { LinearGenomeViewModel } from '..'
-import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
+import { handleSelectedRegion, navToOption } from '../../searchUtils'
+import type { LinearGenomeViewModel } from '..'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
