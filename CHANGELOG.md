@@ -3388,7 +3388,8 @@ yarn run v1.22.18 $ lerna-changelog 2.6.1
     link in new tab by default in feature details
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#3053](https://github.com/GMOD/jbrowse-components/pull/3053) Avoid
-    displaying [object Object] on deeply nested data in base feature details ([@cmdcolin](https://github.com/cmdcolin))
+    displaying [object Object] on deeply nested data in base feature details
+    ([@cmdcolin](https://github.com/cmdcolin))
 
 #### :house: Internal
 
@@ -5276,7 +5277,8 @@ yarn run v1.22.18 $ lerna-changelog 2.6.1
     search for tracks with parentheses in tracklist
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#2512](https://github.com/GMOD/jbrowse-components/pull/2512) Fix [object
-    Window] issue in alignment read vs reference dialog ([@cmdcolin](https://github.com/cmdcolin))
+    Window] issue in alignment read vs reference dialog
+    ([@cmdcolin](https://github.com/cmdcolin))
   - [#2499](https://github.com/GMOD/jbrowse-components/pull/2499) Add missing
     dependency to CLI ([@garrettjstevens](https://github.com/garrettjstevens))
 - `core`
