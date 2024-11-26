@@ -43,20 +43,17 @@ jobs:
       - name: Test embedded lgv
         run: |
           yarn
-          yarn build
-          yarn test:e2e
+          yarn e2e
         working-directory: component_tests/lgv
       - name: Test embedded cgv
         run: |
           yarn
-          yarn build
-          yarn test:e2e
+          yarn e2e
         working-directory: component_tests/cgv
       - name: Test embedded react-app
         run: |
           yarn
-          yarn build
-          yarn test:e2e
+          yarn e2e
         working-directory: component_tests/react-app
 
   buildjbrowseweb:
