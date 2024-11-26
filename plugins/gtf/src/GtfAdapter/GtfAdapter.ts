@@ -5,7 +5,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
-// locals
 import { featureData } from '../util'
 
 import type { FeatureLoc } from '../util'

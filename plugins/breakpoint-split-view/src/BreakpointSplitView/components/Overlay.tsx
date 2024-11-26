@@ -2,7 +2,6 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'
 import PairedFeatures from './PairedFeatures'

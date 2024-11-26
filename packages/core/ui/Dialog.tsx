@@ -3,10 +3,10 @@ import React from 'react'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import CloseIcon from '@mui/icons-material/Close'
 import {
+  Dialog as MUIDialog,
   DialogTitle,
   Divider,
   IconButton,
-  Dialog as MUIDialog,
   ScopedCssBaseline,
   ThemeProvider,
   createTheme,
@@ -15,11 +15,9 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'
+
 import type { DialogProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({

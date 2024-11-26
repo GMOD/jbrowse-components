@@ -4,7 +4,6 @@ import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 
-// locals
 import { findMatchingAlt, getMatchedBreakendFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 

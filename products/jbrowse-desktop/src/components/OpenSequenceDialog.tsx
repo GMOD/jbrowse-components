@@ -16,8 +16,6 @@ import AdapterInput from './AdapterInput'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-// locals
-
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({

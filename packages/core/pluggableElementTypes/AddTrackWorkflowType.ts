@@ -1,6 +1,7 @@
 import type React from 'react'
 
 import PluggableElementBase from './PluggableElementBase'
+
 import type { IAnyModelType } from 'mobx-state-tree'
 
 type BasicComponent = React.ComponentType<{

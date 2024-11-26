@@ -15,8 +15,8 @@ import type { AnyConfigurationSchemaType } from './types'
 import type { IAnyType, SnapshotOut } from 'mobx-state-tree'
 
 export type {
-  AnyConfigurationSchemaType,
   AnyConfigurationModel,
+  AnyConfigurationSchemaType,
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
 } from './types'

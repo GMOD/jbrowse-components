@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-// locals
 import configSchemaF from './configSchema'
 import stateModelF from './model'
 

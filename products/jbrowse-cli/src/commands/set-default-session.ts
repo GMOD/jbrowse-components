@@ -1,4 +1,5 @@
 import fs from 'fs'
+
 import { Flags } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
 

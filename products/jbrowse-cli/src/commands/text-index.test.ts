@@ -4,10 +4,10 @@
 
 import fs from 'fs'
 import path from 'path'
+
 import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
-// locals
 import { dataDir, runInTmpDir } from '../testUtil'
 
 const configPath = dataDir('indexing_config.json')

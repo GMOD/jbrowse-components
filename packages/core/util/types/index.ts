@@ -5,9 +5,9 @@ import { isStateTreeNode } from 'mobx-state-tree'
 
 import type {
   BlobLocation as MUBlobLocation,
-  Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
   NoAssemblyRegion as MUNoAssemblyRegion,
+  Region as MUIRegion,
   UriLocation as MUUriLocation,
 } from './mst'
 import type TextSearchManager from '../../TextSearch/TextSearchManager'
@@ -18,7 +18,6 @@ import type RpcManager from '../../rpc/RpcManager'
 import type { MenuItem } from '../../ui'
 import type { Feature } from '../simpleFeature'
 import type { ThemeOptions } from '@mui/material'
-// types
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,

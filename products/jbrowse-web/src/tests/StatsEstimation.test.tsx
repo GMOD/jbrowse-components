@@ -1,6 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-// locals
 import {
   createView,
   doBeforeEach,

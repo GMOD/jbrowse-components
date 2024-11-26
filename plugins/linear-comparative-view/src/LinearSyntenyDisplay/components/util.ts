@@ -9,7 +9,6 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 
-// locals
 import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from '../model'

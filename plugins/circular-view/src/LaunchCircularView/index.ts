@@ -4,8 +4,6 @@ import type { CircularViewModel } from '../CircularView/model'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// locals
-
 type CGV = CircularViewModel
 
 export default function LaunchCircularViewF(pluginManager: PluginManager) {

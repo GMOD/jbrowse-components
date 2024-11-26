@@ -1,4 +1,5 @@
 import React from 'react'
+
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
   assembleLocString,
@@ -11,7 +12,6 @@ import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { navToBookmark } from '../utils'
 
 import type { GridBookmarkModel } from '../model'

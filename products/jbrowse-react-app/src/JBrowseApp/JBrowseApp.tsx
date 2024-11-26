@@ -6,7 +6,6 @@ import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { ViewModel } from '../createModel'
 
 const App = lazy(() => import('./AppReExport'))

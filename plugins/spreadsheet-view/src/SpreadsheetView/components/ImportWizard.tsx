@@ -21,10 +21,8 @@ import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import TrackSelector from './TrackSelector'
 
-// types
 import type { ImportWizardModel } from '../ImportWizard'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 

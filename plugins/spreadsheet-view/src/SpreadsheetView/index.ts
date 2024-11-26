@@ -5,7 +5,6 @@ import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import stateModelFactory from './SpreadsheetViewModel'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-// locals
 
 export default function SpreadsheetViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

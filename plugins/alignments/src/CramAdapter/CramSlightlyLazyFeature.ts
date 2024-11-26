@@ -1,6 +1,6 @@
-// locals
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 import { cacheGetter } from '../shared/util'
+
 import type CramAdapter from './CramAdapter'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'

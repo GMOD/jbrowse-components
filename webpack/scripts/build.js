@@ -10,6 +10,7 @@ require('../config/env')
 
 const fs = require('fs')
 const path = require('path')
+
 const chalk = require('chalk')
 const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
 const { checkBrowsers } = require('react-dev-utils/browsersHelper')
@@ -18,6 +19,7 @@ const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const printBuildError = require('react-dev-utils/printBuildError')
 const printHostingInstructions = require('react-dev-utils/printHostingInstructions')
 const webpack = require('webpack')
+
 const paths = require('../config/paths')
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild

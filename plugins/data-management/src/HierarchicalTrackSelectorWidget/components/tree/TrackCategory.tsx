@@ -1,15 +1,12 @@
 import React, { useState } from 'react'
 
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
-
-// icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { getAllChildren, treeToMap } from '../util'
 
 import type { NodeData } from '../util'

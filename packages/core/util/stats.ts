@@ -1,7 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 
-// locals
 import type { Feature } from './simpleFeature'
 import type { NoAssemblyRegion } from './types'
 import type { Observable } from 'rxjs'

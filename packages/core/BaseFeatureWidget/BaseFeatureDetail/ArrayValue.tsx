@@ -3,7 +3,6 @@ import React from 'react'
 import isObject from 'is-object'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import Attributes from './Attributes'
 import BasicValue from './BasicValue'
 import FieldName from './FieldName'

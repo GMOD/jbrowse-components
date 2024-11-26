@@ -21,7 +21,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { Feature } from '@jbrowse/core/util'
 
-// locals
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
 

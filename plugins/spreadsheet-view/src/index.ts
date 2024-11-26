@@ -1,10 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-
-// icons
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
-// locals
 import LaunchSpreadsheetViewF from './LaunchSpreadsheetView'
 import SpreadsheetViewF from './SpreadsheetView'
 

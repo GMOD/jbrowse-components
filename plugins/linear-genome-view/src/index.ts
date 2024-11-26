@@ -4,9 +4,6 @@ import { isAbstractMenuManager } from '@jbrowse/core/util'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 import { types } from 'mobx-state-tree'
 
-// icons
-
-// locals
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
@@ -79,20 +76,20 @@ export default class LinearGenomeViewPlugin extends Plugin {
 }
 
 export type {
-  ExportSvgDisplayOptions,
   BaseLinearDisplayModel,
   BlockModel,
+  ExportSvgDisplayOptions,
 } from './BaseLinearDisplay'
 
 export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {
-  baseLinearDisplayConfigSchema,
   BaseLinearDisplay,
-  BlockMsg,
   BaseLinearDisplayComponent,
-  TrackHeightMixin,
+  BlockMsg,
   FeatureDensityMixin,
   TooLargeMessage,
+  TrackHeightMixin,
+  baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
@@ -101,9 +98,9 @@ export {
   SearchBox,
 } from './LinearGenomeView'
 export {
-  renderToSvg,
-  SVGTracks,
   SVGRuler,
+  SVGTracks,
+  renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util'
 export {

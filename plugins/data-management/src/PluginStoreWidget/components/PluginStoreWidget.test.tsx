@@ -7,7 +7,6 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { getParent, getSnapshot } from 'mobx-state-tree'
 
-// locals
 import PluginStoreWidget from './PluginStoreWidget'
 
 import type { PluginStoreModel } from '../model'

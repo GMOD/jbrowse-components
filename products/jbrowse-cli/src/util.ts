@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { isURL, createRemoteStream } from './types/common'
+
+import { createRemoteStream, isURL } from './types/common'
 
 export async function getLocalOrRemoteStream(uri: string, out: string) {
   if (isURL(uri)) {

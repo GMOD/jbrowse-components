@@ -5,8 +5,6 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-
-// icons
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -20,6 +18,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackLabelDragHandle from './TrackLabelDragHandle'
+
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 

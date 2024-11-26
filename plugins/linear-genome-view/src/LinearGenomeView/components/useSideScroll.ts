@@ -1,7 +1,6 @@
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
-// locals
 import type { LinearGenomeViewModel } from '..'
 
 export function useSideScroll(model: LinearGenomeViewModel) {

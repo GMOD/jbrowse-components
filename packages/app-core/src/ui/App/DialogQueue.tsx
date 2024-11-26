@@ -2,7 +2,6 @@ import React, { Suspense } from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 const DialogQueue = observer(function ({

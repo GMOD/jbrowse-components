@@ -7,7 +7,6 @@ import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
 
-// locals
 import VariantFeatureDetails from './VariantFeatureWidget'
 import { stateModelFactory } from './stateModelFactory'
 

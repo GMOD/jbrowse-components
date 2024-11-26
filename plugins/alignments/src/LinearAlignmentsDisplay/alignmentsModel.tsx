@@ -1,8 +1,8 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
-// jbrowse
 import { getLowerPanelDisplays } from './util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 

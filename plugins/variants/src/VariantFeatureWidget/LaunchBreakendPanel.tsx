@@ -4,7 +4,6 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
-// types
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 

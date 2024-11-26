@@ -2,9 +2,9 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from 'mobx-state-tree'
 
-// locals
 import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
 import { getResponseError } from '../util'
+
 import type { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'

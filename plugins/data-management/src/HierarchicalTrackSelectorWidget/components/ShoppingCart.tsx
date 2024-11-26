@@ -9,10 +9,6 @@ import { observer } from 'mobx-react'
 import type { HierarchicalTrackSelectorModel } from '../model'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-// icons
-
-// locals
-
 const ShoppingCart = observer(function ({
   model,
 }: {

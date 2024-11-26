@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 
 import configSchema from './TrixTextSearchAdapter/configSchema'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class TrixPlugin extends Plugin {

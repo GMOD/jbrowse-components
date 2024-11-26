@@ -1,7 +1,6 @@
 import { reaction } from 'mobx'
 import { addDisposer, getParent, types } from 'mobx-state-tree'
 
-// locals
 import { readConfObject } from '../configuration'
 import { when } from '../util'
 import assemblyFactory from './assembly'

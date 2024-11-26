@@ -11,8 +11,6 @@ import type { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/mo
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
-// locals
-
 /**
  * #stateModel ConnectionManagementSessionMixin
  */

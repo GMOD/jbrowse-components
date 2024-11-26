@@ -18,9 +18,9 @@ import {
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 
-// locals
 import { getUniqueTags } from '../../shared/getUniqueTags'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'

@@ -9,8 +9,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import type { Feature } from '@jbrowse/core/util'
 
-// locals
-
 const { parseCigar } = MismatchParser
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {

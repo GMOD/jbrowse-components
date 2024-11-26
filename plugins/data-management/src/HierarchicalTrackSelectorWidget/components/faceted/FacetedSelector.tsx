@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 
-// jbrowse
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getEnv, measureGridWidth } from '@jbrowse/core/util'
@@ -10,10 +9,10 @@ import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import FacetFilters from './FacetFilters'
 import FacetedHeader from './FacetedHeader'
 import TrackLabelMenu from '../tree/TrackLabelMenu'
+
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridColDef } from '@mui/x-data-grid'

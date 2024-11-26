@@ -9,8 +9,6 @@ import type {
 } from '@jbrowse/core/pluggableElementTypes'
 import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
-// icons
-
 // local
 
 export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {

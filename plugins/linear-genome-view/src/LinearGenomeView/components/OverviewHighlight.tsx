@@ -9,8 +9,6 @@ import type { LinearGenomeViewModel } from '../model'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
-// locals
-
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({

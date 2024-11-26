@@ -4,10 +4,10 @@ import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { Grid, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import LauncherPanel from './LauncherPanel'
 import RecentSessionPanel from './RecentSessionsPanel'
 import packageJSON from '../../../package.json'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({

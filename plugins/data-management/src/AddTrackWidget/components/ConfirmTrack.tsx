@@ -18,7 +18,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import TextIndexingConfig from './TextIndexingConfig'
 import TrackAdapterSelector from './TrackAdapterSelector'
 import TrackTypeSelector from './TrackTypeSelector'

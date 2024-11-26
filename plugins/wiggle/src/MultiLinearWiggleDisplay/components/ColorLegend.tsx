@@ -2,8 +2,8 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import RectBg from './RectBg'
+
 import type { WiggleDisplayModel } from '../model'
 
 const ColorLegend = observer(function ({

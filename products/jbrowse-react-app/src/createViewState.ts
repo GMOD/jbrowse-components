@@ -8,8 +8,6 @@ import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { IJsonPatch, SnapshotIn } from 'mobx-state-tree'
 
-// locals
-
 interface TextSearchAdapterConfig {
   textSearchAdapterId: string
   [key: string]: unknown

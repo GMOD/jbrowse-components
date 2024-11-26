@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
-// locals
 import ImportCustomTrack from './AddCustomTrack'
 import ImportSyntenyTrackSelector from './TrackSelector'
+
 import type { LinearSyntenyViewModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SnapshotIn } from 'mobx-state-tree'

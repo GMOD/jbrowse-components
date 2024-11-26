@@ -11,8 +11,6 @@ import { makeStyles } from 'tss-react/mui'
 import type { PluginStoreModel } from '../model'
 import type { BasePlugin } from '@jbrowse/core/util/types'
 
-// locals
-
 // lazies
 const DeletePluginDialog = lazy(() => import('./DeletePluginDialog'))
 

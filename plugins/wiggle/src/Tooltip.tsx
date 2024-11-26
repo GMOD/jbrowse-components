@@ -7,7 +7,6 @@ import { makeStyles } from 'tss-react/mui'
 import { YSCALEBAR_LABEL_OFFSET } from './util'
 
 import type { Feature } from '@jbrowse/core/util'
-// locals
 
 const useStyles = makeStyles()({
   hoverVertical: {

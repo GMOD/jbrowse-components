@@ -14,8 +14,6 @@ import type {
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import type { Region } from '@jbrowse/core/util'
 
-// locals
-
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   adapterConfig: AnyConfigurationModel
   height: number

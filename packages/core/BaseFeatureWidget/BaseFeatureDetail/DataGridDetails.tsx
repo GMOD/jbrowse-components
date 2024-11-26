@@ -4,7 +4,6 @@ import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
 import { getStr, measureGridWidth } from '../../util'

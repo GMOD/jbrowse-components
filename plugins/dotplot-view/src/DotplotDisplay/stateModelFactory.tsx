@@ -10,7 +10,6 @@ import {
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from 'mobx-state-tree'
 
-// locals
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 

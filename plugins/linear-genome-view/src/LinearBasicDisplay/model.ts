@@ -12,10 +12,6 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from 'mobx-state-tree'
 
-// icons
-
-// locals
-
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
 

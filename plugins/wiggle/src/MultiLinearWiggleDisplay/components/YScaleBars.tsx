@@ -3,7 +3,6 @@ import React from 'react'
 import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
 import ColorLegend from './ColorLegend'
 import ScoreLegend from './ScoreLegend'
 import { getOffset } from './util'

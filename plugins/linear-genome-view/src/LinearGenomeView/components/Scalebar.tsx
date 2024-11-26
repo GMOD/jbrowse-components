@@ -4,9 +4,9 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels'
+
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel

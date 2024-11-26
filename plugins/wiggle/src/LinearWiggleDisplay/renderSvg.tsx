@@ -3,7 +3,6 @@ import React from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-// locals
 import YScaleBar from '../shared/YScaleBar'
 
 import type { WiggleDisplayModel } from './model'

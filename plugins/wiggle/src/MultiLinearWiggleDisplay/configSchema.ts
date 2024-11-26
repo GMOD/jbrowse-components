@@ -5,8 +5,6 @@ import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
-
 /**
  * #config MultiLinearWiggleDisplay
  * extends

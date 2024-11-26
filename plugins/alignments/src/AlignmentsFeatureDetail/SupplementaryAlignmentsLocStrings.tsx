@@ -2,7 +2,6 @@ import React from 'react'
 
 import { Link, Typography } from '@mui/material'
 
-// locals
 import { getLengthOnRef } from '../MismatchParser'
 import { navToLoc } from './util'
 

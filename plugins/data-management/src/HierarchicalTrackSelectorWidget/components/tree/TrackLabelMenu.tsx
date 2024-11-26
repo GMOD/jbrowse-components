@@ -2,14 +2,11 @@ import React from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
-
-// icons
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import FilledStarIcon from '@mui/icons-material/Star'
 import StarIcon from '@mui/icons-material/StarBorderOutlined'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

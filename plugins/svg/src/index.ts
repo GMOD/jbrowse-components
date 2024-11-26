@@ -5,6 +5,7 @@ import {
   ReactComponent as SvgFeatureRendererReactComponent,
   configSchema as svgFeatureRendererConfigSchema,
 } from './SvgFeatureRenderer'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 class SvgFeatureRenderer extends BoxRendererType {
@@ -28,6 +29,6 @@ export default class SVGPlugin extends Plugin {
 }
 
 export {
-  configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
+  configSchema as svgFeatureRendererConfigSchema,
 } from './SvgFeatureRenderer'

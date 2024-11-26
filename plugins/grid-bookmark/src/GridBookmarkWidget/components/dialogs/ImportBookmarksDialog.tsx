@@ -1,16 +1,14 @@
 import React, { useState } from 'react'
 
 import {
-  ErrorMessage,
-  FileSelector,
   AssemblySelector,
   Dialog,
+  ErrorMessage,
+  FileSelector,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { isSessionWithShareURL } from '@jbrowse/core/util/types'
-
-// icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ImportIcon from '@mui/icons-material/Publish'
 import {
@@ -26,7 +24,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { readSessionFromDynamo } from '../../sessionSharing'
 import { fromUrlSafeB64 } from '../../utils'
 

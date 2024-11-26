@@ -5,7 +5,6 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import DotplotControls from './DotplotControls'
 import DotplotWarnings from './DotplotWarnings'
 import PanButtons from './PanButtons'

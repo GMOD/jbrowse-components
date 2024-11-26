@@ -5,7 +5,6 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 
 import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpointSplitViewPanel'
 
-// types
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 

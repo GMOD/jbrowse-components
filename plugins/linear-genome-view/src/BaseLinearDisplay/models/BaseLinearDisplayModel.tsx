@@ -13,14 +13,11 @@ import {
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-
-// icons
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
-// locals
 import FeatureDensityMixin from './FeatureDensityMixin'
 import TrackHeightMixin from './TrackHeightMixin'
 import configSchema from './configSchema'

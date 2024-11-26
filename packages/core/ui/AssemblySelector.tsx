@@ -4,9 +4,6 @@ import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// types
-
-// locals
 import { getConf } from '../configuration'
 import { useLocalStorage } from '../util'
 

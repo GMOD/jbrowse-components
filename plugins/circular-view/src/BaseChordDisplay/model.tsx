@@ -1,6 +1,5 @@
 import React from 'react'
 
-// jbrowse
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -18,7 +17,6 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { getParent, isAlive, types } from 'mobx-state-tree'
 
-// locals
 import { baseChordDisplayConfig } from './configSchema'
 import { renderReactionData, renderReactionEffect } from './renderReaction'
 

@@ -1,12 +1,10 @@
 import React, { Suspense, useEffect, useRef } from 'react'
 
-// jbrowse core
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 

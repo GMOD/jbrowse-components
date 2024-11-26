@@ -5,10 +5,8 @@ import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import DropdownTrackSelector from './DropdownTrackSelector'
+
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()({

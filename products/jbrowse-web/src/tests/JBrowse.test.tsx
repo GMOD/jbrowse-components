@@ -4,7 +4,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { fireEvent } from '@testing-library/react'
 
-// locals
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'

@@ -5,7 +5,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 
-// jbrowse
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

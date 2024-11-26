@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { AddTrackModel } from '../model'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+
 import { App } from '@jbrowse/app-core'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -11,8 +12,6 @@ import ShareButton from './ShareButton'
 
 import type { WebSessionModel } from '../sessionModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-// locals
 
 const JBrowse = observer(function ({
   pluginManager,

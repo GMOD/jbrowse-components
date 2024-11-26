@@ -8,7 +8,6 @@ import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
-// jbrowse imports
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 
@@ -20,9 +19,6 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// locals
-
 import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>

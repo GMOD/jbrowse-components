@@ -12,8 +12,8 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { navToSynteny } from './util'
+
 import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({

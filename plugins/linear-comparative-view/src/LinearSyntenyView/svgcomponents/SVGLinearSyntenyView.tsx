@@ -17,10 +17,10 @@ import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 import { getRoot } from 'mobx-state-tree'
 
-// locals
 import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
+
 import type { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
 
 // render LGV to SVG

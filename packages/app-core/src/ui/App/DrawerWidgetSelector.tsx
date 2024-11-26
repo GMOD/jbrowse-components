@@ -14,8 +14,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-// icons
-
 const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 0,

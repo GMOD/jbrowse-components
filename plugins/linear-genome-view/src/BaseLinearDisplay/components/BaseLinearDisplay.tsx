@@ -6,8 +6,6 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
-
 import LinearBlocks from './LinearBlocks'
 
 import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'

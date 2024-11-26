@@ -17,8 +17,6 @@ import { makeStyles } from 'tss-react/mui'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// icons
-
 const useStyles = makeStyles()(theme => ({
   connectionContainer: {
     margin: theme.spacing(4),

@@ -10,8 +10,6 @@ import type { ReducedFeature } from './getSAFeatures'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-// locals
-
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(
   () => import('./BreakendMultiLevelOptionDialog'),

@@ -5,7 +5,6 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { HorizontalAxis, VerticalAxis } from './Axes'
 import Grid from './Grid'
 import Header from './Header'

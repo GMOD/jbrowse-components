@@ -1,9 +1,10 @@
 import readline from 'readline'
 import { createGunzip } from 'zlib'
+
 import { Presets, SingleBar } from 'cli-progress'
 
-// locals
 import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'
+
 import type { Track } from '../base'
 
 export async function* indexGff3({

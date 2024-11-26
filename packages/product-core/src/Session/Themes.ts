@@ -4,7 +4,6 @@ import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
 import type { BaseSession } from './BaseSession'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeOptions } from '@mui/material'

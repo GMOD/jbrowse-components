@@ -12,8 +12,6 @@ import { makeStyles } from 'tss-react/mui'
 // local
 import type { LinearArcDisplayModel } from '../model'
 
-// icons
-
 const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
 )

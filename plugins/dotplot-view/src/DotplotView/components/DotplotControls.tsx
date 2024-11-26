@@ -8,11 +8,8 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// icons
-
 import { CursorMouse, CursorMove } from './CursorIcon'
 
-// locals
 import type { DotplotViewModel } from '../model'
 
 const DotplotControls = observer(function ({

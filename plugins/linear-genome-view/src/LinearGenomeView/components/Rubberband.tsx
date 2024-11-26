@@ -4,7 +4,6 @@ import { Menu } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import RubberbandSpan from './RubberbandSpan'
 import VerticalGuide from './VerticalGuide'
 // hooks

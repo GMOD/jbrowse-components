@@ -6,6 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 // local
 import VcfFeature from '../VcfFeature'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'

@@ -7,6 +7,7 @@ import {
   isAuthNeededException,
   isUriLocation,
 } from '../util/types'
+
 import type PluginManager from '../PluginManager'
 import type { UriLocation } from '../util/types'
 

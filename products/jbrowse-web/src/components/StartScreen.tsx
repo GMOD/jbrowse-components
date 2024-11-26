@@ -1,8 +1,7 @@
 import React, { lazy, useEffect, useState } from 'react'
+
 import { ErrorMessage, LogoFull } from '@jbrowse/core/ui'
 import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
-
-// icons
 import SettingsIcon from '@mui/icons-material/Settings'
 import WarningIcon from '@mui/icons-material/Warning'
 import {
@@ -18,7 +17,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,

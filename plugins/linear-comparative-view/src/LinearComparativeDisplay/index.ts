@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaFactory from './configSchemaF'
 import stateModelFactory from './stateModelFactory'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearComparativeDisplayF(

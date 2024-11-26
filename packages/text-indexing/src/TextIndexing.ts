@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { ixIxxStream } from 'ixixx'

@@ -5,9 +5,9 @@ import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
+
 import type { LinearGenomeViewModel } from '..'
 
 const ImportForm = lazy(() => import('./ImportForm'))

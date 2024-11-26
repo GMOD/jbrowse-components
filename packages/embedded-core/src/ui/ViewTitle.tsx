@@ -6,8 +6,8 @@ import { IconButton, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import ViewMenu from './ViewMenu'
+
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const VersionAboutDialog = lazy(() => import('./VersionAboutDialog'))

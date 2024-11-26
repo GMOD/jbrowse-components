@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 
-// icons
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'

@@ -1,9 +1,9 @@
 import {
   darken,
-  getContrastRatio,
-  lighten,
   emphasize as muiEmphasize,
+  getContrastRatio,
   getLuminance as muiGetLuminance,
+  lighten,
 } from '@mui/material/styles'
 
 import { namedColorToHex } from './cssColorsLevel4'

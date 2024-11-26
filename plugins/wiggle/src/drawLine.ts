@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx } from '@jbrowse/core/util'
 
-// locals
 import { getScale } from './util'
 
 import type { ScaleOpts } from './util'

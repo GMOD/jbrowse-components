@@ -2,8 +2,6 @@ import React, { Suspense, lazy, useState } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
-
-// icons
 import ClearIcon from '@mui/icons-material/Clear'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
@@ -20,10 +18,10 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import InstalledPluginsList from './InstalledPluginsList'
 import PluginCard from './PluginCard'
 import { useFetchPlugins } from './util'
+
 import type { PluginStoreModel } from '../model'
 
 // lazies

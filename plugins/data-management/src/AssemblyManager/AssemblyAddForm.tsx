@@ -7,8 +7,6 @@ import { observer } from 'mobx-react'
 
 import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util/types'
 
-// icons
-
 const AdapterSelector = observer(function ({
   adapterSelection,
   setAdapterSelection,

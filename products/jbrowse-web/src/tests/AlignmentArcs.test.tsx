@@ -1,7 +1,6 @@
 import { waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
 setup()

@@ -3,7 +3,6 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import type { Mismatch } from '../shared/types'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
-// locals
 
 export interface LayoutRecord {
   feature: Feature

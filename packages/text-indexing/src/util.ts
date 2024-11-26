@@ -1,4 +1,5 @@
 import path from 'path'
+
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import sanitize from 'sanitize-filename'
 

@@ -1,7 +1,6 @@
 import { firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-// locals
 import { BaseAdapter } from './BaseAdapter'
 import { max, min, sum } from '../../util'
 import { ObservableCreate } from '../../util/rxjs'

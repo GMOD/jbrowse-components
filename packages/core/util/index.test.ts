@@ -4,6 +4,7 @@ import {
   parseLocString,
   stringify,
 } from './index'
+
 import type { ParsedLocString } from './index'
 
 describe('parseLocString', () => {

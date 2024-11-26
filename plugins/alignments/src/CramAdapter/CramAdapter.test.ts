@@ -6,6 +6,7 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './CramAdapter'
 import { SequenceAdapter } from './CramTestAdapters'
 import configSchema from './configSchema'
+
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()

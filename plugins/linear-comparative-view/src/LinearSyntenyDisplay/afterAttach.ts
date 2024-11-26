@@ -4,7 +4,6 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
-// locals
 import { drawMouseoverSynteny, drawRef } from './drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from './model'

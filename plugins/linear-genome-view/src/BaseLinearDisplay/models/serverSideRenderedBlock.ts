@@ -18,12 +18,9 @@ import { isRetryException } from '@jbrowse/core/util/types'
 import { cast, getParent, isAlive, types } from 'mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+
 import type { Feature } from '@jbrowse/core/util'
-
-import type { Region, AbstractDisplayModel } from '@jbrowse/core/util/types'
-
-// locals
-
+import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'
 
 export interface RenderedProps {

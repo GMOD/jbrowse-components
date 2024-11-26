@@ -1,7 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import React from 'react'
+
 import { Buffer } from 'buffer'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
@@ -11,14 +13,12 @@ import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 
-// locals
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import JBrowse from './TestingJBrowse'
 
-// types
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { GenericFilehandle } from 'generic-filehandle'

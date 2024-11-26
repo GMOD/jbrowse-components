@@ -2,7 +2,6 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import ScalebarCoordinateTicks from './ScalebarCoordinateTicks'
 import {
   ElidedBlock as ElidedBlockComponent,

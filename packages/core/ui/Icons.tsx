@@ -1,5 +1,7 @@
 import React from 'react'
+
 import SvgIcon from '@mui/material/SvgIcon'
+
 import type { SvgIconProps } from '@mui/material/SvgIcon'
 
 // Icons below come from https://material.io/resources/icons/?icon=line_style&style=baseline

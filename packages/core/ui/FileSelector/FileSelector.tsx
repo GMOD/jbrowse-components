@@ -15,7 +15,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
 import { notEmpty, useLocalStorage } from '../../util'

@@ -5,8 +5,6 @@ import { observer } from 'mobx-react'
 // utils
 import { isEmpty } from './util'
 import { replaceUndefinedWithNull } from '../util'
-
-// locals
 import Attributes from './Attributes'
 import BaseCard from './BaseCard'
 import CoreDetails from './CoreDetails'

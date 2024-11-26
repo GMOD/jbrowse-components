@@ -3,6 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 import { parseLineByLine } from '../util'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class MashMapAdapter extends PAFAdapter {

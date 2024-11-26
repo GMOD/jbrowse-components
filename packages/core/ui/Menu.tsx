@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 
-// icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -21,9 +20,10 @@ import { makeStyles } from 'tss-react/mui'
 
 // other
 import { findLastIndex } from '../util'
+
 import type {
-  MenuProps as MUIMenuProps,
   MenuItemProps,
+  MenuProps as MUIMenuProps,
   PopoverProps,
   SvgIconProps,
 } from '@mui/material'

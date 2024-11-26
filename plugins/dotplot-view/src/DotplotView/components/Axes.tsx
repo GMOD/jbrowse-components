@@ -11,7 +11,6 @@ import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { getBlockLabelKeysToHide } from './util'
 
 import type { DotplotViewModel } from '../model'

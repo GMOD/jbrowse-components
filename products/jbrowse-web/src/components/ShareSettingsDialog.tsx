@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
@@ -11,7 +12,6 @@ import {
   RadioGroup,
 } from '@mui/material'
 
-// icons
 import InfoDialog from './ShareInfoDialog'
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'

@@ -12,7 +12,6 @@ import copy from 'copy-to-clipboard'
 import { SourceMapConsumer } from 'source-map-js'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import Dialog from './Dialog'
 import LoadingEllipses from './LoadingEllipses'
 

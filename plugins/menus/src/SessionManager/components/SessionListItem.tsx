@@ -11,11 +11,8 @@ import {
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
 
-// icons
 import type { SessionSnap } from './util'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-// locals
 
 const SessionListItem = observer(function ({
   session,

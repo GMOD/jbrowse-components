@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ErrorMessage } from '@jbrowse/core/ui'
 
 import NoConfigMessage from './NoConfigMessage'

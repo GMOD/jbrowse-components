@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 
 import { ThemeProvider } from '@mui/material/styles'
-
-// locals
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 // eslint-disable-next-line react/no-deprecated
@@ -10,7 +8,8 @@ import { hydrate, unmountComponentAtNode } from 'react-dom'
 
 import { createJBrowseTheme } from '../../ui'
 import { rIC } from '../../util'
-import type { ResultsSerialized, RenderArgs } from './ServerSideRendererType'
+
+import type { RenderArgs, ResultsSerialized } from './ServerSideRendererType'
 
 interface Props extends ResultsSerialized, RenderArgs {
   RenderingComponent: React.ComponentType<any>

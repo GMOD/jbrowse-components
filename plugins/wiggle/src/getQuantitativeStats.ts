@@ -3,7 +3,6 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from 'mobx-state-tree'
 
-// jbrowse
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -83,9 +82,8 @@ export async function getQuantitativeStats(
     )) as QuantitativeStats
     const { scoreMin, scoreMean, scoreStdDev } = results
 
-    // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
-    // scoreMin is never less than 0 helps with most coverage bigwigs
-    // just being >0
+    // uses heuristic to avoid unnecessary scoreMin<0 if the scoreMin is never
+    // less than 0 helps with most coverage bigwigs just being >0
     return autoscaleType === 'localsd'
       ? {
           ...results,

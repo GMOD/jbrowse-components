@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

@@ -11,8 +11,6 @@ import VerticalGuide from './VerticalGuide'
 import type { LinearComparativeViewModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 

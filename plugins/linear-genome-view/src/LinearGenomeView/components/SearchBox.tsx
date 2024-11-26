@@ -5,11 +5,11 @@ import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import { SPACING, WIDGET_HEIGHT } from '../consts'
+
 import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(() => ({

@@ -4,8 +4,6 @@ import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRe
 import { notEmpty, renderToAbstractCanvas } from '@jbrowse/core/util'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
-
-// locals
 import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
 
@@ -144,8 +142,8 @@ export default class PileupRenderer extends BoxRendererType {
 
 export type {
   RenderArgs,
-  RenderResults,
   RenderArgsSerialized,
-  ResultsSerialized,
+  RenderResults,
   ResultsDeserialized,
+  ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

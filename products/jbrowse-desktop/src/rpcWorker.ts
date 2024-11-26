@@ -2,7 +2,6 @@ import './workerPolyfill'
 import { initializeWorker } from '@jbrowse/product-core'
 import { enableStaticRendering } from 'mobx-react'
 
-// locals
 import corePlugins from './corePlugins'
 import { fetchCJS } from './util'
 

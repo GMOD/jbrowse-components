@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import path from 'path'
+
 import cors from 'cors'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'

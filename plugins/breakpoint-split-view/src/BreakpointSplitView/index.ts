@@ -1,9 +1,9 @@
 import { lazy } from 'react'
+
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
-// locals
 import stateModelFactory from './model'
-// types
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function BreakpointSplitViewF(pluginManager: PluginManager) {

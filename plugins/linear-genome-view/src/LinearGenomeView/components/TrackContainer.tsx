@@ -7,11 +7,9 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// jbrowse core
-
-// locals
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
+
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 

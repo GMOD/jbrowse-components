@@ -5,7 +5,6 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
-// locals
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 

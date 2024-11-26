@@ -1,6 +1,5 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
-// locals
 import { fillRect } from './util'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 import { alphaColor } from '../shared/util'

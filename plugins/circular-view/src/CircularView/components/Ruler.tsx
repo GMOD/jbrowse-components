@@ -13,7 +13,6 @@ import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { CircularViewModel } from '../model'
 import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'
 

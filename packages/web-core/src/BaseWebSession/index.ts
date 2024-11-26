@@ -20,7 +20,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
-
 import { autorun } from 'mobx'
 import {
   addDisposer,
@@ -44,10 +43,6 @@ import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from 'mobx-state-tree'
-
-// icons
-
-// locals
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))

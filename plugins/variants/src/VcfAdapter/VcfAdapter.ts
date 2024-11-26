@@ -7,8 +7,9 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 // local
 import VcfFeature from '../VcfFeature'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 type StatusCallback = (arg: string) => void
 

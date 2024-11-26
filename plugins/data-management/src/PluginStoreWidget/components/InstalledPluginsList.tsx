@@ -8,8 +8,6 @@ import InstalledPlugin from './InstalledPlugin'
 import type { PluginStoreModel } from '../model'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
-
 const InstalledPluginsList = observer(function InstalledPluginsList({
   pluginManager,
   model,

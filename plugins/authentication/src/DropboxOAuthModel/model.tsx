@@ -3,7 +3,6 @@ import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
-// locals
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 import DropboxIcon from './DropboxIcon'
 import { getDescriptiveErrorMessage } from './util'

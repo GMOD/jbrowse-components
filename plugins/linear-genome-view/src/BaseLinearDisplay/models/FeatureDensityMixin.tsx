@@ -5,7 +5,6 @@ import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
-// locals
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import { getDisplayStr, getFeatureDensityStatsPre } from './util'
 import TooLargeMessage from '../components/TooLargeMessage'

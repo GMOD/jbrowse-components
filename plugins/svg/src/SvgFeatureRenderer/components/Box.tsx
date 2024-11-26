@@ -12,8 +12,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
-// locals
-
 const utrHeightFraction = 0.65
 
 const Box = observer(function Box(props: {

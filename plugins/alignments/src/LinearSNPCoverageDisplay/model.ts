@@ -7,7 +7,6 @@ import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { observable } from 'mobx'
 import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
-// jbrowse
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun, getColorForModification } from '../util'
 
@@ -23,8 +22,6 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// locals
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))

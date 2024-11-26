@@ -22,6 +22,7 @@ import {
   configSchema as sessionManagerConfigSchema,
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 

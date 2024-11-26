@@ -8,13 +8,10 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// icons
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
 
-// locals
 import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

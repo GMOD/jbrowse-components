@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-
-// icons
 import AddIcon from '@mui/icons-material/Add'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
 import AssemblyTable from './AssemblyTable'

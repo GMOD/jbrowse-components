@@ -15,8 +15,6 @@ import { getNiceDomain } from '../util'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-// locals
-
 // lazies
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
 

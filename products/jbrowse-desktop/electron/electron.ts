@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import url from 'url'
+
 import { generateFastaIndex } from '@gmod/faidx'
 import electron, {
   BrowserWindow,
@@ -15,7 +16,6 @@ import { autoUpdater } from 'electron-updater'
 import windowStateKeeper from 'electron-window-state'
 import parseJson from 'json-parse-even-better-errors'
 
-// locals
 import { getFileStream } from './generateFastaIndex'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises

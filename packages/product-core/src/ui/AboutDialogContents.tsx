@@ -5,17 +5,14 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { Button } from '@mui/material'
-
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import FileInfoPanel from './FileInfoPanel'
 import RefNameInfoDialog from './RefNameInfoDialog'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-// locals
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   content: {

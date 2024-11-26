@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import { defaultFilterFlags } from '../shared/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**

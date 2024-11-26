@@ -6,7 +6,6 @@ import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import AddConnectionWidget2 from './AddConnectionWidget'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})

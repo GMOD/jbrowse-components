@@ -9,12 +9,9 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
-
-// icons
 import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 
-// locals
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

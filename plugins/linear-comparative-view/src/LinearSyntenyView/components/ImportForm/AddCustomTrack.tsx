@@ -12,6 +12,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { basename, extName, getName, stripGz } from './util'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { SnapshotIn } from 'mobx-state-tree'

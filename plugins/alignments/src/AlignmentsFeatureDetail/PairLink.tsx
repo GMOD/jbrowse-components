@@ -2,8 +2,8 @@ import React from 'react'
 
 import { Link } from '@mui/material'
 
-// locals
 import { navToLoc } from './util'
+
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 export default function PairLink({

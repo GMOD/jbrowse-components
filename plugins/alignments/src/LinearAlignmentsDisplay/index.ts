@@ -5,7 +5,6 @@ import configSchemaFactory from './configSchema'
 import modelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-// locals
 
 export default function LinearAlignmentsDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-// locals
 import { parseSTARFusionBuffer } from './STARFusionImport'
 import SpreadsheetModel from '../SpreadsheetModel'
 

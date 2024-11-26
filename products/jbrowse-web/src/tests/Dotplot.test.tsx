@@ -1,7 +1,6 @@
 import path from 'path'
-import { fireEvent } from '@testing-library/react'
 
-// locals
+import { fireEvent } from '@testing-library/react'
 
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import dotplotSession from './dotplot_inverted_test.json'

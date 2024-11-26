@@ -1,7 +1,6 @@
 import React, { lazy, useEffect, useState } from 'react'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 
-// icons
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -19,7 +18,6 @@ import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
 
-// locals
 import { shareSessionToDynamo } from '../sessionSharing'
 import { toUrlSafeB64 } from '../util'
 

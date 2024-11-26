@@ -9,6 +9,7 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
+
 import type { LinearGenomeViewModel } from '..'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 

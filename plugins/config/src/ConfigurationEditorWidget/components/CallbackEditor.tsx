@@ -8,8 +8,6 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
 // Optimize by using system default fonts:
 // https://css-tricks.com/snippets/css/font-stacks/
 const fontFamily =

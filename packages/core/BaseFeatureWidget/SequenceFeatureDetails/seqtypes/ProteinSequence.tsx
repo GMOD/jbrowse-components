@@ -2,10 +2,10 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import { stitch } from '../../util'
 import { proteinColor, splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
+
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'
 

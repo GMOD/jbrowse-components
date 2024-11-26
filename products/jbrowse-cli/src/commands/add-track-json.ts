@@ -1,4 +1,5 @@
 import { promises as fsPromises } from 'fs'
+
 import { Args, Flags } from '@oclif/core'
 
 import JBrowseCommand from '../base'

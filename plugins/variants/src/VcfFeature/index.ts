@@ -3,8 +3,6 @@ import { getSOTermAndDescription } from './util'
 import type VCF from '@gmod/vcf'
 import type { Feature } from '@jbrowse/core/util'
 
-// locals
-
 type Samples = Record<
   string,
   Record<string, { values: string[] | number[] | null }>

@@ -9,11 +9,8 @@ import { getSnapshot } from 'mobx-state-tree'
 import Checkbox2 from './Checkbox2'
 import { getBreakendCoveringRegions } from './util'
 
-// types
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// locals
 
 interface Display {
   id: string

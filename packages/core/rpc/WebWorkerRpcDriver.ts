@@ -1,7 +1,6 @@
 import Rpc from 'librpc-web-mod'
 import { deserializeError } from 'serialize-error'
 
-// locals
 import BaseRpcDriver from './BaseRpcDriver'
 import { nanoid } from '../util/nanoid'
 

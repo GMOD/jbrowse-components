@@ -1,9 +1,9 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-// locals
 import { fillRect } from './util'
 import { getMethBins } from '../ModificationParser'
+
 import type { RenderArgsWithColor } from './makeImageData'
 import type { LayoutFeature } from './util'
 import type { Region } from '@jbrowse/core/util'

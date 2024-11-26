@@ -2,9 +2,9 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import Tooltip from '../../Tooltip'
 import { toP } from '../../util'
+
 import type { TooltipContentsComponent } from '../../Tooltip'
 import type { Feature } from '@jbrowse/core/util'
 

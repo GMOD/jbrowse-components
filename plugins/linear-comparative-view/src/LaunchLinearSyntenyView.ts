@@ -1,7 +1,6 @@
 import { notEmpty } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-// locals
 import type { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

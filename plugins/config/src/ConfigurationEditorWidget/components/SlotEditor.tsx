@@ -3,14 +3,11 @@ import React, { useEffect, useState } from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
-
-// icons
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
 
-// locals
 import BooleanEditor from './BooleanEditor'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'

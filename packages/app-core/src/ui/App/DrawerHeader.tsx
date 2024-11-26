@@ -10,10 +10,6 @@ import DrawerWidgetSelector from './DrawerWidgetSelector'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-// locals
-
-// icons
-
 const useStyles = makeStyles()(theme => ({
   spacer: {
     flexGrow: 1,

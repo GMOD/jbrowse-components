@@ -20,8 +20,8 @@ import {
   isDisplayModel,
   isSessionModel,
   isTrackModel,
-  isViewModel,
   isUriLocation,
+  isViewModel,
 } from './types'
 
 import type PluginManager from '../PluginManager'
@@ -29,9 +29,6 @@ import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
-
-// has to be the full path and not the relative path to get the jest mock
-
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
 import type { Buffer } from 'buffer'
 import type { GenericFilehandle } from 'generic-filehandle'
@@ -1417,11 +1414,11 @@ export async function fetchAndMaybeUnzip(
 }
 
 export {
-  isFeature,
-  default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
   type SimpleFeatureSerializedNoId,
+  default as SimpleFeature,
+  isFeature,
 } from './simpleFeature'
 
 export { blobToDataURL } from './blobToDataURL'

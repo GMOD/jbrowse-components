@@ -13,7 +13,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { FilterBy } from '../types'
 
 const useStyles = makeStyles()(theme => ({

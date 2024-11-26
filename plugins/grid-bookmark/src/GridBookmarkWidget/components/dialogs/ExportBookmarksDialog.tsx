@@ -16,8 +16,8 @@ import { makeStyles } from 'tss-react/mui'
 
 // Icons
 
-// locals
 import { downloadBookmarkFile } from '../../utils'
+
 import type { GridBookmarkModel } from '../../model'
 
 const useStyles = makeStyles()({

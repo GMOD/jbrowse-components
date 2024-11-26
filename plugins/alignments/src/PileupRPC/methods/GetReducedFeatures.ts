@@ -3,7 +3,6 @@ import { dedupe, groupBy } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-// locals
 import { getClip } from '../../MismatchParser'
 import PileupBaseRPC from '../base'
 import { filterForPairs, getInsertSizeStats } from '../util'

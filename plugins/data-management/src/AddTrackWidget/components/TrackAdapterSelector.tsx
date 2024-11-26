@@ -8,8 +8,6 @@ import { makeStyles } from 'tss-react/mui'
 import type { AddTrackModel } from '../model'
 import type AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-// locals
-
 const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),

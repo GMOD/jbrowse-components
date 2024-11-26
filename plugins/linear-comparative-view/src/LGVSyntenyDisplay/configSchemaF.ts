@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**

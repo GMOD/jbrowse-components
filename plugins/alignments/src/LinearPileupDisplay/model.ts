@@ -7,8 +7,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-
-// icons
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -16,7 +14,6 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { observable } from 'mobx'
 import { isAlive, types } from 'mobx-state-tree'
 
-// locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import {

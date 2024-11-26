@@ -13,8 +13,6 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
-// locals
-
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: BED
 

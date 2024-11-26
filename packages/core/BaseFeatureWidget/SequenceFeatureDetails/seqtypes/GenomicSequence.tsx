@@ -2,7 +2,6 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import { genomeColor, splitString, updownstreamColor } from '../util'
 import SequenceDisplay from './SequenceDisplay'
 

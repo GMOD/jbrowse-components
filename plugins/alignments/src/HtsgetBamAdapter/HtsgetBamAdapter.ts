@@ -1,6 +1,7 @@
 import { HtsgetFile } from '@gmod/bam'
 
 import BamAdapter from '../BamAdapter/BamAdapter'
+
 import type { BamFile } from '@gmod/bam'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

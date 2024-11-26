@@ -4,7 +4,6 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 import { DataGrid, GridToolbar, useGridApiRef } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-// locals
 import type { SpreadsheetModel } from '../SpreadsheetModel'
 
 const SpreadsheetDataGrid = observer(function ({

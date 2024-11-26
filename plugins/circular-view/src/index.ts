@@ -4,12 +4,9 @@ import DataUsageIcon from '@mui/icons-material/DataUsage'
 
 import CircularViewF from './CircularView'
 import LaunchCircularViewF from './LaunchCircularView'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-// locals
-
-// icons
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
@@ -33,9 +30,9 @@ export default class CircularViewPlugin extends Plugin {
 }
 
 export {
-  baseChordDisplayConfig,
-  BaseChordDisplayModel,
   BaseChordDisplayComponent,
+  BaseChordDisplayModel,
+  baseChordDisplayConfig,
 } from './BaseChordDisplay'
 
 export {

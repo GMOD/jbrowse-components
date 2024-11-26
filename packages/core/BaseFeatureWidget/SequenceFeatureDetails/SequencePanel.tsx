@@ -2,16 +2,14 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import {
   defaultCodonTable,
   generateCodonTable,
   revcom,
   toLocale,
 } from '../../util'
-import { calculateUTRs, calculateUTRs2, dedupe, revlist } from '../util'
+import { calculateUTRs2, calculateUTRs, dedupe, revlist } from '../util'
 
-// panel types
 import CDNASequence from './seqtypes/CDNASequence'
 import CDSSequence from './seqtypes/CDSSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'

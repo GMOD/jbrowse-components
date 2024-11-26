@@ -4,8 +4,6 @@ import {
   isAbstractMenuManager,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-
-// icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import HighlightIcon from '@mui/icons-material/Highlight'

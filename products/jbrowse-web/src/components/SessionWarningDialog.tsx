@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
 import { nanoid } from '@jbrowse/core/util/nanoid'

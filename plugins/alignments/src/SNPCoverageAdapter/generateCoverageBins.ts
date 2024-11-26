@@ -1,7 +1,6 @@
 import { sum } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-// locals
 import { processDepth } from './processDepth'
 import { processMismatches } from './processMismatches'
 import { processModifications } from './processModifications'

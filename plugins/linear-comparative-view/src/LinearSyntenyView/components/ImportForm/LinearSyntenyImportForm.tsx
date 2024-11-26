@@ -18,9 +18,6 @@ import TrackSelector from './TrackSelectorUtil'
 import type { LinearSyntenyViewModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SnapshotIn } from 'mobx-state-tree'
-// icons
-
-// locals
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

@@ -9,8 +9,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
-// icons
-
 const useStyles = makeStyles()(theme => ({
   paper: {
     overflow: 'auto',

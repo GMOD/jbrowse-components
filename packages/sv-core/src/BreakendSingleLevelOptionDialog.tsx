@@ -5,11 +5,9 @@ import { useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import Checkbox2 from './Checkbox2'
-
-// types
 import { navToSingleLevelBreak } from './util'
+
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

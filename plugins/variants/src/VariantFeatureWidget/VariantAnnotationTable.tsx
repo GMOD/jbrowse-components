@@ -1,6 +1,7 @@
 import React from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+
 import AnnotGrid from './AnnotGrid'
 
 export default function VariantAnnotationTable({

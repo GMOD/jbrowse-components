@@ -9,8 +9,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
 import type { BaseCardProps } from '../types'
 
 const useStyles = makeStyles()(theme => ({

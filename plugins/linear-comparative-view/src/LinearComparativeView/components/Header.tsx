@@ -8,10 +8,8 @@ import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import HeaderSearchBoxes from './HeaderSearchBoxes'
+
 import type { LinearComparativeViewModel } from '../model'
 
 const useStyles = makeStyles()({

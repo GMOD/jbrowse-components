@@ -5,7 +5,6 @@ import { bpToPx, measureText } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { observer } from 'mobx-react'
 
-// locals
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'

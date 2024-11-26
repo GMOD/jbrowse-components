@@ -5,9 +5,9 @@ import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import RubberbandSpan from './RubberbandSpan'
 import { getRelativeX } from './util'
+
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 

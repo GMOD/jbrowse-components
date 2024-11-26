@@ -5,8 +5,6 @@ import { Dialog } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { complement, getSession, reverse } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
-
-// icons
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
@@ -25,7 +23,6 @@ import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { LinearGenomeViewModel } from '..'
 import type { Feature, Region } from '@jbrowse/core/util'
 

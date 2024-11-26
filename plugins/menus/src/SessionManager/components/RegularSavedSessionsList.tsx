@@ -11,11 +11,9 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import DeleteSavedSessionDialog from './DeleteSavedSessionDialog'
 import SessionListItem from './SessionListItem'
+
 import type { SessionModel } from './util'
 
 const useStyles = makeStyles()(theme => ({

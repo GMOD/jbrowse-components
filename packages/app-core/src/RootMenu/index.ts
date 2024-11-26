@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 export interface Menu {

@@ -1,7 +1,6 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import { getParent, types } from 'mobx-state-tree'
 
-// locals
 import { getConf } from '../configuration'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
 import { when } from '../util'

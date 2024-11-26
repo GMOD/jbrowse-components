@@ -4,10 +4,7 @@ import Report from '@mui/icons-material/Report'
 import { observable } from 'mobx'
 import { types } from 'mobx-state-tree'
 
-// locals
 import type { NotificationLevel, SnackAction } from '../util/types'
-
-// icons
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(

@@ -7,10 +7,8 @@ import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import ImportError from './ImportError'
+
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB

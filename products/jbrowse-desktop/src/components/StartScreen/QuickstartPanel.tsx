@@ -17,10 +17,10 @@ import {
 import deepmerge from 'deepmerge'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
 import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
 import { loadPluginManager } from './util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')

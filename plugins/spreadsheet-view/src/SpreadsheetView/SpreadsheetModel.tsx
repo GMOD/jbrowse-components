@@ -9,14 +9,11 @@ import {
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
-// types
 import LocationCell from './components/LocationCell'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 import type { Instance } from 'mobx-state-tree'
-
-// locals
 
 export interface Row {
   // optional feature per-row

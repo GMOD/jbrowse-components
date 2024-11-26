@@ -5,6 +5,7 @@ import configSchemaFactory1 from './config1'
 import configSchemaFactory2 from './config2'
 import stateModelF1 from './stateModel1'
 import stateModelF2 from './stateModel2'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearGCContentDisplayF(pluginManager: PluginManager) {

@@ -5,7 +5,6 @@ import { handleSelectedRegion } from '../searchUtils'
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-// locals
 
 type LGV = LinearGenomeViewModel
 

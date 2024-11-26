@@ -3,6 +3,7 @@ import {
   PileupGetReducedFeatures,
   PileupGetVisibleModifications,
 } from './rpcMethods'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function PileupRPCMethodsF(pm: PluginManager) {

@@ -8,9 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import type { Region } from '@jbrowse/core/util'
-
-// locals
-
 import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 /**

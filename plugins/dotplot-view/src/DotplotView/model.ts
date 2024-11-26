@@ -3,8 +3,6 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-
-// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
@@ -31,7 +29,6 @@ import {
   types,
 } from 'mobx-state-tree'
 
-// locals
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 
@@ -735,4 +732,4 @@ export default function stateModelFactory(pm: PluginManager) {
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
 
-export { type Dotplot1DViewModel, Dotplot1DView } from './1dview'
+export { Dotplot1DView, type Dotplot1DViewModel } from './1dview'

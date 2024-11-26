@@ -1,4 +1,3 @@
-// locals
 import { SimpleFeature, fetchAndMaybeUnzip } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'

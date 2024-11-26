@@ -7,7 +7,8 @@ import {
   resolvePath,
   types,
 } from 'mobx-state-tree'
-import type { IDisposer, IAnyStateTreeNode } from 'mobx-state-tree'
+
+import type { IAnyStateTreeNode, IDisposer } from 'mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 

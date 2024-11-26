@@ -3,9 +3,6 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-
-// types
-// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   assembleLocString,
@@ -35,7 +32,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-
 import { saveAs } from 'file-saver'
 import { autorun, transaction, when } from 'mobx'
 import {
@@ -59,6 +55,7 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -1779,8 +1776,8 @@ export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 
 export {
-  default as ReactComponent,
   default as LinearGenomeView,
+  default as ReactComponent,
 } from './components/LinearGenomeView'
 
 export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'

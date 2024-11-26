@@ -11,9 +11,6 @@ import { Fab, Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import type { HierarchicalTrackSelectorModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

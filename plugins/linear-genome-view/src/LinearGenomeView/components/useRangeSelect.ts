@@ -1,8 +1,8 @@
 import type React from 'react'
 import { useEffect, useState } from 'react'
 
-// locals
 import { getRelativeX } from './util'
+
 import type { LinearGenomeViewModel } from '..'
 
 interface AnchorPosition {

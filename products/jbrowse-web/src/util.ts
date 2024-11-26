@@ -12,8 +12,8 @@ import {
   isReferenceType,
   isValidReference,
 } from 'mobx-state-tree'
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type {
   IAnyStateTreeNode,
   IAnyType,

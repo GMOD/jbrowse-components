@@ -35,10 +35,6 @@ import type {
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// icons
-
-// locals
-
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),

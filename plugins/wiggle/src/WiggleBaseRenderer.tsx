@@ -9,8 +9,6 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
 
-// locals
-
 export interface RenderArgs extends FeatureRenderArgs {
   scaleOpts: ScaleOpts
 }

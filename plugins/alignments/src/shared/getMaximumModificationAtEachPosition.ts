@@ -1,7 +1,7 @@
-// locals
 import { getNextRefPos, parseCigar } from '../MismatchParser'
 import { getModPositions, getModProbabilities } from '../ModificationParser'
 import { getTagAlt } from '../util'
+
 import type { Feature } from '@jbrowse/core/util'
 
 interface MaximumProbabilityMod {

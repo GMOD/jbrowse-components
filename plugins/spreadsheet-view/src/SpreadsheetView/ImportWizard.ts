@@ -4,7 +4,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getParent, types } from 'mobx-state-tree'
 
-// types
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'

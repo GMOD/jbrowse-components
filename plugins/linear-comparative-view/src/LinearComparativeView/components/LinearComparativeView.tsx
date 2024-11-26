@@ -3,7 +3,6 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import Header from './Header'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea'
 import Rubberband from './Rubberband'

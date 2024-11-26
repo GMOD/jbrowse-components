@@ -7,8 +7,6 @@ import { hasPairedReads } from '../shared/util'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-
 type LGV = LinearGenomeViewModel
 
 export function drawFeats(

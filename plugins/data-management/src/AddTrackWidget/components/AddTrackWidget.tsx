@@ -4,9 +4,9 @@ import { getEnv } from '@jbrowse/core/util'
 import { FormControl, FormHelperText, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import DefaultAddTrackWorkflow from './DefaultAddTrackWorkflow'
 import PasteConfigWorkflow from './PasteConfigWorkflow'
+
 import type { AddTrackModel } from '../model'
 
 const AddTrackSelector = observer(function ({

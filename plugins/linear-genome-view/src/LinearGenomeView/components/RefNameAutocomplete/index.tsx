@@ -7,7 +7,6 @@ import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import AutocompleteTextField from './AutocompleteTextField'
 import { getDeduplicatedResult, getFiltered } from './util'
 

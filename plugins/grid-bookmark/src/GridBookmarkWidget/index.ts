@@ -8,8 +8,6 @@ import stateModelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
-
 const configSchema = ConfigurationSchema('GridBookmarkWidget', {})
 
 export default function GridBookmarkWidgetF(pluginManager: PluginManager) {

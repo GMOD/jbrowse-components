@@ -18,12 +18,8 @@ import {
   usePopupState,
 } from 'material-ui-popup-state/hooks'
 
-// locals
 import { MenuItemEndDecoration } from './Menu'
 
-// icons
-
-// types
 import type { MenuItem as JBMenuItem } from './Menu'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 import type { PopupState } from 'material-ui-popup-state/hooks'

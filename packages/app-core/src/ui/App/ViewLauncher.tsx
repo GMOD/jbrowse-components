@@ -12,8 +12,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
-
 // ui elements
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'

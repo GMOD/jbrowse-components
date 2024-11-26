@@ -4,8 +4,6 @@ import HelpIcon from '@mui/icons-material/Help'
 import SearchIcon from '@mui/icons-material/Search'
 import { IconButton, InputAdornment } from '@mui/material'
 
-// icons
-
 // lazy
 const HelpDialog = lazy(() => import('./HelpDialog'))
 

@@ -3,9 +3,8 @@ import React, { useEffect } from 'react'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { IconButton, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
-// icons
+import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
   connectionTypeChoices,

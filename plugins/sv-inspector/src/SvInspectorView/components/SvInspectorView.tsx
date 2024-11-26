@@ -4,8 +4,8 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import CircularViewOptions from './CircularViewOptions'
+
 import type { SvInspectorViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

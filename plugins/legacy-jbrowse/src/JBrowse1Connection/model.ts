@@ -7,8 +7,8 @@ import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/
 import { getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 
-// locals
 import configSchema from './configSchema'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function stateModelFactory(pluginManager: PluginManager) {

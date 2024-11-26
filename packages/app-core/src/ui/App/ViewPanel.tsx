@@ -1,17 +1,13 @@
 import React, { Suspense } from 'react'
 
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-
-// locals
-
-// ui elements
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
 import ViewContainer from './ViewContainer'
+
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {

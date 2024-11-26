@@ -3,6 +3,7 @@ import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from 'mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm'
+
 import type { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'

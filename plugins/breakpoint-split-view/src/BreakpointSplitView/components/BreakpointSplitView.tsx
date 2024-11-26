@@ -4,8 +4,8 @@ import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
+
 import type { BreakpointViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

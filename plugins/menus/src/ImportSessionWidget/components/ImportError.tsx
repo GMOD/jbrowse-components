@@ -4,8 +4,6 @@ import ErrorIcon from '@mui/icons-material/Error'
 import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
 const useStyles = makeStyles()(theme => ({
   error: {
     margin: theme.spacing(2),

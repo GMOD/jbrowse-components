@@ -5,10 +5,7 @@ import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import RedErrorMessageBox from './RedErrorMessageBox'
-
-// icons
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(

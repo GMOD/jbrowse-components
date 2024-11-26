@@ -10,7 +10,6 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { autorun, observable } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
 import { facetedStateTreeF } from './facetedModel'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'

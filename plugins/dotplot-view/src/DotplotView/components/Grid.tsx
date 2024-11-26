@@ -4,7 +4,6 @@ import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import type { DotplotViewModel } from '../model'
 
 export const GridRaw = observer(function ({

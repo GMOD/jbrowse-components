@@ -16,7 +16,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from 'mobx-state-tree'
 
-// locals
+
 import MultiWiggleWidget from './AddTrackWorkflow'
 
 export default (pm: PluginManager) => {

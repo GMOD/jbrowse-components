@@ -22,8 +22,6 @@ import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { TrackViewModel } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
-// locals
-
 export interface ReferringNode {
   node: IAnyStateTreeNode
   key: string

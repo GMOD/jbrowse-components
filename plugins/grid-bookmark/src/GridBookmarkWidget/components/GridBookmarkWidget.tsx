@@ -13,13 +13,10 @@ import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import AssemblySelector from './AssemblySelector'
 import BookmarkGrid from './BookmarkGrid'
 
 import type { GridBookmarkModel } from '../model'
-
-// icons
 
 // lazies
 const ExportBookmarksDialog = lazy(

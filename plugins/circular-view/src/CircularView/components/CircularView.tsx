@@ -5,7 +5,6 @@ import { assembleLocString } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import Controls from './Controls'
 import ImportForm from './ImportForm'
 import Ruler from './Ruler'

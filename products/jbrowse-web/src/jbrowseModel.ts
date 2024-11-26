@@ -1,8 +1,8 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
 import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
 
-// locals
 import { removeAttr } from './util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 

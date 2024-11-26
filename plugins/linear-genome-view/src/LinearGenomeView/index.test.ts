@@ -9,12 +9,12 @@ import {
 import { waitFor } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
 
-// locals
 import { stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+
 import type { LinearGenomeViewModel } from '.'
 
 type LGV = LinearGenomeViewModel

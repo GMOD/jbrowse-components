@@ -3,10 +3,6 @@ import React, { useState } from 'react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
-
-// locals
-
-// icons
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'

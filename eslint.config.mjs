@@ -10,6 +10,7 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   {
     ignores: [
+      'packages/__mocks__/@testing-library/react.tsx',
       '**/build/**/*',
       '**/dist/**/*',
       '**/esm/**/*',
@@ -138,9 +139,13 @@ export default tseslint.config(
 
       'import/no-unresolved': 'off',
       'import/order': [
-        'warn',
+        'error',
         {
-          alphabetize: { order: 'asc' },
+          named: true,
+          'newlines-between': 'always',
+          alphabetize: {
+            order: 'asc',
+          },
           groups: [
             'builtin',
             ['external', 'internal'],

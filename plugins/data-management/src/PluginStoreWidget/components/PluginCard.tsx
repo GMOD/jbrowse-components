@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
-
-// icons
 import AddIcon from '@mui/icons-material/Add'
 import CheckIcon from '@mui/icons-material/Check'
 import PersonIcon from '@mui/icons-material/Person'
@@ -19,7 +17,6 @@ import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { PluginStoreModel } from '../model'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 

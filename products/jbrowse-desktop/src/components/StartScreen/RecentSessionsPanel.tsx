@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { useLocalStorage } from '@jbrowse/core/util'
-
-// icons
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
@@ -20,7 +18,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import RecentSessionsCards from './RecentSessionCards'
 import RecentSessionsList from './RecentSessionList'
 import DeleteSessionDialog from './dialogs/DeleteSessionDialog'

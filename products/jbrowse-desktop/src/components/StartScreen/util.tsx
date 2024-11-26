@@ -7,11 +7,11 @@ import {
 } from '@jbrowse/core/util/analytics'
 import deepmerge from 'deepmerge'
 
-// locals
 import corePlugins from '../../corePlugins'
 import JBrowseRootModelFactory from '../../rootModel'
 import sessionModelFactory from '../../sessionModel'
 import { fetchCJS } from '../../util'
+
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 const { ipcRenderer } = window.require('electron')

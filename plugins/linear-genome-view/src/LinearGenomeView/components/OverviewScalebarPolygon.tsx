@@ -10,8 +10,6 @@ import { HEADER_BAR_HEIGHT } from '../consts'
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
-// locals
-
 const OverviewScalebarPolygon = observer(function ({
   model,
   overview,

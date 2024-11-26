@@ -5,10 +5,11 @@ import {
   isOptionalType,
   isUnionType,
 } from 'mobx-state-tree'
+
 import type {
+  IAnyComplexType,
   IAnyType,
   IModelReflectionPropertiesData,
-  IAnyComplexType,
   ISimpleType,
   UnionStringArray,
 } from 'mobx-state-tree'

@@ -4,7 +4,6 @@ import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 
-// locals
 import Node from './TrackListNode'
 
 import type { TreeNode } from '../../generateHierarchy'

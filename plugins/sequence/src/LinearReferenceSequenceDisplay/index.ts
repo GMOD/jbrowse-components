@@ -3,6 +3,7 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchema } from './configSchema'
 import { modelFactory } from './model'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearReferenceSequenceDisplayF(

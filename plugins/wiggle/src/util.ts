@@ -124,7 +124,7 @@ export function getNiceDomain({
   }
   if (scaleType === 'log') {
     // for min>0 and max>1, set log min to 1, which works for most coverage
-    // types tracks. if max is not >1, might be like raw p-values so then it'll
+    // type tracks. if max is not >1, might be like raw p-values so then it'll
     // display negative values
     if (min >= 0 && max > 1) {
       min = 1

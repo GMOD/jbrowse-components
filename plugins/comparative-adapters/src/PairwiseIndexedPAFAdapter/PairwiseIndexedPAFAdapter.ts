@@ -13,8 +13,6 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
 
-// locals
-
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
 }

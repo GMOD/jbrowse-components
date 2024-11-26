@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-
-// icons
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
@@ -15,7 +13,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
 

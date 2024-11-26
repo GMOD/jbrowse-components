@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+
 import { Flags } from '@oclif/core'
 import { ixIxxStream } from 'ixixx'
 
-// locals
 import JBrowseCommand from '../base'
 import {
   generateMeta,

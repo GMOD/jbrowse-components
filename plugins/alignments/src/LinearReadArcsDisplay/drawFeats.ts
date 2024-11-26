@@ -1,6 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
-// locals
 import { featurizeSA } from '../MismatchParser'
 import {
   getPairedInsertSizeAndOrientationColor,
@@ -8,6 +7,7 @@ import {
   getPairedOrientationColor,
 } from '../shared/color'
 import { hasPairedReads } from '../shared/util'
+
 import type { LinearReadArcsDisplayModel } from './model'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

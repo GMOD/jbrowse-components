@@ -94,5 +94,5 @@ const DotplotVView = Dotplot1DView.extend(self => ({
   },
 }))
 
-export { DotplotVView, DotplotHView, Dotplot1DView }
+export { Dotplot1DView, DotplotHView, DotplotVView }
 export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>

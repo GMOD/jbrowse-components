@@ -11,8 +11,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
 import CurrentJobCard from './CurrentJobCard'
 import JobCard from './JobCard'
 

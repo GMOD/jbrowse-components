@@ -3,8 +3,8 @@ import React from 'react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
-// locals
 import { locstr } from './util'
+
 import type { DotplotViewModel } from '../model'
 
 type Coord = [number, number] | undefined

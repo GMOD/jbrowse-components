@@ -2,10 +2,10 @@ import type React from 'react'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
 import corePlugins from './corePlugins'
 import createRootModel from './rootModel'
 import sessionModelFactory from './sessionModel'
+
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { Instance } from 'mobx-state-tree'
 

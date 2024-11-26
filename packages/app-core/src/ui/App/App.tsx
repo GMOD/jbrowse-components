@@ -5,11 +5,11 @@ import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import AppFab from './AppFab'
 import AppToolbar from './AppToolbar'
 import DialogQueue from './DialogQueue'
 import ViewsContainer from './ViewsContainer'
+
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'

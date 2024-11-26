@@ -9,7 +9,6 @@ import {
   getScale,
 } from '@jbrowse/plugin-wiggle'
 
-// locals
 import { alphaColor } from '../shared/util'
 
 import type {

@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
 import { createGunzip } from 'zlib'
+
 import { Args, Flags } from '@oclif/core'
 import { sync as commandExistsSync } from 'command-exists'
 

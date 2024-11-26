@@ -1,6 +1,5 @@
 import React from 'react'
 
-// locals
 import Position from './Position'
 import SimpleField from './SimpleField'
 import { toLocale } from '../../util'

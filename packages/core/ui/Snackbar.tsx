@@ -9,9 +9,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// icons
-
-// locals
 import type { AbstractSessionModel } from '../util'
 import type { SnackbarMessage } from './SnackbarModel'
 

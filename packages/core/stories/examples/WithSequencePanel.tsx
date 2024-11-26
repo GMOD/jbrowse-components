@@ -38,9 +38,9 @@ function CDSNoCoords() {
 }
 
 export {
-  CDSNoCoords,
   CDSCoords,
-  GeneCoordsGenomic,
+  CDSNoCoords,
   GeneCollapsedIntronCoords,
   GeneCollapsedIntronNoCoords,
+  GeneCoordsGenomic,
 }

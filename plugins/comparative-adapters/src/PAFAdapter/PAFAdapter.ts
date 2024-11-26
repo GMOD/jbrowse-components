@@ -6,7 +6,6 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-// locals
 import SyntenyFeature from '../SyntenyFeature'
 import {
   flipCigar,

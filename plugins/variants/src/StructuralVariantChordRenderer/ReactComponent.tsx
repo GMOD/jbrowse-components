@@ -8,8 +8,6 @@ import type { AnyRegion, Block } from './Chord'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-// locals
-
 const StructuralVariantChordsReactComponent = observer(function ({
   features,
   config,

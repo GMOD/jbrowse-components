@@ -11,8 +11,6 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-
 export async function renderSvg(
   self: WiggleDisplayModel,
   opts: ExportSvgDisplayOptions,

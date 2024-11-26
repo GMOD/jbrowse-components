@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from 'react'
 
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
-
-// locals
 import { getRoot } from 'mobx-state-tree'
 import { hydrate, unmountComponentAtNode } from 'react-dom' // eslint-disable-line react/no-deprecated
 

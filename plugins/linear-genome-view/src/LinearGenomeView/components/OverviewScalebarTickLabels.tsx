@@ -13,8 +13,6 @@ import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
-// locals
-
 const useStyles = makeStyles()({
   scalebarLabel: {
     height: HEADER_OVERVIEW_HEIGHT,

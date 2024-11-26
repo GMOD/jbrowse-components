@@ -1,13 +1,11 @@
 import React from 'react'
 
 import fs from 'fs'
+
 import { render } from '@testing-library/react'
 
-// locals
 import SequencePanel from './SequencePanel'
 import { SequenceFeatureDetailsF } from './model'
-
-// test data
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
 

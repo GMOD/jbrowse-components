@@ -18,10 +18,9 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
-
 import ImportCustomTrack from './ImportCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
+
 import type { DotplotViewModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SnapshotIn } from 'mobx-state-tree'

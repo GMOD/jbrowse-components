@@ -3,7 +3,6 @@ import React from 'react'
 
 import { CanvasSequence } from 'canvas-sequencer'
 
-// locals
 import { blobToDataURL } from './blobToDataURL'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 

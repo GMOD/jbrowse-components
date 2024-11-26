@@ -5,10 +5,10 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import VariantAnnotationTable from './VariantAnnotationTable'
 import VariantSampleGrid from './VariantSampleGrid'
 import { variantFieldDescriptions } from './variantFieldDescriptions'
+
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
 
 // lazies

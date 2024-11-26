@@ -16,9 +16,6 @@ import {
 } from '@jbrowse/product-core'
 import { getParent, types } from 'mobx-state-tree'
 
-// icons
-
-// locals
 import { DesktopSessionFactory } from './DesktopSession'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 

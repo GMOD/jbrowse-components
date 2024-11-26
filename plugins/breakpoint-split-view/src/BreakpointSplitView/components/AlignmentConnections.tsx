@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 
-// locals
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
@@ -23,6 +22,7 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor'
+
 import type { BreakpointViewModel } from '../model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3] as const

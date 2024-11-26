@@ -1,10 +1,10 @@
 import { Buffer } from 'buffer'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 
-// locals
 import {
   fixup,
   generateChallenge,
@@ -12,6 +12,7 @@ import {
   processTokenResponse,
 } from './util'
 import { getResponseError } from '../util'
+
 import type { OAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'

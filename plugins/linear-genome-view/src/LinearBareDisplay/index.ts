@@ -1,9 +1,9 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-// locals
 import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
 import { BaseLinearDisplayComponent } from '../BaseLinearDisplay/'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearBareDisplayF(pluginManager: PluginManager) {

@@ -5,8 +5,6 @@ import type { GridBookmarkModel } from './model'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-
 type LGV = LinearGenomeViewModel
 
 type MaybeLGV = LGV | undefined

@@ -4,8 +4,6 @@ import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-// locals
-
 export function processMismatches({
   feature,
   region,

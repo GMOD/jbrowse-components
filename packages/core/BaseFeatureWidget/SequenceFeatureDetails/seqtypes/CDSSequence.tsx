@@ -2,7 +2,6 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import { stitch } from '../../util'
 import { cdsColor, splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'

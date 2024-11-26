@@ -1,4 +1,5 @@
 import path from 'path'
+
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 import Adapter from './JBrowse1TextSearchAdapter'

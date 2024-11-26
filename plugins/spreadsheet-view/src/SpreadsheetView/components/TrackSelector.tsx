@@ -5,7 +5,6 @@ import { coarseStripHTML } from '@jbrowse/core/util'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import type { ImportWizardModel } from '../ImportWizard'
 
 const TrackSelector = observer(function ({

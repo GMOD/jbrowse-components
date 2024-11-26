@@ -7,8 +7,6 @@ import { stateModelFactory } from './stateModelFactory'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
-
 export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {
     const configSchema = configSchemaFactory(pm)

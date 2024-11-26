@@ -16,9 +16,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

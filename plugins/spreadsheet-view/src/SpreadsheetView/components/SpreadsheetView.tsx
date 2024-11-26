@@ -4,11 +4,9 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// types
 import SpreadsheetDataGrid from './SpreadsheetDataGrid'
 
 import type { SpreadsheetViewModel } from '../SpreadsheetViewModel'
-// locals
 
 const ImportWizard = lazy(() => import('./ImportWizard'))
 

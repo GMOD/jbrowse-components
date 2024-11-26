@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-
-// icons
 import ClearIcon from '@mui/icons-material/Clear'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
 
-// locals
 import ShoppingCart from '../ShoppingCart'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'

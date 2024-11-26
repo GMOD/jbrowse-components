@@ -1,7 +1,6 @@
 import { transaction } from 'mobx'
 import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
-// locals
 import { ConfigurationReference, getConf } from '../../configuration'
 import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'

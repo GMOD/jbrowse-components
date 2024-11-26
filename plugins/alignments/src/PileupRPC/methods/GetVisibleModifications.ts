@@ -2,10 +2,10 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-// locals
 import { getModTypes } from '../../ModificationParser'
 import { getTagAlt } from '../../util'
 import PileupBaseRPC from '../base'
+
 import type { ModificationType } from '../../shared/types'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'

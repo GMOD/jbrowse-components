@@ -5,7 +5,6 @@ import { observer } from 'mobx-react'
 
 import { isUriLocation } from '../../util/types'
 
-// types
 import type { FileLocation } from '../../util/types'
 
 const UrlChooser = observer(function ({

@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -9,8 +10,6 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-
-// icons
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -52,7 +51,6 @@ import type {
   SnapshotIn,
 } from 'mobx-state-tree'
 
-// locals
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 

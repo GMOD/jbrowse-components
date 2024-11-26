@@ -3,9 +3,9 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import ViewLauncher from './ViewLauncher'
 import ViewPanel from './ViewPanel'
+
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'

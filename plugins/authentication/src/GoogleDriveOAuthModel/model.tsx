@@ -3,7 +3,6 @@ import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
-// locals
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 import { GoogleDriveFile } from './GoogleDriveFilehandle'
 import GoogleDriveIcon from './GoogleDriveIcon'

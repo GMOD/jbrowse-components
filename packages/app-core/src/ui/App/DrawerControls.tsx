@@ -8,8 +8,6 @@ import { observer } from 'mobx-react'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-// icons
-
 const DrawerControls = observer(function ({
   session,
 }: {

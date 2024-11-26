@@ -17,9 +17,6 @@ import { observer } from 'mobx-react'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-// icons
-
 import type {
   IconButtonProps as IconButtonPropsType,
   SvgIconProps,

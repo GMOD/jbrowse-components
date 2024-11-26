@@ -6,7 +6,6 @@ import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 import { getRoot } from 'mobx-state-tree'
 
-// locals
 import SVGBackground from './SVGBackground'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
 import { GridRaw } from '../components/Grid'

@@ -1,8 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { getFileName } from '@jbrowse/core/util/tracks'
 
-// locals
-
 import BigWigAdapterF from './BigWigAdapter'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
 import DensityRendererF from './DensityRenderer'
@@ -28,8 +26,8 @@ import {
   WiggleGetMultiRegionQuantitativeStats,
 } from './WiggleRPC/rpcMethods'
 import XYPlotRendererF, {
-  XYPlotRenderer,
   ReactComponent as XYPlotRendererReactComponent,
+  XYPlotRenderer,
   configSchema as xyPlotRendererConfigSchema,
 } from './XYPlotRenderer'
 import * as utils from './util'
@@ -117,8 +115,8 @@ export * from './util'
 
 export { default as WiggleRendering } from './WiggleRendering'
 export {
-  Tooltip,
   ReactComponent as LinearWiggleDisplayReactComponent,
+  Tooltip,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay'
 export type { TooltipContentsComponent } from './Tooltip'

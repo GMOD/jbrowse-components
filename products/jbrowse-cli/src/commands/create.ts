@@ -1,6 +1,8 @@
 import fs from 'fs'
+
 import { Args, Flags } from '@oclif/core'
 import decompress from 'decompress'
+
 import JBrowseCommand from '../base'
 import fetch from '../fetchWithProxy'
 

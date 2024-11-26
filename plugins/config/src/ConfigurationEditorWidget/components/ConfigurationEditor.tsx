@@ -1,6 +1,5 @@
 import React from 'react'
 
-// jbrowse
 import {
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
@@ -8,8 +7,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-
-// icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -23,9 +20,9 @@ import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType } from 'mobx-state-tree'

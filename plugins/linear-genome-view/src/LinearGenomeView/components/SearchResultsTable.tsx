@@ -13,7 +13,6 @@ import {
 } from '@mui/material'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
-// locals
 import type { LinearGenomeViewModel } from '../..'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 

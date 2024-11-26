@@ -13,10 +13,6 @@ import { makeStyles } from 'tss-react/mui'
 import type { LinearGenomeViewModel } from '../model'
 import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
-// icons
-
-// locals
-
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({

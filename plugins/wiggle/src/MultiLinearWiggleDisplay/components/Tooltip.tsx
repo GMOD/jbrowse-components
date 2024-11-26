@@ -9,8 +9,6 @@ import type { TooltipContentsComponent } from '../../Tooltip'
 import type { Source } from '../../util'
 import type { Feature } from '@jbrowse/core/util'
 
-// locals
-
 const en = (n: number) => n.toLocaleString('en-US')
 
 interface Props {

@@ -4,6 +4,7 @@ import { MenuItem, Paper, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { useSlotEditorStyles } from './useSlotEditorStyles'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const TypeSelector = observer(function ({

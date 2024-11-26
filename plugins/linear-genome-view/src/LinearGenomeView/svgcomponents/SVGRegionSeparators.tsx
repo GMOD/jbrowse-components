@@ -1,6 +1,5 @@
 import React from 'react'
 
-// locals
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel

@@ -1,7 +1,7 @@
 import fs from 'fs'
+
 import yargs from 'yargs'
 
-// locals
 import { parseArgv, standardizeArgv } from './parseArgv'
 import { renderRegion } from './renderRegion'
 import setupEnv from './setupEnv'

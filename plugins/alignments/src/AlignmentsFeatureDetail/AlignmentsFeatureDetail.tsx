@@ -2,10 +2,8 @@ import React, { lazy } from 'react'
 
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import { Paper } from '@mui/material'
-
 import { observer } from 'mobx-react'
 
-// locals
 import Flags from './Flags'
 import Formatter from './Formatter'
 import PairLink from './PairLink'

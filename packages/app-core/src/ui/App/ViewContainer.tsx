@@ -10,8 +10,6 @@ import ViewHeader from './ViewHeader'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
-// locals
-
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',

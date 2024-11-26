@@ -1,7 +1,6 @@
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-// locals
 import { paf_chain2paf } from './util'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 

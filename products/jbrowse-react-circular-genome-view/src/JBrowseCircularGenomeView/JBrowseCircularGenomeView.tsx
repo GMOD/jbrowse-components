@@ -7,7 +7,6 @@ import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import type { ViewModel } from '../createModel/createModel'
 
 const JBrowseCircularGenomeView = observer(function ({

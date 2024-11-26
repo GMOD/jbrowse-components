@@ -3,7 +3,6 @@ import React, { lazy } from 'react'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
-// types
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 

@@ -1,7 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-// locals
 import type { CircularViewModel } from '../CircularView/model'
 
 export function renderReactionData(self: any) {

@@ -1,18 +1,12 @@
 import { lazy } from 'react'
 
-// types
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-
-// jbrowse
 import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-
-// icons
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getPath, types } from 'mobx-state-tree'
 
-// local types
 import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'

@@ -5,12 +5,8 @@ import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
-// jbrowse
-
 import type { DesktopRootModel } from '../rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-// locals
 
 const JBrowseNonNullRoot = observer(function ({
   rootModel,

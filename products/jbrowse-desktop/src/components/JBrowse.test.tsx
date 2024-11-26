@@ -12,6 +12,7 @@ import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel'
 import sessionModelFactory from '../sessionModel'
+
 import type { SnapshotIn } from 'mobx-state-tree'
 
 jest.mock('../makeWorkerInstance', () => () => {})

@@ -1,7 +1,6 @@
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
 import { localStorageGetItem, localStorageSetItem } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'

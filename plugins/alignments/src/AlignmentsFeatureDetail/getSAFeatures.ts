@@ -1,6 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
 
-// locals
 import { featurizeSA, getClip, getLengthSansClipping } from '../MismatchParser'
 
 import type { Feature } from '@jbrowse/core/util'

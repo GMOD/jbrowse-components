@@ -6,7 +6,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
-
 import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
 import type { DesktopRootModel } from '../rootModel'

@@ -15,8 +15,6 @@ import ConnectionTypeSelect from './ConnectionTypeSelect'
 
 import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
-// locals
-
 const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
-// jbrowse
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { localStorageGetItem } from '@jbrowse/core/util'
@@ -8,7 +7,6 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { StringParam, useQueryParam } from 'use-query-params'
 
-// locals
 import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
 import { loadPluginManager } from './StartScreen/util'

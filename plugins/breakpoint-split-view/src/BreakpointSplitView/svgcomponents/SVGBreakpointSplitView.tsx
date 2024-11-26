@@ -11,7 +11,6 @@ import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 import { getRoot } from 'mobx-state-tree'
 
-// locals
 import SVGBackground from './SVGBackground'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
 import Overlay from '../components/Overlay'

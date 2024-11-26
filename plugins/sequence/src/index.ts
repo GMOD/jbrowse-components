@@ -10,6 +10,7 @@ import SequenceSearchAdapterF from './SequenceSearchAdapter'
 import TwoBitAdapterF from './TwoBitAdapter'
 import UnindexedFastaAdapterF from './UnindexedFastaAdapter'
 import createExtensionPoints from './createExtensionPoints'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class SequencePlugin extends Plugin {

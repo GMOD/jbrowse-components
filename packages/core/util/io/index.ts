@@ -1,7 +1,6 @@
 import isNode from 'detect-node'
 import { BlobFile, LocalFile } from 'generic-filehandle'
 
-// locals
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import { isElectron } from '../'
 import { getBlob } from '../tracks'

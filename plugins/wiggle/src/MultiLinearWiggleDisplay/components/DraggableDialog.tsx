@@ -15,8 +15,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { DialogProps, PaperProps } from '@mui/material'
 
-// icons
-
 const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',

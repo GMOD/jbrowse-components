@@ -5,9 +5,6 @@ import { Button, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({

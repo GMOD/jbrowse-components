@@ -1,9 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { iterMap } from '@jbrowse/core/util'
 
-// locals
 import { layoutFeature } from './layoutFeature'
 import { sortFeature } from './sortUtil'
+
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 
 // layout determines the height of the canvas that we use to render

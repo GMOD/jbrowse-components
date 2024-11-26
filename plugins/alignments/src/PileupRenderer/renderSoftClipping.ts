@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
-// locals
 import { fillRect, getCharWidthHeight } from './util'
 import { parseCigar } from '../MismatchParser'
 

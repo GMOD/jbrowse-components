@@ -6,13 +6,10 @@ import copy from 'copy-to-clipboard'
 import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
 
-// locals
 import CascadingMenuButton from '../../../ui/CascadingMenuButton'
 
 import type { MenuItem } from '../../../ui'
 import type { SequenceFeatureDetailsModel } from '../model'
-
-// icons
 
 // lazies
 const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog'))

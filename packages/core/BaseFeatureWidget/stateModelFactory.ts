@@ -1,7 +1,6 @@
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
 import { getConf } from '../configuration'
 import { getSession } from '../util'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'

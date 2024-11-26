@@ -1,9 +1,9 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
-// locals
 import { parseCigar } from '../MismatchParser'
 import { getMethBins } from '../ModificationParser'
 import { incWithProbabilities } from './util'
+
 import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'

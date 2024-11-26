@@ -3,6 +3,7 @@ import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-ge
 import { types } from 'mobx-state-tree'
 
 import { defaultFilterFlags } from '../shared/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**

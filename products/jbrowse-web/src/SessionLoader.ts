@@ -4,9 +4,9 @@ import { nanoid } from '@jbrowse/core/util/nanoid'
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
+
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'

@@ -1,6 +1,5 @@
 import React from 'react'
 
-// icons
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import ArrowDropUp from '@mui/icons-material/ArrowDropUp'
 import ArrowLeft from '@mui/icons-material/ArrowLeft'
@@ -11,7 +10,6 @@ import { IconButton, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()({

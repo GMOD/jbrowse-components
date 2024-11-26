@@ -1,6 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-// locals
 import { createView, doBeforeEach, setup } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 

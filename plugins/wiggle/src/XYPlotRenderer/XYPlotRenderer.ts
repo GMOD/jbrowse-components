@@ -3,6 +3,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawXY } from '../drawXY'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
+
 import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
 import type { Feature } from '@jbrowse/core/util'
 

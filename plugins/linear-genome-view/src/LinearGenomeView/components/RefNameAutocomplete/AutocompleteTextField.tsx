@@ -2,8 +2,8 @@ import React from 'react'
 
 import { TextField } from '@mui/material'
 
-// locals
 import EndAdornment from './EndAdornment'
+
 import type {
   AutocompleteRenderInputParams,
   TextFieldProps as TFP,

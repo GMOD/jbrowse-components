@@ -15,10 +15,8 @@ import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
 import ExportSvgDialog from './ExportSvgDialog'
+
 import type { CircularViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

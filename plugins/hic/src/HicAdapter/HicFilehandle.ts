@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer'
+
 import { openLocation } from '@jbrowse/core/util/io'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

@@ -5,7 +5,6 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import stateModelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-// locals
 
 export default function DotplotViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

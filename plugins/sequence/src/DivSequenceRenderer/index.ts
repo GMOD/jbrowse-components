@@ -2,6 +2,7 @@ import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/F
 
 import ReactComponent from './components/DivSequenceRendering'
 import configSchema from './configSchema'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 

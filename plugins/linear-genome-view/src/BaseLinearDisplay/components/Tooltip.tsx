@@ -5,7 +5,6 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
-// locals
 import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 interface Props {

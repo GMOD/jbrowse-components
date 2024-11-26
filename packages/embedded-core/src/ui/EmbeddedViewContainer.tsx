@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import ViewTitle from './ViewTitle'
+
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const useStyles = makeStyles()(theme => ({

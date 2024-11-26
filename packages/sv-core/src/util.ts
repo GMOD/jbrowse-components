@@ -1,8 +1,8 @@
 import { parseBreakend } from '@gmod/vcf'
 import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
-// types
 import { transaction } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
+
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

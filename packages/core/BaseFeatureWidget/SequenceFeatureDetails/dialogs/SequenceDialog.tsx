@@ -5,11 +5,11 @@ import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import SequencePanel from '../SequencePanel'
 import { useFeatureSequence } from '../hooks'
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
+
 import type { SimpleFeatureSerialized } from '../../../util'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
 

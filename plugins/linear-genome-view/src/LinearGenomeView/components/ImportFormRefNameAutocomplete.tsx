@@ -3,7 +3,6 @@ import React from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
 

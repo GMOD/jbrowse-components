@@ -3,7 +3,6 @@ import React from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
 import type { DotplotViewModel } from '../../DotplotView/model'
 import type { DotplotDisplayModel } from '../stateModelFactory'
 

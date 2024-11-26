@@ -13,12 +13,12 @@ import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 import { getRoot } from 'mobx-state-tree'
 
-// locals
 import SVGBackground from './SVGBackground'
 import SVGHeader from './SVGHeader'
 import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
-import type { LinearGenomeViewModel, ExportSvgOptions } from '..'
+
+import type { ExportSvgOptions, LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 

@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-
-// icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Button,
@@ -17,7 +15,6 @@ import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

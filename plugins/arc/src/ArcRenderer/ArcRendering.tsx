@@ -3,10 +3,10 @@ import React, { Suspense, lazy, useState } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// locals
 const ArcTooltip = lazy(() => import('../ArcTooltip'))
 
 function Arc({

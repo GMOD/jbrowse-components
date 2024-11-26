@@ -7,9 +7,8 @@ import {
 } from '@jbrowse/product-core'
 import { types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
-import jobsModelFactory from '../indexJobsModel'
 
-// locals
+import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 import { DesktopMenusMixin } from './Menus'

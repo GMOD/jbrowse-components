@@ -7,10 +7,6 @@ import { DataGrid } from '@mui/x-data-grid'
 import { formatDistance } from 'date-fns'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-
-// locals
-
 import { loadPluginManager } from './util'
 
 import type { RecentSessionData } from './util'

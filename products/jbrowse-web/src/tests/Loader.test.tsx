@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { Buffer } from 'buffer'
+
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle'

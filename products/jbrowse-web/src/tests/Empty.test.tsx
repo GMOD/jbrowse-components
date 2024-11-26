@@ -1,7 +1,7 @@
 import React from 'react'
+
 import { render } from '@testing-library/react'
 
-// locals
 import { JBrowse, getPluginManager } from './util'
 import emptyConfig from '../../test_data/empty.json'
 

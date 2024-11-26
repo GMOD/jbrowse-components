@@ -14,7 +14,6 @@ import {
   Typography,
 } from '@mui/material'
 
-// locals
 import type { ExportSvgOptions } from '..'
 import type { TextFieldProps } from '@mui/material'
 

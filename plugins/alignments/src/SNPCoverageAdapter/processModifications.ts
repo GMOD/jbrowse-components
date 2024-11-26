@@ -1,6 +1,5 @@
 import { max, sum } from '@jbrowse/core/util'
 
-// locals
 import { incWithProbabilities } from './util'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 

@@ -1,7 +1,5 @@
 import { lazy } from 'react'
 
-// icons
-
 import { Cable, DNA, Save, SaveAs } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import AppsIcon from '@mui/icons-material/Apps'
@@ -14,7 +12,6 @@ import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { types } from 'mobx-state-tree'
 
-// locals
 import { getSaveSession } from './Sessions'
 import OpenSequenceDialog from '../components/OpenSequenceDialog'
 

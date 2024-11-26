@@ -5,10 +5,10 @@ import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
 import Arrow from './Arrow'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region, Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 const Segments = observer(function Segments(props: {

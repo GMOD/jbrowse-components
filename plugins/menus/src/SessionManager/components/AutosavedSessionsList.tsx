@@ -4,8 +4,8 @@ import { List, ListSubheader, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
 import SessionListItem from './SessionListItem'
+
 import type { SessionModel, SessionSnap } from './util'
 
 const useStyles = makeStyles()(theme => ({

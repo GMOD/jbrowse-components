@@ -7,9 +7,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-// icons
-
-// locals
 const ReadVsRefDialog = lazy(() => import('./LinearReadVsRef'))
 
 function isDisplay(elt: { name: string }): elt is DisplayType {

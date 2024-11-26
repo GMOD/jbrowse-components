@@ -1,4 +1,3 @@
-// locals
 import { getMismatches } from '../MismatchParser'
 import { cacheGetter } from '../shared/util'
 

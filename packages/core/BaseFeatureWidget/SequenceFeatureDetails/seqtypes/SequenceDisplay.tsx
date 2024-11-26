@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { observer } from 'mobx-react'
+
 import type { SequenceFeatureDetailsModel } from '../model'
 
 const SequenceDisplay = observer(function ({

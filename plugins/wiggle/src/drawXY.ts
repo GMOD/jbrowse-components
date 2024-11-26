@@ -5,7 +5,6 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
 import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
-// locals
 import { fillRectCtx, getOrigin, getScale } from './util'
 
 import type { ScaleOpts } from './util'

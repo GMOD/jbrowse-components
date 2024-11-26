@@ -3,7 +3,6 @@ import React from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
-// locals
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'

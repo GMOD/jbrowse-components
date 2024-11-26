@@ -14,10 +14,6 @@ import ViewMenu from './ViewMenu'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-// icons
-
-// locals
-
 const useStyles = makeStyles()(theme => ({
   icon: {
     color: theme.palette.secondary.contrastText,

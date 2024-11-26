@@ -1,6 +1,7 @@
 import fsPromises from 'fs/promises'
 import os from 'os'
 import path from 'path'
+
 import sanitize from 'sanitize-filename'
 
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'

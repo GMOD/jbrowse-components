@@ -2,7 +2,6 @@ import React from 'react'
 
 import isObject from 'is-object'
 
-// locals
 import ArrayValue from './ArrayValue'
 import DataGridDetails from './DataGridDetails'
 import SimpleField from './SimpleField'

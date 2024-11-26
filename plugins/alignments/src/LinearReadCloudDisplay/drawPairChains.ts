@@ -7,6 +7,7 @@ import {
   getPairedInsertSizeColor,
   getPairedOrientationColor,
 } from '../shared/color'
+
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
   ChainData,

@@ -3,9 +3,9 @@ import React from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-// locals
 import SVGRegionSeparators from './SVGRegionSeparators'
 import SVGTrackLabel from './SVGTrackLabel'
+
 import type { LinearGenomeViewModel } from '..'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

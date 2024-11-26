@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util'
 
 import JobsListWidgetF from './JobsListWidget'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 

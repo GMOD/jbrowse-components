@@ -5,14 +5,11 @@ import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { LoadingEllipses } from '../../ui'
 import { getSession } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'
-
-// icons
 
 // lazies
 const SequenceFeatureDetails = lazy(() => import('./SequenceFeatureDetails'))

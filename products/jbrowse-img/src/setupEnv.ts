@@ -1,4 +1,5 @@
 import { TextDecoder, TextEncoder } from 'util'
+
 import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
 import fetch, { Headers, Request, Response } from 'node-fetch'

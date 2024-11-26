@@ -3,6 +3,7 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 import { types } from 'mobx-state-tree'
 
 import { defaultFilterFlags } from '../shared/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**

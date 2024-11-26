@@ -4,6 +4,7 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 
 import { configSchema } from './configSchema'
 import { stateModelFactory } from './stateModelFactory'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function AlignmentFeatureDetailsF(pluginManager: PluginManager) {

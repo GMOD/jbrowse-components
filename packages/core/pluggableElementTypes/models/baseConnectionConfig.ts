@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '../../configuration'
+
 import type { Instance } from 'mobx-state-tree'
 
 /**

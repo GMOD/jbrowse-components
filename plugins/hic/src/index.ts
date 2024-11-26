@@ -2,7 +2,6 @@ import Plugin from '@jbrowse/core/Plugin'
 import { colord } from '@jbrowse/core/util/colord'
 import { getFileName } from '@jbrowse/core/util/tracks'
 
-// locals
 import HicAdapterF from './HicAdapter'
 import HicRendererF from './HicRenderer'
 import HicTrackF from './HicTrack'

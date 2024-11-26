@@ -6,8 +6,6 @@ import { makeStyles } from 'tss-react/mui'
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-// icons
-
 const useStyles = makeStyles()({
   dragHandle: {
     cursor: 'grab',

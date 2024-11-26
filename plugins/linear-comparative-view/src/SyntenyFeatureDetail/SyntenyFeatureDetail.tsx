@@ -10,8 +10,6 @@ import {
 import { Link, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
-
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 

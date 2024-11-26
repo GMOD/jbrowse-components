@@ -1,10 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-
-// icons
 import TimelineIcon from '@mui/icons-material/Timeline'
 
-// locals
 import ComparativeRenderer from './ComparativeRenderer'
 import DotplotDisplayF from './DotplotDisplay'
 import DotplotReadVsRefMenuItem from './DotplotReadVsRef'

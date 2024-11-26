@@ -1,6 +1,5 @@
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 
-// locals
 import configSchema from './configSchema'
 import modelFactory from './model'
 

@@ -9,8 +9,6 @@ import type { ChainData } from '../shared/fetchChains'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-
 export function drawLongReadChains({
   ctx,
   self,

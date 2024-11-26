@@ -2,8 +2,6 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-
-// icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -12,9 +10,8 @@ import { transaction } from 'mobx'
 import { types } from 'mobx-state-tree'
 
 import { Curves } from './components/Icons'
-
-// locals
 import baseModel from '../LinearComparativeView/model'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 

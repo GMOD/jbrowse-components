@@ -5,9 +5,6 @@ import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// local utils
-
-// local components
 import CenterLine from './CenterLine'
 import Gridlines from './Gridlines'
 import HighlightGroup from './Highlight'
@@ -16,8 +13,6 @@ import RubberbandSpan from './RubberbandSpan'
 import Scalebar from './Scalebar'
 import VerticalGuide from './VerticalGuide'
 import { SCALE_BAR_HEIGHT } from '../consts'
-
-// hooks
 import { useRangeSelect } from './useRangeSelect'
 import { useSideScroll } from './useSideScroll'
 import { useWheelScroll } from './useWheelScroll'
