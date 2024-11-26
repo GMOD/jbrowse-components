@@ -17,6 +17,8 @@ const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
 const printBuildError = require('react-dev-utils/printBuildError')
 const printHostingInstructions = require('react-dev-utils/printHostingInstructions')
+const webpack = require('webpack')
+const paths = require('../config/paths')
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
@@ -38,9 +40,6 @@ const writeStatsJson = argv.includes('--stats')
 
 // We require that you explicitly set browsers and do not fall back to
 // browserslist defaults.
-const webpack = require('webpack')
-
-const paths = require('../config/paths')
 
 module.exports = function buildWebpack(config) {
   return checkBrowsers(paths.appPath, isInteractive)

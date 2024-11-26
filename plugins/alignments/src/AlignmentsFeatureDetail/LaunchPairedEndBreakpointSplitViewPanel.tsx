@@ -5,7 +5,6 @@ import { Link, Typography } from '@mui/material'
 
 // types
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies

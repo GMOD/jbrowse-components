@@ -1,12 +1,12 @@
 import { parseBreakend } from '@gmod/vcf'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import {
   gatherOverlaps,
   type AbstractSessionModel,
   type Feature,
 } from '@jbrowse/core/util'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 export default class BreakpointSplitViewType extends ViewType {
   getBreakendCoveringRegions({

@@ -7,10 +7,6 @@ import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakp
 import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
-
-// locals
-
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SupplementaryAlignments(props: {

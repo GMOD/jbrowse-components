@@ -331,6 +331,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               assemblyName: self.assemblyName,
             }),
             data => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               if (!data) {
                 return
               }

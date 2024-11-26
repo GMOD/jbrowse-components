@@ -152,27 +152,25 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 }
 
 /** abstract interface for a session allows editing configurations */
-export interface SessionWithConfigEditingModel extends AbstractSessionModel {
+export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
-  thing: unknown,
-): thing is SessionWithConfigEditingModel {
-  return isSessionModel(thing) && 'editConfiguration' in thing
+  t: unknown,
+): t is SessionWithConfigEditing {
+  return isSessionModel(t) && 'editConfiguration' in t
 }
 
 /** abstract interface for a session allows adding tracks */
-export interface SessionWithConfigEditingModel extends AbstractSessionModel {
+export interface SessionWithAddTracks extends AbstractSessionModel {
   addTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): void
 }
-export function isSessionWithAddTracks(
-  thing: unknown,
-): thing is SessionWithConfigEditingModel {
+export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (
     // @ts-expect-error
-    isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
+    isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
   )
 }
 

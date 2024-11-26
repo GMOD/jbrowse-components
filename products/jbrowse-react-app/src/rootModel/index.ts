@@ -9,7 +9,6 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import jbrowseWebFactory from '../jbrowseModel'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -19,6 +18,7 @@ import StorageIcon from '@mui/icons-material/Storage'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import jbrowseWebFactory from '../jbrowseModel'
 
 // other
 import { filterSessionInPlace } from '../util'

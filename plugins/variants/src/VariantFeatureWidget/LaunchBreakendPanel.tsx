@@ -4,11 +4,9 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
+// types
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
-import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-
-// locals
 
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(
@@ -66,12 +64,10 @@ function LaunchBreakpointSplitViewPanel({
   locStrings,
   model,
   feature,
-  viewType,
 }: {
   locStrings: string[]
   model: VariantFeatureWidgetModel
   feature: SimpleFeatureSerialized
-  viewType: ViewType
 }) {
   const session = getSession(model)
   const simpleFeature = new SimpleFeature(feature)
@@ -136,10 +132,10 @@ export default function BreakendPanel(props: {
   const { model, locStrings, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  let viewType: ViewType | undefined
+  let hasBreakpointSplitView = false
 
   try {
-    viewType = pluginManager.getViewType('BreakpointSplitView')
+    hasBreakpointSplitView = !!pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // ignore
   }
@@ -147,9 +143,8 @@ export default function BreakendPanel(props: {
   return (
     <BaseCard {...props} title="Breakends">
       <LocStringList model={model} locStrings={locStrings} />
-      {viewType ? (
+      {hasBreakpointSplitView ? (
         <LaunchBreakpointSplitViewPanel
-          viewType={viewType}
           model={model}
           locStrings={locStrings}
           feature={feature}

@@ -1,5 +1,4 @@
-import React, { lazy } from 'react'
-
+import React from 'react'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
   assembleLocString,

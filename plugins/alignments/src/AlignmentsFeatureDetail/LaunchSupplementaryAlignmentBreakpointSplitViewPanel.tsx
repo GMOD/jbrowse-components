@@ -8,7 +8,6 @@ import { getSAFeatures } from './getSAFeatures'
 
 import type { ReducedFeature } from './getSAFeatures'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // locals
