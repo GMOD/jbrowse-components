@@ -9,7 +9,6 @@ import {
   toLocale,
 } from '../../util'
 import { calculateUTRs2, calculateUTRs, dedupe, revlist } from '../util'
-
 import CDNASequence from './seqtypes/CDNASequence'
 import CDSSequence from './seqtypes/CDSSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'
