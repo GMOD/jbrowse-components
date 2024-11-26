@@ -1,8 +1,10 @@
 import React from 'react'
+
 import { getContainingView, when } from '@jbrowse/core/util'
 
 // locals
 import Arcs from './components/Arcs'
+
 import type { LinearArcDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

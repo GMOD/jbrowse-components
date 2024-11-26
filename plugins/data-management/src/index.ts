@@ -1,11 +1,13 @@
 import { lazy } from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
+
 import AddConnectionWidgetF from './AddConnectionWidget'
 import AddTrackWidgetF from './AddTrackWidget'
-
 import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
 import PluginStoreWidgetF from './PluginStoreWidget'
 import UCSCTrackHubConnectionF from './ucsc-trackhub'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const AssemblyManager = lazy(() => import('./AssemblyManager'))

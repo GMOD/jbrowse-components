@@ -4,13 +4,14 @@ import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderer
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
+  ResultsSerialized as ServerSideResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 

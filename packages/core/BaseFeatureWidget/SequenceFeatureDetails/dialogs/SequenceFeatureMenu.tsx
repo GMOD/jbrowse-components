@@ -1,4 +1,5 @@
 import React, { lazy, useState } from 'react'
+
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
 import copy from 'copy-to-clipboard'
@@ -7,6 +8,7 @@ import { observer } from 'mobx-react'
 
 // locals
 import CascadingMenuButton from '../../../ui/CascadingMenuButton'
+
 import type { MenuItem } from '../../../ui'
 import type { SequenceFeatureDetailsModel } from '../model'
 

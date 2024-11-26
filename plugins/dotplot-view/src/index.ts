@@ -11,6 +11,7 @@ import DotplotReadVsRefMenuItem from './DotplotReadVsRef'
 import DotplotRendererF from './DotplotRenderer'
 import DotplotViewF from './DotplotView'
 import LaunchDotplotViewF from './LaunchDotplotView'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

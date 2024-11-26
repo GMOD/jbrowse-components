@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react'
+
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import type { GridBookmarkModel, IExtendedLGV } from '../../model'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+
+// locals
 
 type LGV = IExtendedLGV
 
@@ -29,7 +31,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const session = getSession(model) as SessionWithWidgets
   const { classes } = useStyles()
   const { assemblyManager } = session
-  const { showBookmarkHighlights, showBookmarkLabels } = model
+  const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
     | undefined
@@ -41,7 +43,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   }, [session, bookmarkWidget])
 
   const assemblyNames = new Set(model.assemblyNames)
-  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+  return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(r => assemblyNames.has(r.assemblyName))
         .map(r => {
@@ -65,7 +67,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
           return (
             <Tooltip
               key={`${JSON.stringify(obj)}-${idx}`}
-              title={showBookmarkLabels ? label : ''}
+              title={bookmarkLabelsVisible ? label : ''}
               arrow
             >
               <div

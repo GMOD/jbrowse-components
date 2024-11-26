@@ -8,17 +8,18 @@ import { ixIxxStream } from 'ixixx'
 import JBrowseCommand from '../base'
 import {
   generateMeta,
-  supported,
   guessAdapterFromFileName,
+  supported,
 } from '../types/common'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
+
 import type {
-  Track,
   Config,
+  LocalPathLocation,
+  Track,
   TrixTextSearchAdapter,
   UriLocation,
-  LocalPathLocation,
 } from '../base'
 
 function readConf(path: string) {

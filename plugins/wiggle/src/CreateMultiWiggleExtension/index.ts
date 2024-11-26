@@ -1,6 +1,8 @@
 import { lazy } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 

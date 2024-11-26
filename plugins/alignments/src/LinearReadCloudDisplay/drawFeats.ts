@@ -1,7 +1,9 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { hasPairedReads } from '../shared/util'
+
 import type { LinearReadCloudDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

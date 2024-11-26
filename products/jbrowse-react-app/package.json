@@ -83,7 +83,6 @@
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "base64-js": "^1.0.0",
-    "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",
     "crypto-js": "^4.2.0",
     "file-saver": "^2.0.0",

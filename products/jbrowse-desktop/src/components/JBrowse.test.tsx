@@ -3,7 +3,7 @@ import React from 'react'
 // must import first to create window.require as side effect
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { render, fireEvent } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 // locals
 import JBrowse from './JBrowse'

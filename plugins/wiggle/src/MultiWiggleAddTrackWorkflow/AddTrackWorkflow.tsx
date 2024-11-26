@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import {
   getSession,
   isElectron,
@@ -8,6 +9,7 @@ import {
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { Button, Paper, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({

@@ -1,9 +1,12 @@
 import React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 // locals
+
 import { isUnsupported } from '../util'
 import TrackLabelMenu from './TrackLabelMenu'
 import type { NodeData } from '../util'

@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
+
 import { isStateTreeNode } from 'mobx-state-tree'
+
 import type {
-  NoAssemblyRegion as MUNoAssemblyRegion,
+  BlobLocation as MUBlobLocation,
   Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
+  NoAssemblyRegion as MUNoAssemblyRegion,
   UriLocation as MUUriLocation,
-  BlobLocation as MUBlobLocation,
 } from './mst'
 import type TextSearchManager from '../../TextSearch/TextSearchManager'
 import type assemblyManager from '../../assemblyManager'
@@ -15,14 +17,14 @@ import type { BaseInternetAccountModel } from '../../pluggableElementTypes/model
 import type RpcManager from '../../rpc/RpcManager'
 import type { MenuItem } from '../../ui'
 import type { Feature } from '../simpleFeature'
-// types
 import type { ThemeOptions } from '@mui/material'
+// types
 import type {
-  Instance,
-  SnapshotIn,
   IAnyStateTreeNode,
   IStateTreeNode,
   IType,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 
 export * from './util'
@@ -150,13 +152,13 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 }
 
 /** abstract interface for a session allows editing configurations */
-export interface SessionWithConfigEditingModel extends AbstractSessionModel {
+export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
-  thing: unknown,
-): thing is SessionWithConfigEditingModel {
-  return isSessionModel(thing) && 'editConfiguration' in thing
+  t: unknown,
+): t is SessionWithConfigEditing {
+  return isSessionModel(t) && 'editConfiguration' in t
 }
 
 /** abstract interface for a session allows adding tracks */
@@ -165,12 +167,10 @@ export interface SessionWithAddTracks extends AbstractSessionModel {
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): void
 }
-export function isSessionWithAddTracks(
-  thing: unknown,
-): thing is SessionWithAddTracks {
+export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (
     // @ts-expect-error
-    isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
+    isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
   )
 }
 

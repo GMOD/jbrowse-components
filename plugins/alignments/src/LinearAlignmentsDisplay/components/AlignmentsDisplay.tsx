@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'

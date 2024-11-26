@@ -8,12 +8,12 @@ import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewMo
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
-  isSessionModelWithWidgets,
-  minmax,
-  measureText,
-  max,
-  localStorageGetItem,
   getTickDisplayStr,
+  isSessionModelWithWidgets,
+  localStorageGetItem,
+  max,
+  measureText,
+  minmax,
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -34,6 +34,7 @@ import {
 // locals
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'

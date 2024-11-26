@@ -1,9 +1,11 @@
 import React from 'react'
+
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import Category from './TrackCategory'
 import TrackLabel from './TrackLabel'
+
 import type { NodeData } from '../util'
 
 const useStyles = makeStyles()(theme => ({

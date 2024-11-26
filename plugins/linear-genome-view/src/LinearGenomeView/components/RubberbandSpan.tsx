@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+
 import { stringify, toLocale } from '@jbrowse/core/util'
 import { Popover, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'

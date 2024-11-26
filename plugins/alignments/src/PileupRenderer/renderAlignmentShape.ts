@@ -1,5 +1,7 @@
 import { bpSpanPx } from '@jbrowse/core/util'
+
 import { parseCigar } from '../MismatchParser'
+
 import type { RenderArgsDeserialized } from './PileupRenderer'
 import type { LayoutFeature } from './util'
 

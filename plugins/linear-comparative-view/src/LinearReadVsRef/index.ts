@@ -1,11 +1,13 @@
 import { lazy } from 'react'
-import { getSession, getContainingTrack } from '@jbrowse/core/util'
 
-// icons
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+
+// icons
 
 // locals
 const ReadVsRefDialog = lazy(() => import('./LinearReadVsRef'))

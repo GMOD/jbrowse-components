@@ -1,11 +1,11 @@
 // adapted from https://github.com/mobxjs/mobx-state-tree/blob/master/packages/mst-middlewares/src/time-traveller.ts
 import {
-  types,
-  resolvePath,
-  getEnv,
-  onSnapshot,
-  getSnapshot,
   applySnapshot,
+  getEnv,
+  getSnapshot,
+  onSnapshot,
+  resolvePath,
+  types,
 } from 'mobx-state-tree'
 import type { IDisposer, IAnyStateTreeNode } from 'mobx-state-tree'
 

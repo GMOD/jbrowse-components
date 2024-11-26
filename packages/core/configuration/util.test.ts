@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+
 import { ConfigurationSchema } from './configurationSchema'
 import { getTypeNamesFromExplicitlyTypedUnion } from './util'
 

@@ -1,5 +1,6 @@
-import { createEvent, fireEvent, waitFor, screen } from '@testing-library/react'
-import { setup, createView, doBeforeEach, hts } from './util'
+import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
+
+import { createView, doBeforeEach, hts, setup } from './util'
 setup()
 
 beforeEach(() => {

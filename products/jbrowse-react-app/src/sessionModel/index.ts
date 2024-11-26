@@ -1,4 +1,5 @@
 import { BaseWebSession } from '@jbrowse/web-core'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'

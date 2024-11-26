@@ -1,10 +1,10 @@
 import React from 'react'
+
+// icons
 import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-
-// icons
 
 // locals
 import HamburgerMenu from './HamburgerMenu'

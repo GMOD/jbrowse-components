@@ -1,7 +1,10 @@
 import React from 'react'
+
 import { Grid } from '@mui/material'
+
 import SessionCard from './SessionCard'
 import { loadPluginManager } from './util'
+
 import type { RecentSessionData } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

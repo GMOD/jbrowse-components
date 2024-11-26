@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-
 import CalendarIcon from '@mui/icons-material/CalendarViewDay'
+
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import LinearComparativeDisplayF from './LinearComparativeDisplay'
@@ -12,6 +12,7 @@ import LinearSyntenyViewF from './LinearSyntenyView'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail'
 import SyntenyTrackF from './SyntenyTrack'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

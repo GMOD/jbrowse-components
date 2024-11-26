@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 import baseConfigFactory from '../LinearComparativeDisplay/configSchemaF'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

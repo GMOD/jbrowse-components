@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 // icons
 
-import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
+import { Cable, DNA, Save, SaveAs } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -17,6 +17,7 @@ import { types } from 'mobx-state-tree'
 // locals
 import { getSaveSession } from './Sessions'
 import OpenSequenceDialog from '../components/OpenSequenceDialog'
+
 import type { DesktopRootModel } from '.'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

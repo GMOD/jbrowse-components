@@ -1,4 +1,5 @@
 import BaseRpcDriver from './BaseRpcDriver'
+
 import type { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import type PluginManager from '../PluginManager'
 

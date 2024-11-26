@@ -1,7 +1,7 @@
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { doesIntersect2, max, min, SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, doesIntersect2, max, min } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom, toArray } from 'rxjs'

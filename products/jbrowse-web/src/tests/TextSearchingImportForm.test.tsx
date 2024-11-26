@@ -1,7 +1,7 @@
-import { waitFor, fireEvent } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 // locals
-import { setup, doSetupForImportForm, doBeforeEach } from './util'
+import { doBeforeEach, doSetupForImportForm, setup } from './util'
 
 setup()
 

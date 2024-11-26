@@ -1,16 +1,16 @@
 import { lazy } from 'react'
 
-// jbrowse
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { observable } from 'mobx'
-import { types, cast, getEnv, isAlive } from 'mobx-state-tree'
+import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
-// locals
+// jbrowse
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun, getColorForModification } from '../util'
+
 import type {
   ColorBy,
   FilterBy,
@@ -19,10 +19,12 @@ import type {
 } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
-  AnyConfigurationSchemaType,
   AnyConfigurationModel,
+  AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// locals
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))

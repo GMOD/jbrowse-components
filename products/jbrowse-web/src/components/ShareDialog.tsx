@@ -1,8 +1,8 @@
-import React, { useState, useEffect, lazy } from 'react'
+import React, { lazy, useEffect, useState } from 'react'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // icons
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
@@ -22,6 +22,7 @@ import { StringParam, useQueryParam } from 'use-query-params'
 // locals
 import { shareSessionToDynamo } from '../sessionSharing'
 import { toUrlSafeB64 } from '../util'
+
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const SettingsDialog = lazy(() => import('./ShareSettingsDialog'))

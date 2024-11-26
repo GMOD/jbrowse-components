@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
@@ -8,6 +9,7 @@ import { addDisposer, isAlive, types } from 'mobx-state-tree'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import { getDisplayStr, getFeatureDensityStatsPre } from './util'
 import TooLargeMessage from '../components/TooLargeMessage'
+
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util/types'

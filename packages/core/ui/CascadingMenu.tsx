@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import React, { useContext, useMemo } from 'react'
+
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
   Divider,
@@ -11,12 +12,18 @@ import {
 } from '@mui/material'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
 import {
-  bindHover,
   bindFocus,
+  bindHover,
   bindMenu,
   usePopupState,
 } from 'material-ui-popup-state/hooks'
+
+// locals
 import { MenuItemEndDecoration } from './Menu'
+
+// icons
+
+// types
 import type { MenuItem as JBMenuItem } from './Menu'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 import type { PopupState } from 'material-ui-popup-state/hooks'

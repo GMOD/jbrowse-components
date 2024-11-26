@@ -10,6 +10,7 @@ import {
   generateUcscTranscript,
   isUcscTranscript,
 } from './generateUcscTranscript'
+
 import type BED from '@gmod/bed'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 

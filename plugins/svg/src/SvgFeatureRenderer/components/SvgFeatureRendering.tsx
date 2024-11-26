@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx, measureText } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -8,9 +9,10 @@ import { observer } from 'mobx-react'
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
-import type { ExtraGlyphValidator, DisplayModel } from './util'
+
+import type { DisplayModel, ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region, Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 // used to make features have a little padding for their labels

@@ -3,13 +3,13 @@ import React, { useState } from 'react'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { measureGridWidth } from '@jbrowse/core/util'
 import {
-  FormControlLabel,
   Checkbox,
+  FormControlLabel,
   TextField,
   Typography,
 } from '@mui/material'
-
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 interface Entry {

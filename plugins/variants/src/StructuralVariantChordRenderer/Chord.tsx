@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
+
 import { parseBreakend } from '@gmod/vcf'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { polarToCartesian, getStrokeProps } from '@jbrowse/core/util'
+import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -86,8 +88,8 @@ const Chord = observer(function Chord({
     endPosition = mate.start
     endBlock = blocksForRefs[chr2]
   } else {
-    console.warn('unknown sv type', svType)
-    endPosition = startPos + 1
+    endBlock = startBlock
+    endPosition = feature.get('end')
   }
 
   if (endBlock) {

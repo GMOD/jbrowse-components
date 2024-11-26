@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import clone from 'clone'
+
 import { getSnapshot } from 'mobx-state-tree'
 
 import type { DotplotViewModel } from '../DotplotView/model'
@@ -25,7 +25,7 @@ export function renderBlockData(self: IAnyStateTreeNode) {
       rpcManager,
       renderProps: {
         ...self.renderProps(),
-        view: clone(getSnapshot(parent)),
+        view: structuredClone(getSnapshot(parent)),
         width: viewWidth,
         height: viewHeight,
         borderSize,

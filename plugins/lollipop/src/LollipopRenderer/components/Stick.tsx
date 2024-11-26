@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 

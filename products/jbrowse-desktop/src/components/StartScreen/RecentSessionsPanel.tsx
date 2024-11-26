@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+
 import { useLocalStorage } from '@jbrowse/core/util'
 
 // icons
@@ -12,9 +13,9 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
-  Tooltip,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -25,6 +26,7 @@ import RecentSessionsList from './RecentSessionList'
 import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
 import { loadPluginManager } from './util'
+
 import type { RecentSessionData } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'

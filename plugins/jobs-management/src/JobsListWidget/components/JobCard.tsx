@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { Card, CardContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+
 import type { NewJob } from '../model'
 
 const JobCard = observer(function JobCard({ job }: { job: NewJob }) {

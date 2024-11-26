@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { getSession, getEnv } from '@jbrowse/core/util'
+
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 
 // icons
@@ -7,10 +8,10 @@ import AddIcon from '@mui/icons-material/Add'
 import CheckIcon from '@mui/icons-material/Check'
 import PersonIcon from '@mui/icons-material/Person'
 import {
+  Button,
   Card,
   CardActions,
   CardContent,
-  Button,
   Link,
   Typography,
 } from '@mui/material'

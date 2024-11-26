@@ -1,32 +1,38 @@
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { navToMultiLevelBreak } from '@jbrowse/sv-core'
+import { getParent, type IAnyStateTreeNode } from 'mobx-state-tree'
+
+// locals
 import ReactComponent from './components/SvInspectorView'
-import stateModelFactory from './models/SvInspectorView'
+import stateModelFactory from './model'
+
+// types
+import type { SvInspectorViewModel } from './model'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
-import type BreakpointSplitViewType from '@jbrowse/plugin-breakpoint-split-view/src/BreakpointSplitView/BreakpointSplitView'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
-function defaultOnChordClick(
-  feature: Feature,
-  chordTrack: IAnyStateTreeNode,
-  pluginManager: PluginManager,
-) {
-  const session = getSession(chordTrack)
-  session.setSelection(feature)
-  const view = getContainingView(chordTrack) as CircularViewModel
-  const viewType = pluginManager.getViewType(
-    'BreakpointSplitView',
-  ) as BreakpointSplitViewType
-  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
-
-  // try to center the offsetPx
-  viewSnapshot.views[0]!.offsetPx -= view.width / 2 + 100
-  viewSnapshot.views[1]!.offsetPx -= view.width / 2 + 100
-
-  session.addView('BreakpointSplitView', viewSnapshot)
+function defaultOnChordClick(feature: Feature, chordTrack: IAnyStateTreeNode) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  ;(async () => {
+    const session = getSession(chordTrack)
+    try {
+      session.setSelection(feature)
+      const view = getContainingView(chordTrack) as CircularViewModel
+      const parentView = getParent<any>(view) as SvInspectorViewModel
+      const stableViewId = `${parentView.id}_spawned`
+      await navToMultiLevelBreak({
+        assemblyName: view.assemblyNames[0]!,
+        session,
+        stableViewId,
+        feature,
+      })
+    } catch (e) {
+      console.error(e)
+      session.notifyError(`${e}`, e)
+    }
+  })()
 }
 
 export default function SvInspectorViewF(pluginManager: PluginManager) {

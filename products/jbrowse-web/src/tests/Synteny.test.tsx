@@ -1,13 +1,12 @@
 import React from 'react'
 import { Buffer } from 'buffer'
 import { render } from '@testing-library/react'
-
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
 // local
 import { App } from './loaderUtil'
-import { setup, expectCanvasMatch } from './util'
+import { expectCanvasMatch, setup } from './util'
 setup()
 
 const getFile = (url: string) =>

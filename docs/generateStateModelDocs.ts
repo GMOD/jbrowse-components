@@ -1,11 +1,12 @@
 import fs from 'fs'
 import slugify from 'slugify'
+
 import {
-  rm,
+  extractWithComment,
   filter,
   getAllFiles,
   removeComments,
-  extractWithComment,
+  rm,
 } from './util'
 
 interface Action {

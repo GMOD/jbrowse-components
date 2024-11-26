@@ -41,7 +41,6 @@
     "@floating-ui/react": "^0.26.3",
     "@mui/icons-material": "^6.0.0",
     "@types/file-saver": "^2.0.1",
-    "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0",
     "material-ui-popup-state": "^5.0.0"

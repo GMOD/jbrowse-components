@@ -1,5 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
+
 import type { ScaleOpts, Source } from './util'
 import type {
   RenderArgs as FeatureRenderArgs,

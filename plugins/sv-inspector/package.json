@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@mui/icons-material": "^6.0.0",
-    "clone": "^2.1.2"
+    "@jbrowse/sv-core": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

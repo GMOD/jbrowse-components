@@ -1,26 +1,29 @@
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
+
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import isObject from 'is-object'
 import {
+  getEnv as getEnvMST,
   getParent,
   getSnapshot,
-  getEnv as getEnvMST,
+  hasParent,
   isAlive,
   isStateTreeNode,
-  hasParent,
 } from 'mobx-state-tree'
 import { flushSync, render } from 'react-dom' // eslint-disable-line react/no-deprecated
+
 import { colord } from './colord'
 import { checkStopToken } from './stopToken'
 import {
-  isSessionModel,
   isDisplayModel,
-  isViewModel,
+  isSessionModel,
   isTrackModel,
+  isViewModel,
   isUriLocation,
 } from './types'
+
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
@@ -37,6 +40,7 @@ import type {
   IStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
+
 export * from './types'
 export * from './when'
 export * from './range'
@@ -1334,16 +1338,15 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   return stack
 }
 
-interface BasicFeature {
+export interface BasicFeature {
   end: number
   start: number
   refName: string
-  assemblyName?: string
 }
 
 // returns new array non-overlapping features
-export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
-  const memo = {} as Record<string, BasicFeature[]>
+export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
+  const memo = {} as Record<string, T[]>
   for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []

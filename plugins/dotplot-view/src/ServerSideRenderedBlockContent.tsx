@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import React, { useEffect, useState } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'

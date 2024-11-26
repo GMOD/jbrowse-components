@@ -1,4 +1,5 @@
 import jexl from 'jexl'
+
 import type { Feature } from './simpleFeature'
 
 type JexlWithAddFunction = typeof jexl & {

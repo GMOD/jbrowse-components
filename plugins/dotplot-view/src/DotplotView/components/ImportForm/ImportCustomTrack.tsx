@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
   FormControlLabel,
@@ -9,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
 import { basename, extName, getName, stripGz } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util/types'

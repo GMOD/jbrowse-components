@@ -1,7 +1,9 @@
 import { getParent, isRoot } from 'mobx-state-tree'
-import { getSession, objectHash, getEnv } from './index'
+
+import { getEnv, getSession, objectHash } from './index'
 import { readConfObject } from '../configuration'
-import type { PreFileLocation, FileLocation } from './types'
+
+import type { FileLocation, PreFileLocation } from './types'
 import type { AnyConfigurationModel } from '../configuration'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 

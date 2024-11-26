@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
@@ -18,7 +19,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import ExportSvgDialog from './ExportSvgDialog'
-import type { CircularViewModel } from '../models/model'
+import type { CircularViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   controls: {

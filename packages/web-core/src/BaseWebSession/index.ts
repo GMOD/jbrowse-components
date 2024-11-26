@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import {
   AppFocusMixin,
   SessionAssembliesMixin,
@@ -15,13 +16,11 @@ import {
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
-
-// icons
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
-import clone from 'clone'
+
 import { autorun } from 'mobx'
 import {
   addDisposer,
@@ -31,20 +30,24 @@ import {
   types,
 } from 'mobx-state-tree'
 
-// locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
+
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
-  AnyConfigurationModel,
   AnyConfiguration,
+  AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
-import type { SnapshotIn, Instance } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
+
+// icons
+
+// locals
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
@@ -387,7 +390,7 @@ export function BaseWebSession({
               interface Display {
                 displayId: string
               }
-              const snap = clone(getSnapshot(config)) as {
+              const snap = structuredClone(getSnapshot(config)) as {
                 [key: string]: unknown
                 displays: Display[]
               }

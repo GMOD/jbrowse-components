@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { stringify } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'

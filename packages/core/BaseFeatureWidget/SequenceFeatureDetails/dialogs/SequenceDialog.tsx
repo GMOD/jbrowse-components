@@ -1,6 +1,7 @@
 import React, { Suspense, useRef, useState } from 'react'
+
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

@@ -1,13 +1,15 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
-import { clone, deepUpdate, fillTemplate } from './util'
+
+import { parseJB1Conf, parseJB1Json, regularizeConf } from './jb1ConfigParse'
+import { deepUpdate, fillTemplate } from './util'
+
 import type {
-  JBLocation,
-  UriLocation,
-  LocalPathLocation,
   Config,
-  Track,
   Include,
+  JBLocation,
+  LocalPathLocation,
+  Track,
+  UriLocation,
 } from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
@@ -90,7 +92,7 @@ export async function createFinalConfig(
   baseConfig: Config,
   defaults = configDefaults,
 ): Promise<Config> {
-  const configWithDefaults = deepUpdate(clone(defaults), baseConfig)
+  const configWithDefaults = deepUpdate(structuredClone(defaults), baseConfig)
   let finalConfig = await loadIncludes(configWithDefaults)
   finalConfig = mergeConfigs(finalConfig, baseConfig) || finalConfig
   fillTemplates(finalConfig, finalConfig)
@@ -199,7 +201,7 @@ function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
  * @param inputConfig - Config to load includes into
  */
 async function loadIncludes(inputConfig: Config): Promise<Config> {
-  inputConfig = clone(inputConfig)
+  inputConfig = structuredClone(inputConfig)
 
   async function loadRecur(
     config: Config,
@@ -211,7 +213,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
         `Could not determine source URL: ${JSON.stringify(config)}`,
       )
     }
-    const newUpstreamConf = mergeConfigs(clone(upstreamConf), config)
+    const newUpstreamConf = mergeConfigs(structuredClone(upstreamConf), config)
     if (!newUpstreamConf) {
       throw new Error('Problem merging configs')
     }

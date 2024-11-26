@@ -1,4 +1,5 @@
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+
 import { assembleLocStringFast } from '.'
 import {
   BlockSet,
@@ -7,6 +8,7 @@ import {
   InterRegionPaddingBlock,
 } from './blockTypes'
 import { intersection2 } from './range'
+
 import type { Base1DViewModel } from './calculateStaticBlocks'
 
 /**

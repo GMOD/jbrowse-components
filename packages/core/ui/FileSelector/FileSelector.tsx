@@ -1,14 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react'
+
+// others
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import {
   Box,
+  FormGroup,
   FormHelperText,
   InputLabel,
   Menu,
   MenuItem,
-  Tooltip,
-  ToggleButtonGroup,
   ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -16,11 +19,12 @@ import { observer } from 'mobx-react'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
 import { notEmpty, useLocalStorage } from '../../util'
-import { isUriLocation, isAppRootModel } from '../../util/types'
-import type { FileLocation, AbstractRootModel } from '../../util/types'
-import type { ToggleButtonProps } from '@mui/material'
+import { isAppRootModel, isUriLocation } from '../../util/types'
 
-// icons
+// local types
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes'
+import type { AbstractRootModel, FileLocation } from '../../util/types'
+import type { ToggleButtonProps } from '@mui/material'
 
 const NUM_SHOWN = 2
 
@@ -40,15 +44,56 @@ function shorten(str: string, len: number) {
   return str
 }
 
+function Inline({ children }: { children: React.ReactNode }) {
+  return <div style={{ display: 'flex', gap: 4 }}>{children}</div>
+}
+
+function Box2({ children }: { children: React.ReactNode }) {
+  return (
+    <Box display="flex" flexDirection="row">
+      <Box>{children}</Box>
+    </Box>
+  )
+}
+
+function Input(props: {
+  toggleButtonValue: string
+  selectedAccount?: BaseInternetAccountModel
+  inline?: boolean
+  setLocation: (arg: FileLocation) => void
+}) {
+  const { setLocation, inline, toggleButtonValue, selectedAccount } = props
+  return (
+    <>
+      {selectedAccount?.SelectorComponent ? (
+        <selectedAccount.SelectorComponent
+          {...props}
+          setLocation={setLocation}
+        />
+      ) : toggleButtonValue === 'url' ? (
+        <UrlChooser
+          {...props}
+          setLocation={setLocation}
+          label={selectedAccount?.selectorLabel}
+          style={inline ? { margin: 0 } : undefined}
+        />
+      ) : toggleButtonValue === 'file' ? (
+        <LocalFileChooser {...props} />
+      ) : null}
+    </>
+  )
+}
+
 const FileSelector = observer(function (props: {
   location?: FileLocation
-  setLocation: (param: FileLocation) => void
-  setName?: (str: string) => void
   name?: string
   description?: string
+  inline?: boolean
   rootModel?: AbstractRootModel
+  setLocation: (param: FileLocation) => void
+  setName?: (str: string) => void
 }) {
-  const { location, name, description, rootModel, setLocation } = props
+  const { inline, location, name, description, rootModel, setLocation } = props
   const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
   const [toggleButtonValue, setToggleButtonValue] = useState(
     location && 'internetAccountId' in location && location.internetAccountId
@@ -98,33 +143,19 @@ const FileSelector = observer(function (props: {
     }
   }, [location, selectedAccount, setLocationWithAccount])
 
-  let locationInput = (
-    <UrlChooser
-      {...props}
-      setLocation={setLocationWithAccount}
-      label={selectedAccount?.selectorLabel}
-    />
-  )
-  if (toggleButtonValue === 'file') {
-    locationInput = <LocalFileChooser {...props} />
-  }
-  if (selectedAccount?.SelectorComponent) {
-    const { SelectorComponent } = selectedAccount
-    locationInput = (
-      <SelectorComponent {...props} setLocation={setLocationWithAccount} />
-    )
-  }
+  const Wrapper = inline ? Inline : Box2
 
   return (
     <>
       <Box display="flex">
         <InputLabel shrink>{name}</InputLabel>
       </Box>
-      <Box display="flex" flexDirection="row">
-        <Box>
+      <FormGroup>
+        <Wrapper>
           <ToggleButtonGroup
             value={toggleButtonValue}
             exclusive
+            size="small"
             onChange={(_event, newState) => {
               setRecentlyUsedInternetAccounts([
                 ...new Set(
@@ -143,11 +174,11 @@ const FileSelector = observer(function (props: {
             {new URLSearchParams(window.location.search).get(
               'adminKey',
             ) ? null : (
-              <ToggleButton value="file" aria-label="local file">
+              <ToggleButton size="small" value="file" aria-label="local file">
                 File
               </ToggleButton>
             )}
-            <ToggleButton value="url" aria-label="url">
+            <ToggleButton size="small" value="url" aria-label="url">
               URL
             </ToggleButton>
             {shownAccounts.map(id => {
@@ -177,45 +208,61 @@ const FileSelector = observer(function (props: {
               </ToggleButton>
             ) : null}
           </ToggleButtonGroup>
-
-          <Menu
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={() => {
-              setAnchorEl(null)
-            }}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-          >
-            {hiddenAccounts.map(id => {
-              const { internetAccountId, name } = map[id]!
-              return (
-                <MenuItem
-                  key={id}
-                  value={internetAccountId}
-                  onClick={() => {
-                    setRecentlyUsedInternetAccounts([
-                      ...new Set(
-                        [
-                          internetAccountId,
-                          ...recentlyUsedInternetAccounts,
-                        ].filter(notEmpty),
-                      ),
-                    ])
-
-                    setToggleButtonValue(internetAccountId)
-                    setAnchorEl(null)
-                  }}
-                >
-                  {name}
-                </MenuItem>
-              )
-            })}
-          </Menu>
-        </Box>
-      </Box>
-      {locationInput}
+          {inline ? (
+            <Input
+              {...props}
+              toggleButtonValue={toggleButtonValue}
+              selectedAccount={selectedAccount}
+              setLocation={setLocationWithAccount}
+            />
+          ) : null}
+        </Wrapper>
+        {!inline ? (
+          <Input
+            {...props}
+            toggleButtonValue={toggleButtonValue}
+            selectedAccount={selectedAccount}
+            setLocation={setLocationWithAccount}
+          />
+        ) : null}
+      </FormGroup>
       <FormHelperText>{description}</FormHelperText>
+      {anchorEl ? (
+        <Menu
+          open
+          anchorEl={anchorEl}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          {hiddenAccounts.map(id => {
+            const { internetAccountId, name } = map[id]!
+            return (
+              <MenuItem
+                key={id}
+                value={internetAccountId}
+                onClick={() => {
+                  setRecentlyUsedInternetAccounts([
+                    ...new Set(
+                      [
+                        internetAccountId,
+                        ...recentlyUsedInternetAccounts,
+                      ].filter(notEmpty),
+                    ),
+                  ])
+
+                  setToggleButtonValue(internetAccountId)
+                  setAnchorEl(null)
+                }}
+              >
+                {name}
+              </MenuItem>
+            )
+          })}
+        </Menu>
+      ) : null}
     </>
   )
 })

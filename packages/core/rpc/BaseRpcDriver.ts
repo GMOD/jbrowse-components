@@ -1,6 +1,8 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+
 import { readConfObject } from '../configuration'
 import { clamp } from '../util'
+
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationModel } from '../configuration'
 

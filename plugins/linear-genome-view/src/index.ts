@@ -18,9 +18,9 @@ import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
 import LinearBareDisplayF from './LinearBareDisplay'
 import LinearBasicDisplayF from './LinearBasicDisplay'
 import LinearGenomeViewF, {
+  LinearGenomeView,
   SearchBox,
   ZoomControls,
-  LinearGenomeView,
 } from './LinearGenomeView'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

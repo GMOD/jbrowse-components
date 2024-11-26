@@ -1,13 +1,15 @@
 import React, { useEffect, useRef } from 'react'
 
-// locals
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
+
+// locals
 import { getRoot } from 'mobx-state-tree'
-// eslint-disable-next-line react/no-deprecated
-import { hydrate, unmountComponentAtNode } from 'react-dom'
+import { hydrate, unmountComponentAtNode } from 'react-dom' // eslint-disable-line react/no-deprecated
+
 import { createJBrowseTheme } from '../../ui'
 import { rIC } from '../../util'
+
 import type { AnyReactComponentType, Feature } from '../../util'
 import type { ThemeOptions } from '@mui/material'
 

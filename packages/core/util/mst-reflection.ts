@@ -1,9 +1,9 @@
 import {
+  isArrayType,
+  isLateType,
+  isMapType,
   isOptionalType,
   isUnionType,
-  isArrayType,
-  isMapType,
-  isLateType,
 } from 'mobx-state-tree'
 import type {
   IAnyType,

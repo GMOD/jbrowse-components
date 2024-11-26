@@ -1,5 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Adapter from './BgzipFastaAdapter'
 import configSchema from './configSchema'
 

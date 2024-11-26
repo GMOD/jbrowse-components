@@ -1,4 +1,5 @@
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+
 import { guessAdapterFromFileName, isURL, makeLocation } from './common'
 
 describe('utils for text indexing', () => {

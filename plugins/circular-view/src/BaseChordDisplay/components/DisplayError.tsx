@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
 const DisplayError = observer(function ({

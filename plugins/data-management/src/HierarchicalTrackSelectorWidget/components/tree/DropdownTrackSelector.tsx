@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getSession } from '@jbrowse/core/util'

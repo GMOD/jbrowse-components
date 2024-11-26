@@ -1,5 +1,6 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 import { openLocation } from '@jbrowse/core/util/io'
+
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
 import type { FileLocation } from '@jbrowse/core/util/types'
 

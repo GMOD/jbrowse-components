@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { isAlive } from 'mobx-state-tree'
+
 import type { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 

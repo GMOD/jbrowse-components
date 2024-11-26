@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
   Button,
@@ -10,7 +11,9 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 import AdapterInput from './AdapterInput'
+
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 // locals

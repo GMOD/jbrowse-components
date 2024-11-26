@@ -1,5 +1,6 @@
 import type React from 'react'
 import { lazy } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 
 // icons
@@ -9,6 +10,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { saveAs } from 'file-saver'
 import { transaction } from 'mobx'
 import { types } from 'mobx-state-tree'
+
 import { Curves } from './components/Icons'
 
 // locals

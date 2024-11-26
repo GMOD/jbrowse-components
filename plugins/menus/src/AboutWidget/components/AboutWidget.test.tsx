@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'

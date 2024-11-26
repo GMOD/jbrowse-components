@@ -14,13 +14,14 @@ import {
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import { types, getParent } from 'mobx-state-tree'
+import { getParent, types } from 'mobx-state-tree'
 
 // icons
 
 // locals
 import { DesktopSessionFactory } from './DesktopSession'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
+
 import type { DesktopRootModel } from '../rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'

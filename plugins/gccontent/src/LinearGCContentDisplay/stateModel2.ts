@@ -1,4 +1,6 @@
 import { types } from 'mobx-state-tree'
+
+// locals
 import SharedModelF from './shared'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

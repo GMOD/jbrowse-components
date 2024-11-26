@@ -1,8 +1,10 @@
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+
 // locals
 import { paf_delta2paf } from './util'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class DeltaAdapter extends PAFAdapter {

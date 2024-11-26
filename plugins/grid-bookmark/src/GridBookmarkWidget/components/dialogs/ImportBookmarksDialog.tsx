@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
+
 import {
   ErrorMessage,
   FileSelector,
-  Dialog,
   AssemblySelector,
+  Dialog,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -14,11 +15,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ImportIcon from '@mui/icons-material/Publish'
 import {
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   TextField,
   Typography,
 } from '@mui/material'
@@ -28,6 +29,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import { readSessionFromDynamo } from '../../sessionSharing'
 import { fromUrlSafeB64 } from '../../utils'
+
 import type { GridBookmarkModel } from '../../model'
 import type { FileLocation } from '@jbrowse/core/util/types'
 

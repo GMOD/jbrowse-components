@@ -1,5 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Adapter from './BlastTabularAdapter'
 import MyConfigSchema from './configSchema'
 

@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import SVG from '@jbrowse/plugin-svg'
 import { getSnapshot } from 'mobx-state-tree'
+
 import ThisPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {

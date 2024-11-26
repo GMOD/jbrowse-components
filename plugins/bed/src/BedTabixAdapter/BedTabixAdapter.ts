@@ -5,13 +5,15 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-// locals
 import { featureData } from '../util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import type { FileLocation, Region, Feature } from '@jbrowse/core/util'
+import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
+
+// locals
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: BED

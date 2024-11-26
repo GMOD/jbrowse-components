@@ -1,17 +1,19 @@
 import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   bpSpanPx,
-  revcom,
   complement,
+  defaultCodonTable,
   defaultStarts,
   defaultStops,
-  defaultCodonTable,
   generateCodonTable,
+  revcom,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region, Frame } from '@jbrowse/core/util'
+import type { Feature, Frame, Region } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
 function Translation({

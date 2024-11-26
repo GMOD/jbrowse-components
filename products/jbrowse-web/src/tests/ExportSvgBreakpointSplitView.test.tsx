@@ -3,9 +3,10 @@ import path from 'path'
 import { fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
 
-// locals
-import { createView, setup, doBeforeEach } from './util'
+import { createView, doBeforeEach, setup } from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
+
+// locals
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

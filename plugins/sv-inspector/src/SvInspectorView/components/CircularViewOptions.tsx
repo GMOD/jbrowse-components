@@ -1,10 +1,11 @@
 import React from 'react'
-import { Grid, FormControlLabel, Checkbox } from '@mui/material'
+
+import { Checkbox, FormControlLabel, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import type { SvInspectorViewModel } from '../models/SvInspectorView'
+import type { SvInspectorViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   circularViewOptions: {

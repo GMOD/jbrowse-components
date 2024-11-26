@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
 // locals
@@ -17,12 +18,11 @@ const BaseChordDisplay = observer(function ({
 }) {
   if (display.error) {
     return <DisplayError model={display} />
-  }
-  if (!display.filled) {
+  } else if (!display.filled) {
     return <Loading model={display} />
+  } else {
+    return display.reactElement
   }
-
-  return display.reactElement
 })
 
 export default BaseChordDisplay

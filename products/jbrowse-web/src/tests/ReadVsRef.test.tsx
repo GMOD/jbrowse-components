@@ -1,7 +1,7 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
 // locals
-import { hts, doBeforeEach, createView, setup, expectCanvasMatch } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
 setup()
 

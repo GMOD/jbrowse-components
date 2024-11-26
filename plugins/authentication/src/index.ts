@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import InternetAccountType from '@jbrowse/core/pluggableElementTypes/InternetAccountType'
+
 import {
   configSchema as DropboxOAuthConfigSchema,
   modelFactory as DropboxOAuthInternetAccountModelFactory,
@@ -20,6 +21,7 @@ import {
   configSchema as OAuthConfigSchema,
   modelFactory as OAuthInternetAccountModelFactory,
 } from './OAuthModel'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class AuthenticationPlugin extends Plugin {

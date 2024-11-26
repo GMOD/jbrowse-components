@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react'
+
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 import ViewHeader from './ViewHeader'
+
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 

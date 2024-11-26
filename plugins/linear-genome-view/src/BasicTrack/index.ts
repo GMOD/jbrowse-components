@@ -1,7 +1,8 @@
 import {
-  createBaseTrackModel,
   TrackType,
+  createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes'
+
 import configSchemaF from './configSchema'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

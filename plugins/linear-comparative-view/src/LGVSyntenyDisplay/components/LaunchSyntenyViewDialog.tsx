@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -10,6 +11,7 @@ import {
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 // locals
 import { navToSynteny } from './util'
 import type { Feature } from '@jbrowse/core/util'

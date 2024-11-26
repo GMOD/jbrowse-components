@@ -4,6 +4,7 @@ import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 import { fillRect } from './util'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 import { alphaColor } from '../shared/util'
+
 import type { RenderArgsWithColor } from './makeImageData'
 import type { LayoutFeature } from './util'
 import type { Region } from '@jbrowse/core/util'

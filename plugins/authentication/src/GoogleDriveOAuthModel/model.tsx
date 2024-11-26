@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
@@ -8,6 +9,7 @@ import { GoogleDriveFile } from './GoogleDriveFilehandle'
 import GoogleDriveIcon from './GoogleDriveIcon'
 import { getDescriptiveErrorMessage } from './util'
 import baseModel from '../OAuthModel/model'
+
 import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'

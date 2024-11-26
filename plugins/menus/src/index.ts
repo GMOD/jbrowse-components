@@ -1,8 +1,8 @@
 import { lazy } from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-
 import HelpIcon from '@mui/icons-material/Help'
 import InfoIcon from '@mui/icons-material/Info'
 

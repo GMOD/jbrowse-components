@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 
 // icons
@@ -10,6 +11,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { getAllChildren, treeToMap } from '../util'
+
 import type { NodeData } from '../util'
 
 const useStyles = makeStyles()(theme => ({

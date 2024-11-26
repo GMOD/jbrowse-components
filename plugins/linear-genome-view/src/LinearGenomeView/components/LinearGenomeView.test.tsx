@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
@@ -6,6 +7,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 
 // locals
 import LinearGenomeView from './LinearGenomeView'
+
 import type { LinearGenomeViewModel } from '../model'
 
 // mock

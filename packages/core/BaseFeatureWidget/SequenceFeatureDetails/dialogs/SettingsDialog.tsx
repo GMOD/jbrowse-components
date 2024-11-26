@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  DialogContent,
   DialogActions,
-  FormControlLabel,
+  DialogContent,
   FormControl,
+  FormControlLabel,
   FormLabel,
   Radio,
   RadioGroup,

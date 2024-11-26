@@ -2,6 +2,7 @@ import { readConfObject } from '../configuration'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import rpcConfigSchema from './configSchema'
+
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationModel } from '../configuration'
 

@@ -1,5 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Gff3TabixAdapter from './Gff3TabixAdapter'
 import configSchema from './configSchema'
 

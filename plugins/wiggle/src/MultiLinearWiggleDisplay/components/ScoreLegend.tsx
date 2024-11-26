@@ -1,5 +1,6 @@
 import React from 'react'
-import { measureText, getContainingView } from '@jbrowse/core/util'
+
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals

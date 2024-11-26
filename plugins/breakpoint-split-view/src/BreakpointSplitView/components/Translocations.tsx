@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 
 // locals
 import { getMatchedTranslocationFeatures } from './util'
-import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
+
 import type { BreakpointViewModel, LayoutRecord } from '../model'
 
 const [LEFT] = [0, 1, 2, 3] as const

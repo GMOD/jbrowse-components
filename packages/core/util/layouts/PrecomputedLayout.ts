@@ -1,9 +1,10 @@
 import RBush from 'rbush'
+
 import type {
-  RectTuple,
-  SerializedLayout,
   BaseLayout,
+  RectTuple,
   Rectangle,
+  SerializedLayout,
 } from './BaseLayout'
 
 export interface Layout {

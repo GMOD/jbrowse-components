@@ -1,6 +1,6 @@
 import readline from 'readline'
 import { createGunzip } from 'zlib'
-import { SingleBar, Presets } from 'cli-progress'
+import { Presets, SingleBar } from 'cli-progress'
 
 // locals
 import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'

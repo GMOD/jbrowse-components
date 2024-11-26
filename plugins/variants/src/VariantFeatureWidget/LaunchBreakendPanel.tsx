@@ -1,11 +1,11 @@
 import React, { lazy } from 'react'
+
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { getEnv, getSession, SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
-// locals
+// types
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
-import type { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
@@ -64,15 +64,14 @@ function LaunchBreakpointSplitViewPanel({
   locStrings,
   model,
   feature,
-  viewType,
 }: {
   locStrings: string[]
   model: VariantFeatureWidgetModel
   feature: SimpleFeatureSerialized
-  viewType: ViewType
 }) {
   const session = getSession(model)
   const simpleFeature = new SimpleFeature(feature)
+  const assemblyName = model.view?.displayedRegions[0]?.assemblyName
   return (
     <div>
       <Typography>Launch split view</Typography>
@@ -88,12 +87,11 @@ function LaunchBreakpointSplitViewPanel({
                   BreakendMultiLevelOptionDialog,
                   {
                     handleClose,
-                    model,
+                    session,
                     feature: simpleFeature,
-                    // @ts-expect-error
-                    viewType,
+                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_multilevel`,
                     view: model.view,
-                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                    assemblyName,
                   },
                 ])
               }}
@@ -108,12 +106,11 @@ function LaunchBreakpointSplitViewPanel({
                   BreakendSingleLevelOptionDialog,
                   {
                     handleClose,
-                    model,
+                    session,
                     feature: simpleFeature,
-                    // @ts-expect-error
-                    viewType,
+                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_singlelevel`,
                     view: model.view,
-                    assemblyName: model.view.displayedRegions[0].assemblyName,
+                    assemblyName,
                   },
                 ])
               }}
@@ -135,10 +132,10 @@ export default function BreakendPanel(props: {
   const { model, locStrings, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  let viewType: ViewType | undefined
+  let hasBreakpointSplitView = false
 
   try {
-    viewType = pluginManager.getViewType('BreakpointSplitView')
+    hasBreakpointSplitView = !!pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // ignore
   }
@@ -146,9 +143,8 @@ export default function BreakendPanel(props: {
   return (
     <BaseCard {...props} title="Breakends">
       <LocStringList model={model} locStrings={locStrings} />
-      {viewType ? (
+      {hasBreakpointSplitView ? (
         <LaunchBreakpointSplitViewPanel
-          viewType={viewType}
           model={model}
           locStrings={locStrings}
           feature={feature}

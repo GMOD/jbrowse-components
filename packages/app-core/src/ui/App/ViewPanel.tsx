@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react'
+
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
 // locals

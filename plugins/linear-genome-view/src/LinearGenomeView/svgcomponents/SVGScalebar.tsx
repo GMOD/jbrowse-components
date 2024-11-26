@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
+
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel

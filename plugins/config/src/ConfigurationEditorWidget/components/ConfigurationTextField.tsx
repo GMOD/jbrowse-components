@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
+
 import type { TextFieldProps } from '@mui/material'
 
 // adds ability to have html in helperText. note that FormHelperTextProps is

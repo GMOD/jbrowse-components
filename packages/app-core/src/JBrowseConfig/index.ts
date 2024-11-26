@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   FormatAboutConfigSchemaFactory,

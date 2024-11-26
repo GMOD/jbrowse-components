@@ -2,11 +2,13 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { notEmpty, renderToAbstractCanvas } from '@jbrowse/core/util'
+
 import { PileupLayoutSession } from './PileupLayoutSession'
 
 // locals
 import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
+
 import type { PileupLayoutSessionProps } from './PileupLayoutSession'
 import type {
   ColorBy,

@@ -1,4 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
+
 import type { AnyConfigurationSchemaType } from '../configuration'
 import type { AnyAdapter } from '../data_adapters/BaseAdapter'
 

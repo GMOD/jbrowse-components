@@ -1,4 +1,5 @@
 import path from 'path'
+
 import HttpMap from './HttpMap'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'

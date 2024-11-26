@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
 
 // icons
@@ -8,6 +9,7 @@ import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
 
 // locals
 import ShoppingCart from '../ShoppingCart'
+
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
 export default function FacetedHeader({

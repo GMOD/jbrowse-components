@@ -1,5 +1,6 @@
 import { stateModelFactory as baseModelFactory } from '@jbrowse/core/BaseFeatureWidget'
 import { types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 

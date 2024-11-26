@@ -52,7 +52,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "test:e2e": "start-test 'serve --listen 5000 build/' 5000 'cypress run --headless --browser chrome'"
+    "pree2e": "yarn build",
+    "e2e": "start-test 'serve --listen 5000 build/' 5000 'cypress run --headless --browser chrome'"
   },
   "eslintConfig": {
     "extends": [
@@ -72,5 +73,8 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "."
+  "homepage": ".",
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+  }
 }

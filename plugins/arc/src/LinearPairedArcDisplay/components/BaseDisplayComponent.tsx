@@ -1,4 +1,5 @@
 import React, { lazy } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'

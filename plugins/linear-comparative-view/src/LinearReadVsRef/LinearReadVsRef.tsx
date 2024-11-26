@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import {
-  getSession,
-  getContainingView,
   gatherOverlaps,
+  getContainingView,
+  getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-
-// locals
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   Button,
@@ -19,7 +18,10 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 import type { Feature } from '@jbrowse/core/util'
+
+// locals
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
 

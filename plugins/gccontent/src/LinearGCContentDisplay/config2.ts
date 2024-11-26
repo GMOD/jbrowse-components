@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**

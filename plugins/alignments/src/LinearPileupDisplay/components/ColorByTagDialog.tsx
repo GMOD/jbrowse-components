@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   TextField,
   Typography,
 } from '@mui/material'

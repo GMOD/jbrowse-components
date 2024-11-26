@@ -1,15 +1,16 @@
 import React from 'react'
+
 import { ThemeProvider } from '@mui/material/styles'
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { renderToString } from 'react-dom/server'
 
 // locals
+
 import RendererType from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
-import { getSerializedSvg, updateStatus } from '../../util'
-import SerializableFilterChain from './util/serializableFilterChain'
 import { createJBrowseTheme } from '../../ui'
-
+import SerializableFilterChain from './util/serializableFilterChain'
+import { getSerializedSvg, updateStatus } from '../../util'
 import { checkStopToken } from '../../util/stopToken'
 import type { RenderProps, RenderResults } from './RendererType'
 import type { AnyConfigurationModel } from '../../configuration'

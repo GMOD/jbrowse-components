@@ -1,4 +1,5 @@
 import isObject from 'is-object'
+
 import { max, measureText } from '../../util'
 import { ellipses } from '../util'
 

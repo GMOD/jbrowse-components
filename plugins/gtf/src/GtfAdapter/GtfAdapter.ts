@@ -7,6 +7,7 @@ import { parseStringSync } from 'gtf-nostream'
 
 // locals
 import { featureData } from '../util'
+
 import type { FeatureLoc } from '../util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'

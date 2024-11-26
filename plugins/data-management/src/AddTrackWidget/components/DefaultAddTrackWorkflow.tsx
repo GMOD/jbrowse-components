@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import {
   getSession,
@@ -23,6 +24,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
+
 import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

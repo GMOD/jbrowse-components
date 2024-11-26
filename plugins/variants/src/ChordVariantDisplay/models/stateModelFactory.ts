@@ -3,6 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
 import { types } from 'mobx-state-tree'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'

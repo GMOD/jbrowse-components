@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import type { Feature, Region } from '@jbrowse/core/util'

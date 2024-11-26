@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -8,10 +9,11 @@ import { makeStyles } from 'tss-react/mui'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts'
 import { chooseGridPitch } from '../util'
 
-// locals
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+
+// locals
 
 const useStyles = makeStyles()({
   scalebarLabel: {

@@ -79,7 +79,6 @@
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
-    "clone": "^2.1.2",
     "date-fns": "^4.0.0",
     "deepmerge": "^4.2.2",
     "electron-debug": "^3.0.1",

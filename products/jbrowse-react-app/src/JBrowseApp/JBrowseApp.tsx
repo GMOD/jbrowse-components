@@ -1,7 +1,8 @@
 import React, { Suspense, lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
-import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
+import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

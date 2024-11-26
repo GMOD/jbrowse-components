@@ -1,12 +1,13 @@
 import React from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   Stack,
-  Typography,
   Switch,
+  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -29,7 +30,7 @@ const HighlightSettingsDialog = observer(function ({
             data-testid="toggle_highlight_all_switch"
             checked={model.areBookmarksHighlightedOnAllOpenViews}
             onChange={() => {
-              model.setHighlightToggle(
+              model.setBookmarkHighlightsVisible(
                 !model.areBookmarksHighlightedOnAllOpenViews,
               )
             }}
@@ -41,7 +42,7 @@ const HighlightSettingsDialog = observer(function ({
             data-testid="toggle_highlight_label_all_switch"
             checked={model.areBookmarksHighlightLabelsOnAllOpenViews}
             onChange={() => {
-              model.setLabelToggle(
+              model.setBookmarkLabelsVisible(
                 !model.areBookmarksHighlightLabelsOnAllOpenViews,
               )
             }}

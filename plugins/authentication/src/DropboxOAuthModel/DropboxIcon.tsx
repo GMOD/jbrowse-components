@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { SvgIcon } from '@mui/material'
+
 import type { SvgIconProps } from '@mui/material'
 
 export default function DropboxIcon(props: SvgIconProps) {

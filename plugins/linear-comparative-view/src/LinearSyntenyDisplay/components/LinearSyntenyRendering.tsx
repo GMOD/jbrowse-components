@@ -1,16 +1,18 @@
-import React, { useState, useCallback, useRef, lazy, useEffect } from 'react'
+import React, { lazy, useCallback, useEffect, useRef, useState } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
+import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
+
+import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
-import type { ClickCoord } from './util'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip'))
 

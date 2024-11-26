@@ -9,6 +9,7 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
 import PAFAdapterF from './PAFAdapter'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AdapterGuesser,

@@ -1,4 +1,5 @@
 import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter'
+
 import type { BaseOptions } from './types'
 import type { NoAssemblyRegion } from '../../util'
 import type { RegionsAdapter } from '../BaseAdapter'

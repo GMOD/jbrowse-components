@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
-import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
+
+import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'

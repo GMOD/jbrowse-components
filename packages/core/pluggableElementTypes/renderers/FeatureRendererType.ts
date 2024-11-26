@@ -1,4 +1,3 @@
-import clone from 'clone'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -9,10 +8,11 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 import { checkStopToken } from '../../util/stopToken'
+
 import type {
   RenderArgs as ServerSideRenderArgs,
-  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderResults as ServerSideRenderResults,
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
@@ -74,7 +74,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     const serializedArgs = {
       ...args,
       displayModel: undefined,
-      regions: clone(regions),
+      regions: structuredClone(regions),
     }
     return super.serializeArgsInClient(serializedArgs)
   }

@@ -1,6 +1,8 @@
 import { revcom } from '@jbrowse/core/util'
+
 import { getNextRefPos } from '../MismatchParser'
 import { getTagAlt } from '../util'
+
 import type { Feature } from '@jbrowse/core/util'
 
 const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)

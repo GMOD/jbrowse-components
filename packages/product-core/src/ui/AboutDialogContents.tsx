@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
+
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getSession, getEnv } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { Button } from '@mui/material'
-import clone from 'clone'
+
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
+// locals
 import FileInfoPanel from './FileInfoPanel'
 import RefNameInfoDialog from './RefNameInfoDialog'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -86,7 +89,7 @@ const AboutDialogContents = observer(function ({
             <Button
               variant="contained"
               onClick={() => {
-                const snap = removeAttr(clone(conf), 'baseUri')
+                const snap = removeAttr(structuredClone(conf), 'baseUri')
                 copy(JSON.stringify(snap, null, 2))
                 setCopied(true)
                 setTimeout(() => {

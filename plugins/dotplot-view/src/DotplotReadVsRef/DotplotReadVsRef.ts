@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession, gatherOverlaps } from '@jbrowse/core/util'
+import { gatherOverlaps, getSession } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals

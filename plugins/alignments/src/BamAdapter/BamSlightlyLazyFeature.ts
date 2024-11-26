@@ -1,6 +1,7 @@
 // locals
 import { getMismatches } from '../MismatchParser'
 import { cacheGetter } from '../shared/util'
+
 import type BamAdapter from './BamAdapter'
 import type { BamRecord } from '@gmod/bam'
 import type {

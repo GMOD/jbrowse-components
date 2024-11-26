@@ -1,7 +1,8 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
+
 // jbrowse
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus, toLocale } from '@jbrowse/core/util'
+import { toLocale, updateStatus } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -10,6 +11,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 import type { FilterBy } from '../shared/types'

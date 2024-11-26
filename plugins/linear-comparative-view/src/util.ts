@@ -1,4 +1,5 @@
 import { clamp } from '@jbrowse/core/util'
+
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 

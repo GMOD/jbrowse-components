@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 

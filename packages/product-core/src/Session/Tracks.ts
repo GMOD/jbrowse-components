@@ -2,6 +2,7 @@ import { types } from 'mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,

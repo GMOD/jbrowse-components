@@ -1,4 +1,5 @@
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+
 import { assembleLocStringFast } from '.'
 import {
   BlockSet,
@@ -6,6 +7,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+
 import type { Region } from './types'
 import type { Region as RegionModel } from './types/mst'
 import type { Instance } from 'mobx-state-tree'

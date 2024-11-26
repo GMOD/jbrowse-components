@@ -1,6 +1,8 @@
 import type { ReactElement } from 'react'
 import React from 'react'
+
 import PluggableElementBase from '../PluggableElementBase'
+
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationSchemaType } from '../../configuration'
 import type { AnyReactComponentType } from '../../util'

@@ -1,5 +1,6 @@
 import { parseBreakend } from '@gmod/vcf'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
+
 import type { Feature } from '@jbrowse/core/util'
 
 // this finds candidate alignment features, aimed at plotting split reads from

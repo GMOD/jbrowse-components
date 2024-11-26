@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
@@ -8,6 +9,7 @@ import {
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
 import type { ThemeOptions } from '@mui/material'
 
 const useStyles = makeStyles()(() => ({

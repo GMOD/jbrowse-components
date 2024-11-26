@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+
 // icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
@@ -7,6 +8,7 @@ import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import {
   Divider,
+  Grow,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -14,7 +16,6 @@ import {
   MenuList,
   Paper,
   Popover,
-  Grow,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 

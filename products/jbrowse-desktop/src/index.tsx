@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { createRoot } from 'react-dom/client'
 import { QueryParamProvider } from 'use-query-params'

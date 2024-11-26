@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import {
@@ -11,6 +12,7 @@ import {
 } from '@jbrowse/product-core'
 import InfoIcon from '@mui/icons-material/Info'
 import { getParent, types } from 'mobx-state-tree'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from 'mobx-state-tree'

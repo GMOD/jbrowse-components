@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 // jbrowse
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -12,6 +12,7 @@ import { StringParam, useQueryParam } from 'use-query-params'
 import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
 import { loadPluginManager } from './StartScreen/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const Loader = observer(() => {

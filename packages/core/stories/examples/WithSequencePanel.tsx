@@ -1,5 +1,6 @@
 import React from 'react'
-import { sequence, feature } from './util'
+
+import { feature, sequence } from './util'
 import SequencePanel from '.././../BaseFeatureWidget/SequenceFeatureDetails/SequencePanel'
 import { SequenceFeatureDetailsF } from '.././../BaseFeatureWidget/SequenceFeatureDetails/model'
 

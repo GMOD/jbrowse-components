@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 import modelFactory from './model'

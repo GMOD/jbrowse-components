@@ -2,7 +2,7 @@ import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { autorun } from 'mobx'
-import { types, addDisposer } from 'mobx-state-tree'
+import { addDisposer, types } from 'mobx-state-tree'
 
 // locals
 import { readSessionFromDynamo } from './sessionSharing'

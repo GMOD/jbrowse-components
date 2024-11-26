@@ -7,6 +7,7 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
+
 import type { RenderArgs } from './util'
 import type { Region } from '../../util'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature'

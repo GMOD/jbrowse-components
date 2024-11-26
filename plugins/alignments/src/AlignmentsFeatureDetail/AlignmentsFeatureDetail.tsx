@@ -1,7 +1,8 @@
 import React, { lazy } from 'react'
+
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import { Paper } from '@mui/material'
-import clone from 'clone'
+
 import { observer } from 'mobx-react'
 
 // locals
@@ -10,6 +11,7 @@ import Formatter from './Formatter'
 import PairLink from './PairLink'
 import { tags } from './tagInfo'
 import { getTag } from './util'
+
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 // local components
@@ -23,7 +25,7 @@ const AlignmentsFeatureDetails = observer(function (props: {
 }) {
   const { model } = props
   const { featureData } = model
-  const feat = clone(featureData)
+  const feat = structuredClone(featureData)
   const SA = getTag('SA', feat) as string | undefined
   const { flags } = feat
   return (

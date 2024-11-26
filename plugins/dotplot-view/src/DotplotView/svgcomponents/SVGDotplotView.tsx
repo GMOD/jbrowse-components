@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
@@ -9,6 +10,7 @@ import { getRoot } from 'mobx-state-tree'
 import SVGBackground from './SVGBackground'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
 import { GridRaw } from '../components/Grid'
+
 import type { DotplotViewModel, ExportSvgOptions } from '../model'
 
 // render LGV to SVG

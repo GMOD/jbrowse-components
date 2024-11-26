@@ -1,16 +1,18 @@
 import React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   Checkbox,
-  DialogContent,
   DialogActions,
+  DialogContent,
   FormControlLabel,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

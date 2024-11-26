@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
+
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
-import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
+import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // locals
 import AutocompleteTextField from './AutocompleteTextField'
 import { getDeduplicatedResult, getFiltered } from './util'
+
 import type { Option } from './util'
 import type { LinearGenomeViewModel } from '../../model'
 import type { TextFieldProps as TFP } from '@mui/material'

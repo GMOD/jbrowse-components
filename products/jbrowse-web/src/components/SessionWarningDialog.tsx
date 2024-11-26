@@ -2,13 +2,12 @@ import React from 'react'
 import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
 import { nanoid } from '@jbrowse/core/util/nanoid'
-
 import WarningIcon from '@mui/icons-material/Warning'
 import {
   Button,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
 } from '@mui/material'
 
 import type { SessionLoaderModel } from '../SessionLoader'

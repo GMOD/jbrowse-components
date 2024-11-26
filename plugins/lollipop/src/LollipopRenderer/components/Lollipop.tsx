@@ -1,6 +1,8 @@
 import React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+
 import ScoreText from './ScoreText'
 
 const Lollipop = observer(function Lollipop(props: Record<string, any>) {

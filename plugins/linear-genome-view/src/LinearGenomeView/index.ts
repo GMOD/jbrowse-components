@@ -1,5 +1,7 @@
 import { lazy } from 'react'
+
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+
 import { stateModelFactory } from './model'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

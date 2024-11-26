@@ -40,7 +40,6 @@
     "@mui/icons-material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
     "@types/file-saver": "^2.0.1",
-    "clone": "^2.1.2",
     "file-saver": "^2.0.0"
   },
   "peerDependencies": {

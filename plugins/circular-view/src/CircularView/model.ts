@@ -1,16 +1,17 @@
 import type React from 'react'
 import { lazy } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+
+// types
+// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
-  getSession,
   clamp,
+  getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-
-// icons
-import { Region } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { saveAs } from 'file-saver'
@@ -22,12 +23,15 @@ import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
 import type { SliceRegion } from './slices'
 import type PluginManager from '@jbrowse/core/PluginManager'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Region as IRegion } from '@jbrowse/core/util/types'
+import type { Region } from '@jbrowse/core/util/types/mst'
 import type { SnapshotOrInstance, Instance } from 'mobx-state-tree'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('../components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -90,14 +94,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement('trackHeight', types.number, n => n >= minHeight),
-          defaultHeight,
-        ),
-        /**
+        height: types.optional(types.number, defaultHeight),
+        /*
          * #property
          */
-        displayedRegions: types.array(Region),
+        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
         /**
          * #property
          */
@@ -581,7 +582,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('../svgcomponents/SVGCircularView')
+        const { renderToSvg } = await import('./svgcomponents/SVGCircularView')
         const html = await renderToSvg(self as CircularViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')

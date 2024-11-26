@@ -1,10 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
 import { stringify } from '@jbrowse/core/util'
 import { Popover, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
 import VerticalGuide from './VerticalGuide'
+
 import type { LinearComparativeViewModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

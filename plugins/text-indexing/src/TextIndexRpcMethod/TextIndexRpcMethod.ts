@@ -1,7 +1,8 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { indexTracks } from '@jbrowse/text-indexing'
-import type { indexType, Track } from '@jbrowse/text-indexing'
+
+import type { Track, indexType } from '@jbrowse/text-indexing'
 
 export class TextIndexRpcMethod extends RpcMethodType {
   name = 'TextIndexRpcMethod'

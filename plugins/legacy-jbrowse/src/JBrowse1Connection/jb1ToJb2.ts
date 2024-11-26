@@ -1,14 +1,15 @@
 import { objectHash } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
+  UNKNOWN,
+  UNSUPPORTED,
   generateUnknownTrackConf,
   generateUnsupportedTrackConf,
   guessAdapter,
   guessTrackType,
-  UNKNOWN,
-  UNSUPPORTED,
 } from '@jbrowse/core/util/tracks'
-import type { Track, RefSeqs, RefSeq } from './types'
+
+import type { RefSeq, RefSeqs, Track } from './types'
 
 interface Jb2Track {
   trackId: string

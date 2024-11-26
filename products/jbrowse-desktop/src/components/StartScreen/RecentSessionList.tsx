@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { measureGridWidth } from '@jbrowse/core/util'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Link, Tooltip } from '@mui/material'
@@ -9,7 +10,9 @@ import { makeStyles } from 'tss-react/mui'
 // icons
 
 // locals
+
 import { loadPluginManager } from './util'
+
 import type { RecentSessionData } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -1,8 +1,10 @@
 import { reaction } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
+
 import { isAbortException } from './aborting'
 import { createStopToken, stopStopToken } from './stopToken'
-import type { IReactionPublic, IReactionOptions } from 'mobx'
+
+import type { IReactionOptions, IReactionPublic } from 'mobx'
 
 /**
  * makes a mobx reaction with the given functions, that calls actions on the

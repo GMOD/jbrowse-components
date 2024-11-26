@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import LinearSyntenyRendering from './LinearSyntenyRendering'
+
 import type { LinearSyntenyDisplayModel } from '../model'
 
 const useStyles = makeStyles()(theme => {

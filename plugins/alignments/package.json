@@ -41,7 +41,6 @@
     "@jbrowse/sv-core": "^2.17.0",
     "@mui/icons-material": "^6.0.0",
     "canvas2svg": "^1.0.16",
-    "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",
     "fast-deep-equal": "^3.1.3",
     "generic-filehandle": "^3.0.0"

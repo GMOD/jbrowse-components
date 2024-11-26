@@ -1,5 +1,6 @@
 import { readConfObject } from '../configuration'
 import QuickLRU from '../util/QuickLRU'
+
 import type BaseResult from './BaseResults'
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationModel } from '../configuration'

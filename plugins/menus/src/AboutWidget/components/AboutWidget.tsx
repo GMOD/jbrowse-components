@@ -1,9 +1,11 @@
 import React from 'react'
+
 import { getSession } from '@jbrowse/core/util'
-import { Typography, Link } from '@mui/material'
+import { Link, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 

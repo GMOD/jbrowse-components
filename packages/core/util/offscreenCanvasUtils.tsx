@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
+
 import { CanvasSequence } from 'canvas-sequencer'
 
 // locals

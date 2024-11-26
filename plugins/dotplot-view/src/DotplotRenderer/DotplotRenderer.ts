@@ -3,12 +3,14 @@ import {
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
+
 import { Dotplot1DView } from '../DotplotView/model'
+
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
-  RenderArgsDeserialized,
   RenderArgs,
+  RenderArgsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import type { Region } from '@jbrowse/core/util'
 

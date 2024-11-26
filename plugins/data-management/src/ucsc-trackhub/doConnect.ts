@@ -1,14 +1,15 @@
 import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
+
 import {
-  generateTracks,
   fetchGenomesFile,
   fetchTrackDbFile,
+  generateTracks,
 } from './ucscTrackHub'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 

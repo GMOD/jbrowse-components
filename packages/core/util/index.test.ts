@@ -1,7 +1,7 @@
 import {
   assembleLocString,
-  parseLocString,
   compareLocStrings,
+  parseLocString,
   stringify,
 } from './index'
 import type { ParsedLocString } from './index'

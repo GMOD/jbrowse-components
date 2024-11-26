@@ -1,4 +1,5 @@
 import React from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import MoreVert from '@mui/icons-material/MoreVert'
@@ -8,6 +9,7 @@ import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // icons
+
 import { CursorMouse, CursorMove } from './CursorIcon'
 
 // locals

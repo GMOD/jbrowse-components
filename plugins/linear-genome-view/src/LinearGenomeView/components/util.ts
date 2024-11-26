@@ -1,5 +1,6 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { dedupe } from '@jbrowse/core/util'
+
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'

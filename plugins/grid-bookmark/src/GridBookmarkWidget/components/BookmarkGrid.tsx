@@ -1,8 +1,8 @@
-import React, { lazy } from 'react'
+import React from 'react'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
-  getSession,
   assembleLocString,
+  getSession,
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
@@ -13,11 +13,8 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { navToBookmark } from '../utils'
-import type { GridBookmarkModel } from '../model'
 
-const EditBookmarkLabelDialog = lazy(
-  () => import('./dialogs/EditBookmarkLabelDialog'),
-)
+import type { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
   cell: {
@@ -125,12 +122,6 @@ const BookmarkGrid = observer(function ({
           ),
         },
       ]}
-      onCellDoubleClick={({ row }) => {
-        getSession(model).queueDialog(onClose => [
-          EditBookmarkLabelDialog,
-          { onClose, model, dialogRow: row },
-        ])
-      }}
       processRowUpdate={row => {
         const target = rows[row.id]!
         model.updateBookmarkLabel(target, row.label)

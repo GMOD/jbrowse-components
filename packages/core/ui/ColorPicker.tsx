@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
+
 import { colord } from '@jbrowse/core/util/colord'
-import { Popover, Select, MenuItem, TextField } from '@mui/material'
+import { MenuItem, Popover, Select, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import * as paletteColors from './colors'
-import { useLocalStorage, useDebounce } from '../util'
+import { useDebounce, useLocalStorage } from '../util'
 
 // we are using a vendored copy of react-colorful because the default uses
 // pure-ESM which is difficult to make pass with jest e.g.

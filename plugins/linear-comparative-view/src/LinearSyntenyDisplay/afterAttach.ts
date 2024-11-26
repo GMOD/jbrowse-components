@@ -1,11 +1,12 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { reaction, autorun } from 'mobx'
+import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
 // locals
 import { drawMouseoverSynteny, drawRef } from './drawSynteny'
+
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { Feature } from '@jbrowse/core/util'

@@ -1,8 +1,11 @@
 import { lazy } from 'react'
+
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-// locals
+
 import stateModelFactory from './model'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
+// locals
 
 export default function DotplotViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

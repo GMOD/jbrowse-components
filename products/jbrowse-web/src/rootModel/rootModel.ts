@@ -6,9 +6,11 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
-  InternetAccountsRootModelMixin,
   BaseRootModelFactory,
+  InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+
+// icons
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -22,24 +24,22 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { saveAs } from 'file-saver'
-import { observable, autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 
-import { hydrateRoot, createRoot } from 'react-dom/client'
+// other
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 import { filterSessionInPlace } from '../util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractSessionModel,
   SessionWithWidgets,
 } from '@jbrowse/core/util'
-
-// icons
-
-// other
 import type {
   BaseSession,
   BaseSessionType,
@@ -47,9 +47,9 @@ import type {
 } from '@jbrowse/product-core'
 import type {
   IAnyStateTreeNode,
-  SnapshotIn,
-  Instance,
   IAnyType,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 
 // locals

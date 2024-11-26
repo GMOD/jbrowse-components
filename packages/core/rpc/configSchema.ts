@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+
 import { ConfigurationSchema } from '../configuration'
 import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'
 import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'

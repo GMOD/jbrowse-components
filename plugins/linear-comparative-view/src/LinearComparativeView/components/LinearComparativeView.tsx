@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -6,6 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 import Header from './Header'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea'
 import Rubberband from './Rubberband'
+
 import type { LinearComparativeViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

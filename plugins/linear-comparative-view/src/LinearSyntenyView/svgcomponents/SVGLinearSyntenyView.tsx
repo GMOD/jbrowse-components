@@ -1,11 +1,12 @@
 import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
-  getSession,
+  ReactRendering,
   getSerializedSvg,
+  getSession,
   max,
   measureText,
-  ReactRendering,
   renderToAbstractCanvas,
   renderToStaticMarkup,
   sum,

@@ -1,10 +1,13 @@
 import type React from 'react'
+
 import { types } from 'mobx-state-tree'
+
 import { BaseInternetAccountConfig } from './baseInternetAccountConfig'
 import { ConfigurationReference, getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
-import type { UriLocation, AnyReactComponentType } from '../../util/types'
+
+import type { AnyReactComponentType, UriLocation } from '../../util/types'
 import type { Instance } from 'mobx-state-tree'
 
 const inWebWorker = typeof sessionStorage === 'undefined'

@@ -1,4 +1,5 @@
-import React, { lazy, useRef, useState, Suspense, useEffect } from 'react'
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react'
+
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -7,6 +8,7 @@ import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
+
 import type { SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 

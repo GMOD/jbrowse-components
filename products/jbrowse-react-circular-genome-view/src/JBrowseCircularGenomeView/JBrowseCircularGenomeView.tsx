@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'

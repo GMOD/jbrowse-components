@@ -7,8 +7,8 @@ import BamAdapter from './BamAdapter/BamAdapter'
 import bamConfigSchema from './BamAdapter/configSchema'
 import CramAdapter from './CramAdapter/CramAdapter'
 import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
-
 import cramConfigSchema from './CramAdapter/configSchema'
+
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()

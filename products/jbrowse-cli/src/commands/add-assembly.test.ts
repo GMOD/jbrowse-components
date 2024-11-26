@@ -8,11 +8,11 @@ import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
 import {
-  runInTmpDir,
   ctxDir,
   dataDir,
   readConf,
   readConfAlt,
+  runInTmpDir,
 } from '../testUtil'
 
 const { copyFile, writeFile, mkdir } = fs.promises

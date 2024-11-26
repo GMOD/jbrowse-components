@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
 import { renderAlignment } from './renderAlignment'
 import { renderMismatches } from './renderMismatches'
 import { renderSoftClipping } from './renderSoftClipping'
@@ -11,6 +12,7 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from './util'
+
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import type { Feature } from '@jbrowse/core/util'
 

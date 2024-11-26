@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
+
 import {
   getSession,
-  isSessionModelWithWidgets,
   isSessionModelWithConnections,
+  isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'

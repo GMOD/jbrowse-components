@@ -1,5 +1,6 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession, dedupe } from '@jbrowse/core/util'
+
 import type { LinearGenomeViewModel } from './LinearGenomeView'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'

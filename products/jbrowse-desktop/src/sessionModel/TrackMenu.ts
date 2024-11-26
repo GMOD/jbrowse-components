@@ -5,9 +5,8 @@ import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
-
 import SettingsIcon from '@mui/icons-material/Settings'
-import clone from 'clone'
+
 import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
 import type { DesktopRootModel } from '../rootModel'
@@ -15,8 +14,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type {
   SessionWithDialogs,
-  SessionWithTracks,
   SessionWithDrawerWidgets,
+  SessionWithTracks,
 } from '@jbrowse/product-core'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
@@ -33,7 +32,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
       const session = self as SessionWithDialogs &
         SessionWithTracks &
         SessionWithDrawerWidgets
-      const trackSnapshot = clone(getSnapshot(trackConfig))
+      const trackSnapshot = structuredClone(getSnapshot(trackConfig))
       return [
         {
           label: 'About track',

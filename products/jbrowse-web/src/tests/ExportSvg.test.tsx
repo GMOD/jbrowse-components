@@ -3,9 +3,10 @@ import path from 'path'
 import { fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
 
-// locals
-import { hts, createView, setup, doBeforeEach, mockConsoleWarn } from './util'
+import { createView, doBeforeEach, hts, mockConsoleWarn, setup } from './util'
 import volvoxConfig from '../../test_data/volvox/config.json'
+
+// locals
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

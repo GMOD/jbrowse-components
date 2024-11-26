@@ -1,5 +1,6 @@
 import type React from 'react'
 import { lazy } from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'

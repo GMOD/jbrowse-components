@@ -1,7 +1,9 @@
 import React from 'react'
+
 import Dialog from '@jbrowse/core/ui/Dialog'
-import { getSession, getEnv } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+
 import AboutContents from './AboutDialogContents'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

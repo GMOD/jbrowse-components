@@ -1,4 +1,5 @@
 import { parseLocString } from '@jbrowse/core/util'
+
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 
 /**

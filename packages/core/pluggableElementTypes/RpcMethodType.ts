@@ -1,11 +1,11 @@
 import PluggableElementBase from './PluggableElementBase'
 import mapObject from '../util/map-obj'
-import { setBlobMap, getBlobMap } from '../util/tracks'
+import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
-  isAppRootModel,
-  isUriLocation,
-  isAuthNeededException,
   RetryError,
+  isAppRootModel,
+  isAuthNeededException,
+  isUriLocation,
 } from '../util/types'
 import type PluginManager from '../PluginManager'
 import type { UriLocation } from '../util/types'

@@ -1,4 +1,5 @@
 import { getSOTermAndDescription } from './util'
+
 import type VCF from '@gmod/vcf'
 import type { Feature } from '@jbrowse/core/util'
 
