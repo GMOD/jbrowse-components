@@ -113,7 +113,14 @@ const TrackLabel = observer(
     ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
 
     return (
-      <Paper ref={ref} className={cx(className, classes.root)}>
+      <Paper
+        ref={ref}
+        className={cx(className, classes.root)}
+        onClick={event => {
+          // avoid clicks on track label from turning into double-click zoom
+          event.stopPropagation()
+        }}
+      >
         <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
         <IconButton
           onClick={() => view.hideTrack(trackId)}
