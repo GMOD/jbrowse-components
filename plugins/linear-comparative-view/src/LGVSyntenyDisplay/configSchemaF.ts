@@ -11,7 +11,13 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LGVSyntenyDisplay',
-    {},
+    {
+      mouseover: {
+        type: 'string',
+        defaultValue:
+          'jexl:(get(feature,"name")||"")+ "<br/>" + (get(feature,"mate").name||"")',
+      },
+    },
     {
       /**
        * #baseConfiguration
