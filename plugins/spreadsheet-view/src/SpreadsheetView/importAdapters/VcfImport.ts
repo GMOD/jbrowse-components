@@ -1,8 +1,6 @@
 import VCF from '@gmod/vcf'
 import { VcfFeature } from '@jbrowse/plugin-variants'
 
-import type { Buffer } from 'buffer'
-
 function getRows(lines: string[], vcfParser: VCF) {
   const keys = new Set<string>()
   const rows = lines.map((l, id) => {
@@ -43,7 +41,7 @@ function getRows(lines: string[], vcfParser: VCF) {
   return { keys, rows }
 }
 
-export function parseVcfBuffer(buffer: Buffer) {
+export function parseVcfBuffer(buffer: Uint8Array) {
   const text = new TextDecoder('utf8').decode(buffer)
   const lines = text
     .split(/\n|\r\n|\r/)

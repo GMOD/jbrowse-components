@@ -27,9 +27,22 @@ function getType(adapter: Record<string, unknown>) {
     return 'VCF'
   } else if (adapter.bedLocation || adapter.bedGzLocation) {
     return 'BED'
+  } else if (adapter.bedpeLocation) {
+    return 'BEDPE'
   } else {
     return undefined
   }
+}
+
+// hardcodes a couple different adapter types
+function getAdapterLoc(adapter: Record<string, FileLocation>) {
+  return (
+    adapter.vcfLocation ||
+    adapter.vcfGzLocation ||
+    adapter.bedLocation ||
+    adapter.bedGzLocation ||
+    adapter.bedpeLocation
+  )
 }
 
 // regexp used to guess the type of a file or URL from its file extension
@@ -137,36 +150,27 @@ export default function stateModelFactory() {
           ...sessionTracks,
         ] as AnyConfigurationModel[]
         return allTracks
-          .filter(track => {
+          .map(track => {
             const assemblyNames = readConfObject(track, 'assemblyNames')
             const adapter = readConfObject(track, 'adapter')
-            return (
-              assemblyNames.includes(selectedAssembly) &&
-              (adapter.vcfLocation ||
-                adapter.vcfGzLocation ||
-                adapter.bedLocation ||
-                adapter.bedGzLocation)
-            )
-          })
-          .map(track => {
-            const adapter = readConfObject(track, 'adapter')
             const category = readConfObject(track, 'category').join(',')
-            return {
-              track,
-              label: [
-                category ? `[${category}]` : '',
-                getTrackName(track, session),
-              ]
-                .filter(f => !!f)
-                .join(' '),
-              assemblyNames: readConfObject(track, 'assemblyNames'),
-              type: getType(adapter) || 'UNKNOWN',
-              loc: (adapter.vcfLocation ||
-                adapter.vcfGzLocation ||
-                adapter.bedLocation ||
-                adapter.bedGzLocation) as FileLocation,
-            }
+            const loc = getAdapterLoc(adapter)
+            return assemblyNames.includes(selectedAssembly) && loc
+              ? {
+                  track,
+                  label: [
+                    category ? `[${category}]` : '',
+                    getTrackName(track, session),
+                  ]
+                    .filter(f => !!f)
+                    .join(' '),
+                  assemblyNames,
+                  type: getType(adapter) || 'UNKNOWN',
+                  loc,
+                }
+              : undefined
           })
+          .filter(f => !!f)
           .sort((a, b) => a.label.localeCompare(b.label))
       },
     }))

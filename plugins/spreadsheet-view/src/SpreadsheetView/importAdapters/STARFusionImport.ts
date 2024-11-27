@@ -1,7 +1,5 @@
 import { parseStrand } from './util'
 
-import type { Buffer } from 'buffer'
-
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
   return {
@@ -12,7 +10,7 @@ function parseSTARFusionBreakpointString(str: string) {
   }
 }
 
-export function parseSTARFusionBuffer(buffer: Buffer) {
+export function parseSTARFusionBuffer(buffer: Uint8Array) {
   const text = new TextDecoder('utf8').decode(buffer)
   const lines = text
     .split(/\n|\r\n|\r/)
