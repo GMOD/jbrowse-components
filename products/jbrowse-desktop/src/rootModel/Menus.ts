@@ -22,7 +22,10 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
 import type { Instance } from 'mobx-state-tree'
+
+// lazies
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
+
 const { ipcRenderer } = window.require('electron')
 
 export interface Menu {
@@ -76,10 +79,9 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               icon: SaveAs,
               onClick: async () => {
                 try {
-                  const saveAsPath = await ipcRenderer.invoke(
-                    'promptSessionSaveAs',
+                  self.setSessionPath(
+                    await ipcRenderer.invoke('promptSessionSaveAs'),
                   )
-                  self.setSessionPath(saveAsPath)
                   await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
@@ -94,27 +96,26 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               label: 'Open assembly...',
               icon: DNA,
               onClick: () => {
-                if (!self.session) {
-                  return
-                }
-                const session = self.session as SessionWithDialogs
-                session.queueDialog(doneCallback => [
-                  OpenSequenceDialog,
-                  {
-                    model: self,
-                    onClose: (confs?: AnyConfigurationModel[]) => {
-                      try {
-                        confs?.forEach(conf => {
-                          self.jbrowse.addAssemblyConf(conf)
-                        })
-                      } catch (e) {
-                        console.error(e)
-                        self.session?.notifyError(`${e}`, e)
-                      }
-                      doneCallback()
+                if (self.session) {
+                  const session = self.session as SessionWithDialogs
+                  session.queueDialog(doneCallback => [
+                    OpenSequenceDialog,
+                    {
+                      model: self,
+                      onClose: (confs?: AnyConfigurationModel[]) => {
+                        try {
+                          confs?.forEach(conf => {
+                            self.jbrowse.addAssemblyConf(conf)
+                          })
+                        } catch (e) {
+                          console.error(e)
+                          self.session?.notifyError(`${e}`, e)
+                        }
+                        doneCallback()
+                      },
                     },
-                  },
-                ])
+                  ])
+                }
               },
             },
             {

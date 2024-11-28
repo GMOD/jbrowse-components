@@ -1,17 +1,17 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
+import { openDB } from 'idb'
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
-import { openDB } from 'idb'
 
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
+import type { SessionDB } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
-import { SessionDB } from './types'
 
 export interface SessionTriagedInfo {
   snap: unknown

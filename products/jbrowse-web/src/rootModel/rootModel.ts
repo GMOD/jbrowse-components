@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import { HistoryManagementMixin } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -21,17 +21,27 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { saveAs } from 'file-saver'
+import { openDB } from 'idb'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
-import { openDB } from 'idb'
 
 // other
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 import { filterSessionInPlace } from '../util'
+import {
+  appendMenu,
+  appendToMenu,
+  appendToSubMenu,
+  insertInMenu,
+  insertInSubMenu,
+  insertMenu,
+} from './menus'
 
+import type { SavedSession, Session, SessionDB } from '../types'
+import type { Menu } from './menus'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
@@ -46,22 +56,61 @@ import type {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import { SavedSession, SessionDB } from '../types'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
-
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {
   pluginManager: PluginManager
   assemblyConfigSchema: AssemblyConfig
 }) => IAnyType
+
+interface InsertInSubMenuAction {
+  type: 'insertInSubMenu'
+  menuPath: string[]
+  menuItem: MenuItem
+  position: number
+}
+interface InsertInMenuAction {
+  type: 'insertInMenu'
+  menuName: string
+  menuItem: MenuItem
+  position: number
+}
+interface AppendToMenuAction {
+  type: 'appendToMenu'
+  menuName: string
+  menuItem: MenuItem
+}
+interface AppendToSubMenuAction {
+  type: 'appendToSubMenu'
+  menuPath: string[]
+  menuItem: MenuItem
+}
+interface AppendMenuAction {
+  type: 'appendMenu'
+  menuName: string
+}
+interface InsertMenuAction {
+  type: 'insertMenu'
+  menuName: string
+  position: number
+}
+interface SetMenusAction {
+  type: 'setMenus'
+  newMenus: Menu[]
+}
+
+type MenuAction =
+  | InsertMenuAction
+  | AppendMenuAction
+  | AppendToSubMenuAction
+  | AppendToMenuAction
+  | InsertInMenuAction
+  | InsertInSubMenuAction
+  | SetMenusAction
 
 /**
  * #stateModel JBrowseWebRootModel
@@ -104,7 +153,6 @@ export default function RootModel({
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
-      RootAppMenuMixin(),
     )
     .props({
       /**
@@ -113,10 +161,25 @@ export default function RootModel({
       configPath: types.maybe(types.string),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
       version: packageJSON.version,
+      /**
+       * #volatile
+       */
       hydrateFn: hydrateRoot,
+      /**
+       * #volatile
+       */
       createRootFn: createRoot,
+      /**
+       * #volatile
+       */
       pluginsUpdated: false,
+      /**
+       * #volatile
+       */
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -125,10 +188,158 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
+      /**
+       * #volatile
+       */
       savedSessions: undefined as undefined | SavedSession[],
+      /**
+       * #volatile
+       */
       autosavedSessions: undefined as undefined | SavedSession[],
+      /**
+       * #volatile
+       */
       textSearchManager: new TextSearchManager(pluginManager),
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
+      mutableMenuActions: [] as MenuAction[],
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setMenus(newMenus: Menu[]) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'setMenus', newMenus },
+        ]
+      },
+      /**
+       * #action
+       * Add a top-level menu
+       *
+       * @param menuName - Name of the menu to insert.
+       *
+       */
+      appendMenu(menuName: string) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'appendMenu', menuName },
+        ]
+      },
+      /**
+       * #action
+       * Insert a top-level menu
+       *
+       * @param menuName - Name of the menu to insert.
+       *
+       * @param position - Position to insert menu. If negative, counts from th
+       * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
+       * second-to-last one.
+       *
+       */
+      insertMenu(menuName: string, position: number) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'insertMenu',
+            menuName,
+            position,
+          },
+        ]
+      },
+      /**
+       * #action
+       * Add a menu item to a top-level menu
+       *
+       * @param menuName - Name of the top-level menu to append to.
+       *
+       * @param menuItem - Menu item to append.
+       */
+      appendToMenu(menuName: string, menuItem: MenuItem) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'appendToMenu',
+            menuName,
+            menuItem,
+          },
+        ]
+      },
+      /**
+       * #action
+       * Insert a menu item into a top-level menu
+       *
+       * @param menuName - Name of the top-level menu to insert into
+       *
+       * @param menuItem - Menu item to insert
+       *
+       * @param position - Position to insert menu item. If negative, counts
+       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
+       * the second-to-last one.
+       */
+      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
+        self.mutableMenuActions.push({
+          type: 'insertInMenu',
+          menuName,
+          menuItem,
+          position,
+        })
+      },
+      /**
+       * #action
+       * Add a menu item to a sub-menu
+       *
+       * @param menuPath - Path to the sub-menu to add to, starting with the
+       * top-level menu (e.g. `['File', 'Insert']`).
+       *
+       * @param menuItem - Menu item to append.
+       *
+       * @returns The new length of the sub-menu
+       */
+      appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'appendToSubMenu',
+            menuPath,
+            menuItem,
+          },
+        ]
+      },
+      /**
+       * #action
+       * Insert a menu item into a sub-menu
+       *
+       * @param menuPath - Path to the sub-menu to add to, starting with the
+       * top-level menu (e.g. `['File', 'Insert']`).
+       *
+       * @param menuItem - Menu item to insert.
+       *
+       * @param position - Position to insert menu item. If negative, counts
+       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
+       * the second-to-last one.
+       */
+      insertInSubMenu(
+        menuPath: string[],
+        menuItem: MenuItem,
+        position: number,
+      ) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'insertInSubMenu',
+            menuPath,
+            menuItem,
+            position,
+          },
+        ]
+      },
     }))
     .views(self => ({
       /**
@@ -149,8 +360,6 @@ export default function RootModel({
       get previousAutosaveId() {
         return `previousAutosave-${self.configPath}`
       },
-    }))
-    .views(() => ({
       /**
        * #getter
        */
@@ -195,6 +404,7 @@ export default function RootModel({
 
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           db.getAll('autosavedSessions').then(autosavedSessions => {
+            console.log('wow', autosavedSessions)
             self.setAutosavedSessions(autosavedSessions)
           })
 
@@ -205,22 +415,19 @@ export default function RootModel({
                 if (!self.session) {
                   return
                 }
-                const snapshot = getSnapshot(self.session as BaseSession)
-                sessionStorage.setItem(
-                  'current',
-                  JSON.stringify({ session: snapshot }),
-                )
+                const snapshot = {
+                  session: structuredClone(
+                    getSnapshot(self.session),
+                  ) as Session,
+                }
+                console.log('saving new', snapshot.session.name)
+                sessionStorage.setItem('current', JSON.stringify(snapshot))
 
                 db.put(
                   'autosavedSessions',
-                  {
-                    session: {
-                      ...snapshot,
-                      name: `${snapshot.name}-autosaved`,
-                    },
-                  },
-                  `autosave-${self.configPath}`,
-                ).catch(e => {
+                  snapshot,
+                  snapshot.session.name,
+                ).catch((e: unknown) => {
                   console.error(e)
                   self.session?.notifyError(`${e}`, e)
                 })
@@ -266,12 +473,10 @@ export default function RootModel({
        */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
-        const newSession = {
+        this.setSession({
           ...defaultSession,
           name: `${defaultSession.name} ${new Date().toLocaleString()}`,
-        }
-
-        this.setSession(newSession)
+        })
       },
       /**
        * #action
@@ -288,41 +493,24 @@ export default function RootModel({
       /**
        * #action
        */
-      activateSession(name: string) {
-        const localId = self.localStorageId(name)
-        const newSessionSnapshot = localStorage.getItem(localId)
-        if (!newSessionSnapshot) {
-          throw new Error(
-            `Can't activate session ${name}, it is not in the savedSessions`,
-          )
-        }
-
-        this.setSession(JSON.parse(newSessionSnapshot).session)
-      },
-
-      /**
-       * #action
-       */
       setError(error?: unknown) {
         self.error = error
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       get menus() {
-        return [
+        let ret = [
           {
             label: 'File',
             menuItems: [
               {
                 label: 'New session',
                 icon: AddIcon,
-
-                onClick: (session: any) => {
-                  const lastAutosave = localStorage.getItem(self.autosaveId)
-                  if (lastAutosave) {
-                    localStorage.setItem(self.previousAutosaveId, lastAutosave)
-                  }
-                  session.setDefaultSession()
+                onClick: () => {
+                  self.setDefaultSession()
                 },
               },
               {
@@ -355,15 +543,15 @@ export default function RootModel({
                   )
                 },
               },
+
               {
-                label: 'Open session...',
+                label: 'Save session as...',
                 icon: FolderOpenIcon,
-                onClick: (session: SessionWithWidgets) => {
-                  const widget = session.addWidget(
-                    'SessionManager',
-                    'sessionManager',
-                  )
-                  session.showWidget(widget)
+                onClick: () => {
+                  self.session.queueDialog((onClose: () => void) => [
+                    AssemblyManager,
+                    { onClose, rootModel: self },
+                  ])
                 },
               },
               {
@@ -393,6 +581,17 @@ export default function RootModel({
                           },
                         }))
                       : [{ label: 'No saves', onClick: () => {} }],
+                  },
+                  {
+                    label: 'Open session sidebar...',
+                    icon: FolderOpenIcon,
+                    onClick: (session: SessionWithWidgets) => {
+                      const widget = session.addWidget(
+                        'SessionManager',
+                        'sessionManager',
+                      )
+                      session.showWidget(widget)
+                    },
                   },
                 ],
               },
@@ -447,19 +646,21 @@ export default function RootModel({
                   menuItems: [
                     {
                       label: 'Open assembly manager',
-                      onClick: () =>
+                      onClick: () => {
                         self.session.queueDialog((onClose: () => void) => [
                           AssemblyManager,
                           { onClose, rootModel: self },
-                        ]),
+                        ])
+                      },
                     },
                     {
                       label: 'Set default session',
-                      onClick: () =>
+                      onClick: () => {
                         self.session.queueDialog((onClose: () => void) => [
                           SetDefaultSession,
                           { rootModel: self, onClose },
-                        ]),
+                        ])
+                      },
                     },
                   ],
                 },
@@ -525,6 +726,25 @@ export default function RootModel({
             ],
           },
         ] as Menu[]
+
+        for (const action of self.mutableMenuActions) {
+          if (action.type === 'setMenus') {
+            ret = action.newMenus
+          } else if (action.type === 'appendMenu') {
+            appendMenu({ menus: ret, ...action })
+          } else if (action.type === 'insertMenu') {
+            insertMenu({ menus: ret, ...action })
+          } else if (action.type === 'insertInSubMenu') {
+            insertInSubMenu({ menus: ret, ...action })
+          } else if (action.type === 'appendToSubMenu') {
+            appendToSubMenu({ menus: ret, ...action })
+          } else if (action.type === 'appendToMenu') {
+            appendToMenu({ menus: ret, ...action })
+          } else if (action.type === 'insertInMenu') {
+            insertInMenu({ menus: ret, ...action })
+          }
+        }
+        return ret
       },
     }))
 }

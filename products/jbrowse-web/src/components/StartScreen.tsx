@@ -1,7 +1,6 @@
-import React, { lazy, useEffect, useState } from 'react'
+import React, { lazy, useState } from 'react'
 
 import { ErrorMessage, LogoFull } from '@jbrowse/core/ui'
-import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
 import SettingsIcon from '@mui/icons-material/Settings'
 import WarningIcon from '@mui/icons-material/Warning'
 import {
@@ -15,8 +14,8 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 import {
   NewEmptySession,
