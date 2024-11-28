@@ -13,7 +13,6 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
-import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
@@ -25,7 +24,7 @@ import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
-import { openDB, DBSchema } from 'idb'
+import { openDB } from 'idb'
 
 // other
 import packageJSON from '../../package.json'
@@ -35,10 +34,7 @@ import { filterSessionInPlace } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  AbstractSessionModel,
-  SessionWithWidgets,
-} from '@jbrowse/core/util'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type {
   BaseSession,
   BaseSessionType,
@@ -50,28 +46,11 @@ import type {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import { SavedSession, SessionDB } from '../types'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
-
-interface Session {
-  name: string
-  [key: string]: unknown
-}
-interface SavedSession {
-  session: Session
-}
-interface MyDB extends DBSchema {
-  savedSessions: {
-    key: string
-    value: SavedSession
-  }
-  autosavedSessions: {
-    key: string
-    value: SavedSession
-  }
-}
 
 export interface Menu {
   label: string
@@ -147,6 +126,7 @@ export default function RootModel({
         },
       ),
       savedSessions: undefined as undefined | SavedSession[],
+      autosavedSessions: undefined as undefined | SavedSession[],
       textSearchManager: new TextSearchManager(pluginManager),
       error: undefined as unknown,
     }))
@@ -170,13 +150,7 @@ export default function RootModel({
         return `previousAutosave-${self.configPath}`
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.savedSessions?.map(session => session.session.name) || []
-      },
+    .views(() => ({
       /**
        * #getter
        */
@@ -194,6 +168,12 @@ export default function RootModel({
       setSavedSessions(sessions: SavedSession[]) {
         self.savedSessions = sessions
       },
+      /**
+       * #action
+       */
+      setAutosavedSessions(sessions: SavedSession[]) {
+        self.autosavedSessions = sessions
+      },
     }))
     .actions(self => ({
       /**
@@ -202,7 +182,7 @@ export default function RootModel({
       afterCreate() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
-          const db = await openDB<MyDB>('sessionsDB', 1, {
+          const db = await openDB<SessionDB>('sessionsDB', 1, {
             upgrade(db) {
               db.createObjectStore('savedSessions')
               db.createObjectStore('autosavedSessions')
@@ -211,6 +191,11 @@ export default function RootModel({
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           db.getAll('savedSessions').then(savedSessions => {
             self.setSavedSessions(savedSessions)
+          })
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          db.getAll('autosavedSessions').then(autosavedSessions => {
+            self.setAutosavedSessions(autosavedSessions)
           })
 
           addDisposer(
@@ -303,24 +288,6 @@ export default function RootModel({
       /**
        * #action
        */
-      duplicateCurrentSession() {
-        if (self.session) {
-          const snapshot = structuredClone(getSnapshot(self.session)) as Session
-          let newSnapshotName = `${self.session.name} (copy)`
-          if (self.savedSessionNames.includes(newSnapshotName)) {
-            let newSnapshotCopyNumber = 2
-            do {
-              newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
-              newSnapshotCopyNumber += 1
-            } while (self.savedSessionNames.includes(newSnapshotName))
-          }
-          snapshot.name = newSnapshotName
-          this.setSession(snapshot)
-        }
-      },
-      /**
-       * #action
-       */
       activateSession(name: string) {
         const localId = self.localStorageId(name)
         const newSessionSnapshot = localStorage.getItem(localId)
@@ -340,207 +307,225 @@ export default function RootModel({
         self.error = error
       },
     }))
-    .volatile(self => ({
-      menus: [
-        {
-          label: 'File',
-          menuItems: [
-            {
-              label: 'New session',
-              icon: AddIcon,
+    .views(self => ({
+      get menus() {
+        return [
+          {
+            label: 'File',
+            menuItems: [
+              {
+                label: 'New session',
+                icon: AddIcon,
 
-              onClick: (session: any) => {
-                const lastAutosave = localStorage.getItem(self.autosaveId)
-                if (lastAutosave) {
-                  localStorage.setItem(self.previousAutosaveId, lastAutosave)
-                }
-                session.setDefaultSession()
+                onClick: (session: any) => {
+                  const lastAutosave = localStorage.getItem(self.autosaveId)
+                  if (lastAutosave) {
+                    localStorage.setItem(self.previousAutosaveId, lastAutosave)
+                  }
+                  session.setDefaultSession()
+                },
               },
-            },
-            {
-              label: 'Import session...',
-              icon: PublishIcon,
-              onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'ImportSessionWidget',
-                  'importSessionWidget',
-                )
-                session.showWidget(widget)
-              },
-            },
-            {
-              label: 'Export session',
-              icon: GetAppIcon,
-              onClick: (session: IAnyStateTreeNode) => {
-                const sessionBlob = new Blob(
-                  [JSON.stringify({ session: getSnapshot(session) }, null, 2)],
-                  { type: 'text/plain;charset=utf-8' },
-                )
-                saveAs(sessionBlob, 'session.json')
-              },
-            },
-            {
-              label: 'Open session...',
-              icon: FolderOpenIcon,
-              onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'SessionManager',
-                  'sessionManager',
-                )
-                session.showWidget(widget)
-              },
-            },
-            {
-              label: 'Duplicate session',
-              icon: FileCopyIcon,
-              onClick: (session: AbstractSessionModel) => {
-                if (session.duplicateCurrentSession) {
-                  session.duplicateCurrentSession()
-                }
-              },
-            },
-            {
-              label: 'Recent sessions...',
-              type: 'subMenu',
-              subMenu: self.savedSessions
-                ? self.savedSessions.map(r => ({
-                    label: r.session.name,
-                    onClick: () => {
-                      self.setSession(r.session)
-                    },
-                  }))
-                : [{ label: 'No recent sessions', onClick: () => {} }],
-            },
-            { type: 'divider' },
-            {
-              label: 'Open track...',
-              icon: StorageIcon,
-              onClick: (session: SessionWithWidgets) => {
-                if (session.views.length === 0) {
-                  session.notify('Please open a view to add a track first')
-                } else if (session.views.length > 0) {
+              {
+                label: 'Import session...',
+                icon: PublishIcon,
+                onClick: (session: SessionWithWidgets) => {
                   const widget = session.addWidget(
-                    'AddTrackWidget',
-                    'addTrackWidget',
-                    { view: session.views[0]!.id },
+                    'ImportSessionWidget',
+                    'importSessionWidget',
                   )
                   session.showWidget(widget)
-                  if (session.views.length > 1) {
-                    session.notify(
-                      'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                    )
-                  }
-                }
+                },
               },
-            },
-            {
-              label: 'Open connection...',
-              icon: Cable,
-              onClick: (session: SessionWithWidgets) => {
-                session.showWidget(
-                  session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  ),
-                )
-              },
-            },
-            { type: 'divider' },
-            {
-              label: 'Return to splash screen',
-              icon: AppsIcon,
-              onClick: () => {
-                self.setSession(undefined)
-              },
-            },
-          ],
-        },
-        ...(adminMode
-          ? [
               {
-                label: 'Admin',
-                menuItems: [
+                label: 'Export session',
+                icon: GetAppIcon,
+                onClick: (session: IAnyStateTreeNode) => {
+                  saveAs(
+                    new Blob(
+                      [
+                        JSON.stringify(
+                          { session: getSnapshot(session) },
+                          null,
+                          2,
+                        ),
+                      ],
+                      { type: 'text/plain;charset=utf-8' },
+                    ),
+                    'session.json',
+                  )
+                },
+              },
+              {
+                label: 'Open session...',
+                icon: FolderOpenIcon,
+                onClick: (session: SessionWithWidgets) => {
+                  const widget = session.addWidget(
+                    'SessionManager',
+                    'sessionManager',
+                  )
+                  session.showWidget(widget)
+                },
+              },
+              {
+                label: 'Recent sessions...',
+                type: 'subMenu',
+                subMenu: [
                   {
-                    label: 'Open assembly manager',
-                    onClick: () =>
-                      self.session.queueDialog((onClose: () => void) => [
-                        AssemblyManager,
-                        { onClose, rootModel: self },
-                      ]),
+                    label: 'Autosaves',
+                    type: 'subMenu',
+                    subMenu: self.autosavedSessions?.length
+                      ? self.autosavedSessions.map(r => ({
+                          label: r.session.name,
+                          onClick: () => {
+                            self.setSession(r.session)
+                          },
+                        }))
+                      : [{ label: 'No autosaves found', onClick: () => {} }],
                   },
                   {
-                    label: 'Set default session',
-                    onClick: () =>
-                      self.session.queueDialog((onClose: () => void) => [
-                        SetDefaultSession,
-                        { rootModel: self, onClose },
-                      ]),
+                    label: 'Saves',
+                    type: 'subMenu',
+                    subMenu: self.savedSessions?.length
+                      ? self.savedSessions.map(r => ({
+                          label: r.session.name,
+                          onClick: () => {
+                            self.setSession(r.session)
+                          },
+                        }))
+                      : [{ label: 'No saves', onClick: () => {} }],
                   },
                 ],
               },
-            ]
-          : []),
-        {
-          label: 'Add',
-          menuItems: [],
-        },
-        {
-          label: 'Tools',
-          menuItems: [
-            {
-              label: 'Undo',
-              icon: UndoIcon,
-              onClick: () => {
-                if (self.history.canUndo) {
-                  self.history.undo()
-                }
+              { type: 'divider' },
+              {
+                label: 'Open track...',
+                icon: StorageIcon,
+                onClick: (session: SessionWithWidgets) => {
+                  if (session.views.length === 0) {
+                    session.notify('Please open a view to add a track first')
+                  } else if (session.views.length > 0) {
+                    const widget = session.addWidget(
+                      'AddTrackWidget',
+                      'addTrackWidget',
+                      { view: session.views[0]!.id },
+                    )
+                    session.showWidget(widget)
+                    if (session.views.length > 1) {
+                      session.notify(
+                        'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                      )
+                    }
+                  }
+                },
               },
-            },
-            {
-              label: 'Redo',
-              icon: RedoIcon,
-              onClick: () => {
-                if (self.history.canRedo) {
-                  self.history.redo()
-                }
-              },
-            },
-            { type: 'divider' },
-            {
-              label: 'Plugin store',
-              icon: ExtensionIcon,
-              onClick: () => {
-                if (self.session) {
-                  self.session.showWidget(
-                    self.session.addWidget(
-                      'PluginStoreWidget',
-                      'pluginStoreWidget',
+              {
+                label: 'Open connection...',
+                icon: Cable,
+                onClick: (session: SessionWithWidgets) => {
+                  session.showWidget(
+                    session.addWidget(
+                      'AddConnectionWidget',
+                      'addConnectionWidget',
                     ),
                   )
-                }
+                },
               },
-            },
-            {
-              label: 'Preferences',
-              icon: SettingsIcon,
-              onClick: () => {
-                if (self.session) {
-                  ;(self.session as SessionWithDialogs).queueDialog(
-                    handleClose => [
-                      PreferencesDialog,
-                      {
-                        session: self.session,
-                        handleClose,
-                      },
-                    ],
-                  )
-                }
+              { type: 'divider' },
+              {
+                label: 'Return to splash screen',
+                icon: AppsIcon,
+                onClick: () => {
+                  self.setSession(undefined)
+                },
               },
-            },
-          ],
-        },
-      ] as Menu[],
-      adminMode,
+            ],
+          },
+          ...(adminMode
+            ? [
+                {
+                  label: 'Admin',
+                  menuItems: [
+                    {
+                      label: 'Open assembly manager',
+                      onClick: () =>
+                        self.session.queueDialog((onClose: () => void) => [
+                          AssemblyManager,
+                          { onClose, rootModel: self },
+                        ]),
+                    },
+                    {
+                      label: 'Set default session',
+                      onClick: () =>
+                        self.session.queueDialog((onClose: () => void) => [
+                          SetDefaultSession,
+                          { rootModel: self, onClose },
+                        ]),
+                    },
+                  ],
+                },
+              ]
+            : []),
+          {
+            label: 'Add',
+            menuItems: [],
+          },
+          {
+            label: 'Tools',
+            menuItems: [
+              {
+                label: 'Undo',
+                icon: UndoIcon,
+                onClick: () => {
+                  if (self.history.canUndo) {
+                    self.history.undo()
+                  }
+                },
+              },
+              {
+                label: 'Redo',
+                icon: RedoIcon,
+                onClick: () => {
+                  if (self.history.canRedo) {
+                    self.history.redo()
+                  }
+                },
+              },
+              { type: 'divider' },
+              {
+                label: 'Plugin store',
+                icon: ExtensionIcon,
+                onClick: () => {
+                  if (self.session) {
+                    self.session.showWidget(
+                      self.session.addWidget(
+                        'PluginStoreWidget',
+                        'pluginStoreWidget',
+                      ),
+                    )
+                  }
+                },
+              },
+              {
+                label: 'Preferences',
+                icon: SettingsIcon,
+                onClick: () => {
+                  if (self.session) {
+                    ;(self.session as SessionWithDialogs).queueDialog(
+                      handleClose => [
+                        PreferencesDialog,
+                        {
+                          session: self.session,
+                          handleClose,
+                        },
+                      ],
+                    )
+                  }
+                },
+              },
+            ],
+          },
+        ] as Menu[]
+      },
     }))
 }
 
