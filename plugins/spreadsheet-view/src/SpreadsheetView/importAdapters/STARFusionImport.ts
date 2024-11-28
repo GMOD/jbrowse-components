@@ -1,4 +1,4 @@
-import { parseStrand } from './util'
+import { bufferToLines, parseStrand } from './util'
 
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
@@ -11,30 +11,27 @@ function parseSTARFusionBreakpointString(str: string) {
 }
 
 export function parseSTARFusionBuffer(buffer: Uint8Array) {
-  const text = new TextDecoder('utf8').decode(buffer)
-  const lines = text
-    .split(/\n|\r\n|\r/)
-    .map(f => f.trim())
-    .filter(f => !!f)
+  const lines = bufferToLines(buffer)
   const columns = lines[0]!.slice(1).split('\t')
-  const data = lines.slice(1).map(line => {
-    const cols = line.split('\t')
-    return Object.fromEntries(columns.map((h, i) => [h, cols[i]]))
-  })
-
   return {
-    columns: columns.map(c => ({
-      name: c,
-    })),
+    columns: columns.map(c => ({ name: c })),
     rowSet: {
-      rows: data.map((row, rowNumber) => ({
-        cellData: row,
-        feature: {
-          uniqueId: `sf-${rowNumber}`,
-          ...parseSTARFusionBreakpointString(row.LeftBreakpoint!),
-          mate: parseSTARFusionBreakpointString(row.RightBreakpoint!),
-        },
-      })),
+      rows: lines
+        .slice(1)
+        .map(line => {
+          const cols = line.split('\t')
+          return Object.fromEntries(columns.map((h, i) => [h, cols[i]]))
+        })
+        .map((row, rowNumber) => ({
+          // what is displayed
+          cellData: row,
+          // an actual simplefeatureserialized
+          feature: {
+            uniqueId: `sf-${rowNumber}`,
+            ...parseSTARFusionBreakpointString(row.LeftBreakpoint!),
+            mate: parseSTARFusionBreakpointString(row.RightBreakpoint!),
+          },
+        })),
     },
   }
 }

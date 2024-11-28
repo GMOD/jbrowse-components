@@ -1,11 +1,19 @@
 import VCF from '@gmod/vcf'
 import { VcfFeature } from '@jbrowse/plugin-variants'
 
-function getRows(lines: string[], vcfParser: VCF) {
+import { bufferToLines } from './util'
+
+export function parseVcfBuffer(buffer: Uint8Array) {
+  const lines = bufferToLines(buffer)
+  const header = lines.filter(l => l.startsWith('#')).join('\n')
+  const body = lines.filter(l => !l.startsWith('#'))
+  const vcfParser = new VCF({ header })
   const keys = new Set<string>()
-  const rows = lines.map((l, id) => {
+  const rows = []
+  let i = 0
+  for (const line of body) {
     const [CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, ...rest] =
-      l.split('\t')
+      line.split('\t')
     const ret = Object.fromEntries(
       INFO?.split(';')
         .map(f => f.trim())
@@ -16,7 +24,8 @@ function getRows(lines: string[], vcfParser: VCF) {
           return [k, val.trim()]
         }) || [],
     )
-    return {
+    rows.push({
+      // what is displayed
       cellData: {
         CHROM,
         POS,
@@ -31,28 +40,15 @@ function getRows(lines: string[], vcfParser: VCF) {
           vcfParser.samples.map((s, idx) => [s, rest[idx]]),
         ),
       },
+      // a simplefeatureserializd
       feature: new VcfFeature({
         parser: vcfParser,
-        variant: vcfParser.parseLine(l),
-        id: `vcf-${id}`,
+        variant: vcfParser.parseLine(line),
+        id: `vcf-${i}`,
       }).toJSON(),
-    }
-  })
-  return { keys, rows }
-}
-
-export function parseVcfBuffer(buffer: Uint8Array) {
-  const text = new TextDecoder('utf8').decode(buffer)
-  const lines = text
-    .split(/\n|\r\n|\r/)
-    .map(f => f.trim())
-    .filter(f => !!f)
-
-  const header = lines.filter(l => l.startsWith('#')).join('\n')
-  const body = lines.filter(l => !l.startsWith('#'))
-  const vcfParser = new VCF({ header })
-
-  const { keys, rows } = getRows(body, vcfParser)
+    })
+    i++
+  }
   return {
     columns: [
       'CHROM',

@@ -1,9 +1,7 @@
+import { bufferToLines, parseStrand } from './util'
+
 export function parseBedPEBuffer(buffer: Uint8Array) {
-  const data = new TextDecoder('utf8').decode(buffer)
-  const lines = data
-    .split(/\n|\r\n|\r/)
-    .map(f => f.trim())
-    .filter(f => !!f)
+  const lines = bufferToLines(buffer)
   const rest = lines.filter(
     line =>
       !(
@@ -32,7 +30,11 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
   )
 
   const extraNames = lastHeaderLine?.includes('\t')
-    ? lastHeaderLine.slice(1).split('\t').slice(coreColumns.length)
+    ? lastHeaderLine
+        .slice(1)
+        .split('\t')
+        .slice(coreColumns.length)
+        .map(t => t.trim())
     : Array.from({ length: numExtraColumns }, (_v, i) => `field_${i}`)
 
   const colNames = [...coreColumns, ...extraNames]
@@ -43,6 +45,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
         const cols = line.split('\t')
 
         return {
+          // what is displayed
           cellData: {
             refName: cols[0],
             start: cols[1],
@@ -58,17 +61,18 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
               extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
             ),
           },
+          // an actual simplefeatureserialized
           feature: {
             uniqueId: `bedpe-${idx}`,
             refName: cols[0],
             start: +cols[1]!,
             end: +cols[2]!,
-            strand: cols[8] === '-' ? -1 : 1,
+            strand: parseStrand(cols[8]),
             mate: {
               refName: cols[3],
               start: +cols[4]!,
               end: +cols[5]!,
-              strand: cols[9] === '-' ? -1 : 1,
+              strand: parseStrand(cols[9]),
             },
             name: cols[6],
             score: cols[7],

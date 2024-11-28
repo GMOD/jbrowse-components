@@ -1,9 +1,7 @@
+import { bufferToLines, parseStrand } from './util'
+
 export function parseBedBuffer(buffer: Uint8Array) {
-  const data = new TextDecoder('utf8').decode(buffer)
-  const lines = data
-    .split(/\n|\r\n|\r/)
-    .map(f => f.trim())
-    .filter(f => !!f)
+  const lines = bufferToLines(buffer)
   const rest = lines.filter(
     line =>
       !(
@@ -20,7 +18,11 @@ export function parseBedBuffer(buffer: Uint8Array) {
     (rest[0]?.split('\t')?.length || 0) - coreColumns.length,
   )
   const extraNames = lastHeaderLine?.includes('\t')
-    ? lastHeaderLine.slice(1).split('\t').slice(coreColumns.length)
+    ? lastHeaderLine
+        .slice(1)
+        .split('\t')
+        .slice(coreColumns.length)
+        .map(t => t.trim())
     : Array.from({ length: numExtraColumns }, (_v, i) => `field_${i}`)
 
   const colNames = [...coreColumns, ...extraNames]
@@ -31,6 +33,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
       rows: rest.map((line, idx) => {
         const cols = line.split('\t')
         return {
+          // what is displayed
           cellData: {
             refName: cols[0],
             start: +cols[1]!,
@@ -42,6 +45,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
               extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
             ),
           },
+          // an actual simplefeatureserialized
           feature: {
             uniqueId: `bed-${idx}`,
             refName: cols[0],
@@ -49,7 +53,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
             end: +cols[2]!,
             name: cols[3],
             score: cols[4],
-            strand: cols[5],
+            strand: parseStrand(cols[5]),
             ...Object.fromEntries(
               extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
             ),
