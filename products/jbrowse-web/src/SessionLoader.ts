@@ -10,6 +10,25 @@ import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
+import { openDB, DBSchema } from 'idb'
+
+interface Session {
+  name: string
+  [key: string]: unknown
+}
+interface SavedSession {
+  session: Session
+}
+interface MyDB extends DBSchema {
+  savedSessions: {
+    key: string
+    value: SavedSession
+  }
+  autosavedSessions: {
+    key: string
+    value: SavedSession
+  }
+}
 
 export interface SessionTriagedInfo {
   snap: unknown
@@ -321,7 +340,7 @@ const SessionLoader = types
 
     async afterCreate() {
       try {
-        const db = await openDB<SessionDB>('sessionsDB', 1, {
+        const db = await openDB<MyDB>('sessionsDB', 1, {
           upgrade(db) {
             db.createObjectStore('savedSessions')
             db.createObjectStore('autosavedSessions')

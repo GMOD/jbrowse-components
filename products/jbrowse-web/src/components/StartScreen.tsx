@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 
 import {
   NewEmptySession,
@@ -50,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function StartScreen({
+const StartScreen = observer(function ({
   rootModel,
   onFactoryReset,
 }: {
@@ -66,40 +67,6 @@ export default function StartScreen({
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        if (sessionToLoad) {
-          rootModel.activateSession(sessionToLoad)
-        }
-      } catch (e) {
-        setError(e)
-      }
-    })()
-  }, [rootModel, sessionToLoad])
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        if (updateSessionsList) {
-          setUpdateSessionsList(false)
-
-          setSessionNames(
-            rootModel.savedSessions.map(s => s.name).filter(notEmpty),
-          )
-        }
-      } catch (e) {
-        setError(e)
-      }
-    })()
-  }, [rootModel.savedSessions, updateSessionsList])
-
-  const lastAutosavedSession = JSON.parse(
-    localStorageGetItem(rootModel.previousAutosaveId) || '{}',
-  ).session
 
   return (
     <>
@@ -171,21 +138,7 @@ export default function StartScreen({
               />
             ))}
           </List>
-          {lastAutosavedSession ? (
-            <>
-              <Typography variant="h5" className={classes.header}>
-                Last autosave session
-              </Typography>
-              <List className={classes.list}>
-                <RecentSessionCard
-                  sessionName={lastAutosavedSession.name}
-                  onClick={() => {
-                    rootModel.loadAutosaveSession()
-                  }}
-                />
-              </List>
-            </>
-          ) : null}
+
           {error ? <ErrorMessage error={error} /> : null}
         </div>
       </Container>
@@ -213,4 +166,6 @@ export default function StartScreen({
       </Menu>
     </>
   )
-}
+})
+
+export default StartScreen

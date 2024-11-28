@@ -18,14 +18,14 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
-import SaveIcon from '@mui/icons-material/Save'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { saveAs } from 'file-saver'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
+import { openDB, DBSchema } from 'idb'
 
 // other
 import packageJSON from '../../package.json'
@@ -50,7 +50,6 @@ import type {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import { openDB, DBSchema } from 'idb'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
@@ -147,17 +146,11 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
-      savedSessionsVolatile: observable.map<string, Session>({}),
+      savedSessions: undefined as undefined | SavedSession[],
       textSearchManager: new TextSearchManager(pluginManager),
       error: undefined as unknown,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get savedSessions() {
-        return [...self.savedSessionsVolatile.values()]
-      },
       /**
        * #method
        */
@@ -182,7 +175,7 @@ export default function RootModel({
        * #getter
        */
       get savedSessionNames() {
-        return self.savedSessions.map(session => session.name)
+        return self.savedSessions?.map(session => session.session.name) || []
       },
       /**
        * #getter
@@ -195,6 +188,17 @@ export default function RootModel({
     }))
 
     .actions(self => ({
+      /**
+       * #action
+       */
+      setSavedSessions(sessions: SavedSession[]) {
+        self.savedSessions = sessions
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #aftercreate
+       */
       afterCreate() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
@@ -204,47 +208,24 @@ export default function RootModel({
               db.createObjectStore('autosavedSessions')
             },
           })
-
-          // load old sessions from localStorage
-          loadOldSessions(self.configPath, self.savedSessionsVolatile)
-
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           db.getAll('savedSessions').then(savedSessions => {
-            Object.entries(savedSessions).map(([key, val]) =>
-              self.savedSessionsVolatile.set(key, val.session),
-            )
+            self.setSavedSessions(savedSessions)
           })
 
           addDisposer(
             self,
-            autorun(() => {
-              Promise.all(
-                [...toJS(self.savedSessionsVolatile).values()].map(val => {
-                  const key = self.localStorageId(val.name)
-                  return db.put('savedSessions', { session: val }, key)
-                }),
-              ).catch(e => {
-                console.error(e)
-              })
-            }),
-          )
-
-          addDisposer(
-            self,
             autorun(
-              () => {
+              async () => {
                 if (!self.session) {
                   return
                 }
-                const snapshot = getSnapshot(self.session as BaseSession) || {
-                  name: 'empty',
-                }
+                const snapshot = getSnapshot(self.session as BaseSession)
                 sessionStorage.setItem(
                   'current',
                   JSON.stringify({ session: snapshot }),
                 )
 
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 db.put(
                   'autosavedSessions',
                   {
@@ -254,11 +235,14 @@ export default function RootModel({
                     },
                   },
                   `autosave-${self.configPath}`,
-                )
+                ).catch(e => {
+                  console.error(e)
+                  self.session?.notifyError(`${e}`, e)
+                })
 
-                // this check is not able to be modularized into it's own autorun
-                // at current time because it depends on session storage snapshot
-                // being set above
+                // this check is not able to be modularized into it's own
+                // autorun at current time because it depends on session
+                // storage snapshot being set above
                 if (self.pluginsUpdated) {
                   window.location.reload()
                 }
@@ -309,32 +293,19 @@ export default function RootModel({
        */
       renameCurrentSession(sessionName: string) {
         if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
+          this.setSession({
+            ...getSnapshot(self.session),
+            name: sessionName,
+          })
         }
       },
-      /**
-       * #action
-       */
-      addSavedSession(session: { name: string }) {
-        const key = self.localStorageId(session.name)
-        self.savedSessionsVolatile.set(key, session)
-      },
-      /**
-       * #action
-       */
-      removeSavedSession(session: { name: string }) {
-        const key = self.localStorageId(session.name)
-        localStorage.removeItem(key)
-        self.savedSessionsVolatile.delete(key)
-      },
+
       /**
        * #action
        */
       duplicateCurrentSession() {
         if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          const snapshot = structuredClone(getSnapshot(self.session)) as Session
           let newSnapshotName = `${self.session.name} (copy)`
           if (self.savedSessionNames.includes(newSnapshotName)) {
             let newSnapshotCopyNumber = 2
@@ -361,24 +332,7 @@ export default function RootModel({
 
         this.setSession(JSON.parse(newSessionSnapshot).session)
       },
-      /**
-       * #action
-       */
-      saveSessionToLocalStorage() {
-        if (self.session) {
-          const key = self.localStorageId(self.session.name)
-          self.savedSessionsVolatile.set(key, getSnapshot(self.session))
-        }
-      },
-      loadAutosaveSession() {
-        const previousAutosave = localStorage.getItem(self.previousAutosaveId)
-        const autosavedSession = previousAutosave
-          ? JSON.parse(previousAutosave).session
-          : {}
-        const { name } = autosavedSession
-        autosavedSession.name = `${name.replace('-autosaved', '')}-restored`
-        this.setSession(autosavedSession)
-      },
+
       /**
        * #action
        */
@@ -404,7 +358,7 @@ export default function RootModel({
               },
             },
             {
-              label: 'Import session…',
+              label: 'Import session...',
               icon: PublishIcon,
               onClick: (session: SessionWithWidgets) => {
                 const widget = session.addWidget(
@@ -426,7 +380,7 @@ export default function RootModel({
               },
             },
             {
-              label: 'Open session…',
+              label: 'Open session...',
               icon: FolderOpenIcon,
               onClick: (session: SessionWithWidgets) => {
                 const widget = session.addWidget(
@@ -437,14 +391,6 @@ export default function RootModel({
               },
             },
             {
-              label: 'Save session',
-              icon: SaveIcon,
-              onClick: (session: SessionWithWidgets) => {
-                self.saveSessionToLocalStorage()
-                session.notify(`Saved session "${session.name}"`, 'success')
-              },
-            },
-            {
               label: 'Duplicate session',
               icon: FileCopyIcon,
               onClick: (session: AbstractSessionModel) => {
@@ -452,6 +398,18 @@ export default function RootModel({
                   session.duplicateCurrentSession()
                 }
               },
+            },
+            {
+              label: 'Recent sessions...',
+              type: 'subMenu',
+              subMenu: self.savedSessions
+                ? self.savedSessions.map(r => ({
+                    label: r.session.name,
+                    onClick: () => {
+                      self.setSession(r.session)
+                    },
+                  }))
+                : [{ label: 'No recent sessions', onClick: () => {} }],
             },
             { type: 'divider' },
             {
@@ -584,22 +542,6 @@ export default function RootModel({
       ] as Menu[],
       adminMode,
     }))
-}
-
-function loadOldSessions(
-  configPath: string | undefined,
-  savedSessions: Map<string, unknown>,
-) {
-  for (const [key, val] of Object.entries(localStorage)
-    .filter(([key, _val]) => key.startsWith('localSaved-'))
-    .filter(([key]) => key.includes(configPath || 'undefined'))) {
-    try {
-      const { session } = JSON.parse(val)
-      savedSessions.set(key, session)
-    } catch (e) {
-      console.error('bad session encountered', key, val)
-    }
-  }
 }
 
 export type WebRootModelType = ReturnType<typeof RootModel>

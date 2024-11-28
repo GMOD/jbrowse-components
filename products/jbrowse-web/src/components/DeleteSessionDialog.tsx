@@ -12,21 +12,21 @@ import type { WebRootModel } from '../rootModel/rootModel'
 
 const DeleteSessionDialog = ({
   sessionToDelete,
-  onClose,
   rootModel,
+  onClose,
 }: {
   sessionToDelete?: string
-  onClose: (_arg0: boolean) => void
   rootModel: WebRootModel
+  onClose: (_arg0: boolean) => void
 }) => {
   const [error, setError] = useState<unknown>()
   return (
     <Dialog
       open
+      title={`Delete session "${sessionToDelete}"?`}
       onClose={() => {
         onClose(false)
       }}
-      title={`Delete session "${sessionToDelete}"?`}
     >
       <DialogContent>
         {error ? <ErrorMessage error={error} /> : null}
@@ -34,28 +34,15 @@ const DeleteSessionDialog = ({
       </DialogContent>
       <DialogActions>
         <Button
+          color="primary"
           onClick={() => {
             onClose(false)
           }}
-          color="primary"
         >
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              try {
-                if (sessionToDelete) {
-                  rootModel.removeSavedSession({ name: sessionToDelete })
-                }
-                onClose(true)
-              } catch (e) {
-                console.error(e)
-                setError(e)
-              }
-            })()
-          }}
+          onClick={() => {}}
           color="primary"
           variant="contained"
           autoFocus
