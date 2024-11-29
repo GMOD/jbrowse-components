@@ -26,6 +26,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
   const { hydrateFn } = getRoot<any>(rest.displayModel)
 
   useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = html
+    }
     // requestIdleCallback here helps to avoid hydration mismatch because it
     // provides time for dangerouslySetInnerHTML to set the innerHTML contents
     // of the node, otherwise ref.current.innerHTML can be empty
@@ -59,15 +62,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
       })
     }
     /* biome-ignore lint/correctness/useExhaustiveDependencies: */
-  }, [theme, rest, hydrateFn, RenderingComponent])
+  }, [theme, rest, html, hydrateFn, RenderingComponent])
 
-  return (
-    <div
-      data-testid="hydrationContainer"
-      ref={ref}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  )
+  return <div data-testid="hydrationContainer" ref={ref} />
 })
 
 const OldHydrate = observer(function ({

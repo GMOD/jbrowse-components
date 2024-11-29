@@ -48,7 +48,6 @@ const InstalledPlugin = observer(function ({
       )
     : false
 
-  // console.log({ adminMode, isSessionPlugin, name: plugin.name })
   return (
     <ListItem key={plugin.name}>
       {adminMode || isSessionPlugin ? (
