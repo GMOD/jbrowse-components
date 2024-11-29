@@ -10,7 +10,6 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -23,7 +22,7 @@ import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
 import { saveAs } from 'file-saver'
-import { IDBPDatabase, openDB } from 'idb'
+import { openDB } from 'idb'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
@@ -48,6 +47,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { IDBPDatabase } from 'idb'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -117,7 +117,6 @@ export type MenuAction =
  * - [BaseRootModel](../baserootmodel)
  * - [InternetAccountsMixin](../internetaccountsmixin)
  * - [HistoryManagementMixin](../historymanagementmixin)
- * - [RootAppMenuMixin](../rootappmenumixin)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -159,6 +158,14 @@ export default function RootModel({
       configPath: types.maybe(types.string),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
+      adminMode,
+      /**
+       * #volatile
+       */
+      sessionDB: undefined as IDBPDatabase<SessionDB> | undefined,
       /**
        * #volatile
        */
@@ -339,35 +346,6 @@ export default function RootModel({
         ]
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      localStorageId(name: string) {
-        return `localSaved-${name}-${self.configPath}`
-      },
-      /**
-       * #getter
-       */
-      get autosaveId() {
-        return `autosave-${self.configPath}`
-      },
-      /**
-       * #getter
-       */
-      get previousAutosaveId() {
-        return `previousAutosave-${self.configPath}`
-      },
-      /**
-       * #getter
-       */
-      get currentSessionId() {
-        const locationUrl = new URL(window.location.href)
-        const params = new URLSearchParams(locationUrl.search)
-        return params.get('session')?.split('local-')[1]
-      },
-    }))
-
     .actions(self => ({
       /**
        * #action
@@ -376,11 +354,22 @@ export default function RootModel({
         self.savedSessions = sessions
       },
 
-      async updateSavedSessions(db: IDBPDatabase<SessionDB>) {
-        const savedSessions = await db.getAll('savedSessions')
-        this.setSavedSessions(
-          savedSessions.sort((a, b) => +b.createdAt - +a.createdAt),
-        )
+      /**
+       * #action
+       */
+      async fetchSavedSessions() {
+        if (self.sessionDB) {
+          const savedSessions = await self.sessionDB.getAll('savedSessions')
+          this.setSavedSessions(
+            savedSessions.sort((a, b) => +b.createdAt - +a.createdAt),
+          )
+        }
+      },
+      /**
+       * #action
+       */
+      setSessionDB(db: IDBPDatabase<SessionDB>) {
+        self.sessionDB = db
       },
     }))
     .actions(self => ({
@@ -396,34 +385,7 @@ export default function RootModel({
                 db.createObjectStore('savedSessions')
               },
             })
-
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            self.updateSavedSessions(db)
-
-            addDisposer(
-              self,
-              autorun(
-                async () => {
-                  if (self.session) {
-                    sessionStorage.setItem(
-                      'current',
-                      JSON.stringify({
-                        session: getSnapshot(self.session),
-                        createdAt: new Date(),
-                      }),
-                    )
-
-                    // this check is not able to be modularized into it's own
-                    // autorun at current time because it depends on session
-                    // storage snapshot being set above
-                    if (self.pluginsUpdated) {
-                      window.location.reload()
-                    }
-                  }
-                },
-                { delay: 400 },
-              ),
-            )
+            self.setSessionDB(db)
 
             addDisposer(
               self,
@@ -435,13 +397,13 @@ export default function RootModel({
                       await db.put(
                         'savedSessions',
                         {
-                          session: structuredClone(getSnapshot(self.session)),
+                          session: getSnapshot(self.session),
                           createdAt: new Date(),
                         },
                         id,
                       )
 
-                      self.updateSavedSessions(db)
+                      await self.fetchSavedSessions()
                     } catch (e) {
                       console.error(e)
                       self.session?.notifyError(`${e}`, e)
@@ -453,8 +415,33 @@ export default function RootModel({
             )
           } catch (e) {
             console.error(e)
-            self.session.notifyError(`${e}`, e)
+            self.session?.notifyError(`${e}`, e)
           }
+
+          addDisposer(
+            self,
+            autorun(
+              async () => {
+                if (self.session) {
+                  sessionStorage.setItem(
+                    'current',
+                    JSON.stringify({
+                      session: getSnapshot(self.session),
+                      createdAt: new Date(),
+                    }),
+                  )
+
+                  // this check is not able to be modularized into it's own
+                  // autorun at current time because it depends on session
+                  // storage snapshot being set above
+                  if (self.pluginsUpdated) {
+                    window.location.reload()
+                  }
+                }
+              },
+              { delay: 400 },
+            ),
+          )
         })()
       },
       /**
@@ -495,12 +482,20 @@ export default function RootModel({
        * #action
        */
       activateSession(id: string) {
-        console.log({ id })
         const r = self.savedSessions?.find(f => f.session.id === id)
         if (r) {
           this.setSession(r.session)
         } else {
           self.session.notify('Session not found')
+        }
+      },
+      /**
+       * #action
+       */
+      async deleteSavedSession(id: string) {
+        if (self.sessionDB) {
+          await self.sessionDB.delete('savedSessions', id)
+          await self.fetchSavedSessions()
         }
       },
       /**
@@ -572,7 +567,8 @@ export default function RootModel({
                 subMenu: self.savedSessions?.length
                   ? [
                       ...self.savedSessions.slice(0, 5).map(r => ({
-                        label: `${r.session.name} (${formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                        label: `${r.session.name} (${r.session.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                        disabled: r.session.id === self.session.id,
                         onClick: () => {
                           self.setSession(r.session)
                         },
@@ -641,23 +637,14 @@ export default function RootModel({
                   label: 'Admin',
                   menuItems: [
                     {
-                      label: 'Open assembly manager',
-                      onClick: () => {
-                        self.session.queueDialog((onClose: () => void) => [
-                          AssemblyManager,
-                          {
-                            onClose,
-                            rootModel: self,
-                          },
-                        ])
-                      },
-                    },
-                    {
                       label: 'Set default session',
                       onClick: () => {
                         self.session.queueDialog((onClose: () => void) => [
                           SetDefaultSession,
-                          { rootModel: self, onClose },
+                          {
+                            rootModel: self,
+                            onClose,
+                          },
                         ])
                       },
                     },
@@ -713,6 +700,7 @@ export default function RootModel({
                     AssemblyManager,
                     {
                       onClose,
+                      session: self.session,
                       rootModel: self,
                     },
                   ])

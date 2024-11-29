@@ -8,12 +8,13 @@ import AssemblyEditor from './AssemblyEditor'
 import AssemblyTable from './AssemblyTable'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const AssemblyManager = observer(function ({
-  rootModel,
+  session,
   onClose,
 }: {
-  rootModel: any
+  session: AbstractSessionModel
   onClose: () => void
 }) {
   const [isFormOpen, setFormOpen] = useState(false)
@@ -37,15 +38,23 @@ const AssemblyManager = observer(function ({
         />
       ) : isFormOpen ? (
         <AssemblyAddForm
-          rootModel={rootModel}
-          onClose={() => setFormOpen(false)}
+          session={session}
+          onClose={() => {
+            setFormOpen(false)
+          }}
         />
       ) : (
         <AssemblyTable
-          rootModel={rootModel}
-          onClose={onClose}
-          setAddAssemblyFormOpen={setFormOpen}
-          setAssemblyBeingEdited={setEditingAssembly}
+          session={session}
+          onClose={() => {
+            onClose()
+          }}
+          onAddAssembly={() => {
+            setFormOpen(true)
+          }}
+          onEditAssembly={arg => {
+            setEditingAssembly(arg)
+          }}
         />
       )}
     </Dialog>

@@ -1,76 +1,38 @@
-import React, { useState } from 'react'
+import React from 'react'
 
-import DeleteIcon from '@mui/icons-material/Delete'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import {
-  IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { ListItem, ListItemButton, Typography } from '@mui/material'
+import { formatDistanceToNow } from 'date-fns'
+
+import type { WebRootModel } from '../rootModel/rootModel'
+import type { SavedSession } from '../types'
 
 function RecentSessionCard({
-  sessionName,
-  onClick,
-  onDelete,
+  rootModel,
+  sessionSnap,
+  onError,
 }: {
-  sessionName: string
-  onClick: (arg: string) => void
-  onDelete?: (arg: string) => void
+  rootModel: WebRootModel
+  sessionSnap: SavedSession
+  onError: (arg: unknown) => void
 }) {
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-
   return (
-    <>
-      <ListItem
-        secondaryAction={
-          <IconButton
-            onClick={event => {
-              event.stopPropagation()
-              setMenuAnchorEl(event.currentTarget)
-            }}
-          >
-            <MoreVertIcon />
-          </IconButton>
-        }
-      >
-        <ListItemButton
-          onClick={() => {
-            onClick(sessionName)
-          }}
-        >
-          <Tooltip title={sessionName} enterDelay={300}>
-            <Typography variant="body2" noWrap>
-              {sessionName}
-            </Typography>
-          </Tooltip>
-        </ListItemButton>
-      </ListItem>
-      <Menu
-        anchorEl={menuAnchorEl}
-        open={Boolean(menuAnchorEl)}
-        onClose={() => {
-          setMenuAnchorEl(null)
+    <ListItem>
+      <ListItemButton
+        onClick={() => {
+          try {
+            rootModel.setSession(sessionSnap.session)
+          } catch (e) {
+            console.error(e)
+            onError(e)
+          }
         }}
       >
-        <MenuItem
-          onClick={() => {
-            setMenuAnchorEl(null)
-            onDelete?.(sessionName)
-          }}
-          disabled={!onDelete}
-        >
-          <ListItemIcon>
-            <DeleteIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Delete</Typography>
-        </MenuItem>
-      </Menu>
-    </>
+        <Typography variant="body2" noWrap>
+          {sessionSnap.session.name} (
+          {formatDistanceToNow(sessionSnap.createdAt, { addSuffix: true })})
+        </Typography>
+      </ListItemButton>
+    </ListItem>
   )
 }
 

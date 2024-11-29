@@ -8,6 +8,9 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 const UnindexedFastaAdapter = ConfigurationSchema(
   'UnindexedFastaAdapter',
   {
+    /**
+     * #slot
+     */
     rewriteRefNames: {
       type: 'string',
       defaultValue: '',

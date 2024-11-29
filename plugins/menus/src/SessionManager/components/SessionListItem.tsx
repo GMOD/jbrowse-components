@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React from 'react'
 
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -9,14 +9,10 @@ import {
 } from '@mui/material'
 import { formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
+import { getParent } from 'mobx-state-tree'
 
 import type { SessionSnap } from './util'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-// lazies
-const DeleteSavedSessionDialog = lazy(
-  () => import('./DeleteSavedSessionDialog'),
-)
 
 const SessionListItem = observer(function ({
   session,
@@ -35,14 +31,7 @@ const SessionListItem = observer(function ({
           edge="end"
           disabled={session.name === snap.session.name}
           onClick={() => {
-            session.queueDialog(handleClose => [
-              DeleteSavedSessionDialog,
-              {
-                session,
-                handleClose,
-                snap: snap.session,
-              },
-            ])
+            getParent<any>(session).deleteSavedSession(snap.session.id)
           }}
         >
           <DeleteIcon />

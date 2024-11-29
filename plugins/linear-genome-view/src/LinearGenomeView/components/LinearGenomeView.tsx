@@ -10,32 +10,46 @@ import TracksContainer from './TracksContainer'
 
 import type { LinearGenomeViewModel } from '..'
 
+// lazies
 const ImportForm = lazy(() => import('./ImportForm'))
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 
-const useStyles = makeStyles()(theme => ({
-  note: {
-    textAlign: 'center',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
+const useStyles = makeStyles()({
   rel: {
     position: 'relative',
   },
   top: {
     zIndex: 1000,
   },
-}))
+})
 
 const LinearGenomeView = observer(function ({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { tracks, error, initialized, hasDisplayedRegions } = model
-  const ref = useRef<HTMLDivElement>(null)
-  const session = getSession(model)
+  const { error, initialized, hasDisplayedRegions } = model
+
+  if (!initialized && !error) {
+    return <LoadingEllipses variant="h6" />
+  } else if (!hasDisplayedRegions || error) {
+    return <ImportForm model={model} />
+  } else {
+    return <LinearGenomeViewContainer model={model} />
+  }
+})
+
+const LinearGenomeViewContainer = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
+  const { tracks } = model
   const { classes } = useStyles()
+  const session = getSession(model)
+  const ref = useRef<HTMLDivElement>(null)
+  const MiniControlsComponent = model.MiniControlsComponent()
+  const HeaderComponent = model.HeaderComponent()
   useEffect(() => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly
@@ -52,17 +66,6 @@ const LinearGenomeView = observer(function ({
       document.removeEventListener('keydown', handleSelectView)
     }
   }, [session, model])
-
-  if (!initialized && !error) {
-    return <LoadingEllipses variant="h6" />
-  }
-  if (!hasDisplayedRegions || error) {
-    return <ImportForm model={model} />
-  }
-
-  const MiniControlsComponent = model.MiniControlsComponent()
-  const HeaderComponent = model.HeaderComponent()
-
   return (
     <div
       className={classes.rel}

@@ -70,79 +70,80 @@ const BookmarkGrid = observer(function ({
   ]
 
   return (
-    <DataGrid
-      autoHeight
-      density="compact"
-      rows={rows}
-      columns={[
-        {
-          ...GRID_CHECKBOX_SELECTION_COL_DEF,
-          width: widths[0],
-        },
-        {
-          field: 'locString',
-          headerName: 'Bookmark link',
-          width: widths[1],
-          renderCell: ({ value, row }) => (
-            <Link
-              className={classes.cell}
-              href="#"
-              onClick={async event => {
-                event.preventDefault()
-                const { views } = session
-                await navToBookmark(value, row.assemblyName, views, model)
-              }}
-            >
-              {value}
-            </Link>
-          ),
-        },
-        {
-          field: 'label',
-          headerName: 'Label',
-          width: widths[2],
-          editable: true,
-        },
-        {
-          field: 'assemblyName',
-          headerName: 'Assembly',
-          width: widths[3],
-        },
-        {
-          field: 'highlight',
-          headerName: 'Highlight',
-          width: widths[4],
-          renderCell: ({ value, row }) => (
-            <ColorPicker
-              color={value || 'black'}
-              onChange={event => {
-                model.updateBookmarkHighlight(row, event)
-              }}
-            />
-          ),
-        },
-      ]}
-      processRowUpdate={row => {
-        const target = rows[row.id]!
-        model.updateBookmarkLabel(target, row.label)
-        return row
-      }}
-      onProcessRowUpdateError={e => {
-        session.notifyError(`${e}`, e)
-      }}
-      checkboxSelection
-      onRowSelectionModelChange={newRowSelectionModel => {
-        if (bookmarksWithValidAssemblies.length > 0) {
-          model.setSelectedBookmarks(
-            newRowSelectionModel.map(value => ({
-              ...rows[value as number]!,
-            })),
-          )
-        }
-      }}
-      rowSelectionModel={selectedBookmarks.map(r => r.id)}
-      disableRowSelectionOnClick
-    />
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <DataGrid
+        density="compact"
+        rows={rows}
+        columns={[
+          {
+            ...GRID_CHECKBOX_SELECTION_COL_DEF,
+            width: widths[0],
+          },
+          {
+            field: 'locString',
+            headerName: 'Bookmark link',
+            width: widths[1],
+            renderCell: ({ value, row }) => (
+              <Link
+                className={classes.cell}
+                href="#"
+                onClick={async event => {
+                  event.preventDefault()
+                  const { views } = session
+                  await navToBookmark(value, row.assemblyName, views, model)
+                }}
+              >
+                {value}
+              </Link>
+            ),
+          },
+          {
+            field: 'label',
+            headerName: 'Label',
+            width: widths[2],
+            editable: true,
+          },
+          {
+            field: 'assemblyName',
+            headerName: 'Assembly',
+            width: widths[3],
+          },
+          {
+            field: 'highlight',
+            headerName: 'Highlight',
+            width: widths[4],
+            renderCell: ({ value, row }) => (
+              <ColorPicker
+                color={value || 'black'}
+                onChange={event => {
+                  model.updateBookmarkHighlight(row, event)
+                }}
+              />
+            ),
+          },
+        ]}
+        processRowUpdate={row => {
+          const target = rows[row.id]!
+          model.updateBookmarkLabel(target, row.label)
+          return row
+        }}
+        onProcessRowUpdateError={e => {
+          session.notifyError(`${e}`, e)
+        }}
+        checkboxSelection
+        onRowSelectionModelChange={newRowSelectionModel => {
+          if (bookmarksWithValidAssemblies.length > 0) {
+            model.setSelectedBookmarks(
+              newRowSelectionModel.map(value => ({
+                ...rows[value as number]!,
+              })),
+            )
+          }
+        }}
+        rowSelectionModel={selectedBookmarks.map(r => r.id)}
+        disableRowSelectionOnClick
+      />
+    </div>
   )
 })
 

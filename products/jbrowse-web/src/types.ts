@@ -2,6 +2,7 @@ import type { DBSchema } from 'idb'
 
 export interface Session {
   name: string
+  id: string
   [key: string]: unknown
 }
 export interface SavedSession {

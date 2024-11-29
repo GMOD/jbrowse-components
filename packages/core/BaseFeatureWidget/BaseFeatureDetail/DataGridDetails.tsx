@@ -81,38 +81,40 @@ export default function DataGridDetails({
           }
           label={<Typography variant="body2">Show options</Typography>}
         />
-        <DataGrid
-          disableRowSelectionOnClick
-          rows={rows}
-          rowHeight={20}
-          columnHeaderHeight={35}
-          hideFooter={rows.length < 25}
-          slots={{
-            toolbar: checked ? GridToolbar : null,
-          }}
-          slotProps={{
-            toolbar: {
-              printOptions: {
-                disableToolbarButton: true,
-              },
-            },
-          }}
-          columns={colNames.map(
-            (val, index) =>
-              ({
-                field: val,
-                renderCell: params => {
-                  const value = params.value as string
-                  return (
-                    <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value || '')} />
-                    </div>
-                  )
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <DataGrid
+            disableRowSelectionOnClick
+            rows={rows}
+            rowHeight={20}
+            columnHeaderHeight={35}
+            hideFooter={rows.length < 25}
+            slots={{
+              toolbar: checked ? GridToolbar : null,
+            }}
+            slotProps={{
+              toolbar: {
+                printOptions: {
+                  disableToolbarButton: true,
                 },
-                width: widths[index],
-              }) satisfies GridColDef<(typeof rows)[0]>,
-          )}
-        />
+              },
+            }}
+            columns={colNames.map(
+              (val, index) =>
+                ({
+                  field: val,
+                  renderCell: params => {
+                    const value = params.value as string
+                    return (
+                      <div className={classes.cell}>
+                        <SanitizedHTML html={getStr(value || '')} />
+                      </div>
+                    )
+                  },
+                  width: widths[index],
+                }) satisfies GridColDef<(typeof rows)[0]>,
+            )}
+          />
+        </div>
       </div>
     )
   }

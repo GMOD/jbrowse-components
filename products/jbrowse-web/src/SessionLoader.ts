@@ -10,7 +10,6 @@ import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
 import type { SessionDB } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
 export interface SessionTriagedInfo {
@@ -466,6 +465,7 @@ const SessionLoader = types
      * #aftercreate
      */
     afterCreate() {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
           const db = await openDB<SessionDB>('sessionsDB', 1, {

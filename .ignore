@@ -23,3 +23,4 @@ test_data/config_demo.json
 plugins/spreadsheet-view/src/SpreadsheetView/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf
 website/docs/faq.md
 test_data/sars-cov2/ncbi_original.gff3
+plugins/data-management/src/UCSCTrackHub/ucscAssemblies.ts

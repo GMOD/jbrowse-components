@@ -229,12 +229,15 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
             },
             {
               label: 'Open assembly manager',
-              icon: SettingsIcon,
+              icon: DNA,
               onClick: () => {
                 ;(self.session as AbstractSessionModel).queueDialog(
                   handleClose => [
                     AssemblyManager,
-                    { rootModel: self, onClose: handleClose },
+                    {
+                      session: self.session,
+                      onClose: handleClose,
+                    },
                   ],
                 )
               },

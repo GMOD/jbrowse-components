@@ -140,14 +140,7 @@ exports[`Root MST model adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
+        "icon": [Function],
         "label": "Open assembly manager",
         "onClick": [Function],
       },
@@ -296,14 +289,7 @@ exports[`Root MST model adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
+        "icon": [Function],
         "label": "Open assembly manager",
         "onClick": [Function],
       },

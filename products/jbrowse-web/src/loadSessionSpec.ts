@@ -1,4 +1,4 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export interface ViewSpec {
   type: string

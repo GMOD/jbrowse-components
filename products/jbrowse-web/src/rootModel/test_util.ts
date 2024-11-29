@@ -27,6 +27,7 @@ export function createTestSession(args?: {
   }).create(
     {
       jbrowse: {
+        ...jbrowseConfig,
         configuration: {
           rpc: {
             defaultDriver: 'MainThreadRpcDriver',
@@ -34,7 +35,6 @@ export function createTestSession(args?: {
           // @ts-expect-error
           ...jbrowseConfig.configuration,
         },
-        ...jbrowseConfig,
       },
     },
     { pluginManager },

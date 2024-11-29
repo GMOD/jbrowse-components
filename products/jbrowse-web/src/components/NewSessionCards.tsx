@@ -12,9 +12,10 @@ const useStyles = makeStyles()({
     cursor: 'pointer',
   },
   name: {
-    marginTop: 4, // theme.spacing(),
+    marginTop: 4,
     textAlign: 'center',
     maxWidth: 200,
+    cursor: 'pointer',
   },
   media: {
     height: 150,
@@ -55,7 +56,6 @@ function NewSessionCard({
       <Typography
         variant="subtitle2"
         className={classes.name}
-        style={{ cursor: 'pointer' }}
         onClick={onClick}
       >
         {name}

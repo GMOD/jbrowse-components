@@ -26,7 +26,7 @@ exports[`adds menus 1`] = `
             "render": [Function],
           },
         },
-        "label": "Import session…",
+        "label": "Import session...",
         "onClick": [Function],
       },
       {
@@ -42,40 +42,14 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
+        "label": "Recent sessions...",
+        "subMenu": [
+          {
+            "label": "No autosaves found",
+            "onClick": [Function],
           },
-        },
-        "label": "Open session…",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Save session",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Duplicate session",
-        "onClick": [Function],
+        ],
+        "type": "subMenu",
       },
       {
         "type": "divider",
@@ -158,6 +132,11 @@ exports[`adds menus 1`] = `
           },
         },
         "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Assembly manager",
         "onClick": [Function],
       },
       {
@@ -203,7 +182,7 @@ exports[`adds menus 2`] = `
             "render": [Function],
           },
         },
-        "label": "Import session…",
+        "label": "Import session...",
         "onClick": [Function],
       },
       {
@@ -219,40 +198,14 @@ exports[`adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
+        "label": "Recent sessions...",
+        "subMenu": [
+          {
+            "label": "No autosaves found",
+            "onClick": [Function],
           },
-        },
-        "label": "Open session…",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Save session",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Duplicate session",
-        "onClick": [Function],
+        ],
+        "type": "subMenu",
       },
       {
         "type": "divider",
@@ -335,6 +288,11 @@ exports[`adds menus 2`] = `
           },
         },
         "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Assembly manager",
         "onClick": [Function],
       },
       {
