@@ -45,11 +45,7 @@ import type { Menu } from './menus'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type {
-  BaseSession,
-  BaseSessionType,
-  SessionWithDialogs,
-} from '@jbrowse/product-core'
+import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -103,7 +99,7 @@ interface SetMenusAction {
   newMenus: Menu[]
 }
 
-type MenuAction =
+export type MenuAction =
   | InsertMenuAction
   | AppendMenuAction
   | AppendToSubMenuAction
@@ -404,7 +400,6 @@ export default function RootModel({
 
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           db.getAll('autosavedSessions').then(autosavedSessions => {
-            console.log('wow', autosavedSessions)
             self.setAutosavedSessions(autosavedSessions)
           })
 
@@ -412,31 +407,48 @@ export default function RootModel({
             self,
             autorun(
               async () => {
-                if (!self.session) {
-                  return
-                }
-                const snapshot = {
-                  session: structuredClone(
-                    getSnapshot(self.session),
-                  ) as Session,
-                }
-                console.log('saving new', snapshot.session.name)
-                sessionStorage.setItem('current', JSON.stringify(snapshot))
+                if (self.session) {
+                  sessionStorage.setItem(
+                    'current',
+                    JSON.stringify({
+                      session: getSnapshot(self.session),
+                    }),
+                  )
 
-                db.put(
-                  'autosavedSessions',
-                  snapshot,
-                  snapshot.session.name,
-                ).catch((e: unknown) => {
+                  // this check is not able to be modularized into it's own
+                  // autorun at current time because it depends on session
+                  // storage snapshot being set above
+                  if (self.pluginsUpdated) {
+                    window.location.reload()
+                  }
+                }
+              },
+              { delay: 400 },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              async () => {
+                try {
+                  if (!self.session) {
+                    return
+                  }
+                  const { name } = self.session
+                  const snapshot = {
+                    session: structuredClone(
+                      getSnapshot(self.session),
+                    ) as Session,
+                  }
+                  await db.put('autosavedSessions', snapshot, name)
+
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  const s = await db.getAll('autosavedSessions')
+                  self.setAutosavedSessions(s)
+                } catch (e) {
                   console.error(e)
                   self.session?.notifyError(`${e}`, e)
-                })
-
-                // this check is not able to be modularized into it's own
-                // autorun at current time because it depends on session
-                // storage snapshot being set above
-                if (self.pluginsUpdated) {
-                  window.location.reload()
                 }
               },
               { delay: 400 },
@@ -557,43 +569,27 @@ export default function RootModel({
               {
                 label: 'Recent sessions...',
                 type: 'subMenu',
-                subMenu: [
-                  {
-                    label: 'Autosaves',
-                    type: 'subMenu',
-                    subMenu: self.autosavedSessions?.length
-                      ? self.autosavedSessions.map(r => ({
-                          label: r.session.name,
-                          onClick: () => {
-                            self.setSession(r.session)
-                          },
-                        }))
-                      : [{ label: 'No autosaves found', onClick: () => {} }],
-                  },
-                  {
-                    label: 'Saves',
-                    type: 'subMenu',
-                    subMenu: self.savedSessions?.length
-                      ? self.savedSessions.map(r => ({
-                          label: r.session.name,
-                          onClick: () => {
-                            self.setSession(r.session)
-                          },
-                        }))
-                      : [{ label: 'No saves', onClick: () => {} }],
-                  },
-                  {
-                    label: 'Open session sidebar...',
-                    icon: FolderOpenIcon,
-                    onClick: (session: SessionWithWidgets) => {
-                      const widget = session.addWidget(
-                        'SessionManager',
-                        'sessionManager',
-                      )
-                      session.showWidget(widget)
-                    },
-                  },
-                ],
+                subMenu: self.autosavedSessions?.length
+                  ? [
+                      ...self.autosavedSessions.map(r => ({
+                        label: r.session.name,
+                        onClick: () => {
+                          self.setSession(r.session)
+                        },
+                      })),
+                      {
+                        label: 'More...',
+                        icon: FolderOpenIcon,
+                        onClick: (session: SessionWithWidgets) => {
+                          const widget = session.addWidget(
+                            'SessionManager',
+                            'sessionManager',
+                          )
+                          session.showWidget(widget)
+                        },
+                      },
+                    ]
+                  : [{ label: 'No autosaves found', onClick: () => {} }],
               },
               { type: 'divider' },
               {
