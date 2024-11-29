@@ -4,7 +4,7 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Link, Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { formatDistance } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { makeStyles } from 'tss-react/mui'
 
 import { loadPluginManager } from './util'
@@ -65,7 +65,7 @@ export default function RecentSessionsList({
       rename: session.name,
       showDateTooltip,
       lastModified: showDateTooltip
-        ? formatDistance(date, now, { addSuffix: true })
+        ? formatDistanceToNow(date, { addSuffix: true })
         : date.toLocaleString('en-US'),
       updated: session.updated,
       path: session.path,

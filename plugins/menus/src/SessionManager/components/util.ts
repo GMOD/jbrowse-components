@@ -7,7 +7,7 @@ export interface SessionSnap {
 }
 
 export interface SessionModel extends AbstractSessionModel {
-  savedSessions: SessionSnap[]
+  savedSessions?: SessionSnap[]
   removeSavedSession: (arg: SessionSnap) => void
   activateSession: (arg: string) => void
   loadAutosaveSession: () => void

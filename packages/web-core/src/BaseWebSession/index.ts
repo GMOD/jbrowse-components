@@ -47,6 +47,10 @@ import type { Instance, SnapshotIn } from 'mobx-state-tree'
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
+interface Display {
+  displayId: string
+}
+
 /**
  * #stateModel BaseWebSession
  * used for "web based" products, including jbrowse-web and react-app
@@ -107,8 +111,9 @@ export function BaseWebSession({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * #volatile
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
+       * this is the current "task" that is being performed in the UI. this is
+       * usually an object of the form
+       *
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
@@ -356,7 +361,10 @@ export function BaseWebSession({
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose },
+                {
+                  config,
+                  handleClose,
+                },
               ])
             },
             icon: InfoIcon,
@@ -365,26 +373,25 @@ export function BaseWebSession({
             label: 'Settings',
             priority: 1001,
             disabled: !canEdit,
+            icon: SettingsIcon,
             onClick: () => {
               self.editTrackConfiguration(config)
             },
-            icon: SettingsIcon,
           },
           {
             label: 'Delete track',
             priority: 1000,
             disabled: !canEdit || isRefSeq,
-            onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
+            onClick: () => {
+              self.deleteTrackConf(config)
+            },
           },
           {
             label: 'Copy track',
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              interface Display {
-                displayId: string
-              }
               const snap = structuredClone(getSnapshot(config)) as {
                 [key: string]: unknown
                 displays: Display[]
@@ -432,9 +439,10 @@ export function BaseWebSession({
       // @ts-expect-error
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { connectionInstances, ...rest } = snapshot || {}
-      // connectionInstances schema changed from object to an array, so any
-      // old connectionInstances as object is in snapshot, filter it out
-      // https://github.com/GMOD/jbrowse-components/issues/1903
+
+      // connectionInstances schema changed from object to an array, so any old
+      // connectionInstances as object is in snapshot, filter it out
+      // xref https://github.com/GMOD/jbrowse-components/issues/1903
       return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })

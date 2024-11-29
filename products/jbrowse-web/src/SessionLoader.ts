@@ -326,19 +326,18 @@ const SessionLoader = types
         const db = await openDB<SessionDB>('sessionsDB', 1, {
           upgrade(db) {
             db.createObjectStore('savedSessions')
-            db.createObjectStore('autosavedSessions')
           },
         })
         // rename the current autosave from previously loaded jbrowse session
         // into previousAutosave on load
         const { configPath } = self
         const lastAutosave = await db.get(
-          'autosavedSessions',
+          'savedSessions',
           `autosave-${configPath}`,
         )
         if (lastAutosave) {
           await db.put(
-            'autosavedSessions',
+            'savedSessions',
             lastAutosave,
             `previousAutosave-${configPath}`,
           )

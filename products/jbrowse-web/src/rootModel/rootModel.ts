@@ -20,6 +20,7 @@ import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
+import { formatDistanceToNow } from 'date-fns'
 import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
@@ -40,7 +41,7 @@ import {
   insertMenu,
 } from './menus'
 
-import type { SavedSession, Session, SessionDB } from '../types'
+import type { SavedSession, SessionDB } from '../types'
 import type { Menu } from './menus'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -188,10 +189,6 @@ export default function RootModel({
        * #volatile
        */
       savedSessions: undefined as undefined | SavedSession[],
-      /**
-       * #volatile
-       */
-      autosavedSessions: undefined as undefined | SavedSession[],
       /**
        * #volatile
        */
@@ -373,12 +370,6 @@ export default function RootModel({
       setSavedSessions(sessions: SavedSession[]) {
         self.savedSessions = sessions
       },
-      /**
-       * #action
-       */
-      setAutosavedSessions(sessions: SavedSession[]) {
-        self.autosavedSessions = sessions
-      },
     }))
     .actions(self => ({
       /**
@@ -387,73 +378,73 @@ export default function RootModel({
       afterCreate() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
-          const db = await openDB<SessionDB>('sessionsDB', 1, {
-            upgrade(db) {
-              db.createObjectStore('savedSessions')
-              db.createObjectStore('autosavedSessions')
-            },
-          })
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          db.getAll('savedSessions').then(savedSessions => {
-            self.setSavedSessions(savedSessions)
-          })
-
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          db.getAll('autosavedSessions').then(autosavedSessions => {
-            self.setAutosavedSessions(autosavedSessions)
-          })
-
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                if (self.session) {
-                  sessionStorage.setItem(
-                    'current',
-                    JSON.stringify({
-                      session: getSnapshot(self.session),
-                    }),
-                  )
-
-                  // this check is not able to be modularized into it's own
-                  // autorun at current time because it depends on session
-                  // storage snapshot being set above
-                  if (self.pluginsUpdated) {
-                    window.location.reload()
-                  }
-                }
+          try {
+            const db = await openDB<SessionDB>('sessionsDB', 1, {
+              upgrade(db) {
+                db.createObjectStore('savedSessions')
               },
-              { delay: 400 },
-            ),
-          )
+            })
 
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                try {
-                  if (!self.session) {
-                    return
-                  }
-                  const { name } = self.session
-                  const snapshot = {
-                    session: structuredClone(
-                      getSnapshot(self.session),
-                    ) as Session,
-                  }
-                  await db.put('autosavedSessions', snapshot, name)
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            db.getAll('savedSessions').then(savedSessions => {
+              self.setSavedSessions(savedSessions)
+            })
 
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  const s = await db.getAll('autosavedSessions')
-                  self.setAutosavedSessions(s)
-                } catch (e) {
-                  console.error(e)
-                  self.session?.notifyError(`${e}`, e)
-                }
-              },
-              { delay: 400 },
-            ),
-          )
+            addDisposer(
+              self,
+              autorun(
+                async () => {
+                  if (self.session) {
+                    sessionStorage.setItem(
+                      'current',
+                      JSON.stringify({
+                        session: getSnapshot(self.session),
+                        createdAt: new Date(),
+                      }),
+                    )
+
+                    // this check is not able to be modularized into it's own
+                    // autorun at current time because it depends on session
+                    // storage snapshot being set above
+                    if (self.pluginsUpdated) {
+                      window.location.reload()
+                    }
+                  }
+                },
+                { delay: 400 },
+              ),
+            )
+
+            addDisposer(
+              self,
+              autorun(
+                async () => {
+                  if (self.session) {
+                    try {
+                      const { id } = self.session
+                      await db.put(
+                        'savedSessions',
+                        {
+                          session: structuredClone(getSnapshot(self.session)),
+                          createdAt: new Date(),
+                        },
+                        id,
+                      )
+
+                      self.setSavedSessions(await db.getAll('savedSessions'))
+                    } catch (e) {
+                      console.error(e)
+                      self.session?.notifyError(`${e}`, e)
+                    }
+                  }
+                },
+                { delay: 400 },
+              ),
+            )
+          } catch (e) {
+            console.error(e)
+            self.session.notifyError(`${e}`, e)
+          }
         })()
       },
       /**
@@ -555,24 +546,13 @@ export default function RootModel({
                   )
                 },
               },
-
-              {
-                label: 'Save session as...',
-                icon: FolderOpenIcon,
-                onClick: () => {
-                  self.session.queueDialog((onClose: () => void) => [
-                    AssemblyManager,
-                    { onClose, rootModel: self },
-                  ])
-                },
-              },
               {
                 label: 'Recent sessions...',
                 type: 'subMenu',
-                subMenu: self.autosavedSessions?.length
+                subMenu: self.savedSessions?.length
                   ? [
-                      ...self.autosavedSessions.map(r => ({
-                        label: r.session.name,
+                      ...self.savedSessions.slice(0, 5).map(r => ({
+                        label: `${r.session.name} (${formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
                         onClick: () => {
                           self.setSession(r.session)
                         },
@@ -736,6 +716,7 @@ export default function RootModel({
             appendToSubMenu({ menus: ret, ...action })
           } else if (action.type === 'appendToMenu') {
             appendToMenu({ menus: ret, ...action })
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           } else if (action.type === 'insertInMenu') {
             insertInMenu({ menus: ret, ...action })
           }

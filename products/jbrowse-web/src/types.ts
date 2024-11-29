@@ -6,16 +6,11 @@ export interface Session {
 }
 export interface SavedSession {
   session: Session
+  createdAt: Date
 }
 export interface SessionDB extends DBSchema {
   savedSessions: {
     key: string
-    createdAt: Date
-    value: SavedSession
-  }
-  autosavedSessions: {
-    key: string
-    createdAt: Date
     value: SavedSession
   }
 }
