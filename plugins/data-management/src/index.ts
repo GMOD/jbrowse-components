@@ -6,7 +6,7 @@ import AddConnectionWidgetF from './AddConnectionWidget'
 import AddTrackWidgetF from './AddTrackWidget'
 import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
 import PluginStoreWidgetF from './PluginStoreWidget'
-import UCSCTrackHubConnectionF from './ucsc-trackhub'
+import UCSCTrackHubConnectionF from './UCSCTrackHub'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -32,5 +32,5 @@ export default class DataManagementPlugin extends Plugin {
 
 export { AssemblyManager }
 
-export { type AddTrackModel } from './AddTrackWidget/model'
-export { type HierarchicalTrackSelectorModel } from './HierarchicalTrackSelectorWidget'
+export type { AddTrackModel } from './AddTrackWidget/model'
+export type { HierarchicalTrackSelectorModel } from './HierarchicalTrackSelectorWidget'

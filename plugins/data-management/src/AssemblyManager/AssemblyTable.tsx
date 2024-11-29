@@ -1,26 +1,20 @@
 import React from 'react'
 
+import AddIcon from '@mui/icons-material/Add'
 import { readConfObject } from '@jbrowse/core/configuration'
 import CreateIcon from '@mui/icons-material/Create'
 import DeleteIcon from '@mui/icons-material/Delete'
-import {
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { DataGrid } from '@mui/x-data-grid'
 
 const AssemblyTable = observer(function ({
   rootModel,
-  setIsAssemblyBeingEdited,
   setAssemblyBeingEdited,
+  setAddAssemblyFormOpen,
+  onClose,
 }: {
   rootModel: {
     jbrowse: {
@@ -28,61 +22,77 @@ const AssemblyTable = observer(function ({
       assemblies: AnyConfigurationModel[]
     }
   }
-  setIsAssemblyBeingEdited(arg: boolean): void
-  setAssemblyBeingEdited(arg: AnyConfigurationModel): void
+  setAssemblyBeingEdited: (arg: AnyConfigurationModel) => void
+  setAddAssemblyFormOpen: (arg: boolean) => void
+  onClose: () => void
 }) {
-  function removeAssembly(name: string) {
-    rootModel.jbrowse.removeAssemblyConf(name)
-  }
-
-  const { assemblies } = rootModel.jbrowse
-
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Display name</TableCell>
-            <TableCell>Aliases</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {assemblies.map(assembly => {
-            const name = readConfObject(assembly, 'name')
-            const displayName = readConfObject(assembly, 'displayName')
-            const aliases = readConfObject(assembly, 'aliases')
-            return (
-              <TableRow key={name}>
-                <TableCell>{name}</TableCell>
-                <TableCell>{displayName}</TableCell>
-                <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
-                <TableCell>
-                  <IconButton
-                    data-testid={`${name}-edit`}
-                    onClick={() => {
-                      setIsAssemblyBeingEdited(true)
-                      setAssemblyBeingEdited(assembly)
-                    }}
-                  >
-                    <CreateIcon color="primary" />
-                  </IconButton>
-                  <IconButton
-                    data-testid={`${name}-delete`}
-                    onClick={() => {
-                      removeAssembly(name)
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            )
+    <>
+      <DialogContent>
+        <DataGrid
+          rowHeight={25}
+          columnHeaderHeight={35}
+          hideFooter={rootModel.jbrowse.assemblies.length < 25}
+          rows={rootModel.jbrowse.assemblies.map(assembly => {
+            return {
+              id: readConfObject(assembly, 'name'),
+              name: readConfObject(assembly, 'name'),
+              displayName: readConfObject(assembly, 'displayName'),
+              aliases: readConfObject(assembly, 'aliases'),
+              assembly,
+            }
           })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          columns={[
+            { field: 'name' },
+            { field: 'displayName' },
+            { field: 'aliases' },
+            {
+              field: 'actions',
+              renderCell: params => {
+                return (
+                  <>
+                    <IconButton
+                      onClick={() => {
+                        setAssemblyBeingEdited(params.row.assembly)
+                      }}
+                    >
+                      <CreateIcon color="primary" />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        rootModel.jbrowse.removeAssemblyConf(params.row.name)
+                      }}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  </>
+                )
+              },
+            },
+          ]}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={() => {
+            onClose()
+          }}
+        >
+          Close
+        </Button>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setAddAssemblyFormOpen(true)
+          }}
+        >
+          Add new assembly
+        </Button>
+      </DialogActions>
+    </>
   )
 })
 

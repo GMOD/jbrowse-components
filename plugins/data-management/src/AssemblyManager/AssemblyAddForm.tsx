@@ -2,7 +2,15 @@ import React, { useState } from 'react'
 
 import { FileSelector } from '@jbrowse/core/ui'
 import AddIcon from '@mui/icons-material/Add'
-import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  Grid,
+  MenuItem,
+  Paper,
+  TextField,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util/types'
@@ -66,62 +74,67 @@ const AdapterInput = observer(function ({
     adapterSelection === 'BgzipFastaAdapter'
   ) {
     return (
-      <Grid container spacing={2}>
-        <Grid item>
+      <>
+        <div>
           <FileSelector
+            inline
             name="fastaLocation"
             location={fastaLocation}
             setLocation={loc => {
               setFastaLocation(loc)
             }}
           />
-        </Grid>
-        <Grid item>
+        </div>
+        <div>
           <FileSelector
+            inline
             name="faiLocation"
             location={faiLocation}
             setLocation={loc => {
               setFaiLocation(loc)
             }}
           />
-        </Grid>
+        </div>
         {adapterSelection === 'BgzipFastaAdapter' ? (
-          <Grid item>
+          <div>
             <FileSelector
+              inline
               name="gziLocation"
               location={gziLocation}
               setLocation={loc => {
                 setGziLocation(loc)
               }}
             />
-          </Grid>
+          </div>
         ) : null}
-      </Grid>
+      </>
     )
   }
 
   if (adapterSelection === 'TwoBitAdapter') {
     return (
-      <Grid container spacing={2}>
-        <Grid item>
+      <>
+        <div>
           <FileSelector
+            inline
             name="twoBitLocation"
             location={twoBitLocation}
             setLocation={loc => {
               setTwoBitLocation(loc)
             }}
           />
-        </Grid>
-        <Grid item>
+        </div>
+        <div>
           <FileSelector
+            inline
             name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
             location={chromSizesLocation}
             setLocation={loc => {
               setChromSizesLocation(loc)
             }}
           />
-        </Grid>
-      </Grid>
+        </div>
+      </>
     )
   }
 
@@ -138,10 +151,10 @@ const adapterTypes = [
 
 const AssemblyAddForm = observer(function ({
   rootModel,
-  setFormOpen,
+  onClose,
 }: {
   rootModel: AbstractRootModel
-  setFormOpen: (arg: boolean) => void
+  onClose: () => void
 }) {
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
@@ -158,7 +171,7 @@ const AssemblyAddForm = observer(function ({
     if (assemblyName === '') {
       rootModel.session?.notify("Can't create an assembly without a name")
     } else {
-      setFormOpen(false)
+      onClose()
       let newAssembly: Record<string, unknown>
       if (adapterSelection === 'IndexedFastaAdapter') {
         newAssembly = {
@@ -209,62 +222,74 @@ const AssemblyAddForm = observer(function ({
   }
 
   return (
-    <div>
-      <Paper>
-        <TextField
-          id="assembly-name"
-          label="Assembly name"
-          helperText="The assembly name e.g. hg38"
-          variant="outlined"
-          value={assemblyName}
-          onChange={event => {
-            setAssemblyName(event.target.value)
+    <>
+      <DialogContent>
+        <Paper>
+          <TextField
+            id="assembly-name"
+            label="Assembly name"
+            helperText="The assembly name e.g. hg38"
+            variant="outlined"
+            value={assemblyName}
+            onChange={event => {
+              setAssemblyName(event.target.value)
+            }}
+            slotProps={{
+              htmlInput: { 'data-testid': 'assembly-name' },
+            }}
+          />
+          <TextField
+            id="assembly-name"
+            label="Assembly display name"
+            helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+            variant="outlined"
+            value={assemblyDisplayName}
+            onChange={event => {
+              setAssemblyDisplayName(event.target.value)
+            }}
+            slotProps={{
+              htmlInput: { 'data-testid': 'assembly-display-name' },
+            }}
+          />
+          <AdapterSelector
+            adapterSelection={adapterSelection}
+            adapterTypes={adapterTypes}
+            setAdapterSelection={setAdapterSelection}
+          />
+          <AdapterInput
+            adapterSelection={adapterSelection}
+            fastaLocation={fastaLocation}
+            faiLocation={faiLocation}
+            gziLocation={gziLocation}
+            twoBitLocation={twoBitLocation}
+            chromSizesLocation={chromSizesLocation}
+            setFaiLocation={setFaiLocation}
+            setGziLocation={setGziLocation}
+            setTwoBitLocation={setTwoBitLocation}
+            setFastaLocation={setFastaLocation}
+            setChromSizesLocation={setChromSizesLocation}
+          />
+        </Paper>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AddIcon />}
+          onClick={createAssembly}
+        >
+          Create new assembly
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            onClose()
           }}
-          slotProps={{
-            htmlInput: { 'data-testid': 'assembly-name' },
-          }}
-        />
-        <TextField
-          id="assembly-name"
-          label="Assembly display name"
-          helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
-          variant="outlined"
-          value={assemblyDisplayName}
-          onChange={event => {
-            setAssemblyDisplayName(event.target.value)
-          }}
-          slotProps={{
-            htmlInput: { 'data-testid': 'assembly-display-name' },
-          }}
-        />
-        <AdapterSelector
-          adapterSelection={adapterSelection}
-          adapterTypes={adapterTypes}
-          setAdapterSelection={setAdapterSelection}
-        />
-        <AdapterInput
-          adapterSelection={adapterSelection}
-          fastaLocation={fastaLocation}
-          faiLocation={faiLocation}
-          gziLocation={gziLocation}
-          twoBitLocation={twoBitLocation}
-          chromSizesLocation={chromSizesLocation}
-          setFaiLocation={setFaiLocation}
-          setGziLocation={setGziLocation}
-          setTwoBitLocation={setTwoBitLocation}
-          setFastaLocation={setFastaLocation}
-          setChromSizesLocation={setChromSizesLocation}
-        />
-      </Paper>
-      <Button
-        variant="contained"
-        color="secondary"
-        startIcon={<AddIcon />}
-        onClick={createAssembly}
-      >
-        Create new assembly
-      </Button>
-    </div>
+        >
+          Back
+        </Button>
+      </DialogActions>
+    </>
   )
 })
 

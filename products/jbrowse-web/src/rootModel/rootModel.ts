@@ -4,12 +4,13 @@ import { HistoryManagementMixin } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable } from '@jbrowse/core/ui/Icons'
+import { Cable, DNA } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -22,7 +23,7 @@ import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
 import { saveAs } from 'file-saver'
-import { openDB } from 'idb'
+import { IDBPDatabase, openDB } from 'idb'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 import { createRoot, hydrateRoot } from 'react-dom/client'
@@ -374,6 +375,13 @@ export default function RootModel({
       setSavedSessions(sessions: SavedSession[]) {
         self.savedSessions = sessions
       },
+
+      async updateSavedSessions(db: IDBPDatabase<SessionDB>) {
+        const savedSessions = await db.getAll('savedSessions')
+        this.setSavedSessions(
+          savedSessions.sort((a, b) => +b.createdAt - +a.createdAt),
+        )
+      },
     }))
     .actions(self => ({
       /**
@@ -390,9 +398,7 @@ export default function RootModel({
             })
 
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            db.getAll('savedSessions').then(savedSessions => {
-              self.setSavedSessions(savedSessions)
-            })
+            self.updateSavedSessions(db)
 
             addDisposer(
               self,
@@ -435,7 +441,7 @@ export default function RootModel({
                         id,
                       )
 
-                      self.setSavedSessions(await db.getAll('savedSessions'))
+                      self.updateSavedSessions(db)
                     } catch (e) {
                       console.error(e)
                       self.session?.notifyError(`${e}`, e)
@@ -639,7 +645,10 @@ export default function RootModel({
                       onClick: () => {
                         self.session.queueDialog((onClose: () => void) => [
                           AssemblyManager,
-                          { onClose, rootModel: self },
+                          {
+                            onClose,
+                            rootModel: self,
+                          },
                         ])
                       },
                     },
@@ -696,6 +705,20 @@ export default function RootModel({
                   }
                 },
               },
+              {
+                label: 'Assembly manager',
+                icon: DNA,
+                onClick: () => {
+                  self.session.queueDialog((onClose: () => void) => [
+                    AssemblyManager,
+                    {
+                      onClose,
+                      rootModel: self,
+                    },
+                  ])
+                },
+              },
+
               {
                 label: 'Preferences',
                 icon: SettingsIcon,

@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import AddIcon from '@mui/icons-material/Add'
-import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AssemblyAddForm from './AssemblyAddForm'
@@ -16,82 +14,40 @@ const AssemblyManager = observer(function ({
   onClose,
 }: {
   rootModel: any
-  onClose: (arg: boolean) => void
+  onClose: () => void
 }) {
   const [isFormOpen, setFormOpen] = useState(false)
-  const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
-  const [assemblyBeingEdited, setAssemblyBeingEdited] =
+  const [editingAssembly, setEditingAssembly] =
     useState<AnyConfigurationModel>()
-
-  const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 
   return (
     <Dialog
       open
       title="Assembly manager"
       onClose={() => {
-        onClose(false)
+        onClose()
       }}
     >
-      <DialogContent>
-        {showAssemblyTable ? (
-          <AssemblyTable
-            rootModel={rootModel}
-            setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
-            setAssemblyBeingEdited={setAssemblyBeingEdited}
-          />
-        ) : null}
-        {isAssemblyBeingEdited ? (
-          <AssemblyEditor assembly={assemblyBeingEdited} />
-        ) : null}
-        {isFormOpen ? (
-          <AssemblyAddForm rootModel={rootModel} setFormOpen={setFormOpen} />
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        {isFormOpen ? (
-          <Button
-            variant="contained"
-            onClick={() => {
-              setFormOpen(false)
-            }}
-          >
-            Back
-          </Button>
-        ) : null}
-        {isAssemblyBeingEdited ? (
-          <Button
-            variant="contained"
-            onClick={() => {
-              setIsAssemblyBeingEdited(false)
-            }}
-          >
-            Back
-          </Button>
-        ) : null}
-        {showAssemblyTable ? (
-          <>
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={() => {
-                onClose(false)
-              }}
-            >
-              Close
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setFormOpen(true)
-              }}
-            >
-              Add new assembly
-            </Button>
-          </>
-        ) : null}
-      </DialogActions>
+      {editingAssembly ? (
+        <AssemblyEditor
+          assembly={editingAssembly}
+          onClose={() => {
+            setEditingAssembly(undefined)
+          }}
+        />
+      ) : isFormOpen ? (
+        <AssemblyAddForm
+          rootModel={rootModel}
+          onClose={() => setFormOpen(false)}
+        />
+      ) : (
+        <AssemblyTable
+          rootModel={rootModel}
+          onClose={onClose}
+          setAddAssemblyFormOpen={setFormOpen}
+          setAssemblyBeingEdited={setEditingAssembly}
+        />
+      )}
     </Dialog>
   )
 })

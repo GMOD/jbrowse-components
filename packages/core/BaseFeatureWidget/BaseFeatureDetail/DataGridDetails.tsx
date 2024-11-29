@@ -82,7 +82,6 @@ export default function DataGridDetails({
           label={<Typography variant="body2">Show options</Typography>}
         />
         <DataGrid
-          autoHeight
           disableRowSelectionOnClick
           rows={rows}
           rowHeight={20}
