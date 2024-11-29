@@ -199,6 +199,10 @@ export default function RootModel({
       error: undefined as unknown,
       /**
        * #volatile
+       * older jbrowse versions allowed directly mutating the menus structure.
+       * this was difficult to reconcile with observable data structures. it
+       * now records the series of mutations to this array, and applies them
+       * sequentially
        */
       mutableMenuActions: [] as MenuAction[],
     }))
@@ -484,13 +488,23 @@ export default function RootModel({
       /**
        * #action
        */
-      renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          this.setSession({
-            ...getSnapshot(self.session),
-            name: sessionName,
-          })
+      activateSession(id: string) {
+        console.log({ id })
+        const r = self.savedSessions?.find(f => f.session.id === id)
+        if (r) {
+          this.setSession(r.session)
+        } else {
+          self.session.notify('Session not found')
         }
+      },
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        this.setSession({
+          ...getSnapshot(self.session),
+          name: sessionName,
+        })
       },
 
       /**

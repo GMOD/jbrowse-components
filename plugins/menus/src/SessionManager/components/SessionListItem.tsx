@@ -1,49 +1,61 @@
-import React from 'react'
+import React, { lazy } from 'react'
 
-import { sum } from '@jbrowse/core/util'
-import ViewListIcon from '@mui/icons-material/ViewList'
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
+  IconButton,
   ListItem,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
 } from '@mui/material'
+import { formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
-import pluralize from 'pluralize'
 
 import type { SessionSnap } from './util'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+// lazies
+const DeleteSavedSessionDialog = lazy(
+  () => import('./DeleteSavedSessionDialog'),
+)
+
 const SessionListItem = observer(function ({
   session,
-  sessionSnapshot,
+  snap,
   onClick,
-  secondaryAction,
 }: {
-  sessionSnapshot: SessionSnap
+  snap: SessionSnap
   session: AbstractSessionModel
   onClick: () => void
-  secondaryAction?: React.ReactNode
 }) {
-  const { views = [] } = sessionSnapshot
-  const totalTracks = sum(views.map(view => view.tracks?.length ?? 0))
-  const n = views.length
-
+  const { createdAt } = snap
   return (
-    <ListItem secondaryAction={secondaryAction}>
+    <ListItem
+      secondaryAction={
+        <IconButton
+          edge="end"
+          disabled={session.name === snap.session.name}
+          onClick={() => {
+            session.queueDialog(handleClose => [
+              DeleteSavedSessionDialog,
+              {
+                session,
+                handleClose,
+                snap: snap.session,
+              },
+            ])
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
+      }
+    >
       <ListItemButton onClick={onClick}>
-        <ListItemIcon>
-          <ViewListIcon />
-        </ListItemIcon>
         <ListItemText
-          primary={sessionSnapshot.name}
+          primary={snap.session.name}
           secondary={
-            session.name === sessionSnapshot.name
+            session.id === snap.session.id
               ? 'Currently open'
-              : `${n} ${pluralize('view', n)}; ${totalTracks} open ${pluralize(
-                  'track',
-                  totalTracks,
-                )}`
+              : formatDistanceToNow(createdAt, { addSuffix: true })
           }
         />
       </ListItemButton>

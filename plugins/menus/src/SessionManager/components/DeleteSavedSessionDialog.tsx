@@ -8,15 +8,19 @@ import {
   DialogContentText,
 } from '@mui/material'
 
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
 export default function DeleteSavedSessionDialog({
-  sessionNameToDelete,
+  snap,
+  session,
   handleClose,
 }: {
-  sessionNameToDelete: string
+  snap: { name: string }
+  session: AbstractSessionModel
   handleClose: (arg?: boolean) => void
 }) {
   return (
-    <Dialog open title={`Delete session "${sessionNameToDelete}"?`}>
+    <Dialog open title={`Delete session "${snap.name}"?`}>
       <DialogContent>
         <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>

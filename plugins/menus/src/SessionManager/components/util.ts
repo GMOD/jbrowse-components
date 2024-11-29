@@ -1,9 +1,13 @@
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export interface SessionSnap {
-  name: string
-  views?: { tracks?: unknown[] }[]
-  [key: string]: unknown
+  createdAt: Date
+  session: {
+    name: string
+    id: string
+    views?: { tracks?: unknown[] }[]
+    [key: string]: unknown
+  }
 }
 
 export interface SessionModel extends AbstractSessionModel {

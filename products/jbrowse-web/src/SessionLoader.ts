@@ -21,34 +21,103 @@ export interface SessionTriagedInfo {
 
 const SessionLoader = types
   .model({
+    /**
+     * #property
+     */
     configPath: types.maybe(types.string),
+    /**
+     * #property
+     */
     sessionQuery: types.maybe(types.string),
+    /**
+     * #property
+     */
     password: types.maybe(types.string),
+    /**
+     * #property
+     */
     adminKey: types.maybe(types.string),
+    /**
+     * #property
+     */
     loc: types.maybe(types.string),
+    /**
+     * #property
+     */
     sessionTracks: types.maybe(types.string),
+    /**
+     * #property
+     */
     assembly: types.maybe(types.string),
+    /**
+     * #property
+     */
     tracks: types.maybe(types.string),
+    /**
+     * #property
+     */
     tracklist: types.maybe(types.boolean),
+    /**
+     * #property
+     */
     highlight: types.maybe(types.string),
+    /**
+     * #property
+     */
     nav: types.maybe(types.boolean),
+    /**
+     * #property
+     */
     initialTimestamp: types.number,
   })
   .volatile(() => ({
+    /**
+     * #volatile
+     */
     sessionTriaged: undefined as SessionTriagedInfo | undefined,
+    /**
+     * #volatile
+     */
     configSnapshot: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
+     */
     sessionSnapshot: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
+     */
     sessionSpec: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
+     */
     blankSession: false,
+    /**
+     * #volatile
+     */
     runtimePlugins: [] as PluginRecord[],
+    /**
+     * #volatile
+     */
     sessionPlugins: [] as PluginRecord[],
+    /**
+     * #volatile
+     */
     sessionError: undefined as unknown,
+    /**
+     * #volatile
+     */
     configError: undefined as unknown,
+    /**
+     * #volatile
+     */
     bc1:
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       window.BroadcastChannel
         ? new window.BroadcastChannel('jb_request_session')
         : undefined,
+    /**
+     * #volatile
+     */
     bc2:
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       window.BroadcastChannel
@@ -56,38 +125,58 @@ const SessionLoader = types
         : undefined,
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
     get isSharedSession() {
       return !!self.sessionQuery?.startsWith('share-')
     },
-
+    /**
+     * #getter
+     */
     get isSpecSession() {
       return !!self.sessionQuery?.startsWith('spec-')
     },
-
+    /**
+     * #getter
+     */
     get isJb1StyleSession() {
       return !!self.loc
     },
 
+    /**
+     * #getter
+     */
     get isEncodedSession() {
       return !!self.sessionQuery?.startsWith('encoded-')
     },
-
+    /**
+     * #getter
+     */
     get isJsonSession() {
       return !!self.sessionQuery?.startsWith('json-')
     },
-
+    /**
+     * #getter
+     */
     get isLocalSession() {
       return !!self.sessionQuery?.startsWith('local-')
     },
-
+    /**
+     * #getter
+     */
     get ready() {
       return Boolean(this.isSessionLoaded && !self.configError)
     },
-
+    /**
+     * #getter
+     */
     get error() {
       return self.configError || self.sessionError
     },
-
+    /**
+     * #getter
+     */
     get isSessionLoaded() {
       return Boolean(
         self.sessionError ||
@@ -96,45 +185,79 @@ const SessionLoader = types
           self.sessionSpec,
       )
     },
+    /**
+     * #getter
+     */
     get isConfigLoaded() {
       return Boolean(self.configError || self.configSnapshot)
     },
-
+    /**
+     * #getter
+     */
     get sessionTracksParsed() {
       return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
+    /**
+     * #action
+     */
     setConfigError(error: unknown) {
       self.configError = error
     },
+    /**
+     * #action
+     */
     setSessionError(error: unknown) {
       self.sessionError = error
     },
+    /**
+     * #action
+     */
     setRuntimePlugins(plugins: PluginRecord[]) {
       self.runtimePlugins = plugins
     },
+    /**
+     * #action
+     */
     setSessionPlugins(plugins: PluginRecord[]) {
       self.sessionPlugins = plugins
     },
+    /**
+     * #action
+     */
     setConfigSnapshot(snap: Record<string, unknown>) {
       self.configSnapshot = snap
     },
-
+    /**
+     * #action
+     */
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
+    /**
+     * #action
+     */
     setSessionTriaged(args?: SessionTriagedInfo) {
       self.sessionTriaged = args
     },
+    /**
+     * #action
+     */
     setSessionSnapshotSuccess(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
     async fetchPlugins(config: { plugins: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(config.plugins, {
@@ -148,6 +271,9 @@ const SessionLoader = types
         self.setConfigError(e)
       }
     },
+    /**
+     * #action
+     */
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
@@ -162,7 +288,9 @@ const SessionLoader = types
       }
     },
 
-    // passed
+    /**
+     * #action
+     */
     async setSessionSnapshot(
       snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
@@ -185,7 +313,9 @@ const SessionLoader = types
         self.setConfigError(e)
       }
     },
-
+    /**
+     * #action
+     */
     async fetchConfig() {
       // @ts-expect-error
 
@@ -221,7 +351,9 @@ const SessionLoader = types
       await this.fetchPlugins(config)
       self.setConfigSnapshot(config)
     },
-
+    /**
+     * #action
+     */
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
       const query = self.sessionQuery!.replace('local-', '')
@@ -257,7 +389,9 @@ const SessionLoader = types
       }
       throw new Error('Local storage session not found')
     },
-
+    /**
+     * #action
+     */
     async fetchSharedSession() {
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
@@ -270,7 +404,9 @@ const SessionLoader = types
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
       await this.setSessionSnapshot({ ...session, id: nanoid() })
     },
-
+    /**
+     * #action
+     */
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
         // @ts-expect-error
@@ -278,14 +414,18 @@ const SessionLoader = types
       )
       await this.setSessionSnapshot({ ...session, id: nanoid() })
     },
-
+    /**
+     * #action
+     */
     decodeSessionSpec() {
       if (!self.sessionQuery) {
         return
       }
       self.sessionSpec = JSON.parse(self.sessionQuery.replace('spec-', ''))
     },
-
+    /**
+     * #action
+     */
     decodeJb1StyleSession() {
       const {
         loc,
@@ -314,152 +454,110 @@ const SessionLoader = types
         }
       }
     },
-
+    /**
+     * #action
+     */
     async decodeJsonUrlSession() {
       // @ts-expect-error
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
       await this.setSessionSnapshot({ ...session.session, id: nanoid() })
     },
-
-    async afterCreate() {
-      try {
-        const db = await openDB<SessionDB>('sessionsDB', 1, {
-          upgrade(db) {
-            db.createObjectStore('savedSessions')
-          },
-        })
-        // rename the current autosave from previously loaded jbrowse session
-        // into previousAutosave on load
-        const { configPath } = self
-        const lastAutosave = await db.get(
-          'savedSessions',
-          `autosave-${configPath}`,
-        )
-        if (lastAutosave) {
-          await db.put(
+    /**
+     * #aftercreate
+     */
+    afterCreate() {
+      ;(async () => {
+        try {
+          const db = await openDB<SessionDB>('sessionsDB', 1, {
+            upgrade(db) {
+              db.createObjectStore('savedSessions')
+            },
+          })
+          // rename the current autosave from previously loaded jbrowse session
+          // into previousAutosave on load
+          const { configPath } = self
+          const lastAutosave = await db.get(
             'savedSessions',
-            lastAutosave,
-            `previousAutosave-${configPath}`,
+            `autosave-${configPath}`,
           )
+          if (lastAutosave) {
+            await db.put(
+              'savedSessions',
+              lastAutosave,
+              `previousAutosave-${configPath}`,
+            )
+          }
+        } catch (e) {
+          console.error('failed to create previousAutosave', e)
         }
-      } catch (e) {
-        console.error('failed to create previousAutosave', e)
-      }
 
-      try {
-        // fetch config
-        await this.fetchConfig()
-      } catch (e) {
-        console.error(e)
-        self.setConfigError(e)
-        return
-      }
+        try {
+          // fetch config
+          await this.fetchConfig()
+        } catch (e) {
+          console.error(e)
+          self.setConfigError(e)
+          return
+        }
 
-      addDisposer(
-        self,
-        autorun(async () => {
-          try {
-            const {
-              isLocalSession,
-              isEncodedSession,
-              isSpecSession,
-              isSharedSession,
-              isJsonSession,
-              isJb1StyleSession,
-              sessionQuery,
-              configSnapshot,
-            } = self
-            if (!configSnapshot) {
-              return
-            }
+        addDisposer(
+          self,
+          autorun(async () => {
+            try {
+              const {
+                isLocalSession,
+                isEncodedSession,
+                isSpecSession,
+                isSharedSession,
+                isJsonSession,
+                isJb1StyleSession,
+                sessionQuery,
+                configSnapshot,
+              } = self
+              if (!configSnapshot) {
+                return
+              }
 
-            if (self.bc1) {
-              self.bc1.onmessage = msg => {
-                const r =
-                  JSON.parse(sessionStorage.getItem('current') || '{}')
-                    .session || {}
-                if (r.id === msg.data && self.bc2) {
-                  self.bc2.postMessage(r)
+              if (self.bc1) {
+                self.bc1.onmessage = msg => {
+                  const r =
+                    JSON.parse(sessionStorage.getItem('current') || '{}')
+                      .session || {}
+                  if (r.id === msg.data && self.bc2) {
+                    self.bc2.postMessage(r)
+                  }
                 }
               }
-            }
 
-            if (isSharedSession) {
-              await this.fetchSharedSession()
-            } else if (isSpecSession) {
-              this.decodeSessionSpec()
-            } else if (isJb1StyleSession) {
-              this.decodeJb1StyleSession()
-            } else if (isEncodedSession) {
-              await this.decodeEncodedUrlSession()
-            } else if (isJsonSession) {
-              await this.decodeJsonUrlSession()
-            } else if (isLocalSession) {
-              await this.fetchSessionStorageSession()
-            } else if (sessionQuery) {
-              // if there was a sessionQuery and we don't recognize it
-              throw new Error('unrecognized session format')
-            } else {
-              // placeholder for session loaded, but none found
-              self.setBlankSession(true)
+              if (isSharedSession) {
+                await this.fetchSharedSession()
+              } else if (isSpecSession) {
+                this.decodeSessionSpec()
+              } else if (isJb1StyleSession) {
+                this.decodeJb1StyleSession()
+              } else if (isEncodedSession) {
+                await this.decodeEncodedUrlSession()
+              } else if (isJsonSession) {
+                await this.decodeJsonUrlSession()
+              } else if (isLocalSession) {
+                await this.fetchSessionStorageSession()
+              } else if (sessionQuery) {
+                // if there was a sessionQuery and we don't recognize it
+                throw new Error('unrecognized session format')
+              } else {
+                // placeholder for session loaded, but none found
+                self.setBlankSession(true)
+              }
+            } catch (e) {
+              console.error(e)
+              self.setSessionError(e)
             }
-          } catch (e) {
-            console.error(e)
-            self.setSessionError(e)
-          }
-        }),
-      )
+          }),
+        )
+      })()
     },
   }))
 
 export type SessionLoaderModel = Instance<typeof SessionLoader>
 
 export default SessionLoader
-
-interface ViewSpec {
-  type: string
-  tracks?: string[]
-  assembly: string
-  loc: string
-}
-
-// use extension point named e.g. LaunchView-LinearGenomeView to initialize an
-// LGV session
-export function loadSessionSpec(
-  {
-    views,
-    sessionTracks = [],
-  }: {
-    views: ViewSpec[]
-    sessionTracks: unknown[]
-  },
-  pluginManager: PluginManager,
-) {
-  return async () => {
-    const { rootModel } = pluginManager
-    if (!rootModel) {
-      throw new Error('rootModel not initialized')
-    }
-    try {
-      // @ts-expect-error
-      rootModel.setSession({
-        name: `New session ${new Date().toLocaleString()}`,
-      })
-
-      // @ts-expect-error
-      sessionTracks.forEach(track => rootModel.session.addTrackConf(track))
-
-      await Promise.all(
-        views.map(view =>
-          pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {
-            ...view,
-            session: rootModel.session,
-          }),
-        ),
-      )
-    } catch (e) {
-      console.error(e)
-      rootModel.session?.notify(`${e}`)
-    }
-  }
-}

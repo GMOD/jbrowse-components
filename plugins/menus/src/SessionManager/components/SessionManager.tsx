@@ -1,24 +1,12 @@
-import React, { lazy, useState } from 'react'
+import React from 'react'
 
-import DeleteIcon from '@mui/icons-material/Delete'
-import {
-  IconButton,
-  List,
-  ListSubheader,
-  Paper,
-  Typography,
-} from '@mui/material'
+import { List, ListSubheader, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import SessionListItem from './SessionListItem'
 
 import type { SessionModel } from './util'
-
-// lazies
-const DeleteSavedSessionDialog = lazy(
-  () => import('./DeleteSavedSessionDialog'),
-)
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -35,50 +23,18 @@ const SessionManager = observer(function ({
   session: SessionModel
 }) {
   const { classes } = useStyles()
-  const [sessionIndexToDelete, setSessionIndexToDelete] = useState<number>()
-
   return (
     <Paper className={classes.root}>
       <List subheader={<ListSubheader>Saved sessions</ListSubheader>}>
         {session.savedSessions?.length ? (
-          session.savedSessions.map((sessionSnapshot, idx) => (
+          session.savedSessions.map(snap => (
             <SessionListItem
-              key={sessionSnapshot.name}
-              onClick={() => {
-                session.activateSession(sessionSnapshot.name)
-              }}
-              sessionSnapshot={sessionSnapshot}
+              key={snap.session.id}
+              snap={snap}
               session={session}
-              secondaryAction={
-                <IconButton
-                  edge="end"
-                  disabled={session.name === sessionSnapshot.name}
-                  onClick={() => {
-                    session.queueDialog(onClose => [
-                      DeleteSavedSessionDialog,
-                      {
-                        handleClose: (deleteSession = false) => {
-                          if (
-                            deleteSession &&
-                            sessionIndexToDelete !== undefined
-                          ) {
-                            alert('todo')
-                            // session.removeSavedSession(
-                            //   session.savedSessions?.[sessionIndexToDelete]!,
-                            // )
-                          }
-                          setSessionIndexToDelete(undefined)
-                          onClose()
-                        },
-                        sessionNameToDelete: sessionSnapshot.name,
-                      },
-                    ])
-                    setSessionIndexToDelete(idx)
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              }
+              onClick={() => {
+                session.activateSession(snap.session.id)
+              }}
             />
           ))
         ) : (
