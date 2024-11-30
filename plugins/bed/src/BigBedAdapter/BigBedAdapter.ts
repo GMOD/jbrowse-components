@@ -141,8 +141,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       throw new Error('found uniqueId undefined')
     }
     for (const feat of feats) {
-      const line = `${query.refName}\t${feat.start}\t${feat.end}\t${feat.rest}`
-      const data = parser.parseLine(line, { uniqueId: feat.uniqueId! })
+      const splitLine = [
+        query.refName,
+        `${feat.start}`,
+        `${feat.end}`,
+        ...(feat.rest?.split('\t') || []),
+      ]
+      const data = parser.parseLine(splitLine, { uniqueId: feat.uniqueId! })
 
       const aggr = data[aggregateField]
       if (!parentAggregation[aggr]) {
@@ -169,7 +174,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const f = featureData2({
         ...rest,
         scoreColumn,
-        line,
+        splitLine,
         parser,
         uniqueId,
         start: feat.start,

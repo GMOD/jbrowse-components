@@ -10,13 +10,13 @@ export function isBedMethylFeature({
   return +(splitLine[6] || 0) === start && +(splitLine[7] || 0) === end
 }
 export function generateBedMethylFeature({
-  line,
+  splitLine,
   uniqueId,
   refName,
   start,
   end,
 }: {
-  line: string
+  splitLine: string[]
   uniqueId: string
   refName: string
   start: number
@@ -43,7 +43,7 @@ export function generateBedMethylFeature({
     n_fail,
     n_diff,
     n_nocall,
-  ] = line.split('\t')
+  ] = splitLine
 
   return {
     uniqueId,
