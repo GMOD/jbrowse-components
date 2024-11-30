@@ -2314,9 +2314,9 @@
     quick-lru "^4.0.0"
 
 "@gmod/tabix@^1.5.6":
-  version "1.5.15"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.15.tgz#7a37ee4203680b0903ca5b93959d218992908690"
-  integrity sha512-R9lF8Iq5csM9GG2jAlHbBdvhBVr1KDkBVxHz10GdGp3dv88z0Z3RtAmCnvmj9WtH010yIdKmWxGwKmxYFZxFXQ==
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.6.0.tgz#37f9220bd6300080a6af77f6e3be54f9caf4f97f"
+  integrity sha512-0D4v70FhGoIfAkikHjK1kGTAYAaQsverTAVGE9E5JL4tvwR0C1A3jmLH5znF6oHfuVi6xzb8gOHoUrccoGGoDw==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@gmod/bgzf-filehandle" "^1.3.3"
@@ -9383,7 +9383,7 @@ get-caller-file@^2.0.5:
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-2.0.5.tgz#4f94412a82db32f36e3b0b9741f8a97feb031f7e"
   integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
 
-get-intrinsic@^1.1.3, get-intrinsic@^1.2.1, get-intrinsic@^1.2.3, get-intrinsic@^1.2.4:
+get-intrinsic@^1.2.1, get-intrinsic@^1.2.3, get-intrinsic@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/get-intrinsic/-/get-intrinsic-1.2.4.tgz#e385f5a4b5227d449c3eabbad05494ef0abbeadd"
   integrity sha512-5uYhsJH8VJBTv7oslg4BznJYhDoRI6waYCxMmCdnTrcCrHA/fCFKoTFz2JKKE0HdDFUF7/oQuhzumXJK7paBRQ==
@@ -9666,12 +9666,12 @@ glur@^1.1.2:
   resolved "https://registry.yarnpkg.com/glur/-/glur-1.1.2.tgz#f20ea36db103bfc292343921f1f91e83c3467689"
   integrity sha512-l+8esYHTKOx2G/Aao4lEQ0bnHWg4fWtJbVoZZT9Knxi01pB8C80BR85nONLFwkkQoFRCmXY+BUcGZN3yZ2QsRA==
 
-gopd@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/gopd/-/gopd-1.0.1.tgz#29ff76de69dac7489b7c0918a5788e56477c332c"
-  integrity sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA==
+gopd@^1.0.1, gopd@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/gopd/-/gopd-1.1.0.tgz#df8f0839c2d48caefc32a025a49294d39606c912"
+  integrity sha512-FQoVQnqcdk4hVM4JN1eromaun4iuS34oStkdlLENLdpULsuQcTyXj8w7ayhuUfPwEYZ1ZOooOTT6fdA9Vmx/RA==
   dependencies:
-    get-intrinsic "^1.1.3"
+    get-intrinsic "^1.2.4"
 
 got@^11.7.0, got@^11.8.5:
   version "11.8.6"
@@ -10497,12 +10497,14 @@ is-primitive@^3.0.1:
   integrity sha512-GljRxhWvlCNRfZyORiH77FwdFwGcMO620o37EOYC0ORWdq+WYNVqW0w2Juzew4M+L81l6/QS3t5gkkihyRqv9w==
 
 is-regex@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/is-regex/-/is-regex-1.1.4.tgz#eef5663cd59fa4c0ae339505323df6854bb15958"
-  integrity sha512-kvRdxDsxZjhzUX07ZnLydzS1TU/TJlTUHHY4YLL87e37oUA49DfkLqgy+VjFocowy29cKvcSiu+kIv728jTTVg==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/is-regex/-/is-regex-1.2.0.tgz#41b9d266e7eb7451312c64efc37e8a7d453077cf"
+  integrity sha512-B6ohK4ZmoftlUe+uvenXSbPJFo6U37BH7oO1B3nQH8f/7h27N56s85MhUtbFJAziz5dcmuR3i8ovUl35zp8pFA==
   dependencies:
-    call-bind "^1.0.2"
-    has-tostringtag "^1.0.0"
+    call-bind "^1.0.7"
+    gopd "^1.1.0"
+    has-tostringtag "^1.0.2"
+    hasown "^2.0.2"
 
 is-retry-allowed@^1.1.0:
   version "1.2.0"
