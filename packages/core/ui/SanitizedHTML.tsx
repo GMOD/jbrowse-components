@@ -75,11 +75,8 @@ export default function SanitizedHTML({
     // only have to add this once, and can't do it globally because dompurify
     // not yet initialized at global scope
     dompurify.addHook('afterSanitizeAttributes', node => {
-      // @ts-expect-error
       if (node.tagName === 'A') {
-        // @ts-expect-error
         node.setAttribute('rel', 'noopener noreferrer')
-        // @ts-expect-error
         node.setAttribute('target', '_blank')
       }
     })
