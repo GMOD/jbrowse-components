@@ -13,6 +13,7 @@ export interface Source {
   name: string
   color?: string
   group?: string
+  [key: string]: string | undefined
 }
 
 export function getMultiVariantSourcesAutorun(self: {

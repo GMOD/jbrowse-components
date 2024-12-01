@@ -48,6 +48,7 @@ function SourcesGrid({
     idx: 0,
     field: null,
   })
+  console.log({ rows })
 
   return (
     <div>

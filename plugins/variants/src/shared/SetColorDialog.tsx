@@ -9,12 +9,12 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { set1 } from '@jbrowse/core/ui/colors'
 
-// locals
 import DraggableDialog from './DraggableDialog'
 import SourcesGrid from './SourcesGrid'
 
-import type { Source } from '../util'
+import { randomColor, type Source } from '../util'
 
 const useStyles = makeStyles()({
   content: {
@@ -43,7 +43,7 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const [bulkEdit, setBulkEdit] = useState(false)
+  const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(sources || [])
   const [showTips, setShowTips] = useLocalStorage(
     'multivariant-showTips',
@@ -70,21 +70,22 @@ export default function SetColorDialog({
             color="secondary"
             variant="contained"
             onClick={() => {
-              setBulkEdit(true)
+              setShowBulkEditor(!showBulkEditor)
             }}
           >
-            Bulk edit rows
+            {showBulkEditor ? 'Hide bulk row editor' : 'Show Bulk row editor'}
           </Button>
         </div>
         <br />
         {showTips ? <HelpfulTips /> : null}
 
-        {bulkEdit ? (
+        {showBulkEditor ? (
           <BulkEditPanel
             currLayout={currLayout}
             setCurrLayout={setCurrLayout}
           />
         ) : null}
+        <RowPalletizer currLayout={currLayout} setCurrLayout={setCurrLayout} />
 
         <SourcesGrid
           rows={currLayout}
@@ -130,6 +131,54 @@ export default function SetColorDialog({
   )
 }
 
+function RowPalletizer({
+  setCurrLayout,
+  currLayout,
+}: {
+  currLayout: Source[]
+  setCurrLayout: (arg: Source[]) => void
+}) {
+  return (
+    <div>
+      {Object.keys(currLayout[0] ?? [])
+        .filter(f => f !== 'name' && f !== 'color')
+        .map(r => {
+          return (
+            <Button
+              key={r}
+              onClick={() => {
+                const map = new Map<string, number>()
+                for (const row of currLayout) {
+                  const val = map.get(row[r] as string)
+                  if (!val) {
+                    map.set(row[r] as string, 1)
+                  } else {
+                    map.set(row[r] as string, val + 1)
+                  }
+                }
+                const ret = Object.fromEntries(
+                  [...map.entries()]
+                    .sort((a, b) => a[1] - b[1])
+                    .map((r, idx) => [r[0], set1[idx] || randomColor()]),
+                )
+                console.log([...map.entries()], ret, r)
+
+                setCurrLayout(
+                  currLayout.map(row => ({
+                    ...row,
+                    color: ret[row[r] as string],
+                  })),
+                )
+              }}
+            >
+              Palettize {r}
+            </Button>
+          )
+        })}
+    </div>
+  )
+}
+
 function BulkEditPanel({
   setCurrLayout,
   currLayout,
@@ -142,17 +191,16 @@ function BulkEditPanel({
   return (
     <div>
       <Typography>
-        Paste csv or tab separated text with a header line like "sample
-        population color". If the header contains a tab, assumed to be tsv,
-        otherwise csv. Then rows corresponding to all the samples below. Sample
-        column required, any other column names can be custom
+        Paste CSV or TSV. If a header column is present. First line is a header.
+        If a column called "name" is present, it uses that to connect to IDs in
+        the table, otherwise it uses the first column no.
       </Typography>
       <TextField
         variant="outlined"
         multiline
         minRows={5}
         placeholder={
-          'Paste csv or tab separated text with a header line like "name population color". Name column required, any other column names can be custom'
+          'name,population\nHG00098,GBR\nHG00101,GBR\nHG00459,CHS\n...'
         }
         maxRows={10}
         fullWidth
@@ -167,15 +215,17 @@ function BulkEditPanel({
         }}
       />
       <Button
+        variant="contained"
         onClick={() => {
           const lines = val.split('\n')
           const fields = lines[0]!.split(/[,\t]/gm)
           const newData = Object.fromEntries(
             lines.slice(1).map(line => {
+              const cols = line.split(/[,\t]/gm)
               const record = Object.fromEntries(
-                line.split(/[,\t]/gm).map((col, idx) => [fields[idx], col]),
+                cols.map((col, idx) => [fields[idx], col]),
               )
-              return [record.name, record]
+              return [record.name || cols[0], record]
             }),
           )
 

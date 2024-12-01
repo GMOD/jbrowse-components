@@ -3,6 +3,7 @@ export interface Source {
   name: string
   color?: string
   group?: string
+  [key: string]: unknown
 }
 
 // avoid drawing negative width features for SVG exports
