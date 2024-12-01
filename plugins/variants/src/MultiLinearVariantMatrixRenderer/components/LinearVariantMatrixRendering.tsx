@@ -6,7 +6,7 @@ import { isAlive } from 'mobx-state-tree'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
 
-import type { LinearVariantMatrixDisplayModel } from '../../LinearVariantMatrixDisplay/model'
+import type { LinearVariantMatrixDisplayModel } from '../../MultiLinearVariantMatrixDisplay/model'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 const LinearVariantMatrixRendering = observer(function (props: {

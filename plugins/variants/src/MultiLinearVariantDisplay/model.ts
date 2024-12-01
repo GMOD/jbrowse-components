@@ -181,7 +181,7 @@ export function stateModelFactory(
       get rendererConfig() {
         return self.rendererType.configSchema.create(
           {
-            ...(getConf(self, ['renderers', self.rendererTypeName]) || {}),
+            ...getConf(self, ['renderers', self.rendererTypeName]),
           },
           getEnv(self),
         )

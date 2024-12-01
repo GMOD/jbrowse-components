@@ -8,7 +8,7 @@ import {
 import { observer } from 'mobx-react'
 
 // locals
-import type { LinearVariantMatrixDisplayModel } from '../../LinearVariantMatrixDisplay/model'
+import type { LinearVariantMatrixDisplayModel } from '../../MultiLinearVariantMatrixDisplay/model'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

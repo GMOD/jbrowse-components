@@ -1,4 +1,6 @@
 // jbrowse
+import { lazy } from 'react'
+
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { set1 } from '@jbrowse/core/ui/colors'
 import { getSession } from '@jbrowse/core/util'
@@ -14,7 +16,6 @@ import type { Source } from '../util'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
-import { lazy } from 'react'
 
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
 
