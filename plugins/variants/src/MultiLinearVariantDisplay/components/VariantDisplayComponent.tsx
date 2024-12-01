@@ -5,8 +5,6 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-
-// locals
 import { makeStyles } from 'tss-react/mui'
 
 import LegendBar from '../../shared/LegendBar'
