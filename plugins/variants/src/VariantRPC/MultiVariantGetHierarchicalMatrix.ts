@@ -2,16 +2,15 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
-
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
-import type { Feature, Region } from '@jbrowse/core/util'
-import { clusterData } from '@greenelab/hclust'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { firstValueFrom, toArray } from 'rxjs'
 
-export class MultiVariantHierarchicalCluster extends RpcMethodType {
-  name = 'MultiVariantHierarchicalCluster'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
+import type { Feature, Region } from '@jbrowse/core/util'
+
+export class MultiVariantGetHierarchicalMatrix extends RpcMethodType {
+  name = 'MultiVariantGetHierarchicalMatrix'
 
   async deserializeArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
@@ -62,14 +61,8 @@ export class MultiVariantHierarchicalCluster extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const {
-      statusCallback,
-      sources,
-      mafFilter,
-      regions,
-      adapterConfig,
-      sessionId,
-    } = deserializedArgs
+    const { sources, mafFilter, regions, adapterConfig, sessionId } =
+      deserializedArgs
     const adapter = await getAdapter(pm, sessionId, adapterConfig)
     const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
     const region = regions[0]
@@ -125,12 +118,6 @@ export class MultiVariantHierarchicalCluster extends RpcMethodType {
       }
     }
 
-    return clusterData({
-      data: Object.values(rows),
-      key: 'genotypes',
-      onProgress: (arg: string) => {
-        statusCallback(arg)
-      },
-    })
+    return rows
   }
 }

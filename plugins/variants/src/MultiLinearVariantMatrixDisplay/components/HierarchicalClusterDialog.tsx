@@ -1,27 +1,41 @@
 import React, { useEffect, useState } from 'react'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import {
-  Alert,
-  Button,
-  DialogActions,
-  DialogContent,
-  Typography,
-} from '@mui/material'
+
+import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { Source } from '../../util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { isAlive } from 'mobx-state-tree'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  TextField,
+  Typography,
+} from '@mui/material'
+import copy from 'copy-to-clipboard'
+import { saveAs } from 'file-saver'
+import { isAlive } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
 
-export function toP(s = 0) {
-  return +(+s).toPrecision(6)
-}
+import type { Source } from '../../util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const useStyles = makeStyles()(theme => ({
+  textAreaFont: {
+    fontFamily: 'Courier New',
+  },
+  mauto: {
+    margin: 'auto',
+  },
+  mgap: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(4),
+  },
+}))
 
 export default function HierarchicalCluster({
   model,
@@ -35,79 +49,143 @@ export default function HierarchicalCluster({
   }
   handleClose: () => void
 }) {
-  const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<{ order: number[] }>()
+  const { classes } = useStyles()
+  const [results, setResults] = useState<string>()
   const [error, setError] = useState<unknown>()
-  const [progress, setProgress] = useState<string>('')
+  const [paste, setPaste] = useState('')
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      try {
+        setError(undefined)
+        const view = getContainingView(model) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        const { rpcManager } = getSession(model)
+        const { sources, mafFilter, adapterConfig } = model
+        const sessionId = getRpcSessionId(model)
+        const ret = (await rpcManager.call(
+          sessionId,
+          'MultiVariantGetHierarchicalMatrix',
+          {
+            regions: view.dynamicBlocks.contentBlocks,
+            sources,
+            mafFilter,
+            sessionId,
+            adapterConfig,
+          },
+        )) as Record<string, { genotypes: number[] }>
+
+        const entries = Object.values(ret)
+        const keys = Object.keys(ret)
+        const text = `try(library(fastcluster), silent=TRUE)
+inputMatrix<-matrix(c(${entries.map(val => val.genotypes.join(',')).join(',\n')}
+),nrow=${entries.length},byrow=TRUE)
+rownames(inputMatrix)<-c(${keys.map(key => `'${key}'`).join(',')})
+resultClusters<-hclust(dist(inputMatrix), method='single')
+cat(resultClusters$order,sep='\\n')`
+        setResults(text)
+      } catch (e) {
+        if (!isAbortException(e) && isAlive(model)) {
+          console.error(e)
+          setError(e)
+        }
+      }
+    })()
+  }, [model])
 
   return (
     <Dialog open title="Hierarchical clustering" onClose={handleClose}>
       <DialogContent>
-        <Typography>
-          This will perform basic agglomerative hierarchical clustering on the
-          matrix of currently visible genotype data, which can then sort the
-          rows according to the clustering.
-        </Typography>
-        <Alert severity="warning">
-          This is a fairly CPU and memory intensive operation.
-        </Alert>
-        <Button
-          variant="contained"
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              try {
-                setLoading(true)
-                setError(undefined)
-                const view = getContainingView(model) as LinearGenomeViewModel
-                if (!view.initialized) {
-                  return
-                }
-                const { rpcManager } = getSession(model)
-                const { sources, mafFilter, adapterConfig } = model
-                // const token = createStopToken()
-                // model.setSourcesLoading(token)
-                const sessionId = getRpcSessionId(model)
-                const ret = (await rpcManager.call(
-                  sessionId,
-                  'MultiVariantHierarchicalCluster',
-                  {
-                    regions: view.dynamicBlocks.contentBlocks,
-                    sources,
-                    mafFilter,
-                    sessionId,
-                    adapterConfig,
-                    statusCallback: (arg: string) => {
-                      setProgress(arg)
-                    },
+        <div className={classes.mgap}>
+          <Typography>
+            This page will produce an R script that will basic hierarchical
+            clustering on the matrix of currently visible genotype data using
+            `hclust`.
+          </Typography>
+          {results ? (
+            <div>
+              Step 1:{' '}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  saveAs(
+                    new Blob([results || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'cluster.R',
+                  )
+                }}
+              >
+                Download Rscript
+              </Button>{' '}
+              or{' '}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  copy(results || '')
+                }}
+              >
+                Copy Rscript to clipboard
+              </Button>
+            </div>
+          ) : (
+            <LoadingEllipses
+              className={classes.mauto}
+              variant="h6"
+              title="Generating genotype matrix"
+            />
+          )}
+          {error ? <ErrorMessage error={error} /> : null}
+          <div>
+            <TextField
+              multiline
+              fullWidth
+              variant="outlined"
+              placeholder="Step 2. Paste results from Rscript here (sequence of numbers, one per line, specifying the new ordering)"
+              rows={10}
+              value={paste}
+              onChange={event => {
+                setPaste(event.target.value)
+              }}
+              slotProps={{
+                input: {
+                  classes: {
+                    input: classes.textAreaFont,
                   },
-                )) as { order: number[] }
-                setResults(ret)
-              } catch (e) {
-                if (!isAbortException(e) && isAlive(model)) {
-                  console.error(e)
-                  setError(e)
-                }
-              } finally {
-                setLoading(false)
-              }
-            })()
-          }}
-          disabled={loading}
-        >
-          Perform clustering
-        </Button>
-        {progress ? <div>Progress: {toP(+progress * 100)}%</div> : null}
-        {error ? <ErrorMessage error={error} /> : null}
+                },
+              }}
+            />
+          </div>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button
-          disabled={!results}
           variant="contained"
           onClick={() => {
             const { sources } = model
-            if (results && sources) {
-              model.setLayout(results.order.map(idx => sources[idx]!))
+            if (sources) {
+              try {
+                const res = paste
+                  .split('\n')
+                  .map(t => t.trim())
+                  .filter(f => !!f)
+                  .map(r => +r)
+                  .map(idx => {
+                    const ret = sources[idx - 1]
+                    if (!ret) {
+                      throw new Error(`out of bounds at ${idx}`)
+                    }
+                    return ret
+                  })
+
+                model.setLayout(res)
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
             }
             handleClose()
           }}

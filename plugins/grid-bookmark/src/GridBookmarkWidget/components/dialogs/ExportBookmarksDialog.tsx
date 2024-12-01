@@ -45,7 +45,7 @@ const ExportBookmarksDialog = observer(function ({
   const { selectedBookmarks } = model
   const exportAll = selectedBookmarks.length === 0
   return (
-    <Dialog open onClose={() => onClose()} title="Export bookmarks">
+    <Dialog open onClose={() => { onClose() }} title="Export bookmarks">
       <DialogContent className={classes.container}>
         <Alert severity="info">
           {exportAll ? (
