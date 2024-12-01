@@ -20,8 +20,8 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
-const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const Tooltip = lazy(() => import('../shared/Tooltip'))
+const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([['multivariant', 'MultiVariantRenderer']])

@@ -1,7 +1,6 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
+import MultiLinearVariantMatrixDisplayComponent from './components/VariantDisplayComponent'
 import configSchemaF from './configSchema'
 import stateModelFactory from './model'
 
@@ -19,7 +18,7 @@ export default function LinearVariantMatrixDisplayF(
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: MultiLinearVariantMatrixDisplayComponent,
     })
   })
 }

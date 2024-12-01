@@ -4,7 +4,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 // locals
-import YScaleBars from './components/YScaleBars'
+import YScaleBars from '../shared/YScaleBars'
 
 import type { VariantDisplayModel } from './model'
 import type {

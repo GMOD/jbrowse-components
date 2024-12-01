@@ -14,7 +14,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import { moveDown, moveUp } from './util'
 
-import type { Source } from '../../util'
+import type { Source } from '../util'
 import type { GridColDef } from '@mui/x-data-grid'
 
 // icons
@@ -42,10 +42,8 @@ function SourcesGrid({
   showTips: boolean
 }) {
   const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]!
-  const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,
     field: null,
@@ -53,6 +51,111 @@ function SourcesGrid({
 
   return (
     <div>
+      <GridHeader
+        selected={selected}
+        rows={rows}
+        showTips={showTips}
+        onChange={onChange}
+      />
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          getRowId={row => row.name}
+          checkboxSelection
+          disableRowSelectionOnClick
+          onRowSelectionModelChange={arg => {
+            setSelected(arg as string[])
+          }}
+          rows={rows}
+          rowHeight={25}
+          columnHeaderHeight={33}
+          columns={[
+            {
+              field: 'color',
+              headerName: 'Color',
+              renderCell: params => {
+                const { value, id } = params
+                return (
+                  <ColorPicker
+                    color={value || 'blue'}
+                    onChange={c => {
+                      const elt = rows.find(f => f.name === id)
+                      if (elt) {
+                        elt.color = c
+                      }
+                      onChange([...rows])
+                    }}
+                  />
+                )
+              },
+            },
+            {
+              field: 'name',
+              headerName: 'Name',
+              width: measureGridWidth(rows.map(r => r.name)),
+            },
+            ...Object.keys(rest).map(
+              val =>
+                ({
+                  field: val,
+                  renderCell: ({ value }) => (
+                    <div className={classes.cell}>
+                      <SanitizedHTML html={getStr(value)} />
+                    </div>
+                  ),
+                  width: measureGridWidth(
+                    rows.map(r => `${r[val as keyof Source]}`),
+                  ),
+                }) satisfies GridColDef<(typeof rows)[0]>,
+            ),
+          ]}
+          sortModel={
+            [
+              /* we control the sort as a controlled component using
+               * onSortModelChange */
+            ]
+          }
+          onSortModelChange={args => {
+            const sort = args[0]
+            // this idx%2 flip flops the sorting order, we could inspect args
+            // for sort direction asc or desc but this is just a simplified
+            // thing since we are controlling sort instead of the default data
+            // grid sort anyways
+            const idx = (currSort.idx + 1) % 2
+            const field = sort!.field || currSort.field
+            setCurrSort({ idx, field })
+            onChange(
+              field
+                ? [...rows].sort((a, b) => {
+                    const aa = getStr(a[field as keyof Source])
+                    const bb = getStr(b[field as keyof Source])
+                    return idx === 1
+                      ? aa.localeCompare(bb)
+                      : bb.localeCompare(aa)
+                  })
+                : rows,
+            )
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function GridHeader({
+  selected,
+  onChange,
+  rows,
+  showTips,
+}: {
+  onChange: (arg: Source[]) => void
+  rows: Source[]
+  selected: string[]
+  showTips: boolean
+}) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [widgetColor, setWidgetColor] = useState('blue')
+  return (
+    <>
       <Button
         disabled={!selected.length}
         onClick={event => {
@@ -115,86 +218,7 @@ function SourcesGrid({
           setAnchorEl(null)
         }}
       />
-      <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          getRowId={row => row.name}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={arg => {
-            setSelected(arg as string[])
-          }}
-          rows={rows}
-          rowHeight={25}
-          columnHeaderHeight={33}
-          columns={[
-            {
-              field: 'color',
-              headerName: 'Color',
-              renderCell: params => {
-                const { value, id } = params
-                return (
-                  <ColorPicker
-                    color={value || 'blue'}
-                    onChange={c => {
-                      const elt = rows.find(f => f.name === id)
-                      if (elt) {
-                        elt.color = c
-                      }
-                      onChange([...rows])
-                    }}
-                  />
-                )
-              },
-            },
-            {
-              field: 'name',
-              headerName: 'Name',
-              width: measureGridWidth(rows.map(r => r.name)),
-            },
-            ...Object.keys(rest).map(
-              val =>
-                ({
-                  field: val,
-                  renderCell: ({ value }) => (
-                    <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value)} />
-                    </div>
-                  ),
-                  width: measureGridWidth(
-                    rows.map(r => `${r[val as keyof Source]}`),
-                  ),
-                }) satisfies GridColDef<(typeof rows)[0]>,
-            ),
-          ]}
-          sortModel={
-            [
-              /* we control the sort as a controlled component using onSortModelChange */
-            ]
-          }
-          onSortModelChange={args => {
-            const sort = args[0]
-            // this idx%2 flip flops the sorting order, we could inspect args
-            // for sort direction asc or desc but this is just a simplified
-            // thing since we are controlling sort instead of the default data
-            // grid sort anyways
-            const idx = (currSort.idx + 1) % 2
-            const field = sort!.field || currSort.field
-            setCurrSort({ idx, field })
-            onChange(
-              field
-                ? [...rows].sort((a, b) => {
-                    const aa = getStr(a[field as keyof Source])
-                    const bb = getStr(b[field as keyof Source])
-                    return idx === 1
-                      ? aa.localeCompare(bb)
-                      : bb.localeCompare(aa)
-                  })
-                : rows,
-            )
-          }}
-        />
-      </div>
-    </div>
+    </>
   )
 }
 

@@ -4,14 +4,14 @@ import { observer } from 'mobx-react'
 
 import RectBg from './RectBg'
 
-import type { VariantDisplayModel } from '../model'
+import type { Source } from '../util'
 
 const ColorLegend = observer(function ({
   model,
   labelWidth,
   exportSVG,
 }: {
-  model: VariantDisplayModel
+  model: { rowHeight: number; sources?: Source[] }
   labelWidth: number
   exportSVG?: boolean
 }) {

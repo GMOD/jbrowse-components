@@ -6,10 +6,10 @@ import { observer } from 'mobx-react'
 // locals
 import YScaleBars from '../../shared/YScaleBars'
 
-import type { VariantDisplayModel } from '../model'
+import type { LinearVariantMatrixDisplayModel } from '../model'
 
-const MultiLinearVariantDisplayComponent = observer(function (props: {
-  model: VariantDisplayModel
+const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
+  model: LinearVariantMatrixDisplayModel
 }) {
   const { model } = props
 
@@ -21,4 +21,4 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   )
 })
 
-export default MultiLinearVariantDisplayComponent
+export default MultiLinearVariantMatrixDisplayComponent

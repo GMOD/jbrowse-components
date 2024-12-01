@@ -1,4 +1,3 @@
-// jbrowse
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
@@ -9,7 +8,6 @@ import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-vi
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 
-// locals
 import { randomColor } from '../util'
 
 import type { Source } from '../util'
@@ -17,6 +15,8 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
 
+// lazies
+const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
 
 /**
@@ -66,15 +66,19 @@ export default function stateModelFactory(
        */
       sourcesVolatile: undefined as Source[] | undefined,
     }))
-    .views(() => ({
-      /**
-       * #getter
-       */
-      get blockType() {
-        return 'dynamicBlocks'
-      },
-    }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setLayout(layout: Source[]) {
+        self.layout = layout
+      },
+      /**
+       * #action
+       */
+      clearLayout() {
+        self.layout = []
+      },
       /**
        * #action
        */
@@ -156,11 +160,42 @@ export default function stateModelFactory(
                 ])
               },
             },
+            {
+              label: 'Edit colors/arrangement...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetColorDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
           ]
         },
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
+      get blockType() {
+        return 'dynamicBlocks'
+      },
+      /**
+       * #getter
+       */
+      get totalHeight() {
+        return self.height
+      },
+
+      /**
+       * #getter
+       */
+      get rowHeight() {
+        return self.height / (self.sources?.length || 1)
+      },
       /**
        * #method
        */

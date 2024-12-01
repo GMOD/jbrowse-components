@@ -81,7 +81,10 @@ export type {
   ExportSvgDisplayOptions,
 } from './BaseLinearDisplay'
 
-export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
+export {
+  configSchemaFactory as linearBareDisplayConfigSchemaFactory,
+  stateModelFactory as linarBareDisplayStateModelFactory,
+} from './LinearBareDisplay'
 export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
