@@ -83,7 +83,7 @@ export type {
 
 export {
   configSchemaFactory as linearBareDisplayConfigSchemaFactory,
-  stateModelFactory as linarBareDisplayStateModelFactory,
+  stateModelFactory as linearBareDisplayStateModelFactory,
 } from './LinearBareDisplay'
 export {
   BaseLinearDisplay,

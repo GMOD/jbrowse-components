@@ -31,32 +31,10 @@ function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
-// watches the given worker object, returns a promise that will be rejected if
-// the worker times out
-export async function watchWorker(
-  worker: WorkerHandle,
-  pingTime: number,
-  rpcDriverClassName: string,
-) {
-  // after first ping succeeds, apply wait for timeout
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (true) {
-    await worker.call('ping', [], {
-      timeout: pingTime * 2,
-      rpcDriverClassName,
-    })
-    await new Promise(resolve => setTimeout(resolve, pingTime))
-  }
-}
-
 function detectHardwareConcurrency() {
   const mainThread = typeof window !== 'undefined'
   const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
-  if (mainThread && canDetect) {
-    return window.navigator.hardwareConcurrency
-  }
-  return 1
+  return mainThread && canDetect ? window.navigator.hardwareConcurrency : 1
 }
 class LazyWorker {
   workerP?: Promise<WorkerHandle> | undefined
@@ -65,27 +43,10 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      this.workerP = this.driver
-        .makeWorker()
-        .then(worker => {
-          watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-            (error: unknown) => {
-              console.error(
-                'worker did not respond, killing and generating new one',
-              )
-              console.error(error)
-              worker.destroy()
-              worker.status = 'killed'
-              worker.error = error
-              this.workerP = undefined
-            },
-          )
-          return worker
-        })
-        .catch((e: unknown) => {
-          this.workerP = undefined
-          throw e
-        })
+      this.workerP = this.driver.makeWorker().catch((e: unknown) => {
+        this.workerP = undefined
+        throw e
+      })
     }
     return this.workerP
   }
@@ -222,8 +183,8 @@ export default abstract class BaseRpcDriver {
         done = true
       })
 
-    // check every 5 seconds to see if the worker has been killed, and
-    // reject the killedP promise if it has
+    // check every 5 seconds to see if the worker has been killed, and reject
+    // the killedP promise if it has
     let killedCheckInterval: ReturnType<typeof setInterval>
     const killedP = new Promise((resolve, reject) => {
       killedCheckInterval = setInterval(() => {

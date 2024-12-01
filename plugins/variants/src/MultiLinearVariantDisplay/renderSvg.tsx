@@ -4,7 +4,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 // locals
-import YScaleBars from '../shared/YScaleBars'
+import LegendBar from '../shared/LegendBar'
 
 import type { VariantDisplayModel } from './model'
 import type {
@@ -23,7 +23,7 @@ export async function renderSvg(
     <>
       <g id="snpcov">{await superRenderSvg(opts)}</g>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <YScaleBars model={self} orientation="left" exportSVG />
+        <LegendBar model={self} orientation="left" exportSVG />
       </g>
     </>
   )

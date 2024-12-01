@@ -2331,6 +2331,11 @@
   resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.0.tgz#68f53d2bf7e40c845d69518b950a0ba077ff1e67"
   integrity sha512-8rwamVwPO25EfZUpXXf6h4nv2h8oj8GkMMwkeIZh/FNp2r87SC6YwDcyxGJRe2JAWV/zn8BkKyxdEQnJ5VG3DA==
 
+"@greenelab/hclust@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@greenelab/hclust/-/hclust-0.0.1.tgz#92c3750fea00b6ac712169ed49ddc5614aad7421"
+  integrity sha512-zVKQDcBHESkAg+hvRuTfjzaoqsDlxoJpM0z+x4FgcMood1XZjTCv8Zww0CZFX9g8eLXB7zzG1aas4cwb+2nnMg==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.yarnpkg.com/@humanfs/core/-/core-0.19.1.tgz#17c55ca7d426733fe3c561906b8173c336b40a77"

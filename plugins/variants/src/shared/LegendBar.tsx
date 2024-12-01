@@ -26,6 +26,7 @@ const Wrapper = observer(function ({
     children
   ) : (
     <svg
+      id="colorlegend"
       style={{
         position: 'absolute',
         top: 20,
@@ -40,7 +41,7 @@ const Wrapper = observer(function ({
   )
 })
 
-export const YScaleBars = observer(function (props: {
+export const LegendBar = observer(function (props: {
   model: ReducedModel
   orientation?: string
   exportSVG?: boolean
@@ -64,4 +65,4 @@ export const YScaleBars = observer(function (props: {
   ) : null
 })
 
-export default YScaleBars
+export default LegendBar

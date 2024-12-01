@@ -25,34 +25,39 @@ const ColorLegend = observer(function ({
 
   return sources ? (
     <>
-      <RectBg
-        y={0}
-        x={extraOffset}
-        width={legendWidth}
-        height={(sources.length + 0.25) * rowHeight}
-      />
-      {sources.map(({ name, color }, idx) => (
-        <React.Fragment key={`${name}-${idx}`}>
-          {color ? (
-            <RectBg
-              y={idx * rowHeight + 1}
-              x={extraOffset}
-              width={colorBoxWidth}
-              height={rowHeight}
-              color={color}
-            />
-          ) : null}
-          {canDisplayLabel ? (
-            <text
-              y={idx * rowHeight + svgFontSize}
-              x={extraOffset + colorBoxWidth + 2}
-              fontSize={svgFontSize}
-            >
-              {name}
-            </text>
-          ) : null}
-        </React.Fragment>
-      ))}
+      {canDisplayLabel ? (
+        <RectBg
+          y={0}
+          x={extraOffset}
+          width={legendWidth}
+          height={(sources.length + 0.25) * rowHeight}
+        />
+      ) : null}
+      {sources.map((source, idx) => {
+        const { color, name } = source
+        return (
+          <React.Fragment key={`${name}-${idx}`}>
+            {color ? (
+              <RectBg
+                y={idx * rowHeight + 1}
+                x={extraOffset}
+                width={colorBoxWidth + 0.5}
+                height={rowHeight + 0.5}
+                color={color}
+              />
+            ) : null}
+            {canDisplayLabel ? (
+              <text
+                y={idx * rowHeight + svgFontSize}
+                x={extraOffset + colorBoxWidth + 2}
+                fontSize={svgFontSize}
+              >
+                {name}
+              </text>
+            ) : null}
+          </React.Fragment>
+        )
+      })}
     </>
   ) : null
 })

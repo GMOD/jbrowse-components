@@ -87,13 +87,7 @@ export async function initializeWorker(
     )
 
     // @ts-expect-error
-    self.rpcServer = new RpcServer.Server({
-      ...rpcConfig,
-      ping: async () => {
-        // the ping method is required by the worker driver for checking the
-        // health of the worker
-      },
-    })
+    self.rpcServer = new RpcServer.Server(rpcConfig)
     postMessage({ message: 'ready' })
   } catch (e) {
     postMessage({ message: 'error', error: serializeError(e) })

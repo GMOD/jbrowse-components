@@ -4,7 +4,7 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 // locals
-import YScaleBars from '../../shared/YScaleBars'
+import LegendBar from '../../shared/LegendBar'
 
 import type { VariantDisplayModel } from '../model'
 
@@ -16,7 +16,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   return (
     <div>
       <BaseLinearDisplayComponent {...props} />
-      <YScaleBars model={model} />
+      <LegendBar model={model} />
     </div>
   )
 })

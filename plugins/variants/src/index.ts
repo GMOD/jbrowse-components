@@ -9,6 +9,7 @@ import MultiVariantRendererF from './MultiLinearVariantRenderer'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
 import VariantFeatureWidgetF from './VariantFeatureWidget'
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources'
+import { MultiVariantHierarchicalCluster } from './VariantRPC/MultiVariantHierarchicalCluster'
 import VariantTrackF from './VariantTrack'
 import VcfAdapterF from './VcfAdapter'
 import VcfTabixAdapterF from './VcfTabixAdapter'
@@ -34,6 +35,9 @@ export default class VariantsPlugin extends Plugin {
     ChordVariantDisplayF(pluginManager)
 
     pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
+    pluginManager.addRpcMethod(
+      () => new MultiVariantHierarchicalCluster(pluginManager),
+    )
   }
 }
 

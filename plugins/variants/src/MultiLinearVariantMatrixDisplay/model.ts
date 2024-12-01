@@ -18,6 +18,9 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
+const HierarchicalClusterDialog = lazy(
+  () => import('./components/HierarchicalClusterDialog'),
+)
 
 /**
  * #stateModel LinearVariantMatrixDisplay
@@ -104,32 +107,35 @@ export default function stateModelFactory(
         self.mafFilter = arg
       },
     }))
+    .views(self => ({
+      get preSources() {
+        return self.layout.length ? self.layout : self.sourcesVolatile
+      },
+      /**
+       * #getter
+       */
+      get sources() {
+        const sources = Object.fromEntries(
+          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+        )
+        return this.preSources
+          ?.map(s => ({
+            ...sources[s.name],
+            ...s,
+          }))
+          .map((s, i) => ({
+            ...s,
+            color: s.color || set1[i] || randomColor(),
+          }))
+      },
+    }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
       } = self
+
       return {
-        get preSources() {
-          return self.layout.length ? self.layout : self.sourcesVolatile
-        },
-        /**
-         * #getter
-         */
-        get sources() {
-          const sources = Object.fromEntries(
-            self.sourcesVolatile?.map(s => [s.name, s]) || [],
-          )
-          return this.preSources
-            ?.map(s => ({
-              ...sources[s.name],
-              ...s,
-            }))
-            .map((s, i) => ({
-              ...s,
-              color: s.color || set1[i] || randomColor(),
-            }))
-        },
         /**
          * #method
          */
@@ -149,7 +155,7 @@ export default function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Set minimum allele frequency (MAF)',
+              label: 'Minimum allele frequency',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   MAFFilterDialog,
@@ -157,6 +163,15 @@ export default function stateModelFactory(
                     model: self,
                     handleClose,
                   },
+                ])
+              },
+            },
+            {
+              label: 'Cluster by genotype',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  HierarchicalClusterDialog,
+                  { model: self, handleClose },
                 ])
               },
             },
