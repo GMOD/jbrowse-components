@@ -10,6 +10,7 @@ import type { Source } from '../util'
 interface ReducedModel {
   totalHeight: number
   rowHeight: number
+  lineZoneHeight?: number
   sources?: Source[]
 }
 
@@ -29,7 +30,7 @@ const Wrapper = observer(function ({
       id="colorlegend"
       style={{
         position: 'absolute',
-        top: 20,
+        top: model.lineZoneHeight || 0,
         left: 0,
         pointerEvents: 'none',
         height: model.totalHeight,

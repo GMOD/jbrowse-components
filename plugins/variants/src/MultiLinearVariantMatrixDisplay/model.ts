@@ -17,9 +17,9 @@ import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
-const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
+const MAFFilterDialog = lazy(() => import('../shared/MAFFilterDialog'))
 const HierarchicalClusterDialog = lazy(
-  () => import('./components/HierarchicalClusterDialog'),
+  () => import('../shared/HierarchicalClusterDialog'),
 )
 
 /**
@@ -68,6 +68,11 @@ export default function stateModelFactory(
        * #volatile
        */
       sourcesVolatile: undefined as Source[] | undefined,
+
+      /**
+       * #volatile
+       */
+      lineZoneHeight: 20,
     }))
     .actions(self => ({
       /**
@@ -205,14 +210,14 @@ export default function stateModelFactory(
        * #getter
        */
       get totalHeight() {
-        return self.height
+        return self.height - self.lineZoneHeight
       },
 
       /**
        * #getter
        */
       get rowHeight() {
-        return self.height / (self.sources?.length || 1)
+        return this.totalHeight / (self.sources?.length || 1)
       },
       /**
        * #method

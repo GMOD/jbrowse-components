@@ -22,6 +22,9 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const Tooltip = lazy(() => import('../shared/Tooltip'))
 const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
+const HierarchicalClusterDialog = lazy(
+  () => import('../shared/HierarchicalClusterDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([['multivariant', 'MultiVariantRenderer']])
@@ -77,6 +80,9 @@ export function stateModelFactory(
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setSourcesLoading(str: string) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
@@ -251,6 +257,18 @@ export function stateModelFactory(
               checked: self.autoHeight,
               onClick: () => {
                 self.setAutoHeight(!self.autoHeight)
+              },
+            },
+            {
+              label: 'Cluster by genotype',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  HierarchicalClusterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
               },
             },
             {

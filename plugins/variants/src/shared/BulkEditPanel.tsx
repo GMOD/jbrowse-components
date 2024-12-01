@@ -39,7 +39,9 @@ export default function BulkEditPanel({
         maxRows={10}
         fullWidth
         value={val}
-        onChange={event => { setVal(event.target.value) }}
+        onChange={event => {
+          setVal(event.target.value)
+        }}
         slotProps={{
           input: {
             classes: {

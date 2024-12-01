@@ -19,7 +19,7 @@ import { saveAs } from 'file-saver'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-import type { Source } from '../../util'
+import type { Source } from '../util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -43,7 +43,7 @@ export default function HierarchicalCluster({
 }: {
   model: {
     sources?: Source[]
-    mafFilter: number
+    mafFilter?: number
     adapterConfig: AnyConfigurationModel
     setLayout: (arg: Source[]) => void
   }
