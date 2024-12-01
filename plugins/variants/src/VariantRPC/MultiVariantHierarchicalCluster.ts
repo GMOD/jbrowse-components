@@ -128,7 +128,7 @@ export class MultiVariantHierarchicalCluster extends RpcMethodType {
     return clusterData({
       data: Object.values(rows),
       key: 'genotypes',
-      onProgress: arg => {
+      onProgress: (arg: string) => {
         statusCallback(arg)
       },
     })

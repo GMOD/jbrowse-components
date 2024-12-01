@@ -19,6 +19,7 @@ export function HTTPBasicLoginForm({
       maxWidth="xl"
       data-testid="login-httpbasic"
       title={`Log in for ${internetAccountId}`}
+      onClose={() => handleClose()}
     >
       <form
         onSubmit={event => {

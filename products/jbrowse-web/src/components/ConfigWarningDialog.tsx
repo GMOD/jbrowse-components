@@ -26,7 +26,7 @@ function ConfigWarningDialog({
   reason: PluginDefinition[]
 }) {
   return (
-    <Dialog open maxWidth="xl" title="Warning">
+    <Dialog open maxWidth="xl" title="Warning" onClose={onCancel}>
       <DialogContent>
         <WarningIcon fontSize="large" />
         <DialogContentText>

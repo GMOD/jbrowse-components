@@ -171,7 +171,10 @@ export default function stateModelFactory(
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   HierarchicalClusterDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },

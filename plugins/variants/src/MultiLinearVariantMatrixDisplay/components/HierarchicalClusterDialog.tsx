@@ -28,7 +28,7 @@ export default function HierarchicalCluster({
   handleClose,
 }: {
   model: {
-    sources: Source[]
+    sources?: Source[]
     mafFilter: number
     adapterConfig: AnyConfigurationModel
     setLayout: (arg: Source[]) => void
@@ -41,7 +41,7 @@ export default function HierarchicalCluster({
   const [progress, setProgress] = useState<string>('')
 
   return (
-    <Dialog open title="Hierarchical clustering">
+    <Dialog open title="Hierarchical clustering" onClose={handleClose}>
       <DialogContent>
         <Typography>
           This will perform basic agglomerative hierarchical clustering on the
@@ -105,8 +105,9 @@ export default function HierarchicalCluster({
           disabled={!results}
           variant="contained"
           onClick={() => {
-            if (results) {
-              model.setLayout(results.order.map(idx => model.sources[idx]!))
+            const { sources } = model
+            if (results && sources) {
+              model.setLayout(results.order.map(idx => sources[idx]!))
             }
             handleClose()
           }}
