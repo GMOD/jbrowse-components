@@ -31,7 +31,7 @@ export function fillRectCtx(
 
 export function getCol(gt: string) {
   if (gt === '0|0' || gt === '0/0') {
-    return '#ddd'
+    return '#bbb'
   } else if (gt === '1|0' || gt === '0|1' || gt === '0/1' || gt === '1/0') {
     return 'teal'
   } else if (gt === '1|1' || gt === '1/1') {

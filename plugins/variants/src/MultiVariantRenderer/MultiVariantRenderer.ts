@@ -75,17 +75,16 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
     const region = regions[0]!
 
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const w = Math.max(rightPx - leftPx, 2)
-      const genotypes = feature.get('samples') as Record<
-        string,
-        { GT: [string] }
-      >
-      let t = -scrollTop
-      for (const { name } of sources) {
-        ctx.fillStyle = getCol(genotypes[name]!.GT[0])
-        ctx.fillRect(leftPx, t, w, Math.max(t + rowHeight, 1))
-        t += rowHeight
+      if (feature.get('end') - feature.get('start') <= 10) {
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        const w = Math.max(Math.round(rightPx - leftPx), 2)
+        const genotypes = feature.get('genotypes') as Record<string, string>
+        let t = -scrollTop
+        for (const { name } of sources) {
+          ctx.fillStyle = getCol(genotypes[name]!)
+          ctx.fillRect(Math.floor(leftPx), t, w, Math.max(t + rowHeight, 1))
+          t += rowHeight
+        }
       }
     }
   }

@@ -14,6 +14,9 @@ import type { Source } from '../util'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
+import { lazy } from 'react'
+
+const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
 
 /**
  * #stateModel LinearVariantMatrixDisplay
@@ -41,6 +44,11 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+
+        /**
+         * #property
+         */
+        mafFilter: types.optional(types.number, 0.1),
       }),
     )
     .volatile(() => ({
@@ -84,9 +92,18 @@ export default function stateModelFactory(
           self.sourcesVolatile = sources
         }
       },
+      /**
+       * #action
+       */
+      setMafFilter(arg: number) {
+        self.mafFilter = arg
+      },
     }))
     .views(self => {
-      const { renderProps: superRenderProps } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
       return {
         get preSources() {
           return self.layout.length ? self.layout : self.sourcesVolatile
@@ -120,6 +137,26 @@ export default function stateModelFactory(
             config: self.rendererConfig,
           }
         },
+        /**
+         * #method
+         */
+        trackMenuItems() {
+          return [
+            ...superTrackMenuItems(),
+            {
+              label: 'Set minimum allele frequency (MAF)',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  MAFFilterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+          ]
+        },
       }
     })
     .views(self => ({
@@ -131,6 +168,7 @@ export default function stateModelFactory(
         return {
           ...superProps,
           notReady: superProps.notReady || !self.sources,
+          mafFilter: self.mafFilter,
           height: self.height,
           sources: self.sources,
         }

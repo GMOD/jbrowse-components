@@ -17,6 +17,7 @@ export interface SortParams {
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   sources: { name: string }[]
+  mafFilter: number
   highResolutionScaling: number
   height: number
 }
@@ -44,7 +45,7 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     canvasHeight: number
     renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
   }) {
-    const { sources, features } = renderArgs
+    const { mafFilter, sources, features } = renderArgs
     const feats = [...features.values()]
     const h = canvasHeight / sources.length
     const mafs = [] as Feature[]
@@ -52,21 +53,28 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
       let c = 0
       let c2 = 0
       const samp = feat.get('genotypes')
-      for (const { name } of sources) {
-        const s = samp[name]!
-        if (s === '0|0') {
-          /* do nothing */
-        } else if (s === '1|0' || s === '0|1') {
-          c++
-        } else if (s === '1|1') {
-          c++
-          c2++
-        } else {
-          c++
+
+      // only draw smallish indels
+      if (feat.get('end') - feat.get('start') <= 10) {
+        for (const { name } of sources) {
+          const s = samp[name]!
+          if (s === '0|0' || s === './.') {
+            c2++
+          } else if (s === '1|0' || s === '0|1') {
+            c++
+          } else if (s === '1|1') {
+            c++
+            c2++
+          } else {
+            c++
+          }
         }
-      }
-      if (c / sources.length > 0.15 && c2 / sources.length < 0.85) {
-        mafs.push(feat)
+        if (
+          c / sources.length > mafFilter &&
+          c2 / sources.length < 1 - mafFilter
+        ) {
+          mafs.push(feat)
+        }
       }
     }
 
@@ -77,13 +85,17 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
       ctx.fillStyle = getCol(val)
       for (let i = 0; i < mafs.length; i++) {
         const f = mafs[i]!
-        const samp = f.get('genotypes')
-        const x = (i / mafs.length) * canvasWidth
-        for (let j = 0; j < sources.length; j++) {
-          const y = (j / sources.length) * canvasHeight
-          const { name } = sources[j]!
-          if (samp[name] === val) {
-            ctx.rect(x - f2, y - f2, w + f2, h + f2)
+
+        // only draw smallish indels
+        if (f.get('end') - f.get('start') <= 10) {
+          const samp = f.get('genotypes')
+          const x = (i / mafs.length) * canvasWidth
+          for (let j = 0; j < sources.length; j++) {
+            const y = (j / sources.length) * canvasHeight
+            const { name } = sources[j]!
+            if (samp[name] === val) {
+              ctx.rect(x - f2, y - f2, w + f2, h + f2)
+            }
           }
         }
       }
