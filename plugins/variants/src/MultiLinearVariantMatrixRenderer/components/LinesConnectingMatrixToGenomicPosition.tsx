@@ -8,7 +8,7 @@ import {
 import { observer } from 'mobx-react'
 
 // locals
-import type { LinearVariantMatrixDisplayModel } from '../../MultiLinearVariantMatrixDisplay/model'
+import type { MultiLinearVariantMatrixDisplayModel } from '../../MultiLinearVariantMatrixDisplay/model'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -17,7 +17,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   features = [],
 }: {
   features?: Feature[]
-  model: LinearVariantMatrixDisplayModel
+  model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel

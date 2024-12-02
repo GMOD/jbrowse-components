@@ -47,14 +47,13 @@ export const LegendBar = observer(function (props: {
   orientation?: string
   exportSVG?: boolean
 }) {
-  const { model, exportSVG } = props
+  const { model } = props
   const { rowHeight, sources } = model
   const svgFontSize = Math.min(rowHeight, 12)
   const canDisplayLabel = rowHeight > 11
   return sources ? (
     <Wrapper {...props}>
       <ColorLegend
-        exportSVG={exportSVG}
         model={model}
         labelWidth={Math.max(
           ...sources

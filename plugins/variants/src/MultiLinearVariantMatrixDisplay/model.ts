@@ -13,6 +13,7 @@ import { randomColor } from '../util'
 import type { Source } from '../util'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
@@ -233,28 +234,39 @@ export default function stateModelFactory(
         }
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { getMultiVariantSourcesAutorun } = await import(
-              '../getMultiVariantSourcesAutorun'
-            )
-            getMultiVariantSourcesAutorun(self)
-          } catch (e) {
-            if (isAlive(self)) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
+    .actions(self => {
+      const { renderSvg: superRenderSvg } = self
+      return {
+        afterAttach() {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const { getMultiVariantSourcesAutorun } = await import(
+                '../getMultiVariantSourcesAutorun'
+              )
+              getMultiVariantSourcesAutorun(self)
+            } catch (e) {
+              if (isAlive(self)) {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              }
             }
-          }
-        })()
-      },
-    }))
+          })()
+        },
+
+        /**
+         * #action
+         */
+        async renderSvg(opts: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self, opts, superRenderSvg)
+        },
+      }
+    })
 }
 
-export type LinearVariantMatrixDisplayStateModel = ReturnType<
+export type MultiLinearVariantMatrixDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearVariantMatrixDisplayModel =
-  Instance<LinearVariantMatrixDisplayStateModel>
+export type MultiLinearVariantMatrixDisplayModel =
+  Instance<MultiLinearVariantMatrixDisplayStateModel>

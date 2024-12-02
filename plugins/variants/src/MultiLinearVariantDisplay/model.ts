@@ -318,7 +318,10 @@ export function stateModelFactory(
     })
 }
 
-export type VariantDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type VariantDisplayModel = Instance<VariantDisplayStateModel>
+export type MultiLinearVariantDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type MultiLinearVariantDisplayModel =
+  Instance<MultiLinearVariantDisplayStateModel>
 
 export default stateModelFactory

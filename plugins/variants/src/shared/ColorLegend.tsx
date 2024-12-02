@@ -9,26 +9,22 @@ import type { Source } from '../util'
 const ColorLegend = observer(function ({
   model,
   labelWidth,
-  exportSVG,
 }: {
   model: { rowHeight: number; sources?: Source[] }
   labelWidth: number
-  exportSVG?: boolean
 }) {
   const { rowHeight, sources } = model
   const svgFontSize = Math.min(rowHeight, 8)
   const canDisplayLabel = rowHeight > 8
   const colorBoxWidth = 15
   const legendWidth = labelWidth + colorBoxWidth + 5
-  const svgOffset = exportSVG ? 10 : 0
-  const extraOffset = svgOffset
 
   return sources ? (
     <>
       {canDisplayLabel ? (
         <RectBg
           y={0}
-          x={extraOffset}
+          x={0}
           width={legendWidth}
           height={(sources.length + 0.25) * rowHeight}
         />
@@ -40,7 +36,7 @@ const ColorLegend = observer(function ({
             {color ? (
               <RectBg
                 y={idx * rowHeight + 1}
-                x={extraOffset}
+                x={0}
                 width={colorBoxWidth + 0.5}
                 height={rowHeight + 0.5}
                 color={color}
@@ -49,7 +45,7 @@ const ColorLegend = observer(function ({
             {canDisplayLabel ? (
               <text
                 y={idx * rowHeight + svgFontSize}
-                x={extraOffset + colorBoxWidth + 2}
+                x={colorBoxWidth + 2}
                 fontSize={svgFontSize}
               >
                 {name}

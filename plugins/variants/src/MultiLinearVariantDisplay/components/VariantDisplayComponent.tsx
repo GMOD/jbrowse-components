@@ -9,7 +9,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import LegendBar from '../../shared/LegendBar'
 
-import type { VariantDisplayModel } from '../model'
+import type { MultiLinearVariantDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
 })
 
 const MultiLinearVariantDisplayComponent = observer(function (props: {
-  model: VariantDisplayModel
+  model: MultiLinearVariantDisplayModel
 }) {
   const { model } = props
   const { classes } = useStyles()
