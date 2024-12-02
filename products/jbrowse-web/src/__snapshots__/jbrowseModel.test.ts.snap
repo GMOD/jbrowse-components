@@ -505,6 +505,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearVariantDisplay",
         },
         {
+          "displayId": "volvox_sv_test-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
+        },
+        {
           "displayId": "volvox_sv_test-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -541,6 +549,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test_renamed-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
@@ -1193,6 +1209,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_test_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_test_vcf-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_test_vcf-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
@@ -2126,6 +2150,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearVariantDisplay",
         },
         {
+          "displayId": "volvox_filtered_vcf-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
+        },
+        {
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -2162,6 +2194,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
@@ -2795,6 +2835,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearVariantDisplay",
         },
         {
+          "displayId": "variant_colors-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "variant_colors-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
+        },
+        {
           "displayId": "variant_colors-LinearPairedArcDisplay",
           "type": "LinearPairedArcDisplay",
         },
@@ -3106,6 +3154,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox.inv.vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox.inv.vcf-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox.inv.vcf-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
@@ -3423,6 +3479,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearVariantDisplay",
         },
         {
+          "displayId": "variant_effect_demo_data-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_data-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
+        },
+        {
           "displayId": "variant_effect_demo_data-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -3453,6 +3517,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_jannovar-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
@@ -3936,6 +4008,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bedpe-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_bedpe-ChordVariantDisplay",

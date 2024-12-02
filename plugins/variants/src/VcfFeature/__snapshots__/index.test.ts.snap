@@ -2,7 +2,7 @@
 
 exports[`null ALT 1`] = `
 {
-  "ALT": null,
+  "ALT": undefined,
   "CHROM": "chr1",
   "FILTER": "PASS",
   "ID": [
