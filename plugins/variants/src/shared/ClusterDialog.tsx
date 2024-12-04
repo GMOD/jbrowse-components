@@ -27,9 +27,6 @@ const useStyles = makeStyles()(theme => ({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-  mauto: {
-    margin: 'auto',
-  },
   mgap: {
     display: 'flex',
     flexDirection: 'column',
@@ -97,91 +94,93 @@ cat(resultClusters$order,sep='\\n')`
   }, [model])
 
   return (
-    <Dialog open title="Hierarchical clustering" onClose={handleClose}>
+    <Dialog open title="Cluster by genotype" onClose={handleClose}>
       <DialogContent>
         <div className={classes.mgap}>
           <Typography>
-            This page will produce an R script that will basic hierarchical
-            clustering on the matrix of currently visible genotype data using
-            `hclust`.
+            This page will produce an R script that will perform hierarchical
+            clustering on the visible genotype data using `hclust`.
+          </Typography>
+          <Typography>
+            You can then paste the results in this form to specify the row
+            ordering.
           </Typography>
           {results ? (
             <div>
-              Step 1:{' '}
-              <Button
-                variant="contained"
-                onClick={() => {
-                  saveAs(
-                    new Blob([results || ''], {
-                      type: 'text/plain;charset=utf-8',
-                    }),
-                    'cluster.R',
-                  )
-                }}
-              >
-                Download Rscript
-              </Button>{' '}
-              or{' '}
-              <Button
-                variant="contained"
-                onClick={() => {
-                  copy(results || '')
-                }}
-              >
-                Copy Rscript to clipboard
-              </Button>
+              <div>
+                Step 1:{' '}
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    saveAs(
+                      new Blob([results || ''], {
+                        type: 'text/plain;charset=utf-8',
+                      }),
+                      'cluster.R',
+                    )
+                  }}
+                >
+                  Download Rscript
+                </Button>{' '}
+                or{' '}
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    copy(results || '')
+                  }}
+                >
+                  Copy Rscript to clipboard
+                </Button>
+                <div>
+                  <TextField
+                    multiline
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Step 2. Paste results from Rscript here (sequence of numbers, one per line, specifying the new ordering)"
+                    rows={10}
+                    value={paste}
+                    onChange={event => {
+                      setPaste(event.target.value)
+                    }}
+                    slotProps={{
+                      input: {
+                        classes: {
+                          input: classes.textAreaFont,
+                        },
+                      },
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           ) : (
-            <LoadingEllipses
-              className={classes.mauto}
-              variant="h6"
-              title="Generating genotype matrix"
-            />
+            <LoadingEllipses variant="h6" title="Generating genotype matrix" />
           )}
           {error ? <ErrorMessage error={error} /> : null}
-          <div>
-            <TextField
-              multiline
-              fullWidth
-              variant="outlined"
-              placeholder="Step 2. Paste results from Rscript here (sequence of numbers, one per line, specifying the new ordering)"
-              rows={10}
-              value={paste}
-              onChange={event => {
-                setPaste(event.target.value)
-              }}
-              slotProps={{
-                input: {
-                  classes: {
-                    input: classes.textAreaFont,
-                  },
-                },
-              }}
-            />
-          </div>
         </div>
       </DialogContent>
       <DialogActions>
         <Button
+          disabled={!results}
           variant="contained"
           onClick={() => {
             const { sources } = model
             if (sources) {
               try {
-                const res = paste
-                  .split('\n')
-                  .map(t => t.trim())
-                  .filter(f => !!f)
-                  .map(r => +r)
-                  .map(idx => {
-                    const ret = sources[idx - 1]
-                    if (!ret) {
-                      throw new Error(`out of bounds at ${idx}`)
-                    }
-                    return ret
-                  })
-
-                model.setLayout(res)
+                model.setLayout(
+                  paste
+                    .split('\n')
+                    .map(t => t.trim())
+                    .filter(f => !!f)
+                    .map(r => +r)
+                    .map(idx => {
+                      const ret = sources[idx - 1]
+                      if (!ret) {
+                        throw new Error(`out of bounds at ${idx}`)
+                      }
+                      return ret
+                    }),
+                )
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -190,7 +189,7 @@ cat(resultClusters$order,sep='\\n')`
             handleClose()
           }}
         >
-          Apply clustering to row order
+          Apply clustering
         </Button>
         <Button
           variant="contained"

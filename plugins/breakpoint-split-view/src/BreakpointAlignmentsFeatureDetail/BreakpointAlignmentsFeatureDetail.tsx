@@ -6,7 +6,8 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util'
+
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const BreakpointAlignmentsFeatureDetail = observer(function ({
   model,

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { clamp, getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './ColorLegend'
@@ -8,10 +8,14 @@ import ColorLegend from './ColorLegend'
 import type { Source } from '../util'
 
 interface ReducedModel {
+  scrollTop: number
   totalHeight: number
   rowHeight: number
   lineZoneHeight?: number
   sources?: Source[]
+  canDisplayLabels: boolean
+  height: number
+  id: string
 }
 
 const Wrapper = observer(function ({
@@ -23,15 +27,26 @@ const Wrapper = observer(function ({
   children: React.ReactNode
   exportSVG?: boolean
 }) {
+  const { id, scrollTop, height } = model
+  const clipid = `legend-${id}`
   return exportSVG ? (
-    children
+    <>
+      <defs>
+        <clipPath id={clipid}>
+          <rect x={0} y={0} width={1000} height={height} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clipid})`}>
+        <g transform={`translate(0,${-scrollTop})`}>{children}</g>
+      </g>
+    </>
   ) : (
     <svg
-      id="colorlegend"
       style={{
         position: 'absolute',
-        top: model.lineZoneHeight || 0,
+        top: 0,
         left: 0,
+        zIndex: 100,
         pointerEvents: 'none',
         height: model.totalHeight,
         width: getContainingView(model).width,
@@ -48,17 +63,16 @@ export const LegendBar = observer(function (props: {
   exportSVG?: boolean
 }) {
   const { model } = props
-  const { rowHeight, sources } = model
-  const svgFontSize = Math.min(rowHeight, 12)
-  const canDisplayLabel = rowHeight > 11
+  const { canDisplayLabels, rowHeight, sources } = model
+  const svgFontSize = clamp(rowHeight, 8, 12)
   return sources ? (
     <Wrapper {...props}>
       <ColorLegend
         model={model}
         labelWidth={Math.max(
           ...sources
-            .map(s => measureText(s.name, svgFontSize))
-            .map(width => (canDisplayLabel ? width : 20)),
+            .map(s => measureText(s.name, svgFontSize) + 10)
+            .map(width => (canDisplayLabels ? width : 20)),
         )}
       />
     </Wrapper>

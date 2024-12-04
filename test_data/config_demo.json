@@ -4746,7 +4746,8 @@
           "uri": "https://jbrowse.org/demos/bilby/test.bg",
           "locationType": "UriLocation"
         }
-      }
+      },
+      "category": ["BedGraph"]
     },
     {
       "type": "MultiQuantitativeTrack",
@@ -4759,27 +4760,8 @@
           "uri": "https://jbrowse.org/demos/bilby/test2.bg",
           "locationType": "UriLocation"
         }
-      }
-    },
-    {
-      "type": "VariantTrack",
-      "trackId": "ALL.chr1.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf",
-      "name": "ALL.chr1.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf",
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
       },
-      "assemblyNames": ["hg19"]
+      "category": ["BedGraph"]
     },
     {
       "type": "VariantTrack",
@@ -4828,12 +4810,32 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf.gz",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf.gz.tbi",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "HG02024_VN049_KHVTrio.chr1.vcf",
+      "name": "HG02024_VN049_KHVTrio.chr1.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"

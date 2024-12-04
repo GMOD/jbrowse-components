@@ -33,7 +33,7 @@ export default function RowPalettizer({
                 const ret = Object.fromEntries(
                   [...map.entries()]
                     .sort((a, b) => a[1] - b[1])
-                    .map((r, idx) => [r[0], set1[idx] || randomColor()]),
+                    .map((r, idx) => [r[0], set1[idx] || randomColor(r[0])]),
                 )
 
                 setCurrLayout(

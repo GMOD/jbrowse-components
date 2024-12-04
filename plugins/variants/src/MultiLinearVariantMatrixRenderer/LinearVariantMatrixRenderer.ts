@@ -79,27 +79,20 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     }
 
     const w = canvasWidth / mafs.length
-    const vals = ['0|0', '0|1', '1|0', '1|1']
-    for (const val of vals) {
-      ctx.beginPath()
-      ctx.fillStyle = getCol(val)
-      for (let i = 0; i < mafs.length; i++) {
-        const f = mafs[i]!
+    for (let i = 0; i < mafs.length; i++) {
+      const f = mafs[i]!
 
-        // only draw smallish indels
-        if (f.get('end') - f.get('start') <= 10) {
-          const samp = f.get('genotypes')
-          const x = (i / mafs.length) * canvasWidth
-          for (let j = 0; j < sources.length; j++) {
-            const y = (j / sources.length) * canvasHeight
-            const { name } = sources[j]!
-            if (samp[name] === val) {
-              ctx.rect(x - f2, y - f2, w + f2, h + f2)
-            }
-          }
+      // only draw smallish indels
+      if (f.get('end') - f.get('start') <= 10) {
+        const samp = f.get('genotypes')
+        const x = (i / mafs.length) * canvasWidth
+        for (let j = 0; j < sources.length; j++) {
+          const y = (j / sources.length) * canvasHeight
+          const { name } = sources[j]!
+          ctx.fillStyle = getCol(samp[name])
+          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
         }
       }
-      ctx.fill()
     }
     return { mafs }
   }

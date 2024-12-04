@@ -32,7 +32,7 @@ export function fillRectCtx(
 
 export function getCol(gt: string) {
   if (gt === '0|0' || gt === '0/0') {
-    return '#bbb'
+    return '#ccc'
   } else if (gt === '1|0' || gt === '0|1' || gt === '0/1' || gt === '1/0') {
     return 'teal'
   } else if (gt === '1|1' || gt === '1/1') {
@@ -55,6 +55,11 @@ export const colorPaletteDefault = [
   'pink',
 ]
 
-export function randomColor() {
-  return '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
+export function randomColor(str: string) {
+  let sum = 0
+
+  for (let i = 0; i < str.length; i++) {
+    sum += str.charCodeAt(i)
+  }
+  return `hsl(${sum * 10}, 20%, 50%)`
 }

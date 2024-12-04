@@ -1,11 +1,16 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+// jbrowse
+import {
+  SimpleFeature,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Source {
@@ -15,14 +20,15 @@ export interface Source {
   [key: string]: string | undefined
 }
 
-export function getMultiVariantSourcesAutorun(self: {
+export function getMultiVariantFeaturesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
+  sources?: Source[]
+  mafFilter: number
   adapterProps: () => Record<string, unknown>
-  setSourcesLoading: (aborter: string) => void
   setError: (error: unknown) => void
+  setFeatures: (f: Feature[]) => void
   setMessage: (str: string) => void
-  setSources: (sources: Source[]) => void
 }) {
   addDisposer(
     self,
@@ -34,20 +40,24 @@ export function getMultiVariantSourcesAutorun(self: {
             return
           }
           const { rpcManager } = getSession(self)
-          const { adapterConfig } = self
-          const token = createStopToken()
-          self.setSourcesLoading(token)
+          const { sources, mafFilter, adapterConfig } = self
+          if (!sources) {
+            return
+          }
           const sessionId = getRpcSessionId(self)
-          const sources = (await rpcManager.call(
+          const features = (await rpcManager.call(
             sessionId,
-            'MultiVariantGetSources',
+            'MultiVariantGetSimplifiedFeatures',
             {
+              regions: view.dynamicBlocks.contentBlocks,
+              sources,
+              mafFilter,
               sessionId,
               adapterConfig,
             },
-          )) as Source[]
+          )) as SimpleFeatureSerialized[]
           if (isAlive(self)) {
-            self.setSources(sources)
+            self.setFeatures(features.map(f => new SimpleFeature(f)))
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {

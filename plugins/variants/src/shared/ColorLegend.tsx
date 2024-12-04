@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { clamp } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import RectBg from './RectBg'
@@ -10,18 +11,21 @@ const ColorLegend = observer(function ({
   model,
   labelWidth,
 }: {
-  model: { rowHeight: number; sources?: Source[] }
+  model: {
+    canDisplayLabels: boolean
+    rowHeight: number
+    sources?: Source[]
+  }
   labelWidth: number
 }) {
-  const { rowHeight, sources } = model
-  const svgFontSize = Math.min(rowHeight, 8)
-  const canDisplayLabel = rowHeight > 8
+  const { canDisplayLabels, rowHeight, sources } = model
+  const svgFontSize = clamp(rowHeight, 8, 12)
   const colorBoxWidth = 15
   const legendWidth = labelWidth + colorBoxWidth + 5
 
   return sources ? (
     <>
-      {canDisplayLabel ? (
+      {canDisplayLabels ? (
         <RectBg
           y={0}
           x={0}
@@ -42,7 +46,7 @@ const ColorLegend = observer(function ({
                 color={color}
               />
             ) : null}
-            {canDisplayLabel ? (
+            {canDisplayLabels ? (
               <text
                 y={idx * rowHeight + svgFontSize}
                 x={colorBoxWidth + 2}

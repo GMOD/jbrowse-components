@@ -1,31 +1,29 @@
 import { lazy } from 'react'
 
 // jbrowse imports
-import { getConf } from '@jbrowse/core/configuration'
 import { set1 } from '@jbrowse/core/ui/colors'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  type ExportSvgDisplayOptions,
+  linearBareDisplayStateModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 
 // locals
-import SharedVariantMixin from '../shared/SharedVariantMixin'
 import { randomColor } from '../util'
 
 import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('../shared/Tooltip'))
 const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
 const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
-
-// using a map because it preserves order
-const rendererTypes = new Map([['multivariant', 'MultiVariantRenderer']])
 
 /**
  * #stateModel MultiLinearVariantDisplay
@@ -39,7 +37,7 @@ export function stateModelFactory(
   return types
     .compose(
       'MultiLinearVariantDisplay',
-      SharedVariantMixin(configSchema),
+      linearBareDisplayStateModelFactory(configSchema),
       types.model({
         /**
          * #property
@@ -54,13 +52,18 @@ export function stateModelFactory(
          * #property
          * used only if autoHeight is false
          */
-        rowHeightSetting: types.optional(types.number, 10),
+        rowHeightSetting: types.optional(types.number, 11),
 
         /**
          * #property
          * adjust to height of track/display
          */
         autoHeight: false,
+
+        /**
+         * #property
+         */
+        showSidebarLabelsSetting: true,
       }),
     )
     .volatile(() => ({
@@ -127,6 +130,13 @@ export function stateModelFactory(
       setAutoHeight(arg: boolean) {
         self.autoHeight = arg
       },
+
+      /**
+       * #action
+       */
+      setShowSidebarLabels(arg: boolean) {
+        self.showSidebarLabelsSetting = arg
+      },
     }))
     .views(self => ({
       /**
@@ -141,15 +151,11 @@ export function stateModelFactory(
       get TooltipComponent() {
         return Tooltip as AnyReactComponentType
       },
-
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return rendererTypes.get(self.rendererTypeNameSimple)
-      },
     }))
     .views(self => ({
+      get rendererTypeName() {
+        return 'MultiVariantRenderer'
+      },
       /**
        * #getter
        */
@@ -165,7 +171,7 @@ export function stateModelFactory(
           }))
           .map((s, i) => ({
             ...s,
-            color: s.color || set1[i] || randomColor(),
+            color: s.color || set1[i] || randomColor(s.name),
           }))
       },
     }))
@@ -178,22 +184,16 @@ export function stateModelFactory(
         const { autoHeight, sources, rowHeightSetting, height } = self
         return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
       },
-
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        return self.rendererType.configSchema.create(
-          {
-            ...getConf(self, ['renderers', self.rendererTypeName]),
-          },
-          getEnv(self),
-        )
-      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #getter
+         */
+        get canDisplayLabels() {
+          return self.rowHeight > 8 && self.showSidebarLabelsSetting
+        },
         /**
          * #getter
          */
@@ -209,7 +209,6 @@ export function stateModelFactory(
             ...superProps,
             displayModel: self,
             config: self.rendererConfig,
-            filters: self.filters,
             rpcDriverName: self.rpcDriverName,
             sources: self.sources,
           }
@@ -255,6 +254,14 @@ export function stateModelFactory(
               checked: self.autoHeight,
               onClick: () => {
                 self.setAutoHeight(!self.autoHeight)
+              },
+            },
+            {
+              label: 'Show sidebar labels',
+              type: 'checkbox',
+              checked: self.showSidebarLabelsSetting,
+              onClick: () => {
+                self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
               },
             },
             {

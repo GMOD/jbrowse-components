@@ -158,7 +158,6 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    let done = false
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
@@ -172,41 +171,13 @@ export default abstract class BaseRpcDriver {
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 
     // now actually call the worker
-    const callP = worker
-      .call(functionName, filteredAndSerializedArgs, {
-        timeout: 5 * 60 * 1000, // 5 minutes
-        statusCallback: args.statusCallback,
-        rpcDriverClassName: this.name,
-        ...options,
-      })
-      .finally(() => {
-        done = true
-      })
-
-    // check every 5 seconds to see if the worker has been killed, and reject
-    // the killedP promise if it has
-    let killedCheckInterval: ReturnType<typeof setInterval>
-    const killedP = new Promise((resolve, reject) => {
-      killedCheckInterval = setInterval(() => {
-        // must've been killed
-        if (worker.status === 'killed') {
-          reject(
-            new Error(
-              `operation timed out, worker process stopped responding, ${worker.error}`,
-            ),
-          )
-        } else if (done) {
-          resolve(true)
-        }
-      }, this.workerCheckFrequency)
-    }).finally(() => {
-      clearInterval(killedCheckInterval)
+    const call = await worker.call(functionName, filteredAndSerializedArgs, {
+      timeout: 5 * 60 * 1000, // 5 minutes
+      statusCallback: args.statusCallback,
+      rpcDriverClassName: this.name,
+      ...options,
     })
 
-    // the result is a race between the actual result promise, and the "killed"
-    // promise. the killed promise will only actually win if the worker was
-    // killed before the call could return
-    const resultP = Promise.race([callP, killedP])
-    return rpcMethod.deserializeReturn(resultP, args, this.name)
+    return rpcMethod.deserializeReturn(call, args, this.name)
   }
 }

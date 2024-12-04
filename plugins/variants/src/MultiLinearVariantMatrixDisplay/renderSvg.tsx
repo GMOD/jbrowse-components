@@ -5,6 +5,7 @@ import { when } from 'mobx'
 
 // locals
 import LegendBar from '../shared/LegendBar'
+import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
 
 import type { MultiLinearVariantMatrixDisplayModel } from './model'
 import type {
@@ -13,17 +14,20 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
-  self: MultiLinearVariantMatrixDisplayModel,
+  model: MultiLinearVariantMatrixDisplayModel,
   opts: ExportSvgDisplayOptions,
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
-  await when(() => !!self.regionCannotBeRenderedText)
-  const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
+  await when(() => !!model.regionCannotBeRenderedText)
+  const { offsetPx } = getContainingView(model) as LinearGenomeViewModel
   return (
     <>
-      <g>{await superRenderSvg(opts)}</g>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <LegendBar model={self} orientation="left" exportSVG />
+        <LinesConnectingMatrixToGenomicPosition exportSVG model={model} />
+        <g transform={`translate(0,${model.lineZoneHeight})`}>
+          <g>{await superRenderSvg(opts)}</g>
+          <LegendBar model={model} orientation="left" exportSVG />
+        </g>
       </g>
     </>
   )

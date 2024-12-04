@@ -1,24 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
 
-export class WiggleGetGlobalQuantitativeStats extends RpcMethodType {
+export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetGlobalQuantitativeStats'
-
-  async deserializeArguments(args: any, rpcDriverClassName: string) {
-    const l = await super.deserializeArguments(args, rpcDriverClassName)
-    return {
-      ...l,
-      filters: args.filters
-        ? new SerializableFilterChain({
-            filters: args.filters,
-          })
-        : undefined,
-    }
-  }
 
   async execute(
     args: {

@@ -38,7 +38,6 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.3",
     "@mui/icons-material": "^6.0.0",
     "@types/file-saver": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",

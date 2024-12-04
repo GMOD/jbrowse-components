@@ -15,7 +15,19 @@ export default function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearVariantMatrixDisplay',
     {
+      /**
+       * #slot
+       * MultiLinearVariantMatrixRenderer
+       */
       renderer: configSchema,
+
+      /**
+       * #slot
+       */
+      height: {
+        type: 'number',
+        defaultValue: 250,
+      },
     },
     {
       /**

@@ -7,6 +7,7 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
 import LegendBar from '../../shared/LegendBar'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
@@ -16,6 +17,7 @@ const useStyles = makeStyles()({
   cursor: {
     pointerEvents: 'none',
     zIndex: 1000,
+    position: 'relative',
   },
 })
 
@@ -45,9 +47,17 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
         setMouseX(undefined)
       }}
     >
-      <BaseLinearDisplayComponent {...props} />
-      <LegendBar model={model} />
-      {mouseY && mouseY > 20 && sources ? (
+      <div style={{ position: 'relative' }}>
+        <LinesConnectingMatrixToGenomicPosition model={model} />
+        <div style={{ position: 'absolute', top: 20 }}>
+          <LegendBar model={model} />
+          <BaseLinearDisplayComponent {...props} />
+        </div>
+      </div>
+
+      {mouseY &&
+      mouseY > 20 &&
+      sources?.[Math.floor((mouseY - 20) / rowHeight)] ? (
         <>
           <svg className={classes.cursor} width={width} height={height}>
             <line x1={0} x2={width} y1={mouseY} y2={mouseY} stroke="black" />

@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^2.0.0",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/http-range-fetcher": "^3.0.4",

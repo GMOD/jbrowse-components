@@ -4,7 +4,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { set1 } from '@jbrowse/core/ui/colors'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 
@@ -32,7 +32,7 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearVariantMatrixDisplay',
-      linearBasicDisplayModelFactory(configSchema),
+      linearBareDisplayStateModelFactory(configSchema),
       types.model({
         /**
          * #property
@@ -52,6 +52,11 @@ export default function stateModelFactory(
          * #property
          */
         mafFilter: types.optional(types.number, 0.1),
+
+        /**
+         * #property
+         */
+        showSidebarLabelsSetting: true,
       }),
     )
     .volatile(() => ({
@@ -67,13 +72,22 @@ export default function stateModelFactory(
        * #volatile
        */
       sourcesVolatile: undefined as Source[] | undefined,
-
+      /**
+       * #volatile
+       */
+      featuresVolatile: undefined as Feature[] | undefined,
       /**
        * #volatile
        */
       lineZoneHeight: 20,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setFeatures(f: Feature[]) {
+        self.featuresVolatile = f
+      },
       /**
        * #action
        */
@@ -110,6 +124,12 @@ export default function stateModelFactory(
       setMafFilter(arg: number) {
         self.mafFilter = arg
       },
+      /**
+       * #action
+       */
+      setShowSidebarLabels(arg: boolean) {
+        self.showSidebarLabelsSetting = arg
+      },
     }))
     .views(self => ({
       get preSources() {
@@ -129,7 +149,7 @@ export default function stateModelFactory(
           }))
           .map((s, i) => ({
             ...s,
-            color: s.color || set1[i] || randomColor(),
+            color: s.color || set1[i] || randomColor(s.name),
           }))
       },
     }))
@@ -158,6 +178,15 @@ export default function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'Show sidebar labels',
+              type: 'checkbox',
+              checked: self.showSidebarLabelsSetting,
+              onClick: () => {
+                self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+              },
+            },
+
             {
               label: 'Minimum allele frequency',
               onClick: () => {
@@ -225,11 +254,20 @@ export default function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...superProps,
-          notReady: superProps.notReady || !self.sources,
+          notReady:
+            superProps.notReady || !self.sources || !self.featuresVolatile,
           mafFilter: self.mafFilter,
           height: self.height,
           sources: self.sources,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get canDisplayLabels() {
+        return self.rowHeight > 8 && self.showSidebarLabelsSetting
       },
     }))
     .actions(self => {
@@ -242,22 +280,11 @@ export default function stateModelFactory(
               const { getMultiVariantSourcesAutorun } = await import(
                 '../getMultiVariantSourcesAutorun'
               )
-              getMultiVariantSourcesAutorun(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
-
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { getMultiVariantSourcesAutorun } = await import(
-                '../getMultiVariantSourcesAutorun'
+              const { getMultiVariantFeaturesAutorun } = await import(
+                '../getMultiVariantFeaturesAutorun'
               )
               getMultiVariantSourcesAutorun(self)
+              getMultiVariantFeaturesAutorun(self)
             } catch (e) {
               if (isAlive(self)) {
                 console.error(e)
