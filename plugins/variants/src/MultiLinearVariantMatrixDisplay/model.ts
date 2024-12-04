@@ -19,9 +19,7 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('../shared/MAFFilterDialog'))
-const HierarchicalClusterDialog = lazy(
-  () => import('../shared/HierarchicalClusterDialog'),
-)
+const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
 
 /**
  * #stateModel LinearVariantMatrixDisplay
@@ -176,7 +174,7 @@ export default function stateModelFactory(
               label: 'Cluster by genotype',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  HierarchicalClusterDialog,
+                  ClusterDialog,
                   {
                     model: self,
                     handleClose,
@@ -238,6 +236,21 @@ export default function stateModelFactory(
       const { renderSvg: superRenderSvg } = self
       return {
         afterAttach() {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const { getMultiVariantSourcesAutorun } = await import(
+                '../getMultiVariantSourcesAutorun'
+              )
+              getMultiVariantSourcesAutorun(self)
+            } catch (e) {
+              if (isAlive(self)) {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              }
+            }
+          })()
+
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {

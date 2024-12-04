@@ -68,7 +68,7 @@ export default function HierarchicalCluster({
         const sessionId = getRpcSessionId(model)
         const ret = (await rpcManager.call(
           sessionId,
-          'MultiVariantGetHierarchicalMatrix',
+          'MultiVariantGetGenotypeMatrix',
           {
             regions: view.dynamicBlocks.contentBlocks,
             sources,

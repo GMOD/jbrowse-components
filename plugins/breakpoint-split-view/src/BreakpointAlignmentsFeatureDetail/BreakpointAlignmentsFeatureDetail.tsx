@@ -6,15 +6,22 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
+import { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const BreakpointAlignmentsFeatureDetail = observer(function ({
   model,
 }: {
-  model: { featureData: Record<string, unknown> }
+  model: {
+    featureData: {
+      feature1: SimpleFeatureSerialized
+      feature2: SimpleFeatureSerialized
+    }
+  }
 }) {
-  const { feature1, feature2 } = JSON.parse(JSON.stringify(model.featureData))
+  const { featureData } = model
+  const { feature1, feature2 } = structuredClone(featureData)
   return (
-    <Paper data-testid="alignment-side-drawer">
+    <Paper>
       <BaseCoreDetails title="Feature 1" feature={feature1} />
       <BaseCoreDetails title="Feature 2" feature={feature2} />
       <BaseAttributes title="Feature 1 attributes" feature={feature1} />

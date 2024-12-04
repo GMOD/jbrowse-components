@@ -9,8 +9,8 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export class MultiVariantGetHierarchicalMatrix extends RpcMethodType {
-  name = 'MultiVariantGetHierarchicalMatrix'
+export class MultiVariantGetGenotypeMatrix extends RpcMethodType {
+  name = 'MultiVariantGetGenotypeMatrix'
 
   async deserializeArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)

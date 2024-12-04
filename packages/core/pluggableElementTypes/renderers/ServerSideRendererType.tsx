@@ -87,26 +87,34 @@ export default class ServerSideRenderer extends RendererType {
    * @param results - the results of the render
    * @param args - the arguments passed to render
    */
-  deserializeResultsInClient(res: ResultsSerialized, args: RenderArgs) {
-    // if we are rendering svg, we skip hydration and check if rendere support
-    // SVG (e.g. this.supportsSVG) and then return just the HTML if so
-    return args.exportSVG
-      ? {
-          ...res,
-          html: this.supportsSVG
-            ? res.html
-            : '<text y="12" fill="black">SVG export not supported for this track</text>',
-        }
-      : {
-          ...res,
-          reactElement: (
-            <ServerSideRenderedContent
-              {...args}
-              {...res}
-              RenderingComponent={this.ReactComponent}
-            />
-          ),
-        }
+  deserializeResultsInClient(
+    res: ResultsSerialized,
+    args: RenderArgs,
+  ): ResultsDeserialized {
+    // if we are rendering svg, we skip hydration
+    if (args.exportSVG) {
+      // only return the res if the renderer explicitly has
+      // this.supportsSVG support to avoid garbage being rendered in SVG
+      // document
+      return {
+        ...res,
+        html: this.supportsSVG
+          ? res.html
+          : '<text y="12" fill="black">SVG export not supported for this track</text>',
+      }
+    }
+
+    // get res using ServerSideRenderedContent
+    return {
+      ...res,
+      reactElement: (
+        <ServerSideRenderedContent
+          {...args}
+          {...res}
+          RenderingComponent={this.ReactComponent}
+        />
+      ),
+    }
   }
 
   /**
@@ -115,17 +123,18 @@ export default class ServerSideRenderer extends RendererType {
    *
    * @param args - the converted arguments to modify
    */
-  deserializeArgsInWorker(args: RenderArgsSerialized) {
-    console.log('deserializeArgsInWorker', { args })
-    return {
-      ...args,
-      config: this.configSchema.create(args.config || {}, {
-        pluginManager: this.pluginManager,
-      }),
-      filters: args.filters
-        ? new SerializableFilterChain({ filters: args.filters })
-        : undefined,
-    }
+  deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
+    const deserialized = { ...args } as unknown as RenderArgsDeserialized
+    deserialized.config = this.configSchema.create(args.config || {}, {
+      pluginManager: this.pluginManager,
+    })
+    deserialized.filters = args.filters
+      ? new SerializableFilterChain({
+          filters: args.filters,
+        })
+      : undefined
+
+    return deserialized
   }
 
   /**
@@ -206,4 +215,4 @@ export default class ServerSideRenderer extends RendererType {
   }
 }
 
-export type { RenderResults } from './RendererType'
+export { type RenderResults } from './RendererType'

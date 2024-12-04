@@ -8,8 +8,9 @@ import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer'
 import MultiVariantRendererF from './MultiLinearVariantRenderer'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
 import VariantFeatureWidgetF from './VariantFeatureWidget'
-import { MultiVariantGetHierarchicalMatrix } from './VariantRPC/MultiVariantGetHierarchicalMatrix'
+import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix'
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources'
+import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetSimplifiedFeatures'
 import VariantTrackF from './VariantTrack'
 import VcfAdapterF from './VcfAdapter'
 import VcfTabixAdapterF from './VcfTabixAdapter'
@@ -36,7 +37,10 @@ export default class VariantsPlugin extends Plugin {
 
     pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
     pluginManager.addRpcMethod(
-      () => new MultiVariantGetHierarchicalMatrix(pluginManager),
+      () => new MultiVariantGetGenotypeMatrix(pluginManager),
+    )
+    pluginManager.addRpcMethod(
+      () => new MultiVariantGetSimplifiedFeatures(pluginManager),
     )
   }
 }

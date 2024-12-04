@@ -42,7 +42,41 @@ export function getMultiVariantSourcesAutorun(self: {
           sessionId,
           'MultiVariantGetSources',
           {
-            regions: view.staticBlocks.contentBlocks,
+            regions: view.dynamicBlocks.contentBlocks,
+            sessionId,
+            adapterConfig,
+          },
+        )) as Source[]
+        if (isAlive(self)) {
+          self.setSources(sources)
+        }
+      } catch (e) {
+        if (!isAbortException(e) && isAlive(self)) {
+          console.error(e)
+          getSession(self).notifyError(`${e}`, e)
+        }
+      }
+    }),
+  )
+
+  addDisposer(
+    self,
+    autorun(async () => {
+      try {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const token = createStopToken()
+        self.setSourcesLoading(token)
+        const sessionId = getRpcSessionId(self)
+        const sources = (await rpcManager.call(
+          sessionId,
+          'MultiVariantGetSimplifiedFeatures',
+          {
+            regions: view.dynamicBlocks.contentBlocks,
             sessionId,
             adapterConfig,
           },

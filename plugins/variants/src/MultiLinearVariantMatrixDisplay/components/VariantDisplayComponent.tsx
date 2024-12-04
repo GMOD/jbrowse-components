@@ -15,6 +15,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const useStyles = makeStyles()({
   cursor: {
     pointerEvents: 'none',
+    zIndex: 1000,
   },
 })
 
