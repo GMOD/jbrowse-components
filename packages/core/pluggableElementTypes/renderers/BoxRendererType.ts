@@ -189,16 +189,16 @@ export default class BoxRendererType extends FeatureRendererType {
       args,
     ) as ResultsSerialized
 
-    const region = args.regions[0]!
-    serialized.layout = results.layout.serializeRegion(
-      this.getExpandedRegion(region, args),
-    )
-    serialized.features = serialized.features.filter(f => {
-      return Boolean(serialized.layout.rectangles[f.uniqueId])
-    })
-
-    serialized.maxHeightReached = serialized.layout.maxHeightReached
-    return serialized
+    return {
+      ...serialized,
+      layout: results.layout.serializeRegion(
+        this.getExpandedRegion(args.regions[0]!, args),
+      ),
+      maxHeightReached: serialized.layout.maxHeightReached,
+      features: serialized.features.filter(
+        f => !!serialized.layout.rectangles[f.uniqueId],
+      ),
+    }
   }
 
   /**

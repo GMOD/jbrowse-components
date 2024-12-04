@@ -17,10 +17,11 @@ const LinearVariantMatrixRendering = observer(function (props: {
   regions: Region[]
   bpPerPx: number
   simplifiedFeatures: Feature[]
+  exportSVG: boolean
   onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
 }) {
-  const { simplifiedFeatures, displayModel, width, height } = props
-  const [renderLines, setRenderLines] = useState(false)
+  const { exportSVG, simplifiedFeatures, displayModel, width, height } = props
+  const [renderLines, setRenderLines] = useState(exportSVG)
   useEffect(() => {
     setRenderLines(true)
   }, [])
