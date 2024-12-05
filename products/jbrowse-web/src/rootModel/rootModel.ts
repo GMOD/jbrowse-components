@@ -205,6 +205,7 @@ export default function RootModel({
        * #volatile
        */
       error: undefined as unknown,
+
       /**
        * #volatile
        * older jbrowse versions allowed directly mutating the menus structure.
@@ -492,6 +493,24 @@ export default function RootModel({
       /**
        * #action
        */
+      async favoriteSavedSession(id: string) {
+        if (self.sessionDB) {
+          await self.sessionDB.delete('savedSessions', id)
+          await self.fetchSavedSessions()
+        }
+      },
+      /**
+       * #action
+       */
+      async unfavoriteSavedSession(id: string) {
+        if (self.sessionDB) {
+          await self.sessionDB.delete('savedSessions', id)
+          await self.fetchSavedSessions()
+        }
+      },
+      /**
+       * #action
+       */
       async deleteSavedSession(id: string) {
         if (self.sessionDB) {
           await self.sessionDB.delete('savedSessions', id)
@@ -519,7 +538,7 @@ export default function RootModel({
       /**
        * #method
        */
-      get menus() {
+      menus() {
         let ret = [
           {
             label: 'File',

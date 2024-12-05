@@ -41,6 +41,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
@@ -49,6 +50,11 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 
 interface Display {
   displayId: string
+}
+
+export interface Menu {
+  label: string
+  menuItems: MenuItem[]
 }
 
 /**
@@ -215,12 +221,7 @@ export function BaseWebSession({
       get history() {
         return self.root.history
       },
-      /**
-       * #getter
-       */
-      get menus() {
-        return self.root.menus
-      },
+
       /**
        * #method
        */
@@ -279,8 +280,8 @@ export function BaseWebSession({
       /**
        * #action
        */
-      removeSavedSession(sessionSnapshot: { name: string }) {
-        return self.root.removeSavedSession(sessionSnapshot)
+      deleteSavedSession(id: string) {
+        return self.root.deleteSavedSession(id)
       },
 
       /**
@@ -414,6 +415,13 @@ export function BaseWebSession({
             icon: CopyIcon,
           },
         ]
+      },
+
+      /**
+       * #method
+       */
+      menus(): Menu[] {
+        return self.root.menus()
       },
     }))
     .actions(self => ({

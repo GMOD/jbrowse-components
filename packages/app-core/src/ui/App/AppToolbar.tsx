@@ -29,14 +29,15 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface Menu {
+  label: string
+  menuItems: JBMenuItem[]
+}
+
 type AppSession = SessionWithDrawerWidgets & {
-  menus: {
-    label: string
-    menuItems: JBMenuItem[]
-  }[]
+  menus: () => Menu[]
   savedSessionNames?: string[]
   snackbarMessages: SnackbarMessage[]
-
   renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
 }
@@ -53,7 +54,7 @@ const AppToolbar = observer(function ({
 
   return (
     <Toolbar>
-      {menus.map(menu => (
+      {menus().map(menu => (
         <DropDownMenu
           key={menu.label}
           menuTitle={menu.label}

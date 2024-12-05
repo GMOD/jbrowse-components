@@ -4760,6 +4760,44 @@
           "locationType": "UriLocation"
         }
       }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "bilby3",
+      "name": "Bilby transition matrix (rust)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedGraphTabixAdapter",
+        "bedGraphGzLocation": {
+          "uri": "out.sorted.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "out.sorted.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "bilby4",
+      "name": "Bilby transition matrix (python)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedGraphTabixAdapter",
+        "bedGraphGzLocation": {
+          "uri": "out.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "out.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "connections": [],
