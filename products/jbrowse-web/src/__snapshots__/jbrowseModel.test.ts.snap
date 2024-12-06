@@ -11,6 +11,7 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
   },
   "internetAccounts": [],
   "plugins": [],
+  "preConfiguredSessions": [],
   "tracks": [],
 }
 `;
@@ -450,6 +451,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "umdUrl": "umd_plugin.js",
     },
   ],
+  "preConfiguredSessions": [],
   "tracks": [
     {
       "adapter": {

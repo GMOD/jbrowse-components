@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { HistoryManagementMixin } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
@@ -13,11 +14,13 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
+import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
+import StarIcon from '@mui/icons-material/Star'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
@@ -54,7 +57,6 @@ import type {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import StarIcon from '@mui/icons-material/Star'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
@@ -542,7 +544,7 @@ export default function RootModel({
       /**
        * #action
        */
-      async deleteSessionMetadata(id: string) {
+      async deleteSavedSession(id: string) {
         if (self.sessionDB) {
           await self.sessionDB.delete('metadata', id)
           await self.sessionDB.delete('sessions', id)
@@ -571,6 +573,17 @@ export default function RootModel({
        * #method
        */
       menus() {
+        const preConfiguredSessions = readConfObject(
+          self.jbrowse,
+          'preConfiguredSessions',
+        )
+        const favs = self.savedSessionMetadata
+          ?.filter(f => f.favorite)
+          .slice(0, 5)
+        const rest = self.savedSessionMetadata
+          ?.filter(f => !f.favorite)
+          .slice(0, 5)
+
         let ret = [
           {
             label: 'File',
@@ -613,51 +626,70 @@ export default function RootModel({
                 },
               },
               {
+                label: 'Duplicate session',
+                icon: FileCopyIcon,
+                onClick: () => {
+                  // @ts-expect-error
+                  const { id, ...rest } = getSnapshot(self.session)
+                  self.setSession(rest)
+                },
+              },
+              ...(preConfiguredSessions
+                ? [
+                    {
+                      label: 'Pre-configured sessions...',
+                      subMenu: preConfiguredSessions.map(
+                        (r: { name: string }) => ({
+                          label: r.name,
+                          onClick: () => {
+                            self.setSession(r)
+                          },
+                        }),
+                      ),
+                    },
+                  ]
+                : []),
+              ...(favs?.length
+                ? [
+                    {
+                      label: 'Favorite sessions...',
+                      subMenu: favs.map(r => ({
+                        label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                        disabled: r.id === self.session.id,
+                        icon: StarIcon,
+                        onClick: () => {
+                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                          ;(async () => {
+                            try {
+                              await self.activateSession(r.id)
+                            } catch (e) {
+                              self.session.notifyError(`${e}`, e)
+                            }
+                          })()
+                        },
+                      })),
+                    },
+                  ]
+                : []),
+              {
                 label: 'Recent sessions...',
                 type: 'subMenu',
-                subMenu: self.savedSessionMetadata?.length
+                subMenu: rest?.length
                   ? [
-                      {
-                        label: 'Favs',
-                        subMenu: self.savedSessionMetadata
-                          .filter(f => f.favorite && f.id !== self.session.id)
-                          .slice(0, 5)
-                          .map(r => ({
-                            label: `${r.name} (${formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                            disabled: r.id === self.session.id,
-                            icon: StarIcon,
-                            onClick: () => {
-                              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                              ;(async () => {
-                                try {
-                                  await self.activateSession(r.id)
-                                } catch (e) {
-                                  self.session.notifyError(`${e}`, e)
-                                }
-                              })()
-                            },
-                          })),
-                      },
-                      {
-                        label: 'Auto-saves',
-                        subMenu: self.savedSessionMetadata
-                          .filter(f => !f.favorite && f.id !== self.session.id)
-                          .slice(0, 5)
-                          .map(r => ({
-                            label: `${r.name} (${formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                            disabled: r.id === self.session.id,
-                            onClick: () => {
-                              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                              ;(async () => {
-                                try {
-                                  await self.activateSession(r.id)
-                                } catch (e) {
-                                  self.session.notifyError(`${e}`, e)
-                                }
-                              })()
-                            },
-                          })),
-                      },
+                      ...rest.map(r => ({
+                        label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                        disabled: r.id === self.session.id,
+                        onClick: () => {
+                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                          ;(async () => {
+                            try {
+                              await self.activateSession(r.id)
+                            } catch (e) {
+                              self.session.notifyError(`${e}`, e)
+                            }
+                          })()
+                        },
+                      })),
                       {
                         label: 'More...',
                         icon: FolderOpenIcon,

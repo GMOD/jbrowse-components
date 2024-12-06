@@ -150,5 +150,10 @@ export function JBrowseConfigF({
     defaultSession: types.optional(types.frozen(), {
       name: 'New Session',
     }),
+
+    /**
+     * #slot
+     */
+    preConfiguredSessions: types.array(types.frozen()),
   })
 }
