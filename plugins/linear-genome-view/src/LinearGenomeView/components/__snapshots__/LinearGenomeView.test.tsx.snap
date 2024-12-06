@@ -217,6 +217,7 @@ exports[`renders one track, one region 1`] = `
                       class="css-w4cd9x"
                     >
                       <span
+                        aria-hidden="true"
                         class="notranslate"
                       >
                         ​
@@ -768,6 +769,7 @@ exports[`renders two tracks, two regions 1`] = `
                       class="css-w4cd9x"
                     >
                       <span
+                        aria-hidden="true"
                         class="notranslate"
                       >
                         ​

@@ -41,7 +41,7 @@ import {
   insertMenu,
 } from './menus'
 
-import type { SavedSession, SessionDB } from '../types'
+import type { SessionDB, SessionMetadata } from '../types'
 import type { Menu } from './menus'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -54,6 +54,7 @@ import type {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import StarIcon from '@mui/icons-material/Star'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
@@ -196,7 +197,7 @@ export default function RootModel({
       /**
        * #volatile
        */
-      savedSessions: undefined as undefined | SavedSession[],
+      savedSessionMetadata: undefined as SessionMetadata[] | undefined,
       /**
        * #volatile
        */
@@ -351,18 +352,20 @@ export default function RootModel({
       /**
        * #action
        */
-      setSavedSessions(sessions: SavedSession[]) {
-        self.savedSessions = sessions
+      setSavedSessionMetadata(sessions: SessionMetadata[]) {
+        self.savedSessionMetadata = sessions
       },
 
       /**
        * #action
        */
-      async fetchSavedSessions() {
+      async fetchSessionMetadata() {
         if (self.sessionDB) {
-          const savedSessions = await self.sessionDB.getAll('metadata')
-          this.setSavedSessions(
-            savedSessions.sort((a, b) => +b.createdAt - +a.createdAt),
+          const ret = await self.sessionDB.getAll('metadata')
+          this.setSavedSessionMetadata(
+            ret
+              .filter(f => f.configPath === self.configPath)
+              .sort((a, b) => +b.createdAt - +a.createdAt),
           )
         }
       },
@@ -381,15 +384,10 @@ export default function RootModel({
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const m = 'sessionsMetadata'
-            const sessionDB = await openDB<SessionDB>(m, 1, {
+            const sessionDB = await openDB<SessionDB>('sessionsDB', 1, {
               upgrade(db) {
-                db.createObjectStore('sessionsMetadata', {
-                  keyPath: 'id',
-                })
-                db.createObjectStore('sessions', {
-                  keyPath: 'id',
-                })
+                db.createObjectStore('metadata')
+                db.createObjectStore('sessions')
               },
             })
             self.setSessionDB(sessionDB)
@@ -400,24 +398,24 @@ export default function RootModel({
                 async () => {
                   if (self.session) {
                     try {
-                      const { id } = self.session
                       await sessionDB.put(
                         'sessions',
                         getSnapshot(self.session),
-                        id,
+                        self.session.id,
                       )
                       await sessionDB.put(
                         'metadata',
                         {
+                          name: self.session.name,
                           id: self.session.id,
                           createdAt: new Date(),
                           configPath: self.configPath || '',
                           favorite: false,
                         },
-                        id,
+                        self.session.id,
                       )
 
-                      await self.fetchSavedSessions()
+                      await self.fetchSessionMetadata()
                     } catch (e) {
                       console.error(e)
                       self.session?.notifyError(`${e}`, e)
@@ -495,12 +493,12 @@ export default function RootModel({
       /**
        * #action
        */
-      activateSession(id: string) {
-        const r = self.savedSessions?.find(f => f.session.id === id)
-        if (r) {
-          this.setSession(r.session)
+      async activateSession(id: string) {
+        const ret = await self.sessionDB?.get('sessions', id)
+        if (ret) {
+          this.setSession(ret)
         } else {
-          self.session.notify('Session not found')
+          self.session.notifyError('Session not found')
         }
       },
       /**
@@ -508,11 +506,18 @@ export default function RootModel({
        */
       async favoriteSavedSession(id: string) {
         if (self.sessionDB) {
-          await self.sessionDB.put('metadata', {
-            ...self.savedSessions.find(f => f.id === id),
-            favorite: true,
-          })
-          await self.fetchSavedSessions()
+          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          if (ret) {
+            await self.sessionDB.put(
+              'metadata',
+              {
+                ...ret,
+                favorite: true,
+              },
+              ret.id,
+            )
+            await self.fetchSessionMetadata()
+          }
         }
       },
       /**
@@ -520,21 +525,28 @@ export default function RootModel({
        */
       async unfavoriteSavedSession(id: string) {
         if (self.sessionDB) {
-          await self.sessionDB.put('metadata', {
-            ...self.savedSessions?.find(f => f.id === id),
-            favorite: false,
-          })
-          await self.fetchSavedSessions()
+          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          if (ret) {
+            await self.sessionDB.put(
+              'metadata',
+              {
+                ...ret,
+                favorite: false,
+              },
+              ret.id,
+            )
+          }
+          await self.fetchSessionMetadata()
         }
       },
       /**
        * #action
        */
-      async deleteSavedSession(id: string) {
+      async deleteSessionMetadata(id: string) {
         if (self.sessionDB) {
           await self.sessionDB.delete('metadata', id)
           await self.sessionDB.delete('sessions', id)
-          await self.fetchSavedSessions()
+          await self.fetchSessionMetadata()
         }
       },
       /**
@@ -603,15 +615,49 @@ export default function RootModel({
               {
                 label: 'Recent sessions...',
                 type: 'subMenu',
-                subMenu: self.savedSessions?.length
+                subMenu: self.savedSessionMetadata?.length
                   ? [
-                      ...self.savedSessions.slice(0, 5).map(r => ({
-                        label: `${r.session.name} (${r.session.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                        disabled: r.session.id === self.session.id,
-                        onClick: () => {
-                          self.setSession(r.session)
-                        },
-                      })),
+                      {
+                        label: 'Favs',
+                        subMenu: self.savedSessionMetadata
+                          .filter(f => f.favorite && f.id !== self.session.id)
+                          .slice(0, 5)
+                          .map(r => ({
+                            label: `${r.name} (${formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                            disabled: r.id === self.session.id,
+                            icon: StarIcon,
+                            onClick: () => {
+                              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                              ;(async () => {
+                                try {
+                                  await self.activateSession(r.id)
+                                } catch (e) {
+                                  self.session.notifyError(`${e}`, e)
+                                }
+                              })()
+                            },
+                          })),
+                      },
+                      {
+                        label: 'Auto-saves',
+                        subMenu: self.savedSessionMetadata
+                          .filter(f => !f.favorite && f.id !== self.session.id)
+                          .slice(0, 5)
+                          .map(r => ({
+                            label: `${r.name} (${formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                            disabled: r.id === self.session.id,
+                            onClick: () => {
+                              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                              ;(async () => {
+                                try {
+                                  await self.activateSession(r.id)
+                                } catch (e) {
+                                  self.session.notifyError(`${e}`, e)
+                                }
+                              })()
+                            },
+                          })),
+                      },
                       {
                         label: 'More...',
                         icon: FolderOpenIcon,

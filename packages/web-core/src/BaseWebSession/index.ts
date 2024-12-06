@@ -200,8 +200,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get savedSessions() {
-        return self.root.savedSessions
+      get savedSessionMetadata() {
+        return self.root.savedSessionMetadata
       },
       /**
        * #getter
@@ -209,12 +209,7 @@ export function BaseWebSession({
       get previousAutosaveId() {
         return self.root.previousAutosaveId
       },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.root.savedSessionNames
-      },
+
       /**
        * #getter
        */
@@ -284,6 +279,19 @@ export function BaseWebSession({
         return self.root.deleteSavedSession(id)
       },
 
+      /**
+       * #action
+       */
+      favoriteSavedSession(id: string) {
+        return self.root.favoriteSavedSession(id)
+      },
+
+      /**
+       * #action
+       */
+      unfavoriteSavedSession(id: string) {
+        return self.root.unfavoriteSavedSession(id)
+      },
       /**
        * #action
        */

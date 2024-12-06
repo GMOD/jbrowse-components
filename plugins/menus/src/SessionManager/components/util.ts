@@ -1,5 +1,13 @@
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+export interface SessionMetadata {
+  id: string
+  name: string
+  createdAt: Date
+  configPath: string
+  favorite: boolean
+}
+
 export interface SessionSnap {
   createdAt: Date
   session: {
@@ -11,7 +19,7 @@ export interface SessionSnap {
 }
 
 export interface SessionModel extends AbstractSessionModel {
-  savedSessions?: SessionSnap[]
+  savedSessionMetadata?: SessionMetadata[]
   removeSavedSession: (arg: SessionSnap) => void
   activateSession: (arg: string) => void
   loadAutosaveSession: () => void

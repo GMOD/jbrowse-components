@@ -8,6 +8,7 @@ export interface Session {
 
 export interface SessionMetadata {
   id: string
+  name: string
   createdAt: Date
   configPath: string
   favorite: boolean

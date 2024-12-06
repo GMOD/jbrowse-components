@@ -1,14 +1,12 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
-import { openDB } from 'idb'
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
-import type { SessionDB } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { Instance } from 'mobx-state-tree'
 
@@ -468,92 +466,67 @@ const SessionLoader = types
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
-          const db = await openDB<SessionDB>('sessionsDB', 1, {
-            upgrade(db) {
-              db.createObjectStore('savedSessions')
-            },
-          })
-          // rename the current autosave from previously loaded jbrowse session
-          // into previousAutosave on load
-          const { configPath } = self
-          const lastAutosave = await db.get(
-            'savedSessions',
-            `autosave-${configPath}`,
-          )
-          if (lastAutosave) {
-            await db.put(
-              'savedSessions',
-              lastAutosave,
-              `previousAutosave-${configPath}`,
-            )
-          }
-        } catch (e) {
-          console.error('failed to create previousAutosave', e)
-        }
-
-        try {
-          // fetch config
           await this.fetchConfig()
+
+          addDisposer(
+            self,
+            autorun(async () => {
+              try {
+                const {
+                  isLocalSession,
+                  isEncodedSession,
+                  isSpecSession,
+                  isSharedSession,
+                  isJsonSession,
+                  isJb1StyleSession,
+                  sessionQuery,
+                  configSnapshot,
+                } = self
+                if (!configSnapshot) {
+                  return
+                }
+
+                if (self.bc1) {
+                  self.bc1.onmessage = msg => {
+                    const r =
+                      JSON.parse(sessionStorage.getItem('current') || '{}')
+                        .session || {}
+                    if (r.id === msg.data && self.bc2) {
+                      self.bc2.postMessage(r)
+                    }
+                  }
+                }
+
+                if (isSharedSession) {
+                  await this.fetchSharedSession()
+                } else if (isSpecSession) {
+                  this.decodeSessionSpec()
+                } else if (isJb1StyleSession) {
+                  this.decodeJb1StyleSession()
+                } else if (isEncodedSession) {
+                  await this.decodeEncodedUrlSession()
+                } else if (isJsonSession) {
+                  await this.decodeJsonUrlSession()
+                } else if (isLocalSession) {
+                  await this.fetchSessionStorageSession()
+                } else if (sessionQuery) {
+                  // if there was a sessionQuery and we don't recognize it
+                  throw new Error('unrecognized session format')
+                } else {
+                  // placeholder for session loaded, but none found
+                  self.setBlankSession(true)
+                }
+              } catch (e) {
+                console.error(e)
+                self.setSessionError(e)
+              }
+            }),
+          )
         } catch (e) {
           console.error(e)
           self.setConfigError(e)
           return
         }
-
-        addDisposer(
-          self,
-          autorun(async () => {
-            try {
-              const {
-                isLocalSession,
-                isEncodedSession,
-                isSpecSession,
-                isSharedSession,
-                isJsonSession,
-                isJb1StyleSession,
-                sessionQuery,
-                configSnapshot,
-              } = self
-              if (!configSnapshot) {
-                return
-              }
-
-              if (self.bc1) {
-                self.bc1.onmessage = msg => {
-                  const r =
-                    JSON.parse(sessionStorage.getItem('current') || '{}')
-                      .session || {}
-                  if (r.id === msg.data && self.bc2) {
-                    self.bc2.postMessage(r)
-                  }
-                }
-              }
-
-              if (isSharedSession) {
-                await this.fetchSharedSession()
-              } else if (isSpecSession) {
-                this.decodeSessionSpec()
-              } else if (isJb1StyleSession) {
-                this.decodeJb1StyleSession()
-              } else if (isEncodedSession) {
-                await this.decodeEncodedUrlSession()
-              } else if (isJsonSession) {
-                await this.decodeJsonUrlSession()
-              } else if (isLocalSession) {
-                await this.fetchSessionStorageSession()
-              } else if (sessionQuery) {
-                // if there was a sessionQuery and we don't recognize it
-                throw new Error('unrecognized session format')
-              } else {
-                // placeholder for session loaded, but none found
-                self.setBlankSession(true)
-              }
-            } catch (e) {
-              console.error(e)
-              self.setSessionError(e)
-            }
-          }),
-        )
       })()
     },
   }))

@@ -33,12 +33,12 @@ const RecentSessionList = observer(function ({
         Recent sessions
       </Typography>
       <List className={classes.list}>
-        {rootModel.savedSessions?.length ? (
-          rootModel.savedSessions.map(session => (
+        {rootModel.savedSessionMetadata?.length ? (
+          rootModel.savedSessionMetadata.map(session => (
             <RecentSessionCard
-              key={session.session.id}
+              key={session.id}
               rootModel={rootModel}
-              sessionSnap={session}
+              sessionMetadata={session}
               onError={e => {
                 setError(e)
               }}

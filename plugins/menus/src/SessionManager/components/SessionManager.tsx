@@ -1,40 +1,29 @@
 import React from 'react'
 
-import { IconButton, Link, Paper } from '@mui/material'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { measureGridWidth } from '@jbrowse/core/util'
+import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { IconButton, Link } from '@mui/material'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import type { SessionModel } from './util'
-import { measureGridWidth } from '@jbrowse/core/util'
-
-const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
-  message: {
-    padding: theme.spacing(3),
-  },
-}))
 
 const SessionManager = observer(function ({
   session,
 }: {
   session: SessionModel
 }) {
-  const { classes } = useStyles()
   const rows =
-    session.savedSessions?.map(r => ({
-      id: r.session.id,
-      name: r.session.name,
+    session.savedSessionMetadata?.map(r => ({
+      id: r.id,
+      name: r.name,
       createdAt: r.createdAt,
-      sessionSnap: r.session,
+      fav: r.favorite,
     })) || []
   return (
-    <Paper className={classes.root}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       <DataGrid
         disableRowSelectionOnClick
         columnHeaderHeight={35}
@@ -53,21 +42,21 @@ const SessionManager = observer(function ({
           {
             field: 'fav',
             headerName: 'Fav',
-            width: 10,
+            width: 20,
             renderCell: ({ row }) => {
-              const { sessionSnap } = row
-              const isFav = session.savedSessions?.includes(sessionSnap.id)
               return (
                 <IconButton
                   onClick={() => {
-                    if (isFav) {
-                      session.unfavoriteSavedSession(sessionSnap.id)
+                    if (row.fav) {
+                      // @ts-expect-error
+                      session.unfavoriteSavedSession(row.id)
                     } else {
-                      session.favoriteSavedSession(sessionSnap.id)
+                      // @ts-expect-error
+                      session.favoriteSavedSession(row.id)
                     }
                   }}
                 >
-                  {isFav ? <StarIcon /> : <StarBorderIcon />}
+                  {row.fav ? <StarIcon /> : <StarBorderIcon />}
                 </IconButton>
               )
             },
@@ -78,11 +67,10 @@ const SessionManager = observer(function ({
             headerName: 'Name',
             width: measureGridWidth(rows.map(r => r.name)),
             renderCell: ({ row }) => {
-              const { sessionSnap } = row
               return (
                 <Link
                   onClick={() => {
-                    session.activateSession(sessionSnap.id)
+                    session.activateSession(row.id)
                   }}
                 >
                   {row.name}
@@ -99,11 +87,11 @@ const SessionManager = observer(function ({
             width: 10,
             headerName: '',
             renderCell: ({ row }) => {
-              const { sessionSnap } = row
               return (
                 <IconButton
                   onClick={() => {
-                    session.deleteSavedSession(sessionSnap.id)
+                    // @ts-expect-error
+                    session.deleteSavedSession(row.id)
                   }}
                 >
                   <DeleteIcon />
@@ -113,7 +101,7 @@ const SessionManager = observer(function ({
           },
         ]}
       />
-    </Paper>
+    </div>
   )
 })
 
