@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import { stringify } from '@jbrowse/core/util'
 import { Popover, Typography, alpha } from '@mui/material'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -103,12 +104,14 @@ const LinearComparativeRubberband = observer(function Rubberband({
           clientX,
           clientY,
         })
-        model.views.forEach(view => {
-          const args = computeOffsets(offsetX, view)
-          if (args) {
-            const { leftOffset, rightOffset } = args
-            view.setOffsets(leftOffset, rightOffset)
-          }
+        transaction(() => {
+          model.views.forEach(view => {
+            const args = computeOffsets(offsetX, view)
+            if (args) {
+              const { leftOffset, rightOffset } = args
+              view.setOffsets(leftOffset, rightOffset)
+            }
+          })
         })
         setGuideX(undefined)
       }
@@ -152,8 +155,10 @@ const LinearComparativeRubberband = observer(function Rubberband({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.views.forEach(view => {
-      view.setOffsets(undefined, undefined)
+    transaction(() => {
+      model.views.forEach(view => {
+        view.setOffsets(undefined, undefined)
+      })
     })
   }
 
