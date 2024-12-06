@@ -5,13 +5,21 @@ export interface Session {
   id: string
   [key: string]: unknown
 }
-export interface SavedSession {
-  session: Session
+
+export interface SessionMetadata {
+  id: string
   createdAt: Date
+  configPath: string
+  favorite: boolean
 }
+
 export interface SessionDB extends DBSchema {
-  savedSessions: {
+  sessions: {
     key: string
-    value: SavedSession
+    value: Session
+  }
+  metadata: {
+    key: string
+    value: SessionMetadata
   }
 }

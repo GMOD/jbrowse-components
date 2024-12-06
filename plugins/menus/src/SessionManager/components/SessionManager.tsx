@@ -52,7 +52,7 @@ const SessionManager = observer(function ({
         columns={[
           {
             field: 'fav',
-            headerName: '',
+            headerName: 'Fav',
             width: 10,
             renderCell: ({ row }) => {
               const { sessionSnap } = row
@@ -68,23 +68,6 @@ const SessionManager = observer(function ({
                   }}
                 >
                   {isFav ? <StarIcon /> : <StarBorderIcon />}
-                </IconButton>
-              )
-            },
-          },
-          {
-            field: 'delete',
-            width: 10,
-            headerName: '',
-            renderCell: ({ row }) => {
-              const { sessionSnap } = row
-              return (
-                <IconButton
-                  onClick={() => {
-                    session.deleteSavedSession(sessionSnap.id)
-                  }}
-                >
-                  <DeleteIcon />
                 </IconButton>
               )
             },
@@ -110,6 +93,23 @@ const SessionManager = observer(function ({
           {
             headerName: 'Created at',
             field: 'createdAt',
+          },
+          {
+            field: 'delete',
+            width: 10,
+            headerName: '',
+            renderCell: ({ row }) => {
+              const { sessionSnap } = row
+              return (
+                <IconButton
+                  onClick={() => {
+                    session.deleteSavedSession(sessionSnap.id)
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )
+            },
           },
         ]}
       />

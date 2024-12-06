@@ -360,7 +360,7 @@ export default function RootModel({
        */
       async fetchSavedSessions() {
         if (self.sessionDB) {
-          const savedSessions = await self.sessionDB.getAll('savedSessions')
+          const savedSessions = await self.sessionDB.getAll('metadata')
           this.setSavedSessions(
             savedSessions.sort((a, b) => +b.createdAt - +a.createdAt),
           )
@@ -369,8 +369,8 @@ export default function RootModel({
       /**
        * #action
        */
-      setSessionDB(db: IDBPDatabase<SessionDB>) {
-        self.sessionDB = db
+      setSessionDB(sessionDB: IDBPDatabase<SessionDB>) {
+        self.sessionDB = sessionDB
       },
     }))
     .actions(self => ({
@@ -381,12 +381,18 @@ export default function RootModel({
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const db = await openDB<SessionDB>('sessionsDB', 1, {
+            const m = 'sessionsMetadata'
+            const sessionDB = await openDB<SessionDB>(m, 1, {
               upgrade(db) {
-                db.createObjectStore('savedSessions')
+                db.createObjectStore('sessionsMetadata', {
+                  keyPath: 'id',
+                })
+                db.createObjectStore('sessions', {
+                  keyPath: 'id',
+                })
               },
             })
-            self.setSessionDB(db)
+            self.setSessionDB(sessionDB)
 
             addDisposer(
               self,
@@ -395,11 +401,18 @@ export default function RootModel({
                   if (self.session) {
                     try {
                       const { id } = self.session
-                      await db.put(
-                        'savedSessions',
+                      await sessionDB.put(
+                        'sessions',
+                        getSnapshot(self.session),
+                        id,
+                      )
+                      await sessionDB.put(
+                        'metadata',
                         {
-                          session: getSnapshot(self.session),
+                          id: self.session.id,
                           createdAt: new Date(),
+                          configPath: self.configPath || '',
+                          favorite: false,
                         },
                         id,
                       )
@@ -495,7 +508,10 @@ export default function RootModel({
        */
       async favoriteSavedSession(id: string) {
         if (self.sessionDB) {
-          await self.sessionDB.delete('savedSessions', id)
+          await self.sessionDB.put('metadata', {
+            ...self.savedSessions.find(f => f.id === id),
+            favorite: true,
+          })
           await self.fetchSavedSessions()
         }
       },
@@ -504,7 +520,10 @@ export default function RootModel({
        */
       async unfavoriteSavedSession(id: string) {
         if (self.sessionDB) {
-          await self.sessionDB.delete('savedSessions', id)
+          await self.sessionDB.put('metadata', {
+            ...self.savedSessions?.find(f => f.id === id),
+            favorite: false,
+          })
           await self.fetchSavedSessions()
         }
       },
@@ -513,7 +532,8 @@ export default function RootModel({
        */
       async deleteSavedSession(id: string) {
         if (self.sessionDB) {
-          await self.sessionDB.delete('savedSessions', id)
+          await self.sessionDB.delete('metadata', id)
+          await self.sessionDB.delete('sessions', id)
           await self.fetchSavedSessions()
         }
       },
