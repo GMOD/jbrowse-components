@@ -12,10 +12,17 @@ function getRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  return rootModelFactory({ pluginManager, sessionModelFactory })
+  return rootModelFactory({
+    pluginManager,
+    sessionModelFactory,
+  })
 }
+afterEach(() => {
+  localStorage.clear()
+  sessionStorage.clear()
+})
 
-const mainThread = {
+const mainThreadConfig = {
   jbrowse: {
     configuration: {
       rpc: {
@@ -25,13 +32,8 @@ const mainThread = {
   },
 }
 
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
-
 test('creates with defaults', () => {
-  const root = getRootModel().create(mainThread)
+  const root = getRootModel().create(mainThreadConfig)
   expect(root.session).toBeUndefined()
   root.setDefaultSession()
   expect(root.session).toBeTruthy()
@@ -41,8 +43,10 @@ test('creates with defaults', () => {
 
 test('creates with a minimal session', () => {
   const root = getRootModel().create({
-    ...mainThread,
-    session: { name: 'testSession' },
+    ...mainThreadConfig,
+    session: {
+      name: 'testSession',
+    },
   })
   expect(root.session).toBeTruthy()
 })
@@ -53,7 +57,8 @@ test('activates a session snapshot', () => {
   Storage.prototype.getItem = jest.fn(
     () => `{"session": {"name": "testSession"}}`,
   )
-  const root = getRootModel().create(mainThread)
+
+  const root = getRootModel().create(mainThreadConfig)
   expect(root.session).toBeUndefined()
   root.setSession(session)
   expect(root.session).toBeTruthy()
@@ -62,7 +67,7 @@ test('activates a session snapshot', () => {
 test('adds track and connection configs to an assembly', () => {
   const root = getRootModel().create({
     jbrowse: {
-      ...mainThread.jbrowse,
+      ...mainThreadConfig.jbrowse,
       assemblies: [
         {
           name: 'assembly1',
@@ -105,24 +110,24 @@ test('adds track and connection configs to an assembly', () => {
 })
 
 test('throws if session is invalid', () => {
-  expect(() =>
+  expect(() => {
     getRootModel().create({
-      ...mainThread,
+      ...mainThreadConfig,
       session: {},
-    }),
-  ).toThrow()
+    })
+  }).toThrow()
 })
 
 test('throws if session snapshot is invalid', () => {
-  const root = getRootModel().create(mainThread)
+  const root = getRootModel().create(mainThreadConfig)
   expect(() => {
     root.setSession({})
   }).toThrow()
 })
 
 test('adds menus', () => {
-  const root = getRootModel().create(mainThread)
-  expect(root.menus).toMatchSnapshot()
+  const root = getRootModel().create(mainThreadConfig)
+  expect(root.menus()).toMatchSnapshot()
   root.appendMenu('Third Menu')
   root.insertMenu('Second Menu', -1)
   root.appendToMenu('Second Menu', {
@@ -149,11 +154,5 @@ test('adds menus', () => {
     },
     -1,
   )
-  expect(root.menus).toMatchSnapshot()
-  // expect(() => {
-  //   root.appendToSubMenu(['Second Menu', 'First Menu Item'], {
-  //     label: 'First Sub Menu Item',
-  //     onClick: () => {},
-  //   })
-  // }).toThrow(/is not a subMenu/)
+  expect(root.menus()).toMatchSnapshot()
 })

@@ -129,12 +129,6 @@ export default function sessionModelFactory({
       get assemblyManager() {
         return self.root.assemblyManager
       },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.root.savedSessionNames
-      },
 
       /**
        * #method

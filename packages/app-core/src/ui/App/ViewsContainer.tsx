@@ -19,7 +19,6 @@ const useStyles = makeStyles()({
 interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
-    savedSessionNames: string[]
     renameCurrentSession: (arg: string) => void
     snackbarMessages: SnackbarMessage[]
     popSnackbarMessage: () => unknown

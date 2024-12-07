@@ -36,7 +36,6 @@ interface Menu {
 
 type AppSession = SessionWithDrawerWidgets & {
   menus: () => Menu[]
-  savedSessionNames?: string[]
   snackbarMessages: SnackbarMessage[]
   renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
@@ -50,7 +49,7 @@ const AppToolbar = observer(function ({
   session: AppSession
 }) {
   const { classes } = useStyles()
-  const { savedSessionNames, name, menus } = session
+  const { name, menus } = session
 
   return (
     <Toolbar>
@@ -63,30 +62,28 @@ const AppToolbar = observer(function ({
         />
       ))}
       <div className={classes.grow} />
-      <Tooltip title="Rename Session" arrow>
+      <Tooltip title="Rename session" arrow>
         <EditableTypography
           value={name}
-          setValue={newName => {
-            if (savedSessionNames?.includes(newName)) {
-              session.notify(
-                `Cannot rename session to "${newName}", a saved session with that name already exists`,
-                'warning',
-              )
-            } else {
-              session.renameCurrentSession(newName)
-            }
-          }}
           variant="body1"
           classes={{
             inputBase: classes.inputBase,
             inputRoot: classes.inputRoot,
             inputFocused: classes.inputFocused,
           }}
+          setValue={newName => {
+            session.renameCurrentSession(newName)
+          }}
         />
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
-      <div style={{ width: 150, maxHeight: 48 }}>
+      <div
+        style={{
+          width: 150,
+          maxHeight: 48,
+        }}
+      >
         <AppLogo session={session} />
       </div>
     </Toolbar>

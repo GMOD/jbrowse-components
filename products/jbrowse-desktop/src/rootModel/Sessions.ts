@@ -25,10 +25,6 @@ export function DesktopSessionManagementMixin(_pluginManager: PluginManager) {
       /**
        * #property
        */
-      savedSessionNames: types.maybe(types.array(types.string)),
-      /**
-       * #property
-       */
       sessionPath: types.optional(types.string, ''),
     })
     .actions(s => {
@@ -42,27 +38,7 @@ export function DesktopSessionManagementMixin(_pluginManager: PluginManager) {
             await ipcRenderer.invoke('saveSession', self.sessionPath, val)
           }
         },
-        /**
-         * #action
-         */
-        duplicateCurrentSession() {
-          if (!self.session) {
-            return
-          }
-          const snapshot = structuredClone(getSnapshot(self.session))
-          let newSnapshotName = `${self.session.name} (copy)`
-          if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
-            let newSnapshotCopyNumber = 2
-            do {
-              newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
-              newSnapshotCopyNumber += 1
-            } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
-          }
-          self.setSession({
-            ...(snapshot as Record<string, unknown>),
-            name: newSnapshotName,
-          })
-        },
+
         /**
          * #action
          */

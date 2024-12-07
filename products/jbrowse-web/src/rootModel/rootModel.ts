@@ -11,6 +11,14 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+import {
+  appendMenu,
+  appendToMenu,
+  appendToSubMenu,
+  insertInMenu,
+  insertInSubMenu,
+  insertMenu,
+} from '@jbrowse/web-core'
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -35,21 +43,13 @@ import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 import { filterSessionInPlace } from '../util'
-import {
-  appendMenu,
-  appendToMenu,
-  appendToSubMenu,
-  insertInMenu,
-  insertInSubMenu,
-  insertMenu,
-} from './menus'
 
 import type { SessionDB, SessionMetadata } from '../types'
-import type { Menu } from './menus'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { Menu, MenuAction } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 import type {
   IAnyStateTreeNode,
@@ -68,50 +68,11 @@ type SessionModelFactory = (args: {
   assemblyConfigSchema: AssemblyConfig
 }) => IAnyType
 
-interface InsertInSubMenuAction {
-  type: 'insertInSubMenu'
-  menuPath: string[]
-  menuItem: MenuItem
-  position: number
+interface SessionSnap {
+  name: string
+  id: string
+  [key: string]: unknown
 }
-interface InsertInMenuAction {
-  type: 'insertInMenu'
-  menuName: string
-  menuItem: MenuItem
-  position: number
-}
-interface AppendToMenuAction {
-  type: 'appendToMenu'
-  menuName: string
-  menuItem: MenuItem
-}
-interface AppendToSubMenuAction {
-  type: 'appendToSubMenu'
-  menuPath: string[]
-  menuItem: MenuItem
-}
-interface AppendMenuAction {
-  type: 'appendMenu'
-  menuName: string
-}
-interface InsertMenuAction {
-  type: 'insertMenu'
-  menuName: string
-  position: number
-}
-interface SetMenusAction {
-  type: 'setMenus'
-  newMenus: Menu[]
-}
-
-export type MenuAction =
-  | InsertMenuAction
-  | AppendMenuAction
-  | AppendToSubMenuAction
-  | AppendToMenuAction
-  | InsertInMenuAction
-  | InsertInSubMenuAction
-  | SetMenusAction
 
 /**
  * #stateModel JBrowseWebRootModel
@@ -386,7 +347,7 @@ export default function RootModel({
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const sessionDB = await openDB<SessionDB>('sessionsDB', 1, {
+            const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
               upgrade(db) {
                 db.createObjectStore('metadata')
                 db.createObjectStore('sessions')
@@ -400,21 +361,18 @@ export default function RootModel({
                 async () => {
                   if (self.session) {
                     try {
-                      await sessionDB.put(
-                        'sessions',
-                        getSnapshot(self.session),
-                        self.session.id,
-                      )
+                      const snap = getSnapshot(self.session) as SessionSnap
+                      await sessionDB.put('sessions', snap, snap.id)
                       await sessionDB.put(
                         'metadata',
                         {
-                          name: self.session.name,
-                          id: self.session.id,
+                          name: snap.name,
+                          id: snap.id,
                           createdAt: new Date(),
                           configPath: self.configPath || '',
                           favorite: false,
                         },
-                        self.session.id,
+                        snap.id,
                       )
 
                       await self.fetchSessionMetadata()

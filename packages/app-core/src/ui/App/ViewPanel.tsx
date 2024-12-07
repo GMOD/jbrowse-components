@@ -15,7 +15,6 @@ import type {
 } from '@jbrowse/core/util'
 
 type AppSession = SessionWithDrawerWidgets & {
-  savedSessionNames: string[]
   snackbarMessages: SnackbarMessage[]
   renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown

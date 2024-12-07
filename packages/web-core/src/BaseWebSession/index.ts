@@ -31,6 +31,7 @@ import {
 
 import { WebSessionConnectionsMixin } from '../SessionConnections'
 
+import type { Menu } from '../menus'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -50,11 +51,6 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 
 interface Display {
   displayId: string
-}
-
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
 }
 
 /**
