@@ -19,7 +19,7 @@ import { getParent, types } from 'mobx-state-tree'
 import { DesktopSessionFactory } from './DesktopSession'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 
-import type { DesktopRootModel } from '../rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'

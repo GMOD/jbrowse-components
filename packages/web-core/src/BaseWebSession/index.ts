@@ -31,7 +31,7 @@ import {
 
 import { WebSessionConnectionsMixin } from '../SessionConnections'
 
-import type { Menu } from '../menus'
+import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'

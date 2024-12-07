@@ -244,3 +244,25 @@ export function insertInSubMenu({
   subMenu.splice(position, 0, menuItem)
   return subMenu.length
 }
+
+export function processMutableMenuActions(ret: Menu[], actions: MenuAction[]) {
+  for (const action of actions) {
+    if (action.type === 'setMenus') {
+      ret = action.newMenus
+    } else if (action.type === 'appendMenu') {
+      appendMenu({ menus: ret, ...action })
+    } else if (action.type === 'insertMenu') {
+      insertMenu({ menus: ret, ...action })
+    } else if (action.type === 'insertInSubMenu') {
+      insertInSubMenu({ menus: ret, ...action })
+    } else if (action.type === 'appendToSubMenu') {
+      appendToSubMenu({ menus: ret, ...action })
+    } else if (action.type === 'appendToMenu') {
+      appendToMenu({ menus: ret, ...action })
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } else if (action.type === 'insertInMenu') {
+      insertInMenu({ menus: ret, ...action })
+    }
+  }
+  return ret
+}

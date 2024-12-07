@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { HistoryManagementMixin } from '@jbrowse/app-core'
+import {
+  HistoryManagementMixin,
+  RootAppMenuMixin,
+  processMutableMenuActions,
+} from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -11,14 +15,6 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import {
-  appendMenu,
-  appendToMenu,
-  appendToSubMenu,
-  insertInMenu,
-  insertInSubMenu,
-  insertMenu,
-} from '@jbrowse/web-core'
 import AddIcon from '@mui/icons-material/Add'
 import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -45,11 +41,10 @@ import makeWorkerInstance from '../makeWorkerInstance'
 import { filterSessionInPlace } from '../util'
 
 import type { SessionDB, SessionMetadata } from '../types'
+import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
-import type { Menu, MenuAction } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 import type {
   IAnyStateTreeNode,
@@ -75,6 +70,7 @@ type SessionModelFactory = (args: {
  * - [BaseRootModel](../baserootmodel)
  * - [InternetAccountsMixin](../internetaccountsmixin)
  * - [HistoryManagementMixin](../historymanagementmixin)
+ * - [RootAppMenuMixin](../rootappmenumixin)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -108,6 +104,7 @@ export default function RootModel({
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
+      RootAppMenuMixin(),
     )
     .props({
       /**
@@ -163,148 +160,8 @@ export default function RootModel({
        * #volatile
        */
       error: undefined as unknown,
+    }))
 
-      /**
-       * #volatile
-       * older jbrowse versions allowed directly mutating the menus structure.
-       * this was difficult to reconcile with observable data structures. it
-       * now records the series of mutations to this array, and applies them
-       * sequentially
-       */
-      mutableMenuActions: [] as MenuAction[],
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setMenus(newMenus: Menu[]) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          { type: 'setMenus', newMenus },
-        ]
-      },
-      /**
-       * #action
-       * Add a top-level menu
-       *
-       * @param menuName - Name of the menu to insert.
-       *
-       */
-      appendMenu(menuName: string) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          { type: 'appendMenu', menuName },
-        ]
-      },
-      /**
-       * #action
-       * Insert a top-level menu
-       *
-       * @param menuName - Name of the menu to insert.
-       *
-       * @param position - Position to insert menu. If negative, counts from th
-       * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
-       * second-to-last one.
-       *
-       */
-      insertMenu(menuName: string, position: number) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'insertMenu',
-            menuName,
-            position,
-          },
-        ]
-      },
-      /**
-       * #action
-       * Add a menu item to a top-level menu
-       *
-       * @param menuName - Name of the top-level menu to append to.
-       *
-       * @param menuItem - Menu item to append.
-       */
-      appendToMenu(menuName: string, menuItem: MenuItem) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'appendToMenu',
-            menuName,
-            menuItem,
-          },
-        ]
-      },
-      /**
-       * #action
-       * Insert a menu item into a top-level menu
-       *
-       * @param menuName - Name of the top-level menu to insert into
-       *
-       * @param menuItem - Menu item to insert
-       *
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       */
-      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
-        self.mutableMenuActions.push({
-          type: 'insertInMenu',
-          menuName,
-          menuItem,
-          position,
-        })
-      },
-      /**
-       * #action
-       * Add a menu item to a sub-menu
-       *
-       * @param menuPath - Path to the sub-menu to add to, starting with the
-       * top-level menu (e.g. `['File', 'Insert']`).
-       *
-       * @param menuItem - Menu item to append.
-       *
-       * @returns The new length of the sub-menu
-       */
-      appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'appendToSubMenu',
-            menuPath,
-            menuItem,
-          },
-        ]
-      },
-      /**
-       * #action
-       * Insert a menu item into a sub-menu
-       *
-       * @param menuPath - Path to the sub-menu to add to, starting with the
-       * top-level menu (e.g. `['File', 'Insert']`).
-       *
-       * @param menuItem - Menu item to insert.
-       *
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       */
-      insertInSubMenu(
-        menuPath: string[],
-        menuItem: MenuItem,
-        position: number,
-      ) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'insertInSubMenu',
-            menuPath,
-            menuItem,
-            position,
-          },
-        ]
-      },
-    }))
     .actions(self => ({
       /**
        * #action
@@ -539,7 +396,7 @@ export default function RootModel({
           ?.filter(f => !f.favorite)
           .slice(0, 5)
 
-        let ret = [
+        const ret = [
           {
             label: 'File',
             menuItems: [
@@ -800,25 +657,7 @@ export default function RootModel({
           },
         ] as Menu[]
 
-        for (const action of self.mutableMenuActions) {
-          if (action.type === 'setMenus') {
-            ret = action.newMenus
-          } else if (action.type === 'appendMenu') {
-            appendMenu({ menus: ret, ...action })
-          } else if (action.type === 'insertMenu') {
-            insertMenu({ menus: ret, ...action })
-          } else if (action.type === 'insertInSubMenu') {
-            insertInSubMenu({ menus: ret, ...action })
-          } else if (action.type === 'appendToSubMenu') {
-            appendToSubMenu({ menus: ret, ...action })
-          } else if (action.type === 'appendToMenu') {
-            appendToMenu({ menus: ret, ...action })
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          } else if (action.type === 'insertInMenu') {
-            insertInMenu({ menus: ret, ...action })
-          }
-        }
-        return ret
+        return processMutableMenuActions(ret, self.mutableMenuActions)
       },
     }))
 }

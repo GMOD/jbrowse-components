@@ -1,5 +1,6 @@
 import type React from 'react'
 
+import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -8,15 +9,6 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import {
-  type MenuAction,
-  appendMenu,
-  appendToMenu,
-  appendToSubMenu,
-  insertInMenu,
-  insertInSubMenu,
-  insertMenu,
-} from '@jbrowse/web-core'
 import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
@@ -99,6 +91,7 @@ export default function RootModel({
         assemblyConfigSchema,
       }),
       InternetAccountsRootModelMixin(pluginManager),
+      RootAppMenuMixin(),
     )
 
     .volatile(self => ({
@@ -139,147 +132,6 @@ export default function RootModel({
        * #volatile
        */
       error: undefined as unknown,
-
-      /**
-       * #volatile
-       * older jbrowse versions allowed directly mutating the menus structure.
-       * this was difficult to reconcile with observable data structures. it
-       * now records the series of mutations to this array, and applies them
-       * sequentially
-       */
-      mutableMenuActions: [] as MenuAction[],
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setMenus(newMenus: Menu[]) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          { type: 'setMenus', newMenus },
-        ]
-      },
-      /**
-       * #action
-       * Add a top-level menu
-       *
-       * @param menuName - Name of the menu to insert.
-       *
-       */
-      appendMenu(menuName: string) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          { type: 'appendMenu', menuName },
-        ]
-      },
-      /**
-       * #action
-       * Insert a top-level menu
-       *
-       * @param menuName - Name of the menu to insert.
-       *
-       * @param position - Position to insert menu. If negative, counts from th
-       * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
-       * second-to-last one.
-       *
-       */
-      insertMenu(menuName: string, position: number) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'insertMenu',
-            menuName,
-            position,
-          },
-        ]
-      },
-      /**
-       * #action
-       * Add a menu item to a top-level menu
-       *
-       * @param menuName - Name of the top-level menu to append to.
-       *
-       * @param menuItem - Menu item to append.
-       */
-      appendToMenu(menuName: string, menuItem: MenuItem) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'appendToMenu',
-            menuName,
-            menuItem,
-          },
-        ]
-      },
-      /**
-       * #action
-       * Insert a menu item into a top-level menu
-       *
-       * @param menuName - Name of the top-level menu to insert into
-       *
-       * @param menuItem - Menu item to insert
-       *
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       */
-      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
-        self.mutableMenuActions.push({
-          type: 'insertInMenu',
-          menuName,
-          menuItem,
-          position,
-        })
-      },
-      /**
-       * #action
-       * Add a menu item to a sub-menu
-       *
-       * @param menuPath - Path to the sub-menu to add to, starting with the
-       * top-level menu (e.g. `['File', 'Insert']`).
-       *
-       * @param menuItem - Menu item to append.
-       *
-       * @returns The new length of the sub-menu
-       */
-      appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'appendToSubMenu',
-            menuPath,
-            menuItem,
-          },
-        ]
-      },
-      /**
-       * #action
-       * Insert a menu item into a sub-menu
-       *
-       * @param menuPath - Path to the sub-menu to add to, starting with the
-       * top-level menu (e.g. `['File', 'Insert']`).
-       *
-       * @param menuItem - Menu item to insert.
-       *
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       */
-      insertInSubMenu(
-        menuPath: string[],
-        menuItem: MenuItem,
-        position: number,
-      ) {
-        self.mutableMenuActions = [
-          ...self.mutableMenuActions,
-          {
-            type: 'insertInSubMenu',
-            menuPath,
-            menuItem,
-            position,
-          },
-        ]
-      },
     }))
     .actions(self => {
       return {
@@ -323,23 +175,20 @@ export default function RootModel({
          */
         setDefaultSession() {
           const { defaultSession } = self.jbrowse
-          const newSession = {
+          this.setSession({
             ...defaultSession,
             name: `${defaultSession.name} ${new Date().toLocaleString()}`,
-          }
-
-          this.setSession(newSession)
+          })
         },
         /**
          * #action
          */
         renameCurrentSession(sessionName: string) {
           if (self.session) {
-            const snapshot = JSON.parse(
-              JSON.stringify(getSnapshot(self.session)),
-            )
-            snapshot.name = sessionName
-            this.setSession(snapshot)
+            this.setSession({
+              ...getSnapshot(self.session),
+              name: sessionName,
+            })
           }
         },
 
@@ -352,112 +201,98 @@ export default function RootModel({
       }
     })
     .views(self => ({
+      /**
+       * #method
+       */
       menus() {
-        let ret = [
-          {
-            label: 'File',
-            menuItems: [
-              {
-                label: 'New session',
-                icon: AddIcon,
+        return processMutableMenuActions(
+          [
+            {
+              label: 'File',
+              menuItems: [
+                {
+                  label: 'New session',
+                  icon: AddIcon,
 
-                onClick: (session: any) => {
-                  session.setDefaultSession()
+                  onClick: (session: any) => {
+                    session.setDefaultSession()
+                  },
                 },
-              },
-              {
-                label: 'Import session…',
-                icon: PublishIcon,
-                onClick: (session: SessionWithWidgets) => {
-                  const widget = session.addWidget(
-                    'ImportSessionWidget',
-                    'importSessionWidget',
-                  )
-                  session.showWidget(widget)
-                },
-              },
-              {
-                label: 'Export session',
-                icon: GetAppIcon,
-                onClick: (session: IAnyStateTreeNode) => {
-                  const sessionBlob = new Blob(
-                    [
-                      JSON.stringify(
-                        { session: getSnapshot(session) },
-                        null,
-                        2,
-                      ),
-                    ],
-                    { type: 'text/plain;charset=utf-8' },
-                  )
-                  saveAs(sessionBlob, 'session.json')
-                },
-              },
-
-              { type: 'divider' },
-              {
-                label: 'Open track...',
-                icon: StorageIcon,
-                onClick: (session: SessionWithWidgets) => {
-                  if (session.views.length === 0) {
-                    session.notify('Please open a view to add a track first')
-                  } else if (session.views.length > 0) {
+                {
+                  label: 'Import session…',
+                  icon: PublishIcon,
+                  onClick: (session: SessionWithWidgets) => {
                     const widget = session.addWidget(
-                      'AddTrackWidget',
-                      'addTrackWidget',
-                      { view: session.views[0]!.id },
+                      'ImportSessionWidget',
+                      'importSessionWidget',
                     )
                     session.showWidget(widget)
-                    if (session.views.length > 1) {
-                      session.notify(
-                        'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                      )
-                    }
-                  }
+                  },
                 },
-              },
-              {
-                label: 'Open connection...',
-                icon: Cable,
-                onClick: (session: SessionWithWidgets) => {
-                  const widget = session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  )
-                  session.showWidget(widget)
+                {
+                  label: 'Export session',
+                  icon: GetAppIcon,
+                  onClick: (session: IAnyStateTreeNode) => {
+                    const sessionBlob = new Blob(
+                      [
+                        JSON.stringify(
+                          { session: getSnapshot(session) },
+                          null,
+                          2,
+                        ),
+                      ],
+                      { type: 'text/plain;charset=utf-8' },
+                    )
+                    saveAs(sessionBlob, 'session.json')
+                  },
                 },
-              },
-            ],
-          },
-          {
-            label: 'Add',
-            menuItems: [],
-          },
-          {
-            label: 'Tools',
-            menuItems: [],
-          },
-        ] as Menu[]
 
-        for (const action of self.mutableMenuActions) {
-          if (action.type === 'setMenus') {
-            ret = action.newMenus
-          } else if (action.type === 'appendMenu') {
-            appendMenu({ menus: ret, ...action })
-          } else if (action.type === 'insertMenu') {
-            insertMenu({ menus: ret, ...action })
-          } else if (action.type === 'insertInSubMenu') {
-            insertInSubMenu({ menus: ret, ...action })
-          } else if (action.type === 'appendToSubMenu') {
-            appendToSubMenu({ menus: ret, ...action })
-          } else if (action.type === 'appendToMenu') {
-            appendToMenu({ menus: ret, ...action })
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          } else if (action.type === 'insertInMenu') {
-            insertInMenu({ menus: ret, ...action })
-          }
-        }
-        return ret
+                { type: 'divider' },
+                {
+                  label: 'Open track...',
+                  icon: StorageIcon,
+                  onClick: (session: SessionWithWidgets) => {
+                    if (session.views.length === 0) {
+                      session.notify('Please open a view to add a track first')
+                    } else if (session.views.length > 0) {
+                      const widget = session.addWidget(
+                        'AddTrackWidget',
+                        'addTrackWidget',
+                        { view: session.views[0]!.id },
+                      )
+                      session.showWidget(widget)
+                      if (session.views.length > 1) {
+                        session.notify(
+                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                        )
+                      }
+                    }
+                  },
+                },
+                {
+                  label: 'Open connection...',
+                  icon: Cable,
+                  onClick: (session: SessionWithWidgets) => {
+                    const widget = session.addWidget(
+                      'AddConnectionWidget',
+                      'addConnectionWidget',
+                    )
+                    session.showWidget(widget)
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Add',
+              menuItems: [],
+            },
+            {
+              label: 'Tools',
+              menuItems: [],
+            },
+          ],
+          self.mutableMenuActions,
+        )
       },
     }))
 }
