@@ -14,17 +14,12 @@ exports[`adds menus 1`] = `
             "render": [Function],
           },
         },
-        "label": "Open",
+        "label": "Open session...",
         "onClick": [Function],
       },
       {
         "icon": [Function],
-        "label": "Save",
-        "onClick": [Function],
-      },
-      {
-        "icon": [Function],
-        "label": "Save as...",
+        "label": "Save session as...",
         "onClick": [Function],
       },
       {
@@ -163,17 +158,12 @@ exports[`adds menus 2`] = `
             "render": [Function],
           },
         },
-        "label": "Open",
+        "label": "Open session...",
         "onClick": [Function],
       },
       {
         "icon": [Function],
-        "label": "Save",
-        "onClick": [Function],
-      },
-      {
-        "icon": [Function],
-        "label": "Save as...",
+        "label": "Save session as...",
         "onClick": [Function],
       },
       {
