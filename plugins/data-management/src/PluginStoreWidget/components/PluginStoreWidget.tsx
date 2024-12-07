@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import React, { lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
@@ -42,6 +42,12 @@ const useStyles = makeStyles()(theme => ({
     margin: '1em auto',
     display: 'flex',
   },
+  mr: {
+    marginRight: '0.3em',
+  },
+  m: {
+    margin: '1em',
+  },
 }))
 
 const PluginStoreWidget = observer(function ({
@@ -51,8 +57,8 @@ const PluginStoreWidget = observer(function ({
 }) {
   const { classes } = useStyles()
   const { plugins, error } = useFetchPlugins()
-  const [open, setOpen] = useState(false)
-  const { adminMode } = getSession(model)
+  const session = getSession(model)
+  const { adminMode } = session
   const { pluginManager } = getEnv(model)
 
   return (
@@ -61,7 +67,7 @@ const PluginStoreWidget = observer(function ({
         <>
           {!isElectron && (
             <div className={classes.adminBadge}>
-              <InfoOutlinedIcon style={{ marginRight: '0.3em' }} />
+              <InfoOutlinedIcon className={classes.mr} />
               <Typography>
                 You are using the <code>admin-server</code>. Any changes you
                 make will be saved to your configuration file. You also have the
@@ -73,21 +79,17 @@ const PluginStoreWidget = observer(function ({
             className={classes.customPluginButton}
             variant="contained"
             onClick={() => {
-              setOpen(true)
+              session.queueDialog(onClose => [
+                AddCustomPluginDialog,
+                {
+                  model,
+                  onClose,
+                },
+              ])
             }}
           >
             Add custom plugin
           </Button>
-          {open ? (
-            <Suspense fallback={null}>
-              <AddCustomPluginDialog
-                onClose={() => {
-                  setOpen(false)
-                }}
-                model={model}
-              />
-            </Suspense>
-          ) : null}
         </>
       )}
       <TextField
@@ -119,7 +121,7 @@ const PluginStoreWidget = observer(function ({
         >
           <Typography variant="h5">Installed plugins</Typography>
         </AccordionSummary>
-        <div style={{ margin: '1em' }}>
+        <div className={classes.m}>
           <InstalledPluginsList pluginManager={pluginManager} model={model} />
         </div>
       </Accordion>
@@ -143,12 +145,7 @@ const PluginStoreWidget = observer(function ({
               )
             })
             .map(plugin => (
-              <PluginCard
-                key={plugin.name}
-                plugin={plugin}
-                model={model}
-                adminMode={!!adminMode}
-              />
+              <PluginCard key={plugin.name} plugin={plugin} model={model} />
             ))
         ) : (
           <LoadingEllipses />

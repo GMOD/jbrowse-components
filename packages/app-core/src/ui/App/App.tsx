@@ -37,14 +37,15 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface Menu {
+  label: string
+  menuItems: JBMenuItem[]
+}
+
 interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
-    savedSessionNames: string[]
-    menus: {
-      label: string
-      menuItems: JBMenuItem[]
-    }[]
+    menus: () => Menu[]
     snackbarMessages: SnackbarMessage[]
     renameCurrentSession: (arg: string) => void
     popSnackbarMessage: () => unknown

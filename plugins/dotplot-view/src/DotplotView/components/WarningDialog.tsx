@@ -16,19 +16,22 @@ const useStyles = makeStyles()({
   },
 })
 
-interface TrackWarning {
-  configuration: AnyConfigurationModel
-  displays: { warnings: { message: string; effect: string }[] }[]
+interface Warning {
+  message: string
+  effect: string
 }
 
-const WarningDialog = observer(function WarningDialog({
+interface TrackWarning {
+  configuration: AnyConfigurationModel
+  displays: {
+    warnings: Warning[]
+  }[]
+}
+function getTrackWarnings({
   trackWarnings,
-  handleClose,
 }: {
-  handleClose: () => void
   trackWarnings: TrackWarning[]
 }) {
-  const { classes } = useStyles()
   const rows = [] as {
     name: string
     message: string
@@ -44,6 +47,18 @@ const WarningDialog = observer(function WarningDialog({
       rows.push({ name, ...warning, id: `${i}_${j}` })
     }
   }
+  return rows
+}
+
+const WarningDialog = observer(function WarningDialog({
+  trackWarnings,
+  handleClose,
+}: {
+  handleClose: () => void
+  trackWarnings: TrackWarning[]
+}) {
+  const { classes } = useStyles()
+  const rows = getTrackWarnings({ trackWarnings })
   const columns = [
     { field: 'name' },
     { field: 'message', width: measureGridWidth(rows.map(r => r.message)) },

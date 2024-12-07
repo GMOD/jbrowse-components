@@ -14,7 +14,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import type { PluginStoreModel } from '../model'
@@ -35,31 +34,30 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
   },
+  mr: {
+    marginRight: '0.5em',
+  },
 })
 
 const PluginCard = observer(function PluginCard({
   plugin,
   model,
-  adminMode,
 }: {
   plugin: JBrowsePlugin
   model: PluginStoreModel
-  adminMode: boolean
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { runtimePluginDefinitions } = pluginManager
-  // @ts-expect-error
-  const isInstalled = runtimePluginDefinitions.some(d => d.url === plugin.url)
+  const isInstalled = runtimePluginDefinitions.some(
+    d => 'url' in d && d.url === plugin.url,
+  )
   const [tempDisabled, setTempDisabled] = useState(false)
-  const disableButton = isInstalled || tempDisabled
-
-  const rootModel = getParent<any>(model, 3)
-  const { jbrowse } = rootModel
-
+  const { adminMode, jbrowse } = session
+  const { name, authors, description } = plugin
   return (
-    <Card variant="outlined" key={plugin.name} className={classes.card}>
+    <Card variant="outlined" key={name} className={classes.card}>
       <CardContent>
         <Typography variant="h5">
           <Link
@@ -71,22 +69,24 @@ const PluginCard = observer(function PluginCard({
           </Link>
         </Typography>
         <div className={classes.dataField}>
-          <PersonIcon style={{ marginRight: '0.5em' }} />
-          <Typography>{plugin.authors.join(', ')}</Typography>
+          <PersonIcon className={classes.mr} />
+          <Typography>{authors.join(', ')}</Typography>
         </div>
         <Typography className={classes.bold}>Description:</Typography>
-        <Typography>{plugin.description}</Typography>
+        <Typography>{description}</Typography>
       </CardContent>
       <CardActions>
         <Button
           variant="contained"
-          disabled={disableButton}
+          disabled={isInstalled || tempDisabled}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
             if (adminMode) {
-              jbrowse.addPlugin({ name: plugin.name, url: plugin.url })
+              jbrowse.addPlugin(plugin)
             } else if (isSessionWithSessionPlugins(session)) {
               session.addSessionPlugin(plugin)
+            } else {
+              session.notify('No way to install plugin')
             }
             setTempDisabled(true)
           }}

@@ -3,7 +3,7 @@ import type React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import corePlugins from './corePlugins'
-import createRootModel from './rootModel'
+import createRootModel from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'

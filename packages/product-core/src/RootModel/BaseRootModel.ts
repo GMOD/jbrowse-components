@@ -110,9 +110,10 @@ export function BaseRootModelFactory({
        */
       renameCurrentSession(newName: string) {
         if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = newName
-          this.setSession(snapshot)
+          this.setSession({
+            ...getSnapshot(self.session),
+            name: newName,
+          })
         }
       },
     }))

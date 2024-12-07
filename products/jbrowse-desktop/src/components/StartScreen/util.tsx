@@ -8,8 +8,8 @@ import {
 import deepmerge from 'deepmerge'
 
 import corePlugins from '../../corePlugins'
-import JBrowseRootModelFactory from '../../rootModel'
-import sessionModelFactory from '../../sessionModel'
+import JBrowseRootModelFactory from '../../rootModel/rootModel'
+import sessionModelFactory from '../../sessionModel/sessionModel'
 import { fetchCJS } from '../../util'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'

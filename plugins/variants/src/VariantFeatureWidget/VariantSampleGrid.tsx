@@ -126,24 +126,25 @@ export default function VariantSamples(props: {
         />
       ) : null}
 
-      <DataGrid
-        autoHeight
-        rows={rows}
-        hideFooter={rows.length < 100}
-        columns={columns}
-        disableRowSelectionOnClick
-        rowHeight={25}
-        columnHeaderHeight={35}
-        disableColumnMenu
-        slots={{ toolbar: checked ? GridToolbar : null }}
-        slotProps={{
-          toolbar: {
-            printOptions: {
-              disableToolbarButton: true,
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <DataGrid
+          rows={rows}
+          hideFooter={rows.length < 100}
+          columns={columns}
+          disableRowSelectionOnClick
+          rowHeight={25}
+          columnHeaderHeight={35}
+          disableColumnMenu
+          slots={{ toolbar: checked ? GridToolbar : null }}
+          slotProps={{
+            toolbar: {
+              printOptions: {
+                disableToolbarButton: true,
+              },
             },
-          },
-        }}
-      />
+          }}
+        />
+      </div>
     </BaseCard>
   )
 }

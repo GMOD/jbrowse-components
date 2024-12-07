@@ -8,7 +8,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
-import type { DesktopRootModel } from '../rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type {

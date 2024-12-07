@@ -10,31 +10,37 @@ import JBrowse from './JBrowse'
 import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
-import JBrowseRootModelFactory from '../rootModel'
-import sessionModelFactory from '../sessionModel'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
+import sessionModelFactory from '../sessionModel/sessionModel'
 
 import type { SnapshotIn } from 'mobx-state-tree'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
-;(configSnapshot as any).configuration = {
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
-  },
-}
 
 function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
 
   const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
-  }).create({ jbrowse: initialState || configSnapshot }, { pluginManager })
-  pluginManager.setRootModel(rootModel)
-  pluginManager.configure()
-  return pluginManager
+  }).create(
+    {
+      jbrowse: initialState || {
+        ...configSnapshot,
+        configuration: {
+          rpc: {
+            defaultDriver: 'MainThreadRpcDriver',
+          },
+        },
+      },
+    },
+    { pluginManager },
+  )
+  return pluginManager.setRootModel(rootModel).configure()
 }
 
 test('basic test of electron-mock-ipc', () => {

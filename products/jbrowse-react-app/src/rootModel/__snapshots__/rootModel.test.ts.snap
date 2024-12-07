@@ -42,42 +42,6 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Open session…",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Save session",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Duplicate session",
-        "onClick": [Function],
-      },
-      {
         "type": "divider",
       },
       {
@@ -97,21 +61,6 @@ exports[`adds menus 1`] = `
         "label": "Open connection...",
         "onClick": [Function],
       },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Return to splash screen",
-        "onClick": [Function],
-      },
     ],
   },
   {
@@ -120,59 +69,7 @@ exports[`adds menus 1`] = `
   },
   {
     "label": "Tools",
-    "menuItems": [
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Undo",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Redo",
-        "onClick": [Function],
-      },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Plugin store",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Preferences",
-        "onClick": [Function],
-      },
-    ],
+    "menuItems": [],
   },
 ]
 `;
@@ -219,42 +116,6 @@ exports[`adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Open session…",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Save session",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Duplicate session",
-        "onClick": [Function],
-      },
-      {
         "type": "divider",
       },
       {
@@ -274,21 +135,6 @@ exports[`adds menus 2`] = `
         "label": "Open connection...",
         "onClick": [Function],
       },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Return to splash screen",
-        "onClick": [Function],
-      },
     ],
   },
   {
@@ -297,59 +143,7 @@ exports[`adds menus 2`] = `
   },
   {
     "label": "Tools",
-    "menuItems": [
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Undo",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Redo",
-        "onClick": [Function],
-      },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Plugin store",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Preferences",
-        "onClick": [Function],
-      },
-    ],
+    "menuItems": [],
   },
   {
     "label": "Second Menu",

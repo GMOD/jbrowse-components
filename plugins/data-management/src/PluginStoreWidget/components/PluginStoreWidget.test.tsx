@@ -1,5 +1,6 @@
 import React from 'react'
 
+import DialogQueue from '@jbrowse/app-core/src/ui/App/DialogQueue'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
@@ -52,9 +53,11 @@ function setup(sessionSnapshot?: Record<string, unknown>, adminMode?: boolean) {
 }
 
 test('renders with the available plugins', async () => {
-  const { model } = setup()
+  const { model, session } = setup()
   const { container, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
@@ -66,6 +69,8 @@ test('Installs a session plugin', async () => {
   const { user, session, model } = setup()
   const { findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
@@ -80,6 +85,8 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
   const { user, session, model } = setup({}, true)
   const { findByText, findByLabelText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
@@ -105,6 +112,8 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
   session.jbrowse.addPlugin(plugins.plugins[0])
   const { findByText, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )

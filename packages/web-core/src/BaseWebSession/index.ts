@@ -31,6 +31,7 @@ import {
 
 import { WebSessionConnectionsMixin } from '../SessionConnections'
 
+import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -46,6 +47,10 @@ import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
+
+interface Display {
+  displayId: string
+}
 
 /**
  * #stateModel BaseWebSession
@@ -107,8 +112,9 @@ export function BaseWebSession({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * #volatile
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
+       * this is the current "task" that is being performed in the UI. this is
+       * usually an object of the form
+       *
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
@@ -189,8 +195,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get savedSessions() {
-        return self.root.savedSessions
+      get savedSessionMetadata() {
+        return self.root.savedSessionMetadata
       },
       /**
        * #getter
@@ -198,24 +204,14 @@ export function BaseWebSession({
       get previousAutosaveId() {
         return self.root.previousAutosaveId
       },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.root.savedSessionNames
-      },
+
       /**
        * #getter
        */
       get history() {
         return self.root.history
       },
-      /**
-       * #getter
-       */
-      get menus() {
-        return self.root.menus
-      },
+
       /**
        * #method
        */
@@ -274,10 +270,23 @@ export function BaseWebSession({
       /**
        * #action
        */
-      removeSavedSession(sessionSnapshot: { name: string }) {
-        return self.root.removeSavedSession(sessionSnapshot)
+      deleteSavedSession(id: string) {
+        return self.root.deleteSavedSession(id)
       },
 
+      /**
+       * #action
+       */
+      favoriteSavedSession(id: string) {
+        return self.root.favoriteSavedSession(id)
+      },
+
+      /**
+       * #action
+       */
+      unfavoriteSavedSession(id: string) {
+        return self.root.unfavoriteSavedSession(id)
+      },
       /**
        * #action
        */
@@ -356,7 +365,10 @@ export function BaseWebSession({
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose },
+                {
+                  config,
+                  handleClose,
+                },
               ])
             },
             icon: InfoIcon,
@@ -365,26 +377,25 @@ export function BaseWebSession({
             label: 'Settings',
             priority: 1001,
             disabled: !canEdit,
+            icon: SettingsIcon,
             onClick: () => {
               self.editTrackConfiguration(config)
             },
-            icon: SettingsIcon,
           },
           {
             label: 'Delete track',
             priority: 1000,
             disabled: !canEdit || isRefSeq,
-            onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
+            onClick: () => {
+              self.deleteTrackConf(config)
+            },
           },
           {
             label: 'Copy track',
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              interface Display {
-                displayId: string
-              }
               const snap = structuredClone(getSnapshot(config)) as {
                 [key: string]: unknown
                 displays: Display[]
@@ -407,6 +418,13 @@ export function BaseWebSession({
             icon: CopyIcon,
           },
         ]
+      },
+
+      /**
+       * #method
+       */
+      menus(): Menu[] {
+        return self.root.menus()
       },
     }))
     .actions(self => ({
@@ -432,9 +450,10 @@ export function BaseWebSession({
       // @ts-expect-error
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { connectionInstances, ...rest } = snapshot || {}
-      // connectionInstances schema changed from object to an array, so any
-      // old connectionInstances as object is in snapshot, filter it out
-      // https://github.com/GMOD/jbrowse-components/issues/1903
+
+      // connectionInstances schema changed from object to an array, so any old
+      // connectionInstances as object is in snapshot, filter it out
+      // xref https://github.com/GMOD/jbrowse-components/issues/1903
       return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })

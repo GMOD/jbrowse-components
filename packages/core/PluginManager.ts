@@ -256,6 +256,7 @@ export default class PluginManager {
 
   setRootModel(rootModel: AbstractRootModel) {
     this.rootModel = rootModel
+    return this
   }
 
   configure() {

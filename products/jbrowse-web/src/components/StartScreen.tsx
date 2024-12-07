@@ -1,20 +1,10 @@
-import React, { lazy, useEffect, useState } from 'react'
+import React, { lazy, useState } from 'react'
 
-import { ErrorMessage, LogoFull } from '@jbrowse/core/ui'
-import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
+import { LogoFull } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import SettingsIcon from '@mui/icons-material/Settings'
-import WarningIcon from '@mui/icons-material/Warning'
-import {
-  Container,
-  Grid,
-  IconButton,
-  List,
-  ListItemIcon,
-  ListSubheader,
-  Menu,
-  MenuItem,
-  Typography,
-} from '@mui/material'
+import { Container, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import {
@@ -22,12 +12,11 @@ import {
   NewLinearGenomeViewSession,
   NewSVInspectorSession,
 } from './NewSessionCards'
-import RecentSessionCard from './RecentSessionCard'
+import RecentSessionList from './RecentSessionList'
 
 import type { WebRootModel } from '../rootModel/rootModel'
 
 // lazies
-const DeleteSessionDialog = lazy(() => import('./DeleteSessionDialog'))
 const FactoryResetDialog = lazy(
   () => import('@jbrowse/core/ui/FactoryResetDialog'),
 )
@@ -39,18 +28,18 @@ const useStyles = makeStyles()(theme => ({
     marginTop: 8,
   },
   header: {
-    margin: 8, // theme.spacing(2),
+    margin: 8,
+  },
+  flex: {
+    display: 'flex',
+    width: '100%',
   },
   settings: {
     float: 'right',
   },
-  list: {
-    overflow: 'auto',
-    maxHeight: 200,
-  },
 }))
 
-export default function StartScreen({
+const StartScreen = observer(function ({
   rootModel,
   onFactoryReset,
 }: {
@@ -58,48 +47,7 @@ export default function StartScreen({
   onFactoryReset: () => void
 }) {
   const { classes } = useStyles()
-
-  const [sessionNames, setSessionNames] = useState<string[]>([])
-  const [sessionToDelete, setSessionToDelete] = useState<string>()
-  const [sessionToLoad, setSessionToLoad] = useState<string>()
-  const [error, setError] = useState<unknown>()
-  const [updateSessionsList, setUpdateSessionsList] = useState(true)
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        if (sessionToLoad) {
-          rootModel.activateSession(sessionToLoad)
-        }
-      } catch (e) {
-        setError(e)
-      }
-    })()
-  }, [rootModel, sessionToLoad])
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        if (updateSessionsList) {
-          setUpdateSessionsList(false)
-
-          setSessionNames(
-            rootModel.savedSessions.map(s => s.name).filter(notEmpty),
-          )
-        }
-      } catch (e) {
-        setError(e)
-      }
-    })()
-  }, [rootModel.savedSessions, updateSessionsList])
-
-  const lastAutosavedSession = JSON.parse(
-    localStorageGetItem(rootModel.previousAutosaveId) || '{}',
-  ).session
 
   return (
     <>
@@ -114,103 +62,35 @@ export default function StartScreen({
           />
         </React.Suspense>
       ) : null}
-      {sessionToDelete ? (
-        <React.Suspense fallback={null}>
-          <DeleteSessionDialog
-            rootModel={rootModel}
-            sessionToDelete={sessionToDelete}
-            onClose={update => {
-              setSessionToDelete(undefined)
-              setUpdateSessionsList(update)
-            }}
-          />
-        </React.Suspense>
-      ) : null}
-      <IconButton
+      <CascadingMenuButton
         className={classes.settings}
-        onClick={event => {
-          event.stopPropagation()
-          setMenuAnchorEl(event.currentTarget)
-        }}
+        menuItems={[
+          {
+            label: 'Reset',
+            onClick: () => {
+              setReset(true)
+            },
+          },
+        ]}
       >
         <SettingsIcon />
-      </IconButton>
+      </CascadingMenuButton>
       <Container maxWidth="md">
         <LogoFull />
         <div className={classes.newSession}>
           <Typography variant="h5" className={classes.header}>
             Start a new session
           </Typography>
-          <Grid container spacing={4}>
-            <Grid item>
-              <NewEmptySession rootModel={rootModel} />
-            </Grid>
-            <Grid item>
-              <NewLinearGenomeViewSession rootModel={rootModel} />
-            </Grid>
-            <Grid item>
-              <NewSVInspectorSession rootModel={rootModel} />
-            </Grid>
-          </Grid>
+          <div className={classes.flex}>
+            <NewEmptySession rootModel={rootModel} />
+            <NewLinearGenomeViewSession rootModel={rootModel} />
+            <NewSVInspectorSession rootModel={rootModel} />
+          </div>
         </div>
-        <div>
-          <Typography variant="h5" className={classes.header}>
-            Recent sessions
-          </Typography>
-          <List className={classes.list}>
-            {sessionNames.map(name => (
-              <RecentSessionCard
-                key={name}
-                sessionName={name}
-                onClick={() => {
-                  setSessionToLoad(name)
-                }}
-                onDelete={() => {
-                  setSessionToDelete(name)
-                }}
-              />
-            ))}
-          </List>
-          {lastAutosavedSession ? (
-            <>
-              <Typography variant="h5" className={classes.header}>
-                Last autosave session
-              </Typography>
-              <List className={classes.list}>
-                <RecentSessionCard
-                  sessionName={lastAutosavedSession.name}
-                  onClick={() => {
-                    rootModel.loadAutosaveSession()
-                  }}
-                />
-              </List>
-            </>
-          ) : null}
-          {error ? <ErrorMessage error={error} /> : null}
-        </div>
+        <RecentSessionList rootModel={rootModel} />
       </Container>
-
-      <Menu
-        anchorEl={menuAnchorEl}
-        keepMounted
-        open={Boolean(menuAnchorEl)}
-        onClose={() => {
-          setMenuAnchorEl(null)
-        }}
-      >
-        <ListSubheader>Advanced Settings</ListSubheader>
-        <MenuItem
-          onClick={() => {
-            setReset(true)
-            setMenuAnchorEl(null)
-          }}
-        >
-          <ListItemIcon>
-            <WarningIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Reset</Typography>
-        </MenuItem>
-      </Menu>
     </>
   )
-}
+})
+
+export default StartScreen

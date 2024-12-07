@@ -169,7 +169,7 @@ exports[`renders one track, one region 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r6:"
+                    id=":r8:"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -217,6 +217,7 @@ exports[`renders one track, one region 1`] = `
                       class="css-w4cd9x"
                     >
                       <span
+                        aria-hidden="true"
                         class="notranslate"
                       >
                         ​
@@ -720,7 +721,7 @@ exports[`renders two tracks, two regions 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r8:"
+                    id=":rc:"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -768,6 +769,7 @@ exports[`renders two tracks, two regions 1`] = `
                       class="css-w4cd9x"
                     >
                       <span
+                        aria-hidden="true"
                         class="notranslate"
                       >
                         ​

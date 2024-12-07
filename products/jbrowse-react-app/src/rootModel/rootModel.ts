@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { RootAppMenuMixin } from '@jbrowse/app-core'
+import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -95,8 +95,17 @@ export default function RootModel({
     )
 
     .volatile(self => ({
+      /**
+       * #volatile
+       */
       version,
+      /**
+       * #volatile
+       */
       pluginsUpdated: false,
+      /**
+       * #volatile
+       */
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -107,12 +116,23 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
+      /**
+       * #volatile
+       */
       hydrateFn,
+      /**
+       * #volatile
+       */
       createRootFn,
+      /**
+       * #volatile
+       */
       textSearchManager: new TextSearchManager(pluginManager),
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
     }))
-
     .actions(self => {
       return {
         afterCreate() {
@@ -155,23 +175,20 @@ export default function RootModel({
          */
         setDefaultSession() {
           const { defaultSession } = self.jbrowse
-          const newSession = {
+          this.setSession({
             ...defaultSession,
             name: `${defaultSession.name} ${new Date().toLocaleString()}`,
-          }
-
-          this.setSession(newSession)
+          })
         },
         /**
          * #action
          */
         renameCurrentSession(sessionName: string) {
           if (self.session) {
-            const snapshot = JSON.parse(
-              JSON.stringify(getSnapshot(self.session)),
-            )
-            snapshot.name = sessionName
-            this.setSession(snapshot)
+            this.setSession({
+              ...getSnapshot(self.session),
+              name: sessionName,
+            })
           }
         },
 
@@ -183,86 +200,100 @@ export default function RootModel({
         },
       }
     })
-    .volatile(() => ({
-      menus: [
-        {
-          label: 'File',
-          menuItems: [
+    .views(self => ({
+      /**
+       * #method
+       */
+      menus() {
+        return processMutableMenuActions(
+          [
             {
-              label: 'New session',
-              icon: AddIcon,
+              label: 'File',
+              menuItems: [
+                {
+                  label: 'New session',
+                  icon: AddIcon,
 
-              onClick: (session: any) => {
-                session.setDefaultSession()
-              },
-            },
-            {
-              label: 'Import session…',
-              icon: PublishIcon,
-              onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'ImportSessionWidget',
-                  'importSessionWidget',
-                )
-                session.showWidget(widget)
-              },
-            },
-            {
-              label: 'Export session',
-              icon: GetAppIcon,
-              onClick: (session: IAnyStateTreeNode) => {
-                const sessionBlob = new Blob(
-                  [JSON.stringify({ session: getSnapshot(session) }, null, 2)],
-                  { type: 'text/plain;charset=utf-8' },
-                )
-                saveAs(sessionBlob, 'session.json')
-              },
-            },
-
-            { type: 'divider' },
-            {
-              label: 'Open track...',
-              icon: StorageIcon,
-              onClick: (session: SessionWithWidgets) => {
-                if (session.views.length === 0) {
-                  session.notify('Please open a view to add a track first')
-                } else if (session.views.length > 0) {
-                  const widget = session.addWidget(
-                    'AddTrackWidget',
-                    'addTrackWidget',
-                    { view: session.views[0]!.id },
-                  )
-                  session.showWidget(widget)
-                  if (session.views.length > 1) {
-                    session.notify(
-                      'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                  onClick: (session: any) => {
+                    session.setDefaultSession()
+                  },
+                },
+                {
+                  label: 'Import session…',
+                  icon: PublishIcon,
+                  onClick: (session: SessionWithWidgets) => {
+                    const widget = session.addWidget(
+                      'ImportSessionWidget',
+                      'importSessionWidget',
                     )
-                  }
-                }
-              },
+                    session.showWidget(widget)
+                  },
+                },
+                {
+                  label: 'Export session',
+                  icon: GetAppIcon,
+                  onClick: (session: IAnyStateTreeNode) => {
+                    const sessionBlob = new Blob(
+                      [
+                        JSON.stringify(
+                          { session: getSnapshot(session) },
+                          null,
+                          2,
+                        ),
+                      ],
+                      { type: 'text/plain;charset=utf-8' },
+                    )
+                    saveAs(sessionBlob, 'session.json')
+                  },
+                },
+
+                { type: 'divider' },
+                {
+                  label: 'Open track...',
+                  icon: StorageIcon,
+                  onClick: (session: SessionWithWidgets) => {
+                    if (session.views.length === 0) {
+                      session.notify('Please open a view to add a track first')
+                    } else if (session.views.length > 0) {
+                      const widget = session.addWidget(
+                        'AddTrackWidget',
+                        'addTrackWidget',
+                        { view: session.views[0]!.id },
+                      )
+                      session.showWidget(widget)
+                      if (session.views.length > 1) {
+                        session.notify(
+                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                        )
+                      }
+                    }
+                  },
+                },
+                {
+                  label: 'Open connection...',
+                  icon: Cable,
+                  onClick: (session: SessionWithWidgets) => {
+                    const widget = session.addWidget(
+                      'AddConnectionWidget',
+                      'addConnectionWidget',
+                    )
+                    session.showWidget(widget)
+                  },
+                },
+              ],
             },
             {
-              label: 'Open connection...',
-              icon: Cable,
-              onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'AddConnectionWidget',
-                  'addConnectionWidget',
-                )
-                session.showWidget(widget)
-              },
+              label: 'Add',
+              menuItems: [],
+            },
+            {
+              label: 'Tools',
+              menuItems: [],
             },
           ],
-        },
-        {
-          label: 'Add',
-          menuItems: [],
-        },
-        {
-          label: 'Tools',
-          menuItems: [],
-        },
-      ] as Menu[],
+          self.mutableMenuActions,
+        )
+      },
     }))
 }
 

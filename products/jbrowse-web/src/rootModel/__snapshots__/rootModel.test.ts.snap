@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Root MST model adds menus 1`] = `
+exports[`adds menus 1`] = `
 [
   {
     "label": "File",
@@ -14,26 +14,61 @@ exports[`Root MST model adds menus 1`] = `
             "render": [Function],
           },
         },
-        "label": "Open",
+        "label": "New session",
         "onClick": [Function],
       },
       {
-        "icon": [Function],
-        "label": "Save",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Import session...",
         "onClick": [Function],
       },
       {
-        "icon": [Function],
-        "label": "Save as...",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Export session",
         "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Duplicate session",
+        "onClick": [Function],
+      },
+      {
+        "label": "Pre-configured sessions...",
+        "subMenu": [],
+      },
+      {
+        "label": "Recent sessions...",
+        "subMenu": [
+          {
+            "label": "No autosaves found",
+            "onClick": [Function],
+          },
+        ],
+        "type": "subMenu",
       },
       {
         "type": "divider",
-      },
-      {
-        "icon": [Function],
-        "label": "Open assembly...",
-        "onClick": [Function],
       },
       {
         "icon": {
@@ -64,19 +99,7 @@ exports[`Root MST model adds menus 1`] = `
             "render": [Function],
           },
         },
-        "label": "Return to start screen",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Exit",
+        "label": "Return to splash screen",
         "onClick": [Function],
       },
     ],
@@ -128,15 +151,8 @@ exports[`Root MST model adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Preferences",
+        "icon": [Function],
+        "label": "Assembly manager",
         "onClick": [Function],
       },
       {
@@ -148,7 +164,7 @@ exports[`Root MST model adds menus 1`] = `
             "render": [Function],
           },
         },
-        "label": "Open assembly manager",
+        "label": "Preferences",
         "onClick": [Function],
       },
     ],
@@ -156,7 +172,7 @@ exports[`Root MST model adds menus 1`] = `
 ]
 `;
 
-exports[`Root MST model adds menus 2`] = `
+exports[`adds menus 2`] = `
 [
   {
     "label": "File",
@@ -170,26 +186,61 @@ exports[`Root MST model adds menus 2`] = `
             "render": [Function],
           },
         },
-        "label": "Open",
+        "label": "New session",
         "onClick": [Function],
       },
       {
-        "icon": [Function],
-        "label": "Save",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Import session...",
         "onClick": [Function],
       },
       {
-        "icon": [Function],
-        "label": "Save as...",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Export session",
         "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Duplicate session",
+        "onClick": [Function],
+      },
+      {
+        "label": "Pre-configured sessions...",
+        "subMenu": [],
+      },
+      {
+        "label": "Recent sessions...",
+        "subMenu": [
+          {
+            "label": "No autosaves found",
+            "onClick": [Function],
+          },
+        ],
+        "type": "subMenu",
       },
       {
         "type": "divider",
-      },
-      {
-        "icon": [Function],
-        "label": "Open assembly...",
-        "onClick": [Function],
       },
       {
         "icon": {
@@ -220,19 +271,7 @@ exports[`Root MST model adds menus 2`] = `
             "render": [Function],
           },
         },
-        "label": "Return to start screen",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Exit",
+        "label": "Return to splash screen",
         "onClick": [Function],
       },
     ],
@@ -284,15 +323,8 @@ exports[`Root MST model adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Preferences",
+        "icon": [Function],
+        "label": "Assembly manager",
         "onClick": [Function],
       },
       {
@@ -304,7 +336,7 @@ exports[`Root MST model adds menus 2`] = `
             "render": [Function],
           },
         },
-        "label": "Open assembly manager",
+        "label": "Preferences",
         "onClick": [Function],
       },
     ],
@@ -342,4 +374,70 @@ exports[`Root MST model adds menus 2`] = `
 ]
 `;
 
-exports[`Root MST model creates with defaults 1`] = `{}`;
+exports[`adds track and connection configs to an assembly 1`] = `
+{
+  "aliases": [
+    "assemblyA",
+  ],
+  "name": "assembly1",
+  "sequence": {
+    "adapter": {
+      "adapterId": "sequenceConfigAdapterId",
+      "features": [
+        {
+          "end": 10,
+          "refName": "ctgA",
+          "seq": "cattgttgcg",
+          "start": 0,
+          "uniqueId": "firstId",
+        },
+      ],
+      "type": "FromConfigSequenceAdapter",
+    },
+    "displays": [
+      {
+        "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
+        "type": "LinearReferenceSequenceDisplay",
+      },
+      {
+        "displayId": "sequenceConfigId-LinearGCContentDisplay",
+        "type": "LinearGCContentDisplay",
+      },
+    ],
+    "trackId": "sequenceConfigId",
+    "type": "ReferenceSequenceTrack",
+  },
+}
+`;
+
+exports[`adds track and connection configs to an assembly 2`] = `
+{
+  "displays": [
+    {
+      "displayId": "trackId0-LinearBasicDisplay",
+      "type": "LinearBasicDisplay",
+    },
+    {
+      "displayId": "trackId0-LinearArcDisplay",
+      "type": "LinearArcDisplay",
+    },
+  ],
+  "trackId": "trackId0",
+  "type": "FeatureTrack",
+}
+`;
+
+exports[`adds track and connection configs to an assembly 3`] = `
+{
+  "connectionId": "connectionId0",
+  "dataDirLocation": {
+    "internetAccountId": undefined,
+    "internetAccountPreAuthorization": undefined,
+    "locationType": "UriLocation",
+    "uri": "http://mysite.com/jbrowse/data/",
+  },
+  "type": "JBrowse1Connection",
+}
+`;
+
+exports[`creates with defaults 1`] = `{}`;

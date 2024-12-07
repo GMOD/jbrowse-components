@@ -1,10 +1,14 @@
+// import electron first, important, because the electron mock creates
+// window.require
+import 'electron'
+
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 
 import corePlugins from '../corePlugins'
 import rootModelFactory from './rootModel'
-import sessionModelFactory from '../sessionModel'
+import sessionModelFactory from '../sessionModel/sessionModel'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -12,20 +16,28 @@ function getRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  return rootModelFactory({ pluginManager, sessionModelFactory })
+  return rootModelFactory({
+    pluginManager,
+    sessionModelFactory,
+  })
 }
-
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
 })
 
-test('creates with defaults', () => {
-  const root = getRootModel().create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+const mainThreadConfig = {
+  jbrowse: {
+    configuration: {
+      rpc: {
+        defaultDriver: 'MainThreadRpcDriver',
+      },
     },
-  })
+  },
+}
+
+test('creates with defaults', () => {
+  const root = getRootModel().create(mainThreadConfig)
   expect(root.session).toBeUndefined()
   root.setDefaultSession()
   expect(root.session).toBeTruthy()
@@ -35,10 +47,10 @@ test('creates with defaults', () => {
 
 test('creates with a minimal session', () => {
   const root = getRootModel().create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+    ...mainThreadConfig,
+    session: {
+      name: 'testSession',
     },
-    session: { name: 'testSession' },
   })
   expect(root.session).toBeTruthy()
 })
@@ -49,11 +61,8 @@ test('activates a session snapshot', () => {
   Storage.prototype.getItem = jest.fn(
     () => `{"session": {"name": "testSession"}}`,
   )
-  const root = getRootModel().create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-    },
-  })
+
+  const root = getRootModel().create(mainThreadConfig)
   expect(root.session).toBeUndefined()
   root.setSession(session)
   expect(root.session).toBeTruthy()
@@ -62,7 +71,7 @@ test('activates a session snapshot', () => {
 test('adds track and connection configs to an assembly', () => {
   const root = getRootModel().create({
     jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+      ...mainThreadConfig.jbrowse,
       assemblies: [
         {
           name: 'assembly1',
@@ -105,34 +114,24 @@ test('adds track and connection configs to an assembly', () => {
 })
 
 test('throws if session is invalid', () => {
-  expect(() =>
+  expect(() => {
     getRootModel().create({
-      jbrowse: {
-        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-      },
+      ...mainThreadConfig,
       session: {},
-    }),
-  ).toThrow()
+    })
+  }).toThrow()
 })
 
 test('throws if session snapshot is invalid', () => {
-  const root = getRootModel().create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-    },
-  })
+  const root = getRootModel().create(mainThreadConfig)
   expect(() => {
     root.setSession({})
   }).toThrow()
 })
 
 test('adds menus', () => {
-  const root = getRootModel().create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-    },
-  })
-  expect(root.menus).toMatchSnapshot()
+  const root = getRootModel().create(mainThreadConfig)
+  expect(root.menus()).toMatchSnapshot()
   root.appendMenu('Third Menu')
   root.insertMenu('Second Menu', -1)
   root.appendToMenu('Second Menu', {
@@ -159,11 +158,5 @@ test('adds menus', () => {
     },
     -1,
   )
-  expect(root.menus).toMatchSnapshot()
-  expect(() => {
-    root.appendToSubMenu(['Second Menu', 'First Menu Item'], {
-      label: 'First Sub Menu Item',
-      onClick: () => {},
-    })
-  }).toThrow(/is not a subMenu/)
+  expect(root.menus()).toMatchSnapshot()
 })

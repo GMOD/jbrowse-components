@@ -101,7 +101,7 @@ exports[`renders with the available plugins 1`] = `
               role="region"
             >
               <div
-                style="margin: 1em;"
+                class="css-13k7ai2-m"
               >
                 <ul
                   class="MuiList-root MuiList-padding css-b7dj7n-MuiList-root"
@@ -827,10 +827,9 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q07jlo-MuiSvgIcon-root-mr"
                       data-testid="PersonIcon"
                       focusable="false"
-                      style="margin-right: 0.5em;"
                       viewBox="0 0 24 24"
                     >
                       <path

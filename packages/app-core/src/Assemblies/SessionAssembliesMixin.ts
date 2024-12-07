@@ -39,6 +39,28 @@ export function SessionAssembliesMixin(
         /**
          * #action
          */
+        addAssembly(conf: AnyConfiguration) {
+          if (self.adminMode) {
+            self.jbrowse.addAssemblyConf(conf)
+          } else {
+            this.addSessionAssembly(conf)
+          }
+        },
+
+        /**
+         * #action
+         */
+        removeAssembly(name: string) {
+          if (self.adminMode) {
+            self.jbrowse.removeAssemblyConf(name)
+          } else {
+            this.removeSessionAssembly(name)
+          }
+        },
+
+        /**
+         * #action
+         */
         removeSessionAssembly(assemblyName: string) {
           const elt = self.sessionAssemblies.find(a => a.name === assemblyName)
           if (elt) {

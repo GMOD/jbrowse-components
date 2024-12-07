@@ -1,5 +1,3 @@
-/** MST mixin for managing a queue of dialogs at the level of the session */
-
 import { types } from 'mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
@@ -52,13 +50,9 @@ export function DialogQueueSessionMixin(_pluginManager: PluginManager) {
     }))
 }
 
-/** Session mixin MST type for a session that has `queueOfDialogs`, etc. */
 export type SessionWithDialogsType = ReturnType<typeof DialogQueueSessionMixin>
-
-/** Instance of a session that has dialogs */
 export type SessionWithDialogs = Instance<SessionWithDialogsType>
 
-/** Type guard for SessionWithDialogs */
 export function isSessionWithDialogs(
   session: IAnyStateTreeNode,
 ): session is SessionWithDialogs {

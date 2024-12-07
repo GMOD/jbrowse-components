@@ -230,11 +230,11 @@ const FileSelector = observer(function (props: {
         <Menu
           open
           anchorEl={anchorEl}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
           onClose={() => {
             setAnchorEl(null)
           }}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
           {hiddenAccounts.map(id => {
             const { internetAccountId, name } = map[id]!

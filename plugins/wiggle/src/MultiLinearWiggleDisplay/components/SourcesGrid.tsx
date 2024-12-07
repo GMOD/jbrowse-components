@@ -127,21 +127,18 @@ function SourcesGrid({
             {
               field: 'color',
               headerName: 'Color',
-              renderCell: params => {
-                const { value, id } = params
-                return (
-                  <ColorPicker
-                    color={value || 'blue'}
-                    onChange={c => {
-                      const elt = rows.find(f => f.name === id)
-                      if (elt) {
-                        elt.color = c
-                      }
-                      onChange([...rows])
-                    }}
-                  />
-                )
-              },
+              renderCell: ({ value, id }) => (
+                <ColorPicker
+                  color={value || 'blue'}
+                  onChange={c => {
+                    const elt = rows.find(f => f.name === id)
+                    if (elt) {
+                      elt.color = c
+                    }
+                    onChange([...rows])
+                  }}
+                />
+              ),
             },
             {
               field: 'name',

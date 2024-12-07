@@ -16,8 +16,9 @@ export function createTestSession(args?: {
     adminMode = false,
     jbrowseConfig = {},
   } = args || {}
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
 
   const root = RootModel({
     pluginManager,
@@ -26,12 +27,14 @@ export function createTestSession(args?: {
   }).create(
     {
       jbrowse: {
+        ...jbrowseConfig,
         configuration: {
-          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          rpc: {
+            defaultDriver: 'MainThreadRpcDriver',
+          },
           // @ts-expect-error
           ...jbrowseConfig.configuration,
         },
-        ...jbrowseConfig,
       },
     },
     { pluginManager },
