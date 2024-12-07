@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA, Save, SaveAs } from '@jbrowse/core/ui/Icons'
+import { Cable, DNA, SaveAs } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -149,7 +149,7 @@ export default function rootModelFactory({
               label: 'File',
               menuItems: [
                 {
-                  label: 'Open',
+                  label: 'Open session...',
                   icon: OpenIcon,
                   onClick: async () => {
                     try {
@@ -164,21 +164,7 @@ export default function rootModelFactory({
                   },
                 },
                 {
-                  label: 'Save',
-                  icon: Save,
-                  onClick: async () => {
-                    if (self.session) {
-                      try {
-                        await self.saveSession(getSaveSession(self))
-                      } catch (e) {
-                        console.error(e)
-                        self.session?.notifyError(`${e}`, e)
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Save as...',
+                  label: 'Save session as...',
                   icon: SaveAs,
                   onClick: async () => {
                     try {
