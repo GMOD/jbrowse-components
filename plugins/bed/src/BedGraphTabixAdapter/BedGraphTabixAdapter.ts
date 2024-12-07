@@ -76,36 +76,48 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = query
       const { bedGraph } = await this.configure()
-      const names = (await this.getNames())?.slice(3) || []
-      await bedGraph.getLines(refName, start, end, {
-        lineCallback: (line, fileOffset) => {
-          const [refName, s, e, ...rest] = line.split('\t')
-          for (let j = 0; j < rest.length; j++) {
-            const uniqueId = `${this.id}-${fileOffset}-${j}`
-            const start = +s!
-            const end = +e!
-            const score = +rest[j]!
-            const source = names[j] || `col${j}`
-            if (score) {
-              observer.next(
-                new SimpleFeature({
-                  id: uniqueId,
-                  data: {
-                    refName,
-                    start,
-                    end,
-                    score,
-                    source,
-                  },
-                }),
-              )
+      const meta = await bedGraph.getMetadata()
+      const { columnNumbers } = meta
+      const colRef = columnNumbers.ref - 1
+      const colStart = columnNumbers.start - 1
+      const colEnd = columnNumbers.end - 1
+      const same = colStart === colEnd
+      const names = (await this.getNames())?.slice(same ? 2 : 3) || []
+      await bedGraph.getLines(
+        query.refName,
+        query.start + (same ? -1 : 0),
+        query.end,
+        {
+          lineCallback: (line, fileOffset) => {
+            const cols = line.split('\t')
+            const refName = cols[colRef]!
+            const start = +cols[colStart]!
+            const end = +(same ? start + 1 : cols[colEnd]!)
+            const rest = cols.slice(colEnd + 1)
+            for (let j = 0; j < rest.length; j++) {
+              const uniqueId = `${this.id}-${fileOffset}-${j}`
+              const score = Math.abs(+rest[j]!)
+              const source = names[j] || `col${j}`
+              if (score) {
+                observer.next(
+                  new SimpleFeature({
+                    id: uniqueId,
+                    data: {
+                      refName,
+                      start,
+                      end,
+                      score,
+                      source,
+                    },
+                  }),
+                )
+              }
             }
-          }
+          },
+          ...opts,
         },
-        ...opts,
-      })
+      )
       observer.complete()
     })
   }

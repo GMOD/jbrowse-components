@@ -4,6 +4,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { featureData } from '../util'
 
@@ -71,6 +72,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
+    const { stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const meta = await this.bed.getMetadata()
       const { columnNumbers } = meta
@@ -78,8 +80,14 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const names = await this.getNames()
+      let start = performance.now()
+      checkStopToken(stopToken)
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line, fileOffset) => {
+          if (performance.now() - start > 200) {
+            checkStopToken(stopToken)
+            start = performance.now()
+          }
           observer.next(
             new SimpleFeature(
               featureData({
