@@ -15,7 +15,7 @@ export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
   constructor(public pluginManager: PluginManager) {
-    super({})
+    super()
   }
 
   async serializeArguments(

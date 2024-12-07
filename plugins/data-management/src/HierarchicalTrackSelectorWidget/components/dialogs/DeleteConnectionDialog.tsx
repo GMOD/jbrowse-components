@@ -26,7 +26,7 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
 }) {
   const { connectionConf, name } = deleteDialogDetails
   return (
-    <Dialog open title={`Delete connection "${name}"`}>
+    <Dialog open title={`Delete connection "${name}"`} onClose={handleClose}>
       <DialogContent>
         <DialogContentText>
           Are you sure you want to delete this connection?

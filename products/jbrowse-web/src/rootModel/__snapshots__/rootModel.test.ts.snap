@@ -54,10 +54,6 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "label": "Pre-configured sessions...",
-        "subMenu": [],
-      },
-      {
         "label": "Recent sessions...",
         "subMenu": [
           {
@@ -224,10 +220,6 @@ exports[`adds menus 2`] = `
         },
         "label": "Duplicate session",
         "onClick": [Function],
-      },
-      {
-        "label": "Pre-configured sessions...",
-        "subMenu": [],
       },
       {
         "label": "Recent sessions...",

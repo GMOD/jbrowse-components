@@ -13,8 +13,8 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "C",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -73,8 +73,8 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "C",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -139,8 +139,8 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "G",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "ID": undefined,
     "INFO": {
       "AC1": [
         1,
@@ -205,8 +205,8 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "A",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -265,8 +265,8 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "ct",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,

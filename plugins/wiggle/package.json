@@ -36,7 +36,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.3",
     "@gmod/bbi": "^5.0.0",
     "@mui/icons-material": "^6.0.0",
     "@mui/x-charts-vendor": "^7.12.0",

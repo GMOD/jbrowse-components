@@ -29,7 +29,7 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [currLayout, setCurrLayout] = useState(structuredClone(sources || []))
-  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', true)
+  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', false)
   return (
     <DraggableDialog
       open

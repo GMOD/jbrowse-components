@@ -19,11 +19,6 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
   rendererType: string
 }
 
-/**
- * call a synteny renderer with the given args
- * param views: a set of views that each contain a set of regions
- * used instead of passing regions directly as in render()
- */
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 

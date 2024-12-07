@@ -40,9 +40,13 @@ export default function LoadingEllipses({
   variant = 'body2',
   ...rest
 }: Props) {
-  const { classes } = useStyles()
+  const { cx, classes } = useStyles()
   return (
-    <Typography className={classes.dots} {...rest} variant={variant}>
+    <Typography
+      className={cx(classes.dots, rest.className)}
+      {...rest}
+      variant={variant}
+    >
       {message || 'Loading'}
     </Typography>
   )

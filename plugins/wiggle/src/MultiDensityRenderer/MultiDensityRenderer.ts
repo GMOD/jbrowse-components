@@ -6,7 +6,7 @@ import { drawDensity } from '../drawDensity'
 import type { MultiRenderArgsDeserialized as MultiArgs } from '../WiggleBaseRenderer'
 import type { Feature } from '@jbrowse/core/util'
 
-export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
+export default class MultiDensityPlotRenderer extends WiggleBaseRenderer {
   // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { sources, features } = props

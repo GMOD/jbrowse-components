@@ -42,9 +42,8 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   args: Record<string, unknown> = {},
 ): any {
   if (!slotPath) {
-    return JSON.parse(JSON.stringify(getSnapshot(confObject)))
-  }
-  if (typeof slotPath === 'string') {
+    return structuredClone(getSnapshot(confObject))
+  } else if (typeof slotPath === 'string') {
     let slot = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
     if (
@@ -66,15 +65,13 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       //     schemaType.name
       //   })`,
       // )
+    } else {
+      const val = slot.expr ? slot.expr.evalSync(args) : slot
+      return isStateTreeNode(val)
+        ? JSON.parse(JSON.stringify(getSnapshot(val)))
+        : val
     }
-
-    const val = slot.expr ? slot.expr.evalSync(args) : slot
-    return isStateTreeNode(val)
-      ? JSON.parse(JSON.stringify(getSnapshot(val)))
-      : val
-  }
-
-  if (Array.isArray(slotPath)) {
+  } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
       const newPath = slotPath.slice(1)
@@ -172,39 +169,35 @@ export function isBareConfigurationSchemaType(
 export function isConfigurationSchemaType(
   thing: unknown,
 ): thing is AnyConfigurationSchemaType {
+  // written as a series of if-statements instead of a big logical because this
+  // construction gives much better debugging backtraces.
+
+  // also, note that the order of these statements matters, because for example
+  // some union types are also optional types
+
   if (!isType(thing)) {
     return false
-  }
-
-  // written as a series of if-statements instead of a big logical OR
-  // because this construction gives much better debugging backtraces.
-
-  // also, note that the order of these statements matters, because
-  // for example some union types are also optional types
-
-  if (isBareConfigurationSchemaType(thing)) {
+  } else if (isBareConfigurationSchemaType(thing)) {
     return true
-  }
-
-  if (isUnionType(thing)) {
+  } else if (isUnionType(thing)) {
     return getUnionSubTypes(thing).every(
       t => isConfigurationSchemaType(t) || t.name === 'undefined',
     )
-  }
-
-  if (isOptionalType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+  } else if (
+    isOptionalType(thing) &&
+    isConfigurationSchemaType(getSubType(thing))
+  ) {
     return true
-  }
-
-  if (isArrayType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+  } else if (
+    isArrayType(thing) &&
+    isConfigurationSchemaType(getSubType(thing))
+  ) {
     return true
-  }
-
-  if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+  } else if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
     return true
+  } else {
+    return false
   }
-
-  return false
 }
 
 export function isConfigurationModel(

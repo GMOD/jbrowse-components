@@ -33,6 +33,9 @@ const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
+  ml: {
+    marginLeft: 10,
+  },
 })
 
 type LGV = LinearGenomeViewModel
@@ -158,11 +161,7 @@ const GetSequenceDialog = observer(function ({
         ) : loading ? (
           <Container>
             Retrieving reference sequence...
-            <CircularProgress
-              style={{ marginLeft: 10 }}
-              size={20}
-              disableShrink
-            />
+            <CircularProgress className={classes.ml} size={20} disableShrink />
           </Container>
         ) : null}
         <TextField

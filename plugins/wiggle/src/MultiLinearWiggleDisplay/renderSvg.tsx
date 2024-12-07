@@ -20,7 +20,7 @@ export async function renderSvg(
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   return (
     <>
-      <g id="snpcov">{await superRenderSvg(opts)}</g>
+      <g>{await superRenderSvg(opts)}</g>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
         <YScaleBars model={self} orientation="left" exportSVG />
       </g>

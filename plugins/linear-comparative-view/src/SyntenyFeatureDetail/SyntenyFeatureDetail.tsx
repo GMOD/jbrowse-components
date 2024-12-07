@@ -114,7 +114,7 @@ const SyntenyFeatureDetail = observer(function ({
   model: SyntenyFeatureDetailModel
 }) {
   return (
-    <Paper data-testid="alignment-side-drawer">
+    <Paper>
       <BaseFeatureDetail title="Feature" model={model} />
       <BaseCard title="Link to view">
         <CustomLinker model={model} />

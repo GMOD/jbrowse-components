@@ -33,19 +33,25 @@ const useStyles = makeStyles()({
   },
 })
 
-const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
+const ExportBookmarksDialog = observer(function ({
   model,
   onClose,
 }: {
   model: GridBookmarkModel
-  onClose: (arg: boolean) => void
+  onClose: () => void
 }) {
   const { classes } = useStyles()
   const [fileType, setFileType] = useState('BED')
   const { selectedBookmarks } = model
   const exportAll = selectedBookmarks.length === 0
   return (
-    <Dialog open onClose={onClose} title="Export bookmarks">
+    <Dialog
+      open
+      onClose={() => {
+        onClose()
+      }}
+      title="Export bookmarks"
+    >
       <DialogContent className={classes.container}>
         <Alert severity="info">
           {exportAll ? (
@@ -81,7 +87,7 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           startIcon={<GetAppIcon />}
           onClick={() => {
             downloadBookmarkFile(fileType, model)
-            onClose(false)
+            onClose()
           }}
         >
           Download

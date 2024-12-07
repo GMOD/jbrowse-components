@@ -3207,7 +3207,7 @@ exports[`vcf file import 1`] = `
           "FILTER": [
             "QDFilter",
           ],
-          "ID": null,
+          "ID": undefined,
           "INFO": {
             "DP": [
               166,
@@ -3472,7 +3472,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
-          "ID": null,
+          "ID": undefined,
           "INFO": {
             "AC": [
               1,

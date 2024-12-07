@@ -57,7 +57,9 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const featArray = await firstValueFrom(feat.pipe(toArray()))
   const csiFeaturesArray = await firstValueFrom(csiFeatures.pipe(toArray()))
   expect(featArray.slice(0, 5)).toMatchSnapshot()
-  expect(csiFeaturesArray.slice(0, 5)).toEqual(featArray.slice(0, 5))
+  expect(JSON.stringify(csiFeaturesArray.slice(0, 5))).toEqual(
+    JSON.stringify(featArray.slice(0, 5)),
+  )
 
   const featNonExist = adapter.getFeatures({
     refName: 'ctgC',

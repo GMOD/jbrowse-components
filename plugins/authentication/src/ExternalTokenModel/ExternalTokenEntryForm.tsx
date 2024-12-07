@@ -17,6 +17,9 @@ export const ExternalTokenEntryForm = ({
       open
       maxWidth="xl"
       data-testid="externalToken-form"
+      onClose={() => {
+        handleClose()
+      }}
       title={`Enter token for ${internetAccountId}`}
     >
       <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>

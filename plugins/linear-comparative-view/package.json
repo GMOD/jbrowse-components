@@ -36,7 +36,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.3",
     "@mui/icons-material": "^6.0.0",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0"

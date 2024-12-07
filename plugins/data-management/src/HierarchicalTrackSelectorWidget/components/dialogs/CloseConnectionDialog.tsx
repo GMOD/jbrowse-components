@@ -24,7 +24,12 @@ const CloseConnectionDialog = observer(function CloseConnectionDialog({
 }) {
   const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
   return (
-    <Dialog open maxWidth="lg" title={`Close connection "${name}"`}>
+    <Dialog
+      open
+      maxWidth="lg"
+      title={`Close connection "${name}"`}
+      onClose={onClose}
+    >
       <DialogContent>
         {dereferenceTypeCount ? (
           <>
