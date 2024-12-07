@@ -68,12 +68,6 @@ type SessionModelFactory = (args: {
   assemblyConfigSchema: AssemblyConfig
 }) => IAnyType
 
-interface SessionSnap {
-  name: string
-  id: string
-  [key: string]: unknown
-}
-
 /**
  * #stateModel JBrowseWebRootModel
  *
@@ -361,18 +355,21 @@ export default function RootModel({
                 async () => {
                   if (self.session) {
                     try {
-                      const snap = getSnapshot(self.session) as SessionSnap
-                      await sessionDB.put('sessions', snap, snap.id)
+                      await sessionDB.put(
+                        'sessions',
+                        getSnapshot(self.session),
+                        self.session.id,
+                      )
                       await sessionDB.put(
                         'metadata',
                         {
-                          name: snap.name,
-                          id: snap.id,
+                          name: self.session.name,
+                          id: self.session.id,
                           createdAt: new Date(),
                           configPath: self.configPath || '',
                           favorite: false,
                         },
-                        snap.id,
+                        self.session.id,
                       )
 
                       await self.fetchSessionMetadata()

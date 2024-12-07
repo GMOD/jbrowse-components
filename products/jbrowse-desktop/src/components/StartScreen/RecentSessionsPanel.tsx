@@ -10,7 +10,6 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
-  Grid,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -31,10 +30,12 @@ import type { ToggleButtonProps } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
-  toggleButton: {
-    '&.Mui-disabled': {
-      pointerEvents: 'auto',
-    },
+  flex: {
+    display: 'flex',
+    gap: 20,
+  },
+  verticalCenter: {
+    margin: 'auto 0',
   },
 })
 
@@ -43,22 +44,12 @@ type RecentSessions = RecentSessionData[]
 // note: adjust props so disabled button can have a tooltip and not lose styling
 // https://stackoverflow.com/a/63276424
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const { classes } = useStyles()
-  const { title = '', children, disabled, onClick, ...other } = props
-  const adjustedButtonProps = {
-    disabled: disabled,
-    component: disabled ? 'div' : undefined,
-    onClick: disabled ? undefined : onClick,
-  }
+  const { title = '', children, ...rest } = props
   return (
     <Tooltip title={title}>
-      <ToggleButton
-        {...other}
-        {...adjustedButtonProps}
-        classes={{ root: classes.toggleButton }}
-      >
-        {children}
-      </ToggleButton>
+      <span>
+        <ToggleButton {...rest}>{children}</ToggleButton>
+      </span>
     </Tooltip>
   )
 }
@@ -70,6 +61,7 @@ export default function RecentSessionPanel({
   setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
+  const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
@@ -130,73 +122,67 @@ export default function RecentSessionPanel({
           }}
         />
       ) : null}
-      <Grid container spacing={4} alignItems="center">
-        <Grid item>
-          <FormControl>
-            <ToggleButtonGroup
-              exclusive
-              value={displayMode}
-              onChange={(_, newVal) => {
-                setDisplayMode(newVal)
+      <div className={classes.flex}>
+        <FormControl>
+          <ToggleButtonGroup
+            exclusive
+            value={displayMode}
+            onChange={(_, newVal) => {
+              setDisplayMode(newVal)
+            }}
+          >
+            <ToggleButtonWithTooltip value="grid" title="Grid view">
+              <ViewComfyIcon />
+            </ToggleButtonWithTooltip>
+            <ToggleButtonWithTooltip value="list" title="List view">
+              <ListIcon />
+            </ToggleButtonWithTooltip>
+          </ToggleButtonGroup>
+        </FormControl>
+        <FormControl>
+          <ToggleButtonGroup>
+            <ToggleButtonWithTooltip
+              value="delete"
+              title="Delete sessions"
+              disabled={!selectedSessions?.length}
+              onClick={() => {
+                setSessionsToDelete(selectedSessions)
               }}
             >
-              <ToggleButtonWithTooltip value="grid" title="Grid view">
-                <ViewComfyIcon />
-              </ToggleButtonWithTooltip>
-              <ToggleButtonWithTooltip value="list" title="List view">
-                <ListIcon />
-              </ToggleButtonWithTooltip>
-            </ToggleButtonGroup>
-          </FormControl>
-        </Grid>
-        <Grid item>
-          <FormControl>
-            <ToggleButtonGroup>
-              <ToggleButtonWithTooltip
-                value="delete"
-                title="Delete sessions"
-                disabled={!selectedSessions?.length}
-                onClick={() => {
-                  setSessionsToDelete(selectedSessions)
-                }}
-              >
-                <DeleteIcon />
-              </ToggleButtonWithTooltip>
-              <ToggleButtonWithTooltip
-                value="quickstart"
-                title="Add sessions to quickstart list"
-                disabled={!selectedSessions?.length}
-                onClick={() => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  ;(async () => {
-                    try {
-                      await addToQuickstartList(selectedSessions || [])
-                    } catch (e) {
-                      setError(e)
-                      console.error(e)
-                    }
-                  })()
-                }}
-              >
-                <PlaylistAddIcon />
-              </ToggleButtonWithTooltip>
-            </ToggleButtonGroup>
-          </FormControl>
-        </Grid>
-        <Grid item>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={showAutosaves === 'true'}
-                onChange={() => {
-                  setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
-                }}
-              />
-            }
-            label="Show autosaves"
-          />
-        </Grid>
-        <Grid item>
+              <DeleteIcon />
+            </ToggleButtonWithTooltip>
+            <ToggleButtonWithTooltip
+              value="quickstart"
+              title="Add sessions to quickstart list"
+              disabled={!selectedSessions?.length}
+              onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                ;(async () => {
+                  try {
+                    await addToQuickstartList(selectedSessions || [])
+                  } catch (e) {
+                    setError(e)
+                    console.error(e)
+                  }
+                })()
+              }}
+            >
+              <PlaylistAddIcon />
+            </ToggleButtonWithTooltip>
+          </ToggleButtonGroup>
+        </FormControl>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showAutosaves === 'true'}
+              onChange={() => {
+                setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
+              }}
+            />
+          }
+          label="Show autosaves"
+        />
+        <div className={classes.verticalCenter}>
           <Button variant="contained" component="label" onClick={() => {}}>
             Open saved session (.jbrowse) file
             <input
@@ -217,8 +203,8 @@ export default function RecentSessionPanel({
               }}
             />
           </Button>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (

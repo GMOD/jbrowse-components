@@ -42,7 +42,6 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from 'mobx-state-tree'
 

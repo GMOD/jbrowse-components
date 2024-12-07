@@ -45,7 +45,6 @@ interface Menu {
 interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
-    savedSessionNames: string[]
     menus: () => Menu[]
     snackbarMessages: SnackbarMessage[]
     renameCurrentSession: (arg: string) => void
