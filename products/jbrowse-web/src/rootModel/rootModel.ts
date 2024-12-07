@@ -446,7 +446,7 @@ export default function RootModel({
                   self.setSession(rest)
                 },
               },
-              ...(preConfiguredSessions
+              ...(preConfiguredSessions?.length
                 ? [
                     {
                       label: 'Pre-configured sessions...',

@@ -69,13 +69,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
    * @param args - the arguments passed to render
    */
   serializeArgsInClient(args: RenderArgs) {
-    const { regions } = args
-    const serializedArgs = {
+    return super.serializeArgsInClient({
       ...args,
       displayModel: undefined,
-      regions: structuredClone(regions),
-    }
-    return super.serializeArgsInClient(serializedArgs)
+      regions: structuredClone(args.regions),
+    })
   }
 
   /**
@@ -151,18 +149,13 @@ export default class FeatureRendererType extends ServerSideRendererType {
       throw new Error('Adapter does not support retrieving features')
     }
 
-    // make sure the requested region's start and end are integers, if
-    // there is a region specification.
-    const requestRegions = regions.map(r => {
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.ceil(requestRegion.end)
-      }
-      return requestRegion
-    })
+    // make sure the requested region's start and end are integers, if there is
+    // a region specification.
+    const requestRegions = regions.map(r => ({
+      ...r,
+      start: Math.floor(r.start),
+      end: Math.ceil(r.end),
+    }))
 
     const region = requestRegions[0]!
 
