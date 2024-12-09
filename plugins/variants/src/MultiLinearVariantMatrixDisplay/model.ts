@@ -247,6 +247,8 @@ export default function stateModelFactory(
       get rowHeight() {
         return this.totalHeight / (self.sources?.length || 1)
       },
+    }))
+    .views(self => ({
       /**
        * #method
        */
@@ -257,12 +259,10 @@ export default function stateModelFactory(
           notReady:
             superProps.notReady || !self.sources || !self.featuresVolatile,
           mafFilter: self.mafFilter,
-          height: self.height,
+          height: self.totalHeight,
           sources: self.sources,
         }
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        */
