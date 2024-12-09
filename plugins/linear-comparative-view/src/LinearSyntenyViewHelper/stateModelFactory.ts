@@ -1,14 +1,14 @@
+import {
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
-import {
-  hideTrackGeneric,
-  showTrackGeneric,
-  toggleTrackGeneric,
-} from '@jbrowse/core/util/tracks'
 
 export function linearSyntenyViewHelperModelFactory(
   pluginManager: PluginManager,
