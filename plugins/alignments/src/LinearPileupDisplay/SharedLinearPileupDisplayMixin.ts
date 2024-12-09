@@ -132,11 +132,7 @@ export function SharedLinearPileupDisplayMixin(
     .views(self => ({
       get autorunReady() {
         const view = getContainingView(self) as LGV
-        return (
-          view.initialized &&
-          self.featureDensityStatsReady &&
-          !self.regionTooLarge
-        )
+        return view.initialized && self.statsReadyAndRegionNotTooLarge
       },
     }))
     .actions(self => ({

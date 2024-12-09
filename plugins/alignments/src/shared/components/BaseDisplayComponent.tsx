@@ -26,15 +26,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const BaseDisplayComponent = observer(function ({
+const BlockError = observer(function ({
   model,
-  children,
 }: {
   model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
-  children?: React.ReactNode
 }) {
-  const { error, regionTooLarge } = model
-  return error ? (
+  const { error } = model
+  return (
     <BlockMsg
       message={`${error}`}
       severity="error"
@@ -51,6 +49,19 @@ const BaseDisplayComponent = observer(function ({
         </Tooltip>
       }
     />
+  )
+})
+
+const BaseDisplayComponent = observer(function ({
+  model,
+  children,
+}: {
+  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  children?: React.ReactNode
+}) {
+  const { error, regionTooLarge } = model
+  return error ? (
+    <BlockError model={model} />
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()
   ) : (

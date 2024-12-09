@@ -204,8 +204,7 @@ function stateModelFactory(
           const view = getContainingView(self) as LGV
           return (
             view.initialized &&
-            self.featureDensityStatsReady &&
-            !self.regionTooLarge &&
+            self.statsReadyAndRegionNotTooLarge &&
             !self.error
           )
         },

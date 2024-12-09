@@ -190,6 +190,12 @@ export default function FeatureDensityMixin() {
     }))
     .views(self => ({
       /**
+       * #getter
+       */
+      get statsReadyAndRegionNotTooLarge() {
+        return self.featureDensityStatsReady && !self.regionTooLarge
+      },
+      /**
        * #method
        */
       regionCannotBeRenderedText(_region: Region) {

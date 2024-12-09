@@ -16,27 +16,19 @@ const Wrapper = observer(function ({
   exportSVG?: boolean
 }) {
   const { height } = model
+  const { width, offsetPx } = getContainingView(model) as LinearGenomeViewModel
+  const left = Math.max(0, -offsetPx)
   return exportSVG ? (
-    <g
-      transform={`translate(${Math.max(
-        0,
-        -(getContainingView(model) as LinearGenomeViewModel).offsetPx,
-      )})`}
-    >
-      {children}
-    </g>
+    <g transform={`translate(${left})`}>{children}</g>
   ) : (
     <svg
       style={{
         position: 'absolute',
         top: 0,
-        left: Math.max(
-          0,
-          -(getContainingView(model) as LinearGenomeViewModel).offsetPx,
-        ),
+        left,
         pointerEvents: 'none',
         height,
-        width: getContainingView(model).width,
+        width,
       }}
     >
       {children}
@@ -54,20 +46,20 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { featuresVolatile } = model
-  const { offsetPx, assemblyNames } = view
+  const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = view.dynamicBlocks.contentBlocks[0]?.widthPx || 0
+  const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
   const w = b0 / (featuresVolatile?.length || 1)
+  const l = Math.max(offsetPx, 0)
   return assembly && featuresVolatile ? (
     <Wrapper exportSVG={exportSVG} model={model}>
       {featuresVolatile.map((f, i) => {
+        const ref = f.get('refName')
         const c =
           (view.bpToPx({
-            refName:
-              assembly.getCanonicalRefName(f.get('refName')) ||
-              f.get('refName'),
+            refName: assembly.getCanonicalRefName(ref) || ref,
             coord: f.get('start'),
-          })?.offsetPx || 0) - Math.max(offsetPx, 0)
+          })?.offsetPx || 0) - l
         return (
           <line
             stroke="black"

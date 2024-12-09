@@ -25,6 +25,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   adapterConfig: AnyConfigurationModel
   sources?: Source[]
   mafFilter: number
+  statsReadyAndRegionNotTooLarge: boolean
   adapterProps: () => Record<string, unknown>
   setError: (error: unknown) => void
   setFeatures: (f: Feature[]) => void
@@ -36,9 +37,10 @@ export function getMultiVariantFeaturesAutorun(self: {
       async () => {
         try {
           const view = getContainingView(self) as LinearGenomeViewModel
-          if (!view.initialized) {
+          if (!view.initialized || !self.statsReadyAndRegionNotTooLarge) {
             return
           }
+
           const { rpcManager } = getSession(self)
           const { sources, mafFilter, adapterConfig } = self
           if (!sources) {
