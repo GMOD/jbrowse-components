@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'

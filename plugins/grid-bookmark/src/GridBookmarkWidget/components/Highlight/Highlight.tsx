@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession, notEmpty } from '@jbrowse/core/util'
@@ -65,7 +65,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         .filter(notEmpty)
         .map(({ left, width, highlight, label, bookmark }, idx) => (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <React.Fragment key={`${left}_${width}_${idx}`}>
+          <Fragment key={`${left}_${width}_${idx}`}>
             <div
               className={classes.highlight}
               id="highlight"
@@ -114,7 +114,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 </CascadingMenuButton>
               </div>
             ) : null}
-          </React.Fragment>
+          </Fragment>
         ))
     : null
 })

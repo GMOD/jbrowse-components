@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx, getStrokeProps } from '@jbrowse/core/util'

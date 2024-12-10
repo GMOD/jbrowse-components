@@ -32,7 +32,7 @@ interface ScalebarProps {
 }
 
 const Scalebar = observer(
-  React.forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
+  forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
     { model, style, className, ...other },
     ref,
   ) {

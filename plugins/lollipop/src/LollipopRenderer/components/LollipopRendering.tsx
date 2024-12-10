@@ -1,3 +1,6 @@
+import type { FocusEvent, MouseEvent } from 'react'
+import { Fragment } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -37,37 +40,37 @@ function layoutFeat(args: {
 }
 
 const LollipopRendering = observer(function (props: Record<string, any>) {
-  const onMouseDown = (event: React.MouseEvent) => {
+  const onMouseDown = (event: MouseEvent) => {
     const { onMouseDown: handler } = props
     return handler?.(event)
   }
 
-  const onMouseUp = (event: React.MouseEvent) => {
+  const onMouseUp = (event: MouseEvent) => {
     const { onMouseUp: handler } = props
     return handler?.(event)
   }
 
-  const onMouseEnter = (event: React.MouseEvent | React.FocusEvent) => {
+  const onMouseEnter = (event: MouseEvent | FocusEvent) => {
     const { onMouseEnter: handler } = props
     return handler?.(event)
   }
 
-  const onMouseLeave = (event: React.MouseEvent | React.FocusEvent) => {
+  const onMouseLeave = (event: MouseEvent | FocusEvent) => {
     const { onMouseLeave: handler } = props
     return handler?.(event)
   }
 
-  const onMouseOver = (event: React.MouseEvent) => {
+  const onMouseOver = (event: MouseEvent) => {
     const { onMouseOver: handler } = props
     return handler?.(event)
   }
 
-  const onMouseOut = (event: React.MouseEvent) => {
+  const onMouseOut = (event: MouseEvent) => {
     const { onMouseOut: handler } = props
     return handler?.(event)
   }
 
-  const onClick = (event: React.MouseEvent) => {
+  const onClick = (event: MouseEvent) => {
     const { onClick: handler } = props
     return handler?.(event)
   }
@@ -114,7 +117,7 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
       {records.map(layoutRecord => {
         const feature = features.get(layoutRecord.data.featureId)
         return (
-          <React.Fragment key={feature.id()}>
+          <Fragment key={feature.id()}>
             <Stick
               key={`stick-${feature.id()}`}
               {...props}
@@ -129,7 +132,7 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
               feature={feature}
               selectedFeatureId={selectedFeatureId}
             />
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </svg>

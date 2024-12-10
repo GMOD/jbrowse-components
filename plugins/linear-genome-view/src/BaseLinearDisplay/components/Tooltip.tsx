@@ -4,15 +4,16 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
 import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import { forwardRef, isValidElement } from 'react'
 
 interface Props {
   message: React.ReactNode | string
 }
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ message }, ref) {
     return (
       <div ref={ref}>
-        {React.isValidElement(message) ? (
+        {isValidElement(message) ? (
           message
         ) : message ? (
           <SanitizedHTML html={String(message)} />

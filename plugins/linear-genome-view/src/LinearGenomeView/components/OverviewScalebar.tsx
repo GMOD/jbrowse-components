@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'

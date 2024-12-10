@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { AppBar, Paper, Toolbar, Typography } from '@mui/material'

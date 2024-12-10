@@ -15,6 +15,7 @@ import ProteinSequence from './seqtypes/ProteinSequence'
 import type { SequenceFeatureDetailsModel } from './model'
 import type { SimpleFeatureSerialized } from '../../util'
 import type { SeqState } from '../util'
+import { forwardRef } from 'react'
 
 interface SequencePanelProps {
   sequence: SeqState
@@ -66,7 +67,7 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
 }
 
 const SequencePanel = observer(
-  React.forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
+  forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
     const { sequence, model, feature } = props
     const { showCoordinates, mode } = model
 

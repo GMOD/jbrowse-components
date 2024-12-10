@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'

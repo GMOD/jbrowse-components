@@ -5,6 +5,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { BaseCoverageBin } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
+import { forwardRef } from 'react'
 
 const useStyles = makeStyles()(() => ({
   td: {
@@ -21,7 +22,7 @@ interface Props {
   model: { visibleModifications: Map<string, { color: string }> }
 }
 
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2(props, reactRef) {
     const { feature, model } = props
     const { classes } = useStyles()

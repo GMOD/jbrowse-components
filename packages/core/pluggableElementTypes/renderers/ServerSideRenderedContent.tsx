@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'

@@ -289,7 +289,7 @@ We'll add some more UI elements that allow us to do something more interesting:
 **./src/MyToolWidget/MyToolWidget.tsx**
 
 ```tsx
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Box,
   Button,

@@ -97,6 +97,7 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
       'react/no-is-mounted': 'off',
+      'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
       'unicorn/prefer-global-this': 'off',

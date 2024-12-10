@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react'
+import { Fragment } from 'react/jsx-runtime'
 
 import RectBg from './RectBg'
 
@@ -47,7 +48,7 @@ const ColorLegend = observer(function ({
       {sources.map((source, idx) => {
         const boxHeight = Math.min(20, rowHeight)
         return (
-          <React.Fragment key={`${source.name}-${idx}`}>
+          <Fragment key={`${source.name}-${idx}`}>
             {needsFullHeightScalebar ? null : (
               <RectBg
                 y={idx * rowHeight + 1}
@@ -74,7 +75,7 @@ const ColorLegend = observer(function ({
                 {source.name}
               </text>
             ) : null}
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>

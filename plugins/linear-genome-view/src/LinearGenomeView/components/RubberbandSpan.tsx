@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { stringify, toLocale } from '@jbrowse/core/util'
 import { Popover, Typography, alpha } from '@mui/material'

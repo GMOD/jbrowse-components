@@ -1,4 +1,4 @@
-import React, { lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'

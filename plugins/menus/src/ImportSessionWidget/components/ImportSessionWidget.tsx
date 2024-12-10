@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'

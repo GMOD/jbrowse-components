@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { Paper, useTheme } from '@mui/material'

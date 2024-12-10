@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'

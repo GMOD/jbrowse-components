@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
@@ -48,7 +50,7 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
             ))}
             {displayResults.map(({ result }, i) => (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              <React.Fragment key={i}>{result}</React.Fragment>
+              <Fragment key={i}>{result}</Fragment>
             ))}
           </g>
         </svg>

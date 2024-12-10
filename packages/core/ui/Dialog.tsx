@@ -47,7 +47,7 @@ const Dialog = observer(function (props: Props) {
   return (
     <MUIDialog {...props}>
       <ScopedCssBaseline>
-        {React.isValidElement(header) ? (
+        {isValidElement(header) ? (
           header
         ) : (
           <DialogTitle>

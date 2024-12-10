@@ -98,7 +98,7 @@ export function ReactRendering({
     html?: string
   }
 }) {
-  return React.isValidElement(rendering.reactElement) ? (
+  return isValidElement(rendering.reactElement) ? (
     rendering.reactElement
   ) : (
     <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />

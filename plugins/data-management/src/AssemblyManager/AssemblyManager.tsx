@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'

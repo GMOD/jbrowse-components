@@ -1,4 +1,4 @@
-import { lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import ShareIcon from '@mui/icons-material/Share'
 import { Button, alpha } from '@mui/material'
@@ -48,14 +48,14 @@ const ShareButton = observer(function (props: {
         Share
       </Button>
       {open ? (
-        <React.Suspense fallback={null}>
+        <Suspense fallback={null}>
           <ShareDialog
             handleClose={() => {
               setOpen(false)
             }}
             session={session}
           />
-        </React.Suspense>
+        </Suspense>
       ) : null}
     </div>
   )

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'

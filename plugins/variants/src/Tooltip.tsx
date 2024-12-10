@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
@@ -20,8 +20,6 @@ const useStyles = makeStyles()({
 
 type Coord = [number, number]
 
-// React.forwardRef component for the tooltip, the ref is used for measuring
-// the size of the tooltip
 export type TooltipContentsComponent = React.ForwardRefExoticComponent<
   { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >

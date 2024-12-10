@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useRef } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -89,7 +89,7 @@ const LinearGenomeViewContainer = observer(function ({
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
-          <Suspense fallback={<React.Fragment />}>
+          <Suspense fallback={null}>
             <NoTracksActiveButton model={model} />
           </Suspense>
         ) : (

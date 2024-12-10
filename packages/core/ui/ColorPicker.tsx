@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { colord } from '@jbrowse/core/util/colord'
 import { MenuItem, Popover, Select, TextField } from '@mui/material'

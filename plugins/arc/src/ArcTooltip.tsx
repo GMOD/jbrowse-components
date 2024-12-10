@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -7,11 +7,11 @@ import { observer } from 'mobx-react'
 interface Props {
   message: React.ReactNode | string
 }
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ message }, ref) {
     return (
       <div ref={ref}>
-        {React.isValidElement(message) ? (
+        {isValidElement(message) ? (
           message
         ) : message ? (
           <SanitizedHTML html={String(message)} />

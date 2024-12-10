@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import Menu from '@jbrowse/core/ui/Menu'
 import { IconButton } from '@mui/material'

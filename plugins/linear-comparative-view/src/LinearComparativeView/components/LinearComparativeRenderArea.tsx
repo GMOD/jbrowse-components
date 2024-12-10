@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import { Fragment } from 'react/jsx-runtime'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearComparativeViewModel } from '../model'
@@ -38,7 +39,7 @@ const LinearComparativeRenderArea = observer(function ({
   return (
     <div className={classes.container}>
       {views.map((view, i) => (
-        <React.Fragment key={view.id}>
+        <Fragment key={view.id}>
           {i > 0 ? (
             <>
               <div className={classes.container}>
@@ -53,7 +54,7 @@ const LinearComparativeRenderArea = observer(function ({
             </>
           ) : null}
           <View view={view} />
-        </React.Fragment>
+        </Fragment>
       ))}
     </div>
   )

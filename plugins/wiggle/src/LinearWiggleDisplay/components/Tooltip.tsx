@@ -5,6 +5,7 @@ import { toP } from '../../util'
 
 import type { TooltipContentsComponent } from '../../Tooltip'
 import type { Feature } from '@jbrowse/core/util'
+import { forwardRef } from 'react'
 
 const en = (n: number) => n.toLocaleString('en-US')
 
@@ -12,7 +13,7 @@ interface Props {
   feature: Feature
 }
 
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, ref) {
     const start = feature.get('start') + 1
     const end = feature.get('end')

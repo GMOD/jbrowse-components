@@ -250,7 +250,7 @@ when we click the circular genome view chord.
 `CircularViewChordWidget.tsx`
 
 ```ts
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { observer } from 'mobx-react'
 
 const CircularViewChordWidget = observer(({ model }: { model: any }) => {
