@@ -1,12 +1,20 @@
 import React from 'react'
 
-import { measureGridWidth } from '@jbrowse/core/util'
+import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
-import { IconButton, Link, Tooltip, Typography } from '@mui/material'
+import {
+  Alert,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Link,
+  Tooltip,
+} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { formatDistanceToNow } from 'date-fns'
+import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
 
 import type { SessionModel } from './util'
@@ -16,117 +24,151 @@ const SessionManager = observer(function ({
 }: {
   session: SessionModel
 }) {
-  const rows =
-    session.savedSessionMetadata?.map(r => ({
+  const [showOnlyFavs, setShowOnlyFavs] = useLocalStorage(
+    'sessionManager-showOnlyFavs',
+    false,
+  )
+  const rows = session.savedSessionMetadata
+    ?.map(r => ({
       id: r.id,
       name: r.name,
       createdAt: r.createdAt,
       fav: r.favorite,
-    })) || []
+    }))
+    .filter(f => (showOnlyFavs ? f.fav : true))
+
   return (
     <>
-      <Typography variant="h6">Recent sessions</Typography>
-      <Typography style={{ margin: 20 }}>
-        Click the star to "favorite" the session
-      </Typography>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <DataGrid
-          disableRowSelectionOnClick
-          columnHeaderHeight={35}
-          rowHeight={25}
-          hideFooter={rows.length < 100}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-            },
-          }}
-          rows={rows}
-          columns={[
-            {
-              field: 'fav',
-              headerName: 'Fav',
-              width: 20,
-              renderCell: ({ row }) => {
-                return (
-                  <IconButton
-                    onClick={() => {
-                      if (row.fav) {
-                        // @ts-expect-error
-                        session.unfavoriteSavedSession(row.id)
-                      } else {
-                        // @ts-expect-error
-                        session.favoriteSavedSession(row.id)
-                      }
-                    }}
-                  >
-                    {row.fav ? <StarIcon /> : <StarBorderIcon />}
-                  </IconButton>
-                )
+      <Alert severity="info">Click the star to "favorite" a session</Alert>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={showOnlyFavs}
+            onChange={() => {
+              setShowOnlyFavs(val => !val)
+            }}
+          />
+        }
+        label="Show only favorites?"
+      />
+      <Button
+        variant="contained"
+        onClick={() => {
+          session.savedSessionMetadata?.forEach(elt => {
+            if (differenceInDays(+Date.now(), elt.createdAt) > 7) {
+              // @ts-expect-error
+              session.deleteSavedSession(elt.id)
+            }
+          })
+        }}
+      >
+        Delete sessions older than 7 days? Will not delete favorites
+      </Button>
+      {rows ? (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <DataGrid
+            disableRowSelectionOnClick
+            columnHeaderHeight={35}
+            rowHeight={25}
+            hideFooter={rows.length < 100}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
               },
-            },
-
-            {
-              field: 'name',
-              headerName: 'Name',
-              width: measureGridWidth(rows.map(r => r.name)),
-              renderCell: ({ row }) => {
-                return (
-                  <>
-                    <Link
-                      href="#"
-                      onClick={event => {
-                        event.preventDefault()
-                        session.activateSession(row.id)
+            }}
+            rows={rows}
+            columns={[
+              {
+                field: 'fav',
+                headerName: 'Fav',
+                width: 20,
+                renderCell: ({ row }) => {
+                  return (
+                    <IconButton
+                      onClick={() => {
+                        if (row.fav) {
+                          // @ts-expect-error
+                          session.unfavoriteSavedSession(row.id)
+                        } else {
+                          // @ts-expect-error
+                          session.favoriteSavedSession(row.id)
+                        }
                       }}
                     >
-                      {row.name}
-                    </Link>
-                    {session.id === row.id ? ' (current)' : ''}
-                  </>
-                )
+                      {row.fav ? <StarIcon /> : <StarBorderIcon />}
+                    </IconButton>
+                  )
+                },
               },
-            },
-            {
-              headerName: 'Created at',
-              field: 'createdAt',
-              renderCell: ({ row }) => {
-                return (
-                  <Tooltip
-                    disableInteractive
-                    slotProps={{
-                      transition: {
-                        timeout: 0,
-                      },
-                    }}
-                    title={row.createdAt.toLocaleString()}
-                  >
-                    <div>
-                      {formatDistanceToNow(row.createdAt, { addSuffix: true })}
-                    </div>
-                  </Tooltip>
-                )
+
+              {
+                field: 'name',
+                headerName: 'Name',
+                editable: true,
+                width: measureGridWidth(rows.map(r => r.name)),
+                renderCell: ({ row }) => {
+                  return (
+                    <>
+                      <Link
+                        href="#"
+                        onClick={event => {
+                          event.preventDefault()
+                          session.activateSession(row.id)
+                        }}
+                      >
+                        {row.name}
+                      </Link>
+                      {session.id === row.id ? ' (current)' : ''}
+                    </>
+                  )
+                },
               },
-            },
-            {
-              field: 'delete',
-              width: 10,
-              headerName: 'Delete',
-              renderCell: ({ row }) => {
-                return (
-                  <IconButton
-                    onClick={() => {
-                      // @ts-expect-error
-                      session.deleteSavedSession(row.id)
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                )
+              {
+                headerName: 'Created at',
+                field: 'createdAt',
+                renderCell: ({ row }) => {
+                  return (
+                    <Tooltip
+                      disableInteractive
+                      slotProps={{
+                        transition: {
+                          timeout: 0,
+                        },
+                      }}
+                      title={row.createdAt.toLocaleString()}
+                    >
+                      <div>
+                        {formatDistanceToNow(row.createdAt, {
+                          addSuffix: true,
+                        })}
+                      </div>
+                    </Tooltip>
+                  )
+                },
               },
-            },
-          ]}
-        />
-      </div>
+              {
+                field: 'delete',
+                width: 10,
+                headerName: 'Delete',
+                renderCell: ({ row }) => {
+                  return (
+                    <IconButton
+                      onClick={() => {
+                        // @ts-expect-error
+                        session.deleteSavedSession(row.id)
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )
+                },
+              },
+            ]}
+          />
+        </div>
+      ) : (
+        <div>No sessions loaded</div>
+      )}
     </>
   )
 })
