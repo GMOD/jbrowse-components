@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
+import * as React from 'react'
 import type { LazyExoticComponent } from 'react'
 import { Suspense, forwardRef, lazy } from 'react'
 

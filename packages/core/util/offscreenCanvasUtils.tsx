@@ -4,6 +4,7 @@ import { CanvasSequence } from 'canvas-sequencer'
 
 import { blobToDataURL } from './blobToDataURL'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
+import { isValidElement } from 'react'
 
 export type RenderReturn = Record<string, unknown> | undefined
 

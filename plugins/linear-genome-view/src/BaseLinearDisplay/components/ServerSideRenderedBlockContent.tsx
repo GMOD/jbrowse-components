@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, isValidElement, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'

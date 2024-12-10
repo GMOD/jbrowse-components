@@ -3,6 +3,7 @@ import isObject from 'is-object'
 import { makeStyles } from 'tss-react/mui'
 
 import { SanitizedHTML } from '../../ui'
+import { isValidElement } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   fieldValue: {

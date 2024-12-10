@@ -17,6 +17,7 @@ import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'
 
 import type { DialogProps } from '@mui/material'
+import { isValidElement } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
