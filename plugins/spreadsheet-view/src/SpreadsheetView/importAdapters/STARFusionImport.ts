@@ -1,3 +1,4 @@
+import { isNumber } from './isNumber'
 import { bufferToLines, parseStrand } from './util'
 
 function parseSTARFusionBreakpointString(str: string) {
@@ -16,22 +17,24 @@ export function parseSTARFusionBuffer(buffer: Uint8Array) {
   return {
     columns: columns.map(c => ({ name: c })),
     rowSet: {
-      rows: lines
-        .slice(1)
-        .map(line => {
-          const cols = line.split('\t')
-          return Object.fromEntries(columns.map((h, i) => [h, cols[i]]))
-        })
-        .map((row, rowNumber) => ({
+      rows: lines.slice(1).map((line, rowNumber) => {
+        const cols = line.split('\t')
+        const row = Object.fromEntries(
+          columns.map((h, i) => [h, isNumber(cols[i]) ? +cols[i] : cols[i]!]),
+        )
+        return {
           // what is displayed
           cellData: row,
           // an actual simplefeatureserialized
           feature: {
             uniqueId: `sf-${rowNumber}`,
-            ...parseSTARFusionBreakpointString(row.LeftBreakpoint!),
-            mate: parseSTARFusionBreakpointString(row.RightBreakpoint!),
+            ...parseSTARFusionBreakpointString(row.LeftBreakpoint! as string),
+            mate: parseSTARFusionBreakpointString(
+              row.RightBreakpoint! as string,
+            ),
           },
-        })),
+        }
+      }),
     },
   }
 }

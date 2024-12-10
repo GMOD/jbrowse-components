@@ -1,6 +1,7 @@
 import VCF from '@gmod/vcf'
 import { VcfFeature } from '@jbrowse/plugin-variants'
 
+import { isNumber } from './isNumber'
 import { bufferToLines } from './util'
 
 export function parseVcfBuffer(buffer: Uint8Array) {
@@ -21,18 +22,19 @@ export function parseVcfBuffer(buffer: Uint8Array) {
           const [key, val = 'true'] = e.split('=')
           const k = `INFO.${key!.trim()}`
           keys.add(k)
-          return [k, val.trim()]
+          const v = val.trim()
+          return [k, isNumber(v) ? +v : v]
         }) || [],
     )
     rows.push({
       // what is displayed
       cellData: {
         CHROM,
-        POS,
+        POS: +POS!,
         ID,
         REF,
         ALT,
-        QUAL,
+        QUAL: isNumber(QUAL) ? +QUAL : QUAL,
         FILTER,
         FORMAT,
         ...ret,
