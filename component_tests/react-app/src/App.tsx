@@ -1,3 +1,4 @@
+import React from 'react'
 import { createViewState, JBrowseApp } from '@jbrowse/react-app'
 
 import assembly from './assembly'
