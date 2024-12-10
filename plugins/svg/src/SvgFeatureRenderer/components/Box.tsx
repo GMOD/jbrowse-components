@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getFrame } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'

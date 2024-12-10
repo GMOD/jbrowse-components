@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 

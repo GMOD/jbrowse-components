@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

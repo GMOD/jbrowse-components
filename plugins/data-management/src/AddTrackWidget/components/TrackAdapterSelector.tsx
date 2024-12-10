@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getEnv } from '@jbrowse/core/util'
 import { ListSubheader, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'

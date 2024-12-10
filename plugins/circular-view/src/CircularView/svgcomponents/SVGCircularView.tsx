@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'

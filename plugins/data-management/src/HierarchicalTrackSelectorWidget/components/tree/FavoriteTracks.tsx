@@ -1,5 +1,3 @@
-import React from 'react'
-
 import GradeIcon from '@mui/icons-material/Grade'
 import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'

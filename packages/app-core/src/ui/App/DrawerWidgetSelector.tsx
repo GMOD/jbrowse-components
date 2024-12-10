@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getEnv } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {

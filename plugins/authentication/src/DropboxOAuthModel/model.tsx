@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 

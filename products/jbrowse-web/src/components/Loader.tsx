@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 
 import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'

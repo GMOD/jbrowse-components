@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { toLocale } from '@jbrowse/core/util'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { Typography } from '@mui/material'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getTickDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'

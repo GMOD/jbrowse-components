@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   bpSpanPx,

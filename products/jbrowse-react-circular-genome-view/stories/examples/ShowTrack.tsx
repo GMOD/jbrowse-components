@@ -1,5 +1,3 @@
-import React from 'react'
-
 // replace with from '@jbrowse/react-circular-genome-view' in your code
 import { JBrowseCircularGenomeView, createViewState } from '../../src'
 

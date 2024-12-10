@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent, DialogContentText } from '@mui/material'
 

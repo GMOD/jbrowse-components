@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { clamp } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 

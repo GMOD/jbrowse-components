@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import CloseIcon from '@mui/icons-material/Close'

@@ -3,7 +3,6 @@ genome example using publicly hosted data files. It includes the hg19 reference
 sequence and a structural variant track.
 
 ```tsx
-import React from 'react'
 import '@fontsource/roboto'
 import {
   createViewState,

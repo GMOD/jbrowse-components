@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Link, Typography } from '@mui/material'
 
 import { getLengthOnRef } from '../MismatchParser'

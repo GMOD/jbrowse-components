@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { observer } from 'mobx-react'

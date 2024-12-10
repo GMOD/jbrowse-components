@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import LaunchIcon from '@mui/icons-material/Launch'
 import { Fab, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'

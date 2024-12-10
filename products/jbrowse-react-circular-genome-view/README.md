@@ -9,7 +9,6 @@ of a single JBrowse 2 circular genome view.
 ## Usage
 
 ```tsx
-import React from 'react'
 import '@fontsource/roboto'
 import {
   createViewState,

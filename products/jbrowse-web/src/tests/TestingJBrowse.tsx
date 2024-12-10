@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 

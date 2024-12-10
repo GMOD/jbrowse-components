@@ -1,4 +1,4 @@
-import React, { lazy, useState } from 'react'
+import { lazy, useState } from 'react'
 
 import ShareIcon from '@mui/icons-material/Share'
 import { Button, alpha } from '@mui/material'

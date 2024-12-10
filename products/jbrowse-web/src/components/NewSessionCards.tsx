@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { Card, CardMedia, Container, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'

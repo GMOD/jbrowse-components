@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'

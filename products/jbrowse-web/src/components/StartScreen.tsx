@@ -1,4 +1,4 @@
-import React, { lazy, useState } from 'react'
+import { lazy, useState } from 'react'
 
 import { LogoFull } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'

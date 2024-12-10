@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { render } from '@testing-library/react'

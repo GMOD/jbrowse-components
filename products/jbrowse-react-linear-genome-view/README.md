@@ -9,7 +9,6 @@ of a single JBrowse 2 linear view.
 ## Usage
 
 ```tsx
-import React from 'react'
 import '@fontsource/roboto'
 import {
   createViewState,

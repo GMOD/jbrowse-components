@@ -1,5 +1,3 @@
-import React from 'react'
-
 import ErrorIcon from '@mui/icons-material/Error'
 import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'

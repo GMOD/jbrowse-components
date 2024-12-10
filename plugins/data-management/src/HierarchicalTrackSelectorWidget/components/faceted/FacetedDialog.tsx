@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'

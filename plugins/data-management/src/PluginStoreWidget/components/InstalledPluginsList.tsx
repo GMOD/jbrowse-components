@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { List, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 

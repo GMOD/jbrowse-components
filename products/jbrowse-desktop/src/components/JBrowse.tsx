@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { App } from '@jbrowse/app-core'
 import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'

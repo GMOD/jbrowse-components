@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { set1 } from '@jbrowse/core/ui/colors'
 import { Button } from '@mui/material'
 

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ThemeProvider } from '@mui/material/styles'
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { renderToString } from 'react-dom/server'

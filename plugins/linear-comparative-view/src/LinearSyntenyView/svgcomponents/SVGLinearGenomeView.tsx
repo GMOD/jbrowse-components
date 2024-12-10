@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getFillProps } from '@jbrowse/core/util'
 import { SVGRuler, SVGTracks } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'

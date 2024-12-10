@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'

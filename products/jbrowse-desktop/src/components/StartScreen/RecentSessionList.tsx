@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { measureGridWidth } from '@jbrowse/core/util'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Link, Tooltip } from '@mui/material'

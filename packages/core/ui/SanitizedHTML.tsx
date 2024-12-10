@@ -1,5 +1,3 @@
-import React from 'react'
-
 import dompurify from 'dompurify'
 import escapeHTML from 'escape-html'
 

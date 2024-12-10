@@ -1,7 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import React from 'react'
-
 import { Buffer } from 'buffer'
 
 import PluginManager from '@jbrowse/core/PluginManager'

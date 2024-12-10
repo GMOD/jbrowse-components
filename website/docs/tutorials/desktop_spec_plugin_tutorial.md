@@ -199,7 +199,7 @@ haven't already).
 **./src/MyToolWidget/MyToolWidget.tsx**
 
 ```jsx
-import React from 'react'
+
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 export default function MyToolWidget({ model }: { model: AddTrackModel }) {

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getContainingView, when } from '@jbrowse/core/util'
 
 import Arcs from './components/Arcs'
