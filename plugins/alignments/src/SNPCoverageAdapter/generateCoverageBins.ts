@@ -27,12 +27,7 @@ export async function generateCoverageBins({
   const bins = [] as PreBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
-  const regionSequence =
-    (await fetchSequence({
-      ...region,
-      start: start2,
-      end: region.end + 1,
-    })) || ''
+
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
@@ -43,10 +38,15 @@ export async function generateCoverageBins({
       feature,
       bins,
       region,
-      regionSequence: regionSequence.slice(diff),
     })
 
     if (colorBy?.type === 'modifications') {
+      const regionSequence =
+        (await fetchSequence({
+          ...region,
+          start: start2,
+          end: region.end + 1,
+        })) || ''
       processModifications({
         feature,
         colorBy,
@@ -55,6 +55,12 @@ export async function generateCoverageBins({
         regionSequence: regionSequence.slice(diff),
       })
     } else if (colorBy?.type === 'methylation') {
+      const regionSequence =
+        (await fetchSequence({
+          ...region,
+          start: start2,
+          end: region.end + 1,
+        })) || ''
       processReferenceCpGs({
         feature,
         bins,
