@@ -1,17 +1,15 @@
 import type { PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
-import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
 export function processDepth({
   feature,
   bins,
   region,
-  regionSequence,
 }: {
   feature: Feature
   bins: PreBaseCoverageBin[]
-  region: Region
-  regionSequence: string
+  region: AugmentedRegion
 }) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
@@ -24,7 +22,6 @@ export function processDepth({
         bins[i] = {
           depth: 0,
           readsCounted: 0,
-          refbase: regionSequence[i],
           ref: {
             probabilities: [],
             entryDepth: 0,
