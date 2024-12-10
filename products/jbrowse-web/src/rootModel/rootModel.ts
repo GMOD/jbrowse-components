@@ -178,7 +178,7 @@ export default function RootModel({
           const ret = await self.sessionDB.getAll('metadata')
           this.setSavedSessionMetadata(
             ret
-              .filter(f => f.configPath === self.configPath)
+              .filter(f => f.configPath === self.configPath || '')
               .sort((a, b) => +b.createdAt - +a.createdAt),
           )
         }
