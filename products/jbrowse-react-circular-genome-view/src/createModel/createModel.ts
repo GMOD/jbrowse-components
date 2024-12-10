@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
@@ -24,13 +22,6 @@ export default function createModel(
   runtimePlugins: PluginConstructor[],
   makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
-  },
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
   },
 ) {
   const pluginManager = new PluginManager(
@@ -64,10 +55,33 @@ export default function createModel(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
     })
-    .volatile(() => ({
+    .volatile(self => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       adminMode: false,
+      /**
+       * #volatile
+       */
       version,
+      /**
+       * #volatile
+       */
+      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+        WebWorkerRpcDriver: {
+          makeWorkerInstance,
+        },
+        MainThreadRpcDriver: {},
+      }),
+
+      /**
+       * #volatile
+       */
+      textSearchManager: new TextSearchManager(pluginManager),
     }))
     .actions(self => ({
       /**
@@ -138,17 +152,6 @@ export default function createModel(
       get pluginManager() {
         return pluginManager
       },
-    }))
-    .volatile(self => ({
-      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-        WebWorkerRpcDriver: {
-          makeWorkerInstance,
-        },
-        MainThreadRpcDriver: {},
-      }),
-      hydrateFn,
-      createRootFn,
-      textSearchManager: new TextSearchManager(pluginManager),
     }))
   return { model: rootModel, pluginManager }
 }

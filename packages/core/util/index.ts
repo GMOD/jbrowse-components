@@ -13,6 +13,7 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { flushSync } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { colord } from './colord'
 import { checkStopToken } from './stopToken'
@@ -1382,15 +1383,10 @@ export function getFillProps(str: string) {
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-export function renderToStaticMarkup(
-  node: React.ReactElement,
-  createRootFn: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  },
-) {
+export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')
   flushSync(() => {
-    createRootFn(div).render(node)
+    createRoot(div).render(node)
   })
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }

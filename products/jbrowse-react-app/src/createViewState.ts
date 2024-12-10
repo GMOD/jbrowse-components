@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { onPatch } from 'mobx-state-tree'
 
 import createModel from './createModel'
@@ -38,29 +36,10 @@ export default function createViewState(opts: {
   plugins?: PluginConstructor[]
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  }
 }) {
-  const {
-    config,
-    plugins = [],
-    onChange,
-    makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
-  } = opts
+  const { config, plugins = [], onChange, makeWorkerInstance } = opts
   const { defaultSession = { name: 'NewSession' } } = config
-  const { model, pluginManager } = createModel(
-    plugins,
-    makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
-  )
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
       jbrowse: config,

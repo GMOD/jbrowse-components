@@ -12,6 +12,7 @@ export default tseslint.config(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
+      'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',
       '**/esm/**/*',

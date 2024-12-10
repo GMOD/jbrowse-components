@@ -15,7 +15,6 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getRoot } from 'mobx-state-tree'
 
 import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
@@ -43,7 +42,6 @@ export async function renderToSvg(
   const shift = 50
   const offset = rulerHeight
 
-  const { createRootFn } = getRoot<any>(model)
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
   )
@@ -187,6 +185,5 @@ export async function renderToSvg(
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }

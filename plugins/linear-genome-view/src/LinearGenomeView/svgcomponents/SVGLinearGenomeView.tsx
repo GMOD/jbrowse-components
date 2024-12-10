@@ -11,7 +11,6 @@ import {
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getRoot } from 'mobx-state-tree'
 
 import SVGBackground from './SVGBackground'
 import SVGHeader from './SVGHeader'
@@ -38,7 +37,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const { allThemes } = session
 
-  const { createRootFn } = getRoot<any>(model)
   const theme = allThemes?.()[themeName]
   const { width, tracks, showCytobands } = model
   const shift = 50
@@ -97,7 +95,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }
 

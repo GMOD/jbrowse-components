@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -61,19 +59,10 @@ export default function RootModel({
   makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
-  hydrateFn,
-  createRootFn,
 }: {
   pluginManager: PluginManager
   sessionModelFactory: SessionModelFactory
   makeWorkerInstance?: () => Worker
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  }
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
@@ -116,14 +105,6 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
-      /**
-       * #volatile
-       */
-      hydrateFn,
-      /**
-       * #volatile
-       */
-      createRootFn,
       /**
        * #volatile
        */

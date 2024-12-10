@@ -32,7 +32,6 @@ import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
-import { createRoot, hydrateRoot } from 'react-dom/client'
 
 // other
 import packageJSON from '../../package.json'
@@ -125,14 +124,6 @@ export default function RootModel({
        * #volatile
        */
       version: packageJSON.version,
-      /**
-       * #volatile
-       */
-      hydrateFn: hydrateRoot,
-      /**
-       * #volatile
-       */
-      createRootFn: createRoot,
       /**
        * #volatile
        */

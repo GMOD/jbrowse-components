@@ -4,7 +4,6 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getRoot } from 'mobx-state-tree'
 
 import SVGBackground from './SVGBackground'
 import Ruler from '../components/Ruler'
@@ -19,7 +18,6 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
 
-  const { createRootFn } = getRoot<any>(model)
   const { width, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
@@ -58,6 +56,5 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }
