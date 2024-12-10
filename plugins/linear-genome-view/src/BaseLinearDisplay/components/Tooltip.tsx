@@ -1,10 +1,12 @@
+import { forwardRef, isValidElement } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
-import { forwardRef, isValidElement } from 'react'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 interface Props {
   message: React.ReactNode | string
@@ -24,11 +26,15 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 )
 
 type Coord = [number, number]
+
 const Tooltip = observer(function ({
   model,
   clientMouseCoord,
 }: {
-  model: BaseLinearDisplayModel
+  model: {
+    featureUnderMouse: Feature | undefined
+    configuration: AnyConfigurationModel
+  }
   clientMouseCoord: Coord
 }) {
   const { featureUnderMouse } = model

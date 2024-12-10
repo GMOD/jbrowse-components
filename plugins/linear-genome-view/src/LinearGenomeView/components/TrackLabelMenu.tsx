@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -8,9 +9,8 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
 
+import type { LinearGenomeViewModel } from '../model'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '../model'
 
 const TrackLabelMenu = observer(function ({
   track,

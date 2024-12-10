@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 import { toLocale } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
@@ -5,7 +7,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { BaseCoverageBin } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
-import { forwardRef } from 'react'
 
 const useStyles = makeStyles()(() => ({
   td: {

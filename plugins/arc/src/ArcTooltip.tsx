@@ -1,4 +1,4 @@
-import { forwardRef, isValidElement, Suspense } from 'react'
+import { Suspense, forwardRef, isValidElement } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'

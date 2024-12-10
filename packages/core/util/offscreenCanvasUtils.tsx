@@ -1,10 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 
+import { isValidElement } from 'react'
+
 import { CanvasSequence } from 'canvas-sequencer'
 
 import { blobToDataURL } from './blobToDataURL'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
-import { isValidElement } from 'react'
 
 export type RenderReturn = Record<string, unknown> | undefined
 

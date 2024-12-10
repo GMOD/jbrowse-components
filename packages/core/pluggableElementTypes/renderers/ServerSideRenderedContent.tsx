@@ -13,7 +13,7 @@ interface Props extends ResultsSerialized, RenderArgs {
   RenderingComponent: React.ComponentType<any>
 }
 
-const NewHydrate = observer(function ServerSideRenderedContent({
+const ServerSideRenderedContent = observer(function ServerSideRenderedContent({
   theme,
   html,
   RenderingComponent,
@@ -58,17 +58,7 @@ const NewHydrate = observer(function ServerSideRenderedContent({
     /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   }, [theme, rest, RenderingComponent])
 
-  return (
-    <div
-      data-testid="hydrationContainer"
-      ref={ref}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  )
-})
-
-const ServerSideRenderedContent = observer(function (props: Props) {
-  return <NewHydrate {...props} />
+  return <div ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 })
 
 export default ServerSideRenderedContent

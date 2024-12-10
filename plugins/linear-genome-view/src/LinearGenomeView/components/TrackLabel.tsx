@@ -1,10 +1,10 @@
 import { forwardRef } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import CloseIcon from '@mui/icons-material/Close'
-
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'

@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 import { observer } from 'mobx-react'
 
 // locals
@@ -6,7 +8,6 @@ import Tooltip from '../Tooltip'
 import type { TooltipContentsComponent } from '../Tooltip'
 import type { Source } from '../util'
 import type { Feature } from '@jbrowse/core/util'
-import { forwardRef } from 'react'
 
 const en = (n: number) => n.toLocaleString('en-US')
 

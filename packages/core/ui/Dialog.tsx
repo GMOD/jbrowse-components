@@ -1,3 +1,5 @@
+import { isValidElement } from 'react'
+
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -17,7 +19,6 @@ import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'
 
 import type { DialogProps } from '@mui/material'
-import { isValidElement } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {

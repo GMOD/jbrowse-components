@@ -1,4 +1,6 @@
 import type React from 'react'
+import { forwardRef } from 'react'
+
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -7,7 +9,6 @@ import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels'
 
 import type { LinearGenomeViewModel } from '..'
-import { forwardRef } from 'react'
 
 type LGV = LinearGenomeViewModel
 

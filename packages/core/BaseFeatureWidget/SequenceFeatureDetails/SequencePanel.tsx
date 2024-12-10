@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 import { observer } from 'mobx-react'
 
 import {
@@ -15,7 +17,6 @@ import ProteinSequence from './seqtypes/ProteinSequence'
 import type { SequenceFeatureDetailsModel } from './model'
 import type { SimpleFeatureSerialized } from '../../util'
 import type { SeqState } from '../util'
-import { forwardRef } from 'react'
 
 interface SequencePanelProps {
   sequence: SeqState
