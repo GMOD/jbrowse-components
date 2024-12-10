@@ -1,3 +1,78 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.18.0
+
+## 2.18.0 (2024-12-10)
+
+#### :rocket: Enhancement
+
+- `core`, `product-core`, `sv-core`
+  - [#4511](https://github.com/GMOD/jbrowse-components/pull/4511) Add 'matrix'
+    display for multi-sample VCFs ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4692](https://github.com/GMOD/jbrowse-components/pull/4692) Rename some
+    session options on desktop "File" menu
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4703](https://github.com/GMOD/jbrowse-components/pull/4703) Add mobx
+    transaction to multi-level synteny zoom
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4696](https://github.com/GMOD/jbrowse-components/pull/4696) BED
+    optimizations for GWAS type data ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4693](https://github.com/GMOD/jbrowse-components/pull/4693) Add mate.name
+    to LGVSyntenyDisplay feature mouseovers
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4694](https://github.com/GMOD/jbrowse-components/pull/4694) Allow opening
+    bedpe files from users tracks in SV inspector
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4672](https://github.com/GMOD/jbrowse-components/pull/4672) Add
+    BedGraphAdapter and BedGraphTabixAdapter
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `product-core`, `web-core`
+  - [#4074](https://github.com/GMOD/jbrowse-components/pull/4074) Autosave
+    sessions in jbrowse-web IndexedDB database to make it easier to access old
+    sessions ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `embedded-core`, `product-core`, `sv-core`,
+  `text-indexing`, `web-core`
+  - [#4682](https://github.com/GMOD/jbrowse-components/pull/4682) SV inspector
+    improvements (x-data-grid, opening track data, re-navigate breakpoint split
+    view, support INV/DEL/more) ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`
+  - [#4178](https://github.com/GMOD/jbrowse-components/pull/4178) Add ability to
+    use colorBy and filterBy for alignments track configs, and group by strand
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`, `text-indexing`
+  - [#4663](https://github.com/GMOD/jbrowse-components/pull/4663) Replace
+    AbortSignal with "stop token" to rescue some aborting behavior
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4708](https://github.com/GMOD/jbrowse-components/pull/4708) Avoid full
+  length sequence fetch on SNP coverage calculation
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4676](https://github.com/GMOD/jbrowse-components/pull/4676) Fix
+  MCScanAnchorsAdapter rendering in linear genome view
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4670](https://github.com/GMOD/jbrowse-components/pull/4670) Fix GC-content
+  track regression in v2.17.0 ([@cmdcolin](https://github.com/cmdcolin))
+- [#4667](https://github.com/GMOD/jbrowse-components/pull/4667) Reduce
+  self-pairing for some paired-end read data in breakpoint split view
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `__mocks__`, `app-core`, `core`, `embedded-core`, `product-core`, `sv-core`,
+  `text-indexing`, `web-core`
+  - [#4680](https://github.com/GMOD/jbrowse-components/pull/4680) Add
+    eslint-plugin-import for sort ordering
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4675](https://github.com/GMOD/jbrowse-components/pull/4675) Add fix for
+    potential hydration mismatch errors
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.52s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.17.0
 
 ## 2.17.0 (2024-11-18)
