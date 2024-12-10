@@ -28,6 +28,14 @@
  * IN THE SOFTWARE.
  */
 
+function isWebWorker() {
+  return (
+    // @ts-expect-error
+    typeof WorkerGlobalScope !== 'undefined' &&
+    // @ts-expect-error
+    self instanceof WorkerGlobalScope
+  )
+}
 export function createStopToken() {
   // URL not available in jest and can't properly mock it
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -41,7 +49,8 @@ export function stopStopToken(stopToken: string) {
 }
 
 export function checkStopToken(stopToken?: string) {
-  if (typeof jest === 'undefined' && stopToken !== undefined) {
+  // avoid doing synchronous web worker on main thread
+  if (typeof jest === 'undefined' && stopToken !== undefined && isWebWorker()) {
     const xhr = new XMLHttpRequest()
 
     // synchronous XHR usage to check the token
