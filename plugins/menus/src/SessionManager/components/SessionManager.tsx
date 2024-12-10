@@ -5,7 +5,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
 import {
-  Alert,
   Button,
   Checkbox,
   FormControlLabel,
@@ -16,14 +15,23 @@ import {
 import { DataGrid } from '@mui/x-data-grid'
 import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 import type { SessionModel } from './util'
+
+const useStyles = makeStyles()(theme => ({
+  mb: {
+    margin: theme.spacing(1),
+    marginBottom: theme.spacing(4),
+  },
+}))
 
 const SessionManager = observer(function ({
   session,
 }: {
   session: SessionModel
 }) {
+  const { classes } = useStyles()
   const [showOnlyFavs, setShowOnlyFavs] = useLocalStorage(
     'sessionManager-showOnlyFavs',
     false,
@@ -39,31 +47,39 @@ const SessionManager = observer(function ({
 
   return (
     <>
-      <Alert severity="info">Click the star to "favorite" a session</Alert>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showOnlyFavs}
-            onChange={() => {
-              setShowOnlyFavs(val => !val)
-            }}
-          />
-        }
-        label="Show only favorites?"
-      />
-      <Button
-        variant="contained"
-        onClick={() => {
-          session.savedSessionMetadata?.forEach(elt => {
-            if (differenceInDays(+Date.now(), elt.createdAt) > 7) {
-              // @ts-expect-error
-              session.deleteSavedSession(elt.id)
-            }
-          })
-        }}
-      >
-        Delete sessions older than 7 days? Will not delete favorites
-      </Button>
+      <div className={classes.mb}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showOnlyFavs}
+              onChange={() => {
+                setShowOnlyFavs(val => !val)
+              }}
+            />
+          }
+          label="Show only favorites?"
+        />
+
+        <Button
+          variant="contained"
+          onClick={() => {
+            let i = 0
+            session.savedSessionMetadata?.forEach(elt => {
+              if (
+                differenceInDays(+Date.now(), elt.createdAt) > 1 &&
+                !elt.favorite
+              ) {
+                // @ts-expect-error
+                session.deleteSavedSession(elt.id)
+                i++
+              }
+            })
+            session.notify(`${i} sessions deleted`, 'info')
+          }}
+        >
+          Delete non-fav sessions older than 7 days?
+        </Button>
+      </div>
       {rows ? (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <DataGrid

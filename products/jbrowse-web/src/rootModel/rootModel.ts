@@ -465,21 +465,34 @@ export default function RootModel({
                 ? [
                     {
                       label: 'Favorite sessions...',
-                      subMenu: favs.map(r => ({
-                        label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                        disabled: r.id === self.session.id,
-                        icon: StarIcon,
-                        onClick: () => {
-                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                          ;(async () => {
-                            try {
-                              await self.activateSession(r.id)
-                            } catch (e) {
-                              self.session.notifyError(`${e}`, e)
-                            }
-                          })()
+                      subMenu: [
+                        ...favs.slice(0, 5).map(r => ({
+                          label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                          disabled: r.id === self.session.id,
+                          icon: StarIcon,
+                          onClick: () => {
+                            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                            ;(async () => {
+                              try {
+                                await self.activateSession(r.id)
+                              } catch (e) {
+                                self.session.notifyError(`${e}`, e)
+                              }
+                            })()
+                          },
+                        })),
+                        {
+                          label: 'More...',
+                          icon: FolderOpenIcon,
+                          onClick: (session: SessionWithWidgets) => {
+                            const widget = session.addWidget(
+                              'SessionManager',
+                              'sessionManager',
+                            )
+                            session.showWidget(widget)
+                          },
                         },
-                      })),
+                      ],
                     },
                   ]
                 : []),

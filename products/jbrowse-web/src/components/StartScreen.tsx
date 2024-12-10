@@ -12,7 +12,6 @@ import {
   NewLinearGenomeViewSession,
   NewSVInspectorSession,
 } from './NewSessionCards'
-import RecentSessionList from './RecentSessionList'
 
 import type { WebRootModel } from '../rootModel/rootModel'
 
@@ -87,7 +86,6 @@ const StartScreen = observer(function ({
             <NewSVInspectorSession rootModel={rootModel} />
           </div>
         </div>
-        <RecentSessionList rootModel={rootModel} />
       </Container>
     </>
   )
