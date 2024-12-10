@@ -1,15 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { iterMap } from '@jbrowse/core/util'
+import { iterMap, notEmpty } from '@jbrowse/core/util'
 
 import { layoutFeature } from './layoutFeature'
 import { sortFeature } from './sortUtil'
 
-import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
+import type { PreProcessedRenderArgs } from './types'
 
 // layout determines the height of the canvas that we use to render
-export function layoutFeats(
-  props: RenderArgsDeserializedWithFeaturesAndLayout,
-) {
+export function layoutFeats(props: PreProcessedRenderArgs) {
   const { layout, features, sortedBy, config, bpPerPx, showSoftClip, regions } =
     props
   const region = regions[0]!
@@ -20,7 +18,7 @@ export function layoutFeats(
 
   const heightPx = readConfObject(config, 'height')
   const displayMode = readConfObject(config, 'displayMode')
-  return iterMap(
+  const layoutRecords = iterMap(
     featureMap.values(),
     feature =>
       layoutFeature({
@@ -33,5 +31,10 @@ export function layoutFeats(
         displayMode,
       }),
     featureMap.size,
-  )
+  ).filter(notEmpty)
+
+  return {
+    layoutRecords,
+    height: Math.max(layout.getTotalHeight(), 1),
+  }
 }

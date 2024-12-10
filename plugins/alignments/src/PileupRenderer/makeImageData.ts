@@ -13,10 +13,8 @@ import {
   shouldDrawSNPsMuted,
 } from './util'
 
-import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
+import type { ProcessedRenderArgs } from './types'
 import type { Feature } from '@jbrowse/core/util'
-
-export type RenderArgsWithColor = RenderArgsDeserializedWithFeaturesAndLayout
 
 interface LayoutFeature {
   heightPx: number
@@ -33,7 +31,7 @@ export function makeImageData({
   ctx: CanvasRenderingContext2D
   canvasWidth: number
   layoutRecords: LayoutFeature[]
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
 }) {
   const {
     stopToken,

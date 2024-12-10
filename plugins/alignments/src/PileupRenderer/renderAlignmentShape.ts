@@ -2,7 +2,7 @@ import { bpSpanPx } from '@jbrowse/core/util'
 
 import { parseCigar } from '../MismatchParser'
 
-import type { RenderArgsDeserialized } from './PileupRenderer'
+import type { ProcessedRenderArgs } from './types'
 import type { LayoutFeature } from './util'
 
 export function renderAlignmentShape({
@@ -12,7 +12,7 @@ export function renderAlignmentShape({
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
-  renderArgs: RenderArgsDeserialized
+  renderArgs: ProcessedRenderArgs
 }) {
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat

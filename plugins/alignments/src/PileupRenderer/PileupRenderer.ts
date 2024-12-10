@@ -1,44 +1,22 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { notEmpty, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
 import { fetchSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
 
 import type { PileupLayoutSessionProps } from './PileupLayoutSession'
-import type {
-  ColorBy,
-  ModificationTypeWithColor,
-  SortedBy,
-} from '../shared/types'
+import type { RenderArgsDeserialized } from './types'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RenderArgsDeserialized as BoxRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import type { Feature, Region } from '@jbrowse/core/util'
-import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-
-export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
-  colorBy?: ColorBy
-  colorTagMap?: Record<string, string>
-  visibleModifications?: Record<string, ModificationTypeWithColor>
-  sortedBy?: SortedBy
-  showSoftClip: boolean
-  highResolutionScaling: number
-}
-
-export interface RenderArgsDeserializedWithFeaturesAndLayout
-  extends RenderArgsDeserialized {
-  features: Map<string, Feature>
-  layout: BaseLayout<Feature>
-  regionSequence?: string
-}
+import type { Region } from '@jbrowse/core/util'
 
 export default class PileupRenderer extends BoxRendererType {
   supportsSVG = true
 
-  async fetchSequence(renderProps: RenderArgsDeserialized) {
-    const { sessionId, regions, adapterConfig } = renderProps
+  async fetchSequence(renderProps: RenderArgsDeserialized, region: Region) {
+    const { sessionId, adapterConfig } = renderProps
     const { sequenceAdapter } = adapterConfig
     if (!sequenceAdapter) {
       return undefined
@@ -48,7 +26,6 @@ export default class PileupRenderer extends BoxRendererType {
       sessionId,
       sequenceAdapter,
     )
-    const region = regions[0]!
     return fetchSequence(
       {
         ...region,
@@ -76,24 +53,22 @@ export default class PileupRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
-    const { regions, bpPerPx } = renderProps
+    const { colorBy, regions, bpPerPx } = renderProps
     const region = regions[0]!
 
-    const layoutRecords = layoutFeats({
+    const regionSequence =
+      colorBy?.type === 'methylation' && features.size
+        ? await this.fetchSequence(renderProps, region)
+        : undefined
+
+    const { layoutRecords, height } = layoutFeats({
       ...renderProps,
       features,
       layout,
     })
-
-    // only need reference sequence if there are features and only for some
-    // cases
-    const regionSequence = features.size
-      ? await this.fetchSequence(renderProps)
-      : undefined
     const width = (region.end - region.start) / bpPerPx
-    const height = Math.max(layout.getTotalHeight(), 1)
-
     const { makeImageData } = await import('./makeImageData')
+
     const res = await renderToAbstractCanvas(
       width,
       height,
@@ -101,7 +76,7 @@ export default class PileupRenderer extends BoxRendererType {
       ctx => {
         makeImageData({
           ctx,
-          layoutRecords: layoutRecords.filter(notEmpty),
+          layoutRecords,
           canvasWidth: width,
           renderArgs: {
             ...renderProps,

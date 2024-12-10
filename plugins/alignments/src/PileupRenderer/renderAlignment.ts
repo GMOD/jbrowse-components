@@ -6,7 +6,7 @@ import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { parseCigar } from '../MismatchParser'
 import { renderMethylation } from './renderMethylation'
 
-import type { RenderArgsWithColor } from './makeImageData'
+import type { ProcessedRenderArgs } from './types'
 import type { LayoutFeature } from './util'
 
 export function renderAlignment({
@@ -22,7 +22,7 @@ export function renderAlignment({
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
   colorForBase: Record<string, string>
   contrastForBase: Record<string, string>
   charWidth: number

@@ -4,7 +4,7 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { fillRect, getCharWidthHeight } from './util'
 import { parseCigar } from '../MismatchParser'
 
-import type { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
+import type { ProcessedRenderArgs } from './types'
 import type { LayoutFeature } from './util'
 import type { Mismatch } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -21,7 +21,7 @@ export function renderSoftClipping({
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
-  renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+  renderArgs: ProcessedRenderArgs
   config: AnyConfigurationModel
   colorForBase: Record<string, string>
   theme: Theme

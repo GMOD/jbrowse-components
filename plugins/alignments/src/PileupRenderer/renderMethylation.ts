@@ -4,7 +4,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillRect } from './util'
 import { getMethBins } from '../ModificationParser'
 
-import type { RenderArgsWithColor } from './makeImageData'
+import type { ProcessedRenderArgs } from './types'
 import type { LayoutFeature } from './util'
 import type { Region } from '@jbrowse/core/util'
 
@@ -24,7 +24,7 @@ export function renderMethylation({
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
   canvasWidth: number
   cigarOps: string[]
 }) {

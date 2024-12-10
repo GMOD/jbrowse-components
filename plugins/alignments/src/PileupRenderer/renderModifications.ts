@@ -4,7 +4,7 @@ import { fillRect } from './util'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 import { alphaColor } from '../shared/util'
 
-import type { RenderArgsWithColor } from './makeImageData'
+import type { ProcessedRenderArgs } from './types'
 import type { LayoutFeature } from './util'
 import type { Region } from '@jbrowse/core/util'
 
@@ -22,7 +22,7 @@ export function renderModifications({
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
   canvasWidth: number
   cigarOps: string[]
 }) {
