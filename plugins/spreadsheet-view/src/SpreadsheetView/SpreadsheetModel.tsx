@@ -141,7 +141,7 @@ export default function stateModelFactory() {
                     field: f.name,
                     width: measureGridWidth(
                       // @ts-expect-error
-                      rows.map(r => r[f.name]),
+                      [...rows.map(r => r[f.name]), f.name],
                       { minWidth: 20 },
                     ),
                   }) satisfies GridColDef<(typeof rows)[0]>,

@@ -1,3 +1,5 @@
+import { isNumber } from '@mui/x-data-grid/internals'
+
 import { bufferToLines, parseStrand } from './util'
 
 export function parseBedPEBuffer(buffer: Uint8Array) {
@@ -58,7 +60,10 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
             strand: cols[8],
             mateStrand: cols[9],
             ...Object.fromEntries(
-              extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
+              extraNames.map((n, idx) => {
+                const r = cols[idx + coreColumns.length]
+                return [n, isNumber(r) ? +r : r]
+              }),
             ),
           },
           // an actual simplefeatureserialized
@@ -77,7 +82,10 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
             name: cols[6],
             score: cols[7],
             ...Object.fromEntries(
-              extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
+              extraNames.map((n, idx) => {
+                const r = cols[idx + coreColumns.length]
+                return [n, isNumber(r) ? +r : r]
+              }),
             ),
           },
         }

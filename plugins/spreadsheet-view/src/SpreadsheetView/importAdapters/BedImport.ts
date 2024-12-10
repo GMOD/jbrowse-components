@@ -1,3 +1,4 @@
+import { isNumber } from './isNumber'
 import { bufferToLines, parseStrand } from './util'
 
 export function parseBedBuffer(buffer: Uint8Array) {
@@ -12,7 +13,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
   )
 
   const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
-  const coreColumns = ['refName', 'start', 'end', 'name', 'score', 'strand']
+  const coreColumns = ['refName', 'start', 'end']
   const numExtraColumns = Math.max(
     0,
     (rest[0]?.split('\t')?.length || 0) - coreColumns.length,
@@ -42,7 +43,10 @@ export function parseBedBuffer(buffer: Uint8Array) {
             score: cols[4],
             strand: cols[5],
             ...Object.fromEntries(
-              extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
+              extraNames.map((n, idx) => {
+                const r = cols[idx + coreColumns.length]
+                return [n, isNumber(r) ? +r : r]
+              }),
             ),
           },
           // an actual simplefeatureserialized
@@ -55,7 +59,10 @@ export function parseBedBuffer(buffer: Uint8Array) {
             score: cols[4],
             strand: parseStrand(cols[5]),
             ...Object.fromEntries(
-              extraNames.map((n, idx) => [n, cols[idx + coreColumns.length]]),
+              extraNames.map((n, idx) => {
+                const r = cols[idx + coreColumns.length]
+                return [n, isNumber(r) ? +r : r]
+              }),
             ),
           },
         }
