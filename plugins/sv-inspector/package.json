@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sv-inspector",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "description": "JBrowse 2 SV inspector view",
   "keywords": [
     "jbrowse",
@@ -36,8 +36,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@mui/icons-material": "^6.0.0",
-    "@jbrowse/sv-core": "^2.0.0"
+    "@jbrowse/sv-core": "^2.18.0",
+    "@mui/icons-material": "^6.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
