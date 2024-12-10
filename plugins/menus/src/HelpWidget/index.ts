@@ -7,7 +7,6 @@ import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-
 const configSchema = ConfigurationSchema('HelpWidget', {})
 
 const stateModel = types.model('HelpWidget', {

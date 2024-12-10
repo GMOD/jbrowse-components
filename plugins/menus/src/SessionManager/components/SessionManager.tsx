@@ -46,7 +46,7 @@ const SessionManager = observer(function ({
     .filter(f => (showOnlyFavs ? f.fav : true))
 
   return (
-    <>
+    <div>
       <div className={classes.mb}>
         <FormControlLabel
           control={
@@ -185,7 +185,7 @@ const SessionManager = observer(function ({
       ) : (
         <div>No sessions loaded</div>
       )}
-    </>
+    </div>
   )
 })
 

@@ -212,23 +212,30 @@ export default function RootModel({
                 async () => {
                   if (self.session) {
                     try {
-                      await sessionDB.put(
-                        'sessions',
-                        getSnapshot(self.session),
-                        self.session.id,
-                      )
-                      await sessionDB.put(
-                        'metadata',
-                        {
-                          name: self.session.name,
-                          id: self.session.id,
-                          createdAt: new Date(),
-                          configPath: self.configPath || '',
-                          favorite: false,
-                        },
-                        self.session.id,
-                      )
+                      // careful not to access self.savedSessionMetadata in
+                      // here, or else it can create an infinite loop
+                      const s = self.session
 
+                      // step 1. update the idb data according to whatever
+                      // triggered the autorun
+                      if (self.sessionDB) {
+                        await sessionDB.put('sessions', getSnapshot(s), s.id)
+
+                        const ret = await self.sessionDB.get('metadata', s.id)
+                        await sessionDB.put(
+                          'metadata',
+                          {
+                            ...ret,
+                            favorite: ret?.favorite || false,
+                            name: s.name,
+                            id: s.id,
+                            createdAt: new Date(),
+                            configPath: self.configPath || '',
+                          },
+                          s.id,
+                        )
+                      }
+                      // step 2. refetch the metadata
                       await self.fetchSessionMetadata()
                     } catch (e) {
                       console.error(e)

@@ -7,7 +7,6 @@ import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-
 export const configSchema = ConfigurationSchema('SessionManager', {})
 
 export const stateModel = types.model('SessionManager', {
