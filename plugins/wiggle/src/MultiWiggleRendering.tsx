@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'

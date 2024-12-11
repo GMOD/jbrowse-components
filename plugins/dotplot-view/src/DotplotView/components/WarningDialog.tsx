@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'

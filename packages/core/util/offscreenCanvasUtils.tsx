@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import React from 'react'
+
+import { isValidElement } from 'react'
 
 import { CanvasSequence } from 'canvas-sequencer'
 
@@ -99,7 +100,7 @@ export function ReactRendering({
     html?: string
   }
 }) {
-  return React.isValidElement(rendering.reactElement) ? (
+  return isValidElement(rendering.reactElement) ? (
     rendering.reactElement
   ) : (
     <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />

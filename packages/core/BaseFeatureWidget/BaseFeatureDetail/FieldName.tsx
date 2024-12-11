@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 

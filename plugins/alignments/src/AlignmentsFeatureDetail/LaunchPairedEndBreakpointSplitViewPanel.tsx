@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import { lazy } from 'react'
 
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'

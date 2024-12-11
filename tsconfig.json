@@ -15,8 +15,8 @@
     "removeComments": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "jsx": "react-jsx",
     "isolatedModules": true,
-    "jsx": "react",
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
@@ -28,6 +28,7 @@
     "**/umd/",
     "**/esm/",
     "**/tmp/",
+    "**/config/jest/",
     "**/embedded_demos/",
     "**/component_tests/",
     "**/plugin-development-tools/",

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'

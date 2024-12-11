@@ -1,10 +1,9 @@
-import React from 'react'
+import { Fragment } from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getRoot } from 'mobx-state-tree'
 
 import SVGBackground from './SVGBackground'
 import Ruler from '../components/Ruler'
@@ -19,7 +18,6 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
 
-  const { createRootFn } = getRoot<any>(model)
   const { width, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
@@ -52,12 +50,11 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
             ))}
             {displayResults.map(({ result }, i) => (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              <React.Fragment key={i}>{result}</React.Fragment>
+              <Fragment key={i}>{result}</Fragment>
             ))}
           </g>
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }

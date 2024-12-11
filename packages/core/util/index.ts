@@ -12,7 +12,8 @@ import {
   isAlive,
   isStateTreeNode,
 } from 'mobx-state-tree'
-import { flushSync, render } from 'react-dom' // eslint-disable-line react/no-deprecated
+import { flushSync } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { colord } from './colord'
 import { checkStopToken } from './stopToken'
@@ -80,14 +81,16 @@ export function useWidthSetter(
   return ref
 }
 
+type Timer = ReturnType<typeof setTimeout>
+
 // https://stackoverflow.com/questions/56283920/
 export function useDebouncedCallback<T>(
   callback: (...args: T[]) => void,
   wait = 400,
 ) {
   // track args & timeout handle between calls
-  const argsRef = useRef<T[]>()
-  const timeout = useRef<ReturnType<typeof setTimeout>>()
+  const argsRef = useRef<T[]>(null)
+  const timeout = useRef<Timer>(null)
 
   // make sure our timeout gets cleared if our consuming component gets
   // unmounted
@@ -1380,19 +1383,10 @@ export function getFillProps(str: string) {
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-export function renderToStaticMarkup(
-  node: React.ReactElement,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  },
-) {
+export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')
   flushSync(() => {
-    if (createRootFn) {
-      createRootFn(div).render(node)
-    } else {
-      render(node, div)
-    }
+    createRoot(div).render(node)
   })
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useLocalStorage } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'

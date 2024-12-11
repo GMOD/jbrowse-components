@@ -1,4 +1,4 @@
-import React, { lazy, useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'

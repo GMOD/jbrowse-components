@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import { lazy } from 'react'
 
 import Report from '@mui/icons-material/Report'
 import { observable } from 'mobx'

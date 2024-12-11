@@ -1,4 +1,4 @@
-import React from 'react'
+import { forwardRef } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
@@ -23,7 +23,7 @@ interface Props {
   model: { visibleModifications: Map<string, { color: string }> }
 }
 
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2(props, reactRef) {
     const { feature, model } = props
     const { classes } = useStyles()

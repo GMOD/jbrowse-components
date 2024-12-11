@@ -1,5 +1,3 @@
-import React from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'

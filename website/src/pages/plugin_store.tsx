@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import copy from 'copy-to-clipboard'
 
 import Layout from '@theme/Layout'

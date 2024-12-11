@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'

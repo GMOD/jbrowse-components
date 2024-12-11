@@ -1,4 +1,4 @@
-import React from 'react'
+import { Fragment } from 'react'
 
 import {
   ReactRendering,
@@ -81,7 +81,7 @@ export async function renderBaseLinearDisplaySvg(
 
         return (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <React.Fragment key={`frag-${index}`}>
+          <Fragment key={`frag-${index}`}>
             <defs>
               <clipPath id={clipid}>
                 <rect
@@ -97,7 +97,7 @@ export async function renderBaseLinearDisplaySvg(
                 <ReactRendering rendering={rendering} />
               </g>
             </g>
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>

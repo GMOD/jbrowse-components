@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app'
 import volvoxConfig from '../../public/test_data/volvox/config.json'

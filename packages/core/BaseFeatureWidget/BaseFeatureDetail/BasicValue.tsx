@@ -1,4 +1,4 @@
-import React from 'react'
+import { isValidElement } from 'react'
 
 import { Link } from '@mui/material'
 import isObject from 'is-object'
@@ -21,7 +21,7 @@ export default function BasicValue({ value }: { value: unknown }) {
   const isLink = /^https?:\/\//.exec(`${value}`)
   return (
     <div className={classes.fieldValue}>
-      {React.isValidElement(value) ? (
+      {isValidElement(value) ? (
         value
       ) : isLink ? (
         <Link href={`${value}`}>{`${value}`}</Link>

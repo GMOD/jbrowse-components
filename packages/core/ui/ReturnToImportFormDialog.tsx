@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 

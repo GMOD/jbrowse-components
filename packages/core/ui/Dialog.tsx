@@ -1,4 +1,4 @@
-import React from 'react'
+import { isValidElement } from 'react'
 
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import CloseIcon from '@mui/icons-material/Close'
@@ -49,7 +49,7 @@ const Dialog = observer(function (props: Props) {
   return (
     <MUIDialog {...props}>
       <ScopedCssBaseline>
-        {React.isValidElement(header) ? (
+        {isValidElement(header) ? (
           header
         ) : (
           <DialogTitle>

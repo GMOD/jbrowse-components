@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getEnv, getSession } from '@jbrowse/core/util'
 import {
   Button,

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

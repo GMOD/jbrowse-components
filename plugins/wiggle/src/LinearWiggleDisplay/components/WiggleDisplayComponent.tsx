@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,

@@ -1,4 +1,4 @@
-import React from 'react'
+import { forwardRef } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -68,7 +68,7 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
 }
 
 const SequencePanel = observer(
-  React.forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
+  forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
     const { sequence, model, feature } = props
     const { showCoordinates, mode } = model
 

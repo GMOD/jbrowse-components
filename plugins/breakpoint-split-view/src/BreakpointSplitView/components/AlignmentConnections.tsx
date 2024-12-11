@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
@@ -35,7 +35,7 @@ const AlignmentConnections = observer(function ({
 }: {
   model: BreakpointViewModel
   trackId: string
-  parentRef: React.RefObject<SVGSVGElement>
+  parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { views, showIntraviewLinks } = model

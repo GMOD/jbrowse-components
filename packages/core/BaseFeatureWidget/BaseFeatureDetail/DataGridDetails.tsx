@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'

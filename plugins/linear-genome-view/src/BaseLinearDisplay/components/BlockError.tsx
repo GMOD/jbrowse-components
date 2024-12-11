@@ -1,5 +1,3 @@
-import React from 'react'
-
 import ErrorMessageStackTraceDialog from '@jbrowse/core/ui/ErrorMessageStackTraceDialog'
 import { getSession } from '@jbrowse/core/util'
 import RefreshIcon from '@mui/icons-material/Refresh'

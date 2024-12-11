@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

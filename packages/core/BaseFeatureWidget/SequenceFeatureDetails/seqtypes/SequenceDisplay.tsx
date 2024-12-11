@@ -1,4 +1,4 @@
-import React from 'react'
+import { Fragment } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -38,11 +38,11 @@ const SequenceDisplay = observer(function ({
           : ''
     return (
       /* biome-ignore lint/suspicious/noArrayIndexKey: */
-      <React.Fragment key={`${chunk}-${idx}`}>
+      <Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
         <span style={{ background: color }}>{chunk}</span>
         {postfix}
-      </React.Fragment>
+      </Fragment>
     )
   })
 })

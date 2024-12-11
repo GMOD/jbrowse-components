@@ -1,6 +1,7 @@
 import eslint from '@eslint/js'
 import importPlugin from 'eslint-plugin-import'
 import eslintPluginReact from 'eslint-plugin-react'
+import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
@@ -11,6 +12,7 @@ export default tseslint.config(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
+      'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',
       '**/esm/**/*',
@@ -42,7 +44,14 @@ export default tseslint.config(
       },
     },
   },
-
+  {
+    plugins: {
+      'react-compiler': reactCompiler,
+    },
+    rules: {
+      'react-compiler/react-compiler': 'error',
+    },
+  },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylisticTypeChecked,
@@ -88,6 +97,7 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
       'react/no-is-mounted': 'off',
+      'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
       'unicorn/prefer-global-this': 'off',

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'

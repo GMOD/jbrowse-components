@@ -1,5 +1,3 @@
-import React from 'react'
-
 export default function NoConfigMessage() {
   const links = [
     ['test_data/volvox/config.json', 'Volvox (sample data)'],

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'

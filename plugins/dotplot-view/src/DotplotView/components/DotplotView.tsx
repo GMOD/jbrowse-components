@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 
 import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { transaction } from 'mobx'

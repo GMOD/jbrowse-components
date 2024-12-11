@@ -1,5 +1,3 @@
-import React from 'react'
-
 import isObject from 'is-object'
 import { makeStyles } from 'tss-react/mui'
 

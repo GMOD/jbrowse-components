@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import { Button, alpha } from '@mui/material'

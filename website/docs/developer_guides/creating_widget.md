@@ -8,7 +8,6 @@ Here is an example of registering a custom widget
 index.tsx
 
 ```tsx
-import React from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import PluginManager from '@jbrowse/core/PluginManager'

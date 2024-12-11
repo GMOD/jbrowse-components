@@ -1,4 +1,9 @@
 {
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
   "assemblies": [
     {
       "name": "UU_Cfam_GSD_1.0",
@@ -22,11 +27,6 @@
       }
     }
   ],
-  "configuration": {},
-  "connections": [],
-  "defaultSession": {
-    "name": "New Session"
-  },
   "tracks": [
     {
       "type": "FeatureTrack",

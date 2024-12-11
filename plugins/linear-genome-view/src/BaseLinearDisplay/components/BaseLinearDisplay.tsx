@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'

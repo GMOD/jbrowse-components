@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { Grid, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'

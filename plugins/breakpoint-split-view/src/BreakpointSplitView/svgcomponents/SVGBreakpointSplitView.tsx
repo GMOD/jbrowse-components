@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import {
@@ -9,7 +7,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getRoot } from 'mobx-state-tree'
 
 import SVGBackground from './SVGBackground'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
@@ -31,7 +28,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     themeName = 'default',
   } = opts
 
-  const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, views } = model
@@ -147,6 +143,5 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }

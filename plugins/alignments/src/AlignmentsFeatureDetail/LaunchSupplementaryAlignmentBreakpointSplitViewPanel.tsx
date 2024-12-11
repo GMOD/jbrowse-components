@@ -1,4 +1,4 @@
-import React, { lazy, useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'

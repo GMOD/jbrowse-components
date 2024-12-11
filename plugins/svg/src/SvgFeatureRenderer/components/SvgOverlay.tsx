@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Buffer } from 'buffer'
 
 import { render } from '@testing-library/react'

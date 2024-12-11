@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 

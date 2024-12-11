@@ -1,5 +1,3 @@
-import React from 'react'
-
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 import { linearSyntenyViewHelperModelFactory } from './stateModelFactory'

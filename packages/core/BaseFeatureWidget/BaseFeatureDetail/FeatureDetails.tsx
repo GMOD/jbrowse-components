@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { Divider, Typography } from '@mui/material'
 

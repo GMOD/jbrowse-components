@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'

@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import { lazy } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { IconButton, MenuItem, TextField } from '@mui/material'

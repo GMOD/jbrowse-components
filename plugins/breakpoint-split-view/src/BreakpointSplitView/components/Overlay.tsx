@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { observer } from 'mobx-react'
 
 import AlignmentConnections from './AlignmentConnections'
@@ -10,7 +8,7 @@ import Translocations from './Translocations'
 import type { BreakpointViewModel } from '../model'
 
 const Overlay = observer(function (props: {
-  parentRef: React.RefObject<SVGSVGElement>
+  parentRef: React.RefObject<SVGSVGElement | null>
   model: BreakpointViewModel
   trackId: string
   getTrackYPosOverride?: (trackId: string, level: number) => number

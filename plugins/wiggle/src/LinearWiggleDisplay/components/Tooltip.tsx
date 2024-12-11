@@ -1,4 +1,4 @@
-import React from 'react'
+import { forwardRef } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -14,7 +14,7 @@ interface Props {
   feature: Feature
 }
 
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, ref) {
     const start = feature.get('start') + 1
     const end = feature.get('end')

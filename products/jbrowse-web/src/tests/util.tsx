@@ -1,7 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import React from 'react'
-
 import { Buffer } from 'buffer'
 
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -185,8 +183,8 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
 
   return {
     autocomplete,
-    input,
     getInputValue,
+    input,
     ...args,
   }
 }
@@ -208,12 +206,9 @@ export function mockFile404(
   readBuffer: (request: Request) => Promise<Response>,
 ) {
   // @ts-expect-error
-  fetch.mockResponse(async request => {
-    if (request.url === str) {
-      return { status: 404 }
-    }
-    return readBuffer(request)
-  })
+  fetch.mockResponse(async request =>
+    request.url === str ? { status: 404 } : readBuffer(request),
+  )
 }
 
 export { default as JBrowse } from './TestingJBrowse'

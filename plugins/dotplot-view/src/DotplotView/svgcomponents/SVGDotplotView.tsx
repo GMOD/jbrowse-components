@@ -1,10 +1,7 @@
-import React from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getRoot } from 'mobx-state-tree'
 
 import SVGBackground from './SVGBackground'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
@@ -20,7 +17,6 @@ export async function renderToSvg(
   await when(() => model.initialized)
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
 
-  const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
@@ -67,6 +63,5 @@ export async function renderToSvg(
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }

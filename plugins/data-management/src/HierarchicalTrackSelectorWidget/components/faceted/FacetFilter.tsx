@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { coarseStripHTML } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'

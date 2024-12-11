@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx, measureText } from '@jbrowse/core/util'

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { Paper } from '@mui/material'

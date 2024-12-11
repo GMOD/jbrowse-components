@@ -1,4 +1,5 @@
-import React from 'react'
+import type React from 'react'
+import { forwardRef } from 'react'
 
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -34,7 +35,7 @@ interface ScalebarProps {
 }
 
 const Scalebar = observer(
-  React.forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
+  forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
     { model, style, className, ...other },
     ref,
   ) {

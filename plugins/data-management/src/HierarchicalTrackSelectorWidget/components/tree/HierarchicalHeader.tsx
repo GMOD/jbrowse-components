@@ -1,5 +1,3 @@
-import React from 'react'
-
 import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { observer } from 'mobx-react'

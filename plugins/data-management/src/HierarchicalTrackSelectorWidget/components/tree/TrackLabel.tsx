@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -30,6 +30,7 @@ function PaperComponent(props: PaperProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <Draggable
+      // @ts-expect-error
       nodeRef={ref}
       cancel={'[class*="MuiDialogContent-root"]'}
       // @ts-expect-error

@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
@@ -24,14 +22,6 @@ export default function createModel(
   runtimePlugins: PluginConstructor[],
   makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
-  },
-
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
   },
 ) {
   const pluginManager = new PluginManager(
@@ -79,14 +69,6 @@ export default function createModel(
         },
         MainThreadRpcDriver: {},
       }),
-      /**
-       * #volatile
-       */
-      hydrateFn,
-      /**
-       * #volatile
-       */
-      createRootFn,
       /**
        * #volatile
        */

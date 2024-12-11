@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import type { LazyExoticComponent } from 'react'
-import React, { Suspense, lazy } from 'react'
+import * as React from 'react'
+import { Suspense, forwardRef, lazy } from 'react'
 
 import { useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
@@ -162,7 +163,7 @@ const Entries = {
 
 const LazyMUICore = Object.fromEntries(
   Object.entries(Entries).map(([key, ReactComponent]) => {
-    const Component = React.forwardRef((props: any, ref) => (
+    const Component = forwardRef((props: any, ref) => (
       <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
       </Suspense>
@@ -456,7 +457,7 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
 
 const LazyDataGridComponents = Object.fromEntries(
   Object.entries(DataGridEntries).map(([key, ReactComponent]) => {
-    const Component = React.forwardRef((props: any, ref) => (
+    const Component = forwardRef((props: any, ref) => (
       <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
       </Suspense>
@@ -466,21 +467,21 @@ const LazyDataGridComponents = Object.fromEntries(
   }),
 )
 
-const LazyAttributes = React.forwardRef((props: any, ref) => (
+const LazyAttributes = forwardRef((props: any, ref) => (
   <Suspense fallback={null}>
     <Attributes {...props} ref={ref} />
   </Suspense>
 ))
 LazyAttributes.displayName = 'Attributes'
 
-const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
+const LazyFeatureDetails = forwardRef((props: any, ref) => (
   <Suspense fallback={null}>
     <FeatureDetails {...props} ref={ref} />
   </Suspense>
 ))
 LazyFeatureDetails.displayName = 'FeatureDetails'
 
-const LazyBaseCard = React.forwardRef((props: any, ref) => (
+const LazyBaseCard = forwardRef((props: any, ref) => (
   <Suspense fallback={null}>
     <BaseCard {...props} ref={ref} />
   </Suspense>

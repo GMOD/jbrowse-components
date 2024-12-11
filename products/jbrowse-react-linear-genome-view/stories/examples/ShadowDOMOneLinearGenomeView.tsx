@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'

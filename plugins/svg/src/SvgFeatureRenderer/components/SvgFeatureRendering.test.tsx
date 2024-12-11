@@ -1,5 +1,3 @@
-import React from 'react'
-
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'

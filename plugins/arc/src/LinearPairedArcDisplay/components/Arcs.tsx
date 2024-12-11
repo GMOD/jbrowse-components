@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useRef, useState } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import {
