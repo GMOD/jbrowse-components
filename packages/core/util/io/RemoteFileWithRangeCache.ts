@@ -1,9 +1,5 @@
-import { Buffer } from 'buffer'
-
 import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
-import { RemoteFile } from 'generic-filehandle'
-
-import type { PolyfilledResponse } from 'generic-filehandle'
+import { RemoteFile } from 'generic-filehandle2'
 
 type BinaryRangeFetch = (
   url: string,
@@ -16,7 +12,7 @@ export interface BinaryRangeResponse {
   headers: Record<string, string>
   requestDate: Date
   responseDate: Date
-  buffer: Buffer
+  buffer: Uint8Array
 }
 
 const fetchers: Record<string, BinaryRangeFetch> = {}
@@ -47,10 +43,7 @@ export function clearCache() {
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
-  public async fetch(
-    url: RequestInfo,
-    init?: RequestInit,
-  ): Promise<PolyfilledResponse> {
+  public async fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
     const str = String(url)
     if (!fetchers[str]) {
       fetchers[str] = this.fetchBinaryRange.bind(this)
@@ -111,7 +104,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       headers,
       requestDate,
       responseDate,
-      buffer: Buffer.from(arrayBuffer),
+      buffer: new Uint8Array(arrayBuffer),
     }
   }
 }

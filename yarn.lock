@@ -9392,6 +9392,11 @@ gauge@^4.0.3:
     strip-ansi "^6.0.1"
     wide-align "^1.1.5"
 
+generic-filehandle2@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-0.0.1.tgz#7f26ee54a939ed588d6bdb3a453bb2255ccd2be9"
+  integrity sha512-cySnWoVmNUSkRztAwlghNVAYXUh+VVy/fxn8tT3jZIo8UQEHkYL7ueSUseBZrwqBCq9n06Wp/F4xv2q2/SwYCQ==
+
 generic-filehandle@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-3.2.0.tgz#f65401ce71bccadb796335495c3d9250185876d4"
