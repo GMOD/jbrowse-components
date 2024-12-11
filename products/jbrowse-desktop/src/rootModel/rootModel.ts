@@ -60,7 +60,6 @@ type SessionModelFactory = (args: {
  * composed of
  * - [BaseRootModel](../baserootmodel)
  * - [InternetAccountsMixin](../internetaccountsmixin)
- * - [DesktopMenusMixin](../desktopmenusmixin)
  * - [DesktopSessionManagementMixin](../desktopsessionmanagementmixin)
  * - [HistoryManagementMixin](../historymanagementmixin)
  * - [RootAppMenuMixin](../rootappmenumixin)
