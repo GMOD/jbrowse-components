@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearReadCloudDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReadCloudDisplay.md)
+
+## Docs
 
 it is not a block based track, hence not BaseLinearDisplay extends
 
@@ -38,22 +46,22 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBy
+#### property: filterBySetting
 
 ```js
 // type signature
-IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
+IType<FilterBy, FilterBy, FilterBy>
 // code
-filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
+filterBySetting: types.frozen<FilterBy | undefined>()
 ```
 
-#### property: colorBy
+#### property: colorBySetting
 
 ```js
 // type signature
 IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.frozen<ColorBy | undefined>()
+colorBySetting: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: drawSingletons
@@ -63,6 +71,22 @@ colorBy: types.frozen<ColorBy | undefined>()
 true
 // code
 drawSingletons: true
+```
+
+### LinearReadCloudDisplay - Getters
+
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
 ```
 
 ### LinearReadCloudDisplay - Methods

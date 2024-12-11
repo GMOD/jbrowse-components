@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/assemblyManager/assembly.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assembly.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assembly.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Assembly.md)
+
+## Docs
 
 ### Assembly - Properties
 
@@ -26,6 +34,9 @@ configuration: types.safeReference(assemblyConfigType)
 ### Assembly - Getters
 
 #### getter: initialized
+
+this is a getter with a side effect of loading the data. not the best practice,
+but it helps to lazy load the assembly
 
 ```js
 // type
@@ -58,13 +69,6 @@ string[]
 ```js
 // type
 string
-```
-
-#### getter: hasName
-
-```js
-// type
-(name: string) => any
 ```
 
 #### getter: allAliases
@@ -127,6 +131,13 @@ string[]
 ```js
 // type signature
 getConf: (arg: string) => any
+```
+
+#### method: hasName
+
+```js
+// type signature
+hasName: (name: string) => any
 ```
 
 #### method: getCanonicalRefName

@@ -1,7 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import baseWiggleRendererConfigSchema from '../configSchema'
-
 /**
  * #config MultiVariantRenderer
  */
@@ -14,7 +12,6 @@ const configSchema = ConfigurationSchema(
     /**
      * #baseConfiguration
      */
-    baseConfiguration: baseWiggleRendererConfigSchema,
     explicitlyTyped: true,
   },
 )

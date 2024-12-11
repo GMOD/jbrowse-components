@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/circular-view/src/BaseChordDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/model.tsx)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/model.tsx)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseChordDisplay.md)
+
+## Docs
 
 extends
 
@@ -51,7 +59,7 @@ configuration: ConfigurationReference(baseChordDisplayConfig)
 
 ```js
 // type
-any
+any[]
 ```
 
 #### getter: rendererType
@@ -82,13 +90,6 @@ string
 renderProps: () => any
 ```
 
-#### method: isCompatibleWithRenderer
-
-```js
-// type signature
-isCompatibleWithRenderer: (renderer: RendererType) => renderer is CircularChordRendererType
-```
-
 #### method: renderSvg
 
 ```js
@@ -116,7 +117,7 @@ renderStarted: () => void
 
 ```js
 // type signature
-renderSuccess: ({ message, data, reactElement, html, renderingComponent, }: { message: string; data: any; html: string; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
+renderSuccess: ({ message, data, reactElement, html, renderingComponent, }: { message?: string; data?: any; html?: string; reactElement?: React.ReactElement; renderingComponent?: React.ComponentType<any>; }) => void
 ```
 
 #### action: renderError

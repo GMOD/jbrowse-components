@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/assemblyManager/assemblyManager.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assemblyManager.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assemblyManager.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/AssemblyManager.md)
+
+## Docs
 
 ### AssemblyManager - Properties
 
@@ -28,6 +36,13 @@ assemblies: types.array(assemblyFactory(conf, pm))
 
 ### AssemblyManager - Getters
 
+#### getter: assemblyNameMap
+
+```js
+// type
+Record<string, { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; lowerCaseRefNameAliases: RefNameAliases | undefined; cytobands: Feature[] | undefined; } & ... 6 more ... & IStateTr...
+```
+
 #### getter: assemblyNamesList
 
 ```js
@@ -37,8 +52,8 @@ any
 
 #### getter: assemblyList
 
-looks at jbrowse.assemblies, session.sessionAssemblies, and
-session.temporaryAssemblies to load from
+combined jbrowse.assemblies, session.sessionAssemblies, and
+session.temporaryAssemblies
 
 ```js
 // type
@@ -68,14 +83,14 @@ waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & Non
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { stopToken?: string; sessionId: string; }) => Promise<any>
 ```
 
 #### method: getReverseRefNameMapForAdapter
 
 ```js
 // type signature
-getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
+getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { stopToken?: string; sessionId: string; }) => Promise<any>
 ```
 
 #### method: isValidRefName

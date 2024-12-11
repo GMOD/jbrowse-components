@@ -8,11 +8,21 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearPileupDisplay/SharedLinearPileupDisplayMixin.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/SharedLinearPileupDisplayMixin.ts)
+## Links
 
-extends `BaseLinearDisplay`
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/SharedLinearPileupDisplayMixin.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SharedLinearPileupDisplayMixin.md)
+
+## Docs
+
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
 
 ### SharedLinearPileupDisplayMixin - Properties
 
@@ -61,22 +71,22 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### property: colorBy
+#### property: colorBySetting
 
 ```js
 // type signature
 IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.frozen<ColorBy | undefined>()
+colorBySetting: types.frozen<ColorBy | undefined>()
 ```
 
-#### property: filterBy
+#### property: filterBySetting
 
 ```js
 // type signature
-IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
+IType<FilterBy, FilterBy, FilterBy>
 // code
-filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
+filterBySetting: types.frozen<FilterBy | undefined>()
 ```
 
 #### property: jexlFilters
@@ -89,6 +99,20 @@ jexlFilters: types.optional(types.array(types.string), [])
 ```
 
 ### SharedLinearPileupDisplayMixin - Getters
+
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
+```
 
 #### getter: rendererConfig
 
@@ -143,7 +167,7 @@ string
 
 ```js
 // type
-({ model, }: { model: { sortedBy?: { pos: number; refName: number; type: string; tag?: string; }; }; }) => Element
+({ model, }: { model: { sortedBy?: SortedBy; }; }) => Element
 ```
 
 ### SharedLinearPileupDisplayMixin - Methods
