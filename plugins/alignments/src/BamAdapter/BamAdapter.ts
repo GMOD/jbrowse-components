@@ -1,21 +1,20 @@
 import { BamFile } from '@gmod/bam'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
-// jbrowse
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
-import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
-
-// locals
-import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { FilterBy } from '../shared/types'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
+import { filterReadFlag, filterTagValue } from '../shared/util'
+
+import type { FilterBy } from '../shared/types'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface Header {
   idToName: string[]
@@ -208,30 +207,21 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             )
           }
 
-          const flags = record.flags
-          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
+          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
             continue
           }
 
-          if (tagFilter) {
-            const readVal = record.tags[tagFilter.tag]
-            const filterVal = tagFilter.value
-            if (
-              filterVal === '*'
-                ? readVal === undefined
-                : `${readVal}` !== `${filterVal}`
-            ) {
-              continue
-            }
+          if (
+            tagFilter &&
+            filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
+          ) {
+            continue
           }
 
           if (readName && record.name !== readName) {
             continue
           }
 
-          // retrieve a feature from our feature cache if it is available, the
-          // features in the cache have pre-computed mismatches objects that
-          // can be re-used across blocks
           const ret = this.ultraLongFeatureCache.get(`${record.id}`)
           if (!ret) {
             const elt = new BamSlightlyLazyFeature(record, this, ref)

@@ -1,5 +1,6 @@
 import jexl from 'jexl'
-import { Feature } from './simpleFeature'
+
+import type { Feature } from './simpleFeature'
 
 type JexlWithAddFunction = typeof jexl & {
   addFunction(name: string, func: (...args: unknown[]) => unknown): void

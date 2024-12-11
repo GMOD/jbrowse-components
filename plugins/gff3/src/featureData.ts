@@ -1,4 +1,4 @@
-import { GFF3FeatureLineWithRefs } from 'gff-nostream'
+import type { GFF3FeatureLineWithRefs } from 'gff-nostream'
 
 interface GFF3Feature {
   start: number

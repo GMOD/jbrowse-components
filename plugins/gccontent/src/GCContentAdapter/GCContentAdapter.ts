@@ -1,11 +1,12 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { firstValueFrom } from 'rxjs'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter {
   private gcMode = 'content'
@@ -20,12 +21,13 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
     return adapter.dataAdapter as BaseFeatureDataAdapter
   }
 
-  public async getRefNames() {
+  public async getRefNames(opts?: BaseOptions) {
     const adapter = await this.configure()
-    return adapter.getRefNames()
+    return adapter.getRefNames(opts)
   }
 
-  public getFeatures(query: Region, opts: BaseOptions) {
+  public getFeatures(query: Region, opts?: BaseOptions) {
+    const { statusCallback = () => {}, stopToken } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
       const windowSize = this.getConf('windowSize')
@@ -42,50 +44,61 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
         return
       }
 
-      const ret = sequenceAdapter.getFeatures(
-        {
-          ...query,
-          start: queryStart,
-          end: queryEnd,
-        },
-        opts,
+      const feats = await firstValueFrom(
+        sequenceAdapter
+          .getFeatures(
+            {
+              ...query,
+              start: queryStart,
+              end: queryEnd,
+            },
+            opts,
+          )
+          .pipe(toArray()),
       )
-      const feats = await firstValueFrom(ret.pipe(toArray()))
       const residues = feats[0]?.get('seq') || ''
 
-      for (let i = hw; i < residues.length - hw; i += windowDelta) {
-        const r = f ? residues[i] : residues.slice(i - hw, i + hw)
-        let nc = 0
-        let ng = 0
-        let len = 0
-        for (const letter of r) {
-          if (letter === 'c' || letter === 'C') {
-            nc++
-          } else if (letter === 'g' || letter === 'G') {
-            ng++
+      let start = performance.now()
+      await updateStatus('Calculating GC', statusCallback, () => {
+        for (let i = hw; i < residues.length - hw; i += windowDelta) {
+          if (performance.now() - start > 400) {
+            checkStopToken(stopToken)
+            start = performance.now()
           }
-          if (letter !== 'N') {
-            len++
+          const r = f ? residues[i] : residues.slice(i - hw, i + hw)
+          let nc = 0
+          let ng = 0
+          let len = 0
+          for (const letter of r) {
+            if (letter === 'c' || letter === 'C') {
+              nc++
+            } else if (letter === 'g' || letter === 'G') {
+              ng++
+            }
+            if (letter !== 'N') {
+              len++
+            }
           }
-        }
-        const pos = queryStart
-        const score =
-          this.gcMode === 'content'
-            ? (ng + nc) / (len || 1)
-            : this.gcMode === 'skew'
-              ? (ng - nc) / (ng + nc || 1)
-              : 0
+          const pos = queryStart
+          const score =
+            this.gcMode === 'content'
+              ? (ng + nc) / (len || 1)
+              : this.gcMode === 'skew'
+                ? (ng - nc) / (ng + nc || 1)
+                : 0
 
-        observer.next(
-          new SimpleFeature({
-            uniqueId: `${this.id}_${pos + i}`,
-            refName: query.refName,
-            start: pos + i,
-            end: pos + i + windowDelta,
-            score,
-          }),
-        )
-      }
+          observer.next(
+            new SimpleFeature({
+              uniqueId: `${this.id}_${pos + i}`,
+              refName: query.refName,
+              start: pos + i,
+              end: pos + i + windowDelta,
+              score,
+            }),
+          )
+        }
+      })
+
       observer.complete()
     })
   }

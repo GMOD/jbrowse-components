@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+
 import {
   Box,
   Button,
@@ -9,7 +9,9 @@ import {
   LinearProgress,
   Typography,
 } from '@mui/material'
-import { NewJob } from '../model'
+import { observer } from 'mobx-react'
+
+import type { NewJob } from '../model'
 
 const CurrentJobCard = observer(function CurrentJobCard({
   job,

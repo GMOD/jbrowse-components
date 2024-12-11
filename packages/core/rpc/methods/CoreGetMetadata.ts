@@ -1,6 +1,6 @@
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 
 export default class CoreGetMetadata extends RpcMethodType {
   name = 'CoreGetMetadata'

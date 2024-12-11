@@ -1,13 +1,13 @@
-import { LayoutFeature } from './util'
-
 import { getAlignmentShapeColor } from './getAlignmentShapeColor'
 import { renderAlignmentShape } from './renderAlignmentShape'
-import { renderPerBaseQuality } from './renderPerBaseQuality'
-import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderModifications } from './renderModifications'
-import { RenderArgsWithColor } from './makeImageData'
-import { renderMethylation } from './renderMethylation'
+import { renderPerBaseLettering } from './renderPerBaseLettering'
+import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { parseCigar } from '../MismatchParser'
+import { renderMethylation } from './renderMethylation'
+
+import type { ProcessedRenderArgs } from './types'
+import type { LayoutFeature } from './util'
 
 export function renderAlignment({
   ctx,
@@ -22,7 +22,7 @@ export function renderAlignment({
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
   colorForBase: Record<string, string>
   contrastForBase: Record<string, string>
   charWidth: number

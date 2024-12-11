@@ -1,16 +1,16 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { colord, Colord } from '@jbrowse/core/util/colord'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import mix from 'colord/plugins/mix'
+import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
-import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+import { fillRectCtx, getOrigin, getScale } from './util'
 
-// locals
-import { fillRectCtx, getOrigin, getScale, ScaleOpts } from './util'
+import type { ScaleOpts } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { Colord } from '@jbrowse/core/util/colord'
 
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()
@@ -30,6 +30,7 @@ const clipHeight = 2
 export function drawXY(
   ctx: CanvasRenderingContext2D,
   props: {
+    stopToken?: string
     features: Map<string, Feature> | Feature[]
     bpPerPx: number
     regions: Region[]
@@ -83,13 +84,20 @@ export function drawXY(
   const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
+  let start = performance.now()
+
   // we handle whiskers separately to render max row, min row, and avg in three
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
     let lastCol: string | undefined
     let lastMix: string | undefined
+    start = performance.now()
     for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken()
+        start = performance.now()
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       if (feature.get('summary')) {
         const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
@@ -106,7 +114,12 @@ export function drawXY(
     }
     lastMix = undefined
     lastCol = undefined
+    start = performance.now()
     for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken()
+        start = performance.now()
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
       const max = feature.get('maxScore')
@@ -133,7 +146,12 @@ export function drawXY(
     }
     lastMix = undefined
     lastCol = undefined
+    start = performance.now()
     for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken()
+        start = performance.now()
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       if (feature.get('summary')) {
@@ -151,7 +169,12 @@ export function drawXY(
       }
     }
   } else {
+    start = performance.now()
     for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken()
+        start = performance.now()
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       // create reduced features, avoiding multiple features per px
@@ -183,7 +206,12 @@ export function drawXY(
   ctx.save()
   if (hasClipping) {
     ctx.fillStyle = clipColor
+    start = performance.now()
     for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken()
+        start = performance.now()
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')

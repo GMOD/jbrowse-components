@@ -1,26 +1,24 @@
-import { toArray } from 'rxjs/operators'
-import clone from 'clone'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-// locals
-import { iterMap } from '../../util'
-import SimpleFeature, {
-  Feature,
-  SimpleFeatureSerialized,
-} from '../../util/simpleFeature'
-import { AugmentedRegion as Region } from '../../util/types'
+import ServerSideRendererType from './ServerSideRendererType'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import ServerSideRendererType, {
+import { iterMap } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
+import { checkStopToken } from '../../util/stopToken'
+
+import type {
   RenderArgs as ServerSideRenderArgs,
-  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderResults as ServerSideRenderResults,
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { AnyConfigurationModel } from '../../configuration'
-import { checkStopToken } from '../../util/stopToken'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { Feature, SimpleFeatureSerialized } from '../../util/simpleFeature'
+import type { AugmentedRegion as Region } from '../../util/types'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel?: {
@@ -71,13 +69,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
    * @param args - the arguments passed to render
    */
   serializeArgsInClient(args: RenderArgs) {
-    const { regions } = args
-    const serializedArgs = {
+    return super.serializeArgsInClient({
       ...args,
       displayModel: undefined,
-      regions: clone(regions),
-    }
-    return super.serializeArgsInClient(serializedArgs)
+      regions: structuredClone(args.regions),
+    })
   }
 
   /**
@@ -153,18 +149,13 @@ export default class FeatureRendererType extends ServerSideRendererType {
       throw new Error('Adapter does not support retrieving features')
     }
 
-    // make sure the requested region's start and end are integers, if
-    // there is a region specification.
-    const requestRegions = regions.map(r => {
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.ceil(requestRegion.end)
-      }
-      return requestRegion
-    })
+    // make sure the requested region's start and end are integers, if there is
+    // a region specification.
+    const requestRegions = regions.map(r => ({
+      ...r,
+      start: Math.floor(r.start),
+      end: Math.ceil(r.end),
+    }))
 
     const region = requestRegions[0]!
 

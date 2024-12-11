@@ -1,7 +1,9 @@
-import React, { useState, useEffect, lazy } from 'react'
-import { getSnapshot } from 'mobx-state-tree'
-import { observer } from 'mobx-react'
+import React, { lazy, useEffect, useState } from 'react'
+
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
+import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Button,
   DialogActions,
@@ -12,17 +14,14 @@ import {
   Typography,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
+import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
-import { AbstractSessionModel } from '@jbrowse/core/util'
 
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
-
-// locals
-import { toUrlSafeB64 } from '../util'
 import { shareSessionToDynamo } from '../sessionSharing'
+import { toUrlSafeB64 } from '../util'
+
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const SettingsDialog = lazy(() => import('./ShareSettingsDialog'))
 

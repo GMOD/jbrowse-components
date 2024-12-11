@@ -1,7 +1,11 @@
-import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
-import { getSession, objectHash, getEnv } from './index'
-import { PreFileLocation, FileLocation } from './types'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import { getParent, isRoot } from 'mobx-state-tree'
+
+import { getEnv, getSession, objectHash } from './index'
+import { readConfObject } from '../configuration'
+
+import type { FileLocation, PreFileLocation } from './types'
+import type { AnyConfigurationModel } from '../configuration'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 

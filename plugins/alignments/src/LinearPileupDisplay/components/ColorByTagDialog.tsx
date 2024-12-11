@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 interface Tag {
   type: string

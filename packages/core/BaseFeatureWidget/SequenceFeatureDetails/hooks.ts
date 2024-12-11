@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { SeqState, ErrorState } from '../util'
-import { Feature, SimpleFeatureSerialized, getSession } from '../../util'
 import { getConf } from '../../configuration'
+import { getSession } from '../../util'
+
+import type { Feature, SimpleFeatureSerialized } from '../../util'
+import type { ErrorState, SeqState } from '../util'
 
 const BPLIMIT = 500_000
 

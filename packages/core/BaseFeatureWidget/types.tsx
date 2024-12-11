@@ -1,6 +1,7 @@
-import React from 'react'
-import { SimpleFeatureSerialized } from '../util/simpleFeature'
-import { BaseFeatureWidgetModel } from './stateModelFactory'
+import type React from 'react'
+
+import type { BaseFeatureWidgetModel } from './stateModelFactory'
+import type { SimpleFeatureSerialized } from '../util/simpleFeature'
 
 export interface BaseProps extends BaseCardProps {
   feature: SimpleFeatureSerialized

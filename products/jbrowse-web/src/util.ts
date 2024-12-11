@@ -1,22 +1,25 @@
 import {
-  PluginDefinition,
   isCJSPluginDefinition,
   isESMPluginDefinition,
   isUMDPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
 import {
-  getPropertyMembers,
   getChildType,
+  getPropertyMembers,
   isArrayType,
+  isMapType,
   isModelType,
   isReferenceType,
   isValidReference,
-  isMapType,
-  IAnyType,
-  IAnyStateTreeNode,
-  Instance,
 } from 'mobx-state-tree'
-import type { types } from 'mobx-state-tree'
+
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  types,
+} from 'mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -78,9 +81,9 @@ export async function toUrlSafeB64(str: string) {
 type MSTArray = Instance<ReturnType<typeof types.array>>
 type MSTMap = Instance<ReturnType<typeof types.map>>
 
-// attempts to remove undefined references from the given MST model. can only actually
-// remove them from arrays and maps. throws MST undefined ref error if it encounters
-// undefined refs in model properties
+// attempts to remove undefined references from the given MST model. can only
+// actually remove them from arrays and maps. throws MST undefined ref error if
+// it encounters undefined refs in model properties
 export function filterSessionInPlace(
   node: IAnyStateTreeNode | undefined,
   type: IAnyType,

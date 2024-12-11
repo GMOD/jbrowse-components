@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiLinearWiggleDisplay.md)
+
+## Docs
 
 extends
 
@@ -121,7 +129,7 @@ any
 
 ```js
 // type
-{ color: string; name: string; group?: string; }[]
+{ color: string; baseUri?: string; name: string; group?: string; }[]
 ```
 
 #### getter: quantitativeStatsReady
@@ -193,7 +201,7 @@ boolean
 
 ```js
 // type
-;1 | 0 | 2
+;0 | 1 | 2
 ```
 
 ### MultiLinearWiggleDisplay - Methods

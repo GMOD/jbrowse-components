@@ -1,11 +1,13 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
-// locals
-import { Feat, stitch } from '../../util'
+import { stitch } from '../../util'
 import { proteinColor, splitString } from '../util'
-import { SequenceFeatureDetailsModel } from '../model'
 import SequenceDisplay from './SequenceDisplay'
+
+import type { Feat } from '../../util'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const ProteinSequence = observer(function ({
   cds,

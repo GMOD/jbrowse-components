@@ -1,11 +1,10 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { isElectron, UriLocation } from '@jbrowse/core/util'
-import { Instance, types } from 'mobx-state-tree'
 import { Buffer } from 'buffer'
 
-// locals
-import { OAuthInternetAccountConfigModel } from './configSchema'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
+import { isElectron } from '@jbrowse/core/util'
+import { types } from 'mobx-state-tree'
+
 import {
   fixup,
   generateChallenge,
@@ -13,6 +12,10 @@ import {
   processTokenResponse,
 } from './util'
 import { getResponseError } from '../util'
+
+import type { OAuthInternetAccountConfigModel } from './configSchema'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance } from 'mobx-state-tree'
 
 interface OAuthData {
   client_id: string

@@ -1,12 +1,12 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature, max, min } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature, min, max } from '@jbrowse/core/util'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -81,7 +81,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     ).filter(f => !!f)
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))
-    return { scoreMin, scoreMax }
+    return {
+      scoreMin,
+      scoreMax,
+    }
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {

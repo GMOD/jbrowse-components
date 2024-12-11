@@ -1,17 +1,18 @@
 import React, { Suspense, lazy } from 'react'
-import { AppBar } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
-import Snackbar from '@jbrowse/core/ui/Snackbar'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
-// locals
+import Snackbar from '@jbrowse/core/ui/Snackbar'
+import { AppBar } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import AppFab from './AppFab'
 import AppToolbar from './AppToolbar'
 import DialogQueue from './DialogQueue'
-import AppFab from './AppFab'
 import ViewsContainer from './ViewsContainer'
+
+import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 // lazies
 const DrawerWidget = lazy(() => import('./DrawerWidget'))
@@ -36,14 +37,15 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface Menu {
+  label: string
+  menuItems: JBMenuItem[]
+}
+
 interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
-    savedSessionNames: string[]
-    menus: {
-      label: string
-      menuItems: JBMenuItem[]
-    }[]
+    menus: () => Menu[]
     snackbarMessages: SnackbarMessage[]
     renameCurrentSession: (arg: string) => void
     popSnackbarMessage: () => unknown

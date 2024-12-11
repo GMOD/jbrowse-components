@@ -1,9 +1,10 @@
-import { FileLocation } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
-import type { GenericFilehandle } from 'generic-filehandle'
-
 import { Buffer } from 'buffer'
-import PluginManager from '@jbrowse/core/PluginManager'
+
+import { openLocation } from '@jbrowse/core/util/io'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { FileLocation } from '@jbrowse/core/util'
+import type { GenericFilehandle } from 'generic-filehandle'
 
 // wraps generic-filehandle so the read function only takes a position and
 // length

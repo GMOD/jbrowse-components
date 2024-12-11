@@ -1,18 +1,15 @@
-import {
-  addDisposer,
-  getParent,
-  types,
-  Instance,
-  IAnyType,
-} from 'mobx-state-tree'
 import { reaction } from 'mobx'
+import { addDisposer, getParent, types } from 'mobx-state-tree'
 
-// locals
+import { readConfObject } from '../configuration'
 import { when } from '../util'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
-import assemblyFactory, { Assembly } from './assembly'
-import PluginManager from '../PluginManager'
-import RpcManager from '../rpc/RpcManager'
+import assemblyFactory from './assembly'
+
+import type { AnyConfigurationModel } from '../configuration'
+import type { Assembly } from './assembly'
+import type PluginManager from '../PluginManager'
+import type RpcManager from '../rpc/RpcManager'
+import type { IAnyType, Instance } from 'mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 
@@ -32,6 +29,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get assemblyNameMap() {
         const obj = {} as Record<string, Assembly>
         for (const assembly of self.assemblies) {
@@ -59,12 +59,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #getter
-       * looks at jbrowse.assemblies, session.sessionAssemblies, and
-       * session.temporaryAssemblies to load from
+       * combined jbrowse.assemblies, session.sessionAssemblies, and
+       * session.temporaryAssemblies
        */
       get assemblyList() {
-        // name is the explicit identifier and can be accessed without getConf,
-        // hence the union with {name:string}
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
@@ -83,8 +81,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     .views(self => ({
       /**
        * #method
-       * use this method instead of assemblyManager.get(assemblyName)
-       * to get an assembly with regions loaded
+       * use this method instead of assemblyManager.get(assemblyName) to get an
+       * assembly with regions loaded
        */
       async waitForAssembly(assemblyName: string) {
         if (!assemblyName) {

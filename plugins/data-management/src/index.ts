@@ -1,12 +1,14 @@
 import { lazy } from 'react'
+
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import UCSCTrackHubConnectionF from './ucsc-trackhub'
-import AddTrackWidgetF from './AddTrackWidget'
 
 import AddConnectionWidgetF from './AddConnectionWidget'
-import PluginStoreWidgetF from './PluginStoreWidget'
+import AddTrackWidgetF from './AddTrackWidget'
 import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
+import PluginStoreWidgetF from './PluginStoreWidget'
+import UCSCTrackHubConnectionF from './UCSCTrackHub'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const AssemblyManager = lazy(() => import('./AssemblyManager'))
 
@@ -30,5 +32,5 @@ export default class DataManagementPlugin extends Plugin {
 
 export { AssemblyManager }
 
-export { type AddTrackModel } from './AddTrackWidget/model'
-export { type HierarchicalTrackSelectorModel } from './HierarchicalTrackSelectorWidget'
+export type { AddTrackModel } from './AddTrackWidget/model'
+export type { HierarchicalTrackSelectorModel } from './HierarchicalTrackSelectorWidget'

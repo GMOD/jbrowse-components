@@ -1,12 +1,14 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { Region, dedupe, groupBy } from '@jbrowse/core/util'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { toArray } from 'rxjs/operators'
+import { dedupe, groupBy } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
-// locals
-import { filterForPairs, getInsertSizeStats } from '../util'
-import PileupBaseRPC from '../base'
+import { toArray } from 'rxjs/operators'
+
 import { getClip } from '../../MismatchParser'
+import PileupBaseRPC from '../base'
+import { filterForPairs, getInsertSizeStats } from '../util'
+
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
 
 // specialized get features to return limited data about alignments
 export default class PileupGetReducedFeatures extends PileupBaseRPC {

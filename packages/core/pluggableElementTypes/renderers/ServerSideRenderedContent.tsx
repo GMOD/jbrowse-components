@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from 'react'
-import { ThemeProvider } from '@mui/material/styles'
 
-// locals
-import { createJBrowseTheme } from '../../ui'
-import { ResultsSerialized, RenderArgs } from './ServerSideRendererType'
+import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 // eslint-disable-next-line react/no-deprecated
 import { hydrate, unmountComponentAtNode } from 'react-dom'
+
+import { createJBrowseTheme } from '../../ui'
 import { rIC } from '../../util'
+
+import type { RenderArgs, ResultsSerialized } from './ServerSideRendererType'
 
 interface Props extends ResultsSerialized, RenderArgs {
   RenderingComponent: React.ComponentType<any>
@@ -25,6 +26,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
   const { hydrateFn } = getRoot<any>(rest.displayModel)
 
   useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = html
+    }
     // requestIdleCallback here helps to avoid hydration mismatch because it
     // provides time for dangerouslySetInnerHTML to set the innerHTML contents
     // of the node, otherwise ref.current.innerHTML can be empty
@@ -58,15 +62,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
       })
     }
     /* biome-ignore lint/correctness/useExhaustiveDependencies: */
-  }, [theme, rest, hydrateFn, RenderingComponent])
+  }, [theme, rest, html, hydrateFn, RenderingComponent])
 
-  return (
-    <div
-      data-testid="hydrationContainer"
-      ref={ref}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  )
+  return <div data-testid="hydrationContainer" ref={ref} />
 })
 
 const OldHydrate = observer(function ({

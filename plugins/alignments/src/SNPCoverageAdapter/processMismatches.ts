@@ -1,9 +1,8 @@
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util'
-
-// locals
-import { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
 import { inc, isInterbase, mismatchLen } from './util'
+
+import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
 export function processMismatches({
   feature,
@@ -11,7 +10,7 @@ export function processMismatches({
   bins,
   skipmap,
 }: {
-  region: Region
+  region: AugmentedRegion
   bins: PreBaseCoverageBin[]
   feature: Feature
   skipmap: SkipMap
@@ -29,7 +28,7 @@ export function processMismatches({
       const epos = j - region.start
       if (epos >= 0 && epos < bins.length) {
         const bin = bins[epos]!
-        const { base, type } = mismatch
+        const { base, altbase, type } = mismatch
         const interbase = isInterbase(type)
 
         if (type === 'deletion' || type === 'skip') {
@@ -39,6 +38,7 @@ export function processMismatches({
           inc(bin, fstrand, 'snps', base)
           bin.ref.entryDepth--
           bin.ref[fstrand]--
+          bin.refbase = altbase
         } else {
           inc(bin, fstrand, 'noncov', type)
         }

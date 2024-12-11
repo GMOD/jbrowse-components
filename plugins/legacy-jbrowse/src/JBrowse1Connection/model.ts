@@ -3,13 +3,13 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
+import { getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 
-// locals
 import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types

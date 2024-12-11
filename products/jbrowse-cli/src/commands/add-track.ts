@@ -1,8 +1,12 @@
-import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
+
+import { Args, Flags } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
-import JBrowseCommand, { Config, Track } from '../base'
+
+import JBrowseCommand from '../base'
+
+import type { Config, Track } from '../base'
 
 const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants

@@ -1,25 +1,27 @@
 import { lazy } from 'react'
-import { types, cast, getEnv, isAlive } from 'mobx-state-tree'
-import { observable } from 'mobx'
 
-// jbrowse
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  getConf,
-  readConfObject,
-  AnyConfigurationSchemaType,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
-import { getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { getContainingView } from '@jbrowse/core/util'
+import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import { observable } from 'mobx'
+import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
-// locals
-import { createAutorun, getColorForModification } from '../util'
-import { ColorBy, FilterBy } from '../shared/types'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { ModificationType, ModificationTypeWithColor } from '../shared/types'
+import { createAutorun, getColorForModification } from '../util'
+
+import type {
+  ColorBy,
+  FilterBy,
+  ModificationType,
+  ModificationTypeWithColor,
+} from '../shared/types'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -62,14 +64,11 @@ function stateModelFactory(
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), {
-          flagInclude: 0,
-          flagExclude: 1540,
-        }),
+        filterBySetting: types.frozen<FilterBy | undefined>(),
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
@@ -88,6 +87,21 @@ function stateModelFactory(
        */
       modificationsReady: false,
     }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -99,7 +113,7 @@ function stateModelFactory(
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },
@@ -107,7 +121,7 @@ function stateModelFactory(
        * #action
        */
       setColorScheme(colorBy?: ColorBy) {
-        self.colorBy = colorBy
+        self.colorBySetting = colorBy
           ? {
               ...colorBy,
             }
@@ -190,8 +204,7 @@ function stateModelFactory(
           const view = getContainingView(self) as LGV
           return (
             view.initialized &&
-            self.featureDensityStatsReady &&
-            !self.regionTooLarge &&
+            self.statsReadyAndRegionNotTooLarge &&
             !self.error
           )
         },

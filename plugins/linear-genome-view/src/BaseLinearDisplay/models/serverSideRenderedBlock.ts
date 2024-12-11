@@ -1,36 +1,27 @@
-import React from 'react'
-import {
-  types,
-  getParent,
-  isAlive,
-  cast,
-  Instance,
-  getSnapshot,
-} from 'mobx-state-tree'
+import type React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
-  getSession,
   getContainingDisplay,
   getContainingView,
+  getSession,
   getViewParams,
   makeAbortableReaction,
-  Feature,
 } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types/mst'
-import {
-  AbstractDisplayModel,
-  isRetryException,
-} from '@jbrowse/core/util/types'
-
-import {
-  getTrackAssemblyNames,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
-
-// locals
-import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  getRpcSessionId,
+  getTrackAssemblyNames,
+} from '@jbrowse/core/util/tracks'
+import { isRetryException } from '@jbrowse/core/util/types'
+import { cast, getParent, isAlive, types } from 'mobx-state-tree'
+
+import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+
+import type { Feature } from '@jbrowse/core/util'
+import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 export interface RenderedProps {
   reactElement: React.ReactElement
@@ -49,7 +40,7 @@ const blockState = types
     /**
      * #property
      */
-    region: Region,
+    region: types.frozen<Region>(),
     /**
      * #property
      */
@@ -64,6 +55,9 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   .volatile(() => ({
+    /**
+     * #volatile
+     */
     stopToken: undefined as string | undefined,
     /**
      * #volatile
@@ -283,8 +277,8 @@ export function renderBlockData(
     const renderProps = display.renderProps()
     const { config } = renderProps
 
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
+    // This line is to trigger the mobx reaction when the config changes It
+    // won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
@@ -304,7 +298,7 @@ export function renderBlockData(
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [getSnapshot(self.region)],
+        regions: [self.region],
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
@@ -337,33 +331,28 @@ async function renderBlockEffect(
   } = props
   if (!isAlive(self)) {
     return undefined
-  }
-
-  if (displayError) {
+  } else if (displayError) {
     self.setError(displayError)
     return undefined
-  }
-  if (cannotBeRenderedReason) {
+  } else if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
     return undefined
-  }
-
-  if (renderProps.notReady) {
+  } else if (renderProps.notReady) {
     return undefined
-  }
-
-  const { reactElement, features, layout, maxHeightReached } =
-    await rendererType.renderInClient(rpcManager, {
-      ...renderArgs,
-      ...renderProps,
-      viewParams: getViewParams(self),
-      stopToken,
-    })
-  return {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
-    renderProps,
+  } else {
+    const { reactElement, features, layout, maxHeightReached } =
+      await rendererType.renderInClient(rpcManager, {
+        ...renderArgs,
+        ...renderProps,
+        viewParams: getViewParams(self),
+        stopToken,
+      })
+    return {
+      reactElement,
+      features,
+      layout,
+      maxHeightReached,
+      renderProps,
+    }
   }
 }

@@ -1,11 +1,13 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
-import { getSession } from '@jbrowse/core/util'
-// locals
-import { TreeNode } from '../../generateHierarchy'
-import { HierarchicalTrackSelectorModel } from '../../model'
+
 import Node from './TrackListNode'
+
+import type { TreeNode } from '../../generateHierarchy'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 function getNodeData(
   node: TreeNode,

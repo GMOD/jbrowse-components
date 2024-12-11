@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -7,7 +8,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 const EditGCContentParamsDialog = observer(function ({
   model,
@@ -33,7 +34,7 @@ const EditGCContentParamsDialog = observer(function ({
           and it is not recommended to make the step size larger than the window
           size as then the sliding window will miss contents.
         </Typography>
-        {windowDelta > windowSize ? (
+        {+windowDelta > +windowSize ? (
           <ErrorMessage error="It is not recommended to make the step size larger than the window size" />
         ) : null}
         <TextField

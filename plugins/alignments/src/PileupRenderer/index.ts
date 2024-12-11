@@ -1,7 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import PileupRenderer from './PileupRenderer'
-import configSchema from './configSchema'
 import ReactComponent from './components/PileupRendering'
+import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addRendererType(() => {

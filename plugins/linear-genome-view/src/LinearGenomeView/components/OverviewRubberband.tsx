@@ -1,14 +1,15 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getSession, stringify } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import React, { useEffect, useRef, useState } from 'react'
 
-// locals
-import { LinearGenomeViewModel } from '..'
+import { getSession, stringify } from '@jbrowse/core/util'
+import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
 import RubberbandSpan from './RubberbandSpan'
 import { getRelativeX } from './util'
+
+import type { LinearGenomeViewModel } from '..'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 type LGV = LinearGenomeViewModel
 

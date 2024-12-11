@@ -2,8 +2,9 @@
  * Helper class allows reading names index generated in JBrowse1
  * Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
  */
-import crc32 from 'crc/crc32'
 import { Buffer } from 'buffer'
+
+import crc32 from 'crc/crc32'
 
 export default class HttpMap {
   url: string

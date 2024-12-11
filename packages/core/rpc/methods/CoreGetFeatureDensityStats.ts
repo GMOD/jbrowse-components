@@ -1,8 +1,10 @@
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { RenderArgs } from './util'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { renameRegionsIfNeeded, Region } from '../../util'
+import { renameRegionsIfNeeded } from '../../util'
+
+import type { RenderArgs } from './util'
+import type { Region } from '../../util'
 
 export default class CoreGetFeatureDensityStats extends RpcMethodType {
   name = 'CoreGetFeatureDensityStats'

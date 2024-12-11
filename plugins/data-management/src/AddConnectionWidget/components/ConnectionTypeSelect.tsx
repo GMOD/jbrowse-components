@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
+
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { IconButton, MenuItem, TextField } from '@mui/material'
-import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 import { observer } from 'mobx-react'
 
-// icons
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
   connectionTypeChoices,

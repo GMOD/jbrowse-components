@@ -1,26 +1,13 @@
 import { lazy } from 'react'
-import clone from 'clone'
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+
 import {
-  getConf,
-  AnyConfigurationModel,
-  readConfObject,
-  AnyConfiguration,
-} from '@jbrowse/core/configuration'
-import { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
+  AppFocusMixin,
+  SessionAssembliesMixin,
+  TemporaryAssembliesMixin,
+} from '@jbrowse/app-core'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-  SnapshotIn,
-  Instance,
-} from 'mobx-state-tree'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import PluginManager from '@jbrowse/core/PluginManager'
 import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
@@ -29,27 +16,41 @@ import {
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
-import {
-  AppFocusMixin,
-  SessionAssembliesMixin,
-  TemporaryAssembliesMixin,
-} from '@jbrowse/app-core'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
-
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
+import SettingsIcon from '@mui/icons-material/Settings'
+import { autorun } from 'mobx'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getSnapshot,
+  types,
+} from 'mobx-state-tree'
 
-// locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
+
+import type { Menu } from '@jbrowse/app-core'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type {
+  AnyConfiguration,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
+
+interface Display {
+  displayId: string
+}
 
 /**
  * #stateModel BaseWebSession
@@ -111,8 +112,9 @@ export function BaseWebSession({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * #volatile
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
+       * this is the current "task" that is being performed in the UI. this is
+       * usually an object of the form
+       *
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
@@ -193,8 +195,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get savedSessions() {
-        return self.root.savedSessions
+      get savedSessionMetadata() {
+        return self.root.savedSessionMetadata
       },
       /**
        * #getter
@@ -202,24 +204,14 @@ export function BaseWebSession({
       get previousAutosaveId() {
         return self.root.previousAutosaveId
       },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.root.savedSessionNames
-      },
+
       /**
        * #getter
        */
       get history() {
         return self.root.history
       },
-      /**
-       * #getter
-       */
-      get menus() {
-        return self.root.menus
-      },
+
       /**
        * #method
        */
@@ -278,10 +270,23 @@ export function BaseWebSession({
       /**
        * #action
        */
-      removeSavedSession(sessionSnapshot: { name: string }) {
-        return self.root.removeSavedSession(sessionSnapshot)
+      deleteSavedSession(id: string) {
+        return self.root.deleteSavedSession(id)
       },
 
+      /**
+       * #action
+       */
+      favoriteSavedSession(id: string) {
+        return self.root.favoriteSavedSession(id)
+      },
+
+      /**
+       * #action
+       */
+      unfavoriteSavedSession(id: string) {
+        return self.root.unfavoriteSavedSession(id)
+      },
       /**
        * #action
        */
@@ -360,7 +365,10 @@ export function BaseWebSession({
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose },
+                {
+                  config,
+                  handleClose,
+                },
               ])
             },
             icon: InfoIcon,
@@ -369,27 +377,26 @@ export function BaseWebSession({
             label: 'Settings',
             priority: 1001,
             disabled: !canEdit,
+            icon: SettingsIcon,
             onClick: () => {
               self.editTrackConfiguration(config)
             },
-            icon: SettingsIcon,
           },
           {
             label: 'Delete track',
             priority: 1000,
             disabled: !canEdit || isRefSeq,
-            onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
+            onClick: () => {
+              self.deleteTrackConf(config)
+            },
           },
           {
             label: 'Copy track',
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              interface Display {
-                displayId: string
-              }
-              const snap = clone(getSnapshot(config)) as {
+              const snap = structuredClone(getSnapshot(config)) as {
                 [key: string]: unknown
                 displays: Display[]
               }
@@ -411,6 +418,13 @@ export function BaseWebSession({
             icon: CopyIcon,
           },
         ]
+      },
+
+      /**
+       * #method
+       */
+      menus(): Menu[] {
+        return self.root.menus()
       },
     }))
     .actions(self => ({
@@ -436,9 +450,10 @@ export function BaseWebSession({
       // @ts-expect-error
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { connectionInstances, ...rest } = snapshot || {}
-      // connectionInstances schema changed from object to an array, so any
-      // old connectionInstances as object is in snapshot, filter it out
-      // https://github.com/GMOD/jbrowse-components/issues/1903
+
+      // connectionInstances schema changed from object to an array, so any old
+      // connectionInstances as object is in snapshot, filter it out
+      // xref https://github.com/GMOD/jbrowse-components/issues/1903
       return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })

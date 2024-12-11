@@ -1,8 +1,10 @@
-import PluginManager from '../PluginManager'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
-import rpcConfigSchema from './configSchema'
-import WebWorkerRpcDriver from './WebWorkerRpcDriver'
+import { readConfObject } from '../configuration'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
+import WebWorkerRpcDriver from './WebWorkerRpcDriver'
+import rpcConfigSchema from './configSchema'
+
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationModel } from '../configuration'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
 interface BackendConfigurations {

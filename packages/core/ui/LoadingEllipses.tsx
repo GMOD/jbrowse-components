@@ -1,7 +1,10 @@
 import React from 'react'
-import { Typography, TypographyProps } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+
+import { Typography } from '@mui/material'
 import { keyframes } from 'tss-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { TypographyProps } from '@mui/material'
 
 const useStyles = makeStyles()({
   dots: {
@@ -37,9 +40,13 @@ export default function LoadingEllipses({
   variant = 'body2',
   ...rest
 }: Props) {
-  const { classes } = useStyles()
+  const { cx, classes } = useStyles()
   return (
-    <Typography className={classes.dots} {...rest} variant={variant}>
+    <Typography
+      className={cx(classes.dots, rest.className)}
+      {...rest}
+      variant={variant}
+    >
       {message || 'Loading'}
     </Typography>
   )

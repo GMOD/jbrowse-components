@@ -1,19 +1,17 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FileLocation, Region } from '@jbrowse/core/util/types'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { openLocation } from '@jbrowse/core/util/io'
 import { TabixIndexedFile } from '@gmod/tabix'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-// locals
-import { parsePAFLine } from '../util'
 import SyntenyFeature from '../SyntenyFeature'
+import { parsePAFLine } from '../util'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature } from '@jbrowse/core/util'
+import type { FileLocation, Region } from '@jbrowse/core/util/types'
 
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel

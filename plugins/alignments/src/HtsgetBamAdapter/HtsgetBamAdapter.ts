@@ -1,6 +1,9 @@
-import { BamFile, HtsgetFile } from '@gmod/bam'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { HtsgetFile } from '@gmod/bam'
+
 import BamAdapter from '../BamAdapter/BamAdapter'
+
+import type { BamFile } from '@gmod/bam'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class HtsgetBamAdapter extends BamAdapter {
   protected async configurePre() {

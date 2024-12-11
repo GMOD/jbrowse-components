@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Paper, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+
 import {
   getSession,
   isElectron,
@@ -8,7 +7,10 @@ import {
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
-import { AddTrackModel } from '@jbrowse/plugin-data-management'
+import { Button, Paper, TextField } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+
+import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

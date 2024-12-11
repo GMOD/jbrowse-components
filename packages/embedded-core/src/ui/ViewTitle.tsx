@@ -1,13 +1,14 @@
 import React, { Suspense, lazy, useState } from 'react'
+
+import { Logomark } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { IconButton, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { Logomark } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 
-// locals
 import ViewMenu from './ViewMenu'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const VersionAboutDialog = lazy(() => import('./VersionAboutDialog'))
 

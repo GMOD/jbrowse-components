@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react'
-import { Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+import { Paper } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

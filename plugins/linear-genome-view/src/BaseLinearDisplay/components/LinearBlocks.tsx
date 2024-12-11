@@ -1,15 +1,17 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
+
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import { makeStyles } from 'tss-react/mui'
 
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from './Block'
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
+
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 type LGV = LinearGenomeViewModel
 

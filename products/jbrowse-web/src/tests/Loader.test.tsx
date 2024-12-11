@@ -1,14 +1,14 @@
 import React from 'react'
-import { render, waitFor } from '@testing-library/react'
+
 import { Buffer } from 'buffer'
 
+import { render, waitFor } from '@testing-library/react'
+import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
 // local
 import { App } from './loaderUtil'
-
-import { Image, createCanvas } from 'canvas'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -170,7 +170,7 @@ test('can use a spec url for spreadsheet view', async () => {
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SpreadsheetView","uri":"test_data/volvox/volvox.filtered.vcf.gz","assembly":"volvox"}]}' />,
   )
 
-  await findByText('ctgA:8470..8471', {}, delay)
+  await findByText('ctgA:8,471', {}, delay)
 }, 40000)
 
 test('can use a spec url for sv inspector view', async () => {
@@ -179,7 +179,7 @@ test('can use a spec url for sv inspector view', async () => {
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}' />,
   )
 
-  await findByText('ctgB:1982..1983', {}, delay)
+  await findByText('ctgB:1,982', {}, delay)
 }, 40000)
 
 test('can use a spec url for dotplot view', async () => {

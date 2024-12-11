@@ -1,12 +1,12 @@
 import React from 'react'
-import { ListSubheader, MenuItem, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getEnv } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-// locals
-import { AddTrackModel } from '../model'
+import { getEnv } from '@jbrowse/core/util'
+import { ListSubheader, MenuItem, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { AddTrackModel } from '../model'
+import type AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {

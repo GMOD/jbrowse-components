@@ -1,14 +1,16 @@
 import React from 'react'
-import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { UriLocation } from '@jbrowse/core/util/types'
-import { Instance, types } from 'mobx-state-tree'
 
-// locals
-import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
-import baseModel from '../OAuthModel/model'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
+
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
-import { getDescriptiveErrorMessage } from './util'
 import DropboxIcon from './DropboxIcon'
+import { getDescriptiveErrorMessage } from './util'
+import baseModel from '../OAuthModel/model'
+
+import type { DropboxOAuthInternetAccountConfigModel } from './configSchema'
+import type { UriLocation } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel DropboxOAuthInternetAccount

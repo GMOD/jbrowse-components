@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-menus",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "description": "JBrowse 2 basic menus",
   "keywords": [
     "jbrowse",
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@mui/icons-material": "^6.0.0",
+    "date-fns": "^4.1.0",
     "pluralize": "^8.0.0",
     "react-dropzone": "^14.2.1"
   },

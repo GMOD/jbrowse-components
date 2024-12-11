@@ -1,9 +1,12 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
+
 import CanvasFeatureRenderer, {
-  configSchema as canvasFeatureRendererConfigSchema,
   ReactComponent as CanvasFeatureRendererReactComponent,
+  configSchema as canvasFeatureRendererConfigSchema,
 } from './CanvasFeatureRenderer'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
 
 export default class CanvasPlugin extends Plugin {
   name = 'CanvasPlugin'
@@ -22,6 +25,6 @@ export default class CanvasPlugin extends Plugin {
 }
 
 export {
-  configSchema as canvasFeatureRendererConfigSchema,
   ReactComponent as CanvasFeatureRendererReactComponent,
+  configSchema as canvasFeatureRendererConfigSchema,
 } from './CanvasFeatureRenderer'

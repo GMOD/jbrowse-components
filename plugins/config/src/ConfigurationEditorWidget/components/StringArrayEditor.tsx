@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
 
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Button,
   FormHelperText,
@@ -11,9 +11,7 @@ import {
   ListItem,
   TextField,
 } from '@mui/material'
-
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
+import { observer } from 'mobx-react'
 
 const StringArrayEditor = observer(function ({
   slot,

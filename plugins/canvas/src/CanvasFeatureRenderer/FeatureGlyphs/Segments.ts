@@ -1,8 +1,10 @@
-import { bpSpanPx, Feature } from '@jbrowse/core/util'
+import { bpSpanPx } from '@jbrowse/core/util'
 
 // locals
-import { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
 import BoxGlyph from './Box'
+
+import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class Segments extends BoxGlyph {
   renderFeature(

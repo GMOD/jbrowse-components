@@ -1,41 +1,38 @@
-import React, { lazy } from 'react'
-import { ThemeOptions } from '@mui/material'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import type React from 'react'
+import { lazy } from 'react'
+
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { MenuItem } from '@jbrowse/core/ui'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  getContainingView,
   getContainingTrack,
+  getContainingView,
   getSession,
+  isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
-  isFeature,
   mergeIntervals,
-  Feature,
-  AnyReactComponentType,
 } from '@jbrowse/core/util'
-import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { autorun, when } from 'mobx'
-import {
-  addDisposer,
-  isAlive,
-  getSnapshot,
-  types,
-  Instance,
-} from 'mobx-state-tree'
-
-// icons
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { autorun, when } from 'mobx'
+import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
-// locals
-import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
-import BlockState from './serverSideRenderedBlock'
-import configSchema from './configSchema'
-import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
+import TrackHeightMixin from './TrackHeightMixin'
+import configSchema from './configSchema'
+import BlockState from './serverSideRenderedBlock'
+
+import type {
+  ExportSvgOptions,
+  LinearGenomeViewModel,
+} from '../../LinearGenomeView'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ThemeOptions } from '@mui/material'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('../components/Tooltip'))
@@ -89,7 +86,13 @@ function stateModelFactory() {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       featureIdUnderMouse: undefined as undefined | string,
+      /**
+       * #volatile
+       */
       contextMenuFeature: undefined as undefined | Feature,
     }))
     .views(self => ({
@@ -121,8 +124,8 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * how many milliseconds to wait for the display to "settle" before
-       * re-rendering a block
+       * how many milliseconds to wait for the display to
+       * "settle" before re-rendering a block
        */
       get renderDelay() {
         return 50
@@ -137,8 +140,8 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * returns a string feature ID if the globally-selected object is
-       * probably a feature
+       * returns a string feature ID if the globally-selected object
+       * is probably a feature
        */
       get selectedFeatureId() {
         if (isAlive(self)) {
@@ -154,8 +157,8 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * a CompositeMap of `featureId -> feature obj` that just looks in all
-       * the block data for that feature
+       * a CompositeMap of `featureId -> feature obj` that
+       * just looks in all the block data for that feature
        */
       get features() {
         const featureMaps = []
@@ -471,9 +474,9 @@ function stateModelFactory() {
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {
-        // watch the parent's blocks to update our block state when they change,
-        // then we recreate the blocks on our own model (creating and deleting to
-        // match the parent blocks)
+        // watch the parent's blocks to update our block state when they
+        // change, then we recreate the blocks on our own model (creating and
+        // deleting to match the parent blocks)
         addDisposer(
           self,
           autorun(() => {

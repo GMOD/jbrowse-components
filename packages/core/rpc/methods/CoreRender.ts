@@ -1,13 +1,14 @@
+import { validateRendererType } from './util'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import {
-  RenderResults,
-  ResultsSerialized,
-  RenderArgs,
-  RenderArgsSerialized,
-  validateRendererType,
-} from './util'
 import { renameRegionsIfNeeded } from '../../util'
 import { checkStopToken } from '../../util/stopToken'
+
+import type {
+  RenderArgs,
+  RenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
+} from './util'
 
 /**
  * fetches features from an adapter and call a renderer with them

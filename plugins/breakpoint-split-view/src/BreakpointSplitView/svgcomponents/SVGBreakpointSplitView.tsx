@@ -1,20 +1,21 @@
 import React from 'react'
-import { when } from 'mobx'
-import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getRoot } from 'mobx-state-tree'
+import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import {
-  SVGTracks,
   SVGRuler,
+  SVGTracks,
   totalHeight,
 } from '@jbrowse/plugin-linear-genome-view'
+import { ThemeProvider } from '@mui/material'
+import { when } from 'mobx'
+import { getRoot } from 'mobx-state-tree'
 
-// locals
 import SVGBackground from './SVGBackground'
-import { ExportSvgOptions, BreakpointViewModel } from '../model'
-import Overlay from '../components/Overlay'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
+import Overlay from '../components/Overlay'
+
+import type { BreakpointViewModel, ExportSvgOptions } from '../model'
 
 type BSV = BreakpointViewModel
 

@@ -1,9 +1,9 @@
 import { types } from 'mobx-state-tree'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfiguration } from '@jbrowse/core/configuration'
-import { BaseSession } from '@jbrowse/product-core'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { AnyConfiguration } from '@jbrowse/core/configuration'
+import type { BaseSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel SessionAssembliesMixin
@@ -34,6 +34,28 @@ export function SessionAssembliesMixin(
           }
           const length = self.sessionAssemblies.push(conf)
           return self.sessionAssemblies[length - 1]
+        },
+
+        /**
+         * #action
+         */
+        addAssembly(conf: AnyConfiguration) {
+          if (self.adminMode) {
+            self.jbrowse.addAssemblyConf(conf)
+          } else {
+            this.addSessionAssembly(conf)
+          }
+        },
+
+        /**
+         * #action
+         */
+        removeAssembly(name: string) {
+          if (self.adminMode) {
+            self.jbrowse.removeAssemblyConf(name)
+          } else {
+            this.removeSessionAssembly(name)
+          }
         },
 
         /**

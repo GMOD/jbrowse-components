@@ -1,12 +1,13 @@
-import React from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance } from 'mobx-state-tree'
+import type React from 'react'
 
-// locals
+import PluginManager from '@jbrowse/core/PluginManager'
+
 import corePlugins from './corePlugins'
-import createRootModel from './rootModel'
+import createRootModel from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
+
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { Instance } from 'mobx-state-tree'
 
 export default function createModel(
   runtimePlugins: PluginConstructor[],

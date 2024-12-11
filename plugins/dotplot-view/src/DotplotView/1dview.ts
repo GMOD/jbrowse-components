@@ -1,7 +1,9 @@
-import { getParent, Instance } from 'mobx-state-tree'
-import { observable } from 'mobx'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import { observable } from 'mobx'
+import { getParent } from 'mobx-state-tree'
+
+import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel Dotplot1DView
@@ -92,5 +94,5 @@ const DotplotVView = Dotplot1DView.extend(self => ({
   },
 }))
 
-export { DotplotVView, DotplotHView, Dotplot1DView }
+export { Dotplot1DView, DotplotHView, DotplotVView }
 export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>

@@ -1,11 +1,13 @@
-import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
+
+import { Args, Flags } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
 
-// locals
+import JBrowseCommand from '../base'
 import fetch from '../fetchWithProxy'
-import JBrowseCommand, { Config } from '../base'
+
+import type { Config } from '../base'
 
 export default class AddConnection extends JBrowseCommand {
   // @ts-expect-error

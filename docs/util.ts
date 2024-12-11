@@ -1,6 +1,7 @@
-import * as ts from 'typescript'
-import { promisify } from 'util'
 import { exec } from 'child_process'
+import { promisify } from 'util'
+
+import * as ts from 'typescript'
 const exec2 = promisify(exec)
 
 interface Node {

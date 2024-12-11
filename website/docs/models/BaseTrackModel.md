@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/pluggableElementTypes/models/BaseTrackModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseTrackModel.md)
+
+## Docs
 
 these MST models only exist for tracks that are _shown_. they should contain
 only UI state for the track, and have a reference to a track configuration. note

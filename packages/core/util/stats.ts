@@ -1,9 +1,9 @@
-import { firstValueFrom, Observable } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 
-// locals
-import { NoAssemblyRegion } from './types'
-import { Feature } from './simpleFeature'
+import type { Feature } from './simpleFeature'
+import type { NoAssemblyRegion } from './types'
+import type { Observable } from 'rxjs'
 
 export interface UnrectifiedQuantitativeStats {
   scoreMin: number

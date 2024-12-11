@@ -1,5 +1,6 @@
 import getValue from 'get-value'
-import { Track, Source } from './types'
+
+import type { Source, Track } from './types'
 
 export function isTrack(arg: any): arg is Track {
   return arg?.label && typeof arg.label === 'string'
@@ -64,7 +65,7 @@ export function fillTemplate(template: string, fillWith: Obj): string {
  * @param src - The object to clone
  */
 
-export function clone(src: any): any {
+export function structuredClone(src: any): any {
   if (
     !src ||
     typeof src !== 'object' ||
@@ -91,7 +92,7 @@ export function clone(src: any): any {
     r = []
     for (let i = 0, l = src.length; i < l; ++i) {
       if (i in src) {
-        r[i] = clone(src[i])
+        r[i] = structuredClone(src[i])
       }
     }
     // we don't clone functions for performance reasons
@@ -102,7 +103,7 @@ export function clone(src: any): any {
     // generic objects
     r = src.constructor ? new src.constructor() : {}
   }
-  return mixin(r, src, clone)
+  return mixin(r, src, a => structuredClone(a))
 }
 
 /**

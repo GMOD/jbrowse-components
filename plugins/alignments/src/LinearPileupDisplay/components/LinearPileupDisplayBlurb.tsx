@@ -1,17 +1,15 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { SortedBy } from '../../shared/types'
 
 const LinearPileupDisplayBlurb = observer(function ({
   model,
 }: {
   model: {
-    sortedBy?: {
-      pos: number
-      refName: number
-      type: string
-      tag?: string
-    }
+    sortedBy?: SortedBy
   }
 }) {
   const { sortedBy } = model

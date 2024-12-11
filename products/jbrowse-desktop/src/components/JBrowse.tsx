@@ -1,14 +1,12 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { ThemeProvider } from '@mui/material/styles'
-import { CssBaseline } from '@mui/material'
 
-// jbrowse
 import { App } from '@jbrowse/app-core'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { CssBaseline } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
+import { observer } from 'mobx-react'
 
-// locals
-import { DesktopRootModel } from '../rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const JBrowseNonNullRoot = observer(function ({
   rootModel,

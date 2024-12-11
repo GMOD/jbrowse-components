@@ -1,25 +1,26 @@
 import React from 'react'
-import {
-  SvgIconProps,
-  IconButton,
-  IconButtonProps as IconButtonPropsType,
-} from '@mui/material'
-import { observer } from 'mobx-react'
-import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  bindTrigger,
-  bindPopover,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 
-// icons
-import MenuIcon from '@mui/icons-material/Menu'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
+import { getSession } from '@jbrowse/core/util'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import MenuIcon from '@mui/icons-material/Menu'
+import { IconButton } from '@mui/material'
+import {
+  bindPopover,
+  bindTrigger,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
+import { observer } from 'mobx-react'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  IconButtonProps as IconButtonPropsType,
+  SvgIconProps,
+} from '@mui/material'
 
 const ViewMenu = observer(function ({
   model,

@@ -1,10 +1,4 @@
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationSchema,
-} from '@jbrowse/core/configuration'
-
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   FormatAboutConfigSchemaFactory,
@@ -12,6 +6,10 @@ import {
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
 import { types } from 'mobx-state-tree'
+
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseRootConfig
@@ -152,5 +150,10 @@ export function JBrowseConfigF({
     defaultSession: types.optional(types.frozen(), {
       name: 'New Session',
     }),
+
+    /**
+     * #slot
+     */
+    preConfiguredSessions: types.array(types.frozen()),
   })
 }

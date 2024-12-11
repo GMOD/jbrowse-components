@@ -1,16 +1,18 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import {
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
-  Region,
 } from '@jbrowse/core/util'
-import ComparativeRenderer, {
-  RenderArgsDeserialized,
-  RenderArgs,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 
-// locals
-import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
+import { Dotplot1DView } from '../DotplotView/model'
+
+import type { Dotplot1DViewModel } from '../DotplotView/model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  RenderArgs,
+  RenderArgsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import type { Region } from '@jbrowse/core/util'
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   adapterConfig: AnyConfigurationModel

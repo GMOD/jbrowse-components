@@ -1,35 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import React from 'react'
-import {
-  isStateTreeNode,
-  Instance,
-  SnapshotIn,
+import type React from 'react'
+
+import { isStateTreeNode } from 'mobx-state-tree'
+
+import type {
+  BlobLocation as MUBlobLocation,
+  LocalPathLocation as MULocalPathLocation,
+  NoAssemblyRegion as MUNoAssemblyRegion,
+  Region as MUIRegion,
+  UriLocation as MUUriLocation,
+} from './mst'
+import type TextSearchManager from '../../TextSearch/TextSearchManager'
+import type assemblyManager from '../../assemblyManager'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+import type RpcManager from '../../rpc/RpcManager'
+import type { MenuItem } from '../../ui'
+import type { Feature } from '../simpleFeature'
+import type { ThemeOptions } from '@mui/material'
+import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   IType,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
-import { ThemeOptions } from '@mui/material'
-import { AnyConfigurationModel } from '../../configuration'
-import TextSearchManager from '../../TextSearch/TextSearchManager'
-import { MenuItem } from '../../ui'
-import RpcManager from '../../rpc/RpcManager'
-import { Feature } from '../simpleFeature'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-// types
-import type assemblyManager from '../../assemblyManager'
-import type {
-  NoAssemblyRegion as MUNoAssemblyRegion,
-  Region as MUIRegion,
-  LocalPathLocation as MULocalPathLocation,
-  UriLocation as MUUriLocation,
-  BlobLocation as MUBlobLocation,
-} from './mst'
 
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer
-  extends IStateTreeNode<IType<any, unknown, any>> {
+  extends IStateTreeNode<IType<any, any, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -154,23 +155,21 @@ export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
-  thing: unknown,
-): thing is SessionWithConfigEditing {
-  return isSessionModel(thing) && 'editConfiguration' in thing
+  t: unknown,
+): t is SessionWithConfigEditing {
+  return isSessionModel(t) && 'editConfiguration' in t
 }
 
 /** abstract interface for a session allows adding tracks */
-export interface SessionWithConfigEditing extends AbstractSessionModel {
+export interface SessionWithAddTracks extends AbstractSessionModel {
   addTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): void
 }
-export function isSessionWithAddTracks(
-  thing: unknown,
-): thing is SessionWithConfigEditing {
+export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (
     // @ts-expect-error
-    isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
+    isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
   )
 }
 

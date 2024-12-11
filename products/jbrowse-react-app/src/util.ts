@@ -1,16 +1,19 @@
 import {
-  getPropertyMembers,
   getChildType,
+  getPropertyMembers,
   isArrayType,
+  isMapType,
   isModelType,
   isReferenceType,
   isValidReference,
-  isMapType,
-  IAnyType,
-  IAnyStateTreeNode,
-  Instance,
 } from 'mobx-state-tree'
-import type { types } from 'mobx-state-tree'
+
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  types,
+} from 'mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid

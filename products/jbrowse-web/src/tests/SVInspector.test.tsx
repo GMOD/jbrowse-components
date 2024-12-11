@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
-import { doBeforeEach, createView, setup, mockConsoleWarn } from './util'
+
+import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
 
 setup()
 

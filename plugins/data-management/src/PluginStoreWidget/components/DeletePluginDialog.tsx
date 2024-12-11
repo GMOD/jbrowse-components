@@ -1,6 +1,7 @@
 import React from 'react'
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 
 export default function DeletePluginDialog({
   onClose,

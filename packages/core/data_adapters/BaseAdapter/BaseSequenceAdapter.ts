@@ -1,7 +1,8 @@
-import { NoAssemblyRegion } from '../../util'
-import { BaseOptions } from './types'
-import { RegionsAdapter } from '../BaseAdapter'
 import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter'
+
+import type { BaseOptions } from './types'
+import type { NoAssemblyRegion } from '../../util'
+import type { RegionsAdapter } from '../BaseAdapter'
 
 export abstract class BaseSequenceAdapter
   extends BaseFeatureDataAdapter

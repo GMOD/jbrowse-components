@@ -1,11 +1,12 @@
 import React from 'react'
+
+import Dialog from '@jbrowse/core/ui/Dialog'
 import {
   Button,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
 } from '@mui/material'
-import Dialog from '@jbrowse/core/ui/Dialog'
 
 export default function FactoryResetDialog({
   onClose,

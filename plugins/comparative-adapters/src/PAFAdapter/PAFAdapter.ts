@@ -1,27 +1,25 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-// locals
 import SyntenyFeature from '../SyntenyFeature'
 import {
   flipCigar,
-  swapIndelCigar,
-  parsePAFLine,
   parseLineByLine,
+  parsePAFLine,
+  swapIndelCigar,
 } from '../util'
-import { getWeightedMeans, PAFRecord } from './util'
+import { getWeightedMeans } from './util'
+
+import type { PAFRecord } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
 
 const { parseCigar } = MismatchParser
 

@@ -1,4 +1,6 @@
 import React from 'react'
+
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
   AccordionSummary,
@@ -6,15 +8,13 @@ import {
   CardContent,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-// icons
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-
-import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
-import { JobsListModel, NewJob } from '../model'
+import JobCard from './JobCard'
+
+import type { JobsListModel, NewJob } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   root: {

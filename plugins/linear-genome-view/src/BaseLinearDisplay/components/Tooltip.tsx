@@ -1,10 +1,11 @@
 import React from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-// locals
-import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import { observer } from 'mobx-react'
+
+import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 interface Props {
   message: React.ReactNode | string

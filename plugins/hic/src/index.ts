@@ -1,18 +1,19 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation } from '@jbrowse/core/util/types'
-import { colord, Colord } from '@jbrowse/core/util/colord'
-import {
-  getFileName,
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
+import { colord } from '@jbrowse/core/util/colord'
+import { getFileName } from '@jbrowse/core/util/tracks'
 
-// locals
+import HicAdapterF from './HicAdapter'
 import HicRendererF from './HicRenderer'
 import HicTrackF from './HicTrack'
 import LinearHicDisplayF from './LinearHicDisplay'
-import HicAdapterF from './HicAdapter'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Colord } from '@jbrowse/core/util/colord'
+import type {
+  AdapterGuesser,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'

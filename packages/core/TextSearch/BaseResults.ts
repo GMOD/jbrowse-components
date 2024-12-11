@@ -1,6 +1,7 @@
-import React from 'react'
-import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
-import { SearchType } from '../data_adapters/BaseAdapter'
+import type React from 'react'
+
+import type { SearchType } from '../data_adapters/BaseAdapter'
+import type TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 
 export interface BaseResultArgs {
   label: string

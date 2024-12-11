@@ -1,8 +1,9 @@
 import path from 'path'
-import meta from '../../test_data/names/meta.json'
+
+import HttpMap from './HttpMap'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'
-import HttpMap from './HttpMap'
+import meta from '../../test_data/names/meta.json'
 
 test('read from meta', async () => {
   const rootTemplate = path

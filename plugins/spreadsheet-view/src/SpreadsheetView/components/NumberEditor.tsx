@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import React, { useEffect, useState } from 'react'
 
-// locals
-import { ImportWizardModel } from '../models/ImportWizard'
+import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { ImportWizardModel } from '../ImportWizard'
 
 const useStyles = makeStyles()({
   textField: {

@@ -1,14 +1,17 @@
-import BoxRendererType, {
-  RenderArgsDeserialized as BoxRenderArgsDeserialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-import { iterMap, Feature, notEmpty } from '@jbrowse/core/util'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { iterMap, notEmpty } from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 // locals
 import BoxGlyph from './FeatureGlyphs/Box'
 import GeneGlyph from './FeatureGlyphs/Gene'
-import { LaidOutFeatureRect } from './FeatureGlyph'
+
+import type { LaidOutFeatureRect } from './FeatureGlyph'
+import type {
+  RenderArgsDeserialized as BoxRenderArgsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import type { Feature} from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 export interface PostDrawFeatureRectWithGlyph extends LaidOutFeatureRect {
   glyph: BoxGlyph
@@ -132,6 +135,6 @@ export {
   type RenderArgs,
   type RenderArgsSerialized,
   type RenderResults,
-  type ResultsSerialized,
   type ResultsDeserialized,
+  type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

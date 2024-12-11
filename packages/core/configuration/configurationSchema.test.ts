@@ -1,8 +1,8 @@
-import { types, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, types } from 'mobx-state-tree'
+
+import { getConf, readConfObject } from '.'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
-import { getConf, readConfObject } from '.'
-// import { ConfigurationSchemaForModel, GetOptions, GetBase, ConfigurationSlotName } from './types'
 
 describe('configuration schemas', () => {
   test('can make a schema with a color', () => {
@@ -38,7 +38,7 @@ describe('configuration schemas', () => {
     model.configuration.someInteger.set(42)
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(42)
 
-    // typescript tests
+    // type "tests"
     // const conf = model.configuration
     // let schema: ConfigurationSchemaForModel<typeof conf>
     // let options: GetOptions<typeof schema>
@@ -128,7 +128,7 @@ describe('configuration schemas', () => {
     expect(isConfigurationModel(model)).toBe(true)
     expect(readConfObject(model, 'someInteger')).toBe(12)
 
-    // typescript tests
+    // type "tests"
     // const conf = model
     // let schema: ConfigurationSchemaForModel<typeof conf>
     // let options: GetOptions<typeof schema>

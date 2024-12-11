@@ -1,11 +1,11 @@
 import React from 'react'
+
 import isObject from 'is-object'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import Attributes from './Attributes'
-import FieldName from './FieldName'
 import BasicValue from './BasicValue'
+import FieldName from './FieldName'
 
 const useStyles = makeStyles()(theme => ({
   field: {

@@ -1,20 +1,18 @@
 import React from 'react'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from '@mui/material'
-import { nanoid } from '@jbrowse/core/util/nanoid'
 
+import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
+import { Dialog } from '@jbrowse/core/ui'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import WarningIcon from '@mui/icons-material/Warning'
 import {
-  PluginDefinition,
-  pluginDescriptionString,
-} from '@jbrowse/core/PluginLoader'
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+} from '@mui/material'
 
-import { SessionLoaderModel } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 function SessionWarningDialog({
   onConfirm,
@@ -26,7 +24,7 @@ function SessionWarningDialog({
   reason: PluginDefinition[]
 }) {
   return (
-    <Dialog open maxWidth="xl" title="Warning">
+    <Dialog open maxWidth="xl" title="Warning" onClose={onCancel}>
       <DialogContent>
         <WarningIcon fontSize="large" />
         <DialogContentText>

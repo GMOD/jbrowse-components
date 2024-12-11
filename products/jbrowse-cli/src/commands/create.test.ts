@@ -4,10 +4,10 @@
 
 import fs from 'fs'
 import path from 'path'
-import nock from 'nock'
-import { runCommand } from '@oclif/test'
 
-// locals
+import { runCommand } from '@oclif/test'
+import nock from 'nock'
+
 import { runInTmpDir } from '../testUtil'
 
 const { readdir } = fs.promises

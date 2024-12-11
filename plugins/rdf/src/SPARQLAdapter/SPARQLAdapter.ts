@@ -1,17 +1,16 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import format from 'string-template'
-import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import format from 'string-template'
 
 import type MyConfigSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 interface SPARQLEntry {
   type: string

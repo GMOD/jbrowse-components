@@ -1,7 +1,6 @@
-import { createGunzip } from 'zlib'
 import readline from 'readline'
+import { createGunzip } from 'zlib'
 
-// locals
 import { decodeURIComponentNoThrow } from '../util'
 import { getLocalOrRemoteStream } from './common'
 

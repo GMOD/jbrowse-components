@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseReactLinearGenomeViewRootModel.md)
+
+## Docs
 
 ### JBrowseReactLinearGenomeViewRootModel - Properties
 
@@ -97,7 +105,7 @@ setError: (error: unknown) => void
 
 ```js
 // type signature
-addInternetAccount: (internetAccount: any) => void
+addInternetAccount: (acct: any) => void
 ```
 
 #### action: findAppropriateInternetAccount

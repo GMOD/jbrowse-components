@@ -1,43 +1,39 @@
 import { lazy } from 'react'
-import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, isAlive } from 'mobx-state-tree'
-import copy from 'copy-to-clipboard'
+
 import {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
   ConfigurationReference,
-  readConfObject,
   getConf,
+  readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
+  SimpleFeature,
+  getContainingTrack,
+  getContainingView,
   getEnv,
   getSession,
-  getContainingView,
-  getContainingTrack,
   isSessionModelWithWidgets,
-  SimpleFeature,
-  SimpleFeatureSerialized,
-  Feature,
 } from '@jbrowse/core/util'
-
-import {
-  LinearGenomeViewModel,
-  BaseLinearDisplay,
-} from '@jbrowse/plugin-linear-genome-view'
-
-// icons
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import copy from 'copy-to-clipboard'
+import { autorun, observable } from 'mobx'
+import { addDisposer, cast, isAlive, types } from 'mobx-state-tree'
 
-// locals
-import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { createAutorun } from '../util'
-import { ColorBy, FilterBy } from '../shared/types'
+import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTags } from '../shared/getUniqueTags'
-import { defaultFilterFlags } from '../shared/util'
+
+import type { ColorBy, FilterBy } from '../shared/types'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const FilterByTagDialog = lazy(
@@ -60,7 +56,8 @@ type LGV = LinearGenomeViewModel
 /**
  * #stateModel SharedLinearPileupDisplayMixin
  * #category display
- * extends `BaseLinearDisplay`
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export function SharedLinearPileupDisplayMixin(
   configSchema: AnyConfigurationSchemaType,
@@ -92,11 +89,11 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
+        filterBySetting: types.frozen<FilterBy | undefined>(),
         /**
          * #property
          */
@@ -104,18 +101,38 @@ export function SharedLinearPileupDisplayMixin(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       colorTagMap: observable.map<string, string>({}),
+      /**
+       * #volatile
+       */
       featureUnderMouseVolatile: undefined as undefined | Feature,
+      /**
+       * #volatile
+       */
       tagsReady: false,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
     }))
     .views(self => ({
       get autorunReady() {
         const view = getContainingView(self) as LGV
-        return (
-          view.initialized &&
-          self.featureDensityStatsReady &&
-          !self.regionTooLarge
-        )
+        return view.initialized && self.statsReadyAndRegionNotTooLarge
       },
     }))
     .actions(self => ({
@@ -152,7 +169,7 @@ export function SharedLinearPileupDisplayMixin(
        */
       setColorScheme(colorScheme: ColorBy) {
         self.colorTagMap = observable.map({})
-        self.colorBy = {
+        self.colorBySetting = {
           ...colorScheme,
         }
         if (colorScheme.tag) {
@@ -237,7 +254,7 @@ export function SharedLinearPileupDisplayMixin(
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },
@@ -655,4 +672,17 @@ export function SharedLinearPileupDisplayMixin(
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap) {
+        // @ts-expect-error
+        const { colorBy, filterBy, ...rest } = snap
+        return {
+          ...rest,
+          filterBySetting: filterBy,
+          colorBySetting: colorBy,
+        }
+      }
+      return snap
+    })
 }

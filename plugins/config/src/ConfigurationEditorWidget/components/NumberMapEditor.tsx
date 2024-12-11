@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
 
+import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Card,
   CardContent,
@@ -11,11 +12,9 @@ import {
   InputLabel,
   TextField,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
 import NumberEditor from './NumberEditor'
 
 const useStyles = makeStyles()(theme => ({

@@ -1,16 +1,12 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature, doesIntersect2 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import {
-  doesIntersect2,
-  SimpleFeature,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { readFile, parseBed } from '../util'
+
+import { parseBed, readFile } from '../util'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 interface BareFeature {
   strand: number

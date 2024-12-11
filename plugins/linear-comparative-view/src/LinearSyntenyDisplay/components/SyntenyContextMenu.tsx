@@ -1,10 +1,11 @@
 import React from 'react'
-import { getContainingView, getSession, Feature } from '@jbrowse/core/util'
-import { Menu } from '@jbrowse/core/ui'
 
-// locals
-import { LinearSyntenyDisplayModel } from '../model'
-import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import { Menu } from '@jbrowse/core/ui'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import type { LinearSyntenyDisplayModel } from '../model'
+import type { Feature } from '@jbrowse/core/util'
 
 interface ClickCoord {
   clientX: number

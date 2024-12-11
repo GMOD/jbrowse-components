@@ -1,17 +1,17 @@
 import React from 'react'
+
+import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 // core
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
-
-// locals
-import type { LinearGenomeViewModel } from '..'
-import { chooseGridPitch } from '../util'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts'
+import { chooseGridPitch } from '../util'
+
+import type { LinearGenomeViewModel } from '..'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 const useStyles = makeStyles()({
   scalebarLabel: {

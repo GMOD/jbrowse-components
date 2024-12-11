@@ -1,25 +1,24 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import {
-  SessionWithWidgets,
   getSession,
   isAbstractMenuManager,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import {
-  PluggableElementType,
-  ViewType,
-} from '@jbrowse/core/pluggableElementTypes'
-
-// icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
-import { GridBookmarkModel } from './GridBookmarkWidget/model'
+
+import type { GridBookmarkModel } from './GridBookmarkWidget/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  PluggableElementType,
+  ViewType,
+} from '@jbrowse/core/pluggableElementTypes'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default class GridBookmarkPlugin extends Plugin {
   name = 'GridBookmarkPlugin'
@@ -37,30 +36,29 @@ export default class GridBookmarkPlugin extends Plugin {
             .props({
               /**
                * #property
-               * show the bookmark highlights on this track
                */
-              showBookmarkHighlights: true,
+              bookmarkHighlightsVisible: true,
               /**
                * #property
-               * show the bookmark labels on this track
                */
-              showBookmarkLabels: true,
+              bookmarkLabelsVisible: true,
             })
             .actions(self => ({
               /**
                * #action
                */
-              toggleShowBookmarkHighlights(toggle?: boolean) {
-                self.showBookmarkHighlights =
-                  toggle !== undefined ? toggle : !self.showBookmarkHighlights
+              setBookmarkHighlightsVisible(arg: boolean) {
+                self.bookmarkHighlightsVisible = arg
               },
               /**
                * #action
                */
-              toggleShowBookmarkLabels(toggle?: boolean) {
-                self.showBookmarkLabels =
-                  toggle !== undefined ? toggle : !self.showBookmarkLabels
+              setBookmarkLabelsVisible(arg: boolean) {
+                self.bookmarkLabelsVisible = arg
               },
+              /**
+               * #action
+               */
               activateBookmarkWidget() {
                 const session = getSession(self)
                 if (isSessionModelWithWidgets(session)) {
@@ -82,6 +80,9 @@ export default class GridBookmarkPlugin extends Plugin {
               },
             }))
             .actions(self => ({
+              /**
+               * #action
+               */
               navigateNewestBookmark() {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
@@ -95,6 +96,9 @@ export default class GridBookmarkPlugin extends Plugin {
                 }
               },
 
+              /**
+               * #action
+               */
               bookmarkCurrentRegion() {
                 if (self.id === getSession(self).focusedViewId) {
                   const selectedRegions = self.getSelectedRegions(
@@ -114,6 +118,9 @@ export default class GridBookmarkPlugin extends Plugin {
               const superMenuItems = self.menuItems
               const superRubberBandMenuItems = self.rubberBandMenuItems
               return {
+                /**
+                 * #method
+                 */
                 menuItems() {
                   return [
                     ...superMenuItems(),
@@ -138,18 +145,22 @@ export default class GridBookmarkPlugin extends Plugin {
                           label: 'Toggle bookmark highlights',
                           icon: HighlightIcon,
                           type: 'checkbox',
-                          checked: self.showBookmarkHighlights,
+                          checked: self.bookmarkHighlightsVisible,
                           onClick: () => {
-                            self.toggleShowBookmarkHighlights()
+                            self.setBookmarkHighlightsVisible(
+                              !self.bookmarkHighlightsVisible,
+                            )
                           },
                         },
                         {
                           label: 'Toggle bookmark labels',
                           icon: LabelIcon,
                           type: 'checkbox',
-                          checked: self.showBookmarkLabels,
+                          checked: self.bookmarkLabelsVisible,
                           onClick: () => {
-                            self.toggleShowBookmarkLabels()
+                            self.setBookmarkLabelsVisible(
+                              !self.bookmarkLabelsVisible,
+                            )
                           },
                         },
                       ],
@@ -157,6 +168,9 @@ export default class GridBookmarkPlugin extends Plugin {
                   ]
                 },
 
+                /**
+                 * #method
+                 */
                 rubberBandMenuItems() {
                   return [
                     ...superRubberBandMenuItems(),

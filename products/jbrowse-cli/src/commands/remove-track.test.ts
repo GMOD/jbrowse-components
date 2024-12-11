@@ -5,8 +5,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { readConf, runInTmpDir } from '../testUtil'
 import { runCommand } from '@oclif/test'
+
+import { readConf, runInTmpDir } from '../testUtil'
 
 const twoPath = path.join(__dirname, '..', '..', 'test', 'data', 'simple.2bit')
 

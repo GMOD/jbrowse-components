@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react'
+
+import { App } from '@jbrowse/app-core'
+import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
-import { useQueryParam, StringParam } from 'use-query-params'
-import { CssBaseline, ThemeProvider } from '@mui/material'
+import { StringParam, useQueryParam } from 'use-query-params'
 
 // core
-import { App } from '@jbrowse/app-core'
-import PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
 import ShareButton from './ShareButton'
-import { WebSessionModel } from '../sessionModel'
+
+import type { WebSessionModel } from '../sessionModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const JBrowse = observer(function ({
   pluginManager,

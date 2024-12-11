@@ -1,8 +1,10 @@
-import React, { useEffect, useState, CSSProperties } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { Typography } from '@mui/material'
+import type { CSSProperties } from 'react'
+import React, { useEffect, useState } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground

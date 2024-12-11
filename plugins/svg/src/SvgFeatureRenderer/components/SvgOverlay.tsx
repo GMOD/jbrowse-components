@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { bpSpanPx, Feature, Region } from '@jbrowse/core/util'
+
+import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+import type { Feature, Region } from '@jbrowse/core/util'
 
 type LayoutRecord = [number, number, number, number]
 

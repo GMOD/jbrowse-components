@@ -1,14 +1,15 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import { RemoteFile } from 'generic-filehandle'
-import config from '../../test_data/volvox/config_auth.json'
+
 import {
-  setup,
-  pv,
-  hts,
   createView,
-  expectCanvasMatch,
   doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  pv,
+  setup,
 } from './util'
+import config from '../../test_data/volvox/config_auth.json'
 
 setup()
 

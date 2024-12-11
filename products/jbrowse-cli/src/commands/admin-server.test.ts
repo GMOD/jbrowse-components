@@ -4,9 +4,9 @@
 
 import fs from 'fs'
 import path from 'path'
+
 import { runCommand } from '@oclif/test'
 
-// locals
 import fetch from '../fetchWithProxy'
 import { dataDir, readConf, runInTmpDir } from '../testUtil'
 

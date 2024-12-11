@@ -1,12 +1,13 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
-// locals
-import { Feat } from '../../util'
-import { splitString, cdsColor, updownstreamColor, utrColor } from '../util'
-import { SequenceFeatureDetailsModel } from '../model'
+import { cdsColor, splitString, updownstreamColor, utrColor } from '../util'
 import SequenceDisplay from './SequenceDisplay'
-import { SimpleFeatureSerialized } from '../../../util'
+
+import type { SimpleFeatureSerialized } from '../../../util'
+import type { Feat } from '../../util'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const CDNASequence = observer(function ({
   utr,

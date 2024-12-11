@@ -1,11 +1,13 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import ComparativeRenderer, {
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import type {
   RenderArgs as ComparativeRenderArgs,
   RenderArgsSerialized as ComparativeRenderArgsSerialized,
   RenderResults,
   ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import type ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 
 interface RenderArgs extends ComparativeRenderArgs {
   adapterConfig: Record<string, unknown>
@@ -17,11 +19,6 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
   rendererType: string
 }
 
-/**
- * call a synteny renderer with the given args
- * param views: a set of views that each contain a set of regions
- * used instead of passing regions directly as in render()
- */
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 

@@ -1,19 +1,20 @@
-import { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import { Region } from '@jbrowse/core/util/types'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { colord } from '@jbrowse/core/util/colord'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
   scaleSequential,
   scaleSequentialLog,
 } from '@mui/x-charts-vendor/d3-scale'
-import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 import interpolateViridis from './viridis'
-import { RenderArgsDeserializedWithFeatures } from './HicRenderer'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import type { RenderArgsDeserializedWithFeatures } from './HicRenderer'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
   getResolution: (bp: number) => Promise<number>

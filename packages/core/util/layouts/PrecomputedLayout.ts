@@ -1,10 +1,11 @@
-import {
-  RectTuple,
-  SerializedLayout,
-  BaseLayout,
-  Rectangle,
-} from './BaseLayout'
 import RBush from 'rbush'
+
+import type {
+  BaseLayout,
+  RectTuple,
+  Rectangle,
+  SerializedLayout,
+} from './BaseLayout'
 
 export interface Layout {
   minX: number

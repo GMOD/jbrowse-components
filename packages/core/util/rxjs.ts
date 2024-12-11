@@ -1,4 +1,6 @@
-import { Observable, Observer } from 'rxjs'
+import { Observable } from 'rxjs'
+
+import type { Observer } from 'rxjs'
 
 /**
  * Wrapper for rxjs Observable.create with improved error handling and

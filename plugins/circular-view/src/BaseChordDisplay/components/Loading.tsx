@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { makeStyles } from 'tss-react/mui'
+import React, { useEffect, useState } from 'react'
+
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => {
   const offset = 2

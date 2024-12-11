@@ -1,9 +1,11 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
+
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
 import { Link, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   root: {

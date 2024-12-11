@@ -224,7 +224,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from 'mobx-state-tree'
 
-// locals
+
 import MyToolWidget from './MyToolWidget'
 
 export default (pluginManager: PluginManager) => {

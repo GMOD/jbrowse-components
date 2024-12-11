@@ -1,11 +1,13 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { Region } from '@jbrowse/core/util/types'
+import React, { useEffect, useRef, useState } from 'react'
+
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-import { LaidOutFeatureRect } from '../FeatureGlyph'
+
+import type { LaidOutFeatureRect } from '../FeatureGlyph'
+import type { Region } from '@jbrowse/core/util/types'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)

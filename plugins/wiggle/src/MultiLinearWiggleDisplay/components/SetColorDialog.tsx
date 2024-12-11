@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { useLocalStorage } from '@jbrowse/core/util'
-import clone from 'clone'
 
-// locals
+import { useLocalStorage } from '@jbrowse/core/util'
+import { Button, DialogActions, DialogContent } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+
 import DraggableDialog from './DraggableDialog'
-import { Source } from '../../util'
 import SourcesGrid from './SourcesGrid'
+
+import type { Source } from '../../util'
 
 const useStyles = makeStyles()({
   content: {
@@ -28,8 +28,8 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const [currLayout, setCurrLayout] = useState(clone(sources || []))
-  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', true)
+  const [currLayout, setCurrLayout] = useState(structuredClone(sources || []))
+  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', false)
   return (
     <DraggableDialog
       open

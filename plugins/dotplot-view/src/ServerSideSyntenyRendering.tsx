@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { observer } from 'mobx-react'
+import React, { useEffect, useRef, useState } from 'react'
+
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { observer } from 'mobx-react'
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by

@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
   DialogContent,
   DialogContentText,
-  IconButton,
   FormControl,
   FormControlLabel,
+  IconButton,
   Radio,
   RadioGroup,
 } from '@mui/material'
 
-// icons
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import InfoDialog from './ShareInfoDialog'
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'

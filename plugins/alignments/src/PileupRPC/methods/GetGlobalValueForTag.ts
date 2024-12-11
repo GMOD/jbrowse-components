@@ -1,11 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { Region } from '@jbrowse/core/util'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-// locals
 import PileupBaseRPC from '../base'
+
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
 
 export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
   name = 'PileupGetGlobalValueForTag'

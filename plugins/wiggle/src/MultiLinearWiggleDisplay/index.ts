@@ -1,9 +1,11 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
-import { lazy } from 'react'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function MultiLinearWiggleDisplayF(
   pluginManager: PluginManager,

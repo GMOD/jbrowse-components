@@ -1,24 +1,30 @@
 import deepEqual from 'fast-deep-equal'
 
 // layouts
+import FeatureRendererType from './FeatureRendererType'
+import { readConfObject } from '../../configuration'
+import { getLayoutId } from '../../util'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
-import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
 
 // other
-import FeatureRendererType, {
+import type {
   RenderArgs as FeatureRenderArgs,
-  RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
+  RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderResults as FeatureRenderResults,
-  ResultsSerialized as FeatureResultsSerialized,
   ResultsDeserialized as FeatureResultsDeserialized,
+  ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
-import { getLayoutId, Region, Feature } from '../../util'
-import { readConfObject, AnyConfigurationModel } from '../../configuration'
-import SerializableFilterChain from './util/serializableFilterChain'
-import RpcManager from '../../rpc/RpcManager'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { Feature, Region } from '../../util'
+import type SerializableFilterChain from './util/serializableFilterChain'
+import type RpcManager from '../../rpc/RpcManager'
+import type {
+  BaseLayout,
+  SerializedLayout,
+} from '../../util/layouts/BaseLayout'
 
 export interface LayoutSessionProps {
   config: AnyConfigurationModel

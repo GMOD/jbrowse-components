@@ -1,11 +1,11 @@
 import React from 'react'
-import { Fab, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
-// icons
 import LaunchIcon from '@mui/icons-material/Launch'
+import { Fab, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   left: {

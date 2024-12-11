@@ -1,14 +1,13 @@
 import React from 'react'
+
+import GradeIcon from '@mui/icons-material/Grade'
 import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// icons
-import GradeIcon from '@mui/icons-material/Grade'
-
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
 import DropdownTrackSelector from './DropdownTrackSelector'
+
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()({
   smallBadge: {

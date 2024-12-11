@@ -1,12 +1,13 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
-// locals
-import { BreakpointViewModel } from '../model'
 import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'
-import Translocations from './Translocations'
 import PairedFeatures from './PairedFeatures'
+import Translocations from './Translocations'
+
+import type { BreakpointViewModel } from '../model'
 
 const Overlay = observer(function (props: {
   parentRef: React.RefObject<SVGSVGElement>

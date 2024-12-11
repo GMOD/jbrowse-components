@@ -2,7 +2,7 @@ import React from 'react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 export const HumanExomeExample = () => {
   const assembly = {

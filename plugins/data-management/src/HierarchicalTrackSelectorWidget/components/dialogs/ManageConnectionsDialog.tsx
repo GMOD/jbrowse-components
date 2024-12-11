@@ -1,23 +1,21 @@
 import React from 'react'
+
+import { readConfObject } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   IconButton,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { makeStyles } from 'tss-react/mui'
 
-// icons
-import CloseIcon from '@mui/icons-material/Close'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   connectionContainer: {

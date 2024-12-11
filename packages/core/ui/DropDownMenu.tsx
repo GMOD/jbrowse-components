@@ -1,10 +1,13 @@
 import React, { useRef, useState } from 'react'
-import { Button, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
-import Menu, { MenuItem } from './Menu'
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
+import { Button, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import Menu from './Menu'
+
+import type { MenuItem } from './Menu'
 
 const useStyles = makeStyles()(theme => ({
   buttonRoot: {

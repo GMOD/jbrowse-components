@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/sv-inspector/src/SvInspectorView/models/SvInspectorView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/models/SvInspectorView.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SvInspectorView.md)
+
+## Docs
 
 does not extend, but is a combination of a
 
@@ -47,14 +55,7 @@ type: types.literal('SvInspectorView')
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(
-          types.refinement(
-            'SvInspectorViewHeight',
-            types.number,
-            n => n >= minHeight,
-          ),
-          defaultHeight,
-        )
+height: types.optional(types.number, defaultHeight)
 ```
 
 #### property: onlyDisplayRelevantRegionsInCircularView
@@ -66,26 +67,11 @@ false
 onlyDisplayRelevantRegionsInCircularView: false
 ```
 
-#### property: mode
-
-switch specifying whether we are showing the import wizard or the spreadsheet in
-our viewing area
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-mode: types.optional(
-          types.enumeration('SvInspectorViewMode', ['import', 'display']),
-          'import',
-        )
-```
-
 #### property: spreadsheetView
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...> | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -113,13 +99,6 @@ circularView: types.optional(CircularModel, () =>
 
 ### SvInspectorView - Getters
 
-#### getter: selectedRows
-
-```js
-// type
-({ id: string; cells: IMSTArray<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; extendedData: any; isSelected: boolean; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>)[]
-```
-
 #### getter: assemblyName
 
 ```js
@@ -138,7 +117,7 @@ boolean
 
 ```js
 // type
-any
+SimpleFeatureSerialized[]
 ```
 
 #### getter: featuresAdapterConfigSnapshot
@@ -158,6 +137,13 @@ any
 any[]
 ```
 
+#### getter: canonicalFeatureRefNameSet
+
+```js
+// type
+Set<unknown>
+```
+
 #### getter: featuresCircularTrackConfiguration
 
 ```js
@@ -171,7 +157,7 @@ any[]
 
 ```js
 // type signature
-menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
 ### SvInspectorView - Actions
@@ -188,20 +174,6 @@ setWidth: (newWidth: number) => void
 ```js
 // type signature
 setHeight: (newHeight: number) => number
-```
-
-#### action: setImportMode
-
-```js
-// type signature
-setImportMode: () => void
-```
-
-#### action: setDisplayMode
-
-```js
-// type signature
-setDisplayMode: () => void
 ```
 
 #### action: setDisplayedRegions

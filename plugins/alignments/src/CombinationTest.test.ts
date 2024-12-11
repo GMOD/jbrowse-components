@@ -1,15 +1,15 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { toArray } from 'rxjs/operators'
 import { LocalFile } from 'generic-filehandle'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
-import CramAdapter from './CramAdapter/CramAdapter'
-import BamAdapter from './BamAdapter/BamAdapter'
-import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
-
-import cramConfigSchema from './CramAdapter/configSchema'
-import bamConfigSchema from './BamAdapter/configSchema'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import BamAdapter from './BamAdapter/BamAdapter'
+import bamConfigSchema from './BamAdapter/configSchema'
+import CramAdapter from './CramAdapter/CramAdapter'
+import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
+import cramConfigSchema from './CramAdapter/configSchema'
+
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()
 

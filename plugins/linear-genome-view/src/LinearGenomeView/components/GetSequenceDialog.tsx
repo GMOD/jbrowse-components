@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
+
+import { getConf } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import { complement, getSession, reverse } from '@jbrowse/core/util'
+import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
   Checkbox,
@@ -7,31 +13,18 @@ import {
   Container,
   DialogActions,
   DialogContent,
-  FormGroup,
   FormControlLabel,
+  FormGroup,
   TextField,
   Typography,
 } from '@mui/material'
-import { observer } from 'mobx-react'
-import { saveAs } from 'file-saver'
-import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  getSession,
-  reverse,
-  complement,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
-import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { saveAs } from 'file-saver'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-// icons
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import GetAppIcon from '@mui/icons-material/GetApp'
-
-// locals
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -39,6 +32,9 @@ const useStyles = makeStyles()({
   },
   textAreaFont: {
     fontFamily: 'Courier New',
+  },
+  ml: {
+    marginLeft: 10,
   },
 })
 
@@ -165,11 +161,7 @@ const GetSequenceDialog = observer(function ({
         ) : loading ? (
           <Container>
             Retrieving reference sequence...
-            <CircularProgress
-              style={{ marginLeft: 10 }}
-              size={20}
-              disableShrink
-            />
+            <CircularProgress className={classes.ml} size={20} disableShrink />
           </Container>
         ) : null}
         <TextField

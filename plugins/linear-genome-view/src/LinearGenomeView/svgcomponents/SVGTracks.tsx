@@ -1,11 +1,13 @@
 import React from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+
 import { getSession } from '@jbrowse/core/util'
-// locals
-import { LinearGenomeViewModel } from '..'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+
 import SVGRegionSeparators from './SVGRegionSeparators'
 import SVGTrackLabel from './SVGTrackLabel'
+
+import type { LinearGenomeViewModel } from '..'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
 

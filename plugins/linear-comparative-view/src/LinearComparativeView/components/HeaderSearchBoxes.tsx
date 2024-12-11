@@ -1,13 +1,12 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-// jbrowse
-import {
-  LinearGenomeViewModel,
-  SearchBox,
-} from '@jbrowse/plugin-linear-genome-view'
+
 import { toLocale } from '@jbrowse/core/util'
+import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
+import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(() => ({
   bp: {

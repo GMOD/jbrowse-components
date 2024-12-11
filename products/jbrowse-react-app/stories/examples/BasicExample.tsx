@@ -2,7 +2,7 @@ import React from 'react'
 
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app'
-import { createViewState, JBrowseApp } from '../../src'
+import { JBrowseApp, createViewState } from '../../src'
 
 const config = {
   assemblies: [

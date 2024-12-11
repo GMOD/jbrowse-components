@@ -1,9 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
-import isNode from 'detect-node'
-
 import { CanvasSequence } from 'canvas-sequencer'
+import isNode from 'detect-node'
 
 type AbstractCanvas = any
 

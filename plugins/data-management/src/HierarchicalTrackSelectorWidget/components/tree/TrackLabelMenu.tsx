@@ -1,16 +1,14 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-
-// icons
+import { getSession } from '@jbrowse/core/util'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import StarIcon from '@mui/icons-material/StarBorderOutlined'
 import FilledStarIcon from '@mui/icons-material/Star'
+import StarIcon from '@mui/icons-material/StarBorderOutlined'
+import { makeStyles } from 'tss-react/mui'
 
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   cascadingStyle: {

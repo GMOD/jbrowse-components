@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { useEffect, useState } from 'react'
+
 import { clamp } from '@jbrowse/core/util'
 
-// locals
-import { LayoutRecord } from './model'
+import type { LayoutRecord } from './model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

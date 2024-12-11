@@ -1,8 +1,8 @@
-import {
-  RectTuple,
-  SerializedLayout,
-  Rectangle,
+import type {
   BaseLayout,
+  RectTuple,
+  Rectangle,
+  SerializedLayout,
 } from './BaseLayout'
 
 /**

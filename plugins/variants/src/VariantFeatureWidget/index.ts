@@ -1,8 +1,11 @@
 import { lazy } from 'react'
+
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { stateModelFactory } from './stateModelFactory'
+
 import { configSchema } from './configSchema'
+import { stateModelFactory } from './stateModelFactory'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function VariantFeatureWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(

@@ -1,7 +1,10 @@
 import React from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
+
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+
 import { linearSyntenyViewHelperModelFactory } from './stateModelFactory'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 function UnusedComponent() {
   return <div />

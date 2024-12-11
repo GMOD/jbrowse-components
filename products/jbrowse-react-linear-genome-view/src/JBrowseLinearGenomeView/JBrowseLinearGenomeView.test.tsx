@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { render, waitFor } from '@testing-library/react'
+
 import { createViewState } from '..'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
 jest.mock(

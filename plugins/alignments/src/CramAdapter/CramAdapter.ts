@@ -1,22 +1,23 @@
-import { CraiIndex, IndexedCramFile, CramRecord } from '@gmod/cram'
-import { toArray } from 'rxjs/operators'
+import { CraiIndex, IndexedCramFile } from '@gmod/cram'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { toLocale, updateStatus } from '@jbrowse/core/util'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
-// jbrowse
-import {
-  BaseFeatureDataAdapter,
+import { toArray } from 'rxjs/operators'
+
+import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
+import { filterReadFlag, filterTagValue } from '../shared/util'
+
+import type { FilterBy } from '../shared/types'
+import type { CramRecord } from '@gmod/cram'
+import type {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, Feature } from '@jbrowse/core/util'
-import { updateStatus, toLocale } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
-
-// locals
-import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
-import { FilterBy } from '../shared/types'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 interface Header {
   idToName?: string[]
@@ -152,8 +153,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       const { cram } = conf
       const samHeader = await cram.cram.getSamHeader()
 
-      // use the @SQ lines in the header to figure out the
-      // mapping between ref ID numbers and names
+      // use the @SQ lines in the header to figure out the mapping between ref
+      // ID numbers and names
       const idToName: string[] = []
       const nameToId: Record<string, number> = {}
       samHeader
@@ -195,8 +196,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return samHeader.idToName
   }
 
-  // use info from the SAM header if possible, but fall back to using
-  // the ref seq order from when the browser's refseqs were loaded
+  // use info from the SAM header if possible, but fall back to using the ref
+  // seq order from when the browser's refseqs were loaded
   refNameToId(refName: string) {
     if (this.samHeader.nameToId) {
       return this.samHeader.nameToId[refName]
@@ -207,8 +208,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return undefined
   }
 
-  // use info from the SAM header if possible, but fall back to using
-  // the ref seq order from when the browser's refseqs were loaded
+  // use info from the SAM header if possible, but fall back to using the ref
+  // seq order from when the browser's refseqs were loaded
   refIdToName(refId: number) {
     return this.samHeader.idToName?.[refId] || this.seqIdToRefName?.[refId]
   }
@@ -254,24 +255,19 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         } = filterBy || {}
 
         for (const record of records) {
-          const flags = record.flags
-          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
+          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
             continue
           }
-
-          if (tagFilter) {
-            const readVal =
+          if (
+            tagFilter &&
+            filterTagValue(
               tagFilter.tag === 'RG'
                 ? samHeader.readGroups?.[record.readGroupId]
-                : record.tags[tagFilter.tag]
-            const filterVal = tagFilter.value
-            if (
-              filterVal === '*'
-                ? readVal === undefined
-                : `${readVal}` !== `${filterVal}`
-            ) {
-              continue
-            }
+                : record.tags[tagFilter.tag],
+              tagFilter.value,
+            )
+          ) {
+            continue
           }
 
           if (readName && record.readName !== readName) {

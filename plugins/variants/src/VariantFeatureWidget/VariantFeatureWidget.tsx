@@ -1,14 +1,15 @@
-import React, { lazy, Suspense } from 'react'
-import { observer } from 'mobx-react'
-import { Paper } from '@mui/material'
-import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
-import { parseBreakend } from '@gmod/vcf'
+import React, { Suspense, lazy } from 'react'
 
-// locals
-import VariantSampleGrid from './VariantSampleGrid'
+import { parseBreakend } from '@gmod/vcf'
+import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import { Paper } from '@mui/material'
+import { observer } from 'mobx-react'
+
 import VariantAnnotationTable from './VariantAnnotationTable'
-import { VariantFeatureWidgetModel } from './stateModelFactory'
+import VariantSampleGrid from './VariantSampleGrid'
 import { variantFieldDescriptions } from './variantFieldDescriptions'
+
+import type { VariantFeatureWidgetModel } from './stateModelFactory'
 
 // lazies
 const LaunchBreakendPanel = lazy(() => import('./LaunchBreakendPanel'))

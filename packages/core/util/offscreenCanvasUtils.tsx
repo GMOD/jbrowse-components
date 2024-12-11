@@ -1,10 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
+
 import { CanvasSequence } from 'canvas-sequencer'
 
-// locals
-import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './blobToDataURL'
+import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 
 export type RenderReturn = Record<string, unknown> | undefined
 

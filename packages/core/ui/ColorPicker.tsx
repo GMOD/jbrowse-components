@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
+
 import { colord } from '@jbrowse/core/util/colord'
-import { Popover, Select, MenuItem, TextField } from '@mui/material'
+import { MenuItem, Popover, Select, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import * as paletteColors from './colors'
-import { useLocalStorage, useDebounce } from '../util'
-
-// we are using a vendored copy of react-colorful because the default uses
-// pure-ESM which is difficult to make pass with jest e.g.
-// https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
+import { useDebounce, useLocalStorage } from '../util'
 import { RgbaStringColorPicker } from './react-colorful'
+
+// note: we are using a vendored copy of react-colorful because the default
+// uses pure-ESM which is difficult to make pass with jest e.g.
+// https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
 
 const useStyles = makeStyles()({
   picker: { position: 'relative' },

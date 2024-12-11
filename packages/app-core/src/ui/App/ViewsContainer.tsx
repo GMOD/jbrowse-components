@@ -1,13 +1,13 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
-// locals
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
 import ViewLauncher from './ViewLauncher'
 import ViewPanel from './ViewPanel'
+
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   viewsContainer: {
@@ -19,8 +19,6 @@ const useStyles = makeStyles()({
 interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
-    savedSessionNames: string[]
-    menus: { label: string; menuItems: JBMenuItem[] }[]
     renameCurrentSession: (arg: string) => void
     snackbarMessages: SnackbarMessage[]
     popSnackbarMessage: () => unknown

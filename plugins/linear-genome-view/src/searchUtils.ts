@@ -1,12 +1,11 @@
-import { getSession } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
-import { dedupe, TextSearchManager } from '@jbrowse/core/util'
+import { dedupe, getSession } from '@jbrowse/core/util'
 
-// locals
-import { LinearGenomeViewModel } from './LinearGenomeView'
+import type { LinearGenomeViewModel } from './LinearGenomeView'
+import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { TextSearchManager } from '@jbrowse/core/util'
 
 export async function navToOption({
   option,

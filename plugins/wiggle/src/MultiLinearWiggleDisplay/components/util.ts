@@ -1,11 +1,12 @@
+import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
   measureText,
 } from '@jbrowse/core/util'
-import { WiggleDisplayModel } from '../model'
-import { getConf } from '@jbrowse/core/configuration'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+import type { WiggleDisplayModel } from '../model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
   const idxs = sel

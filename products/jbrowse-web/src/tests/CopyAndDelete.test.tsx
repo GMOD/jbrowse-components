@@ -1,16 +1,17 @@
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
-import { getConf } from '@jbrowse/core/configuration'
 
-import masterConfig from '../../test_data/volvox/connection_test.json'
+import { getConf } from '@jbrowse/core/configuration'
+import { fireEvent, render, waitFor } from '@testing-library/react'
+
 import {
   JBrowse,
   createView,
-  setup,
-  getPluginManager,
   doBeforeEach,
+  getPluginManager,
   mockConsoleWarn,
+  setup,
 } from './util'
+import masterConfig from '../../test_data/volvox/connection_test.json'
 
 setup()
 beforeEach(() => {

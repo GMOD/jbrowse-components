@@ -1,7 +1,8 @@
-import { within } from '@testing-library/react'
 import path from 'path'
-// locals
-import { setup, expectCanvasMatch, doBeforeEach, createView } from './util'
+
+import { within } from '@testing-library/react'
+
+import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 import config from '../../test_data/methylation_test/config.json'
 
 setup()

@@ -1,15 +1,17 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 
-// locals
-import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 import {
   clamp,
   getContainingView,
   getSession,
   measureText,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import { observer } from 'mobx-react'
+
+// locals
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+
 
 const FloatingLabels = observer(function ({
   model,

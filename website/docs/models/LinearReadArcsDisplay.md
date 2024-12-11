@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearReadArcsDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReadArcsDisplay.md)
+
+## Docs
 
 the arc display is a non-block-based track, so draws to a single canvas and can
 connect multiple regions extends
@@ -39,15 +47,6 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBy
-
-```js
-// type signature
-IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
-// code
-filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags)
-```
-
 #### property: lineWidth
 
 ```js
@@ -66,13 +65,22 @@ IMaybe<ISimpleType<number>>
 jitter: types.maybe(types.number)
 ```
 
-#### property: colorBy
+#### property: colorBySetting
 
 ```js
 // type signature
 IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.frozen<ColorBy | undefined>()
+colorBySetting: types.frozen<ColorBy | undefined>()
+```
+
+#### property: filterBySetting
+
+```js
+// type signature
+IType<FilterBy, FilterBy, FilterBy>
+// code
+filterBySetting: types.frozen<FilterBy | undefined>()
 ```
 
 #### property: drawInter
@@ -94,6 +102,20 @@ drawLongRange: true
 ```
 
 ### LinearReadArcsDisplay - Getters
+
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
+```
 
 #### getter: drawn
 

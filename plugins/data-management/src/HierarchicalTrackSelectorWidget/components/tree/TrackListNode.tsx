@@ -1,10 +1,11 @@
 import React from 'react'
+
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import Category from './TrackCategory'
 import TrackLabel from './TrackLabel'
-import { NodeData } from '../util'
+
+import type { NodeData } from '../util'
 
 const useStyles = makeStyles()(theme => ({
   // this accordionBase element's small padding is used to give a margin to

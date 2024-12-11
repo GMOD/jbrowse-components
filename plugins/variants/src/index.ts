@@ -1,13 +1,22 @@
+import Plugin from '@jbrowse/core/Plugin'
+
+import ChordVariantDisplayF from './ChordVariantDisplay'
+import LinearVariantDisplayF from './LinearVariantDisplay'
+import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay'
+import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay'
+import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer'
+import MultiVariantRendererF from './MultiLinearVariantRenderer'
+import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
+import VariantFeatureWidgetF from './VariantFeatureWidget'
+import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix'
+import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetSimplifiedFeatures'
+import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources'
+import VariantTrackF from './VariantTrack'
 import VcfAdapterF from './VcfAdapter'
 import VcfTabixAdapterF from './VcfTabixAdapter'
 import ExtensionPointsF from './extensionPoints'
-import VariantTrackF from './VariantTrack'
-import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import ChordVariantDisplayF from './ChordVariantDisplay'
-import LinearVariantDisplayF from './LinearVariantDisplay'
-import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
-import VariantFeatureWidgetF from './VariantFeatureWidget'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -19,8 +28,20 @@ export default class VariantsPlugin extends Plugin {
     VariantTrackF(pluginManager)
     ExtensionPointsF(pluginManager)
     LinearVariantDisplayF(pluginManager)
+    LinearVariantMatrixDisplayF(pluginManager)
+    MultiLinearVariantDisplayF(pluginManager)
+    MultiVariantRendererF(pluginManager)
+    LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
+
+    pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
+    pluginManager.addRpcMethod(
+      () => new MultiVariantGetGenotypeMatrix(pluginManager),
+    )
+    pluginManager.addRpcMethod(
+      () => new MultiVariantGetSimplifiedFeatures(pluginManager),
+    )
   }
 }
 

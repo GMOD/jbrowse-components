@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface LayoutItem {
   uniqueId: string

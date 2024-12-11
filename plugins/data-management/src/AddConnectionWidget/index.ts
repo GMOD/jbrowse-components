@@ -1,9 +1,12 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { lazy } from 'react'
 
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+
 import stateModel from './model'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
 const configSchema = ConfigurationSchema('AddConnectionWidget', {})
 
 export default function AddConnectionWidgetF(pluginManager: PluginManager) {

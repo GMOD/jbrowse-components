@@ -1,16 +1,15 @@
 import React, { useState } from 'react'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { Button, Paper, Typography, alpha } from '@mui/material'
+
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import { Button, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
+import { makeStyles } from 'tss-react/mui'
 
-// icons
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-
-// locals
 import ImportError from './ImportError'
+
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 

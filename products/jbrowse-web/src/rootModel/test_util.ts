@@ -1,7 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+
 import corePlugins from '../corePlugins'
 import RootModel from './rootModel'
-import sessionModelFactory, { WebSessionModel } from '../sessionModel'
+import sessionModelFactory from '../sessionModel'
+
+import type { WebSessionModel } from '../sessionModel'
 
 export function createTestSession(args?: {
   adminMode?: boolean
@@ -13,8 +16,9 @@ export function createTestSession(args?: {
     adminMode = false,
     jbrowseConfig = {},
   } = args || {}
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
 
   const root = RootModel({
     pluginManager,
@@ -23,12 +27,14 @@ export function createTestSession(args?: {
   }).create(
     {
       jbrowse: {
+        ...jbrowseConfig,
         configuration: {
-          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          rpc: {
+            defaultDriver: 'MainThreadRpcDriver',
+          },
           // @ts-expect-error
           ...jbrowseConfig.configuration,
         },
-        ...jbrowseConfig,
       },
     },
     { pluginManager },

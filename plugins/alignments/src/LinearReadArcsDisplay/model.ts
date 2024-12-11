@@ -1,25 +1,21 @@
-import React, { lazy } from 'react'
-import { types, Instance } from 'mobx-state-tree'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import type React from 'react'
+import { lazy } from 'react'
+
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { getSession } from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// icons
-import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import PaletteIcon from '@mui/icons-material/Palette'
+import { types } from 'mobx-state-tree'
 
-// locals
-import { ColorBy, FilterBy } from '../shared/types'
-import { ChainData } from '../shared/fetchChains'
-import { defaultFilterFlags } from '../shared/util'
+import type { ChainData } from '../shared/fetchChains'
+import type { ColorBy, FilterBy } from '../shared/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const FilterByTagDialog = lazy(
@@ -55,11 +51,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.optional(types.frozen<FilterBy>(), defaultFilterFlags),
-
-        /**
-         * #property
-         */
         lineWidth: types.maybe(types.number),
 
         /**
@@ -70,7 +61,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        colorBy: types.frozen<ColorBy | undefined>(),
+        colorBySetting: types.frozen<ColorBy | undefined>(),
+
+        /**
+         * #property
+         */
+        filterBySetting: types.frozen<FilterBy | undefined>(),
 
         /**
          * #property
@@ -84,11 +80,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       loading: false,
+      /**
+       * #volatile
+       */
       chainData: undefined as ChainData | undefined,
+      /**
+       * #volatile
+       */
       lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       lastDrawnBpPerPx: 0,
+      /**
+       * #volatile
+       */
       ref: null as HTMLCanvasElement | null,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+      /**
+       * #getter
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
     }))
     .actions(self => ({
       /**
@@ -129,7 +154,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setColorScheme(colorBy: { type: string }) {
-        self.colorBy = {
+        self.colorBySetting = {
           ...colorBy,
         }
       },
@@ -159,7 +184,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBy = {
+        self.filterBySetting = {
           ...filter,
         }
       },

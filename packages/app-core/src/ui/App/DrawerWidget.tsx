@@ -1,14 +1,14 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
-import { observer } from 'mobx-react'
-import { getEnv } from '@jbrowse/core/util'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { getEnv } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
-// locals
 import Drawer from './Drawer'
 import DrawerHeader from './DrawerHeader'
+
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const ModalWidget = lazy(() => import('./ModalWidget'))
 

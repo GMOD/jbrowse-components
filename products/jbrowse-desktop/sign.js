@@ -1,8 +1,8 @@
 // this script adapted from
 // https://github.com/electron-userland/electron-builder/issues/6158#issuecomment-899798533
-const path = require('path')
-const fs = require('fs')
 const childProcess = require('child_process')
+const fs = require('fs')
+const path = require('path')
 
 const TEMP_DIR = path.join(__dirname, 'release', 'temp')
 

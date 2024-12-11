@@ -9,16 +9,19 @@ process.on('unhandledRion', err => {
 require('../config/env')
 
 const fs = require('fs')
+
 const chalk = require('chalk')
-const webpack = require('webpack')
-const WebpackDevServer = require('webpack-dev-server')
 const {
   choosePort,
   createCompiler,
   prepareUrls,
 } = require('react-dev-utils/WebpackDevServerUtils')
+const { checkBrowsers } = require('react-dev-utils/browsersHelper')
 const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
+const webpack = require('webpack')
+const WebpackDevServer = require('webpack-dev-server')
+
 const paths = require('../config/paths')
 
 const useYarn = fs.existsSync(paths.yarnLockFile)
@@ -47,7 +50,6 @@ if (process.env.HOST) {
 
 // We require that you explicitly set browsers and do not fall back to
 // browserslist defaults.
-const { checkBrowsers } = require('react-dev-utils/browsersHelper')
 
 module.exports = function startWebpack(config) {
   return checkBrowsers(paths.appPath, isInteractive)

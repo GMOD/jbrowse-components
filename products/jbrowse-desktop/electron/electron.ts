@@ -1,22 +1,21 @@
-import electron, {
-  dialog,
-  app,
-  ipcMain,
-  shell,
-  BrowserWindow,
-  Menu,
-} from 'electron'
 import fs from 'fs'
-import debug from 'electron-debug'
 import path from 'path'
 import url from 'url'
-import windowStateKeeper from 'electron-window-state'
+
 import { generateFastaIndex } from '@gmod/faidx'
+import electron, {
+  BrowserWindow,
+  Menu,
+  app,
+  dialog,
+  ipcMain,
+  shell,
+} from 'electron'
+import debug from 'electron-debug'
 import { autoUpdater } from 'electron-updater'
-// @ts-ignore
+import windowStateKeeper from 'electron-window-state'
 import parseJson from 'json-parse-even-better-errors'
 
-// locals
 import { getFileStream } from './generateFastaIndex'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises

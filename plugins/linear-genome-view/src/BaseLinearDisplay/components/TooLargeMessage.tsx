@@ -1,9 +1,10 @@
 import React from 'react'
-import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-// locals
-import BlockMsg from '../components/BlockMsg'
 import { Button } from '@mui/material'
+
+import BlockMsg from '../components/BlockMsg'
+
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function TooLargeMessage({
   model,

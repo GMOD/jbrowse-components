@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
 export const ExternalTokenEntryForm = ({
   internetAccountId,
@@ -16,6 +17,9 @@ export const ExternalTokenEntryForm = ({
       open
       maxWidth="xl"
       data-testid="externalToken-form"
+      onClose={() => {
+        handleClose()
+      }}
       title={`Enter token for ${internetAccountId}`}
     >
       <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>

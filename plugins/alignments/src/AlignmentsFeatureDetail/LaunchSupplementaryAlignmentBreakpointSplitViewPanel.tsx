@@ -1,17 +1,14 @@
 import React, { lazy, useEffect, useState } from 'react'
-import { Typography, Link } from '@mui/material'
-import {
-  SimpleFeature,
-  SimpleFeatureSerialized,
-  getSession,
-  toLocale,
-} from '@jbrowse/core/util'
-import { ErrorMessage } from '@jbrowse/core/ui'
-import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
-// locals
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import { ReducedFeature, getSAFeatures } from './getSAFeatures'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import { Link, Typography } from '@mui/material'
+
+import { getSAFeatures } from './getSAFeatures'
+
+import type { ReducedFeature } from './getSAFeatures'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const BreakendMultiLevelOptionDialog = lazy(
@@ -24,11 +21,9 @@ const BreakendSingleLevelOptionDialog = lazy(
 export default function LaunchBreakpointSplitViewPanel({
   model,
   feature,
-  viewType,
 }: {
   model: AlignmentFeatureWidgetModel
   feature: SimpleFeatureSerialized
-  viewType: ViewType
 }) {
   const { view } = model
   const [res, setRes] = useState<ReducedFeature[]>()
@@ -66,18 +61,8 @@ export default function LaunchBreakpointSplitViewPanel({
             <li key={`${JSON.stringify(arg)}-${index}`}>
               {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
               {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
-              <TopBottomSplitViewLink
-                model={model}
-                f1={f1}
-                f2={f2}
-                viewType={viewType}
-              />{' '}
-              <SideBySideViewLink
-                model={model}
-                f1={f1}
-                f2={f2}
-                viewType={viewType}
-              />
+              <TopBottomSplitViewLink model={model} f1={f1} f2={f2} />{' '}
+              <SideBySideViewLink model={model} f1={f1} f2={f2} />
             </li>
           )
         })}
@@ -90,26 +75,23 @@ function TopBottomSplitViewLink({
   model,
   f1,
   f2,
-  viewType,
 }: {
   model: AlignmentFeatureWidgetModel
   f1: ReducedFeature
   f2: ReducedFeature
-  viewType: ViewType
 }) {
   return (
     <Link
       href="#"
       onClick={event => {
         event.preventDefault()
-        getSession(model).queueDialog(handleClose => [
+        const session = getSession(model)
+        session.queueDialog(handleClose => [
           BreakendMultiLevelOptionDialog,
           {
             handleClose,
-            model,
+            session,
             feature: new SimpleFeature({ ...f1, mate: f2 }),
-            // @ts-expect-error
-            viewType,
             view: model.view,
             assemblyName: model.view.displayedRegions[0].assemblyName,
           },
@@ -125,26 +107,23 @@ function SideBySideViewLink({
   model,
   f1,
   f2,
-  viewType,
 }: {
   model: AlignmentFeatureWidgetModel
   f1: ReducedFeature
   f2: ReducedFeature
-  viewType: ViewType
 }) {
   return (
     <Link
       href="#"
       onClick={event => {
         event.preventDefault()
-        getSession(model).queueDialog(handleClose => [
+        const session = getSession(model)
+        session.queueDialog(handleClose => [
           BreakendSingleLevelOptionDialog,
           {
             handleClose,
-            model,
+            session,
             feature: new SimpleFeature({ ...f1, mate: f2 }),
-            // @ts-expect-error
-            viewType,
             view: model.view,
             assemblyName: model.view.displayedRegions[0].assemblyName,
           },

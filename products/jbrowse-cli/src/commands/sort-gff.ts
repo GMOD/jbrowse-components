@@ -1,7 +1,8 @@
+import { spawn } from 'child_process'
+
 import { Args, Flags } from '@oclif/core'
 import { sync as commandExistsSync } from 'command-exists'
 
-import { spawn } from 'child_process'
 import JBrowseCommand from '../base'
 
 export default class SortGff extends JBrowseCommand {

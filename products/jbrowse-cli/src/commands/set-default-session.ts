@@ -1,7 +1,8 @@
-import { Flags } from '@oclif/core'
 import fs from 'fs'
 
+import { Flags } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
+
 import JBrowseCommand from '../base'
 
 const fsPromises = fs.promises

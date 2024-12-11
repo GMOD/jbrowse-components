@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material'
-import { observer } from 'mobx-react'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-// icons
 import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const DrawerControls = observer(function ({
   session,

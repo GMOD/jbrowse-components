@@ -1,11 +1,13 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import ComparativeRenderer, {
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import type {
   RenderArgs as ComparativeRenderArgs,
   RenderArgsSerialized as ComparativeRenderArgsSerialized,
   RenderResults,
   ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import type ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 
 interface RenderArgs extends ComparativeRenderArgs {
   adapterConfig: Record<string, unknown>

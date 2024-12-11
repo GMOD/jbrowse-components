@@ -1,19 +1,15 @@
-import React, { Suspense, lazy, useState } from 'react'
-import { observer } from 'mobx-react'
-import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-import CloseIcon from '@mui/icons-material/Close'
-import LockIcon from '@mui/icons-material/Lock'
+import React, { lazy } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
-import {
-  BasePlugin,
-  isSessionWithSessionPlugins,
-} from '@jbrowse/core/util/types'
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
+import CloseIcon from '@mui/icons-material/Close'
+import LockIcon from '@mui/icons-material/Lock'
+import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-// locals
-import { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model'
+import type { BasePlugin } from '@jbrowse/core/util/types'
 
 // lazies
 const DeletePluginDialog = lazy(() => import('./DeletePluginDialog'))
@@ -43,7 +39,6 @@ const InstalledPlugin = observer(function ({
   plugin: BasePlugin
   model: PluginStoreModel
 }) {
-  const [dialogPlugin, setDialogPlugin] = useState<string>()
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { jbrowse, adminMode } = session
@@ -54,42 +49,39 @@ const InstalledPlugin = observer(function ({
     : false
 
   return (
-    <>
-      {dialogPlugin ? (
-        <Suspense fallback={null}>
-          <DeletePluginDialog
-            plugin={dialogPlugin}
-            onClose={name => {
-              if (name) {
-                const pluginMetadata = pluginManager.pluginMetadata[plugin.name]
+    <ListItem key={plugin.name}>
+      {adminMode || isSessionPlugin ? (
+        <IconButton
+          data-testid={`removePlugin-${plugin.name}`}
+          onClick={() => {
+            session.queueDialog(onClose => [
+              DeletePluginDialog,
+              {
+                plugin: plugin.name,
+                onClose: (name?: string) => {
+                  if (name) {
+                    const pluginMetadata =
+                      pluginManager.pluginMetadata[plugin.name]
 
-                if (adminMode) {
-                  jbrowse.removePlugin(pluginMetadata)
-                } else if (isSessionWithSessionPlugins(session)) {
-                  session.removeSessionPlugin(pluginMetadata)
-                }
-              }
-              setDialogPlugin(undefined)
-            }}
-          />
-        </Suspense>
-      ) : null}
-      <ListItem key={plugin.name}>
-        {adminMode || isSessionPlugin ? (
-          <IconButton
-            data-testid={`removePlugin-${plugin.name}`}
-            onClick={() => {
-              setDialogPlugin(plugin.name)
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : (
-          <LockedPlugin />
-        )}
-        <Typography>{plugin.name}</Typography>
-      </ListItem>
-    </>
+                    if (adminMode) {
+                      jbrowse.removePlugin(pluginMetadata)
+                    } else if (isSessionWithSessionPlugins(session)) {
+                      session.removeSessionPlugin(pluginMetadata)
+                    }
+                  }
+                  onClose()
+                },
+              },
+            ])
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : (
+        <LockedPlugin />
+      )}
+      <Typography>{plugin.name}</Typography>
+    </ListItem>
   )
 })
 

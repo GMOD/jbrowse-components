@@ -1,9 +1,9 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import isObject from 'is-object'
-import { Link } from '@mui/material'
 
-// locals
+import { Link } from '@mui/material'
+import isObject from 'is-object'
+import { makeStyles } from 'tss-react/mui'
+
 import { SanitizedHTML } from '../../ui'
 
 const useStyles = makeStyles()(theme => ({

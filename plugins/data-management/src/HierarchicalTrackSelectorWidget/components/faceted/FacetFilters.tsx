@@ -1,10 +1,12 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
-// locals
 import FacetFilter from './FacetFilter'
-import { HierarchicalTrackSelectorModel } from '../../model'
-import { Row, getRowStr } from './util'
+import { getRowStr } from './util'
+
+import type { Row } from './util'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const FacetFilters = observer(function ({
   rows,

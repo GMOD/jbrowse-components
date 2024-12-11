@@ -5,9 +5,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { readConf, runInTmpDir } from '../testUtil'
-import nock from 'nock'
 import { runCommand } from '@oclif/test'
+import nock from 'nock'
+
+import { readConf, runInTmpDir } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
 

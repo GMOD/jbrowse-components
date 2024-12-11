@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
 
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { measureGridWidth } from '@jbrowse/core/util'
 import {
-  FormControlLabel,
   Checkbox,
+  FormControlLabel,
   TextField,
   Typography,
 } from '@mui/material'
-
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 interface Entry {
   sample: string
@@ -125,24 +126,25 @@ export default function VariantSamples(props: {
         />
       ) : null}
 
-      <DataGrid
-        autoHeight
-        rows={rows}
-        hideFooter={rows.length < 100}
-        columns={columns}
-        disableRowSelectionOnClick
-        rowHeight={25}
-        columnHeaderHeight={35}
-        disableColumnMenu
-        slots={{ toolbar: checked ? GridToolbar : null }}
-        slotProps={{
-          toolbar: {
-            printOptions: {
-              disableToolbarButton: true,
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <DataGrid
+          rows={rows}
+          hideFooter={rows.length < 100}
+          columns={columns}
+          disableRowSelectionOnClick
+          rowHeight={25}
+          columnHeaderHeight={35}
+          disableColumnMenu
+          slots={{ toolbar: checked ? GridToolbar : null }}
+          slotProps={{
+            toolbar: {
+              printOptions: {
+                disableToolbarButton: true,
+              },
             },
-          },
-        }}
-      />
+          }}
+        />
+      </div>
     </BaseCard>
   )
 }

@@ -1,9 +1,9 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession, notEmpty } from '@jbrowse/core/util'
+
 import { hasAllOverlap, hasAnyOverlap } from './util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function filterTracks(
   tracks: AnyConfigurationModel[],

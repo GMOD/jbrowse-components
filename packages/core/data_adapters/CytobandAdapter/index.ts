@@ -1,6 +1,7 @@
-import { AdapterType } from '../../pluggableElementTypes'
-import PluginManager from '../../PluginManager'
 import configSchema from './configSchema'
+import { AdapterType } from '../../pluggableElementTypes'
+
+import type PluginManager from '../../PluginManager'
 
 export default function CytobandAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(

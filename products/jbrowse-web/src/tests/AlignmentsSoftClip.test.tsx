@@ -1,14 +1,13 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import {
-  setup,
-  expectCanvasMatch,
-  doBeforeEach,
   createView,
-  pc,
+  doBeforeEach,
+  expectCanvasMatch,
   hts,
+  pc,
+  setup,
 } from './util'
 
 setup()

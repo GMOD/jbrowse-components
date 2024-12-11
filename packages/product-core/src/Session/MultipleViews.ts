@@ -1,20 +1,14 @@
-import {
-  IAnyStateTreeNode,
-  Instance,
-  cast,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
-
-import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Region } from '@jbrowse/core/util'
-import { DrawerWidgetSessionMixin } from './DrawerWidgets'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { cast, getSnapshot, types } from 'mobx-state-tree'
 
-// locals
 import { BaseSessionModel, isBaseSession } from './BaseSession'
+import { DrawerWidgetSessionMixin } from './DrawerWidgets'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import type { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import type { Region } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel MultipleViewsSessionMixin

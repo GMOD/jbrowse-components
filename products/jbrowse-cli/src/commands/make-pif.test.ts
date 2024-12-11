@@ -2,10 +2,12 @@
  * @jest-environment node
  */
 
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import { gunzipSync } from 'zlib'
+
 import { runCommand } from '@oclif/test'
+
 import { runInTmpDir } from '../testUtil'
 
 const base = path.join(__dirname, '..', '..', 'test', 'data')

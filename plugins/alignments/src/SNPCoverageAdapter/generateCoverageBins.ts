@@ -1,14 +1,15 @@
-import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { Feature, sum } from '@jbrowse/core/util'
+import { sum } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-// locals
-import { PreBaseCoverageBin, SkipMap } from '../shared/types'
-import { processReferenceCpGs } from './processReferenceCpGs'
-import { processModifications } from './processModifications'
 import { processDepth } from './processDepth'
 import { processMismatches } from './processMismatches'
-import { Opts } from './util'
+import { processModifications } from './processModifications'
+import { processReferenceCpGs } from './processReferenceCpGs'
+
+import type { Opts } from './util'
+import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 export async function generateCoverageBins({
   fetchSequence,
@@ -26,12 +27,7 @@ export async function generateCoverageBins({
   const bins = [] as PreBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
-  const regionSequence =
-    (await fetchSequence({
-      ...region,
-      start: start2,
-      end: region.end + 1,
-    })) || ''
+
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
@@ -42,10 +38,15 @@ export async function generateCoverageBins({
       feature,
       bins,
       region,
-      regionSequence: regionSequence.slice(diff),
     })
 
     if (colorBy?.type === 'modifications') {
+      const regionSequence =
+        (await fetchSequence({
+          ...region,
+          start: start2,
+          end: region.end + 1,
+        })) || ''
       processModifications({
         feature,
         colorBy,
@@ -54,6 +55,12 @@ export async function generateCoverageBins({
         regionSequence: regionSequence.slice(diff),
       })
     } else if (colorBy?.type === 'methylation') {
+      const regionSequence =
+        (await fetchSequence({
+          ...region,
+          start: start2,
+          end: region.end + 1,
+        })) || ''
       processReferenceCpGs({
         feature,
         bins,

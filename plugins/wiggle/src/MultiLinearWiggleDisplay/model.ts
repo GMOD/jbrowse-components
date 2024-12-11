@@ -1,29 +1,25 @@
 import { lazy } from 'react'
-import { isAlive, types, Instance } from 'mobx-state-tree'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import deepEqual from 'fast-deep-equal'
 
-// jbrowse imports
-import {
-  AnyConfigurationSchemaType,
-  getConf,
-} from '@jbrowse/core/configuration'
-import {
-  getSession,
-  Feature,
-  AnyReactComponentType,
-  getContainingView,
-} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import deepEqual from 'fast-deep-equal'
+import { isAlive, types } from 'mobx-state-tree'
+import { axisPropsFromTickScale } from 'react-d3-axis-mod'
+
+import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+
+import type { Source } from '../util'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// locals
-import { getScale, Source, YSCALEBAR_LABEL_OFFSET } from '../util'
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
@@ -67,10 +63,26 @@ export function stateModelFactory(
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
+      sourcesLoadingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       featureUnderMouseVolatile: undefined as Feature | undefined,
+      /**
+       * #volatile
+       */
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      setSourcesLoading(str: string) {
+        if (self.sourcesLoadingStopToken) {
+          stopStopToken(self.sourcesLoadingStopToken)
+        }
+        self.sourcesLoadingStopToken = str
+      },
       /**
        * #action
        */
@@ -221,10 +233,7 @@ export function stateModelFactory(
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return (
-          view.initialized &&
-          self.featureDensityStatsReady &&
-          !self.regionTooLarge &&
-          !self.error
+          view.initialized && self.statsReadyAndRegionNotTooLarge && !self.error
         )
       },
     }))

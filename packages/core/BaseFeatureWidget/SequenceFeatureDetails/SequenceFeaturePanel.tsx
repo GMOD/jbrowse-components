@@ -1,15 +1,15 @@
-import React, { lazy, useState, Suspense } from 'react'
+import React, { Suspense, lazy, useState } from 'react'
+
+import Help from '@mui/icons-material/Help'
 import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { LoadingEllipses } from '../../ui'
-import { BaseFeatureWidgetModel } from '../stateModelFactory'
-import { SimpleFeatureSerialized, getSession } from '../../util'
+import { getSession } from '../../util'
 
-// icons
-import Help from '@mui/icons-material/Help'
+import type { SimpleFeatureSerialized } from '../../util'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // lazies
 const SequenceFeatureDetails = lazy(() => import('./SequenceFeatureDetails'))

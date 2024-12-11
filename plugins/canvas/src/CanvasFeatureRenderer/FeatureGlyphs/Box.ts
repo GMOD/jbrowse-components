@@ -1,13 +1,16 @@
-import { measureText, bpSpanPx, Feature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { bpSpanPx, measureText } from '@jbrowse/core/util'
 
 // locals
-import FeatureGlyph, {
-  ViewInfo,
+import FeatureGlyph from '../FeatureGlyph'
+
+import type {
   FeatureRect,
-  PreLaidOutFeatureRect,
   LaidOutFeatureRect,
+  PreLaidOutFeatureRect,
+  ViewInfo,
 } from '../FeatureGlyph'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class Box extends FeatureGlyph {
   makeFeatureLabel(feature: Feature, fRect: FeatureRect, param?: string) {

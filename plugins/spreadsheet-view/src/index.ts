@@ -1,14 +1,12 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-
-// icons
+import { isAbstractMenuManager } from '@jbrowse/core/util'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
-// locals
+import LaunchSpreadsheetViewF from './LaunchSpreadsheetView'
 import SpreadsheetViewF from './SpreadsheetView'
 
-import LaunchSpreadsheetViewF from './LaunchSpreadsheetView'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class SpreadsheetViewPlugin extends Plugin {
   name = 'SpreadsheetViewPlugin'

@@ -1,17 +1,14 @@
 import React from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+
+import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
-import {
-  chooseGlyphComponent,
-  ExtraGlyphValidator,
-  layOut,
-  layOutFeature,
-} from './util'
+
+import { chooseGlyphComponent, layOut, layOutFeature } from './util'
+
+import type { ExtraGlyphValidator } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SceneGraph } from '@jbrowse/core/util/layouts'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const Subfeatures = observer(function Subfeatures(props: {
   feature: Feature

@@ -1,11 +1,12 @@
 import React from 'react'
+
 import { observer } from 'mobx-react'
 
-// locals
 import { genomeColor, splitString, updownstreamColor } from '../util'
-import { SequenceFeatureDetailsModel } from '../model'
 import SequenceDisplay from './SequenceDisplay'
-import { SimpleFeatureSerialized } from '../../../util'
+
+import type { SimpleFeatureSerialized } from '../../../util'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const GenomicSequence = observer(function ({
   sequence,

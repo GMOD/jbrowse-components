@@ -1,10 +1,13 @@
-import { toArray } from 'rxjs/operators'
-import { BaseFeatureDataAdapter } from './BaseAdapter'
-import { ObservableCreate } from '../util/rxjs'
-import SimpleFeature, { Feature } from '../util/simpleFeature'
-import { Region } from '../util/types'
-import { ConfigurationSchema } from '../configuration/configurationSchema'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import { BaseFeatureDataAdapter } from './BaseAdapter'
+import { ConfigurationSchema } from '../configuration/configurationSchema'
+import { ObservableCreate } from '../util/rxjs'
+import SimpleFeature from '../util/simpleFeature'
+
+import type { Feature } from '../util/simpleFeature'
+import type { Region } from '../util/types'
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {

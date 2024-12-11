@@ -1,11 +1,11 @@
 import React from 'react'
-import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { stringify } from '@jbrowse/core/util'
 
-// locals
-import { LinearGenomeViewModel } from '..'
+import { stringify } from '@jbrowse/core/util'
+import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 

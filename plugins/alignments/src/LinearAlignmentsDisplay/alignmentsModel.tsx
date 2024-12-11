@@ -1,12 +1,10 @@
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
-// jbrowse
-import {
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { getLowerPanelDisplays } from './util'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearAlignmentsDisplayMixin

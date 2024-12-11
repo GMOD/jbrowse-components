@@ -1,23 +1,18 @@
 import BED from '@gmod/bed'
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { TabixIndexedFile } from '@gmod/tabix'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  FileLocation,
-  Region,
-  Feature,
-  SimpleFeature,
-} from '@jbrowse/core/util'
-import { TabixIndexedFile } from '@gmod/tabix'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-// locals
 import { featureData } from '../util'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: BED
@@ -77,6 +72,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
+    const { stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const meta = await this.bed.getMetadata()
       const { columnNumbers } = meta
@@ -84,8 +80,14 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const names = await this.getNames()
+      let start = performance.now()
+      checkStopToken(stopToken)
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line, fileOffset) => {
+          if (performance.now() - start > 200) {
+            checkStopToken(stopToken)
+            start = performance.now()
+          }
           observer.next(
             new SimpleFeature(
               featureData({

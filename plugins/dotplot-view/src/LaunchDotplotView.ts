@@ -1,7 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import { DotplotViewModel } from './DotplotView/model'
 import { transaction } from 'mobx'
+
+import type { DotplotViewModel } from './DotplotView/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default function LaunchDotplotView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(

@@ -1,8 +1,10 @@
-import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
-import fetch from '../fetchWithProxy'
-import JBrowseCommand from '../base'
+
+import { Args, Flags } from '@oclif/core'
 import decompress from 'decompress'
+
+import JBrowseCommand from '../base'
+import fetch from '../fetchWithProxy'
 
 const fsPromises = fs.promises
 

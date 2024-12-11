@@ -1,8 +1,10 @@
-import { Feature } from '@jbrowse/core/util'
-import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import { renderAlignment } from './renderAlignment'
+import { renderMismatches } from './renderMismatches'
+import { renderSoftClipping } from './renderSoftClipping'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -10,11 +12,9 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from './util'
-import { renderAlignment } from './renderAlignment'
-import { renderMismatches } from './renderMismatches'
-import { renderSoftClipping } from './renderSoftClipping'
 
-export type RenderArgsWithColor = RenderArgsDeserializedWithFeaturesAndLayout
+import type { ProcessedRenderArgs } from './types'
+import type { Feature } from '@jbrowse/core/util'
 
 interface LayoutFeature {
   heightPx: number
@@ -31,7 +31,7 @@ export function makeImageData({
   ctx: CanvasRenderingContext2D
   canvasWidth: number
   layoutRecords: LayoutFeature[]
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
 }) {
   const {
     stopToken,

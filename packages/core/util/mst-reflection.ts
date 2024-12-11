@@ -1,12 +1,15 @@
 import {
+  isArrayType,
+  isLateType,
+  isMapType,
   isOptionalType,
   isUnionType,
-  isArrayType,
-  isMapType,
-  isLateType,
+} from 'mobx-state-tree'
+
+import type {
+  IAnyComplexType,
   IAnyType,
   IModelReflectionPropertiesData,
-  IAnyComplexType,
   ISimpleType,
   UnionStringArray,
 } from 'mobx-state-tree'

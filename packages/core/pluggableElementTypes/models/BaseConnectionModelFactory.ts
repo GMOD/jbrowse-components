@@ -1,11 +1,10 @@
 import { cast, types } from 'mobx-state-tree'
-import {
-  AnyConfigurationModel,
-  ConfigurationReference,
-} from '../../configuration'
-import PluginManager from '../../PluginManager'
 
 import configSchema from './baseConnectionConfig'
+import { ConfigurationReference } from '../../configuration'
+
+import type PluginManager from '../../PluginManager'
+import type { AnyConfigurationModel } from '../../configuration'
 
 type TrackConf = AnyConfigurationModel | Record<string, unknown>
 

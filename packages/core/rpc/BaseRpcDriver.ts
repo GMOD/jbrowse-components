@@ -1,7 +1,10 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+
+import { readConfObject } from '../configuration'
 import { clamp } from '../util'
-import PluginManager from '../PluginManager'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
@@ -28,32 +31,10 @@ function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
-// watches the given worker object, returns a promise that will be rejected if
-// the worker times out
-export async function watchWorker(
-  worker: WorkerHandle,
-  pingTime: number,
-  rpcDriverClassName: string,
-) {
-  // after first ping succeeds, apply wait for timeout
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (true) {
-    await worker.call('ping', [], {
-      timeout: pingTime * 2,
-      rpcDriverClassName,
-    })
-    await new Promise(resolve => setTimeout(resolve, pingTime))
-  }
-}
-
 function detectHardwareConcurrency() {
   const mainThread = typeof window !== 'undefined'
   const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
-  if (mainThread && canDetect) {
-    return window.navigator.hardwareConcurrency
-  }
-  return 1
+  return mainThread && canDetect ? window.navigator.hardwareConcurrency : 1
 }
 class LazyWorker {
   workerP?: Promise<WorkerHandle> | undefined
@@ -62,27 +43,10 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      this.workerP = this.driver
-        .makeWorker()
-        .then(worker => {
-          watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-            (error: unknown) => {
-              console.error(
-                'worker did not respond, killing and generating new one',
-              )
-              console.error(error)
-              worker.destroy()
-              worker.status = 'killed'
-              worker.error = error
-              this.workerP = undefined
-            },
-          )
-          return worker
-        })
-        .catch((e: unknown) => {
-          this.workerP = undefined
-          throw e
-        })
+      this.workerP = this.driver.makeWorker().catch((e: unknown) => {
+        this.workerP = undefined
+        throw e
+      })
     }
     return this.workerP
   }
@@ -194,7 +158,6 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    let done = false
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
@@ -208,41 +171,13 @@ export default abstract class BaseRpcDriver {
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 
     // now actually call the worker
-    const callP = worker
-      .call(functionName, filteredAndSerializedArgs, {
-        timeout: 5 * 60 * 1000, // 5 minutes
-        statusCallback: args.statusCallback,
-        rpcDriverClassName: this.name,
-        ...options,
-      })
-      .finally(() => {
-        done = true
-      })
-
-    // check every 5 seconds to see if the worker has been killed, and
-    // reject the killedP promise if it has
-    let killedCheckInterval: ReturnType<typeof setInterval>
-    const killedP = new Promise((resolve, reject) => {
-      killedCheckInterval = setInterval(() => {
-        // must've been killed
-        if (worker.status === 'killed') {
-          reject(
-            new Error(
-              `operation timed out, worker process stopped responding, ${worker.error}`,
-            ),
-          )
-        } else if (done) {
-          resolve(true)
-        }
-      }, this.workerCheckFrequency)
-    }).finally(() => {
-      clearInterval(killedCheckInterval)
+    const call = await worker.call(functionName, filteredAndSerializedArgs, {
+      timeout: 5 * 60 * 1000, // 5 minutes
+      statusCallback: args.statusCallback,
+      rpcDriverClassName: this.name,
+      ...options,
     })
 
-    // the result is a race between the actual result promise, and the "killed"
-    // promise. the killed promise will only actually win if the worker was
-    // killed before the call could return
-    const resultP = Promise.race([callP, killedP])
-    return rpcMethod.deserializeReturn(resultP, args, this.name)
+    return rpcMethod.deserializeReturn(call, args, this.name)
   }
 }

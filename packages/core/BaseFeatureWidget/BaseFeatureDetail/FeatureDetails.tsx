@@ -1,16 +1,18 @@
 import React from 'react'
+
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { Divider, Typography } from '@mui/material'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
 
-// locals
-import { getEnv, getSession, SimpleFeatureSerialized } from '../../util'
-import { ErrorMessage } from '../../ui'
 import { generateTitle } from './util'
 import SequenceFeatureDetails from '../SequenceFeatureDetails'
 import Attributes from './Attributes'
 import BaseCard from './BaseCard'
 import CoreDetails from './CoreDetails'
+import { ErrorMessage } from '../../ui'
+import { getEnv, getSession } from '../../util'
+
+import type { SimpleFeatureSerialized } from '../../util'
+import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // coreDetails are omitted in some circumstances
 const coreDetails = [

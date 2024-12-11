@@ -1,12 +1,12 @@
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
-// locals
-import { readConfObject, AnyConfigurationModel } from '../../configuration'
-import { getSubAdapterType } from '../dataAdapterCache'
-import { AugmentedRegion as Region } from '../../util/types'
+import { ConfigurationSchema, readConfObject } from '../../configuration'
 import idMaker from '../../util/idMaker'
-import PluginManager from '../../PluginManager'
-import { ConfigurationSchema } from '../../configuration'
+
+import type PluginManager from '../../PluginManager'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { AugmentedRegion as Region } from '../../util/types'
+import type { getSubAdapterType } from '../dataAdapterCache'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
 

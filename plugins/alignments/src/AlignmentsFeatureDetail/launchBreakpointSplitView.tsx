@@ -1,8 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-import { ReducedFeature } from './getSAFeatures'
+import type { ReducedFeature } from './getSAFeatures'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getBreakpointSplitView({
   f1,

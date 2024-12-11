@@ -1,10 +1,10 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseChordDisplayComponent } from '@jbrowse/plugin-circular-view'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { BaseChordDisplayComponent } from '@jbrowse/plugin-circular-view'
 
-// locals
 import configSchemaF from './models/configSchema'
 import stateModelF from './models/stateModelFactory'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function ChordVariantDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

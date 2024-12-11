@@ -1,6 +1,9 @@
-import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
 import { Buffer } from 'buffer'
-import { RemoteFile, PolyfilledResponse } from 'generic-filehandle'
+
+import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
+import { RemoteFile } from 'generic-filehandle'
+
+import type { PolyfilledResponse } from 'generic-filehandle'
 
 type BinaryRangeFetch = (
   url: string,

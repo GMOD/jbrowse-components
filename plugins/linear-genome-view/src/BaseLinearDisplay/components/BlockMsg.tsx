@@ -1,6 +1,9 @@
 import React from 'react'
-import { Tooltip, Alert, AlertColor } from '@mui/material'
+
+import { Alert, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+import type { AlertColor } from '@mui/material'
 
 const useStyles = makeStyles()({
   ellipses: {
@@ -21,6 +24,9 @@ export default function BlockMsg({
   const { classes } = useStyles()
   return (
     <Alert
+      onClick={event => {
+        event.stopPropagation()
+      }}
       severity={severity}
       action={action}
       classes={{ message: classes.ellipses }}

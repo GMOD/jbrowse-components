@@ -1,13 +1,13 @@
 import React from 'react'
-import { FileSelector } from '@jbrowse/core/ui'
-import { AbstractRootModel } from '@jbrowse/core/util'
-import { Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getRoot } from 'mobx-state-tree'
-import { observer } from 'mobx-react'
 
-// locals
-import { AddTrackModel } from '../model'
+import { FileSelector } from '@jbrowse/core/ui'
+import { Paper } from '@mui/material'
+import { observer } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
+
+import type { AddTrackModel } from '../model'
+import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

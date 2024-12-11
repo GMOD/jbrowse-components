@@ -1,41 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react'
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+import { unzip } from '@gmod/bgzf-filehandle'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import isObject from 'is-object'
-import PluginManager from '../PluginManager'
-import type { Buffer } from 'buffer'
 import {
+  getEnv as getEnvMST,
   getParent,
   getSnapshot,
-  getEnv as getEnvMST,
+  hasParent,
   isAlive,
   isStateTreeNode,
-  hasParent,
+} from 'mobx-state-tree'
+import { flushSync, render } from 'react-dom' // eslint-disable-line react/no-deprecated
+
+import { colord } from './colord'
+import { checkStopToken } from './stopToken'
+import {
+  isDisplayModel,
+  isSessionModel,
+  isTrackModel,
+  isUriLocation,
+  isViewModel,
+} from './types'
+
+import type PluginManager from '../PluginManager'
+import type { BaseBlock } from './blockTypes'
+import type { Feature } from './simpleFeature'
+import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
+import type { Region as MUIRegion } from './types/mst'
+import type { BaseOptions } from '../data_adapters/BaseAdapter'
+import type { Buffer } from 'buffer'
+import type { GenericFilehandle } from 'generic-filehandle'
+import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   Instance,
 } from 'mobx-state-tree'
-import { Feature } from './simpleFeature'
-import {
-  isSessionModel,
-  isDisplayModel,
-  isViewModel,
-  isTrackModel,
-  AssemblyManager,
-  Region,
-  TypeTestedByPredicate,
-} from './types'
-import type { Region as MUIRegion } from './types/mst'
-import { BaseBlock } from './blockTypes'
-import { isUriLocation } from './types'
 
-// has to be the full path and not the relative path to get the jest mock
-import useMeasure from '@jbrowse/core/util/useMeasure'
-import { colord } from './colord'
-// eslint-disable-next-line react/no-deprecated
-import { flushSync, render } from 'react-dom'
-import { GenericFilehandle } from 'generic-filehandle'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { BaseOptions } from '../data_adapters/BaseAdapter'
-import { checkStopToken } from './stopToken'
 export * from './types'
 export * from './when'
 export * from './range'
@@ -1333,16 +1335,15 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   return stack
 }
 
-interface BasicFeature {
+export interface BasicFeature {
   end: number
   start: number
   refName: string
-  assemblyName?: string
 }
 
 // returns new array non-overlapping features
-export function gatherOverlaps(regions: BasicFeature[], w = 5000) {
-  const memo = {} as Record<string, BasicFeature[]>
+export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
+  const memo = {} as Record<string, T[]>
   for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
@@ -1413,12 +1414,13 @@ export async function fetchAndMaybeUnzip(
 }
 
 export {
-  isFeature,
-  default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
   type SimpleFeatureSerializedNoId,
+  default as SimpleFeature,
+  isFeature,
 } from './simpleFeature'
 
 export { blobToDataURL } from './blobToDataURL'
 export { makeAbortableReaction } from './makeAbortableReaction'
+export * from './aborting'

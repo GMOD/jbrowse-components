@@ -1,16 +1,17 @@
 import React, { Suspense, useRef, useState } from 'react'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 
-// locals
-import { useFeatureSequence } from '../hooks'
-import { SimpleFeatureSerialized } from '../../../util'
-import { BaseFeatureWidgetModel } from '../../stateModelFactory'
+import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
 import SequencePanel from '../SequencePanel'
+import { useFeatureSequence } from '../hooks'
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
+
+import type { SimpleFeatureSerialized } from '../../../util'
+import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
 
 const useStyles = makeStyles()({
   dialogContent: {

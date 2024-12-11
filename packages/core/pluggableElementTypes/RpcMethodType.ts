@@ -1,20 +1,21 @@
-import mapObject from '../util/map-obj'
-import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
-import { setBlobMap, getBlobMap } from '../util/tracks'
+import mapObject from '../util/map-obj'
+import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
-  isAppRootModel,
-  isUriLocation,
-  isAuthNeededException,
   RetryError,
-  UriLocation,
+  isAppRootModel,
+  isAuthNeededException,
+  isUriLocation,
 } from '../util/types'
+
+import type PluginManager from '../PluginManager'
+import type { UriLocation } from '../util/types'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
   constructor(public pluginManager: PluginManager) {
-    super({})
+    super()
   }
 
   async serializeArguments(

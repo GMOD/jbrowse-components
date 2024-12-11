@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { InputBase, Typography, TypographyProps, useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import { InputBase, Typography, useTheme } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+
+import type { TypographyProps } from '@mui/material'
 
 type Variant = TypographyProps['variant']
 

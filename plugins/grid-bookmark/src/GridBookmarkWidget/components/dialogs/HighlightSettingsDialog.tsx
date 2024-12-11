@@ -1,17 +1,17 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   Stack,
-  Typography,
   Switch,
+  Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
-// locals
-import { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model'
 
 const HighlightSettingsDialog = observer(function ({
   onClose,
@@ -29,7 +29,7 @@ const HighlightSettingsDialog = observer(function ({
             data-testid="toggle_highlight_all_switch"
             checked={model.areBookmarksHighlightedOnAllOpenViews}
             onChange={() => {
-              model.setHighlightToggle(
+              model.setBookmarkHighlightsVisible(
                 !model.areBookmarksHighlightedOnAllOpenViews,
               )
             }}
@@ -41,7 +41,7 @@ const HighlightSettingsDialog = observer(function ({
             data-testid="toggle_highlight_label_all_switch"
             checked={model.areBookmarksHighlightLabelsOnAllOpenViews}
             onChange={() => {
-              model.setLabelToggle(
+              model.setBookmarkLabelsVisible(
                 !model.areBookmarksHighlightLabelsOnAllOpenViews,
               )
             }}

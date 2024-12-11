@@ -1,12 +1,12 @@
 import React from 'react'
+
 import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-// locals
 import { makeTicks } from '../util'
-
-import { LinearGenomeViewModel } from '..'
 import SVGRegionSeparators from './SVGRegionSeparators'
+
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 

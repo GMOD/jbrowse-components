@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import baseWiggleRendererConfigSchema from '../configSchema'
 import { types } from 'mobx-state-tree'
+
+import baseWiggleRendererConfigSchema from '../configSchema'
 
 /**
  * #config XYPlotRenderer

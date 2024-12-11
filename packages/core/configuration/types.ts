@@ -1,9 +1,9 @@
-import type { IStateTreeNode, Instance, SnapshotOut } from 'mobx-state-tree'
 import type {
-  ConfigurationSchemaType,
   ConfigurationSchemaOptions,
+  ConfigurationSchemaType,
 } from './configurationSchema'
 import type ConfigSlot from './configurationSlot'
+import type { IStateTreeNode, Instance, SnapshotOut } from 'mobx-state-tree'
 
 export type GetOptions<SCHEMA> =
   SCHEMA extends ConfigurationSchemaType<any, infer OPTIONS> ? OPTIONS : never

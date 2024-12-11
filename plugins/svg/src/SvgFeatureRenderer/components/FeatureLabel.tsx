@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react'
+
+import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
-import {
-  measureText,
-  getViewParams,
-  Feature,
-  Region,
-  stripAlpha,
-} from '@jbrowse/core/util'
-import { DisplayModel } from './util'
+
+import type { DisplayModel } from './util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 interface ViewParams {
   start: number
@@ -58,7 +55,7 @@ const FeatureLabel = observer(function ({
 
   const viewLeft = reversed ? params.end : params.start
 
-  const [labelVisible, setLabelVisible] = useState(exportSVG)
+  const [featureLabelsVisible, setFeatureLabelsVisible] = useState(exportSVG)
   const theme = useTheme()
 
   // we use an effect to set the label visible because there can be a mismatch
@@ -66,7 +63,7 @@ const FeatureLabel = observer(function ({
   // labels. if we are exporting an SVG we allow it as is though and do not use
   // the effect
   useEffect(() => {
-    setLabelVisible(true)
+    setFeatureLabelsVisible(true)
   }, [])
 
   if (isStateTreeNode(region) && !isAlive(region)) {
@@ -101,7 +98,7 @@ const FeatureLabel = observer(function ({
     x = params.offsetPx1
   }
 
-  return labelVisible ? (
+  return featureLabelsVisible ? (
     <text
       x={x}
       y={y + fontHeight}

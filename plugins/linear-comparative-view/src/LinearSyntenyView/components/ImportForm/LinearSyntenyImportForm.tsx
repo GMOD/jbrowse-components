@@ -1,22 +1,23 @@
 import React, { useState } from 'react'
-import { Button, Container, IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { SnapshotIn } from 'mobx-state-tree'
+
+import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import {
   getSession,
   isSessionWithAddTracks,
   notEmpty,
 } from '@jbrowse/core/util'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
-// icons
-import CloseIcon from '@mui/icons-material/Close'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-// locals
-import { LinearSyntenyViewModel } from '../../model'
-import TrackSelector from './TrackSelectorUtil'
+import CloseIcon from '@mui/icons-material/Close'
+import { Button, Container, IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
 import Spacer from './Spacer'
+import TrackSelector from './TrackSelectorUtil'
+
+import type { LinearSyntenyViewModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

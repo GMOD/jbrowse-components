@@ -1,4 +1,12 @@
 import React, { useEffect, useState } from 'react'
+
+import { AssemblySelector } from '@jbrowse/core/ui'
+import {
+  getSession,
+  isElectron,
+  isSupportedIndexingAdapter,
+} from '@jbrowse/core/util'
+import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import {
   Checkbox,
   FormControl,
@@ -7,21 +15,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import {
-  isSupportedIndexingAdapter,
-  getSession,
-  isElectron,
-} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { UNKNOWN } from '@jbrowse/core/util/tracks'
-import { AssemblySelector } from '@jbrowse/core/ui'
+import { makeStyles } from 'tss-react/mui'
 
-// locals
-import { AddTrackModel } from '../model'
 import TextIndexingConfig from './TextIndexingConfig'
-import TrackTypeSelector from './TrackTypeSelector'
 import TrackAdapterSelector from './TrackAdapterSelector'
+import TrackTypeSelector from './TrackTypeSelector'
+
+import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {

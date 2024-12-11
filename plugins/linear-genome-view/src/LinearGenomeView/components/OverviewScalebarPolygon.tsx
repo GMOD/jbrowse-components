@@ -1,14 +1,14 @@
 import React from 'react'
-import { useTheme, alpha } from '@mui/material'
+
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // core
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
-
-// locals
-import { LinearGenomeViewModel } from '..'
 import { HEADER_BAR_HEIGHT } from '../consts'
+
+import type { LinearGenomeViewModel } from '..'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 const OverviewScalebarPolygon = observer(function ({
   model,

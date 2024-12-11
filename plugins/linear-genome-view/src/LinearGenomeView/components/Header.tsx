@@ -1,20 +1,19 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { Button, IconButton, FormGroup, Typography, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getBpDisplayStr } from '@jbrowse/core/util'
 
-// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import { Button, FormGroup, IconButton, Typography, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-// locals
-import { LinearGenomeViewModel } from '..'
 import OverviewScalebar from './OverviewScalebar'
-import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
+import ZoomControls from './ZoomControls'
 import { SPACING } from '../consts'
+
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({

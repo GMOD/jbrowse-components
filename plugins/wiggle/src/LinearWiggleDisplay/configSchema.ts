@@ -1,9 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
 
-// locals
 import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearWiggleDisplay

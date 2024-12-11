@@ -1,18 +1,19 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
+
 import {
-  getSession,
   getEnv,
+  getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
+import { isSessionWithConnections } from '@jbrowse/product-core'
+import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
+import { makeStyles } from 'tss-react/mui'
 
-// locals
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
-import { isSessionWithConnections } from '@jbrowse/product-core'
+
+import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
   root: {

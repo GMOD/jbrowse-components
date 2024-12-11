@@ -1,8 +1,9 @@
-import { Feature, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 
-// locals
 import { featurizeSA, getClip, getLengthSansClipping } from '../MismatchParser'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ReducedFeature {
   refName: string

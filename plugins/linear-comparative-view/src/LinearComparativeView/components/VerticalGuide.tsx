@@ -1,9 +1,11 @@
 import React from 'react'
+
+import { stringify } from '@jbrowse/core/util'
 import { Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { stringify } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
-import { LinearComparativeViewModel } from '../model'
+
+import type { LinearComparativeViewModel } from '../model'
 
 type LCV = LinearComparativeViewModel
 

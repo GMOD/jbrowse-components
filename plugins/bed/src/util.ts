@@ -1,51 +1,57 @@
-import BED from '@gmod/bed'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import {
   generateBedMethylFeature,
   isBedMethylFeature,
 } from './generateBedMethylFeature'
 import {
-  generateUcscTranscript,
-  isUcscTranscript,
-} from './generateUcscTranscript'
-import {
   generateRepeatMaskerFeature,
   isRepeatMaskerDescriptionField,
 } from './generateRepeatMaskerFeature'
+import {
+  generateUcscTranscript,
+  isUcscTranscript,
+} from './generateUcscTranscript'
 
-function stringToStrand(f: string) {
-  if (f === '-1') {
-    return -1
-  } else if (f === '+') {
-    return 1
-  } else {
-    return 0
+import type BED from '@gmod/bed'
+
+function defaultParser(fields: string[], splitLine: string[]) {
+  let hasBlockCount = false
+  const r = [] as [string, string][]
+  for (let i = 0; i < splitLine.length; i++) {
+    if (fields[i] === 'blockCount') {
+      hasBlockCount = true
+    }
+    r.push([fields[i]!, splitLine[i]!] as const)
   }
-}
+  // heuristically try to determine whether to follow 'slow path' as there can
+  // be many features in e.g. GWAS type data
+  const obj = Object.fromEntries(r)
+  // slow path
+  if (hasBlockCount) {
+    const {
+      blockStarts,
+      blockCount,
+      chromStarts,
+      thickEnd,
+      thickStart,
+      blockSizes,
+      ...rest
+    } = obj
 
-function defaultParser(fields: string[], line: string) {
-  const obj = Object.fromEntries(
-    line.split('\t').map((f, i) => [fields[i]!, f] as const),
-  )
-  const {
-    blockStarts,
-    blockCount,
-    chromStarts,
-    thickEnd,
-    thickStart,
-    blockSizes,
-    ...rest
-  } = obj
+    return {
+      ...rest,
+      blockStarts: arrayify(blockStarts),
+      chromStarts: arrayify(chromStarts),
+      blockSizes: arrayify(blockSizes),
+      thickStart: thickStart ? +thickStart : undefined,
+      thickEnd: thickEnd ? +thickEnd : undefined,
+      blockCount: blockCount ? +blockCount : undefined,
+    } as Record<string, unknown>
+  }
 
-  return {
-    ...rest,
-    blockStarts: arrayify(blockStarts),
-    chromStarts: arrayify(chromStarts),
-    blockSizes: arrayify(blockSizes),
-    thickStart: thickStart ? +thickStart : undefined,
-    thickEnd: thickEnd ? +thickEnd : undefined,
-    blockCount: blockCount ? +blockCount : undefined,
-  } as Record<string, unknown>
+  // fast path
+  else {
+    return obj
+  }
 }
 
 export function makeBlocks({
@@ -65,26 +71,23 @@ export function makeBlocks({
   blockSizes?: number[]
   blockStarts?: number[]
 }) {
-  if (blockCount) {
-    const subfeatures = []
-    const starts = chromStarts || blockStarts || []
-    for (let b = 0; b < blockCount; b++) {
-      const bmin = (starts[b] || 0) + start
-      const bsize = blockSizes?.[b]
-      if (bsize && bsize > 0) {
-        const bmax = bmin + bsize
-        subfeatures.push({
-          uniqueId: `${uniqueId}-${b}`,
-          start: bmin,
-          end: bmax,
-          refName,
-          type: 'block',
-        })
-      }
+  const subfeatures = []
+  const starts = chromStarts || blockStarts || []
+  for (let b = 0; b < blockCount; b++) {
+    const bmin = (starts[b] || 0) + start
+    const bsize = blockSizes?.[b]
+    if (bsize && bsize > 0) {
+      const bmax = bmin + bsize
+      subfeatures.push({
+        uniqueId: `${uniqueId}-${b}`,
+        start: bmin,
+        end: bmax,
+        refName,
+        type: 'block',
+      })
     }
-    return subfeatures
   }
-  return []
+  return subfeatures
 }
 
 export function featureData({
@@ -108,11 +111,12 @@ export function featureData({
 }) {
   const splitLine = line.split('\t')
   const refName = splitLine[colRef]!
-  const start = +splitLine[colStart]!
-  const end = +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0)
+  const start = Number.parseInt(splitLine[colStart]!, 10)
+  const end =
+    Number.parseInt(splitLine[colEnd]!, 10) + (colStart === colEnd ? 1 : 0)
 
   return featureData2({
-    line,
+    splitLine,
     refName,
     start,
     end,
@@ -124,7 +128,7 @@ export function featureData({
 }
 
 export function featureData2({
-  line,
+  splitLine,
   refName,
   start,
   end,
@@ -133,7 +137,7 @@ export function featureData2({
   scoreColumn,
   names,
 }: {
-  line: string
+  splitLine: string[]
   refName: string
   start: number
   end: number
@@ -141,11 +145,10 @@ export function featureData2({
   uniqueId: string
   scoreColumn: string
   names?: string[]
-}): SimpleFeatureSerialized {
-  const splitLine = line.split('\t')
+}) {
   const data = names
-    ? defaultParser(names, line)
-    : parser.parseLine(line, { uniqueId })
+    ? defaultParser(names, splitLine)
+    : parser.parseLine(splitLine, { uniqueId })
   const {
     strand: strand2,
     score: score2,
@@ -155,39 +158,42 @@ export function featureData2({
     ...rest
   } = data
 
-  const {
-    chromStarts,
-    blockSizes,
-    blockStarts,
-    type,
-    blockCount,
-    thickStart,
-    thickEnd,
-    description,
-    ...rest2
-  } = rest
   const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
-  const strand = typeof strand2 === 'string' ? stringToStrand(strand2) : strand2
+  const strand =
+    typeof strand2 === 'string' ? (strand2 === '-' ? -1 : 1) : strand2
 
-  const subfeatures = makeBlocks({
-    start,
-    uniqueId,
-    refName,
-    chromStarts,
-    blockCount,
-    blockSizes,
-    blockStarts,
-  })
+  const subfeatures = rest.blockCount
+    ? makeBlocks({
+        start,
+        uniqueId,
+        refName,
+        chromStarts: rest.chromStarts,
+        blockCount: rest.blockCount,
+        blockSizes: rest.blockSizes,
+        blockStarts: rest.blockStarts,
+      })
+    : undefined
 
   if (isBedMethylFeature({ splitLine, start, end })) {
     return generateBedMethylFeature({
-      line,
+      splitLine,
       uniqueId,
       refName,
       start,
       end,
     })
-  } else if (isRepeatMaskerDescriptionField(description)) {
+  } else if (isRepeatMaskerDescriptionField(rest.description)) {
+    const {
+      chromStarts,
+      blockSizes,
+      blockStarts,
+      type,
+      blockCount,
+      thickStart,
+      thickEnd,
+      description,
+      ...rest2
+    } = rest
     return generateRepeatMaskerFeature({
       ...rest2,
       uniqueId,
@@ -200,7 +206,23 @@ export function featureData2({
       refName,
       subfeatures,
     })
-  } else if (isUcscTranscript({ strand, blockCount, thickStart })) {
+  } else if (
+    subfeatures &&
+    isUcscTranscript({
+      strand,
+      blockCount: rest.blockCount,
+      thickStart: rest.thickStart,
+    })
+  ) {
+    const {
+      chromStarts,
+      blockSizes,
+      type,
+      blockCount,
+      thickStart,
+      thickEnd,
+      description,
+    } = rest
     return generateUcscTranscript({
       ...rest,
       description,
@@ -222,8 +244,6 @@ export function featureData2({
     return {
       ...rest,
       uniqueId,
-      description,
-      type,
       score,
       start,
       end,

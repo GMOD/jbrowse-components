@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react'
+
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
-import { observer } from 'mobx-react'
 import {
-  bindTrigger,
   bindPopover,
+  bindTrigger,
   usePopupState,
 } from 'material-ui-popup-state/hooks'
-import { MenuItem } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const CascadingMenuButton = observer(function CascadingMenuButton({
   children,

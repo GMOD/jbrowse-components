@@ -1,21 +1,14 @@
-import React, { lazy } from 'react'
-import { Tooltip, IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import React, { Suspense, lazy } from 'react'
+
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from 'tss-react/mui'
 
-// icons
-import RefreshIcon from '@mui/icons-material/Refresh'
-import ReportIcon from '@mui/icons-material/Report'
-
-// locals
 import BlockMsg from './BlockMsg'
 
-const ErrorMessageStackTraceDialog = lazy(
-  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
-)
+// lazies
+const BlockError = lazy(() => import('./BlockError'))
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground
@@ -55,39 +48,13 @@ const ServerSideRenderedBlockContent = observer(function ({
 }) {
   if (model.error) {
     return (
-      <BlockMsg
-        message={`${model.error}`}
-        severity="error"
-        action={
-          <>
-            <Tooltip title="Reload track">
-              <IconButton
-                data-testid="reload_button"
-                onClick={() => {
-                  model.reload()
-                }}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Show stack trace">
-              <IconButton
-                onClick={() => {
-                  getSession(model).queueDialog(onClose => [
-                    ErrorMessageStackTraceDialog,
-                    { onClose, error: model.error as Error },
-                  ])
-                }}
-              >
-                <ReportIcon />
-              </IconButton>
-            </Tooltip>
-          </>
-        }
-      />
+      <Suspense fallback={null}>
+        <BlockError model={model} />
+      </Suspense>
     )
   } else if (model.message) {
-    // the message can be a fully rendered react component, e.g. the region too large message
+    // the message can be a fully rendered react component, e.g. the region too
+    // large message
     return React.isValidElement(model.message) ? (
       model.message
     ) : (

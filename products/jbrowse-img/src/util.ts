@@ -1,6 +1,7 @@
-import fs from 'fs'
-import tmp from 'tmp'
 import { spawnSync } from 'child_process'
+import fs from 'fs'
+
+import tmp from 'tmp'
 
 // nice helper function from https://stackoverflow.com/questions/263965/
 export function booleanize(str: string) {

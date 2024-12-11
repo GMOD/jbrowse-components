@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from 'react'
-import { Select, MenuItem, Paper, Typography } from '@mui/material'
-import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSession } from '@jbrowse/core/util'
+import React, { useEffect, useState } from 'react'
+
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorMessage } from '@jbrowse/core/ui'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-
-// locals
-import { DotplotViewModel } from '../../model'
+import type { DotplotViewModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
   const assemblyNames = readConfObject(track, 'assemblyNames')

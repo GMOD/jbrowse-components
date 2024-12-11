@@ -1,6 +1,8 @@
-import { Feature } from '@jbrowse/core/util'
-import { ViewInfo } from '../FeatureGlyph'
 import SegmentsGlyph from './Segments'
+
+import type { ViewInfo } from '../FeatureGlyph'
+import type { Feature } from '@jbrowse/core/util'
+
 
 export default class UnprocessedTranscript extends SegmentsGlyph {
   renderBox(

@@ -1,13 +1,13 @@
 import React from 'react'
+
 import isObject from 'is-object'
 
-// locals
+import ArrayValue from './ArrayValue'
+import DataGridDetails from './DataGridDetails'
+import SimpleField from './SimpleField'
+import UriAttribute from './UriField'
 import { accessNested, generateMaxWidth } from './util'
 import { isUriLocation } from '../../util'
-import DataGridDetails from './DataGridDetails'
-import ArrayValue from './ArrayValue'
-import UriAttribute from './UriField'
-import SimpleField from './SimpleField'
 
 const MAX_FIELD_NAME_WIDTH = 170
 

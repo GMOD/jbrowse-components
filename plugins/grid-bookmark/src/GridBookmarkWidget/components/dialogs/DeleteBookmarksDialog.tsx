@@ -1,10 +1,10 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { Button, DialogContent, DialogActions, Alert } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 
-// locals
-import { GridBookmarkModel } from '../../model'
+import { Dialog } from '@jbrowse/core/ui'
+import { Alert, Button, DialogActions, DialogContent } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { GridBookmarkModel } from '../../model'
 
 const DeleteBookmarksDialog = observer(function ({
   onClose,

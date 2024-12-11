@@ -1,9 +1,10 @@
 import domLoadScript from 'load-script'
 
-// locals
-import Plugin, { PluginConstructor } from './Plugin'
+import Plugin from './Plugin'
 import ReExports from './ReExports'
 import { isElectron } from './util'
+
+import type { PluginConstructor } from './Plugin'
 
 export interface UMDLocPluginDefinition {
   umdLoc: {

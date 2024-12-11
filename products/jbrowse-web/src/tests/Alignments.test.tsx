@@ -1,14 +1,13 @@
 import { fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import {
-  setup,
-  expectCanvasMatch,
   createView,
-  hts,
   doBeforeEach,
+  expectCanvasMatch,
+  hts,
   pv,
+  setup,
 } from './util'
 
 setup()
@@ -33,7 +32,7 @@ test('opens an alignments track and clicks feature', async () => {
   expectCanvasMatch(await f1.findByTestId(pv('1..4000-0'), ...opts))
   expectCanvasMatch(await f2.findByTestId(pv('1..4000-0'), ...opts))
 
-  const track = await findAllByTestId('pileup-overlay')
+  const track = await findAllByTestId('pileup-overlay-normal')
   fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
   fireEvent.mouseDown(track[0]!, { clientX: 200, clientY: 20 })

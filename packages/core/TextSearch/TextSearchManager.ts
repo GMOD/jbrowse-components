@@ -1,11 +1,13 @@
-import BaseResult from './BaseResults'
-import PluginManager from '../PluginManager'
+import { readConfObject } from '../configuration'
 import QuickLRU from '../util/QuickLRU'
-import {
+
+import type BaseResult from './BaseResults'
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationModel } from '../configuration'
+import type {
   BaseTextSearchAdapter,
   BaseTextSearchArgs,
 } from '../data_adapters/BaseAdapter'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 export interface SearchScope {
   includeAggregateIndexes: boolean

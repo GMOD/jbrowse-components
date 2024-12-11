@@ -1,4 +1,4 @@
-import { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types'
 import type { Buffer } from 'buffer'
 
 export function cigarToMismatches(
@@ -65,8 +65,8 @@ export function cigarToMismatches(
         mismatches.push({
           start: roffset + j,
           type: 'mismatch',
-          base: r[j]!,
-          qual: q[j]!,
+          base: r[j] || 'X',
+          qual: q[j],
           length: 1,
         })
       }

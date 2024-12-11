@@ -11,7 +11,8 @@ const BedpeAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * can be plaintext or gzipped, not indexed so loaded into memory on startup
+     * can be plaintext or gzipped, not indexed so loaded into memory on
+     * startup
      */
     bedpeLocation: {
       type: 'fileLocation',

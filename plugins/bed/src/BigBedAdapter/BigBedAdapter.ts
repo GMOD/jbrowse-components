@@ -1,24 +1,17 @@
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature, doesIntersect2, max, min } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  doesIntersect2,
-  max,
-  min,
-  Feature,
-  SimpleFeature,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util'
-import { firstValueFrom, Observer, toArray } from 'rxjs'
+import { firstValueFrom, toArray } from 'rxjs'
 
-// locals
 import { featureData2 } from '../util'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
+import type { Observer } from 'rxjs'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
   private cachedP?: Promise<{
@@ -148,8 +141,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       throw new Error('found uniqueId undefined')
     }
     for (const feat of feats) {
-      const line = `${query.refName}\t${feat.start}\t${feat.end}\t${feat.rest}`
-      const data = parser.parseLine(line, { uniqueId: feat.uniqueId! })
+      const splitLine = [
+        query.refName,
+        `${feat.start}`,
+        `${feat.end}`,
+        ...(feat.rest?.split('\t') || []),
+      ]
+      const data = parser.parseLine(splitLine, { uniqueId: feat.uniqueId! })
 
       const aggr = data[aggregateField]
       if (!parentAggregation[aggr]) {
@@ -176,7 +174,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const f = featureData2({
         ...rest,
         scoreColumn,
-        line,
+        splitLine,
         parser,
         uniqueId,
         start: feat.start,

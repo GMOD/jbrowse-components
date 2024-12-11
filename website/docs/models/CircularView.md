@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/circular-view/src/CircularView/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/CircularView.md)
+
+## Docs
 
 extends
 
@@ -100,19 +108,7 @@ disableImportForm: false
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(
-          types.refinement('trackHeight', types.number, n => n >= minHeight),
-          defaultHeight,
-        )
-```
-
-#### property: displayedRegions
-
-```js
-// type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
-// code
-displayedRegions: types.array(Region)
+height: types.optional(types.number, defaultHeight)
 ```
 
 #### property: scrollX

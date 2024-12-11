@@ -12,6 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "module": "esnext",
+    "removeComments": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -22,8 +23,10 @@
   "exclude": [
     "**/build/",
     "**/dist/",
+    "**/esm/",
     "**/lib/",
     "**/umd/",
+    "**/esm/",
     "**/tmp/",
     "**/embedded_demos/",
     "**/component_tests/",

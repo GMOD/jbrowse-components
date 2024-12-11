@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
-// locals
-import { measureGridWidth, getStr } from '../../util'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
+
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
+import { getStr, measureGridWidth } from '../../util'
+
+import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   margin: {
@@ -79,39 +81,40 @@ export default function DataGridDetails({
           }
           label={<Typography variant="body2">Show options</Typography>}
         />
-        <DataGrid
-          autoHeight
-          disableRowSelectionOnClick
-          rows={rows}
-          rowHeight={20}
-          columnHeaderHeight={35}
-          hideFooter={rows.length < 25}
-          slots={{
-            toolbar: checked ? GridToolbar : null,
-          }}
-          slotProps={{
-            toolbar: {
-              printOptions: {
-                disableToolbarButton: true,
-              },
-            },
-          }}
-          columns={colNames.map(
-            (val, index) =>
-              ({
-                field: val,
-                renderCell: params => {
-                  const value = params.value as string
-                  return (
-                    <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value || '')} />
-                    </div>
-                  )
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <DataGrid
+            disableRowSelectionOnClick
+            rows={rows}
+            rowHeight={20}
+            columnHeaderHeight={35}
+            hideFooter={rows.length < 25}
+            slots={{
+              toolbar: checked ? GridToolbar : null,
+            }}
+            slotProps={{
+              toolbar: {
+                printOptions: {
+                  disableToolbarButton: true,
                 },
-                width: widths[index],
-              }) satisfies GridColDef<(typeof rows)[0]>,
-          )}
-        />
+              },
+            }}
+            columns={colNames.map(
+              (val, index) =>
+                ({
+                  field: val,
+                  renderCell: params => {
+                    const value = params.value as string
+                    return (
+                      <div className={classes.cell}>
+                        <SanitizedHTML html={getStr(value || '')} />
+                      </div>
+                    )
+                  },
+                  width: widths[index],
+                }) satisfies GridColDef<(typeof rows)[0]>,
+            )}
+          />
+        </div>
       </div>
     )
   }

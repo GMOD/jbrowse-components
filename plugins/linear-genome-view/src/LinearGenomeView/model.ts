@@ -1,10 +1,9 @@
-import React, { lazy } from 'react'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type React from 'react'
+import { lazy } from 'react'
+
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { Region } from '@jbrowse/core/util/types'
-import { ElementId } from '@jbrowse/core/util/types/mst'
-import { Region as IRegion } from '@jbrowse/core/util/types'
-import { MenuItem } from '@jbrowse/core/ui'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   assembleLocString,
   clamp,
@@ -17,48 +16,38 @@ import {
   measureText,
   springAnimate,
   sum,
-  ParsedLocString,
 } from '@jbrowse/core/util'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
+import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { when, transaction, autorun } from 'mobx'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import LabelIcon from '@mui/icons-material/Label'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import SearchIcon from '@mui/icons-material/Search'
+import SyncAltIcon from '@mui/icons-material/SyncAlt'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import { saveAs } from 'file-saver'
+import { autorun, transaction, when } from 'mobx'
 import {
   addDisposer,
   cast,
-  getSnapshot,
+  getParent,
   getRoot,
+  getSnapshot,
   resolveIdentifier,
   types,
-  Instance,
-  getParent,
 } from 'mobx-state-tree'
 
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { moveTo, pxToBp, bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { saveAs } from 'file-saver'
-import clone from 'clone'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-// icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import SyncAltIcon from '@mui/icons-material/SyncAlt'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import LabelIcon from '@mui/icons-material/Label'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import PaletteIcon from '@mui/icons-material/Palette'
-import SearchIcon from '@mui/icons-material/Search'
-
-import MiniControls from './components/MiniControls'
 import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { handleSelectedRegion } from '../searchUtils'
+import MiniControls from './components/MiniControls'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
@@ -66,6 +55,16 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { ParsedLocString } from '@jbrowse/core/util'
+import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
+import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -282,19 +281,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       volatileWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       minimumBlockWidth: 3,
+      /**
+       * #volatile
+       */
       draggingTrackId: undefined as undefined | string,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
-      // array of callbacks to run after the next set of the displayedRegions,
-      // which is basically like an onLoad
+      /**
+       * #volatile
+       * array of callbacks to run after the next set of the displayedRegions,
+       * which is basically like an onLoad
+       */
       afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
+      /**
+       * #volatile
+       */
       scaleFactor: 1,
+      /**
+       * #volatile
+       */
       trackRefs: {} as Record<string, HTMLDivElement>,
+      /**
+       * #volatile
+       */
       coarseDynamicBlocks: [] as BaseBlock[],
+      /**
+       * #volatile
+       */
       coarseTotalBp: 0,
+      /**
+       * #volatile
+       */
       leftOffset: undefined as undefined | BpOffset,
+      /**
+       * #volatile
+       */
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
@@ -365,6 +397,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get assembliesNotFound() {
+        const { assemblyManager } = getSession(self)
+        const r0 = self.assemblyNames
+          .map(a => (!assemblyManager.get(a) ? a : undefined))
+          .filter(f => !!f)
+          .join(',')
+        return r0 ? `Assemblies ${r0} not found` : undefined
+      },
+
+      /**
+       * #getter
+       */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames
@@ -378,8 +422,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
-        const { assemblyNames } = self
-        return assemblyNames.every(a => assemblyManager.get(a)?.initialized)
+        return self.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
+        )
       },
 
       /**
@@ -466,7 +511,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get error(): unknown {
-        return self.volatileError || this.assemblyErrors
+        return (
+          self.volatileError || this.assemblyErrors || this.assembliesNotFound
+        )
       },
 
       /**
@@ -569,7 +616,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
-            const viewMenuActions = clone(track.viewMenuActions)
+            const viewMenuActions = structuredClone(track.viewMenuActions)
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }
@@ -1744,8 +1791,8 @@ export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 
 export {
-  default as ReactComponent,
   default as LinearGenomeView,
+  default as ReactComponent,
 } from './components/LinearGenomeView'
 
 export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'

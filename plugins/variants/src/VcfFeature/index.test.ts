@@ -1,4 +1,5 @@
 import VcfParser from '@gmod/vcf'
+
 import VcfFeature from './index'
 
 test('test usage of the VcfFeature', () => {

@@ -3,9 +3,10 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
-import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
+
+import type { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
+import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -45,7 +46,7 @@ export async function fetchChains(
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LGV
 
-  if (!view.initialized || self.error || self.regionTooLarge) {
+  if (!view.initialized || self.error || !self.statsReadyAndRegionNotTooLarge) {
     return
   }
 

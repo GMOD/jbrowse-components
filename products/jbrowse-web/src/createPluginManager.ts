@@ -1,11 +1,12 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
-// locals
+import corePlugins from './corePlugins'
+import { loadSessionSpec } from './loadSessionSpec'
 import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
-import corePlugins from './corePlugins'
-import { SessionLoaderModel, loadSessionSpec } from './SessionLoader'
+
+import type { SessionLoaderModel } from './SessionLoader'
 
 export function createPluginManager(self: SessionLoaderModel) {
   // it is ready when a session has loaded and when there is no config

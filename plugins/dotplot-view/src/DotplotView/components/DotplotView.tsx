@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react'
+
 import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// locals
-import { DotplotViewModel } from '../model'
-import ImportForm from './ImportForm'
-import Header from './Header'
+import { HorizontalAxis, VerticalAxis } from './Axes'
 import Grid from './Grid'
-import { VerticalAxis, HorizontalAxis } from './Axes'
+import Header from './Header'
+import ImportForm from './ImportForm'
+
+import type { DotplotViewModel } from '../model'
 
 const TooltipWhereClicked = lazy(() => import('./DotplotTooltipClick'))
 const TooltipWhereMouseovered = lazy(() => import('./DotplotTooltipMouseover'))

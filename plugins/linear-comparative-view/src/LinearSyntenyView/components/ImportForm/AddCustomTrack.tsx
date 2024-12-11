@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { SnapshotIn } from 'mobx-state-tree'
+import React, { useEffect, useState } from 'react'
+
+import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
   FormControlLabel,
   Grid,
@@ -8,11 +9,13 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material'
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
-import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 import { basename, extName, getName, stripGz } from './util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FileLocation } from '@jbrowse/core/util/types'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 function getAdapter({
   radioOption,

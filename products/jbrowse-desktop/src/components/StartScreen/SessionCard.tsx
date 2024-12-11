@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+
+import DeleteIcon from '@mui/icons-material/Delete'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
+import TextFieldsIcon from '@mui/icons-material/TextFields'
 import {
   Card,
   CardHeader,
@@ -11,12 +16,6 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
-// icons
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
-import DeleteIcon from '@mui/icons-material/Delete'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import TextFieldsIcon from '@mui/icons-material/TextFields'
 
 const { ipcRenderer } = window.require('electron')
 

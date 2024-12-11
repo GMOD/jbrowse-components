@@ -1,26 +1,26 @@
 import React from 'react'
-import { IconButton, Paper, Typography, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession, getContainingView } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-
-// icons
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import CloseIcon from '@mui/icons-material/Close'
-import MinimizeIcon from '@mui/icons-material/Minimize'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import AddIcon from '@mui/icons-material/Add'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import MinimizeIcon from '@mui/icons-material/Minimize'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-import { LinearGenomeViewModel } from '..'
 import TrackLabelDragHandle from './TrackLabelDragHandle'
+
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -113,7 +113,14 @@ const TrackLabel = observer(
     ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
 
     return (
-      <Paper ref={ref} className={cx(className, classes.root)}>
+      <Paper
+        ref={ref}
+        className={cx(className, classes.root)}
+        onClick={event => {
+          // avoid clicks on track label from turning into double-click zoom
+          event.stopPropagation()
+        }}
+      >
         <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
         <IconButton
           onClick={() => view.hideTrack(trackId)}

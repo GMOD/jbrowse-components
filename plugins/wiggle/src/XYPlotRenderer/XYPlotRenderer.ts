@@ -1,17 +1,18 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util'
+
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { drawXY } from '../drawXY'
-import WiggleBaseRenderer, {
-  RenderArgsDeserializedWithFeatures,
-} from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
+
+import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const { features, config } = props
+    const { stopToken, features, config } = props
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
     // wiggle display, and makes the height of the actual drawn area add
@@ -30,6 +31,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
               readConfObject(config, 'color', { feature }),
       offset: YSCALEBAR_LABEL_OFFSET,
       features: [...features.values()],
+      stopToken,
     })
   }
 }

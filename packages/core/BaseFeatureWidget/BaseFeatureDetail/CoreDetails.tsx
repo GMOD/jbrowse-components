@@ -1,9 +1,11 @@
 import React from 'react'
-// locals
-import { toLocale, SimpleFeatureSerialized } from '../../util'
-import { BaseProps } from '../types'
-import SimpleField from './SimpleField'
+
 import Position from './Position'
+import SimpleField from './SimpleField'
+import { toLocale } from '../../util'
+
+import type { SimpleFeatureSerialized } from '../../util'
+import type { BaseProps } from '../types'
 
 export default function CoreDetails(props: BaseProps) {
   const { feature } = props

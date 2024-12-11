@@ -1,5 +1,4 @@
-// locals
-import { setup, doBeforeEach, createView } from './util'
+import { createView, doBeforeEach, setup } from './util'
 import config from '../../test_data/cfam2/config.json'
 
 setup()

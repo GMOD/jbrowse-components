@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
 export function HTTPBasicLoginForm({
   internetAccountId,
@@ -18,6 +19,9 @@ export function HTTPBasicLoginForm({
       maxWidth="xl"
       data-testid="login-httpbasic"
       title={`Log in for ${internetAccountId}`}
+      onClose={() => {
+        handleClose()
+      }}
     >
       <form
         onSubmit={event => {

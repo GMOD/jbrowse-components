@@ -1,10 +1,4 @@
-import { types, addDisposer, Instance } from 'mobx-state-tree'
-import { autorun, observable } from 'mobx'
-import {
-  getConf,
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   dedupe,
   getSession,
@@ -13,13 +7,17 @@ import {
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { autorun, observable } from 'mobx'
+import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
+import { facetedStateTreeF } from './facetedModel'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
-import { facetedStateTreeF } from './facetedModel'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Instance } from 'mobx-state-tree'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 

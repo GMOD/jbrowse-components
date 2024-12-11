@@ -1,24 +1,26 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
-import { ixIxxStream } from 'ixixx'
-import { Flags } from '@oclif/core'
 
-// locals
-import { indexGff3 } from '../types/gff3Adapter'
-import { indexVcf } from '../types/vcfAdapter'
-import JBrowseCommand, {
-  Track,
-  Config,
-  TrixTextSearchAdapter,
-  UriLocation,
-  LocalPathLocation,
-} from '../base'
+import { Flags } from '@oclif/core'
+import { ixIxxStream } from 'ixixx'
+
+import JBrowseCommand from '../base'
 import {
   generateMeta,
-  supported,
   guessAdapterFromFileName,
+  supported,
 } from '../types/common'
+import { indexGff3 } from '../types/gff3Adapter'
+import { indexVcf } from '../types/vcfAdapter'
+
+import type {
+  Config,
+  LocalPathLocation,
+  Track,
+  TrixTextSearchAdapter,
+  UriLocation,
+} from '../base'
 
 function readConf(path: string) {
   return JSON.parse(fs.readFileSync(path, 'utf8')) as Config

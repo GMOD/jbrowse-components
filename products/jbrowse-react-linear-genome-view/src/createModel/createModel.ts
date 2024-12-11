@@ -1,17 +1,21 @@
-import React from 'react'
+import type React from 'react'
+
+import PluginManager from '@jbrowse/core/PluginManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { UriLocation } from '@jbrowse/core/util'
-import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
+import { cast, getSnapshot, types } from 'mobx-state-tree'
+
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
+
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewRootModel
@@ -32,8 +36,7 @@ export default function createModel(
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
-  )
-  pluginManager.createPluggableElements()
+  ).createPluggableElements()
   const Session = createSessionModel(pluginManager)
   const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
   const AssemblyManager = assemblyManagerFactory(assemblyConfig, pluginManager)
@@ -63,17 +66,38 @@ export default function createModel(
       ),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
         WebWorkerRpcDriver: {
           makeWorkerInstance,
         },
         MainThreadRpcDriver: {},
       }),
+      /**
+       * #volatile
+       */
       hydrateFn,
+      /**
+       * #volatile
+       */
       createRootFn,
+      /**
+       * #volatile
+       */
       textSearchManager: new TextSearchManager(pluginManager),
+      /**
+       * #volatile
+       */
       adminMode: false,
+      /**
+       * #volatile
+       */
       version,
     }))
     .actions(self => ({
@@ -87,9 +111,10 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-        snapshot.name = sessionName
-        this.setSession(snapshot)
+        this.setSession({
+          ...JSON.parse(JSON.stringify(getSnapshot(self.session))),
+          name: sessionName,
+        })
       },
       /**
        * #action
@@ -100,21 +125,18 @@ export default function createModel(
       /**
        * #action
        */
-      addInternetAccount(
-        internetAccount: SnapshotIn<(typeof self.internetAccounts)[0]>,
-      ) {
-        self.internetAccounts.push(internetAccount)
+      addInternetAccount(acct: SnapshotIn<(typeof self.internetAccounts)[0]>) {
+        self.internetAccounts.push(acct)
       },
       /**
        * #action
        */
       findAppropriateInternetAccount(location: UriLocation) {
-        // find the existing account selected from menu
         const selectedId = location.internetAccountId
         if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
+          const selectedAccount = self.internetAccounts.find(
+            a => a.internetAccountId === selectedId,
+          )
           if (selectedAccount) {
             return selectedAccount
           }

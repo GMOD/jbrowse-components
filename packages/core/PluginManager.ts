@@ -1,42 +1,35 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import {
-  isModelType,
-  isType,
-  types,
-  IAnyType,
-  IAnyModelType,
-} from 'mobx-state-tree'
+import { isModelType, isType, types } from 'mobx-state-tree'
 
 // Pluggable elements
-import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
-import RendererType from './pluggableElementTypes/renderers/RendererType'
-import AdapterType from './pluggableElementTypes/AdapterType'
-import TrackType from './pluggableElementTypes/TrackType'
-import DisplayType from './pluggableElementTypes/DisplayType'
-import ViewType from './pluggableElementTypes/ViewType'
-import WidgetType from './pluggableElementTypes/WidgetType'
-import ConnectionType from './pluggableElementTypes/ConnectionType'
-import RpcMethodType from './pluggableElementTypes/RpcMethodType'
-import InternetAccountType from './pluggableElementTypes/InternetAccountType'
-import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
-import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
-
+import CorePlugin from './CorePlugin'
+import ReExports from './ReExports'
 import {
   ConfigurationSchema,
   isBareConfigurationSchemaType,
 } from './configuration'
-
-import Plugin from './Plugin'
-import ReExports from './ReExports'
-
-import {
-  PluggableElementType,
-  PluggableElementMember,
-} from './pluggableElementTypes'
-import { AbstractRootModel } from './util'
-import CorePlugin from './CorePlugin'
+import AdapterType from './pluggableElementTypes/AdapterType'
+import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
+import ConnectionType from './pluggableElementTypes/ConnectionType'
+import DisplayType from './pluggableElementTypes/DisplayType'
+import InternetAccountType from './pluggableElementTypes/InternetAccountType'
+import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
+import TrackType from './pluggableElementTypes/TrackType'
+import ViewType from './pluggableElementTypes/ViewType'
+import WidgetType from './pluggableElementTypes/WidgetType'
+import RendererType from './pluggableElementTypes/renderers/RendererType'
 import createJexlInstance from './util/jexl'
-import { PluginDefinition } from './PluginLoader'
+
+import type Plugin from './Plugin'
+import type { PluginDefinition } from './PluginLoader'
+import type {
+  PluggableElementMember,
+  PluggableElementType,
+} from './pluggableElementTypes'
+import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
+import type { AbstractRootModel } from './util'
+import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
 
 // helper class that keeps groups of callbacks that are then run in a specified
 // order by group
@@ -263,6 +256,7 @@ export default class PluginManager {
 
   setRootModel(rootModel: AbstractRootModel) {
     this.rootModel = rootModel
+    return this
   }
 
   configure() {

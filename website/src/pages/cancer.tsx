@@ -7,7 +7,6 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import MiniFeatures from '@site/src/components/MiniFeatures'
 
-// locals
 import MiniPlugins from '../components/MiniPlugins'
 import styles from './styles.module.css'
 

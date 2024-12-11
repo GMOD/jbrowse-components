@@ -1,9 +1,13 @@
 /* eslint-disable no-console */
-import express, { Request } from 'express'
 import path from 'path'
-import cors from 'cors'
+
 import bodyParser from 'body-parser'
+import cors from 'cors'
+import express from 'express'
+
 import oauthServer from './oauth/server'
+
+import type { Request } from 'express'
 
 const router = express.Router()
 

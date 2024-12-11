@@ -1,13 +1,12 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-// locals
 import {
-  setup,
-  expectCanvasMatch,
-  doBeforeEach,
   createView,
+  doBeforeEach,
+  expectCanvasMatch,
   hts,
   pv,
+  setup,
 } from './util'
 
 setup()

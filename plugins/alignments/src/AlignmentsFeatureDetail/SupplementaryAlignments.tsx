@@ -1,12 +1,13 @@
 import React from 'react'
-import { SimpleFeatureSerialized, getEnv, getSession } from '@jbrowse/core/util'
-import { ViewType } from '@jbrowse/core/pluggableElementTypes'
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
-// locals
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
-import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { getEnv, getSession } from '@jbrowse/core/util'
+
 import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel'
+import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings'
+
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SupplementaryAlignments(props: {
   tag: string
@@ -16,10 +17,10 @@ export default function SupplementaryAlignments(props: {
   const { model, tag, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  let viewType: ViewType | undefined
+  let hasBreakendSplitView = false
 
   try {
-    viewType = pluginManager.getViewType('BreakpointSplitView')
+    hasBreakendSplitView = !!pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // ignore
   }
@@ -27,12 +28,8 @@ export default function SupplementaryAlignments(props: {
   return (
     <BaseCard {...props} title="Supplementary alignments">
       <SupplementaryAlignmentsLocStrings model={model} tag={tag} />
-      {viewType ? (
-        <LaunchBreakpointSplitViewPanel
-          viewType={viewType}
-          model={model}
-          feature={feature}
-        />
+      {hasBreakendSplitView ? (
+        <LaunchBreakpointSplitViewPanel model={model} feature={feature} />
       ) : null}
     </BaseCard>
   )

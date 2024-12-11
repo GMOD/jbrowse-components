@@ -1,18 +1,21 @@
-import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
+import { getParent, types } from 'mobx-state-tree'
 
-// locals
-import { getConf, AnyConfigurationModel } from '../configuration'
-import {
+import { getConf } from '../configuration'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
+import { when } from '../util'
+import QuickLRU from '../util/QuickLRU'
+
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationModel } from '../configuration'
+import type {
   BaseOptions,
   BaseRefNameAliasAdapter,
   RegionsAdapter,
 } from '../data_adapters/BaseAdapter'
-import PluginManager from '../PluginManager'
-import { when, Region, Feature } from '../util'
-import QuickLRU from '../util/QuickLRU'
-import RpcManager from '../rpc/RpcManager'
-import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
+import type RpcManager from '../rpc/RpcManager'
+import type { Feature, Region } from '../util'
+import type { IAnyType, Instance } from 'mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 

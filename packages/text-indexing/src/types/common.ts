@@ -1,7 +1,9 @@
 import fs from 'fs'
-import fetch from 'node-fetch'
 import path from 'path'
-import { LocalPathLocation, UriLocation, Track } from '../util'
+
+import fetch from 'node-fetch'
+
+import type { LocalPathLocation, Track, UriLocation } from '../util'
 
 // Method for handing off the parsing of a gff3 file URL. Calls the proper
 // parser depending on if it is gzipped or not. Returns a @gmod/gff stream.

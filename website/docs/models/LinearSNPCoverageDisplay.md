@@ -8,9 +8,17 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearSNPCoverageDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSNPCoverageDisplay.md)
+
+## Docs
 
 extends
 
@@ -54,25 +62,22 @@ IMaybe<ISimpleType<boolean>>
 drawArcs: types.maybe(types.boolean)
 ```
 
-#### property: filterBy
+#### property: filterBySetting
 
 ```js
 // type signature
-IOptionalIType<IType<FilterBy, FilterBy, FilterBy>, [undefined]>
+IType<FilterBy, FilterBy, FilterBy>
 // code
-filterBy: types.optional(types.frozen<FilterBy>(), {
-          flagInclude: 0,
-          flagExclude: 1540,
-        })
+filterBySetting: types.frozen<FilterBy | undefined>()
 ```
 
-#### property: colorBy
+#### property: colorBySetting
 
 ```js
 // type signature
 IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: types.frozen<ColorBy | undefined>()
+colorBySetting: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: jexlFilters
@@ -85,6 +90,20 @@ jexlFilters: types.optional(types.array(types.string), [])
 ```
 
 ### LinearSNPCoverageDisplay - Getters
+
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
+```
 
 #### getter: rendererConfig
 

@@ -1,5 +1,6 @@
 import { orientationTypes, pairMap } from '../util'
-import { ChainStats } from './fetchChains'
+
+import type { ChainStats } from './fetchChains'
 
 export const fillColor = {
   color_fwd_strand_not_proper: '#ECC8C8',

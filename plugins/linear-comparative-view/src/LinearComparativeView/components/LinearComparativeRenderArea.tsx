@@ -1,13 +1,13 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getEnv } from '@jbrowse/core/util'
-import { ResizeHandle } from '@jbrowse/core/ui'
 
-// locals
-import { LinearComparativeViewModel } from '../model'
 import { getConf } from '@jbrowse/core/configuration'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { ResizeHandle } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { LinearComparativeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
   container: {
@@ -36,26 +36,29 @@ const LinearComparativeRenderArea = observer(function ({
 }) {
   const { classes } = useStyles()
   const { views, levels } = model
-  const RenderList = [
-    <View key={views[0]!.id} view={views[0]!} />,
-  ] as React.ReactNode[]
-  for (let i = 1; i < views.length; i++) {
-    const view = views[i]!
-    const level = levels[i - 1]
-    RenderList.push(
-      <React.Fragment key={view.id}>
-        <div className={classes.container}>
-          <Overlays model={model} level={i - 1} />
-        </div>
-        <ResizeHandle
-          onDrag={n => level?.setHeight(level.height + n)}
-          className={classes.resizeHandle}
-        />
-        <View view={view} />
-      </React.Fragment>,
-    )
-  }
-  return <div className={classes.container}>{RenderList}</div>
+
+  return (
+    <div className={classes.container}>
+      {views.map((view, i) => (
+        <React.Fragment key={view.id}>
+          {i > 0 ? (
+            <>
+              <div className={classes.container}>
+                <Overlays model={model} level={i - 1} />
+              </div>
+              <ResizeHandle
+                onDrag={n =>
+                  levels[i - 1]?.setHeight((levels[i - 1]?.height || 0) + n)
+                }
+                className={classes.resizeHandle}
+              />
+            </>
+          ) : null}
+          <View view={view} />
+        </React.Fragment>
+      ))}
+    </div>
+  )
 })
 
 const Overlays = observer(function ({

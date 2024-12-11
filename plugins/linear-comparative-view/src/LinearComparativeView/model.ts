@@ -1,30 +1,20 @@
 import { lazy } from 'react'
-import {
-  addDisposer,
-  cast,
-  getPath,
-  types,
-  Instance,
-  SnapshotIn,
-} from 'mobx-state-tree'
-import { autorun } from 'mobx'
 
-// jbrowse
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import { autorun } from 'mobx'
+import { addDisposer, cast, getPath, types } from 'mobx-state-tree'
+
+import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// icons
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-
-// locals
-import { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(

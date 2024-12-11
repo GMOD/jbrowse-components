@@ -1,10 +1,8 @@
 import React, { Suspense, lazy, useState } from 'react'
 
-import { IconButton, InputAdornment } from '@mui/material'
-
-// icons
-import SearchIcon from '@mui/icons-material/Search'
 import HelpIcon from '@mui/icons-material/Help'
+import SearchIcon from '@mui/icons-material/Search'
+import { IconButton, InputAdornment } from '@mui/material'
 
 // lazy
 const HelpDialog = lazy(() => import('./HelpDialog'))

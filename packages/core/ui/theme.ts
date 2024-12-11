@@ -1,10 +1,12 @@
-import { blue, green, red, grey, orange } from '@mui/material/colors'
-import { createTheme, ThemeOptions } from '@mui/material/styles'
+import { blue, green, grey, orange, red } from '@mui/material/colors'
+import { createTheme } from '@mui/material/styles'
+import deepmerge from 'deepmerge'
+
+import type { ThemeOptions } from '@mui/material/styles'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,
 } from '@mui/material/styles/createPalette'
-import deepmerge from 'deepmerge'
 
 declare module '@mui/material/styles/createPalette' {
   interface Palette {

@@ -1,6 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance, types } from 'mobx-state-tree'
 import { stateModelFactory as baseModelFactory } from '@jbrowse/core/BaseFeatureWidget'
+import { types } from 'mobx-state-tree'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from 'mobx-state-tree'
 
 export function stateModelFactory(pluginManager: PluginManager) {
   const baseModel = baseModelFactory(pluginManager)

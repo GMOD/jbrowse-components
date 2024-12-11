@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
+
+import { defaultFilterFlags } from '../shared/util'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearSNPCoverageDisplay
@@ -52,7 +55,8 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       */ inverted: {
+       */
+      inverted: {
         type: 'boolean',
         description: 'draw upside down',
         defaultValue: false,
@@ -73,6 +77,25 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
           'SNPCoverageRenderer',
         )!.configSchema,
       }),
+      /**
+       * #slot
+       */
+      colorBy: {
+        type: 'frozen',
+        description: 'color scheme to use',
+        defaultValue: {
+          type: 'normal',
+        },
+      },
+
+      /**
+       * #slot
+       */
+      filterBy: {
+        type: 'frozen',
+        description: 'default filters to use',
+        defaultValue: defaultFilterFlags,
+      },
     },
     {
       /**

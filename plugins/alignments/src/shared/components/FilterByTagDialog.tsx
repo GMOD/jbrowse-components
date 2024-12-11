@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -9,10 +10,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-// locals
-import { FilterBy } from '../types'
+
+import type { FilterBy } from '../types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

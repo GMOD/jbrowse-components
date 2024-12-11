@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
+
 import { ErrorMessage } from '@jbrowse/core/ui'
 
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-
 import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 type ViewState = ReturnType<typeof createViewState>
 

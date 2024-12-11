@@ -1,10 +1,14 @@
 import {
-  readConfObject,
-  AnyConfigurationModel,
+  readConfObject
 } from '@jbrowse/core/configuration'
-import { bpSpanPx, Feature } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
-import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
+import { bpSpanPx } from '@jbrowse/core/util'
+
+import type {
+  AnyConfigurationModel} from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
+import type { Region } from '@jbrowse/core/util/types'
+
 
 export interface ViewInfo {
   bpPerPx: number

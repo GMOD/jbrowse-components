@@ -1,11 +1,11 @@
 import React from 'react'
-import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 
-// locals
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
   input: {

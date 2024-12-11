@@ -1,9 +1,11 @@
 import React from 'react'
-import { Typography, Link } from '@mui/material'
-// locals
+
+import { Link, Typography } from '@mui/material'
+
 import { getLengthOnRef } from '../MismatchParser'
 import { navToLoc } from './util'
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
+
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
 export default function SupplementaryAlignmentsLocStrings({
   tag,

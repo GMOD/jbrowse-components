@@ -1,11 +1,11 @@
 import crypto from 'crypto'
 
-import {
+import type {
+  AuthorizationCode,
+  AuthorizationCodeModel,
   Client,
   RefreshToken,
   RefreshTokenModel,
-  AuthorizationCode,
-  AuthorizationCodeModel,
   Token,
 } from '@node-oauth/oauth2-server'
 

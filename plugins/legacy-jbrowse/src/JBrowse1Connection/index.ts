@@ -1,9 +1,9 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 
-// locals
-import modelFactory from './model'
 import configSchema from './configSchema'
+import modelFactory from './model'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function JBrowse1ConnectionF(pluginManager: PluginManager) {
   pluginManager.addConnectionType(

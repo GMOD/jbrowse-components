@@ -1,10 +1,11 @@
-import { SingleBar, Presets } from 'cli-progress'
-import { createGunzip } from 'zlib'
 import readline from 'readline'
+import { createGunzip } from 'zlib'
 
-// locals
-import { Track } from '../base'
+import { Presets, SingleBar } from 'cli-progress'
+
 import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'
+
+import type { Track } from '../base'
 
 export async function* indexVcf({
   config,

@@ -1,9 +1,11 @@
-import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
+
+import { Args, Flags } from '@oclif/core'
 import decompress from 'decompress'
-import fetch from '../fetchWithProxy'
+
 import JBrowseCommand from '../base'
+import fetch from '../fetchWithProxy'
 
 export default class Upgrade extends JBrowseCommand {
   static description = 'Upgrades JBrowse 2 to latest version'

@@ -1,9 +1,10 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import PluginManager from '@jbrowse/core/PluginManager'
-// locals
+
+import ReactComponent from './components/AlignmentsDisplay'
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
-import ReactComponent from './components/AlignmentsDisplay'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearAlignmentsDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

@@ -1,14 +1,14 @@
-import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import clone from 'clone'
+import { addDisposer, types } from 'mobx-state-tree'
 
-// locals
-import PluginManager from '../PluginManager'
 import { getConf } from '../configuration'
 import { getSession } from '../util'
-import { ElementId } from '../util/types/mst'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
 import { replaceUndefinedWithNull } from './util'
+import { ElementId } from '../util/types/mst'
+
+import type PluginManager from '../PluginManager'
+import type { Instance } from 'mobx-state-tree'
 
 interface Feat {
   subfeatures?: Record<string, unknown>[]
@@ -147,7 +147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 )
               }
               if (unformattedFeatureData) {
-                const feature = clone(unformattedFeatureData)
+                const feature = structuredClone(unformattedFeatureData)
 
                 const combine = (
                   arg2: string,

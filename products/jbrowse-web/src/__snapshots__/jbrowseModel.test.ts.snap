@@ -11,6 +11,7 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
   },
   "internetAccounts": [],
   "plugins": [],
+  "preConfiguredSessions": [],
   "tracks": [],
 }
 `;
@@ -23,20 +24,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "ixFilePath": {
-        "internetAccountId": undefined,
-        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox.ix",
       },
       "ixxFilePath": {
-        "internetAccountId": undefined,
-        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox.ixx",
       },
       "metaFilePath": {
-        "internetAccountId": undefined,
-        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox_meta.json",
       },
@@ -48,20 +43,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox-rev-del",
       ],
       "ixFilePath": {
-        "internetAccountId": undefined,
-        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del.ix",
       },
       "ixxFilePath": {
-        "internetAccountId": undefined,
-        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del.ixx",
       },
       "metaFilePath": {
-        "internetAccountId": undefined,
-        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del_meta.json",
       },
@@ -102,14 +91,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -142,14 +127,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -174,14 +155,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit_404",
           },
@@ -206,20 +183,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "misc.fa.fai",
           },
           "fastaLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "misc.fa",
           },
           "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/fa.metadata.yaml",
           },
@@ -244,20 +215,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_del.fa.fai",
           },
           "fastaLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_del.fa",
           },
           "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/fa.metadata.yaml",
           },
@@ -282,20 +247,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_ins.fa.fai",
           },
           "fastaLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_ins.fa",
           },
           "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/fa.metadata.yaml",
           },
@@ -320,20 +279,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rev-del.fa.fai",
           },
           "fastaLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rev-del.fa",
           },
           "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/fa.metadata.yaml",
           },
@@ -358,20 +311,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.fa.fai",
           },
           "fastaLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.fa",
           },
           "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/fa.metadata.yaml",
           },
@@ -396,20 +343,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "sequence": {
         "adapter": {
           "faiLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "output_prefix3.simseq.genome.fa.fai",
           },
           "fastaLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "output_prefix3.simseq.genome.fa",
           },
           "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/fa.metadata.yaml",
           },
@@ -462,8 +403,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
     "logoPath": {
-      "internetAccountId": undefined,
-      "internetAccountPreAuthorization": undefined,
       "locationType": "UriLocation",
       "uri": "",
     },
@@ -512,18 +451,15 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "umdUrl": "umd_plugin.js",
     },
   ],
+  "preConfiguredSessions": [],
   "tracks": [
     {
       "adapter": {
         "chromSizesLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "/path/to/default.chrom.sizes",
         },
         "twoBitLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.2bit",
         },
@@ -546,16 +482,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.dup.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.dup.vcf.gz",
         },
@@ -571,6 +503,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_sv_test-ChordVariantDisplay",
@@ -589,16 +529,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.dup.renamed.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.dup.renamed.vcf.gz",
         },
@@ -613,6 +549,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test_renamed-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
@@ -630,14 +574,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
@@ -685,14 +625,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
@@ -714,6 +650,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "colorBy": {
+            "type": "mappingQuality",
+          },
           "displayId": "volvox_cram_pileup_pileup",
           "height": 400,
           "type": "LinearPileupDisplay",
@@ -743,21 +682,17 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "subkey": "wow",
         },
       },
-      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height)",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height, colorBy mappingQual)",
       "trackId": "volvox_cram_pileup",
       "type": "AlignmentsTrack",
     },
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
@@ -805,14 +740,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
@@ -860,14 +791,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
@@ -915,14 +842,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
@@ -970,15 +893,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -997,6 +916,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments_alignments",
           "height": 400,
           "pileupDisplay": {
+            "colorBy": {
+              "type": "mappingQuality",
+            },
             "displayId": "volvox_bam_altname_alignments_pileup",
             "type": "LinearPileupDisplay",
           },
@@ -1019,22 +941,18 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearReadCloudDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (ctgA, larger default height)",
+      "name": "volvox-sorted.bam (ctgA, larger default height, colorBy mappingQual)",
       "trackId": "volvox_alignments",
       "type": "AlignmentsTrack",
     },
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted-altname.bam.bai",
           },
@@ -1076,15 +994,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted-altname.bam.bai",
           },
@@ -1126,15 +1040,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -1176,15 +1086,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted-altname.bam.bai",
           },
@@ -1226,15 +1132,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -1287,16 +1189,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.test.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.test.vcf.gz",
         },
@@ -1311,6 +1209,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_test_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_test_vcf-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_test_vcf-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
@@ -1331,8 +1237,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "rootUrlTemplate": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_long_names_nclist/{refseq}/trackData.json",
         },
@@ -1361,15 +1265,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam.nonexist",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -1411,15 +1311,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai.nonexist",
           },
@@ -1461,8 +1357,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bw.nonexist",
         },
@@ -1537,8 +1431,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1564,8 +1456,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1592,8 +1482,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1620,8 +1508,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.altname.bw",
         },
@@ -1718,15 +1604,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-long-reads-sv.bam.bai",
           },
@@ -1768,14 +1650,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.cram",
         },
@@ -1823,14 +1701,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.cram",
         },
@@ -1878,15 +1752,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-long-reads.fastq.sorted.bam.bai",
           },
@@ -1928,14 +1798,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-samspec.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-samspec.cram",
         },
@@ -1983,15 +1849,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-samspec.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-samspec.bam.bai",
           },
@@ -2033,14 +1895,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sv.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sv.cram",
         },
@@ -2088,15 +1946,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sv.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sv.bam.bai",
           },
@@ -2138,15 +1992,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "gffGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.sort.gff3.gz",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.sort.gff3.gz.tbi",
           },
@@ -2180,14 +2030,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
@@ -2235,15 +2081,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -2286,16 +2128,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf.gz",
         },
@@ -2310,6 +2148,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
@@ -2328,16 +2174,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf.gz",
         },
@@ -2352,6 +2194,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
@@ -2369,8 +2219,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigBedLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bb",
         },
@@ -2399,15 +2247,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bedGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-bed12.bed.gz",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-bed12.bed.gz.tbi",
           },
@@ -2437,8 +2281,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bedLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-bed12.bed",
         },
@@ -2467,8 +2309,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -2495,8 +2335,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "rootUrlTemplate": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_genes_nclist/{refseq}/trackData.json",
         },
@@ -2525,8 +2363,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -2553,8 +2389,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -2580,8 +2414,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_negative.bw",
         },
@@ -2608,8 +2440,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_negative.bw",
         },
@@ -2635,8 +2465,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_posneg.bw",
         },
@@ -2663,8 +2491,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_posneg_frac.bw",
         },
@@ -2691,8 +2517,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_posneg.bw",
         },
@@ -2718,8 +2542,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam.coverage.bw",
         },
@@ -2746,8 +2568,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam.coverage.bw",
         },
@@ -2777,8 +2597,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "volvox",
         ],
         "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_fake_synteny_alt.paf",
         },
@@ -2820,8 +2638,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "volvox",
         ],
         "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_fake_synteny.paf",
         },
@@ -2859,15 +2675,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rg.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rg.bam.bai",
           },
@@ -2916,14 +2728,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rg.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rg.cram",
         },
@@ -2971,8 +2779,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bigWigLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bw.nonexist",
         },
@@ -2998,16 +2804,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf.gz",
         },
@@ -3033,6 +2835,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearVariantDisplay",
         },
         {
+          "displayId": "variant_colors-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "variant_colors-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
+        },
+        {
           "displayId": "variant_colors-LinearPairedArcDisplay",
           "type": "LinearPairedArcDisplay",
         },
@@ -3044,15 +2854,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-chebi-volvox.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-chebi-volvox.bam.bai",
           },
@@ -3101,15 +2907,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-double-volvox.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-double-volvox.bam.bai",
           },
@@ -3158,15 +2960,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-multi-volvox.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-multi-volvox.bam.bai",
           },
@@ -3215,15 +3013,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-orient-volvox.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-orient-volvox.bam.bai",
           },
@@ -3272,15 +3066,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "gffGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "single_exon_gene.sorted.gff.gz",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "single_exon_gene.sorted.gff.gz.tbi",
           },
@@ -3310,8 +3100,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "gtfLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.sorted.gtf",
         },
@@ -3346,16 +3134,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.inv.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.inv.vcf.gz",
         },
@@ -3370,6 +3154,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox.inv.vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox.inv.vcf-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox.inv.vcf-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
@@ -3387,14 +3179,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "deep_sequencing.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "deep_sequencing.cram",
         },
@@ -3515,15 +3303,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "spliced.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "spliced.bam.bai",
           },
@@ -3573,8 +3357,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.lowercase.vcf",
         },
@@ -3602,8 +3384,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_del.paf",
         },
@@ -3643,8 +3423,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_ins.paf",
         },
@@ -3685,8 +3463,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "variant_effect_demo_data.vcf",
         },
@@ -3701,6 +3477,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_data-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_data-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_data-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "variant_effect_demo_data-ChordVariantDisplay",
@@ -3719,8 +3503,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_vcf_jannovar.vcf",
         },
@@ -3735,6 +3517,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_jannovar-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
         },
         {
           "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
@@ -3756,8 +3546,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "volvox",
         ],
         "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rev-del.paf",
         },
@@ -3795,8 +3583,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "gffLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rev-del.gff",
         },
@@ -3822,15 +3608,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.bam.bai",
           },
@@ -3879,14 +3661,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv.cram",
         },
@@ -3934,14 +3712,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv-paired.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv-paired.cram",
         },
@@ -3989,15 +3763,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv-paired.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv-paired.bam.bai",
           },
@@ -4050,8 +3820,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "volvox",
         ],
         "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_inv_indels.paf",
         },
@@ -4089,14 +3857,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-inv-pbsim.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-inv-pbsim.cram",
         },
@@ -4144,15 +3908,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "paired_end_stranded_rnaseq.bam",
         },
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "paired_end_stranded_rnaseq.bam.bai",
           },
@@ -4201,8 +3961,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bedLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "arc_test.bed",
         },
@@ -4231,8 +3989,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "bedpeLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bedpe",
         },
@@ -4254,6 +4010,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearVariantDisplay",
         },
         {
+          "displayId": "volvox_bedpe-LinearVariantMatrixDisplay",
+          "type": "LinearVariantMatrixDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-MultiLinearVariantDisplay",
+          "type": "MultiLinearVariantDisplay",
+        },
+        {
           "displayId": "volvox_bedpe-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -4270,15 +4034,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         ],
         "index": {
           "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_ins.pif.gz.tbi",
           },
         },
         "pifGzLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_ins.pif.gz",
         },
@@ -4316,8 +4076,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "gffLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "multipart.gff",
         },
@@ -4346,14 +4104,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.noref.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.noref.cram",
         },

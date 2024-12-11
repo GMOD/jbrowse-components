@@ -1,7 +1,7 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { HierarchicalTrackSelectorModel } from '../model'
-import { TreeNode } from '../generateHierarchy'
-import { MenuItem } from '@jbrowse/core/ui'
+import type { TreeNode } from '../generateHierarchy'
+import type { HierarchicalTrackSelectorModel } from '../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 export interface NodeData {
   nestingLevel: number

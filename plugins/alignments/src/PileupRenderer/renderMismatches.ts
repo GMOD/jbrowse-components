@@ -1,8 +1,11 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
-import { fillRect, LayoutFeature } from './util'
-import { RenderArgsWithColor } from './makeImageData'
 import { colord } from '@jbrowse/core/util/colord'
-import { Mismatch } from '../shared/types'
+
+import { fillRect } from './util'
+
+import type { ProcessedRenderArgs } from './types'
+import type { LayoutFeature } from './util'
+import type { Mismatch } from '../shared/types'
 
 export function renderMismatches({
   ctx,
@@ -21,7 +24,7 @@ export function renderMismatches({
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
-  renderArgs: RenderArgsWithColor
+  renderArgs: ProcessedRenderArgs
   colorForBase: Record<string, string>
   contrastForBase: Record<string, string>
   mismatchAlpha?: boolean

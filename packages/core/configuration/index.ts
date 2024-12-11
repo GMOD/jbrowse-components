@@ -1,14 +1,14 @@
 export {
-  ConfigurationSchema,
   ConfigurationReference,
+  ConfigurationSchema,
 } from './configurationSchema'
 
 export type {
-  AnyConfigurationSchemaType,
+  AnyConfiguration,
   AnyConfigurationModel,
+  AnyConfigurationSchemaType,
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
-  AnyConfiguration,
 } from './types'
 
 export * from './util'

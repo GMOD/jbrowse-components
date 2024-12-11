@@ -2,10 +2,12 @@
  * By convention, exit codes in this base class are below 100
  */
 
-import { Command } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
+
+import { Command } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
+
 import fetch from './fetchWithProxy'
 
 export interface UriLocation {

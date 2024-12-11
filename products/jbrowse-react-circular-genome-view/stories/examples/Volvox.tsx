@@ -1,7 +1,7 @@
 import React from 'react'
 
 // replace with from '@jbrowse/react-circular-genome-view' in your code
-import { createViewState, JBrowseCircularGenomeView } from '../../src'
+import { JBrowseCircularGenomeView, createViewState } from '../../src'
 
 export const Volvox = () => {
   const defaultSession = {

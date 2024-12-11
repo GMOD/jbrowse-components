@@ -1,9 +1,9 @@
-import { ServerSideRendererType } from '../../pluggableElementTypes'
-import {
+import type { ServerSideRendererType } from '../../pluggableElementTypes'
+import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
 } from '../../pluggableElementTypes/renderers/ServerSideRendererType'
-import { Region } from '../../util'
+import type { Region } from '../../util'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   adapterConfig: Record<string, unknown>

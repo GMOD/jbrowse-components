@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
-import { SnapshotIn } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import React, { useEffect, useState } from 'react'
 
-// locals
-import { LinearSyntenyViewModel } from '../../model'
+import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
+
 import ImportCustomTrack from './AddCustomTrack'
 import ImportSyntenyTrackSelector from './TrackSelector'
+
+import type { LinearSyntenyViewModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SnapshotIn } from 'mobx-state-tree'
 
 type Conf = SnapshotIn<AnyConfigurationModel>
 

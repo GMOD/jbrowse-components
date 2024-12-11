@@ -1,14 +1,16 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { Popover, Typography, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { stringify } from '@jbrowse/core/util'
-import { Menu } from '@jbrowse/core/ui'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import React, { useEffect, useRef, useState } from 'react'
 
-// locals
-import { LinearComparativeViewModel } from '../model'
+import { Menu } from '@jbrowse/core/ui'
+import { stringify } from '@jbrowse/core/util'
+import { Popover, Typography, alpha } from '@mui/material'
+import { transaction } from 'mobx'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
 import VerticalGuide from './VerticalGuide'
+
+import type { LinearComparativeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
@@ -102,12 +104,14 @@ const LinearComparativeRubberband = observer(function Rubberband({
           clientX,
           clientY,
         })
-        model.views.forEach(view => {
-          const args = computeOffsets(offsetX, view)
-          if (args) {
-            const { leftOffset, rightOffset } = args
-            view.setOffsets(leftOffset, rightOffset)
-          }
+        transaction(() => {
+          model.views.forEach(view => {
+            const args = computeOffsets(offsetX, view)
+            if (args) {
+              const { leftOffset, rightOffset } = args
+              view.setOffsets(leftOffset, rightOffset)
+            }
+          })
         })
         setGuideX(undefined)
       }
@@ -151,8 +155,10 @@ const LinearComparativeRubberband = observer(function Rubberband({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.views.forEach(view => {
-      view.setOffsets(undefined, undefined)
+    transaction(() => {
+      model.views.forEach(view => {
+        view.setOffsets(undefined, undefined)
+      })
     })
   }
 

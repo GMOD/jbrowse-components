@@ -1,9 +1,10 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import {
   PileupGetGlobalValueForTag,
-  PileupGetVisibleModifications,
   PileupGetReducedFeatures,
+  PileupGetVisibleModifications,
 } from './rpcMethods'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function PileupRPCMethodsF(pm: PluginManager) {
   pm.addRpcMethod(() => new PileupGetGlobalValueForTag(pm))

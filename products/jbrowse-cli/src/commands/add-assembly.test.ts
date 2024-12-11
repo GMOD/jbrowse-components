@@ -4,16 +4,17 @@
 
 import fs from 'fs'
 import path from 'path'
+
+import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
 import {
-  runInTmpDir,
   ctxDir,
   dataDir,
   readConf,
   readConfAlt,
+  runInTmpDir,
 } from '../testUtil'
-import { runCommand } from '@oclif/test'
 
 const { copyFile, writeFile, mkdir } = fs.promises
 

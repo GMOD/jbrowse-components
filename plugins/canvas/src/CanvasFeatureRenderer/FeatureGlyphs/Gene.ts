@@ -1,11 +1,12 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 // locals
 import BoxGlyph from './Box'
-import NoncodingGlyph from './UnprocessedTranscript'
 import ProcessedTranscriptGlyph from './ProcessedTranscript'
-import { ViewInfo, LaidOutFeatureRect } from '../FeatureGlyph'
+import NoncodingGlyph from './UnprocessedTranscript'
+
+import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
+import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
 
 interface FeatureRectWithGlyph extends LaidOutFeatureRect {
   label: any

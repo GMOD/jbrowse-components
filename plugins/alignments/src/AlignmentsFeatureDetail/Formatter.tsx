@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import copy from 'copy-to-clipboard'
 
 // this 'show more...' used specifically as a formatter on alignments feature

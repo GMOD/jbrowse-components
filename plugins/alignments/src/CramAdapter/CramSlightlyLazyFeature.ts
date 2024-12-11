@@ -1,10 +1,9 @@
-import { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import { CramRecord } from '@gmod/cram'
-
-// locals
-import CramAdapter from './CramAdapter'
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 import { cacheGetter } from '../shared/util'
+
+import type CramAdapter from './CramAdapter'
+import type { CramRecord } from '@gmod/cram'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class

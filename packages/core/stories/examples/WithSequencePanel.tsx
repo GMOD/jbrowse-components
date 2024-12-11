@@ -1,7 +1,8 @@
 import React from 'react'
+
+import { feature, sequence } from './util'
 import SequencePanel from '.././../BaseFeatureWidget/SequenceFeatureDetails/SequencePanel'
 import { SequenceFeatureDetailsF } from '.././../BaseFeatureWidget/SequenceFeatureDetails/model'
-import { sequence, feature } from './util'
 
 function GeneCollapsedIntronCoords() {
   const model = SequenceFeatureDetailsF().create()
@@ -37,9 +38,9 @@ function CDSNoCoords() {
 }
 
 export {
-  CDSNoCoords,
   CDSCoords,
-  GeneCoordsGenomic,
+  CDSNoCoords,
   GeneCollapsedIntronCoords,
   GeneCollapsedIntronNoCoords,
+  GeneCoordsGenomic,
 }

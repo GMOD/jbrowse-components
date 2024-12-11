@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { LoadingEllipses } from '@jbrowse/core/ui'
 
-// locals
+import { LoadingEllipses } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
 import LinearSyntenyRendering from './LinearSyntenyRendering'
-import { LinearSyntenyDisplayModel } from '../model'
+
+import type { LinearSyntenyDisplayModel } from '../model'
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground

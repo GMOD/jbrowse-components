@@ -1,9 +1,9 @@
 import React, { lazy, useState } from 'react'
+
 import { Alert, Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
-import { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model'
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog'))
 

@@ -1,12 +1,13 @@
-import FeatureRendererType, {
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import { renderToAbstractCanvas } from '@jbrowse/core/util'
+
+import type { ScaleOpts, Source } from './util'
+import type {
   RenderArgs as FeatureRenderArgs,
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
-import { ThemeOptions } from '@mui/material'
-
-// locals
-import { ScaleOpts, Source } from './util'
+import type { Feature } from '@jbrowse/core/util'
+import type { ThemeOptions } from '@mui/material'
 
 export interface RenderArgs extends FeatureRenderArgs {
   scaleOpts: ScaleOpts

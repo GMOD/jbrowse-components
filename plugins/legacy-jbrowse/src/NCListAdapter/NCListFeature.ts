@@ -1,4 +1,4 @@
-import {
+import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'

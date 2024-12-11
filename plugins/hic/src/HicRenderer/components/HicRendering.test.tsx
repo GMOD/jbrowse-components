@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { render } from '@testing-library/react'
+
 import HicRendering from './HicRendering'
 
 // these tests do very little, let's try to expand them at some point

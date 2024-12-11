@@ -1,20 +1,20 @@
 import React, { useState } from 'react'
-import { Button } from '@mui/material'
-import { getStr, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
-import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+
 import { SanitizedHTML } from '@jbrowse/core/ui'
-
-// locals
-import { moveUp, moveDown } from './util'
-import { Source } from '../../util'
-
-// icons
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import { Button } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
+
+import { moveDown, moveUp } from './util'
+
+import type { Source } from '../../util'
+import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -127,21 +127,18 @@ function SourcesGrid({
             {
               field: 'color',
               headerName: 'Color',
-              renderCell: params => {
-                const { value, id } = params
-                return (
-                  <ColorPicker
-                    color={value || 'blue'}
-                    onChange={c => {
-                      const elt = rows.find(f => f.name === id)
-                      if (elt) {
-                        elt.color = c
-                      }
-                      onChange([...rows])
-                    }}
-                  />
-                )
-              },
+              renderCell: ({ value, id }) => (
+                <ColorPicker
+                  color={value || 'blue'}
+                  onChange={c => {
+                    const elt = rows.find(f => f.name === id)
+                    if (elt) {
+                      elt.color = c
+                    }
+                    onChange([...rows])
+                  }}
+                />
+              ),
             },
             {
               field: 'name',

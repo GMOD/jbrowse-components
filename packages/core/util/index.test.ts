@@ -1,10 +1,11 @@
 import {
   assembleLocString,
-  parseLocString,
-  ParsedLocString,
   compareLocStrings,
+  parseLocString,
   stringify,
 } from './index'
+
+import type { ParsedLocString } from './index'
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [

@@ -1,34 +1,31 @@
 import React from 'react'
 
 import {
-  FormGroup,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getMembers, IAnyType } from 'mobx-state-tree'
-import { singular } from 'pluralize'
-
-// jbrowse
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import {
-  readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
-  AnyConfigurationModel,
+  readConfObject,
 } from '@jbrowse/core/configuration'
-
-// icons
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  FormGroup,
+  Typography,
+} from '@mui/material'
+import { observer } from 'mobx-react'
+import { getMembers } from 'mobx-state-tree'
+import { singular } from 'pluralize'
+import { makeStyles } from 'tss-react/mui'
 
-// locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IAnyType } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   icon: {

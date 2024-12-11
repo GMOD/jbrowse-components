@@ -1,23 +1,21 @@
 import { lazy } from 'react'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
-import clone from 'clone'
 
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import DeleteIcon from '@mui/icons-material/Delete'
-import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import InfoIcon from '@mui/icons-material/Info'
+import SettingsIcon from '@mui/icons-material/Settings'
+import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-
+import type { DesktopRootModel } from '../rootModel/rootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type {
   SessionWithDialogs,
-  SessionWithTracks,
   SessionWithDrawerWidgets,
+  SessionWithTracks,
 } from '@jbrowse/product-core'
-import { DesktopRootModel } from '../rootModel'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -33,7 +31,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
       const session = self as SessionWithDialogs &
         SessionWithTracks &
         SessionWithDrawerWidgets
-      const trackSnapshot = clone(getSnapshot(trackConfig))
+      const trackSnapshot = structuredClone(getSnapshot(trackConfig))
       return [
         {
           label: 'About track',
