@@ -42,8 +42,7 @@
     "@gmod/vcf": "^6.0.0",
     "@jbrowse/sv-core": "^2.18.0",
     "@mui/icons-material": "^6.0.0",
-    "@mui/x-data-grid": "^7.0.0",
-    "generic-filehandle": "^3.0.0"
+    "@mui/x-data-grid": "^7.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

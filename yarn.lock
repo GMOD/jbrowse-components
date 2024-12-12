@@ -2249,10 +2249,10 @@
     long "^4.0.0"
     pako "^1.0.11"
 
-"@gmod/cram@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-4.0.0.tgz#9b6c626417d13ffeb5a688f23c9a7c39025a051a"
-  integrity sha512-ZqX+GRYSV8z75w2dwPF29MOKwej3MiialNLdUETrm50QzGKE6jm1J0RXvWh2HQ4mbFvga5OyjAMN24hwkDPakA==
+"@gmod/cram@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-4.0.1.tgz#7ae4126de819f4758886d38930e4bac2ce652768"
+  integrity sha512-nSijrwZ7Bprf10g9MkfilJjlbAAOqZ5sE9UkBpUTSoMwQ1LuqPxMGGCZOX6WThTBMF1fFyfmRdv6SEc64NjQhw==
   dependencies:
     bzip2 "^0.1.1"
     crc "^4.3.2"
@@ -8440,11 +8440,6 @@ es6-error@^4.1.1:
   resolved "https://registry.yarnpkg.com/es6-error/-/es6-error-4.1.1.tgz#9e3af407459deed47e9a91f9b885a84eb05c561d"
   integrity sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==
 
-es6-promisify@^6.1.1:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-6.1.1.tgz#46837651b7b06bf6fff893d03f29393668d01621"
-  integrity sha512-HBL8I3mIki5C1Cc9QjKUenHtnG0A5/xA8Q/AllRcfiwl2CZFXGK7ddBiCoRwAix4i2KxcQfjtIVcrVbB3vbmwg==
-
 esbuild-register@^3.5.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/esbuild-register/-/esbuild-register-3.6.0.tgz#cf270cfa677baebbc0010ac024b823cbf723a36d"
@@ -9385,13 +9380,6 @@ generic-filehandle2@^0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-0.0.2.tgz#a87839bdefa5cebb8aec6aa1486f904595908dde"
   integrity sha512-8v2ZOMiJ2uneKpaKNqCTFDBmXai4nihRd8QY9G6vQ9JRcuaDrkwSKxlGM4A0k2X4XNr+X02T6RMv1QPT9fgPEw==
-
-generic-filehandle@^3.0.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-3.2.0.tgz#f65401ce71bccadb796335495c3d9250185876d4"
-  integrity sha512-tG6ZGpKVQn1N6WLlOFoDZL54wdrBSelY3Mk3R9nTPYas0odoY9LcGvUJmb9jGghFC4hy3WY8EqQUIQk0ni/0jg==
-  dependencies:
-    es6-promisify "^6.1.1"
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
