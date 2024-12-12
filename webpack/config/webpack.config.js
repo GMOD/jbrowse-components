@@ -80,6 +80,7 @@ module.exports = function webpackBuilder(webpackEnv) {
 
   return {
     target: ['browserslist'],
+    cache: false,
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
