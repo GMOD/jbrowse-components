@@ -4821,7 +4821,7 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": ["hg19"]
     },
     {
       "type": "VariantTrack",
