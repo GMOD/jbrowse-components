@@ -68,10 +68,9 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
         }
         const { start, end } = range[0]!
         const len = end - start + 1
-        const buf = Buffer.alloc(len)
-        const { bytesRead } = await file.read(buf, 0, len, start)
+        const buf = await file.read(len, start)
         const stat = await file.stat()
-        return new Response(buf.subarray(0, bytesRead), {
+        return new Response(buf, {
           status: 206,
           headers: [['content-range', `${start}-${end}/${stat.size}`]],
         })

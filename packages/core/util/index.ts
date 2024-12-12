@@ -1401,6 +1401,7 @@ export async function fetchAndMaybeUnzip(
 ) {
   const { statusCallback = () => {} } = opts || {}
   const buf = (await updateStatus('Downloading file', statusCallback, () =>
+    // @ts-expect-error
     loc.readFile(opts),
   )) as unknown as Uint8Array
   return isGzip(buf)
