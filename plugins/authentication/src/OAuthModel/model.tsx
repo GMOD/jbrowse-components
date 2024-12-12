@@ -55,7 +55,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           const array = new Uint8Array(32)
           globalThis.crypto.getRandomValues(array)
-          codeVerifier = fixup(Buffer.from(array).toString('base64'))
+          // @ts-expect-error
+          codeVerifier = fixup(Uint8Array.fromBase64(array))
           return codeVerifier
         },
       }

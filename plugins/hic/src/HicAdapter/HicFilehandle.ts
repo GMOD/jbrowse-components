@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer'
-
 import { openLocation } from '@jbrowse/core/util/io'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -11,7 +9,10 @@ class HicFilehandle {
 
   async read(position: number, length: number) {
     const buffer = await this.filehandle.read(length, position)
-    return buffer
+    return buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    )
   }
 }
 
