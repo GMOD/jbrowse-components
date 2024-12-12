@@ -69,7 +69,7 @@ export function paf_chain2paf(buffer: Buffer) {
   let blockStart = 0
   const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
-    const n = buffer.indexOf('\n', blockStart)
+    const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break
     }

@@ -31,8 +31,7 @@ import type { Feature } from './simpleFeature'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
-import type { Buffer } from 'buffer'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
@@ -1391,17 +1390,19 @@ export function renderToStaticMarkup(node: React.ReactElement) {
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
-export function isGzip(buf: Buffer) {
+export function isGzip(buf: Uint8Array) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
+
 export async function fetchAndMaybeUnzip(
   loc: GenericFilehandle,
   opts?: BaseOptions,
 ) {
   const { statusCallback = () => {} } = opts || {}
   const buf = (await updateStatus('Downloading file', statusCallback, () =>
+    // @ts-expect-error
     loc.readFile(opts),
-  )) as Buffer
+  )) as unknown as Uint8Array
   return isGzip(buf)
     ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
     : buf

@@ -11,7 +11,7 @@ import type { Request } from 'express'
 
 const router = express.Router()
 
-const filePath = path.join(__dirname, '../public/oauthAuthenticate.html')
+const filePath = path.join(__dirname, './public/oauthAuthenticate.html')
 
 router.get('/', (req, res) => {
   // send back a simple form for the oauth

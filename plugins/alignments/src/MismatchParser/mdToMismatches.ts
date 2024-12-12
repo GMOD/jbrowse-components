@@ -1,5 +1,4 @@
 import type { Mismatch } from '../shared/types'
-import type { Buffer } from 'buffer'
 
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 
@@ -8,7 +7,7 @@ export function mdToMismatches(
   ops: string[],
   cigarMismatches: Mismatch[],
   seq: string,
-  qual?: Buffer | number[] | null,
+  qual?: Uint8Array,
 ) {
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
   let lastCigar = 0

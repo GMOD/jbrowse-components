@@ -33,7 +33,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     let i = 0
     const decoder = new TextDecoder('utf8')
     while (blockStart < buffer.length) {
-      const n = buffer.indexOf('\n', blockStart)
+      const n = buffer.indexOf(10, blockStart)
       // could be a non-newline ended file, so slice to end of file if n===-1
       const b =
         n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)

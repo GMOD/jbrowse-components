@@ -49,7 +49,7 @@ export function paf_delta2paf(buffer: Buffer) {
   let i = 0
   const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
-    const n = buffer.indexOf('\n', blockStart)
+    const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break
     }

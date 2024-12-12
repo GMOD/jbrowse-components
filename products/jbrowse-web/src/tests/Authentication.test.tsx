@@ -1,5 +1,5 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
-import { RemoteFile } from 'generic-filehandle'
+import { RemoteFile } from 'generic-filehandle2'
 
 import {
   createView,

@@ -2,7 +2,7 @@ import NCListStore from '@gmod/nclist'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { RemoteFile } from 'generic-filehandle'
+import { RemoteFile } from 'generic-filehandle2'
 
 import NCListFeature from './NCListFeature'
 

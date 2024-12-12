@@ -37,13 +37,12 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/tabix": "^1.5.6",
+    "@gmod/bgzf-filehandle": "^2.0.1",
+    "@gmod/tabix": "^2.0.0",
     "@gmod/vcf": "^6.0.0",
     "@jbrowse/sv-core": "^2.18.0",
     "@mui/icons-material": "^6.0.0",
-    "@mui/x-data-grid": "^7.0.0",
-    "generic-filehandle": "^3.0.0"
+    "@mui/x-data-grid": "^7.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
