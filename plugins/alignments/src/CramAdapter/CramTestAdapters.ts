@@ -30,7 +30,8 @@ export class FetchableSmallFasta {
 
   constructor(filehandle: FileHandle) {
     this.data = filehandle.readFile().then(buffer => {
-      const text = buffer.toString('utf8')
+      const decoder = new TextDecoder('utf8')
+      const text = decoder.decode(buffer)
       return parseSmallFasta(text)
     })
   }
