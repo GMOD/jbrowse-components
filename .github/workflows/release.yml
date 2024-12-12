@@ -21,6 +21,8 @@ jobs:
           draft: true
           prerelease: false
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -54,6 +56,8 @@ jobs:
       image: docker://node:20-bullseye
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Setup java
@@ -100,6 +104,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -125,6 +132,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
