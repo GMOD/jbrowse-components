@@ -34,7 +34,7 @@
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^2.0.0",
     "@gmod/bgzf-filehandle": "^2.0.1",
-    "@gmod/http-range-fetcher": "^3.0.4",
+    "@gmod/http-range-fetcher": "^4.0.0",
     "@mui/icons-material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
     "canvas-sequencer": "^3.1.0",

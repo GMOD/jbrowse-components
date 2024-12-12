@@ -2271,10 +2271,10 @@
     pump "^3.0.0"
     split2 "^4.2.0"
 
-"@gmod/http-range-fetcher@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-3.0.4.tgz#7ab2fdc96703b9f977d9c517e8028fb68765e118"
-  integrity sha512-j/WtsUgxf4dRmWJ2WTBdZ4svMe0hMIETmfrqusXxxieyPCI4+tgtST1Fvo5MOCSrpaVH5BGsnoo/Mcs/Dsp/nQ==
+"@gmod/http-range-fetcher@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-4.0.0.tgz#d7b323f95ba51cb8b963beb526309d4574791dce"
+  integrity sha512-vT/2ZPV1TukaN5huvFmXgMi5SLKA8tTWIMAvkSbZyzicmpdGS0Bz7PwPEJtX6AhzP3Pv+ucu3fn2b4WF7DCYAw==
   dependencies:
     quick-lru "^4.0.0"
 
@@ -2286,10 +2286,10 @@
     "@gmod/bgzf-filehandle" "^2.0.0"
     generic-filehandle2 "^0.0.1"
 
-"@gmod/nclist@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-1.0.3.tgz#68122cf6109a5e03d327c56c5261698ec89ca2be"
-  integrity sha512-qA1QKjC9HuLWd/XfyuBQ6ZN7T5edeW2xQkwWYiWWzd9TnnthHxPnLw4Bxw+SSj6sb9t93oPH546Z5HiMDinZEw==
+"@gmod/nclist@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-2.0.0.tgz#5ff1ee8b7d5eadeb8870d218d3bfda1a45e2652e"
+  integrity sha512-F/yyNDgfw4OZj1yJEu1ejWd3za5KbSZV5g9U6YFG9hw4HHLemTyK2e4Yle1Km7dLdWU3iPskTjBm0iuDxyTDQA==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@jridgewell/resolve-uri" "^3.1.2"
