@@ -7,7 +7,7 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 
@@ -19,7 +19,7 @@ import JBrowse from './TestingJBrowse'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 type LGV = LinearGenomeViewModel
 

@@ -4,7 +4,7 @@ import type {
   FilehandleOptions,
   PolyfilledResponse,
   Stats,
-} from 'generic-filehandle'
+} from 'generic-filehandle2'
 
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean

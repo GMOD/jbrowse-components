@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer'
 
 import { render } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 import rangeParser from 'range-parser'
 
 // local

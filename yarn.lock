@@ -2224,14 +2224,13 @@
     long "^4.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/bbi@^5.0.0":
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-5.0.2.tgz#9392fbfce8e9181ee96c7b21ff7b3b6502536692"
-  integrity sha512-sqBwF7hTQI1wHgzc50y2jgEjSVYta3oSZeKUffNhR002fBpeU5c//7EoY0f1X8JrK97rTYTkZCGcGn2pd5lhOQ==
+"@gmod/bbi@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-6.0.0.tgz#6b34286e213cc9160919226009ac127c8bab154f"
+  integrity sha512-oI7siZLfHtCAj9fh6I1NHNVE4V/mHHesaE7UpXyyHi0LQtRybtLgIUTOFvC8yAZGK+oxDBoBrmqk9uPzbkf2Ow==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
-    buffer "^6.0.3"
-    generic-filehandle "^3.0.0"
+    generic-filehandle2 "^0.0.1"
     pako "^2.0.0"
     quick-lru "^4.0.0"
     rxjs "^7.8.0"
@@ -2250,13 +2249,14 @@
     long "^4.0.0"
     pako "^1.0.11"
 
-"@gmod/cram@^3.0.3":
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.7.tgz#21587c8c4bdc056a3f46f3ddba3793c9ae6c560a"
-  integrity sha512-tgLkT3KZP4Xw2QnVGaP0RdsScgeCTTia4tvHtXYZbjchMgfuCU6gIOMWzhhujBAydU3ESkXWdPozY1czbm+BtQ==
+"@gmod/cram@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-4.0.0.tgz#9b6c626417d13ffeb5a688f23c9a7c39025a051a"
+  integrity sha512-ZqX+GRYSV8z75w2dwPF29MOKwej3MiialNLdUETrm50QzGKE6jm1J0RXvWh2HQ4mbFvga5OyjAMN24hwkDPakA==
   dependencies:
     bzip2 "^0.1.1"
     crc "^4.3.2"
+    generic-filehandle2 "^0.0.2"
     long "^4.0.0"
     md5 "^2.2.1"
     pako "^1.0.4"
@@ -6354,14 +6354,6 @@ buffer@^5.1.0, buffer@^5.2.1, buffer@^5.5.0:
     base64-js "^1.3.1"
     ieee754 "^1.1.13"
 
-buffer@^6.0.3:
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
-  integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
-  dependencies:
-    base64-js "^1.3.1"
-    ieee754 "^1.2.1"
-
 builder-util-runtime@9.2.10:
   version "9.2.10"
   resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-9.2.10.tgz#a0f7d9e214158402e78b74a745c8d9f870c604bc"
@@ -10149,7 +10141,7 @@ idb@^8.0.0:
   resolved "https://registry.yarnpkg.com/idb/-/idb-8.0.0.tgz#33d7ed894ed36e23bcb542fb701ad579bfaad41f"
   integrity sha512-l//qvlAKGmQO31Qn7xdzagVPPaHTxXx199MhrAFuVBTPqydcPYBWjkrbv4Y0ktB+GmWOiwHl237UUOrLmQxLvw==
 
-ieee754@^1.1.13, ieee754@^1.2.1:
+ieee754@^1.1.13:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==

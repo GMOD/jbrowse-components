@@ -1,5 +1,5 @@
 import { fireEvent } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 
 import {
   createView,
