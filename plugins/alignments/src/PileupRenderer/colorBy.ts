@@ -10,7 +10,7 @@ export function colorByInsertSize(feature: Feature) {
   return feature.get('is_paired') &&
     feature.get('refName') !== feature.get('next_ref')
     ? '#555'
-    : `hsl(${Math.abs(feature.get('template_length')) / 10},50%,50%)`
+    : `hsl(${Math.min(Math.abs(feature.get('template_length')) / 10, 200)},50%,50%)`
 }
 
 export function colorByMappingQuality(feature: Feature) {
