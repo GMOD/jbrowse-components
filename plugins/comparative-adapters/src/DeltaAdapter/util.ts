@@ -1,5 +1,3 @@
-import type { Buffer } from 'buffer'
-
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *
  * The MIT License
@@ -28,7 +26,7 @@ import type { Buffer } from 'buffer'
  * SOFTWARE.
  */
 
-export function paf_delta2paf(buffer: Buffer) {
+export function paf_delta2paf(buffer: Uint8Array) {
   let rname = ''
   let qname = ''
   let qs = 0

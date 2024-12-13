@@ -21,11 +21,10 @@ export interface NodeData {
 }
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
-  // @ts-expect-error
   return subtree?.type === 'category'
-    ? subtree.children
-        .map(t => (t.type === 'category' ? getAllChildren(t) : t.conf))
-        .flat(Number.POSITIVE_INFINITY)
+    ? subtree.children.flatMap(t =>
+        t.type === 'category' ? getAllChildren(t) : t.conf,
+      )
     : []
 }
 
