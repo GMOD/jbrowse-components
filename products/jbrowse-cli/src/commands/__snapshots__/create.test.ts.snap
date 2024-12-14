@@ -21,7 +21,11 @@ exports[`fails if user selects a directory that has existing files 1`] = `"This 
 exports[`fails to download a version that does not exist 1`] = `"Could not find version: "`;
 
 exports[`lists versions 1`] = `
-"All JBrowse versions:
-v0.0.1
+"  console.log
+    All JBrowse versions:
+    v0.0.1
+
+      at Object.stdout (node_modules/@oclif/core/lib/ux/write.js:13:17)
+
 "
 `;

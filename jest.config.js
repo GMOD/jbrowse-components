@@ -40,4 +40,5 @@ module.exports = {
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
   testEnvironment: 'jsdom',
+  verbose: true,
 }
