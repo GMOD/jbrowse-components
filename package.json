@@ -40,7 +40,7 @@
     "@mui/system": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
     "@node-oauth/express-oauth-server": "^4.0.0",
-    "@oclif/core": "4.0.37",
+    "@oclif/core": "^4.0.37",
     "@oclif/test": "^4.0.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@r2wc/react-to-web-component": "^2.0.3",
