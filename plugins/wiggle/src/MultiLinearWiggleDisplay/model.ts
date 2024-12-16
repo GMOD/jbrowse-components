@@ -43,7 +43,7 @@ const rendererTypes = new Map([
  * - [SharedWiggleMixin](../sharedwigglemixin)
  */
 export function stateModelFactory(
-  pluginManager: PluginManager,
+  _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
