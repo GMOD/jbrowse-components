@@ -32,7 +32,7 @@ function PaperComponent(props: PaperProps) {
       nodeRef={ref}
       cancel={'[class*="MuiDialogContent-root"]'}
       // @ts-expect-error
-      onStart={arg => arg.target?.className?.includes('MuiDialogTitle')}
+      onStart={arg => `${arg.target?.className}`.includes('MuiDialogTitle')}
     >
       <Paper ref={ref} {...props} />
     </Draggable>
