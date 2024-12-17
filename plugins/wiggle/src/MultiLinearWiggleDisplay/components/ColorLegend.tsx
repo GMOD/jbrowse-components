@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react'
-import { Fragment } from 'react/jsx-runtime'
-
 import RectBg from './RectBg'
+import LegendItem from './LegendItem'
 
 import type { WiggleDisplayModel } from '../model'
 
@@ -17,15 +16,12 @@ const ColorLegend = observer(function ({
   exportSVG?: boolean
 }) {
   const {
-    needsCustomLegend,
     needsScalebar,
     needsFullHeightScalebar,
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
     sources,
   } = model
-  const svgFontSize = Math.min(rowHeight, 12)
-  const canDisplayLabel = rowHeight > 11
   const colorBoxWidth = renderColorBoxes ? 15 : 0
   const legendWidth = labelWidth + colorBoxWidth + 5
   const svgOffset = exportSVG ? 10 : 0
@@ -45,39 +41,17 @@ const ColorLegend = observer(function ({
           />
         ) : null
       }
-      {sources.map((source, idx) => {
-        const boxHeight = Math.min(20, rowHeight)
-        return (
-          <Fragment key={`${source.name}-${idx}`}>
-            {needsFullHeightScalebar ? null : (
-              <RectBg
-                y={idx * rowHeight + 1}
-                x={extraOffset}
-                width={legendWidth}
-                height={boxHeight}
-              />
-            )}
-            {source.color ? (
-              <RectBg
-                y={idx * rowHeight + 1}
-                x={extraOffset}
-                width={colorBoxWidth}
-                height={needsCustomLegend ? rowHeight : boxHeight}
-                color={source.color}
-              />
-            ) : null}
-            {canDisplayLabel ? (
-              <text
-                y={idx * rowHeight + 13}
-                x={extraOffset + colorBoxWidth + 2}
-                fontSize={svgFontSize}
-              >
-                {source.name}
-              </text>
-            ) : null}
-          </Fragment>
-        )
-      })}
+      {sources.map((source, idx) => (
+        <LegendItem
+          key={`${source.name}-${idx}`}
+          source={source}
+          idx={idx}
+          model={model}
+          rowHeight={rowHeight}
+          exportSVG={exportSVG}
+          labelWidth={labelWidth}
+        />
+      ))}
     </>
   ) : null
 })

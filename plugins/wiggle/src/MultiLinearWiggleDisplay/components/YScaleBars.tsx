@@ -1,10 +1,7 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-
-import ColorLegend from './ColorLegend'
-import ScoreLegend from './ScoreLegend'
-import { getOffset } from './util'
-import YScaleBar from '../../shared/YScaleBar'
+import FullHeightScaleBar from './FullHeightScaleBar'
+import IndividualScaleBars from './IndividualScaleBars'
 
 import type { WiggleDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -45,15 +42,7 @@ export const YScaleBars = observer(function (props: {
   exportSVG?: boolean
 }) {
   const { model, orientation, exportSVG } = props
-  const {
-    stats,
-    needsCustomLegend,
-    needsFullHeightScalebar,
-    rowHeightTooSmallForScalebar,
-    rowHeight,
-    sources,
-    ticks,
-  } = model
+  const { stats, needsFullHeightScalebar, rowHeight, sources } = model
   const svgFontSize = Math.min(rowHeight, 12)
   const canDisplayLabel = rowHeight > 11
   const { width: viewWidth } = getContainingView(model) as LGV
@@ -73,41 +62,20 @@ export const YScaleBars = observer(function (props: {
   return (
     <Wrapper {...props}>
       {needsFullHeightScalebar ? (
-        <>
-          <g transform={`translate(${!exportSVG ? getOffset(model) : 0},0)`}>
-            <YScaleBar model={model} orientation={orientation} />
-          </g>
-          <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
-            <ColorLegend
-              exportSVG={exportSVG}
-              model={model}
-              rowHeight={12}
-              labelWidth={labelWidth}
-            />
-          </g>
-        </>
+        <FullHeightScaleBar
+          model={model}
+          orientation={orientation}
+          exportSVG={exportSVG}
+          viewWidth={viewWidth}
+          labelWidth={labelWidth}
+        />
       ) : (
-        <>
-          <ColorLegend
-            exportSVG={exportSVG}
-            model={model}
-            rowHeight={model.rowHeight}
-            labelWidth={labelWidth}
-          />
-
-          {rowHeightTooSmallForScalebar || needsCustomLegend ? (
-            <ScoreLegend {...props} />
-          ) : (
-            sources.map((_source, idx) => (
-              <g
-                transform={`translate(0 ${rowHeight * idx})`}
-                key={`${JSON.stringify(ticks)}-${idx}`}
-              >
-                <YScaleBar model={model} orientation={orientation} />
-              </g>
-            ))
-          )}
-        </>
+        <IndividualScaleBars
+          model={model}
+          orientation={orientation}
+          exportSVG={exportSVG}
+          labelWidth={labelWidth}
+        />
       )}
     </Wrapper>
   )
