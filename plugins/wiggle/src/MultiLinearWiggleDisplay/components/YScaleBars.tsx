@@ -1,12 +1,10 @@
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
 import FullHeightScaleBar from './FullHeightScaleBar'
 import IndividualScaleBars from './IndividualScaleBars'
 
 import type { WiggleDisplayModel } from '../model'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 const Wrapper = observer(function ({
   children,
@@ -42,43 +40,24 @@ export const YScaleBars = observer(function (props: {
   exportSVG?: boolean
 }) {
   const { model, orientation, exportSVG } = props
-  const { stats, needsFullHeightScalebar, rowHeight, sources } = model
-  const svgFontSize = Math.min(rowHeight, 12)
-  const canDisplayLabel = rowHeight > 11
-  const { width: viewWidth } = getContainingView(model) as LGV
-  const minWidth = 20
-
-  const ready = stats && sources
-  if (!ready) {
-    return null
-  }
-
-  const labelWidth = Math.max(
-    ...sources
-      .map(s => measureText(s.name, svgFontSize))
-      .map(width => (canDisplayLabel ? width : minWidth)),
-  )
-
-  return (
+  const { stats, needsFullHeightScalebar, sources } = model
+  return stats && sources ? (
     <Wrapper {...props}>
       {needsFullHeightScalebar ? (
         <FullHeightScaleBar
           model={model}
           orientation={orientation}
           exportSVG={exportSVG}
-          viewWidth={viewWidth}
-          labelWidth={labelWidth}
         />
       ) : (
         <IndividualScaleBars
           model={model}
           orientation={orientation}
           exportSVG={exportSVG}
-          labelWidth={labelWidth}
         />
       )}
     </Wrapper>
-  )
+  ) : null
 })
 
 export default YScaleBars

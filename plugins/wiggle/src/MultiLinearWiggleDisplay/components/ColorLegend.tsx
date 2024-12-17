@@ -1,18 +1,17 @@
 import { observer } from 'mobx-react'
-import RectBg from './RectBg'
+
 import LegendItem from './LegendItem'
+import RectBg from './RectBg'
 
 import type { WiggleDisplayModel } from '../model'
 
 const ColorLegend = observer(function ({
   model,
   rowHeight,
-  labelWidth,
   exportSVG,
 }: {
   model: WiggleDisplayModel
   rowHeight: number
-  labelWidth: number
   exportSVG?: boolean
 }) {
   const {
@@ -21,6 +20,7 @@ const ColorLegend = observer(function ({
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
     sources,
+    labelWidth,
   } = model
   const colorBoxWidth = renderColorBoxes ? 15 : 0
   const legendWidth = labelWidth + colorBoxWidth + 5

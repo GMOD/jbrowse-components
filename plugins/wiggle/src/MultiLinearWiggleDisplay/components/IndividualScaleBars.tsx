@@ -1,19 +1,19 @@
 import { observer } from 'mobx-react'
-import YScaleBar from '../../shared/YScaleBar'
+
 import ColorLegend from './ColorLegend'
 import ScoreLegend from './ScoreLegend'
+import YScaleBar from '../../shared/YScaleBar'
+
 import type { WiggleDisplayModel } from '../model'
 
 const IndividualScaleBars = observer(function ({
   model,
   orientation,
   exportSVG,
-  labelWidth,
 }: {
   model: WiggleDisplayModel
   orientation?: string
   exportSVG?: boolean
-  labelWidth: number
 }) {
   const {
     sources,
@@ -23,13 +23,12 @@ const IndividualScaleBars = observer(function ({
     ticks,
   } = model
 
-  return (
+  return sources?.length ? (
     <>
       <ColorLegend
         exportSVG={exportSVG}
         model={model}
         rowHeight={model.rowHeight}
-        labelWidth={labelWidth}
       />
 
       {rowHeightTooSmallForScalebar || needsCustomLegend ? (
@@ -45,7 +44,7 @@ const IndividualScaleBars = observer(function ({
         ))
       )}
     </>
-  )
+  ) : null
 })
 
 export default IndividualScaleBars

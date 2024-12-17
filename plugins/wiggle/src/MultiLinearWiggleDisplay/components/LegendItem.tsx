@@ -1,6 +1,8 @@
 import RectBg from './RectBg'
+
 import type { Source } from '../../util'
-import { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model'
+
 
 function LegendItem({
   source,
