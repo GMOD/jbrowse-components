@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { useLocalStorage } from '@jbrowse/core/util'
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
