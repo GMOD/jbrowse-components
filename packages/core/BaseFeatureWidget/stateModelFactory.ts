@@ -4,7 +4,6 @@ import { addDisposer, types } from 'mobx-state-tree'
 import { getConf } from '../configuration'
 import { getSession } from '../util'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
-import { replaceUndefinedWithNull } from './util'
 import { ElementId } from '../util/types/mst'
 
 import type PluginManager from '../PluginManager'
@@ -194,14 +193,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         typeof snap,
         symbol
       >
-      // finalizedFeatureData avoids running formatter twice if loading from
-      // snapshot
       return {
-        // replacing undefined with null helps with allowing fields to be
-        // hidden, setting null is not allowed by jexl so we set it to
-        // undefined to hide. see config guide. this replacement happens both
-        // here and when displaying the featureData in base feature widget
-        finalizedFeatureData: replaceUndefinedWithNull(featureData),
+        finalizedFeatureData: featureData,
         ...rest,
       }
     })
