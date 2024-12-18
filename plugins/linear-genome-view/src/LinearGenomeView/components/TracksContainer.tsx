@@ -1,15 +1,12 @@
-import { useRef } from 'react'
+import { lazy, Suspense, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import CenterLine from './CenterLine'
 import Gridlines from './Gridlines'
-import HighlightGroup from './Highlight'
 import Rubberband from './Rubberband'
-import RubberbandSpan from './RubberbandSpan'
 import Scalebar from './Scalebar'
 import VerticalGuide from './VerticalGuide'
 import { SCALE_BAR_HEIGHT } from '../consts'
@@ -18,6 +15,10 @@ import { useSideScroll } from './useSideScroll'
 import { useWheelScroll } from './useWheelScroll'
 
 import type { LinearGenomeViewModel } from '..'
+
+const CenterLine = lazy(() => import('./CenterLine'))
+const Highlight = lazy(() => import('./Highlight'))
+const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -62,7 +63,6 @@ const TracksContainer = observer(function TracksContainer({
     undefined,
     { model },
   ) as React.ReactNode
-
   return (
     <div
       ref={ref}
@@ -76,17 +76,21 @@ const TracksContainer = observer(function TracksContainer({
       onMouseUp={mouseUp}
     >
       {showGridlines ? <Gridlines model={model} /> : null}
-      {showCenterLine ? <CenterLine model={model} /> : null}
+      <Suspense fallback={null}>
+        {showCenterLine ? <CenterLine model={model} /> : null}
+      </Suspense>
       {guideX !== undefined ? (
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (
-        <RubberbandSpan
-          leftBpOffset={leftBpOffset}
-          rightBpOffset={rightBpOffset}
-          numOfBpSelected={numOfBpSelected}
-          width={width}
-          left={left}
-        />
+        <Suspense fallback={null}>
+          <RubberbandSpan
+            leftBpOffset={leftBpOffset}
+            rightBpOffset={rightBpOffset}
+            numOfBpSelected={numOfBpSelected}
+            width={width}
+            left={left}
+          />
+        </Suspense>
       ) : null}
       {anchorPosition ? (
         <Menu
@@ -119,6 +123,24 @@ const TracksContainer = observer(function TracksContainer({
       {children}
     </div>
   )
+})
+
+const HighlightGroup = observer(function HighlightGroup({
+  model,
+}: {
+  model: LGV
+}) {
+  return model.highlight.length ? (
+    <Suspense fallback={null}>
+      {model.highlight.map((highlight, idx) => (
+        <Highlight
+          key={`${JSON.stringify(highlight)}-${idx}`}
+          model={model}
+          highlight={highlight}
+        />
+      ))}
+    </Suspense>
+  ) : null
 })
 
 export default TracksContainer

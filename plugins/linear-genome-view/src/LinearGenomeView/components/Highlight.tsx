@@ -82,6 +82,7 @@ const Highlight = observer(function Highlight({
     ...highlight,
     refName: asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName,
   })
+  const r = h.wpw()
 
   return h ? (
     <div
@@ -140,18 +141,4 @@ const Highlight = observer(function Highlight({
   ) : null
 })
 
-const HighlightGroup = observer(function HighlightGroup({
-  model,
-}: {
-  model: LGV
-}) {
-  return model.highlight.map((highlight, idx) => (
-    <Highlight
-      key={`${JSON.stringify(highlight)}-${idx}`}
-      model={model}
-      highlight={highlight}
-    />
-  ))
-})
-
-export default HighlightGroup
+export default Highlight
