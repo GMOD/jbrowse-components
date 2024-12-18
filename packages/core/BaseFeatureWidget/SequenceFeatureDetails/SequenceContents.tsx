@@ -23,21 +23,19 @@ const SequenceContents = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   let { seq, upstream = '', downstream = '' } = sequence
+  const children =
+    feature.subfeatures
+      ?.sort((a, b) => a.start - b.start)
+      .map(sub => ({
+        ...sub,
+        start: sub.start - feature.start,
+        end: sub.end - feature.start,
+      })) || []
 
-  const { subfeatures = [] } = feature
-
-  const children = subfeatures
-    .sort((a, b) => a.start - b.start)
-    .map(sub => ({
-      ...sub,
-      start: sub.start - feature.start,
-      end: sub.end - feature.start,
-    }))
-
-  // we filter duplicate entries in cds and exon lists duplicate entries
-  // may be rare but was seen in Gencode v36 track NCList, likely a bug
-  // on GFF3 or probably worth ignoring here (produces broken protein
-  // translations if included)
+  // we filter duplicate entries in cds and exon lists duplicate entries may be
+  // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
+  // probably worth ignoring here (produces broken protein translations if
+  // included)
   //
   // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
   // transcript ENST00000445597.6
