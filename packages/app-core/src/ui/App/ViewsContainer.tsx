@@ -1,11 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import ViewLauncher from './ViewLauncher'
 import ViewPanel from './ViewPanel'
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+
+const ViewLauncher = lazy(() => import('./ViewLauncher'))
 
 const useStyles = makeStyles()({
   viewsContainer: {
@@ -34,7 +36,9 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
           <ViewPanel key={`view-${view.id}`} view={view} session={session} />
         ))
       ) : (
-        <ViewLauncher {...props} />
+        <Suspense fallback={null}>
+          <ViewLauncher {...props} />
+        </Suspense>
       )}
 
       {/* blank space at the bottom of screen allows scroll */}
