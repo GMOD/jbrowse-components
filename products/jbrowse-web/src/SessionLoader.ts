@@ -66,6 +66,11 @@ const SessionLoader = types
      * #property
      */
     initialTimestamp: types.number,
+
+    /**
+     * #property
+     */
+    hubURL: types.maybe(types.array(types.string)),
   })
   .volatile(() => ({
     /**
@@ -84,6 +89,10 @@ const SessionLoader = types
      * #volatile
      */
     sessionSpec: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
+     */
+    hubSpec: undefined as Record<string, unknown> | undefined,
     /**
      * #volatile
      */
@@ -133,6 +142,12 @@ const SessionLoader = types
      */
     get isSpecSession() {
       return !!self.sessionQuery?.startsWith('spec-')
+    },
+    /**
+     * #getter
+     */
+    get isHubSession() {
+      return !!self.hubURL
     },
     /**
      * #getter
@@ -315,11 +330,9 @@ const SessionLoader = types
      */
     async fetchConfig() {
       // @ts-expect-error
-
       let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
 
       // @ts-expect-error
-
       if (window.__jbrowseCacheBuster) {
         configPath += `?rand=${Math.random()}`
       }
@@ -399,7 +412,10 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.setSessionSnapshot({ ...session, id: nanoid() })
+      await this.setSessionSnapshot({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #action
@@ -409,7 +425,10 @@ const SessionLoader = types
         // @ts-expect-error
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      await this.setSessionSnapshot({ ...session, id: nanoid() })
+      await this.setSessionSnapshot({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #action
@@ -431,6 +450,7 @@ const SessionLoader = types
         tracklist,
         nav,
         highlight,
+        hubURL,
         sessionTracksParsed: sessionTracks,
       } = self
       if (loc) {
@@ -448,6 +468,19 @@ const SessionLoader = types
               highlight: highlight?.split(' '),
             },
           ],
+        }
+      }
+    },
+
+    /**
+     * #action
+     */
+    decodeHubSpec() {
+      const { loc, hubURL, sessionTracksParsed: sessionTracks } = self
+      if (loc) {
+        self.hubSpec = {
+          sessionTracks,
+          hubURL,
         }
       }
     },
@@ -525,7 +558,6 @@ const SessionLoader = types
         } catch (e) {
           console.error(e)
           self.setConfigError(e)
-          return
         }
       })()
     },

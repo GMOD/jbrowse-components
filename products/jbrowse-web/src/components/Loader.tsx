@@ -47,6 +47,7 @@ export function Loader({
   const [password, setPassword] = useQueryParam('password', Str)
   const [loc, setLoc] = useQueryParam('loc', Str)
   const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
+  const [hubURL, setHubURL] = useQueryParam('hubURL', Str)
   const [assembly, setAssembly] = useQueryParam('assembly', Str)
   const [tracks, setTracks] = useQueryParam('tracks', Str)
   const [highlight, setHighlight] = useQueryParam('highlight', Str)
@@ -65,28 +66,21 @@ export function Loader({
     tracklist: JSON.parse(normalize(tracklist) || 'false'),
     highlight: normalize(highlight),
     nav: JSON.parse(normalize(nav) || 'true'),
+    hubURL: normalize(hubURL?.split(',')),
     initialTimestamp,
   })
 
   useEffect(() => {
     setLoc(undefined, 'replaceIn')
     setTracks(undefined, 'replaceIn')
+    setHubURL(undefined, 'replaceIn')
     setAssembly(undefined, 'replaceIn')
     setPassword(undefined, 'replaceIn')
     setSessionTracks(undefined, 'replaceIn')
     setTrackList(undefined, 'replaceIn')
     setNav(undefined, 'replaceIn')
     setHighlight(undefined, 'replaceIn')
-  }, [
-    setAssembly,
-    setLoc,
-    setNav,
-    setTrackList,
-    setTracks,
-    setPassword,
-    setSessionTracks,
-    setHighlight,
-  ])
+  }, [])
 
   return <Renderer loader={loader} />
 }
@@ -147,13 +141,10 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    let pm: PluginManager | undefined
     try {
-      if (!ready) {
-        return
+      if (ready) {
+        setPluginManager(createPluginManager(loader))
       }
-      pm = createPluginManager(loader)
-      setPluginManager(pm)
     } catch (e) {
       console.error(e)
       setError(e)

@@ -3,21 +3,23 @@ import { doAnalytics } from '@jbrowse/core/util/analytics'
 
 import corePlugins from './corePlugins'
 import { loadSessionSpec } from './loadSessionSpec'
+import { loadHubSpec } from './loadHubSpec'
 import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 
 import type { SessionLoaderModel } from './SessionLoader'
 
-export function createPluginManager(self: SessionLoaderModel) {
-  // it is ready when a session has loaded and when there is no config
-  // error Assuming that the query changes self.sessionError or
-  // self.sessionSnapshot or self.blankSession
+export function createPluginManager(model: SessionLoaderModel) {
+  // it is ready when a session has loaded and when there is no config error
+  //
+  // Assuming that the query changes model.sessionError or
+  // model.sessionSnapshot or model.blankSession
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
       plugin: new P(),
       metadata: { isCore: true },
     })),
-    ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
+    ...model.runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {
@@ -25,7 +27,7 @@ export function createPluginManager(self: SessionLoaderModel) {
         url: definition.url,
       },
     })),
-    ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
+    ...model.sessionPlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {
@@ -38,22 +40,22 @@ export function createPluginManager(self: SessionLoaderModel) {
   const RootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
-    adminMode: !!self.adminKey,
+    adminMode: !!model.adminKey,
   })
 
-  if (!self.configSnapshot) {
+  if (!model.configSnapshot) {
     return undefined
   }
   const rootModel = RootModel.create(
     {
-      jbrowse: self.configSnapshot,
-      configPath: self.configPath,
+      jbrowse: model.configSnapshot,
+      configPath: model.configPath,
     },
     { pluginManager },
   )
 
   // @ts-expect-error
-  if (!self.configSnapshot.configuration?.rpc?.defaultDriver) {
+  if (!model.configSnapshot.configuration?.rpc?.defaultDriver) {
     rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
   }
 
@@ -62,14 +64,18 @@ export function createPluginManager(self: SessionLoaderModel) {
   // in order: saves the previous autosave for recovery, tries to load the
   // local session if session in query, or loads the default session
   try {
-    if (self.sessionError) {
+    const { sessionError, sessionSpec, sessionSnapshot, hubSpec } = model
+    if (sessionError) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
-      throw self.sessionError
-    } else if (self.sessionSnapshot) {
-      rootModel.setSession(self.sessionSnapshot)
-    } else if (self.sessionSpec) {
+      throw sessionError
+    } else if (sessionSnapshot) {
+      rootModel.setSession(sessionSnapshot)
+    } else if (hubSpec) {
       // @ts-expect-error
-      afterInitializedCb = loadSessionSpec(self.sessionSpec, pluginManager)
+      afterInitializedCb = () => loadHubSpec(hubSpec, pluginManager)
+    } else if (sessionSpec) {
+      // @ts-expect-error
+      afterInitializedCb = () => loadSessionSpec(sessionSpec, pluginManager)
     } else if (rootModel.jbrowse.defaultSession?.views?.length) {
       rootModel.setDefaultSession()
     }
@@ -81,14 +87,14 @@ export function createPluginManager(self: SessionLoaderModel) {
     const s = r.startsWith('Error:') ? r : `Error: ${r}`
     rootModel.session?.notifyError(
       `${s}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-      self.sessionError,
-      self.sessionSnapshot,
+      model.sessionError,
+      model.sessionSnapshot,
     )
     console.error(e)
   }
 
   // send analytics
-  doAnalytics(rootModel, self.initialTimestamp, self.sessionQuery)
+  doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
 
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()

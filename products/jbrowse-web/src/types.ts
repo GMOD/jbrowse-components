@@ -24,3 +24,10 @@ export interface SessionDB extends DBSchema {
     value: SessionMetadata
   }
 }
+
+export interface ViewSpec {
+  type: string
+  tracks?: string[]
+  assembly: string
+  loc: string
+}
