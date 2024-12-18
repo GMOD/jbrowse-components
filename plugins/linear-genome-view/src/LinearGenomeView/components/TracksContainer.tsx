@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef } from 'react'
+import { Suspense, lazy, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'

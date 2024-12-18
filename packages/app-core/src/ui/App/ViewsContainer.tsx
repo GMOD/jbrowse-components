@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react'
+import { Suspense, lazy } from 'react'
+
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

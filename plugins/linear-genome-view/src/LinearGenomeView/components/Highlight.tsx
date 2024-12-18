@@ -25,9 +25,12 @@ const useStyles = makeStyles()(theme => ({
   linkIcon: {
     color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
   },
+  z3: {
+    zIndex: 3,
+  },
 }))
 
-const Highlight = observer(function Highlight({
+const Highlight = observer(function ({
   model,
   highlight,
 }: {
@@ -82,7 +85,6 @@ const Highlight = observer(function Highlight({
     ...highlight,
     refName: asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName,
   })
-  const r = h.wpw()
 
   return h ? (
     <div
@@ -95,10 +97,10 @@ const Highlight = observer(function Highlight({
       <Tooltip title="Highlighted from URL parameter" arrow>
         <IconButton
           ref={anchorEl}
+          className={classes.z3}
           onClick={() => {
             setOpen(true)
           }}
-          style={{ zIndex: 3 }}
         >
           <LinkIcon fontSize="small" className={classes.linkIcon} />
         </IconButton>
