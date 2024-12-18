@@ -2,7 +2,12 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  max,
+  measureText,
+} from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
@@ -332,6 +337,23 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
+      get legendFontSize() {
+        return Math.min(self.rowHeight, 12)
+      },
+
+      get canDisplayLegendLabels() {
+        return self.rowHeight > 11
+      },
+
+      get labelWidth() {
+        const minWidth = 20
+        return max(
+          self.sources
+            ?.map(s => measureText(s.name, this.legendFontSize))
+            .map(width => (this.canDisplayLegendLabels ? width : minWidth)) ||
+            [],
+        )
+      },
       /**
        * #method
        */

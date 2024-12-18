@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
+import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 import { useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-import DraggableDialog from './DraggableDialog'
 import SourcesGrid from './SourcesGrid'
 import { type Source } from '../util'
 import BulkEditPanel from './BulkEditPanel'

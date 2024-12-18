@@ -1,6 +1,4 @@
-import isObject from 'is-object'
-
-import { max, measureText } from '../../util'
+import { isObject, max, measureText } from '../../util'
 import { ellipses } from '../util'
 
 export function isEmpty(obj: Record<string, unknown>) {
@@ -28,11 +26,11 @@ export function generateMaxWidth(array: unknown[][], prefix: string[]) {
 // @returns hello (with special addition to grab description also)
 export function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
   let obj2: unknown = obj
-  arr.forEach(elt => {
+  for (const elt of arr) {
     if (isObject(obj2)) {
       obj2 = obj2[elt]
     }
-  })
+  }
   return typeof obj2 === 'string'
     ? obj2
     : isObject(obj2) && typeof obj2.Description === 'string'

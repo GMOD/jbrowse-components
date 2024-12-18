@@ -1,11 +1,9 @@
-import isObject from 'is-object'
-
 import ArrayValue from './ArrayValue'
 import DataGridDetails from './DataGridDetails'
 import SimpleField from './SimpleField'
 import UriAttribute from './UriField'
 import { accessNested, generateMaxWidth } from './util'
-import { isUriLocation } from '../../util'
+import { isObject, isUriLocation } from '../../util'
 
 const MAX_FIELD_NAME_WIDTH = 170
 

@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import isObject from 'is-object'
 import {
   getEnv as getEnvMST,
   getParent,
@@ -1406,6 +1405,13 @@ export async function fetchAndMaybeUnzip(
   return isGzip(buf)
     ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
     : buf
+}
+
+// MIT https://github.com/inspect-js/is-object
+export function isObject(
+  x: unknown,
+): x is Record<string | symbol | number, unknown> {
+  return typeof x === 'object' && x !== null
 }
 
 export {

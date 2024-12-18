@@ -86,9 +86,7 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
   }
 
   const firstCds = cds.at(0)!
-
   const lastCds = cds.at(-1)!
-
   const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
     elt => ({ ...elt, type: 'five_prime_UTR' }),
   )
