@@ -62,10 +62,10 @@ export default function SanitizedHTML({
   className,
 }: {
   className?: string
-  html: string
+  html: unknown
 }) {
   // try to add links to the text first
-  const html = linkify(pre)
+  const html = linkify(`${pre}`)
   const value = isHTML(html) ? html : escapeHTML(html)
   if (!added) {
     // eslint-disable-next-line react-compiler/react-compiler
