@@ -85,7 +85,7 @@ setMessage: (messageText: string) => void
 
 ```js
 // type signature
-setRendered: (args?: { data: any; reactElement: React.ReactElement; renderingComponent: React.Component; }) => void
+setRendered: (args?: { data: any; reactElement: ReactElement<unknown, string | JSXElementConstructor<any>>; renderingComponent: Component<{}, {}, any>; }) => void
 ```
 
 #### action: setError
