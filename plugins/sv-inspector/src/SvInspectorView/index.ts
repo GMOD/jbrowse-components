@@ -1,9 +1,10 @@
+import { lazy } from 'react'
+
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { navToMultiLevelBreak } from '@jbrowse/sv-core'
 import { type IAnyStateTreeNode, getParent } from 'mobx-state-tree'
 
-import ReactComponent from './components/SvInspectorView'
 import stateModelFactory from './model'
 
 import type { SvInspectorViewModel } from './model'
@@ -42,7 +43,7 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
       name: 'SvInspectorView',
       displayName: 'SV inspector',
       stateModel,
-      ReactComponent,
+      ReactComponent: lazy(() => import('./components/SvInspectorView')),
     })
   })
 }

@@ -25,9 +25,12 @@ const useStyles = makeStyles()(theme => ({
   linkIcon: {
     color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
   },
+  z3: {
+    zIndex: 3,
+  },
 }))
 
-const Highlight = observer(function Highlight({
+const Highlight = observer(function ({
   model,
   highlight,
 }: {
@@ -94,10 +97,10 @@ const Highlight = observer(function Highlight({
       <Tooltip title="Highlighted from URL parameter" arrow>
         <IconButton
           ref={anchorEl}
+          className={classes.z3}
           onClick={() => {
             setOpen(true)
           }}
-          style={{ zIndex: 3 }}
         >
           <LinkIcon fontSize="small" className={classes.linkIcon} />
         </IconButton>
@@ -140,18 +143,4 @@ const Highlight = observer(function Highlight({
   ) : null
 })
 
-const HighlightGroup = observer(function HighlightGroup({
-  model,
-}: {
-  model: LGV
-}) {
-  return model.highlight.map((highlight, idx) => (
-    <Highlight
-      key={`${JSON.stringify(highlight)}-${idx}`}
-      model={model}
-      highlight={highlight}
-    />
-  ))
-})
-
-export default HighlightGroup
+export default Highlight

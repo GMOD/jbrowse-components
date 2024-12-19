@@ -15,9 +15,8 @@ import '@fontsource/roboto'
 import JBrowse from './JBrowse'
 import Loading from './Loading'
 import SessionLoader from '../SessionLoader'
-import factoryReset from '../factoryReset'
-import StartScreenErrorMessage from './StartScreenErrorMessage'
 import { createPluginManager } from '../createPluginManager'
+import factoryReset from '../factoryReset'
 
 import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
 import type { WebRootModel } from '../rootModel/rootModel'
@@ -26,6 +25,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
 const StartScreen = lazy(() => import('./StartScreen'))
+const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
 function normalize<T>(param: T | null | undefined) {
   return param === null ? undefined : param
@@ -162,7 +162,11 @@ const Renderer = observer(function ({
 
   const err = configError || error
   if (err) {
-    return <StartScreenErrorMessage error={err} />
+    return (
+      <Suspense fallback={null}>
+        <StartScreenErrorMessage error={err} />
+      </Suspense>
+    )
   } else if (sessionTriaged) {
     return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
   } else if (pluginManager) {
