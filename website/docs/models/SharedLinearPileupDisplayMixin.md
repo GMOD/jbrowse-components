@@ -98,6 +98,15 @@ IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
 jexlFilters: types.optional(types.array(types.string), [])
 ```
 
+#### property: hideIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideIndelsSetting: types.maybe(types.boolean)
+```
+
 ### SharedLinearPileupDisplayMixin - Getters
 
 #### getter: colorBy
@@ -197,7 +206,7 @@ colorSchemeSubMenuItems: () => { label: string; onClick: () => void; }[]
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 ### SharedLinearPileupDisplayMixin - Actions

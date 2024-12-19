@@ -46,6 +46,7 @@ export function makeImageData({
     config,
     'largeInsertionIndicatorScale',
   )
+  const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
   const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
   const colorForBase = getColorBaseMap(theme)
@@ -76,6 +77,7 @@ export function makeImageData({
       ctx,
       feat,
       renderArgs,
+      hideSmallIndels,
       mismatchAlpha,
       drawSNPsMuted,
       drawIndels,
