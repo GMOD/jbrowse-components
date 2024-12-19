@@ -753,14 +753,27 @@
       "assemblyNames": ["hg19"],
       "category": ["SKBR3"],
       "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam",
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram",
           "locationType": "UriLocation"
         },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai",
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -775,12 +788,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/Ultralong_OxfordNanopore/NA12878-minion-ul_GRCh37.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/Ultralong_OxfordNanopore/NA12878-minion-ul_GRCh37.bam.bai",
             "locationType": "UriLocation"
           }
         }
@@ -933,46 +946,6 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "illumina_hg002",
-      "name": "HG002 Illumina hs37d5.2x250",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "pacbio_hg002",
-      "name": "HG002 Pacbio hs37d5.11kb",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
       "trackId": "na12878_pacbio",
       "name": "NA12878 Pacbio",
       "assemblyNames": ["hg19"],
@@ -980,12 +953,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/merged_ec_output_primary.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/NA12878_PacBio_MtSinai/merged_ec_output_primary.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/merged_ec_output_primary.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/NA12878_PacBio_MtSinai/merged_ec_output_primary.bam.bai",
             "locationType": "UriLocation"
           }
         },
@@ -1173,39 +1146,7 @@
         }
       }
     },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "nanopore_ultralong_cram",
-      "name": "HG002 Nanopore ultralong (CRAM)",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
-      "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram",
-          "locationType": "UriLocation"
-        },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai",
-          "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
+
     {
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
@@ -1215,12 +1156,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V2.3.4_2019-06-26/ultra-long-ont_hs37d5_phased.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V2.3.4_2019-06-26/ultra-long-ont_hs37d5_phased.bam.bai",
             "locationType": "UriLocation"
           }
         },
@@ -1608,52 +1549,19 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "hg002_cram",
-      "name": "HG002 CRAM nanopore+whatshap",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
-      "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram",
-          "locationType": "UriLocation"
-        },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai",
-          "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "hg002_bai",
+      "trackId": "hg002_nanopore",
       "name": "HG002 BAM nanopore+whatshap",
       "assemblyNames": ["hg19"],
       "category": ["GIAB"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam.bai",
             "locationType": "UriLocation"
           }
         },
@@ -1729,44 +1637,6 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "skbr3_10x",
-      "name": "SKBR3 10x",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "skbr3_nanopore",
-      "name": "SKBR3 nanopore (BAM)",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam.bai",
             "locationType": "UriLocation"
           }
         }
@@ -1933,38 +1803,7 @@
         }
       }
     },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "skbr3.ont.sort.mod",
-      "name": "SKBR3 nanopore (CRAM)",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram",
-          "locationType": "UriLocation"
-        },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai",
-          "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
+
     {
       "type": "QuantitativeTrack",
       "category": ["Mappability"],
@@ -3779,14 +3618,16 @@
       "assemblyNames": ["hg19"],
       "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
       "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.cram",
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829N.bam",
           "locationType": "UriLocation"
         },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.cram.crai",
-          "locationType": "UriLocation"
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829N.bam.bai",
+            "locationType": "UriLocation"
+          }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
@@ -3813,14 +3654,16 @@
       "assemblyNames": ["hg19"],
       "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
       "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram",
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829T.bam",
           "locationType": "UriLocation"
         },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram.crai",
-          "locationType": "UriLocation"
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829T.bam.bai",
+            "locationType": "UriLocation"
+          }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
