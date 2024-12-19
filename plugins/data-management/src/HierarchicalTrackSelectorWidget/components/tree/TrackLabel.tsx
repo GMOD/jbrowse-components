@@ -54,12 +54,13 @@ export default function TrackLabel({ data }: { data: NodeData }) {
         <FormControlLabel
           className={classes.checkboxLabel}
           onClick={event => {
-            if (event.ctrlKey) {
+            if (event.ctrlKey || event.metaKey) {
               if (selected) {
                 model.removeFromSelection([conf])
               } else {
                 model.addToSelection([conf])
               }
+              event.preventDefault()
             }
           }}
           control={
