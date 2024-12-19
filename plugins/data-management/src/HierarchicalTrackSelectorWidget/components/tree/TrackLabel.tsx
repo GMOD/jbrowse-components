@@ -41,8 +41,8 @@ export default function TrackLabel({ data }: { data: NodeData }) {
     id,
     trackId,
     name,
-    onChange,
     selected,
+    onChange,
   } = data
   const description = readConfObject(conf, 'description')
   return (
@@ -53,6 +53,16 @@ export default function TrackLabel({ data }: { data: NodeData }) {
       >
         <FormControlLabel
           className={classes.checkboxLabel}
+          onClick={event => {
+            if (event.ctrlKey || event.metaKey) {
+              if (selected) {
+                model.removeFromSelection([conf])
+              } else {
+                model.addToSelection([conf])
+              }
+              event.preventDefault()
+            }
+          }}
           control={
             <Checkbox
               className={classes.compactCheckbox}
@@ -70,7 +80,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           label={
             <div
               data-testid={`htsTrackLabel-${id}`}
-              style={{ background: selected ? '#cccc' : undefined }}
+              className={selected ? classes.selected : undefined}
             >
               <SanitizedHTML html={name} />
             </div>
