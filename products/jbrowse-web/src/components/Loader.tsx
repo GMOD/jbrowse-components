@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 
-import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 import {
@@ -19,7 +19,6 @@ import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
 
 import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
-import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
@@ -35,9 +34,6 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  // return value if defined, else convert null to undefined for use with
-  // types.maybe
-
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
@@ -130,11 +126,10 @@ const Renderer = observer(function ({
   useEffect(() => {
     let pm: PluginManager | undefined
     try {
-      if (!ready) {
-        return
+      if (ready) {
+        pm = createPluginManager(loader)
+        setPluginManager(pm)
       }
-      pm = createPluginManager(loader)
-      setPluginManager(pm)
     } catch (e) {
       console.error(e)
       setError(e)
