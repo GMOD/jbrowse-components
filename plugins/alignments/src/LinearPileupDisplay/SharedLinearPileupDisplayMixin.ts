@@ -676,11 +676,12 @@ export function SharedLinearPileupDisplayMixin(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snap) {
         // @ts-expect-error
-        const { colorBy, filterBy, ...rest } = snap
+        const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =
+          snap
         return {
           ...rest,
-          filterBySetting: filterBy,
-          colorBySetting: colorBy,
+          filterBySetting: filterBySetting || filterBy,
+          colorBySetting: colorBySetting || colorBy,
         }
       }
       return snap
