@@ -98,6 +98,10 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         jexlFilters: types.optional(types.array(types.string), []),
+        /**
+         * #property
+         */
+        hideSmallIndelsSetting: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -130,9 +134,19 @@ export function SharedLinearPileupDisplayMixin(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get autorunReady() {
         const view = getContainingView(self) as LGV
         return view.initialized && self.statsReadyAndRegionNotTooLarge
+      },
+
+      /**
+       * #getter
+       */
+      get hideSmallIndels() {
+        return self.hideSmallIndelsSetting
       },
     }))
     .actions(self => ({
@@ -265,6 +279,13 @@ export function SharedLinearPileupDisplayMixin(
       setJexlFilters(filters: string[]) {
         self.jexlFilters = cast(filters)
       },
+
+      /**
+       * #action
+       */
+      setHideSmallIndels(arg: boolean) {
+        self.hideSmallIndelsSetting = arg
+      },
     }))
 
     .views(self => ({
@@ -272,17 +293,21 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get rendererConfig() {
-        const { featureHeight, noSpacing, trackMaxHeight, rendererTypeName } =
-          self
+        const {
+          featureHeight: height,
+          noSpacing,
+          hideSmallIndels,
+          trackMaxHeight: maxHeight,
+          rendererTypeName,
+        } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+            ...(height !== undefined ? { height } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
-            ...(trackMaxHeight !== undefined
-              ? { maxHeight: trackMaxHeight }
-              : {}),
+            ...(maxHeight !== undefined ? { maxHeight } : {}),
           },
           getEnv(self),
         )
@@ -560,6 +585,15 @@ export function SharedLinearPileupDisplayMixin(
                   },
                 },
               ],
+            },
+            {
+              label: 'Hide small indels (<10bp)',
+              priority: -1,
+              type: 'checkbox',
+              checked: self.hideSmallIndels,
+              onClick: () => {
+                self.setHideSmallIndels(!self.hideSmallIndels)
+              },
             },
             {
               label: 'Set max height...',

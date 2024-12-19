@@ -208,12 +208,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           trackMaxHeight,
           mismatchAlpha,
           rendererTypeName,
+          hideSmallIndels,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
             ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
             ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
             ...(trackMaxHeight !== undefined
