@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 
@@ -13,14 +13,11 @@ import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 // ui elements
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
-import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 // locals
 import ViewContainer from './ViewContainer'
 
 type AppSession = SessionWithDrawerWidgets & {
-  savedSessionNames: string[]
-  menus: { label: string; menuItems: JBMenuItem[] }[]
   snackbarMessages: SnackbarMessage[]
   renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown

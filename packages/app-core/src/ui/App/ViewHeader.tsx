@@ -40,7 +40,7 @@ const ViewHeader = observer(function ({
   onClose: () => void
   onMinimize: () => void
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
 

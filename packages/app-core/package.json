@@ -45,7 +45,8 @@
     "@jbrowse/product-core": "^2.18.0",
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
-    "copy-to-clipboard": "^3.3.1"
+    "copy-to-clipboard": "^3.3.1",
+    "react-resizable": "^3.0.5"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",
