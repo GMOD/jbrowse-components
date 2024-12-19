@@ -118,11 +118,11 @@ export function renderMismatches({
     } else if (mismatch.type === 'insertion' && drawIndels) {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
-      const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))
+      const insW = Math.max(minSubfeatureWidth, Math.min(1.2, 1 / bpPerPx))
       if (len < 10) {
         fillRect(ctx, pos, topPx, insW, heightPx, canvasWidth, 'purple')
         if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
-          const l = pos - insW
+          const l = Math.round(pos - insW)
           fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
           fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
           ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
