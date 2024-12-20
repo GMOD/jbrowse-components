@@ -26,9 +26,9 @@ In contrast, "no-build" plugins have no build step and can be hand edited. This
 can be useful for adding
 [extra jexl config callbacks for making extra config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
 
-## Writing a no-build plugin
+## Writing a UMD "no-build" plugin
 
-### Adding a callback function which you can use in your config
+### Example use case: Adding a jexl callback function which you can use in your config
 
 A common method for a no-build plugin might be making a custom function that you
 can use to simplify `jexl` callbacks in your config. We will create a file
@@ -73,7 +73,10 @@ you can refer to this plugin and the custom function you added in your config.
 ```json
 {
   "plugins": [
-    { "name": "MyNoBuildPlugin", "umdLoc": { "uri": "myplugin.js" } }
+    {
+      "name": "MyNoBuildPlugin",
+      "umdLoc": { "uri": "myplugin.js" }
+    }
   ],
   "tracks": [
     {
@@ -83,13 +86,9 @@ you can refer to this plugin and the custom function you added in your config.
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "file.gff.gz"
-        },
+        "gffGzLocation": { "uri": "file.gff.gz" },
         "index": {
-          "location": {
-            "uri": "file.gff.gz.tbi"
-          }
+          "location": { "uri": "file.gff.gz.tbi" }
         }
       },
       "displays": [
@@ -240,44 +239,19 @@ Then in your config you can reference it using the "esmLoc" function
 ```json
 {
   "plugins": [
-    { "name": "MyNoBuildPlugin", "esmLoc": { "uri": "esmplugin.js" } }
-  ],
-  "tracks": [
     {
-      "type": "FeatureTrack",
-      "trackId": "mytrack",
-      "name": "mytrack",
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "file.gff.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "file.gff.gz.tbi"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mytrack-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:customColor(feature)"
-          }
-        }
-      ]
+      "name": "MyNoBuildPlugin",
+      "esmLoc": { "uri": "esmplugin.js" }
     }
-  ]
+  ],
+  "tracks": []
 }
 ```
 
 ## Result
 
-With JBrowse running and your plugin added to your config, your JBrowse session
-should look like the following:
+With JBrowse running and the "Citation" plugin from above added to your config,
+your JBrowse session should look like the following:
 
 <Figure caption="Screenshot of a running JBrowse instance with the simple no build plugin added. Note our top level menu item has been added, and upon clicking it our widget opens." src="/img/no_build_final.png"/>
 
