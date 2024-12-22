@@ -26,45 +26,33 @@ In contrast, "no-build" plugins have no build step and can be hand edited. This
 can be useful for adding
 [extra jexl config callbacks for making extra config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
 
-## Writing a UMD "no-build" plugin
+## Writing a "no-build" plugin
 
 ### Example use case: Adding a jexl callback function which you can use in your config
 
 A common method for a no-build plugin might be making a custom function that you
 can use to simplify `jexl` callbacks in your config. We will create a file
-`myplugin.js`, which will contain a ["UMD"](https://github.com/umdjs/umd) module
-providing a single "Plugin" class [1].
+`myplugin.js`, which will export a single class.
 
 `myplugin.js`
 
 ```typescript
-// the plugin will be a simplified UMD module, and we put the code in a
-// function to avoid variable name collisions with the global scope
-;(function () {
-  class Plugin {
-    name = 'MyNoBuildPlugin'
-    version = '1.0'
+export default class MyPlugin {
+  name = 'MyPlugin'
+  version = '1.0'
 
-    install(pluginManager) {
-      pluginManager.jexl.addFunction('customColor', feature => {
-        if (feature.get('type') === 'exon') {
-          return 'red'
-        } else if (feature.get('type') === 'CDS') {
-          return 'green'
-        }
-      })
-    }
-
-    configure(pluginManager) {}
+  install(pluginManager) {
+    pluginManager.jexl.addFunction('customColor', feature => {
+      if (feature.get('type') === 'exon') {
+        return 'red'
+      } else if (feature.get('type') === 'CDS') {
+        return 'green'
+      }
+    })
   }
 
-  // the plugin will be included in both the main thread and web worker, so
-  // install plugin to either window or self (webworker global scope)
-  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyNoBuildPlugin =
-    {
-      default: Plugin,
-    }
-})()
+  configure(pluginManager) {}
+}
 ```
 
 Put this file `myplugin.js` in the same folder as your config file, and then,
@@ -75,7 +63,9 @@ you can refer to this plugin and the custom function you added in your config.
   "plugins": [
     {
       "name": "MyNoBuildPlugin",
-      "umdLoc": { "uri": "myplugin.js" }
+      "esmLoc": {
+        "uri": "myplugin.js"
+      }
     }
   ],
   "tracks": [
@@ -118,7 +108,8 @@ plugin class.
 // ...
   configure(pluginManager) {
     // this is called in the web worker as well, which does not have a
-    // rootModel, so check for rootModel
+    // rootModel, so check for existance of pluginManager.rootModel before
+    // continuing
     if (pluginManager.rootModel) {
       // adding a new menu to the top toolbar
       pluginManager.rootModel.insertMenu('Citations', 4)
@@ -150,12 +141,7 @@ const { types } = pluginManager.jbrequire('mobx-state-tree')
 
 which would provide the functionality of mobx-state-tree through that value.
 
-## Using ESM instead of UMD
-
-Instead of UMD, you can also just simply export a class.
-
-Before 2024, this had a little less browser compatibility, but it is now broadly
-compatible.
+## Complete example
 
 Example
 
@@ -241,7 +227,9 @@ Then in your config you can reference it using the "esmLoc" function
   "plugins": [
     {
       "name": "MyNoBuildPlugin",
-      "esmLoc": { "uri": "esmplugin.js" }
+      "esmLoc": {
+        "uri": "esmplugin.js"
+      }
     }
   ],
   "tracks": []
@@ -264,3 +252,15 @@ If you'd like some general development information, checkout the series of
 
 Have some questions? [Contact us](/contact) through our various communication
 channels.
+
+## Footnote: UMD vs ESM
+
+This guide was updated in 2024 to use "ESM" modules which export a simple class
+in response to browsers increased support of importing pure ESM modules.
+However, for maximum legacy browser compatibility, you can also use "UMD"
+modules also
+
+For an example of UMD, see
+https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127
+(it uses a function that defines a specific global variable rather than
+exporting a class)
