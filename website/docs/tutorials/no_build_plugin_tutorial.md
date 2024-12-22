@@ -56,47 +56,24 @@ export default class MyPlugin {
 ```
 
 Put this file `myplugin.js` in the same folder as your config file, and then,
-you can refer to this plugin and the custom function you added in your config.
+you can refer to this plugin and the custom function you added in your
+`config.json`.
 
 ```json
 {
   "plugins": [
     {
-      "name": "MyNoBuildPlugin",
+      "name": "MyPlugin",
       "esmLoc": {
         "uri": "myplugin.js"
       }
     }
   ],
-  "tracks": [
-    {
-      "type": "FeatureTrack",
-      "trackId": "mytrack",
-      "name": "mytrack",
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": { "uri": "file.gff.gz" },
-        "index": {
-          "location": { "uri": "file.gff.gz.tbi" }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mytrack-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:customColor(feature)"
-          }
-        }
-      ]
-    }
-  ]
+  "tracks": []
 }
 ```
 
-### Adding a global menu item
+### Example use case: Adding a global menu item
 
 Another example of a no-build plugin is to add menu items or minor extension
 points. Here, we're going to add a menu item using the `configure` method in the
@@ -117,7 +94,7 @@ plugin class.
       // appending a menu item to the new menu
       pluginManager.rootModel.appendToMenu('Citations', {
         label: 'Cite this JBrowse session',
-        onClick: (session) => { }
+        onClick: (session) => { /* do nothing for now, see below for example */ }
       })
     }
   }
@@ -148,8 +125,8 @@ Example
 `esmplugin.js`
 
 ```typescript
-export default class MyNoBuildPlugin {
-  name = 'MyNoBuildPlugin'
+export default class MyPlugin {
+  name = 'MyPlugin'
   version = '1.0'
 
   install(pluginManager) {
@@ -169,7 +146,9 @@ export default class MyNoBuildPlugin {
 
     // this is our react component
     const CiteWidget = props => {
-      // React.createElement can be used to add html to our widget component
+      // React.createElement can be used to add html to our widget component.
+      // We write out raw React.createElement code because JSX requires a build
+      // step and can't be used very easily in the no build plugin context
       const header = React.createElement(
         'h1',
         null,
@@ -226,7 +205,7 @@ Then in your config you can reference it using the "esmLoc" function
 {
   "plugins": [
     {
-      "name": "MyNoBuildPlugin",
+      "name": "MyPlugin",
       "esmLoc": {
         "uri": "esmplugin.js"
       }
@@ -247,13 +226,20 @@ your JBrowse session should look like the following:
 
 Congratulations! You built and ran a single file no-build plugin in JBrowse.
 
-If you'd like some general development information, checkout the series of
-[developer guides](/docs/developer_guide) available.
-
 Have some questions? [Contact us](/contact) through our various communication
 channels.
 
-## Footnote: UMD vs ESM
+## Footnote 1: JSX syntax
+
+You can see from the above that writing React code is a little cumbersome as JSX
+syntax is not really supported in the no build plugins since JSX generally
+requires a build step.
+
+If you are writing module code or writing a plugin that has dependencies, you
+can try our https://github.com/GMOD/jbrowse-plugin-template which has a build
+step, bundler, and type checking with typescript
+
+## Footnote 2: UMD vs ESM module syntax
 
 This guide was updated in 2024 to use "ESM" modules which export a simple class
 in response to browsers increased support of importing pure ESM modules.
