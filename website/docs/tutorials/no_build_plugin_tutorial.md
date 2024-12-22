@@ -85,7 +85,7 @@ plugin class.
 // ...
   configure(pluginManager) {
     // this is called in the web worker as well, which does not have a
-    // rootModel, so check for existance of pluginManager.rootModel before
+    // rootModel, so check for existence of pluginManager.rootModel before
     // continuing
     if (pluginManager.rootModel) {
       // adding a new menu to the top toolbar
