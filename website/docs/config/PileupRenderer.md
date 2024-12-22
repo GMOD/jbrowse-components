@@ -71,6 +71,17 @@ minSubfeatureWidth: {
     }
 ```
 
+#### slot: hideSmallIndels
+
+```js
+hideSmallIndels: {
+      type: 'boolean',
+      description:
+        'Hides small indels, sometimes occurring in long read sequencing',
+      defaultValue: false,
+    }
+```
+
 #### slot: maxHeight
 
 ```js
