@@ -18,7 +18,6 @@ module.exports = {
           loader: require.resolve('babel-loader'),
           options: {
             rootMode: 'upward',
-            presets: ['@babel/preset-react'],
           },
         },
       ],

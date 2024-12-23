@@ -736,7 +736,7 @@
     lru-cache "^5.1.1"
     semver "^6.3.1"
 
-"@babel/helper-create-class-features-plugin@^7.25.9":
+"@babel/helper-create-class-features-plugin@^7.18.6", "@babel/helper-create-class-features-plugin@^7.25.9":
   version "7.25.9"
   resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.25.9.tgz#7644147706bb90ff613297d49ed5266bde729f83"
   integrity sha512-UTZQMvt0d/rSz6KI+qdu7GQze5TIajwTS++GUozlw8VBJDEOAqSXwm1WvmYEZwqdqSGQshRocPDqrt4HBZB3fQ==
@@ -909,6 +909,14 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.9"
     "@babel/traverse" "^7.25.9"
+
+"@babel/plugin-proposal-private-methods@^7.18.6":
+  version "7.18.6"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-private-methods/-/plugin-proposal-private-methods-7.18.6.tgz#5209de7d213457548a98436fa2882f52f4be6bea"
+  integrity sha512-nutsvktDItsNn4rpGItSNV2sz1XwS+nfU0Rg8aCx3W3NOKVzdMjJRu0O5OkgDp3ZGICSTbgRpxZoWsxoKRvbeA==
+  dependencies:
+    "@babel/helper-create-class-features-plugin" "^7.18.6"
+    "@babel/helper-plugin-utils" "^7.18.6"
 
 "@babel/plugin-proposal-private-property-in-object@7.21.0-placeholder-for-preset-env.2":
   version "7.21.0-placeholder-for-preset-env.2"
@@ -3432,7 +3440,7 @@
     wordwrap "^1.0.0"
     wrap-ansi "^7.0.0"
 
-"@oclif/plugin-help@^6.0.15", "@oclif/plugin-help@^6.2.17":
+"@oclif/plugin-help@^6.0.15", "@oclif/plugin-help@^6.2.20":
   version "6.2.20"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-6.2.20.tgz#05de43a710f038419d3ded11a59e8481408a9e9e"
   integrity sha512-2l4A/erCAdBWmJwb1LJ7TvSMbBUQbGhIzkdHZb5DMgFJC+Nwfeol5YojqRMeciyGkoqmWPBGENwr0LJgZp2skw==
@@ -6065,9 +6073,9 @@ babel-plugin-polyfill-regenerator@^0.6.1:
     "@babel/helper-define-polyfill-provider" "^0.6.3"
 
 babel-plugin-react-compiler@^19.0.0-beta-6fc168f-20241025:
-  version "19.0.0-beta-df7b47d-20241124"
-  resolved "https://registry.yarnpkg.com/babel-plugin-react-compiler/-/babel-plugin-react-compiler-19.0.0-beta-df7b47d-20241124.tgz#1da10ca50123079458f957956db1070cf22624bb"
-  integrity sha512-93iSASR20HNsotcOTQ+KPL0zpgfRFVWL86AtXpmHp995HuMVnC9femd8Winr3GxkPEh8lEOyaw3nqY4q2HUm5w==
+  version "19.0.0-beta-b2e8e9c-20241220"
+  resolved "https://registry.yarnpkg.com/babel-plugin-react-compiler/-/babel-plugin-react-compiler-19.0.0-beta-b2e8e9c-20241220.tgz#088691bc21d1917c53ad43bf069f818d423e641b"
+  integrity sha512-aigv5VrOTLUOCeq/t1fuZvvs9Ze1GUfxnleWfiGoZcR0Lo34w3JcGgNiJBoxqlWfFiVnZhzaja9Aa1p6PWAtPg==
   dependencies:
     "@babel/types" "^7.19.0"
 
@@ -8552,13 +8560,13 @@ eslint-plugin-import@^2.31.0:
     tsconfig-paths "^3.15.0"
 
 eslint-plugin-react-compiler@^19.0.0-beta-6fc168f-20241025:
-  version "19.0.0-beta-df7b47d-20241124"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react-compiler/-/eslint-plugin-react-compiler-19.0.0-beta-df7b47d-20241124.tgz#468751d3a8a6781189405ee56b39b80545306df8"
-  integrity sha512-82PfnllC8jP/68KdLAbpWuYTcfmtGLzkqy2IW85WopKMTr+4rdQpp+lfliQ/QE79wWrv/dRoADrk3Pdhq25nTw==
+  version "19.0.0-beta-b2e8e9c-20241220"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-compiler/-/eslint-plugin-react-compiler-19.0.0-beta-b2e8e9c-20241220.tgz#d039223c7ff07636cffd6809833fb6859b51d4d8"
+  integrity sha512-STVaOQyivSBv0un6/ujYOPntKcCaD0qXIG8siBEs9QcWmQ7q3J3ozuAE86SlSc7ElIZgPoL9HoSN3EONS47nqQ==
   dependencies:
     "@babel/core" "^7.24.4"
     "@babel/parser" "^7.24.4"
-    "@babel/plugin-transform-private-methods" "^7.25.9"
+    "@babel/plugin-proposal-private-methods" "^7.18.6"
     hermes-parser "^0.25.1"
     zod "^3.22.4"
     zod-validation-error "^3.0.3"
@@ -8931,9 +8939,9 @@ fastest-levenshtein@^1.0.12, fastest-levenshtein@^1.0.7:
   integrity sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==
 
 fastq@^1.6.0:
-  version "1.17.1"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.17.1.tgz#2a523f07a4e7b1e81a42b91b8bf2254107753b47"
-  integrity sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.18.0.tgz#d631d7e25faffea81887fe5ea8c9010e1b36fee0"
+  integrity sha512-QKHXPW0hD8g4UET03SdOdunzSouc9N4AuHdsX8XNcTsuz+yYFILVNIX4l9yHABMhiEI9Db0JTTIpu0wB+Y1QQw==
   dependencies:
     reusify "^1.0.4"
 
@@ -12779,9 +12787,9 @@ obuf@^1.0.0, obuf@^1.1.2:
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
 oclif@^4.0.0:
-  version "4.17.3"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.17.3.tgz#058585af3b60b556fdb56bc4c1938dc2ea1853cd"
-  integrity sha512-J4F7gykHSSJHvZ5p6YnSJUjRKZkWKY4shPp6ag26FbJdooxuxBrLL5x9s4UFfWjEhZUWIU+eKHpsa8toImDDeg==
+  version "4.17.4"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.17.4.tgz#d435f6c95f6b6b19fb5cb0f35544f8b4f0e6a458"
+  integrity sha512-CELZOdxSfpM2Kl3dGP0N4fL4+RReGP18vo6oNklWoSP4ka+pJTBzO3W0o15KHAyrzpes5cui+xur3UPZIGr0LQ==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.699.0"
     "@aws-sdk/client-s3" "^3.712.0"
@@ -12789,7 +12797,7 @@ oclif@^4.0.0:
     "@inquirer/input" "^2.2.4"
     "@inquirer/select" "^2.5.0"
     "@oclif/core" "^4.2.0"
-    "@oclif/plugin-help" "^6.2.17"
+    "@oclif/plugin-help" "^6.2.20"
     "@oclif/plugin-not-found" "^3.2.31"
     "@oclif/plugin-warn-if-update-available" "^3.1.28"
     async-retry "^1.3.3"
@@ -15882,9 +15890,9 @@ typescript-eslint@^8.0.1:
   integrity sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==
 
 typescript@^5.8.0-dev.20241213:
-  version "5.8.0-dev.20241222"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.0-dev.20241222.tgz#a01f10d7cddb2cc3b7a46aaf92b5baa754bb1179"
-  integrity sha512-0LmynFBKqPM5ifRv3S5OlGJd9nAiDgQU1Tx3Kt1GbgCxATgeR2c4NiX5x1PqKlIKcB5R4inZcQm9YdUO1P6SXQ==
+  version "5.8.0-dev.20241223"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.0-dev.20241223.tgz#85bc46aa2e7dba0b627f4e91dc407f8208136587"
+  integrity sha512-eRWuZYgyh1COHIln8pxvd/qMaQNBW8EcekIbHAgC+HnK9vBCNMbfpWaD7z6yC9shfBmdpZIKNxooznoa/Mfa1A==
 
 uglify-js@^3.1.4:
   version "3.19.3"
