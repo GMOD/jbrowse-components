@@ -9,22 +9,22 @@ exports[`renders all the different types of built-in slots 1`] = `
     <h3
       class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
     >
-      <div
+      <button
         aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-        role="button"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
         tabindex="0"
+        type="button"
       >
-        <div
-          class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+        <span
+          class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
         >
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
             Configuration
           </p>
-        </div>
-        <div
+        </span>
+        <span
           class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
         >
           <svg
@@ -38,8 +38,8 @@ exports[`renders all the different types of built-in slots 1`] = `
               d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
             />
           </svg>
-        </div>
-      </div>
+        </span>
+      </button>
     </h3>
     <div
       class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
@@ -752,22 +752,22 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
     <h3
       class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
     >
-      <div
+      <button
         aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-        role="button"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
         tabindex="0"
+        type="button"
       >
-        <div
-          class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+        <span
+          class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
         >
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
             Configuration
           </p>
-        </div>
-        <div
+        </span>
+        <span
           class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
         >
           <svg
@@ -781,8 +781,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
               d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
             />
           </svg>
-        </div>
-      </div>
+        </span>
+      </button>
     </h3>
     <div
       class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
@@ -1053,22 +1053,22 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                 <h3
                   class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
                 >
-                  <div
+                  <button
                     aria-expanded="true"
-                    class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-                    role="button"
+                    class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
                     tabindex="0"
+                    type="button"
                   >
-                    <div
-                      class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+                    <span
+                      class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
                     >
                       <p
                         class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
                       >
                         renderer
                       </p>
-                    </div>
-                    <div
+                    </span>
+                    <span
                       class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
                     >
                       <svg
@@ -1082,8 +1082,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                           d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
                         />
                       </svg>
-                    </div>
-                  </div>
+                    </span>
+                  </button>
                 </h3>
                 <div
                   class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
@@ -1793,22 +1793,22 @@ exports[`renders with just the required model elements 1`] = `
     <h3
       class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
     >
-      <div
+      <button
         aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-        role="button"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
         tabindex="0"
+        type="button"
       >
-        <div
-          class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+        <span
+          class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
         >
           <p
             class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
           >
             Configuration
           </p>
-        </div>
-        <div
+        </span>
+        <span
           class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
         >
           <svg
@@ -1822,8 +1822,8 @@ exports[`renders with just the required model elements 1`] = `
               d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
             />
           </svg>
-        </div>
-      </div>
+        </span>
+      </button>
     </h3>
     <div
       class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"

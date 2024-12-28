@@ -49,7 +49,7 @@ export default function SVGTracks({
               prevOffset: currOffset,
               reactElements: [
                 ...reactElements,
-                <g key={conf.trackId} transform={`translate(0 ${currOffset})`}>
+                <g key={conf.trackId} transform={`translate(0 ${prevOffset})`}>
                   <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
                     <SVGRegionSeparators
                       model={model}
@@ -68,7 +68,10 @@ export default function SVGTracks({
               ],
             }
           },
-          { prevOffset: 0, reactElements: [] as React.ReactElement[] },
+          {
+            prevOffset: 0,
+            reactElements: [] as React.ReactElement[],
+          },
         ).reactElements
       }
     </>
