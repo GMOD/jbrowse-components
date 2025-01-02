@@ -7,14 +7,9 @@ import { addDisposer, types } from 'mobx-state-tree'
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
+import type { SessionTriagedInfo } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { Instance } from 'mobx-state-tree'
-
-export interface SessionTriagedInfo {
-  snap: unknown
-  origin: string
-  reason: PluginDefinition[]
-}
 
 const SessionLoader = types
   .model({
@@ -450,7 +445,6 @@ const SessionLoader = types
         tracklist,
         nav,
         highlight,
-        hubURL,
         sessionTracksParsed: sessionTracks,
       } = self
       if (loc) {
@@ -489,8 +483,11 @@ const SessionLoader = types
      */
     async decodeJsonUrlSession() {
       // @ts-expect-error
-      const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      await this.setSessionSnapshot({ ...session.session, id: nanoid() })
+      const { session } = JSON.parse(self.sessionQuery.replace(/^json-/, ''))
+      await this.setSessionSnapshot({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #aftercreate

@@ -1,3 +1,4 @@
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type { DBSchema } from 'idb'
 
 export interface Session {
@@ -30,4 +31,10 @@ export interface ViewSpec {
   tracks?: string[]
   assembly: string
   loc: string
+}
+
+export interface SessionTriagedInfo {
+  snap: unknown
+  origin: string
+  reason: PluginDefinition[]
 }

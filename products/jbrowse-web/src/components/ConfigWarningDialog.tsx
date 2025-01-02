@@ -1,6 +1,5 @@
 import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import WarningIcon from '@mui/icons-material/Warning'
 import {
   Button,
@@ -9,12 +8,9 @@ import {
   DialogContentText,
 } from '@mui/material'
 
-import factoryReset from '../factoryReset'
-
-import type { SessionLoaderModel } from '../SessionLoader'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
-function ConfigWarningDialog({
+export default function ConfigWarningDialog({
   onConfirm,
   onCancel,
   reason,
@@ -60,29 +56,4 @@ function ConfigWarningDialog({
       </DialogActions>
     </Dialog>
   )
-}
-
-export default function ConfigTriaged({
-  loader,
-  handleClose,
-}: {
-  loader: SessionLoaderModel
-  handleClose: () => void
-}) {
-  const { sessionTriaged } = loader
-  return sessionTriaged ? (
-    <ConfigWarningDialog
-      onConfirm={async () => {
-        const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
-        await loader.fetchPlugins(session)
-        loader.setConfigSnapshot({ ...session, id: nanoid() })
-        handleClose()
-      }}
-      onCancel={async () => {
-        await factoryReset()
-        handleClose()
-      }}
-      reason={sessionTriaged.reason}
-    />
-  ) : null
 }

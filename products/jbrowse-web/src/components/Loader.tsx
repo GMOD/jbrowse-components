@@ -18,15 +18,16 @@ import SessionLoader from '../SessionLoader'
 import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
 
-import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader'
 import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
-const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
+const SessionTriaged = lazy(() => import('./SessionTriaged'))
 const StartScreen = lazy(() => import('./StartScreen'))
 const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
+// return value if defined, else convert null to undefined for use with
+// types.maybe
 function normalize<T>(param: T | null | undefined) {
   return param === null ? undefined : param
 }
@@ -36,9 +37,6 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  // return value if defined, else convert null to undefined for use with
-  // types.maybe
-
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
@@ -84,34 +82,6 @@ export function Loader({
 
   return <Renderer loader={loader} />
 }
-
-const SessionTriaged = observer(function ({
-  sessionTriaged,
-  loader,
-}: {
-  loader: SessionLoaderModel
-  sessionTriaged: SessionTriagedInfo
-}) {
-  return (
-    <Suspense fallback={null}>
-      {sessionTriaged.origin === 'session' ? (
-        <SessionWarningDialog
-          loader={loader}
-          handleClose={() => {
-            loader.setSessionTriaged(undefined)
-          }}
-        />
-      ) : (
-        <ConfigWarningDialog
-          loader={loader}
-          handleClose={() => {
-            loader.setSessionTriaged(undefined)
-          }}
-        />
-      )}
-    </Suspense>
-  )
-})
 
 const PluginManagerLoaded = observer(function ({
   pluginManager,
@@ -159,7 +129,11 @@ const Renderer = observer(function ({
       </Suspense>
     )
   } else if (sessionTriaged) {
-    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+    return (
+      <Suspense fallback={null}>
+        <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+      </Suspense>
+    )
   } else if (pluginManager) {
     return <PluginManagerLoaded pluginManager={pluginManager} />
   } else {

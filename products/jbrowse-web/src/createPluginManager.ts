@@ -2,8 +2,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
 import corePlugins from './corePlugins'
-import { loadSessionSpec } from './loadSessionSpec'
 import { loadHubSpec } from './loadHubSpec'
+import { loadSessionSpec } from './loadSessionSpec'
 import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 

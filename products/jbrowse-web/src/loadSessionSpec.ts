@@ -1,5 +1,5 @@
+import type { ViewSpec } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import { ViewSpec } from './types'
 
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
 // LGV session
