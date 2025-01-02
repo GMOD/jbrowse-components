@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 
-import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 import {
@@ -19,12 +19,10 @@ import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
 
 import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
-import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
-const StartScreen = lazy(() => import('./StartScreen'))
 const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
 function normalize<T>(param: T | null | undefined) {
@@ -36,9 +34,6 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  // return value if defined, else convert null to undefined for use with
-  // types.maybe
-
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
@@ -119,24 +114,6 @@ const SessionTriaged = observer(function ({
   )
 })
 
-const PluginManagerLoaded = observer(function ({
-  pluginManager,
-}: {
-  pluginManager: PluginManager
-}) {
-  const { rootModel } = pluginManager
-  return !rootModel?.session ? (
-    <Suspense fallback={<LoadingEllipses />}>
-      <StartScreen
-        rootModel={rootModel as WebRootModel}
-        onFactoryReset={factoryReset}
-      />
-    </Suspense>
-  ) : (
-    <JBrowse pluginManager={pluginManager} />
-  )
-})
-
 const Renderer = observer(function ({
   loader,
 }: {
@@ -149,11 +126,10 @@ const Renderer = observer(function ({
   useEffect(() => {
     let pm: PluginManager | undefined
     try {
-      if (!ready) {
-        return
+      if (ready) {
+        pm = createPluginManager(loader)
+        setPluginManager(pm)
       }
-      pm = createPluginManager(loader)
-      setPluginManager(pm)
     } catch (e) {
       console.error(e)
       setError(e)
@@ -170,7 +146,7 @@ const Renderer = observer(function ({
   } else if (sessionTriaged) {
     return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
   } else if (pluginManager) {
-    return <PluginManagerLoaded pluginManager={pluginManager} />
+    return <JBrowse pluginManager={pluginManager} />
   } else {
     return <Loading />
   }
