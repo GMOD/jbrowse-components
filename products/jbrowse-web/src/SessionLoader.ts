@@ -285,8 +285,7 @@ const SessionLoader = types
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
           fetchESM: url => import(/* webpackIgnore:true */ url),
-        })
-        pluginLoader.installGlobalReExports(window)
+        }).installGlobalReExports(window)
         const plugins = await pluginLoader.load(window.location.href)
         self.setSessionPlugins([...plugins])
       } catch (e) {
@@ -325,36 +324,40 @@ const SessionLoader = types
      */
     async fetchConfig() {
       // @ts-expect-error
-      let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
-
-      // @ts-expect-error
-      if (window.__jbrowseCacheBuster) {
-        configPath += `?rand=${Math.random()}`
-      }
-
-      const text = await openLocation({
-        uri: configPath,
-        locationType: 'UriLocation',
-      }).readFile('utf8')
-      const config = JSON.parse(text)
-      const configUri = new URL(configPath, window.location.href)
-      addRelativeUris(config, configUri)
-
-      // cross origin config check
-      if (configUri.hostname !== window.location.hostname) {
-        const configPlugins = config.plugins || []
-        const configPluginsAllowed = await checkPlugins(configPlugins)
-        if (!configPluginsAllowed) {
-          self.setSessionTriaged({
-            snap: config,
-            origin: 'config',
-            reason: configPlugins,
-          })
-          return
+      const path = window.__jbrowseConfigPath
+      let { hubURL, configPath = path || 'config.json' } = self
+      console.log({ hubURL, configPath })
+      if (!hubURL) {
+        // @ts-expect-error
+        if (window.__jbrowseCacheBuster) {
+          configPath += `?rand=${Math.random()}`
         }
+        const text = await openLocation({
+          uri: configPath,
+          locationType: 'UriLocation',
+        }).readFile('utf8')
+        const config = JSON.parse(text)
+        const configUri = new URL(configPath, window.location.href)
+        addRelativeUris(config, configUri)
+
+        // cross origin config check
+        if (configUri.hostname !== window.location.hostname) {
+          const configPlugins = config.plugins || []
+          const configPluginsAllowed = await checkPlugins(configPlugins)
+          if (!configPluginsAllowed) {
+            self.setSessionTriaged({
+              snap: config,
+              origin: 'config',
+              reason: configPlugins,
+            })
+            return
+          }
+        }
+        await this.fetchPlugins(config)
+        self.setConfigSnapshot(config)
+      } else {
+        self.setConfigSnapshot({})
       }
-      await this.fetchPlugins(config)
-      self.setConfigSnapshot(config)
     },
     /**
      * #action
@@ -470,12 +473,11 @@ const SessionLoader = types
      * #action
      */
     decodeHubSpec() {
-      const { loc, hubURL, sessionTracksParsed: sessionTracks } = self
-      if (loc) {
-        self.hubSpec = {
-          sessionTracks,
-          hubURL,
-        }
+      const { hubURL, sessionTracksParsed: sessionTracks } = self
+
+      self.hubSpec = {
+        sessionTracks,
+        hubURL,
       }
     },
     /**
@@ -509,6 +511,7 @@ const SessionLoader = types
                   isSharedSession,
                   isJsonSession,
                   isJb1StyleSession,
+                  isHubSession,
                   sessionQuery,
                   configSnapshot,
                 } = self
@@ -535,6 +538,9 @@ const SessionLoader = types
                   this.decodeJb1StyleSession()
                 } else if (isEncodedSession) {
                   await this.decodeEncodedUrlSession()
+                } else if (isHubSession) {
+                  this.decodeHubSpec()
+                  self.setBlankSession(true)
                 } else if (isJsonSession) {
                   await this.decodeJsonUrlSession()
                 } else if (isLocalSession) {

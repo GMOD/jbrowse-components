@@ -18,8 +18,21 @@ export async function loadHubSpec(
     if (!r.ok) {
       throw new Error(`HTTP ${r.status} fetching ${hubURL[0]}`)
     }
-    const d = await r.text()
-    console.log({ d })
+    // const d = await r.text()
+
+    // @ts-expect-error
+    rootModel.setSession({
+      name: `${hubURL.join(',')}`,
+      sessionConnections: hubURL.map(r => ({
+        type: 'UCSCTrackHubConnection',
+        connectionId: r,
+        name: r,
+        hubTxtLocation: {
+          uri: r,
+          locationType: 'UriLocation',
+        },
+      })),
+    })
   } catch (e) {
     console.error(e)
     rootModel.session?.notifyError(`${e}`, e)
