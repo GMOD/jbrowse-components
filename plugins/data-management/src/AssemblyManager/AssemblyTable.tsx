@@ -52,6 +52,7 @@ const AssemblyTable = observer(function ({
                   return (
                     <>
                       <IconButton
+                        disabled={!editable}
                         onClick={() => {
                           onEditAssembly(assembly)
                         }}
