@@ -78,7 +78,17 @@ export function Loader({
     setTrackList(undefined, 'replaceIn')
     setNav(undefined, 'replaceIn')
     setHighlight(undefined, 'replaceIn')
-  }, [])
+  }, [
+    setAssembly,
+    setHighlight,
+    setHubURL,
+    setLoc,
+    setNav,
+    setPassword,
+    setSessionTracks,
+    setTrackList,
+    setTracks,
+  ])
 
   return <Renderer loader={loader} />
 }

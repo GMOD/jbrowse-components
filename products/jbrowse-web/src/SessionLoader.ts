@@ -325,15 +325,13 @@ const SessionLoader = types
     async fetchConfig() {
       // @ts-expect-error
       const path = window.__jbrowseConfigPath
-      let { hubURL, configPath = path || 'config.json' } = self
-      console.log({ hubURL, configPath })
+      const { hubURL, configPath = path || 'config.json' } = self
       if (!hubURL) {
-        // @ts-expect-error
-        if (window.__jbrowseCacheBuster) {
-          configPath += `?rand=${Math.random()}`
-        }
         const text = await openLocation({
-          uri: configPath,
+          uri:
+            configPath +
+            // @ts-expect-error
+            (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
           locationType: 'UriLocation',
         }).readFile('utf8')
         const config = JSON.parse(text)
