@@ -1,7 +1,6 @@
 import { groupBy } from '@jbrowse/core/util'
 
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { drawXY } from '../drawXY'
 
 import type { MultiRenderArgsDeserialized as MultiArgs } from '../WiggleBaseRenderer'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,6 +13,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const groups = groupBy(features.values(), f => f.get('source'))
     const height = props.height / sources.length
     const width = (region.end - region.start) / bpPerPx
+    const { drawXY } = await import('../drawXY')
     let feats = [] as Feature[]
     ctx.save()
     sources.forEach(source => {

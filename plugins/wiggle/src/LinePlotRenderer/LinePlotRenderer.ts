@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { drawLine } from '../drawLine'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
@@ -14,6 +13,8 @@ export default class LinePlotRenderer extends WiggleBaseRenderer {
   ) {
     const { config } = props
     const c = readConfObject(config, 'color')
+    const { drawLine } = await import('../drawLine')
+
     return drawLine(ctx, {
       ...props,
       offset: YSCALEBAR_LABEL_OFFSET,
