@@ -1,7 +1,6 @@
 import { groupBy } from '@jbrowse/core/util'
 
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { drawXY } from '../drawXY'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { MultiRenderArgsDeserialized as MultiArgs } from '../WiggleBaseRenderer'
@@ -12,6 +11,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { sources, features } = props
     const groups = groupBy(features.values(), f => f.get('source'))
+    const { drawXY } = await import('../drawXY')
     let feats = [] as Feature[]
     for (const source of sources) {
       const features = groups[source.name] || []
