@@ -10,8 +10,8 @@ import {
 
 import { alphaColor } from '../shared/util'
 
-import type { BaseCoverageBin } from '../shared/types'
 import type { RenderArgsDeserializedWithFeatures } from './types'
+import type { BaseCoverageBin } from '../shared/types'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7

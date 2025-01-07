@@ -2325,9 +2325,9 @@
   integrity sha512-M8r1rpmNOVH6UHwUTSOR5Z86upWEhvI3BKbyYVq8imTS+nZAq8Gr9RJTBsGlL0sgX7fmLSXms8/pTyp7e3YAQA==
 
 "@gmod/vcf@^6.0.0":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.1.tgz#d1b1f1f1ecafe1c706dcebfa6cdc5df5f0eeb282"
-  integrity sha512-AAu9wDze6apTgal6j/FOclSBFzNBuR3N73DNAVOjNppPvbwzU0ryohw1Bit9OJ4Ils6QekTUW1vnZNBlWmZ9Yw==
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.2.tgz#611ea59dffaf1714125616ca95bd7ad19741064a"
+  integrity sha512-S5nht1dHeaoF3LzwQQaHaCoTRUHmxSO2ZDCmCYfscgdoSWVgFWBQgi5C/tlbzmBz3igXKJHQo7/OhTNSfZONfQ==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
