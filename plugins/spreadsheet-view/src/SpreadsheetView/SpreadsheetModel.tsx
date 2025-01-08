@@ -4,8 +4,7 @@ import {
   measureGridWidth,
   toLocale,
 } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 
 import LocationCell from './components/LocationCell'
 
@@ -58,10 +57,6 @@ export default function stateModelFactory() {
       /**
        * #volatile
        */
-      isLoaded: false,
-      /**
-       * #volatile
-       */
       visibleRowFlags: undefined as Record<number, boolean> | undefined,
     }))
     .views(self => ({
@@ -87,7 +82,10 @@ export default function stateModelFactory() {
       get initialized() {
         const session = getSession(self)
         const name = self.assemblyName
-        return name ? session.assemblyManager.get(name)?.initialized : false
+        return (
+          self.rowSet &&
+          (name ? session.assemblyManager.get(name)?.initialized : false)
+        )
       },
     }))
     .views(self => ({
@@ -119,17 +117,17 @@ export default function stateModelFactory() {
                 field: 'Length',
                 type: 'number',
                 width: measureGridWidth(
-                  rows.map(r =>
-                    r.feature ? toLocale(r.feature.end - r.feature.start) : 0,
-                  ),
+                  rows.map(row => {
+                    const { feature } = row
+                    return feature ? feature.end - feature.start : 0
+                  }),
                 ),
                 valueGetter: (
                   _val: unknown,
                   row: { feature?: SimpleFeatureSerialized },
                 ) => {
-                  return row.feature
-                    ? row.feature.end - row.feature.start
-                    : undefined
+                  const { feature } = row
+                  return feature ? feature.end - feature.start : undefined
                 },
                 valueFormatter: arg => toLocale(arg),
               } satisfies GridColDef<(typeof rows)[0]>,
@@ -143,6 +141,11 @@ export default function stateModelFactory() {
                       [...rows.map(r => r[f.name]), f.name],
                       { minWidth: 20 },
                     ),
+                    type:
+                      // @ts-expect-error
+                      typeof rows[0][f.name] === 'number'
+                        ? 'number'
+                        : undefined,
                   }) satisfies GridColDef<(typeof rows)[0]>,
               ),
             ]
@@ -153,7 +156,7 @@ export default function stateModelFactory() {
       get visibleRows() {
         const { visibleRowFlags } = self
         return visibleRowFlags
-          ? self.rows?.filter((f, idx) => !!visibleRowFlags[idx])
+          ? self.rows?.filter((_f, idx) => !!visibleRowFlags[idx])
           : self.rows
       },
     }))
@@ -169,38 +172,6 @@ export default function stateModelFactory() {
        */
       setVisibleColumns(arg: Record<string, boolean>) {
         self.visibleColumns = arg
-      },
-
-      /**
-       * #action
-       */
-      setLoaded(flag: boolean) {
-        self.isLoaded = flag
-      },
-
-      /**
-       * #afterattach
-       */
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            const { assemblyManager } = session
-            try {
-              if (self.assemblyName) {
-                await assemblyManager.waitForAssembly(self.assemblyName)
-                this.setLoaded(true)
-              }
-            } catch (e) {
-              console.error(e)
-              session.notifyError(
-                `Failed to load assembly ${self.assemblyName} ${e}`,
-                e,
-              )
-            }
-          }),
-        )
       },
     }))
     .preProcessSnapshot(snap => {

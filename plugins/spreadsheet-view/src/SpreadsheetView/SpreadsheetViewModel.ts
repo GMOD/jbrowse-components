@@ -164,14 +164,10 @@ export default function stateModelFactory() {
         >
         // check stringified length of rows if it is a localfile or similar.
         // try not to exceed localstorage limits
-        if (JSON.stringify(rowSet).length > 1_000_000) {
-          return {
+        return rowSet && JSON.stringify(rowSet).length > 1_000_000 ? {
             ...(snap as Omit<typeof snap, symbol>),
             spreadsheet: rest,
-          }
-        } else {
-          return snap
-        }
+          } : snap
       }
       return snap
     })

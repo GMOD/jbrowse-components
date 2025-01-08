@@ -23,10 +23,8 @@ import TrackHeightMixin from './TrackHeightMixin'
 import configSchema from './configSchema'
 import BlockState from './serverSideRenderedBlock'
 
-import type {
-  ExportSvgOptions,
-  LinearGenomeViewModel,
-} from '../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { ExportSvgOptions } from '../../LinearGenomeView/types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'

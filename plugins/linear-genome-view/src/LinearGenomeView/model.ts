@@ -45,7 +45,11 @@ import {
 } from 'mobx-state-tree'
 
 import Header from './components/Header'
-import { generateLocations, parseLocStrings } from './util'
+import {
+  calculateVisibleLocStrings,
+  generateLocations,
+  parseLocStrings,
+} from './util'
 import { handleSelectedRegion } from '../searchUtils'
 import MiniControls from './components/MiniControls'
 import {
@@ -56,6 +60,7 @@ import {
   SCALE_BAR_HEIGHT,
 } from './consts'
 
+import type { BpOffset, ExportSvgOptions, HighlightType, NavLocation } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -78,63 +83,6 @@ const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
 const SearchResultsDialog = lazy(
   () => import('./components/SearchResultsDialog'),
 )
-
-export interface BpOffset {
-  refName?: string
-  index: number
-  offset: number
-  start?: number
-  end?: number
-  coord?: number
-  reversed?: boolean
-  assemblyName?: string
-  oob?: boolean
-}
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
-  paddingHeight?: number
-  headerHeight?: number
-  cytobandHeight?: number
-  trackLabels?: string
-  themeName?: string
-}
-
-export interface HighlightType {
-  start: number
-  end: number
-  assemblyName: string
-  refName: string
-}
-
-function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
-  if (!contentBlocks.length) {
-    return ''
-  }
-  const isSingleAssemblyName = contentBlocks.every(
-    b => b.assemblyName === contentBlocks[0]!.assemblyName,
-  )
-  const locs = contentBlocks.map(block =>
-    assembleLocString({
-      ...block,
-      start: Math.round(block.start),
-      end: Math.round(block.end),
-      assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-    }),
-  )
-  return locs.join(' ')
-}
-
-export interface NavLocation {
-  refName: string
-  start?: number
-  end?: number
-  assemblyName?: string
-}
 
 /**
  * #stateModel LinearGenomeView

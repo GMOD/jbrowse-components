@@ -47,7 +47,9 @@ const SvInspectorView = observer(function ({
     <div className={classes.container}>
       <div className={classes.viewsContainer}>
         <div
-          style={{ width: model.spreadsheetView.width }}
+          style={{
+            width: model.spreadsheetView.width,
+          }}
           className={classes.container}
         >
           <SpreadsheetViewReactComponent model={model.spreadsheetView} />
