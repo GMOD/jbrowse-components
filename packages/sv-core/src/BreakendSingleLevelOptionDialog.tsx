@@ -6,7 +6,7 @@ import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Checkbox2 from './Checkbox2'
-import { navToSingleLevelBreak } from './util'
+import { navToSingleLevelBreak } from './navToSingleLevelBreak'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -27,6 +27,7 @@ const BreakendSingleLevelOptionDialog = observer(function ({
   assemblyName: string
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
+  const [focusOnBreakends, setFocusOnBreakends] = useState(true)
   const [windowSize, setWindowSize] = useLocalStorage(
     'breakpointWindowSize',
     '5000',
@@ -48,6 +49,13 @@ const BreakendSingleLevelOptionDialog = observer(function ({
             }}
           />
         ) : null}
+        <Checkbox2
+          checked={copyTracks}
+          label="Focus on breakends"
+          onChange={event => {
+            setFocusOnBreakends(event.target.checked)
+          }}
+        />
 
         <TextField
           label="Window size (bp)"
@@ -72,6 +80,7 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                 await navToSingleLevelBreak({
                   feature,
                   assemblyName,
+                  focusOnBreakends,
                   session,
                   stableViewId,
                   tracks: view?.tracks,

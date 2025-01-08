@@ -54,7 +54,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        interactToggled: false,
+        interactiveOverlay: false,
         /**
          * #property
          */

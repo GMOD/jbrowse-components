@@ -110,7 +110,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get showCircularView() {
-        return !!self.spreadsheetView.spreadsheet
+        return !!self.spreadsheetView.spreadsheet?.rowSet
       },
 
       /**
@@ -273,7 +273,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                 self.height - headerHeight - circularViewOptionsBarHeight,
               )
             },
-            { name: 'SvInspectorView height binding' },
+            {
+              name: 'SvInspectorView height binding',
+            },
           ),
         )
 
@@ -291,8 +293,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               } = self
               if (!circularView.initialized || !currentAssembly?.regions) {
                 return
-              }
-              if (onlyDisplayRelevantRegionsInCircularView) {
+              } else if (onlyDisplayRelevantRegionsInCircularView) {
                 if (circularView.tracks.length === 1) {
                   try {
                     circularView.setDisplayedRegions(

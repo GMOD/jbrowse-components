@@ -62,13 +62,13 @@ true
 showIntraviewLinks: true
 ```
 
-#### property: interactToggled
+#### property: interactiveOverlay
 
 ```js
 // type signature
 false
 // code
-interactToggled: false
+interactiveOverlay: false
 ```
 
 #### property: levels

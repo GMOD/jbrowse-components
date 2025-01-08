@@ -16,7 +16,8 @@ import SVGHeader from './SVGHeader'
 import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
 
-import type { ExportSvgOptions, LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { ExportSvgOptions } from '../types'
 
 type LGV = LinearGenomeViewModel
 
