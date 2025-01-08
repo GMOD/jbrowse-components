@@ -12,7 +12,8 @@ import SVGBackground from './SVGBackground'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
 import Overlay from '../components/Overlay'
 
-import type { BreakpointViewModel, ExportSvgOptions } from '../model'
+import type { BreakpointViewModel } from '../model'
+import type { ExportSvgOptions } from '../types'
 
 type BSV = BreakpointViewModel
 
