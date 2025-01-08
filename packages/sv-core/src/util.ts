@@ -1,5 +1,6 @@
 import { parseBreakend } from '@gmod/vcf'
 
+import type { Track } from './types'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -48,4 +49,15 @@ export function getBreakendCoveringRegions({
       matePos: feature.get('end'),
     }
   }
+}
+
+export function stripIds(arr: Track[]) {
+  return arr.map(({ id, displays, ...rest }) => ({
+    ...rest,
+    displays: displays.map(({ id, ...rest }) => rest),
+  }))
+}
+
+export function makeTitle(f: Feature) {
+  return `${f.get('name') || f.get('id') || 'breakend'} split detail`
 }

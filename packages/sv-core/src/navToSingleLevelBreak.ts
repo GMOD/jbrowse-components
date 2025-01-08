@@ -1,18 +1,11 @@
 import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
 import { getSnapshot } from 'mobx-state-tree'
 
-import { getBreakendCoveringRegions } from './util'
+import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
 
+import type { BreakpointSplitView } from './types'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Track } from './types'
-
-function stripIds(arr: Track[]) {
-  return arr.map(({ id, displays, ...rest }) => ({
-    ...rest,
-    displays: displays.map(({ id, ...rest }) => rest),
-  }))
-}
 
 export function singleLevelSnapshotFromBreakendFeature({
   feature,
@@ -51,9 +44,7 @@ export function singleLevelSnapshotFromBreakendFeature({
           ]),
         },
       ],
-      displayName: `${
-        feature.get('name') || feature.get('id') || 'breakend'
-      } split detail`,
+      displayName: makeTitle(feature),
     },
   }
 }
@@ -79,12 +70,11 @@ export async function navToSingleLevelBreak({
     session,
   })
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
-  let viewInStack = session.views.find(f => f.id === stableViewId) as
-    | { views: any[] }
+  let view = session.views.find(f => f.id === stableViewId) as
+    | BreakpointSplitView
     | undefined
-
-  if (!viewInStack) {
-    viewInStack = session.addView('BreakpointSplitView', {
+  if (!view) {
+    view = session.addView('BreakpointSplitView', {
       ...snap,
       views: [
         {
@@ -94,11 +84,11 @@ export async function navToSingleLevelBreak({
       ],
     }) as unknown as { views: LinearGenomeViewModel[] }
   } else {
-    viewInStack.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
+    view.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
     // @ts-expect-error
-    viewInStack.setDisplayName(snap.displayName)
+    view.setDisplayName(snap.displayName)
   }
-  const lgv = viewInStack.views[0]!
+  const lgv = view.views[0]!
   await when(() => lgv.initialized)
 
   const l0 = lgv.bpToPx({
@@ -110,7 +100,16 @@ export async function navToSingleLevelBreak({
     refName: mateRefName,
   })
   if (l0 && r0) {
-    lgv.moveTo({ ...l0, offset: l0.offsetPx }, { ...r0, offset: r0.offsetPx })
+    lgv.moveTo(
+      {
+        ...l0,
+        offset: l0.offsetPx,
+      },
+      {
+        ...r0,
+        offset: r0.offsetPx,
+      },
+    )
   } else {
     getSession(lgv).notify('Unable to navigate to breakpoint')
   }

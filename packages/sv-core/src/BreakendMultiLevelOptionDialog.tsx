@@ -8,9 +8,9 @@ import { getSnapshot } from 'mobx-state-tree'
 import Checkbox2 from './Checkbox2'
 import { navToMultiLevelBreak } from './navToMultiLevelBreak'
 
+import type { Track } from './types'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { Track } from './types'
 
 const BreakendMultiLevelOptionDialog = observer(function ({
   session,

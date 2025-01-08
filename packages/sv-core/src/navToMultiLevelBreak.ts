@@ -1,24 +1,10 @@
 import { when } from '@jbrowse/core/util'
 
-import { getBreakendCoveringRegions } from './util'
+import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
 
+import type { BreakpointSplitView, Track } from './types'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Track } from './types'
-
-function stripIds(arr: Track[]) {
-  return arr.map(({ id, displays, ...rest }) => ({
-    ...rest,
-    displays: displays.map(({ id, ...rest }) => rest),
-  }))
-}
-function makeTitle(f: Feature) {
-  return `${f.get('name') || f.get('id') || 'breakend'} split detail`
-}
-
-interface BreakpointSplitView {
-  views: LinearGenomeViewModel[]
-}
 
 export async function navToMultiLevelBreak({
   stableViewId,
