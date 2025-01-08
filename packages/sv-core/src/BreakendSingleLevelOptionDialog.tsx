@@ -6,7 +6,7 @@ import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Checkbox2 from './Checkbox2'
-import { navToSingleLevelBreak } from './util'
+import { navToSingleLevelBreak } from './navToSingleLevelBreak'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
