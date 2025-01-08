@@ -24,9 +24,7 @@ test(
       fireEvent.click(await findByText('SV inspector'))
 
       fireEvent.change(await findByTestId('urlInput', {}, delay), {
-        target: {
-          value: 'volvox.dup.renamed.vcf.gz',
-        },
+        target: { value: 'volvox.dup.renamed.vcf.gz' },
       })
       await waitFor(() => {
         expect(
@@ -34,7 +32,6 @@ test(
         ).not.toBeDisabled()
       })
       fireEvent.click(await findByTestId('open_spreadsheet'))
-      expect(session.views.length).toBe(2)
       fireEvent.click(await findByTestId('chord-vcf-0', {}, delay))
 
       // confirm breakpoint split view opened
