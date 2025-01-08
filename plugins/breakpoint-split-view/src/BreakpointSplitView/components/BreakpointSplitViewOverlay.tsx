@@ -17,6 +17,13 @@ const useStyles = makeStyles()({
       fill: 'none',
     },
   },
+  base: {
+    // we set pointerEvents:none here but individual overlays can add
+    // pointerEvents:'auto' to retoggle it back on for a single e.g. svg line
+    pointerEvents: 'none',
+    width: '100%',
+    zIndex: 10,
+  },
 })
 
 const BreakpointSplitViewOverlay = observer(function ({
@@ -25,23 +32,18 @@ const BreakpointSplitViewOverlay = observer(function ({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
-  const { matchedTracks, interactToggled } = model
+  const { matchedTracks } = model
   const ref = useRef(null)
   return (
     <div className={classes.overlay}>
-      <svg
-        ref={ref}
-        style={{
-          width: '100%',
-          zIndex: 10,
-          pointerEvents: interactToggled ? undefined : 'none',
-        }}
-      >
+      <svg ref={ref} className={classes.base}>
         {matchedTracks.map(track => (
           // note: we must pass ref down, because:
-          // - the child component needs to getBoundingClientRect on the this
+          //
+          // 1. the child component needs to getBoundingClientRect on the this
           // components SVG, and...
-          // - we cannot rely on using getBoundingClientRect in this component
+          //
+          // 2. we cannot rely on using getBoundingClientRect in this component
           // to make sure this works because if it gets shifted around by
           // another element, this will not re-render necessarily
           <Overlay
