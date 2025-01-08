@@ -117,6 +117,7 @@ export default function stateModelFactory() {
               } satisfies GridColDef<(typeof rows)[0]>,
               {
                 field: 'Length',
+                type: 'number',
                 width: measureGridWidth(
                   rows.map(r =>
                     r.feature ? toLocale(r.feature.end - r.feature.start) : 0,
