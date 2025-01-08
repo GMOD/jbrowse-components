@@ -63,7 +63,7 @@ test('export svg of synteny', async () => {
             trackSelectorType: 'hierarchical',
             showIntraviewLinks: true,
             linkViews: true,
-            interactToggled: false,
+            interactiveOverlay: false,
             middleComparativeHeight: 174,
             tracks: [
               {

@@ -60,7 +60,12 @@ import {
   SCALE_BAR_HEIGHT,
 } from './consts'
 
-import type { BpOffset, ExportSvgOptions, HighlightType, NavLocation } from './types'
+import type {
+  BpOffset,
+  ExportSvgOptions,
+  HighlightType,
+  NavLocation,
+} from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'

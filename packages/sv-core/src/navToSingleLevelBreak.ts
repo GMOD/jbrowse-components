@@ -7,7 +7,59 @@ import type { BreakpointSplitView } from './types'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function singleLevelSnapshotFromBreakendFeature({
+export function singleLevelFocusedSnapshotFromBreakendFeature({
+  feature,
+  session,
+  assemblyName,
+  windowSize = 0,
+}: {
+  feature: Feature
+  session: AbstractSessionModel
+  assemblyName: string
+  windowSize?: number
+}) {
+  const { assemblyManager } = session
+  const assembly = assemblyManager.get(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly ${assemblyName} not found`)
+  }
+  if (!assembly.regions) {
+    throw new Error(`assembly ${assemblyName} regions not loaded`)
+  }
+  const coverage = getBreakendCoveringRegions({
+    feature,
+    assembly,
+  })
+  const { refName, mateRefName } = coverage
+  const topRegion = assembly.regions.find(f => f.refName === refName)!
+  const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)!
+  return {
+    coverage,
+    snap: {
+      type: 'BreakpointSplitView',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          displayedRegions: gatherOverlaps([
+            {
+              ...topRegion,
+              end: coverage.pos + windowSize,
+              assemblyName,
+            },
+            {
+              ...bottomRegion,
+              start: coverage.matePos - windowSize,
+              assemblyName,
+            },
+          ]),
+        },
+      ],
+      displayName: makeTitle(feature),
+    },
+  }
+}
+
+export function singleLevelEncompassingSnapshotFromBreakendFeature({
   feature,
   session,
   assemblyName,
@@ -56,6 +108,7 @@ export async function navToSingleLevelBreak({
   session,
   tracks,
   windowSize = 0,
+  focusOnBreakends,
 }: {
   stableViewId?: string
   feature: Feature
@@ -63,12 +116,20 @@ export async function navToSingleLevelBreak({
   windowSize?: number
   session: AbstractSessionModel
   tracks?: any
+  focusOnBreakends?: boolean
 }) {
-  const { snap, coverage } = singleLevelSnapshotFromBreakendFeature({
-    feature,
-    assemblyName,
-    session,
-  })
+  const { snap, coverage } = focusOnBreakends
+    ? singleLevelFocusedSnapshotFromBreakendFeature({
+        feature,
+        assemblyName,
+        session,
+        windowSize,
+      })
+    : singleLevelEncompassingSnapshotFromBreakendFeature({
+        feature,
+        assemblyName,
+        session,
+      })
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
   let view = session.views.find(f => f.id === stableViewId) as
     | BreakpointSplitView

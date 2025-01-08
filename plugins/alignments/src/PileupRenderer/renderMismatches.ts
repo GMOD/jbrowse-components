@@ -127,7 +127,7 @@ export function renderMismatches({
     } else if (mismatch.type === 'insertion' && drawIndels) {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
-      const insW = Math.max(minSubfeatureWidth, Math.min(1.2, 1 / bpPerPx))
+      const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))
       if (len < 10) {
         if (!hideSmallIndels) {
           fillRect(ctx, pos, topPx, insW, heightPx, canvasWidth, 'purple')

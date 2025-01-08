@@ -75,5 +75,5 @@ export function makeSummary(feature: Feature, alt?: string) {
     alt,
   ]
     .filter(f => !!f)
-    .join(' - ')
+    .join('<br/>')
 }
