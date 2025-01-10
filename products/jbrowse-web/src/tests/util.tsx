@@ -1,15 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
-
-import React from 'react'
-
-import { Buffer } from 'buffer'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 
@@ -21,7 +16,7 @@ import JBrowse from './TestingJBrowse'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 type LGV = LinearGenomeViewModel
 
@@ -70,10 +65,9 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
         }
         const { start, end } = range[0]!
         const len = end - start + 1
-        const buf = Buffer.alloc(len)
-        const { bytesRead } = await file.read(buf, 0, len, start)
+        const buf = await file.read(len, start)
         const stat = await file.stat()
-        return new Response(buf.subarray(0, bytesRead), {
+        return new Response(buf, {
           status: 206,
           headers: [['content-range', `${start}-${end}/${stat.size}`]],
         })
@@ -92,6 +86,7 @@ export function setup() {
 }
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
+  // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
@@ -185,8 +180,8 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
 
   return {
     autocomplete,
-    input,
     getInputValue,
+    input,
     ...args,
   }
 }
@@ -208,12 +203,9 @@ export function mockFile404(
   readBuffer: (request: Request) => Promise<Response>,
 ) {
   // @ts-expect-error
-  fetch.mockResponse(async request => {
-    if (request.url === str) {
-      return { status: 404 }
-    }
-    return readBuffer(request)
-  })
+  fetch.mockResponse(async request =>
+    request.url === str ? { status: 404 } : readBuffer(request),
+  )
 }
 
 export { default as JBrowse } from './TestingJBrowse'

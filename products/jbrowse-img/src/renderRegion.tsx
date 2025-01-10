@@ -3,7 +3,6 @@ import path from 'path'
 
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
-import { createRoot } from 'react-dom/client'
 
 // local
 import { booleanize } from './util'
@@ -459,7 +458,6 @@ function process(
 export async function renderRegion(opts: Opts) {
   const model = createViewState({
     ...readData(opts),
-    createRootFn: createRoot,
   })
   const {
     loc,

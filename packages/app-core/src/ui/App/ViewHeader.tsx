@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'

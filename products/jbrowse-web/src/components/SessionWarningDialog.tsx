@@ -1,8 +1,5 @@
-import React from 'react'
-
 import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import WarningIcon from '@mui/icons-material/Warning'
 import {
   Button,
@@ -11,10 +8,9 @@ import {
   DialogContentText,
 } from '@mui/material'
 
-import type { SessionLoaderModel } from '../SessionLoader'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
-function SessionWarningDialog({
+export default function SessionWarningDialog({
   onConfirm,
   onCancel,
   reason,
@@ -59,30 +55,4 @@ function SessionWarningDialog({
       </DialogActions>
     </Dialog>
   )
-}
-
-export default function SessionTriaged({
-  loader,
-  handleClose,
-}: {
-  loader: SessionLoaderModel
-  handleClose: () => void
-}) {
-  const { sessionTriaged } = loader
-  return sessionTriaged ? (
-    <SessionWarningDialog
-      onConfirm={async () => {
-        const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
-
-        // second param true says we passed user confirmation
-        await loader.setSessionSnapshot({ ...session, id: nanoid() }, true)
-        handleClose()
-      }}
-      onCancel={() => {
-        loader.setBlankSession(true)
-        handleClose()
-      }}
-      reason={sessionTriaged.reason}
-    />
-  ) : null
 }

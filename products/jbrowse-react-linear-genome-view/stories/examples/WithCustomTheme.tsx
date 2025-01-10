@@ -1,5 +1,3 @@
-import React from 'react'
-
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
 import { getVolvoxConfig } from './util'

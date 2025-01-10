@@ -3,7 +3,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Observable } from 'rxjs'
 
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 // setup for Cram Adapter Testing
 export function parseSmallFasta(text: string) {
@@ -30,7 +30,8 @@ export class FetchableSmallFasta {
 
   constructor(filehandle: FileHandle) {
     this.data = filehandle.readFile().then(buffer => {
-      const text = buffer.toString('utf8')
+      const decoder = new TextDecoder('utf8')
+      const text = decoder.decode(buffer)
       return parseSmallFasta(text)
     })
   }

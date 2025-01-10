@@ -1,5 +1,3 @@
-import type { Buffer } from 'buffer'
-
 /* adapted from chain2paf by Andrea Guarracino, license reproduced below
  *
  * MIT License
@@ -53,7 +51,7 @@ function generate_record(
   }
 }
 
-export function paf_chain2paf(buffer: Buffer) {
+export function paf_chain2paf(buffer: Uint8Array) {
   let t_name = ''
   let t_start = 0
   let t_end = 0
@@ -69,7 +67,7 @@ export function paf_chain2paf(buffer: Buffer) {
   let blockStart = 0
   const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
-    const n = buffer.indexOf('\n', blockStart)
+    const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break
     }

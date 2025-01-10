@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { TextField } from '@mui/material'
@@ -30,14 +30,14 @@ export const ColorSlot = (props: {
         {...TextFieldProps}
       />
       <div style={{ marginTop: 10 }}>
-        <React.Suspense fallback={null}>
+        <Suspense fallback={null}>
           <ColorPicker
             color={value}
             onChange={event => {
               onChange(event)
             }}
           />
-        </React.Suspense>
+        </Suspense>
       </div>
     </div>
   )

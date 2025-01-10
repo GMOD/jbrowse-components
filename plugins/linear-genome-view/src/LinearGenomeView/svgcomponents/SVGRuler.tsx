@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 

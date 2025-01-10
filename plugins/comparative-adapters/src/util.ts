@@ -2,8 +2,7 @@ import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 
 import type { PAFRecord } from './PAFAdapter/util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Buffer } from 'buffer'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 export function parseBed(text: string) {
   return new Map(
@@ -38,14 +37,14 @@ export function zip(a: number[], b: number[]) {
 }
 
 export function parseLineByLine<T>(
-  buffer: Buffer,
+  buffer: Uint8Array,
   cb: (line: string) => T | undefined,
 ): T[] {
   let blockStart = 0
   const entries: T[] = []
   const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
-    const n = buffer.indexOf('\n', blockStart)
+    const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'

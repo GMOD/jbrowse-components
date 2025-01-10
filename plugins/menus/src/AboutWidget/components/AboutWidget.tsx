@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getSession } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 import { observer } from 'mobx-react'

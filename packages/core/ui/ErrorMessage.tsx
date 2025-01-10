@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'

@@ -88,7 +88,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
           const { fasta } = await this.setup()
           // TODO:ABORT
           const size = await fasta.getSequenceSize(refName)
-          const regionEnd = Math.min(size, end)
+          const regionEnd = Math.min(size || 0, end)
           const chunks = []
           const chunkSize = 128000
 

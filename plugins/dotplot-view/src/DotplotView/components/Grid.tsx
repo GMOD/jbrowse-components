@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'

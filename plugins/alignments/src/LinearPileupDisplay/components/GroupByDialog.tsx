@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
@@ -142,7 +142,7 @@ const GroupByTagDialog = observer(function (props: {
                   session.addTrackConf({
                     ...trackConf,
                     trackId: t1,
-                    name: `${trackConf.name} (-)`,
+                    name: `${trackConf.name} (${tag}:${tagValue})`,
                     displays: [
                       {
                         displayId: `${t1}-LinearAlignmentsDisplay`,

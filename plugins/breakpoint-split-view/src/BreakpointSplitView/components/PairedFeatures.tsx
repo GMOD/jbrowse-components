@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -19,10 +19,10 @@ const PairedFeatures = observer(function ({
 }: {
   model: BreakpointViewModel
   trackId: string
-  parentRef: React.RefObject<SVGSVGElement>
+  parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
-  const { views } = model
+  const { interactiveOverlay, views } = model
   const session = getSession(model)
   const { assemblyManager } = session
   const totalFeatures = model.getTrackFeatures(trackId)
@@ -99,6 +99,7 @@ const PairedFeatures = observer(function ({
               d={path}
               data-testid="r2"
               key={JSON.stringify(path)}
+              pointerEvents={interactiveOverlay ? 'auto' : undefined}
               strokeWidth={id === mouseoverElt ? 10 : 5}
               onClick={() => {
                 const featureWidget = session.addWidget?.(

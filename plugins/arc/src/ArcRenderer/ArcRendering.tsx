@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
@@ -45,7 +45,7 @@ function Arc({
     readConfObject(config, 'height', { feature }) || 100,
     displayHeight,
   )
-  const ref = React.createRef<SVGPathElement>()
+  const ref = useRef<SVGPathElement>(null)
 
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
   const t = 0.5
@@ -167,7 +167,7 @@ function SemiCircles({
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
   const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
-  const ref = React.createRef<SVGPathElement>()
+  const ref = useRef<SVGPathElement>(null)
   const textYCoord = (right - left) / 2
 
   return (

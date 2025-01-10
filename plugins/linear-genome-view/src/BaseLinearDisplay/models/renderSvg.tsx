@@ -1,4 +1,4 @@
-import React from 'react'
+import { Fragment } from 'react'
 
 import {
   ReactRendering,
@@ -10,10 +10,8 @@ import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { getId } from './util'
 
 import type { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
-import type {
-  ExportSvgOptions,
-  LinearGenomeViewModel,
-} from '../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { ExportSvgOptions } from '../../LinearGenomeView/types'
 import type { ThemeOptions } from '@mui/material'
 
 export async function renderBaseLinearDisplaySvg(
@@ -81,7 +79,7 @@ export async function renderBaseLinearDisplaySvg(
 
         return (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <React.Fragment key={`frag-${index}`}>
+          <Fragment key={`frag-${index}`}>
             <defs>
               <clipPath id={clipid}>
                 <rect
@@ -97,7 +95,7 @@ export async function renderBaseLinearDisplaySvg(
                 <ReactRendering rendering={rendering} />
               </g>
             </g>
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>

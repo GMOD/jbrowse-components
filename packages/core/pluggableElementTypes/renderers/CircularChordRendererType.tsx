@@ -1,5 +1,3 @@
-import React from 'react'
-
 import FeatureRenderer from './FeatureRendererType'
 import RpcRenderedSvgGroup from './RpcRenderedSvgGroup'
 import { SimpleFeature } from '../../util'

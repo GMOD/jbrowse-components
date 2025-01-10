@@ -1,4 +1,5 @@
-import React from 'react'
+import type { ReactNode } from 'react'
+import { Fragment } from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
@@ -84,7 +85,7 @@ function Translation({
             ? theme?.palette.stopCodon
             : undefined
         return !(renderLetter || codonFill) ? null : (
-          <React.Fragment key={`${index}-${letter}`}>
+          <Fragment key={`${index}-${letter}`}>
             <rect
               x={x}
               y={y}
@@ -108,7 +109,7 @@ function Translation({
                 {letter}
               </text>
             ) : null}
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>
@@ -153,7 +154,7 @@ function Sequence({
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <React.Fragment key={`${letter}-${index}`}>
+          <Fragment key={`${letter}-${index}`}>
             <rect
               x={x}
               y={y}
@@ -176,7 +177,7 @@ function Sequence({
                 {letter}
               </text>
             ) : null}
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>
@@ -306,7 +307,7 @@ function Wrapper({
   exportSVG?: { rasterizeLayers: boolean }
   width: number
   totalHeight: number
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return exportSVG ? (
     children

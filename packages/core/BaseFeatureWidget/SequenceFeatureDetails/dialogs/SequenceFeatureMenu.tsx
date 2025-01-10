@@ -1,4 +1,4 @@
-import React, { lazy, useState } from 'react'
+import { forwardRef, lazy, useState } from 'react'
 
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
@@ -19,7 +19,7 @@ interface Props {
   extraItems?: MenuItem[]
 }
 const SequenceFeatureMenu = observer(
-  React.forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
+  forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
     { model, extraItems = [] },
     ref,
   ) {

@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'

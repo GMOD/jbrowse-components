@@ -61,7 +61,7 @@
         "trackSelectorType": "hierarchical",
         "showIntraviewLinks": true,
         "linkViews": false,
-        "interactToggled": false,
+        "interactiveOverlay": false,
         "middleComparativeHeight": 100,
         "tracks": [
           {
@@ -135,7 +135,7 @@
         "trackSelectorType": "hierarchical",
         "showIntraviewLinks": true,
         "linkViews": false,
-        "interactToggled": false,
+        "interactiveOverlay": false,
         "middleComparativeHeight": 100,
         "tracks": [
           {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { parseBreakend } from '@gmod/vcf'
 import { readConfObject } from '@jbrowse/core/configuration'

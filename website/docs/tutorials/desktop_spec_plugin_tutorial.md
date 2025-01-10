@@ -199,7 +199,7 @@ haven't already).
 **./src/MyToolWidget/MyToolWidget.tsx**
 
 ```jsx
-import React from 'react'
+
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 export default function MyToolWidget({ model }: { model: AddTrackModel }) {
@@ -289,7 +289,7 @@ We'll add some more UI elements that allow us to do something more interesting:
 **./src/MyToolWidget/MyToolWidget.tsx**
 
 ```tsx
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Box,
   Button,

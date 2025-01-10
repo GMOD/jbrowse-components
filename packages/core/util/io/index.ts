@@ -1,5 +1,5 @@
 import isNode from 'detect-node'
-import { BlobFile, LocalFile } from 'generic-filehandle'
+import { BlobFile, LocalFile } from 'generic-filehandle2'
 
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import { isElectron } from '../'
@@ -18,7 +18,7 @@ import type {
   LocalPathLocation,
   UriLocation,
 } from '../types'
-import type { Fetcher, GenericFilehandle } from 'generic-filehandle'
+import type { Fetcher, GenericFilehandle } from 'generic-filehandle2'
 
 function isLocalPathLocation(
   location: FileLocation,

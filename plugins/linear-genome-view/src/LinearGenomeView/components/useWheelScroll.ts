@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 type Timer = ReturnType<typeof setTimeout>
 
 export function useWheelScroll(
-  ref: React.RefObject<HTMLDivElement>,
+  ref: React.RefObject<HTMLDivElement | null>,
   model: {
     bpPerPx: number
     zoomTo: (arg: number, arg2?: number) => void
@@ -13,7 +13,7 @@ export function useWheelScroll(
   },
 ) {
   const delta = useRef(0)
-  const timeout = useRef<Timer>()
+  const timeout = useRef<Timer>(null)
   const scheduled = useRef(false)
   useEffect(() => {
     const curr = ref.current

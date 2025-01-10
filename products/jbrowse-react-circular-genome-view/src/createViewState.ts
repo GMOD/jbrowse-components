@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { autorun } from 'mobx'
 import { onPatch } from 'mobx-state-tree'
 
@@ -24,13 +22,6 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   makeWorkerInstance?: () => Worker
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  }
   defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
@@ -43,16 +34,12 @@ export default function createViewState(opts: ViewStateOptions) {
     configuration,
     aggregateTextSearchAdapters,
     plugins,
-    hydrateFn,
-    createRootFn,
     makeWorkerInstance,
     onChange,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {

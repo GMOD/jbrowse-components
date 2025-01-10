@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import DragIcon from '@mui/icons-material/DragIndicator'
 import { makeStyles } from 'tss-react/mui'
 

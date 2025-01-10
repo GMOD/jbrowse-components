@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { observer } from 'mobx-react'
 
 import AlignmentConnections from './AlignmentConnections'
@@ -10,21 +8,22 @@ import Translocations from './Translocations'
 import type { BreakpointViewModel } from '../model'
 
 const Overlay = observer(function (props: {
-  parentRef: React.RefObject<SVGSVGElement>
+  parentRef: React.RefObject<SVGSVGElement | null>
   model: BreakpointViewModel
   trackId: string
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { model, trackId } = props
   const tracks = model.getMatchedTracks(trackId)
+  const type = tracks[0]?.type
 
   // curvy line type arcs
-  if (tracks[0]?.type === 'AlignmentsTrack') {
+  if (type === 'AlignmentsTrack') {
     return <AlignmentConnections {...props} />
   }
 
   // translocation type arcs
-  else if (tracks[0]?.type === 'VariantTrack') {
+  else if (type === 'VariantTrack') {
     return model.hasTranslocations(trackId) ? (
       <Translocations {...props} />
     ) : model.hasPairedFeatures(trackId) ? (
@@ -32,7 +31,10 @@ const Overlay = observer(function (props: {
     ) : (
       <Breakends {...props} />
     )
-  } else {
+  }
+
+  // unknown
+  else {
     return null
   }
 })

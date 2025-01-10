@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'

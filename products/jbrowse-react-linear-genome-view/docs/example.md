@@ -3,7 +3,6 @@ genome example using publicly hosted data files. It includes the GRCh38
 reference sequence and a genes track.
 
 ```tsx
-import React from 'react'
 import '@fontsource/roboto'
 import {
   createViewState,

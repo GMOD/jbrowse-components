@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { coarseStripHTML, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 

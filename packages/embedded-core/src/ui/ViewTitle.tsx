@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'

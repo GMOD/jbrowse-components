@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 
 import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -15,18 +15,19 @@ import '@fontsource/roboto'
 import JBrowse from './JBrowse'
 import Loading from './Loading'
 import SessionLoader from '../SessionLoader'
-import factoryReset from '../factoryReset'
-import StartScreenErrorMessage from './StartScreenErrorMessage'
 import { createPluginManager } from '../createPluginManager'
+import factoryReset from '../factoryReset'
 
-import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader'
 import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
-const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
+const SessionTriaged = lazy(() => import('./SessionTriaged'))
 const StartScreen = lazy(() => import('./StartScreen'))
+const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
+// return value if defined, else convert null to undefined for use with
+// types.maybe
 function normalize<T>(param: T | null | undefined) {
   return param === null ? undefined : param
 }
@@ -36,9 +37,6 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  // return value if defined, else convert null to undefined for use with
-  // types.maybe
-
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
@@ -47,6 +45,7 @@ export function Loader({
   const [password, setPassword] = useQueryParam('password', Str)
   const [loc, setLoc] = useQueryParam('loc', Str)
   const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
+  const [hubURL, setHubURL] = useQueryParam('hubURL', Str)
   const [assembly, setAssembly] = useQueryParam('assembly', Str)
   const [tracks, setTracks] = useQueryParam('tracks', Str)
   const [highlight, setHighlight] = useQueryParam('highlight', Str)
@@ -65,12 +64,14 @@ export function Loader({
     tracklist: JSON.parse(normalize(tracklist) || 'false'),
     highlight: normalize(highlight),
     nav: JSON.parse(normalize(nav) || 'true'),
+    hubURL: normalize(hubURL?.split(',')),
     initialTimestamp,
   })
 
   useEffect(() => {
     setLoc(undefined, 'replaceIn')
     setTracks(undefined, 'replaceIn')
+    setHubURL(undefined, 'replaceIn')
     setAssembly(undefined, 'replaceIn')
     setPassword(undefined, 'replaceIn')
     setSessionTracks(undefined, 'replaceIn')
@@ -79,45 +80,18 @@ export function Loader({
     setHighlight(undefined, 'replaceIn')
   }, [
     setAssembly,
+    setHighlight,
+    setHubURL,
     setLoc,
     setNav,
-    setTrackList,
-    setTracks,
     setPassword,
     setSessionTracks,
-    setHighlight,
+    setTrackList,
+    setTracks,
   ])
 
   return <Renderer loader={loader} />
 }
-
-const SessionTriaged = observer(function ({
-  sessionTriaged,
-  loader,
-}: {
-  loader: SessionLoaderModel
-  sessionTriaged: SessionTriagedInfo
-}) {
-  return (
-    <Suspense fallback={null}>
-      {sessionTriaged.origin === 'session' ? (
-        <SessionWarningDialog
-          loader={loader}
-          handleClose={() => {
-            loader.setSessionTriaged(undefined)
-          }}
-        />
-      ) : (
-        <ConfigWarningDialog
-          loader={loader}
-          handleClose={() => {
-            loader.setSessionTriaged(undefined)
-          }}
-        />
-      )}
-    </Suspense>
-  )
-})
 
 const PluginManagerLoaded = observer(function ({
   pluginManager,
@@ -147,13 +121,10 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    let pm: PluginManager | undefined
     try {
-      if (!ready) {
-        return
+      if (ready) {
+        setPluginManager(createPluginManager(loader))
       }
-      pm = createPluginManager(loader)
-      setPluginManager(pm)
     } catch (e) {
       console.error(e)
       setError(e)
@@ -162,9 +133,17 @@ const Renderer = observer(function ({
 
   const err = configError || error
   if (err) {
-    return <StartScreenErrorMessage error={err} />
+    return (
+      <Suspense fallback={null}>
+        <StartScreenErrorMessage error={err} />
+      </Suspense>
+    )
   } else if (sessionTriaged) {
-    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+    return (
+      <Suspense fallback={null}>
+        <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+      </Suspense>
+    )
   } else if (pluginManager) {
     return <PluginManagerLoaded pluginManager={pluginManager} />
   } else {

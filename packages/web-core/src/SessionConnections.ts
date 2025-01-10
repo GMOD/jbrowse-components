@@ -32,40 +32,44 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       const superDeleteConnection = self.deleteConnection
       const superAddConnectionConf = self.addConnectionConf
       return {
+        /**
+         * #action
+         */
         addConnectionConf(connectionConf: BaseConnectionConfigModel) {
           if (self.adminMode) {
             return superAddConnectionConf(connectionConf)
+          } else {
+            const { connectionId, type } = connectionConf
+            if (!type) {
+              throw new Error(`unknown connection type ${type}`)
+            }
+            const connection = self.sessionTracks.find(
+              c => c.connectionId === connectionId,
+            )
+            if (connection) {
+              return connection
+            } else {
+              const length = self.sessionConnections.push(connectionConf)
+              return self.sessionConnections[length - 1]
+            }
           }
-          const { connectionId, type } = connectionConf
-          if (!type) {
-            throw new Error(`unknown connection type ${type}`)
-          }
-          const connection = self.sessionTracks.find(
-            c => c.connectionId === connectionId,
-          )
-          if (connection) {
-            return connection
-          }
-          const length = self.sessionConnections.push(connectionConf)
-          return self.sessionConnections[length - 1]
         },
 
+        /**
+         * #action
+         */
         deleteConnection(configuration: AnyConfigurationModel) {
-          let deletedConn: unknown
           if (self.adminMode) {
-            deletedConn = superDeleteConnection(configuration)
-          }
-          if (!deletedConn) {
+            return superDeleteConnection(configuration)
+          } else {
             const { connectionId } = configuration
             const idx = self.sessionConnections.findIndex(
               c => c.connectionId === connectionId,
             )
-            if (idx === -1) {
-              return undefined
-            }
-            return self.sessionConnections.splice(idx, 1)
+            return idx === -1
+              ? undefined
+              : self.sessionConnections.splice(idx, 1)
           }
-          return deletedConn
         },
       }
     })

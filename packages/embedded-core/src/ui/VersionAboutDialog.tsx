@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent, Link, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'

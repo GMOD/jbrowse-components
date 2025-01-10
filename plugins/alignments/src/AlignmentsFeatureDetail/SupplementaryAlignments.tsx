@@ -1,5 +1,3 @@
-import React from 'react'
-
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getEnv, getSession } from '@jbrowse/core/util'
 

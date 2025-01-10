@@ -178,7 +178,7 @@ being a JBrowse admin!
 ### Track menu
 
 Users can access track-specific functions by using the track menu, which is
-accessible from the track selecter itself ("..." icon) or on the track label
+accessible from the track selector itself ("..." icon) or on the track label
 (vertical "..."). Some functions are only available when the track is open e.g.
 from the track label, but more basic options like "About track" are available
 from the track menu on the track selector.

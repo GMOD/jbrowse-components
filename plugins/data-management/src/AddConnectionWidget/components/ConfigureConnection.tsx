@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'

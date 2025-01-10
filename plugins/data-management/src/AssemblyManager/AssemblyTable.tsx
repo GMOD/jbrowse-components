@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import AddIcon from '@mui/icons-material/Add'
 import CreateIcon from '@mui/icons-material/Create'
@@ -54,6 +52,7 @@ const AssemblyTable = observer(function ({
                   return (
                     <>
                       <IconButton
+                        disabled={!editable}
                         onClick={() => {
                           onEditAssembly(assembly)
                         }}

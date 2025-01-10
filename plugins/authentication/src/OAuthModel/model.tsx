@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron } from '@jbrowse/core/util'
@@ -16,6 +14,18 @@ import { getResponseError } from '../util'
 import type { OAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
+
+// ISC Copyright (c) 2020, Andrea Giammarchi, @WebReflection
+// https://github.com/WebReflection/uint8-to-base64
+function encode(uint8array: Uint8Array) {
+  const output = []
+
+  for (let i = 0, length = uint8array.length; i < length; i++) {
+    output.push(String.fromCharCode(uint8array[i]!))
+  }
+
+  return btoa(output.join(''))
+}
 
 interface OAuthData {
   client_id: string
@@ -50,12 +60,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
          * #getter
          */
         get codeVerifierPKCE() {
-          if (codeVerifier) {
-            return codeVerifier
+          if (!codeVerifier) {
+            const array = new Uint8Array(32)
+            globalThis.crypto.getRandomValues(array)
+            codeVerifier = fixup(encode(array))
           }
-          const array = new Uint8Array(32)
-          globalThis.crypto.getRandomValues(array)
-          codeVerifier = fixup(Buffer.from(array).toString('base64'))
           return codeVerifier
         },
       }
@@ -140,7 +149,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       async exchangeAuthorizationForAccessToken(
         token: string,
         redirectUri: string,
-      ): Promise<string> {
+      ) {
         const params = new URLSearchParams(
           Object.entries({
             code: token,
@@ -174,9 +183,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #action
        */
-      async exchangeRefreshForAccessToken(
-        refreshToken: string,
-      ): Promise<string> {
+      async exchangeRefreshForAccessToken(refreshToken: string) {
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

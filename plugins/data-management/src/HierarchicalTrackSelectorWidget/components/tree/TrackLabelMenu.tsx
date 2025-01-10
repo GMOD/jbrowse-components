@@ -1,5 +1,3 @@
-import React from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'

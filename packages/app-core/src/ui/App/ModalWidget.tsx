@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import CloseIcon from '@mui/icons-material/Close'

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
@@ -184,7 +184,7 @@ function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
   return findLastIndex(menuItems.slice(0, currentIdx), checkIfValid)
 }
 
-const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
+const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
   function MenuPage2(props, ref) {
     const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<HTMLElement>()
     const [openSubMenuIdx, setOpenSubMenuIdx] = useState<number>()

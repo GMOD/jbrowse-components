@@ -1,5 +1,3 @@
-import React from 'react'
-
 import DialogQueue from '@jbrowse/app-core/src/ui/App/DialogQueue'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'

@@ -1,5 +1,4 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
-import React from 'react'
 
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'

@@ -1,5 +1,4 @@
-import type { ReactElement } from 'react'
-import React from 'react'
+import type React from 'react'
 
 import PluggableElementBase from '../PluggableElementBase'
 
@@ -10,7 +9,7 @@ import type { AnyReactComponentType } from '../../util'
 export type RenderProps = Record<string, unknown>
 
 export interface RenderResults {
-  reactElement?: ReactElement
+  reactElement?: React.ReactElement
   html?: string
 }
 
@@ -38,7 +37,7 @@ export default class RendererType extends PluggableElementBase {
 
   async render(props: RenderProps): Promise<RenderResults> {
     return {
-      reactElement: React.createElement(this.ReactComponent, props, null),
+      reactElement: <this.ReactComponent {...props} />,
     }
   }
 

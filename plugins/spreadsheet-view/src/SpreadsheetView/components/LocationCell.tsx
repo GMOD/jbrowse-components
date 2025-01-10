@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { Link } from '@mui/material'
 import { getParent } from 'mobx-state-tree'

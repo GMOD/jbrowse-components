@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
 

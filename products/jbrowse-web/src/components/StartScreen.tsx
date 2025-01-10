@@ -1,4 +1,4 @@
-import React, { lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { LogoFull } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
@@ -51,7 +51,7 @@ const StartScreen = observer(function ({
   return (
     <>
       {reset ? (
-        <React.Suspense fallback={null}>
+        <Suspense fallback={null}>
           <FactoryResetDialog
             open={reset}
             onFactoryReset={onFactoryReset}
@@ -59,7 +59,7 @@ const StartScreen = observer(function ({
               setReset(false)
             }}
           />
-        </React.Suspense>
+        </Suspense>
       ) : null}
       <CascadingMenuButton
         className={classes.settings}

@@ -3,8 +3,6 @@ test_data/many_contigs/large.chrom.sizes
 packages/core/ui/react-colorful.js
 plugins/legacy-jbrowse/test_data
 plugins/data-management/src/ucsc-trackhub/ucscAssemblies.ts
-plugins/circular-view/test_data/circos_example_content.txt
-plugins/circular-view/test_data/circos_example.svg
 products/jbrowse-web/src/tests/Loader.test.tsx
 test_data/yeast_synteny/
 test_data/hg38_aliases.txt
@@ -17,10 +15,7 @@ products/jbrowse-desktop/src/components/JBrowse.test.tsx
 test_data/volvox/names/
 products/jbrowse-web/src/sessionSharing.ts
 website/docs/models/
-website/src/pages/index.tsx
 *.snap
-test_data/config_demo.json
 plugins/spreadsheet-view/src/SpreadsheetView/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf
-website/docs/faq.md
 test_data/sars-cov2/ncbi_original.gff3
 plugins/data-management/src/UCSCTrackHub/ucscAssemblies.ts

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import ArrowDropUp from '@mui/icons-material/ArrowDropUp'
 import ArrowLeft from '@mui/icons-material/ArrowLeft'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { fireEvent, render } from '@testing-library/react'
 

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'

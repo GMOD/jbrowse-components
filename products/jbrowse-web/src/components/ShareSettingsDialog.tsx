@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'

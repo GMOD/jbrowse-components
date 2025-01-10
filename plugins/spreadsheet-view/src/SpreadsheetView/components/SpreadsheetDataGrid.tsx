@@ -1,6 +1,3 @@
-import React from 'react'
-
-import { LoadingEllipses } from '@jbrowse/core/ui'
 import { DataGrid, GridToolbar, useGridApiRef } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -43,9 +40,7 @@ const SpreadsheetDataGrid = observer(function ({
       rows={rows}
       columns={dataGridColumns}
     />
-  ) : (
-    <LoadingEllipses variant="h6" />
-  )
+  ) : null
 })
 
 export default SpreadsheetDataGrid

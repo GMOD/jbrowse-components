@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { assembleLocString } from '../../util'
 
 import type { BaseProps } from '../types'

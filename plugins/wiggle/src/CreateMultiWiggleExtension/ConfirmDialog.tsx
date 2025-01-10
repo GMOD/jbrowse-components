@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import Dialog from '@jbrowse/core/ui/Dialog'

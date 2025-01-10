@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app'

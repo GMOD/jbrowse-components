@@ -1,9 +1,5 @@
-import { Buffer } from 'buffer'
-
 import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
-import { RemoteFile } from 'generic-filehandle'
-
-import type { PolyfilledResponse } from 'generic-filehandle'
+import { RemoteFile } from 'generic-filehandle2'
 
 type BinaryRangeFetch = (
   url: string,
@@ -16,7 +12,7 @@ export interface BinaryRangeResponse {
   headers: Record<string, string>
   requestDate: Date
   responseDate: Date
-  buffer: Buffer
+  buffer: Uint8Array
 }
 
 const fetchers: Record<string, BinaryRangeFetch> = {}
@@ -35,6 +31,7 @@ function binaryRangeFetch(
 }
 
 const globalRangeCache = new HttpRangeFetcher({
+  // @ts-expect-error
   fetch: binaryRangeFetch,
   size: 500 * 1024 ** 2, // 500MiB
   chunkSize: 128 * 1024, // 128KiB
@@ -48,9 +45,9 @@ export function clearCache() {
 
 export class RemoteFileWithRangeCache extends RemoteFile {
   public async fetch(
-    url: RequestInfo,
+    url: string | RequestInfo,
     init?: RequestInit,
-  ): Promise<PolyfilledResponse> {
+  ): Promise<Response> {
     const str = String(url)
     if (!fetchers[str]) {
       fetchers[str] = this.fetchBinaryRange.bind(this)
@@ -64,13 +61,15 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         const s = Number.parseInt(start!, 10)
         const e = Number.parseInt(end!, 10)
         const len = e - s
-        // tODO: abort
         const { buffer, headers } = (await globalRangeCache.getRange(
-          url,
+          `${url}`,
           s,
           len + 1,
         )) as BinaryRangeResponse
-        return new Response(buffer, { status: 206, headers })
+        return new Response(buffer, {
+          status: 206,
+          headers,
+        })
       }
     }
     return super.fetch(url, init)
@@ -111,7 +110,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       headers,
       requestDate,
       responseDate,
-      buffer: Buffer.from(arrayBuffer),
+      buffer: new Uint8Array(arrayBuffer),
     }
   }
 }

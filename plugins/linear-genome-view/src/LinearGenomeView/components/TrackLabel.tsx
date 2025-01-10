@@ -1,23 +1,16 @@
-import React from 'react'
+import { forwardRef } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackLabelDragHandle from './TrackLabelDragHandle'
+import TrackLabelMenu from './TrackLabelMenu'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -45,7 +38,7 @@ interface Props {
 }
 
 const TrackLabel = observer(
-  React.forwardRef<HTMLDivElement, Props>(function TrackLabel2(
+  forwardRef<HTMLDivElement, Props>(function TrackLabel2(
     { track, className },
     ref,
   ) {
@@ -56,61 +49,6 @@ const TrackLabel = observer(
     const minimized = track.minimized
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
-    const items = [
-      {
-        label: 'Track order',
-        type: 'subMenu',
-        priority: 2000,
-        subMenu: [
-          {
-            label: minimized ? 'Restore track' : 'Minimize track',
-            icon: minimized ? AddIcon : MinimizeIcon,
-            onClick: () => {
-              track.setMinimized(!minimized)
-            },
-          },
-          ...(view.tracks.length > 2
-            ? [
-                {
-                  label: 'Move track to top',
-                  icon: KeyboardDoubleArrowUpIcon,
-                  onClick: () => {
-                    view.moveTrackToTop(track.id)
-                  },
-                },
-              ]
-            : []),
-
-          {
-            label: 'Move track up',
-            icon: KeyboardArrowUpIcon,
-            onClick: () => {
-              view.moveTrackUp(track.id)
-            },
-          },
-          {
-            label: 'Move track down',
-            icon: KeyboardArrowDownIcon,
-            onClick: () => {
-              view.moveTrackDown(track.id)
-            },
-          },
-          ...(view.tracks.length > 2
-            ? [
-                {
-                  label: 'Move track to bottom',
-                  icon: KeyboardDoubleArrowDownIcon,
-                  onClick: () => {
-                    view.moveTrackToBottom(track.id)
-                  },
-                },
-              ]
-            : []),
-        ],
-      },
-      ...(session.getTrackActionMenuItems?.(trackConf) || []),
-      ...track.trackMenuItems(),
-    ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
 
     return (
       <Paper
@@ -145,10 +83,7 @@ const TrackLabel = observer(
               .join(' ')}
           />
         </Typography>
-
-        <CascadingMenuButton menuItems={items} data-testid="track_menu_icon">
-          <MoreVertIcon fontSize="small" />
-        </CascadingMenuButton>
+        <TrackLabelMenu track={track} />
       </Paper>
     )
   }),

@@ -1,11 +1,10 @@
 import type { Mismatch } from '../shared/types'
-import type { Buffer } from 'buffer'
 
 export function cigarToMismatches(
   ops: string[],
   seq?: string,
   ref?: string,
-  qual?: Buffer,
+  qual?: Uint8Array,
 ) {
   let roffset = 0 // reference offset
   let soffset = 0 // seq offset

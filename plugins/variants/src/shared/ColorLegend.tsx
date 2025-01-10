@@ -1,4 +1,4 @@
-import React from 'react'
+import { Fragment } from 'react'
 
 import { clamp } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -36,7 +36,7 @@ const ColorLegend = observer(function ({
       {sources.map((source, idx) => {
         const { color, name } = source
         return (
-          <React.Fragment key={`${name}-${idx}`}>
+          <Fragment key={`${name}-${idx}`}>
             {color ? (
               <RectBg
                 y={idx * rowHeight + 1}
@@ -55,7 +55,7 @@ const ColorLegend = observer(function ({
                 {name}
               </text>
             ) : null}
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </>

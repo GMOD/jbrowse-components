@@ -60,7 +60,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
     const cram = new IndexedCramFile({
       cramFilehandle: openLocation(cramLocation, pm),
-      index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
+      index: new CraiIndex({
+        filehandle: openLocation(craiLocation, pm),
+      }),
       seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
     })
@@ -174,7 +176,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
       const data = { idToName, nameToId, readGroups }
       this.samHeader = data
-      return { samHeader: data, ...conf }
+      return {
+        samHeader: data,
+        ...conf,
+      }
     })
   }
 
@@ -311,6 +316,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   /**
    * get the approximate number of bytes queried from the file for the given
    * query regions
+   *
    * @param regions - list of query regions
    */
   private async bytesForRegions(regions: Region[], _opts?: BaseOptions) {

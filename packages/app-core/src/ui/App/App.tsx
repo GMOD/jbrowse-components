@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react'
+import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { AppBar } from '@mui/material'

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'

@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import isObject from 'is-object'
 import {
   getEnv as getEnvMST,
   getParent,
@@ -12,7 +11,8 @@ import {
   isAlive,
   isStateTreeNode,
 } from 'mobx-state-tree'
-import { flushSync, render } from 'react-dom' // eslint-disable-line react/no-deprecated
+import { flushSync } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { colord } from './colord'
 import { checkStopToken } from './stopToken'
@@ -30,8 +30,7 @@ import type { Feature } from './simpleFeature'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
-import type { Buffer } from 'buffer'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
@@ -80,14 +79,16 @@ export function useWidthSetter(
   return ref
 }
 
+type Timer = ReturnType<typeof setTimeout>
+
 // https://stackoverflow.com/questions/56283920/
 export function useDebouncedCallback<T>(
   callback: (...args: T[]) => void,
   wait = 400,
 ) {
   // track args & timeout handle between calls
-  const argsRef = useRef<T[]>()
-  const timeout = useRef<ReturnType<typeof setTimeout>>()
+  const argsRef = useRef<T[]>(null)
+  const timeout = useRef<Timer>(null)
 
   // make sure our timeout gets cleared if our consuming component gets
   // unmounted
@@ -1380,37 +1381,37 @@ export function getFillProps(str: string) {
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-export function renderToStaticMarkup(
-  node: React.ReactElement,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  },
-) {
+export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')
   flushSync(() => {
-    if (createRootFn) {
-      createRootFn(div).render(node)
-    } else {
-      render(node, div)
-    }
+    createRoot(div).render(node)
   })
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
-export function isGzip(buf: Buffer) {
+export function isGzip(buf: Uint8Array) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
+
 export async function fetchAndMaybeUnzip(
   loc: GenericFilehandle,
   opts?: BaseOptions,
 ) {
   const { statusCallback = () => {} } = opts || {}
   const buf = (await updateStatus('Downloading file', statusCallback, () =>
+    // @ts-expect-error
     loc.readFile(opts),
-  )) as Buffer
+  )) as unknown as Uint8Array
   return isGzip(buf)
     ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
     : buf
+}
+
+// MIT https://github.com/inspect-js/is-object
+export function isObject(
+  x: unknown,
+): x is Record<string | symbol | number, unknown> {
+  return typeof x === 'object' && x !== null
 }
 
 export {

@@ -250,7 +250,7 @@ when we click the circular genome view chord.
 `CircularViewChordWidget.tsx`
 
 ```ts
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { observer } from 'mobx-react'
 
 const CircularViewChordWidget = observer(({ model }: { model: any }) => {
@@ -273,7 +273,7 @@ message we can edit.
 <!-- TODO: upgrade to @mui when the template upgrades to mui -->
 
 ```ts
-import React from 'react'
+
 import { observer } from 'mobx-react'
 // JBrowse uses material-ui where possible for basic components
 import { TextField } from '@material-ui/core'

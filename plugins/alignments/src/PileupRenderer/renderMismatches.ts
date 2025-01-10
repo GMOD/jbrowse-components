@@ -18,6 +18,7 @@ export function renderMismatches({
   charHeight,
   colorForBase,
   contrastForBase,
+  hideSmallIndels,
   canvasWidth,
   drawSNPsMuted,
   drawIndels = true,
@@ -32,6 +33,7 @@ export function renderMismatches({
   drawSNPsMuted?: boolean
   minSubfeatureWidth: number
   largeInsertionIndicatorScale: number
+  hideSmallIndels: boolean
   charWidth: number
   charHeight: number
   canvasWidth: number
@@ -100,32 +102,41 @@ export function renderMismatches({
         )
       }
     } else if (mismatch.type === 'deletion' && drawIndels) {
-      fillRect(
-        ctx,
-        leftPx,
-        topPx,
-        Math.abs(leftPx - rightPx),
-        heightPx,
-        canvasWidth,
-        colorForBase.deletion,
-      )
-      const txt = `${mismatch.length}`
-      const rwidth = measureText(txt, 10)
-      if (widthPx >= rwidth && heightPx >= heightLim) {
-        ctx.fillStyle = contrastForBase.deletion!
-        ctx.fillText(txt, (leftPx + rightPx) / 2 - rwidth / 2, topPx + heightPx)
+      const len = mismatch.length
+      if (!hideSmallIndels || len >= 10) {
+        fillRect(
+          ctx,
+          leftPx,
+          topPx,
+          Math.abs(leftPx - rightPx),
+          heightPx,
+          canvasWidth,
+          colorForBase.deletion,
+        )
+        const txt = `${mismatch.length}`
+        const rwidth = measureText(txt, 10)
+        if (widthPx >= rwidth && heightPx >= heightLim) {
+          ctx.fillStyle = contrastForBase.deletion!
+          ctx.fillText(
+            txt,
+            (leftPx + rightPx) / 2 - rwidth / 2,
+            topPx + heightPx,
+          )
+        }
       }
     } else if (mismatch.type === 'insertion' && drawIndels) {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
       const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))
       if (len < 10) {
-        fillRect(ctx, pos, topPx, insW, heightPx, canvasWidth, 'purple')
-        if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
-          const l = pos - insW
-          fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
-          fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
-          ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+        if (!hideSmallIndels) {
+          fillRect(ctx, pos, topPx, insW, heightPx, canvasWidth, 'purple')
+          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+            const l = Math.round(pos - insW)
+            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
+            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
+            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+          }
         }
       }
     } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {

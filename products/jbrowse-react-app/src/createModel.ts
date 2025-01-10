@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import corePlugins from './corePlugins'
@@ -14,13 +12,6 @@ export default function createModel(
   makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  },
 ) {
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
@@ -32,8 +23,6 @@ export default function createModel(
       pluginManager,
       sessionModelFactory,
       makeWorkerInstance,
-      hydrateFn,
-      createRootFn,
     }),
     pluginManager,
   }

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
@@ -14,9 +12,12 @@ const ShoppingCart = observer(function ({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
+  const session = getSession(model)
   const { selection } = model
   const { pluginManager } = getEnv(model)
-  const session = getSession(model)
+  const { adminMode, sessionTracks } = session
+  const s = new Set<string>(sessionTracks?.map(t => t.trackId))
+  const canEdit = (t: string) => adminMode || s.has(t)
   const items = pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
     [],
@@ -27,11 +28,23 @@ const ShoppingCart = observer(function ({
     <CascadingMenuButton
       menuItems={[
         {
-          label: 'Clear',
+          label: 'Clear selection',
           onClick: () => {
             model.clearSelection()
           },
         },
+        ...(selection.every(elt => canEdit(elt.trackId))
+          ? [
+              {
+                label: 'Delete tracks',
+                onClick: () => {
+                  // @ts-expect-error
+                  selection.forEach(s => session.deleteTrackConf?.(s))
+                },
+              },
+            ]
+          : []),
+
         ...items.map(item => ({
           ...item,
           ...('onClick' in item

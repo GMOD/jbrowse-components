@@ -1,5 +1,3 @@
-import React from 'react'
-
 import Dialog from '@jbrowse/core/ui/Dialog'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'

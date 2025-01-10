@@ -1,5 +1,3 @@
-import React from 'react'
-
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession } from '@jbrowse/core/util'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'

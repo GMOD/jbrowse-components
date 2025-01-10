@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 import { onPatch } from 'mobx-state-tree'
 
@@ -36,13 +34,6 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-  ) => any
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  }
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -58,14 +49,10 @@ export default function createViewState(opts: ViewStateOptions) {
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {

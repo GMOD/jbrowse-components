@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react'
+import { Suspense, isValidElement, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
@@ -55,7 +55,7 @@ const ServerSideRenderedBlockContent = observer(function ({
   } else if (model.message) {
     // the message can be a fully rendered react component, e.g. the region too
     // large message
-    return React.isValidElement(model.message) ? (
+    return isValidElement(model.message) ? (
       model.message
     ) : (
       <BlockMsg message={`${model.message}`} severity="info" />

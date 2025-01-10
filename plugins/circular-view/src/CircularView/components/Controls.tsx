@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'

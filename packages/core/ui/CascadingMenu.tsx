@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import React, { useContext, useMemo } from 'react'
+import type React from 'react'
+import { createContext, useContext, useMemo } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
@@ -24,7 +25,7 @@ import type { MenuItem as JBMenuItem } from './Menu'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 import type { PopupState } from 'material-ui-popup-state/hooks'
 
-const CascadingContext = React.createContext({
+const CascadingContext = createContext({
   parentPopupState: null,
   rootPopupState: null,
 } as { parentPopupState: PopupState | null; rootPopupState: PopupState | null })
