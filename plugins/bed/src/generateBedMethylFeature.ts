@@ -7,8 +7,13 @@ export function isBedMethylFeature({
   start: number
   end: number
 }) {
-  return +(splitLine[6] || 0) === start && +(splitLine[7] || 0) === end
+  return (
+    +(splitLine[6] || 0) === start &&
+    +(splitLine[7] || 0) === end &&
+    !splitLine[10]?.includes(',')
+  )
 }
+
 export function generateBedMethylFeature({
   splitLine,
   uniqueId,
