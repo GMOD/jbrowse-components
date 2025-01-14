@@ -1,16 +1,16 @@
 export function isBedMethylFeature({
   splitLine,
-  start,
-  end,
 }: {
   splitLine: string[]
   start: number
   end: number
 }) {
   return (
-    +(splitLine[6] || 0) === start &&
-    +(splitLine[7] || 0) === end &&
-    !splitLine[10]?.includes(',')
+    // if it has comma-y blocks, not bedMethyl
+    !splitLine[10]?.includes(',') &&
+    // field 12+ not required in bedMethyl, but if it is a string and not a
+    // number, not bedMethyl
+    (splitLine[12] !== undefined ? !Number.isNaN(+splitLine[12]) : true)
   )
 }
 
