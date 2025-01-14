@@ -36,7 +36,6 @@ export function processModifications({
           bins[epos] = {
             depth: 0,
             readsCounted: 0,
-            refbase: regionSequence[epos],
             snps: {},
             ref: {
               probabilities: [],
@@ -54,6 +53,7 @@ export function processModifications({
 
         const s = 1 - sum(allProbs)
         const bin = bins[epos]
+        bin.refbase = regionSequence[epos]
         if (twoColor && s > max(allProbs)) {
           incWithProbabilities(bin, fstrand, 'nonmods', `nonmod_${type}`, s)
         } else {
