@@ -60,8 +60,9 @@ export function generateRepeatMaskerFeature({
   description: string
   [key: string]: unknown
 }) {
+  const { subfeatures, ...rest2 } = rest
   return {
-    ...rest,
+    ...rest2,
     ...makeRepeatTrackDescription(description),
     uniqueId,
     refName,
