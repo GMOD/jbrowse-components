@@ -1169,7 +1169,6 @@
         }
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
@@ -1826,7 +1825,6 @@
         }
       }
     },
-
     {
       "type": "QuantitativeTrack",
       "category": ["Mappability"],
@@ -4722,6 +4720,19 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chm13v2.0_rmsk",
+      "name": "chm13v2.0_rmsk",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg1"]
     }
   ],
   "connections": [],
