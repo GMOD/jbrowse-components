@@ -29,7 +29,7 @@ export function featureData(
   const extra = l.slice(10)
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
-    : extra
+    : {}
   const ALT = svTypes.has(extra[0]!) ? `<${extra[0]}>` : undefined
 
   return new SimpleFeature({

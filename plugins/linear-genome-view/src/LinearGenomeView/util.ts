@@ -185,6 +185,7 @@ export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     )
     const locs = contentBlocks.map(block =>
       assembleLocString({
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...block,
         start: Math.round(block.start),
         end: Math.round(block.end),

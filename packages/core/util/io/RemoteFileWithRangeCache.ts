@@ -85,6 +85,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     const res = await super.fetch(url, {
       ...options,
       headers: {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...options.headers,
         range: `bytes=${start}-${end}`,
       },
