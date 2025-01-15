@@ -28,10 +28,14 @@ exports[`renders with the available plugins 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+            id=":r1:"
             tabindex="0"
             type="button"
           >
+            <span
+              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -857,12 +861,13 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-12qtcjg-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                    id=":rv:"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-6rkz1o-MuiButton-startIcon"
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-1in3o51-MuiButton-startIcon"
                     >
                       <svg
                         aria-hidden="true"

@@ -60,7 +60,9 @@ export default function BulkEditPanel({
           const fields = lines[0]!.split(/[,\t]/gm)
           if (fields.includes('name')) {
             setError('')
-            const oldLayout = currLayout.map(record => [record.name, record])
+            const oldLayout = Object.fromEntries(
+              currLayout.map(record => [record.name, record]),
+            )
             const newData = Object.fromEntries(
               lines.slice(1).map(line => {
                 const cols = line.split(/[,\t]/gm)
@@ -69,7 +71,10 @@ export default function BulkEditPanel({
                 )
                 return [
                   newRecord.name,
-                  { ...newRecord, ...oldLayout[newRecord.name] },
+                  {
+                    ...newRecord,
+                    ...oldLayout[newRecord.name],
+                  },
                 ]
               }),
             )
@@ -97,7 +102,9 @@ export default function BulkEditPanel({
           const fields = lines[0]!.split(/[,\t]/gm)
           if (fields.includes('name')) {
             setError('')
-            const oldLayout = currLayout.map(record => [record.name, record])
+            const oldLayout = Object.fromEntries(
+              currLayout.map(record => [record.name, record]),
+            )
             const newData = Object.fromEntries(
               lines.slice(1).map(line => {
                 const cols = line.split(/[,\t]/gm)
@@ -106,7 +113,10 @@ export default function BulkEditPanel({
                 )
                 return [
                   newRecord.name,
-                  { ...newRecord, ...oldLayout[newRecord.name] },
+                  {
+                    ...newRecord,
+                    ...oldLayout[newRecord.name],
+                  },
                 ]
               }),
             )

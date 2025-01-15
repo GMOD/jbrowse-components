@@ -1,3 +1,4 @@
+// this uses modkit bedMethyl. unclear how to reliably detect minimal 9+2 bedMethyl
 export function isBedMethylFeature({
   splitLine,
   start,
@@ -7,8 +8,15 @@ export function isBedMethylFeature({
   start: number
   end: number
 }) {
-  return +(splitLine[6] || 0) === start && +(splitLine[7] || 0) === end
+  return (
+    +(splitLine[6] || 0) === start &&
+    +(splitLine[7] || 0) === end &&
+    [9, 10, 11, 12, 13, 14, 15, 16, 17].every(
+      r => splitLine[r] && !Number.isNaN(+splitLine[r]),
+    )
+  )
 }
+
 export function generateBedMethylFeature({
   splitLine,
   uniqueId,

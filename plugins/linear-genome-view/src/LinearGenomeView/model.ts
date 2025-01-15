@@ -940,6 +940,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
           ...region,
           start: Math.floor(region.start),
           end: Math.ceil(region.end),
@@ -1362,6 +1363,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.dynamicBlocks.contentBlocks.map(
             block =>
               ({
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
