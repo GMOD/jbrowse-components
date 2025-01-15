@@ -2,7 +2,7 @@ import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import { getParent, types } from 'mobx-state-tree'
 
 import { getConf } from '../configuration'
-import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
+import { adapterConfigCacheKey } from '../data_adapters/util'
 import { when } from '../util'
 import QuickLRU from '../util/QuickLRU'
 
