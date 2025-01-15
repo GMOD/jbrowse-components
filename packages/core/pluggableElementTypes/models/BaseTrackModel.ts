@@ -2,6 +2,7 @@ import { transaction } from 'mobx'
 import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../configuration'
+import { adapterConfigCacheKey } from '../../data_adapters/util'
 import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
@@ -65,7 +66,10 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        return self.configuration.trackId
+        const adapter = getConf(self, 'adapter')
+        return adapter
+          ? adapterConfigCacheKey(adapter)
+          : self.configuration.trackId
       },
       /**
        * #getter
