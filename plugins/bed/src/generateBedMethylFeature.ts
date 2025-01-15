@@ -1,3 +1,4 @@
+// this uses modkit bedMethyl. unclear how to reliably detect minimal 9+2 bedMethyl
 export function isBedMethylFeature({
   splitLine,
   start,
