@@ -12,6 +12,9 @@ import { types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('./components/LaunchSyntenyViewDialog'),
@@ -59,9 +62,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                       getSession(self).queueDialog(handleClose => [
                         LaunchSyntenyViewDialog,
                         {
-                          model: self,
+                          view: getContainingView(self) as LGV,
                           trackId: getConf(getContainingTrack(self), 'trackId'),
                           handleClose,
+                          session: getSession(self),
                           feature,
                         },
                       ])
