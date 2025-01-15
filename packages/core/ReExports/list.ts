@@ -9,6 +9,7 @@ export default [
   'react',
   'react/jsx-runtime',
   'react-dom',
+  'react-dom/client',
   'mobx-react',
   '@mui/x-data-grid',
   '@mui/material/utils',

@@ -17,6 +17,7 @@ import * as mxreact from 'mobx-react'
 import * as mst from 'mobx-state-tree'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
+import * as ReactDomClient from 'react-dom/client'
 import { makeStyles } from 'tss-react/mui'
 
 // material-ui lab
@@ -495,6 +496,7 @@ const libs = {
   react: React,
   'react/jsx-runtime': ReactJSXRuntime,
   'react-dom': ReactDom,
+  'react-dom/client': ReactDomClient,
   'mobx-react': mxreact,
   '@mui/x-data-grid': {
     useGridApiContext,
