@@ -17,11 +17,15 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
         >
           <button
             aria-haspopup="true"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-1qby7rs-MuiButtonBase-root-MuiIconButton-root-iconRoot"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-iwqq6r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
+            id=":r0:"
             tabindex="0"
             type="button"
           >
+            <span
+              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
@@ -41,10 +45,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             class="css-122lw0e-grow"
           />
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+            id=":r1:"
             tabindex="0"
             type="button"
           >
+            <span
+              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+            />
             <div
               style="width: 22px; height: 22px;"
             >
@@ -145,12 +153,16 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               class="css-1vhj25i-controls"
             >
               <button
-                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 disabled=""
+                id=":r5:"
                 tabindex="-1"
                 title="unlock to zoom out"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -164,11 +176,15 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                id=":r6:"
                 tabindex="0"
                 title="zoom in"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -185,11 +201,15 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                id=":r7:"
                 tabindex="0"
                 title="rotate counter-clockwise"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -203,11 +223,15 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                id=":r8:"
                 tabindex="0"
                 title="rotate clockwise"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -221,11 +245,15 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                id=":r9:"
                 tabindex="0"
                 title="locked model to window size"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -239,10 +267,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                id=":ra:"
                 tabindex="0"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -256,12 +288,16 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="circular_track_select"
+                id=":rb:"
                 tabindex="0"
                 title="Open track selector"
                 type="button"
               >
+                <span
+                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
