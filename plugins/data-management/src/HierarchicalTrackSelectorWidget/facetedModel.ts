@@ -55,8 +55,17 @@ export function facetedStateTreeF() {
       ),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       visible: {} as Record<string, boolean>,
+      /**
+       * #volatile
+       */
       useShoppingCart: false,
+      /**
+       * #volatile
+       */
       filters: observable.map<string, string[]>(),
     }))
     .actions(self => ({
@@ -158,6 +167,9 @@ export function facetedStateTreeF() {
       get metadataKeys() {
         return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
       },
+      /**
+       * #getter
+       */
       get filteredMetadataKeys() {
         return self.showSparse
           ? this.metadataKeys

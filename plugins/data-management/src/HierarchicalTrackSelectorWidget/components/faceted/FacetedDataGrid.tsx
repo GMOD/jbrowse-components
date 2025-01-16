@@ -1,25 +1,22 @@
 import { useState } from 'react'
 
 import { getEnv, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridToolbar  } from '@mui/x-data-grid'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
+import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { GridColDef } from '@mui/x-data-grid'
 
-export default function FacetedDataGrid({
+const FacetedDataGrid = observer(function ({
   model,
   columns,
   shownTrackIds,
   selection,
 }: {
   model: HierarchicalTrackSelectorModel
-  filteredRows: any[]
-  visible: Record<string, boolean>
   columns: GridColDef[]
-  showOptions: boolean
-  useShoppingCart: boolean
   shownTrackIds: Set<string>
   selection: any[]
 }) {
@@ -127,4 +124,6 @@ export default function FacetedDataGrid({
       rowHeight={25}
     />
   )
-}
+})
+
+export default FacetedDataGrid

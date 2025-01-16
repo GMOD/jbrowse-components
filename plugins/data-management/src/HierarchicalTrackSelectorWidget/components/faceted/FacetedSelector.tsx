@@ -44,12 +44,9 @@ const FacetedSelector = observer(function FacetedSelector({
     rows,
     panelWidth,
     showFilters,
-    useShoppingCart,
-    showOptions,
     filteredRows,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
-    visible,
   } = faceted
 
   type T = GridColDef<(typeof filteredRows)[0]>
@@ -120,11 +117,7 @@ const FacetedSelector = observer(function FacetedSelector({
         >
           <FacetedDataGrid
             model={model}
-            filteredRows={filteredRows}
-            visible={visible}
             columns={columns}
-            showOptions={showOptions}
-            useShoppingCart={useShoppingCart}
             shownTrackIds={shownTrackIds}
             selection={selection}
           />
