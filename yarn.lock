@@ -2367,10 +2367,10 @@
   dependencies:
     generic-filehandle2 "^1.0.0"
 
-"@gmod/ucsc-hub@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.3.0.tgz#375eeab1c515605510c706f6e2d76d6b42454f8c"
-  integrity sha512-M8r1rpmNOVH6UHwUTSOR5Z86upWEhvI3BKbyYVq8imTS+nZAq8Gr9RJTBsGlL0sgX7fmLSXms8/pTyp7e3YAQA==
+"@gmod/ucsc-hub@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-1.0.0.tgz#2fd6251d5ad040b8658e3d4c17987f89bc741322"
+  integrity sha512-BTMPPUS667K2eGQ6ASc69908l3hDWF2sV/ZoTuMqIz1AfiHuaDMpcdELNf61bVeTWvUUFG5qkOQApcWMvlIvjw==
 
 "@gmod/vcf@^6.0.0":
   version "6.0.2"
