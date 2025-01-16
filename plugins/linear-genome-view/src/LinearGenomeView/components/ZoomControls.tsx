@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
-import { IconButton, Slider } from '@mui/material'
+import { IconButton, Slider, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -15,7 +15,7 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
   },
   slider: {
-    width: 70,
+    width: 100,
     color: theme.palette.text.secondary,
   },
 }))
@@ -31,29 +31,32 @@ const ZoomControls = observer(function ({
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
   }, [bpPerPx])
-
+  const zoomInDisabled = bpPerPx <= minBpPerPx + 0.0001
+  const zoomOutDisabled = bpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
-      <IconButton
-        data-testid="zoom_out_more"
-        onClick={() => {
-          model.zoom(bpPerPx * 15)
-        }}
-        disabled={bpPerPx >= maxBpPerPx - 0.0001}
-        size="large"
-      >
-        <ZoomOut fontSize="large" />
-      </IconButton>
-      <IconButton
-        data-testid="zoom_out"
-        onClick={() => {
-          model.zoom(bpPerPx * 2)
-        }}
-        disabled={bpPerPx >= maxBpPerPx - 0.0001}
-        size="large"
-      >
-        <ZoomOut />
-      </IconButton>
+      <Tooltip title="Zoom out 15x">
+        <IconButton
+          data-testid="zoom_out_more"
+          disabled={zoomOutDisabled}
+          onClick={() => {
+            model.zoom(bpPerPx * 15)
+          }}
+        >
+          <ZoomOut fontSize="large" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Zoom out 2x">
+        <IconButton
+          data-testid="zoom_out"
+          disabled={zoomOutDisabled}
+          onClick={() => {
+            model.zoom(bpPerPx * 2)
+          }}
+        >
+          <ZoomOut />
+        </IconButton>
+      </Tooltip>
 
       <Slider
         size="small"
@@ -61,31 +64,33 @@ const ZoomControls = observer(function ({
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
+        onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
         onChange={(_, val) => {
           setValue(val as number)
         }}
-        onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
       />
-      <IconButton
-        data-testid="zoom_in"
-        onClick={() => {
-          model.zoom(model.bpPerPx / 2)
-        }}
-        disabled={bpPerPx <= minBpPerPx + 0.0001}
-        size="large"
-      >
-        <ZoomIn />
-      </IconButton>
-      <IconButton
-        data-testid="zoom_in"
-        onClick={() => {
-          model.zoom(model.bpPerPx / 15)
-        }}
-        disabled={bpPerPx <= minBpPerPx + 0.0001}
-        size="large"
-      >
-        <ZoomIn fontSize="large" />
-      </IconButton>
+      <Tooltip title="Zoom in 2x">
+        <IconButton
+          data-testid="zoom_in"
+          disabled={zoomInDisabled}
+          onClick={() => {
+            model.zoom(model.bpPerPx / 2)
+          }}
+        >
+          <ZoomIn />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Zoom in 15x">
+        <IconButton
+          data-testid="zoom_in_more"
+          disabled={zoomInDisabled}
+          onClick={() => {
+            model.zoom(model.bpPerPx / 15)
+          }}
+        >
+          <ZoomIn fontSize="large" />
+        </IconButton>
+      </Tooltip>
     </div>
   )
 })
