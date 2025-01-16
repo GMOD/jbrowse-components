@@ -36,26 +36,30 @@ const ZoomControls = observer(function ({
   return (
     <div className={classes.container}>
       <Tooltip title="Zoom out 15x">
-        <IconButton
-          data-testid="zoom_out_more"
-          disabled={zoomOutDisabled}
-          onClick={() => {
-            model.zoom(bpPerPx * 15)
-          }}
-        >
-          <ZoomOut fontSize="large" />
-        </IconButton>
+        <span>
+          <IconButton
+            data-testid="zoom_out_more"
+            disabled={zoomOutDisabled}
+            onClick={() => {
+              model.zoom(bpPerPx * 15)
+            }}
+          >
+            <ZoomOut fontSize="large" />
+          </IconButton>
+        </span>
       </Tooltip>
       <Tooltip title="Zoom out 2x">
-        <IconButton
-          data-testid="zoom_out"
-          disabled={zoomOutDisabled}
-          onClick={() => {
-            model.zoom(bpPerPx * 2)
-          }}
-        >
-          <ZoomOut />
-        </IconButton>
+        <span>
+          <IconButton
+            data-testid="zoom_out"
+            disabled={zoomOutDisabled}
+            onClick={() => {
+              model.zoom(bpPerPx * 2)
+            }}
+          >
+            <ZoomOut />
+          </IconButton>
+        </span>
       </Tooltip>
 
       <Slider
@@ -70,26 +74,30 @@ const ZoomControls = observer(function ({
         }}
       />
       <Tooltip title="Zoom in 2x">
-        <IconButton
-          data-testid="zoom_in"
-          disabled={zoomInDisabled}
-          onClick={() => {
-            model.zoom(model.bpPerPx / 2)
-          }}
-        >
-          <ZoomIn />
-        </IconButton>
+        <span>
+          <IconButton
+            data-testid="zoom_in"
+            disabled={zoomInDisabled}
+            onClick={() => {
+              model.zoom(model.bpPerPx / 2)
+            }}
+          >
+            <ZoomIn />
+          </IconButton>
+        </span>
       </Tooltip>
       <Tooltip title="Zoom in 15x">
-        <IconButton
-          data-testid="zoom_in_more"
-          disabled={zoomInDisabled}
-          onClick={() => {
-            model.zoom(model.bpPerPx / 15)
-          }}
-        >
-          <ZoomIn fontSize="large" />
-        </IconButton>
+        <span>
+          <IconButton
+            data-testid="zoom_in_more"
+            disabled={zoomInDisabled}
+            onClick={() => {
+              model.zoom(model.bpPerPx / 15)
+            }}
+          >
+            <ZoomIn fontSize="large" />
+          </IconButton>
+        </span>
       </Tooltip>
     </div>
   )
