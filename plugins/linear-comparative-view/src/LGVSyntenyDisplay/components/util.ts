@@ -117,7 +117,6 @@ export async function navToSynteny({
   const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)
-  console.log(m1, m2)
   const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
     horizontallyFlip ? '[rev]' : ''
   }`
