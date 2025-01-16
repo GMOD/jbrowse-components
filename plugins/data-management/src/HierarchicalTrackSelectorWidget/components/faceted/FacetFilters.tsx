@@ -40,16 +40,18 @@ const FacetFilters = observer(function ({
 
   let currentRows = rows
   for (const facet of ret) {
-    const elt = uniqs.get(facet)!
-    for (const row of currentRows) {
-      const key = getRowStr(facet, row)
-      const val = elt.get(key)
-      // we don't allow filtering on empty yet
-      if (key) {
-        if (val === undefined) {
-          elt.set(key, 1)
-        } else {
-          elt.set(key, val + 1)
+    const elt = uniqs.get(facet)
+    if (elt) {
+      for (const row of currentRows) {
+        const key = getRowStr(facet, row)
+        const val = elt.get(key)
+        // we don't allow filtering on empty yet
+        if (key) {
+          if (val === undefined) {
+            elt.set(key, 1)
+          } else {
+            elt.set(key, val + 1)
+          }
         }
       }
     }
