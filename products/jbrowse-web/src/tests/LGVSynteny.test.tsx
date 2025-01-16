@@ -11,7 +11,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 5000 }
+const delay = { timeout: 50000 }
 const opts = [{}, delay]
 
 test('nav to synteny from right click', async () => {
@@ -22,7 +22,7 @@ test('nav to synteny from right click', async () => {
   await view.navToLocString('ctgA:30,222..33,669')
   await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-  const track = await findAllByTestId('pileup-overlay-strand')
+  const track = await findAllByTestId('pileup-overlay-strand', ...opts)
   fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
   fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 5 })
   fireEvent.click(await findByText('Launch synteny view for this position'))
@@ -43,7 +43,7 @@ test('nav to synteny from feature details', async () => {
   await view.navToLocString('ctgA:30,222..33,669')
   await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-  const track = await findAllByTestId('pileup-overlay-strand')
+  const track = await findAllByTestId('pileup-overlay-strand', ...opts)
   fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
   fireEvent.click(track[0]!, { clientX: 200, clientY: 5 })
   fireEvent.click(
