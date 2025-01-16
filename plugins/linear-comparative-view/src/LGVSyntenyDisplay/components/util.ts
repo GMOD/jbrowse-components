@@ -1,18 +1,12 @@
-import { getSession } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
 
 const { parseCigar } = MismatchParser
 
-function f(n: number) {
-  return Math.floor(n)
-}
 function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0
@@ -36,23 +30,27 @@ function findPosInCigar(cigar: string[], startX: number) {
   return [featX, mateX] as const
 }
 
+export interface SimpleRegion {
+  refName: string
+  start: number
+  end: number
+}
+
 export async function navToSynteny({
   feature,
   windowSize: ws,
-  model,
+  session,
   trackId,
-  view,
+  region,
   horizontallyFlip,
 }: {
   windowSize: number
   trackId: string
   horizontallyFlip: boolean
   feature: Feature
-  view?: LinearGenomeViewModel
-  model: IAnyStateTreeNode
+  session: AbstractSessionModel
+  region?: SimpleRegion
 }) {
-  const session = getSession(model)
-  const reg = view?.dynamicBlocks.contentBlocks[0]
   const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')
 
@@ -71,9 +69,9 @@ export async function navToSynteny({
   let rFeatStart: number
   let rFeatEnd: number
 
-  if (reg && cigar) {
-    const regStart = reg.start
-    const regEnd = reg.end
+  if (region && cigar) {
+    const regStart = region.start
+    const regEnd = region.end
     const p = parseCigar(cigar)
     const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
     const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
@@ -116,10 +114,10 @@ export async function navToSynteny({
       },
     ],
   }) as LSV
-  const l1 = `${featRef}:${f(rFeatStart - ws)}-${f(rFeatEnd + ws)}`
+  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)
-  const l2 = `${mateRef}:${f(m1 - ws)}-${f(m2 + ws)}${
+  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
     horizontallyFlip ? '[rev]' : ''
   }`
   await Promise.all([
