@@ -11,6 +11,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
+  localStorageGetBoolean,
   localStorageGetItem,
   localStorageSetItem,
   measureText,
@@ -171,9 +172,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "center line"
          */
         showCenterLine: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
-          ),
+          localStorageGetBoolean('lgv-showCenterLine', false),
         ),
 
         /**
@@ -181,9 +180,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "cytobands" in the overview scale bar
          */
         showCytobandsSetting: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showCytobands', true),
         ),
 
         /**
@@ -219,7 +216,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * color by CDS
          */
         colorByCDS: types.optional(types.boolean, () =>
-          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+          localStorageGetBoolean('lgv-colorByCDS', false),
         ),
 
         /**
@@ -227,9 +224,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * color by CDS
          */
         showTrackOutlines: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
       }),
     )
@@ -407,11 +402,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get headerHeight() {
         if (self.hideHeader) {
           return 0
-        }
-        if (self.hideHeaderOverview) {
+        } else if (self.hideHeaderOverview) {
           return HEADER_BAR_HEIGHT
+        } else {
+          return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
         }
-        return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
 
       /**
