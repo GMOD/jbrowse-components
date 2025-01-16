@@ -1,6 +1,5 @@
 import BaseFeatureDetail from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 

@@ -1,7 +1,7 @@
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
 

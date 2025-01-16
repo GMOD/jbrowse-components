@@ -8,9 +8,9 @@ import {
 import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { SyntenyFeatureDetailModel } from './types'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { SyntenyFeatureDetailModel } from './types'
 
 // lazies
 const LaunchSyntenyViewDialog = lazy(
