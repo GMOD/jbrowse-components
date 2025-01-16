@@ -95,7 +95,6 @@ export async function doConnect(self: {
           continue
         }
 
-        // @ts-expect-error
         const db = genome.data.trackDb
         if (!db) {
           throw new Error('genomesFile not found on hub')
