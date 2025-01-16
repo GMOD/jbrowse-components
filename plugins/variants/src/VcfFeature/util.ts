@@ -66,10 +66,9 @@ export function getSOTermAndDescription(
         }),
     )
   }
-  if (soTerms.size) {
-    return [[...soTerms].join(','), [...descriptions].join(',')]
-  }
-  return []
+  return soTerms.size
+    ? [[...soTerms].join(','), [...descriptions].join(',')]
+    : []
 }
 
 export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {

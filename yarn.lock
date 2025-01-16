@@ -2325,9 +2325,9 @@
   integrity sha512-BTMPPUS667K2eGQ6ASc69908l3hDWF2sV/ZoTuMqIz1AfiHuaDMpcdELNf61bVeTWvUUFG5qkOQApcWMvlIvjw==
 
 "@gmod/vcf@^6.0.0":
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.3.tgz#ad0b6a56a39d24c6433cc7cc340b59cc5a3559f2"
-  integrity sha512-an+wUQuew/HbBzWUGX99preQnUeNqSZYGwO54OwjcUUX6JLpnny2xOBBmVpP78V3zlJFsaTBN4Ek4GOCUAMMJg==
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.6.tgz#8b82c0d6c6c3badead814ca9fc39b78cad2ce1f7"
+  integrity sha512-pgNGVbglMrNZKUiRgxCxOEZUsF9LyGTOHxu6DJvbLU7ZJEiLo6uAHIJYTmk6Z8pdT9lLCqNd9mJCc/g0TbmpnA==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
@@ -4974,9 +4974,9 @@
   integrity sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==
 
 "@types/ms@*":
-  version "0.7.34"
-  resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.34.tgz#10964ba0dee6ac4cd462e2795b6bebd407303433"
-  integrity sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@types/ms/-/ms-2.1.0.tgz#052aa67a48eccc4309d7f0191b7e41434b90bb78"
+  integrity sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==
 
 "@types/mute-stream@^0.0.4":
   version "0.0.4"
