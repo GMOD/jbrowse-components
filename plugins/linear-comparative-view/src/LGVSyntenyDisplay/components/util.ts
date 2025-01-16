@@ -7,9 +7,6 @@ type LSV = LinearSyntenyViewModel
 
 const { parseCigar } = MismatchParser
 
-function f(n: number) {
-  return Math.floor(n)
-}
 function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0
@@ -117,10 +114,11 @@ export async function navToSynteny({
       },
     ],
   }) as LSV
-  const l1 = `${featRef}:${f(rFeatStart - ws)}-${f(rFeatEnd + ws)}`
+  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)
-  const l2 = `${mateRef}:${f(m1 - ws)}-${f(m2 + ws)}${
+  console.log(m1, m2)
+  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
     horizontallyFlip ? '[rev]' : ''
   }`
   await Promise.all([

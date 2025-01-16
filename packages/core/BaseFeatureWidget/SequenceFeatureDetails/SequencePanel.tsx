@@ -5,15 +5,7 @@ import { observer } from 'mobx-react'
 import SequenceContents from './SequenceContents'
 import SequenceName from './SequenceName'
 
-import type { SequenceFeatureDetailsModel } from './model'
-import type { SimpleFeatureSerialized } from '../../util'
-import type { SeqState } from '../util'
-
-interface SequencePanelProps {
-  sequence: SeqState
-  feature: SimpleFeatureSerialized
-  model: SequenceFeatureDetailsModel
-}
+import type { SequencePanelProps } from './types'
 
 function WordWrap({ children }: { children: React.ReactNode }) {
   return (
