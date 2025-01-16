@@ -337,30 +337,64 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <div
                     class="css-z84q6m-container"
                   >
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-ktsoci-MuiButtonBase-root-MuiIconButton-root"
-                      data-testid="zoom_out"
-                      id=":r8:"
-                      tabindex="0"
-                      type="button"
-                    >
-                      <span
-                        class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
-                        data-testid="ZoomOutIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
-                        />
-                      </svg>
-                    </button>
                     <span
-                      class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-webx07-MuiSlider-root-slider"
+                      aria-label="Zoom out 15x"
+                      class=""
+                      data-mui-internal-clone-element="true"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        data-testid="zoom_out_more"
+                        id=":r9:"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
+                          data-testid="ZoomOutIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
+                          />
+                        </svg>
+                      </button>
+                    </span>
+                    <span
+                      aria-label="Zoom out 2x"
+                      class=""
+                      data-mui-internal-clone-element="true"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        data-testid="zoom_out"
+                        id=":rb:"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          data-testid="ZoomOutIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
+                          />
+                        </svg>
+                      </button>
+                    </span>
+                    <span
+                      class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1fayfxi-MuiSlider-root-slider"
                     >
                       <span
                         class="MuiSlider-rail css-r64h58-MuiSlider-rail"
@@ -389,31 +423,68 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         />
                       </span>
                     </span>
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-ktsoci-MuiButtonBase-root-MuiIconButton-root"
-                      data-testid="zoom_in"
-                      id=":r9:"
-                      tabindex="0"
-                      type="button"
+                    <span
+                      aria-label="Zoom in 2x"
+                      class=""
+                      data-mui-internal-clone-element="true"
                     >
-                      <span
-                        class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
-                        data-testid="ZoomInIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        data-testid="zoom_in"
+                        id=":rd:"
+                        tabindex="0"
+                        type="button"
                       >
-                        <path
-                          d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                        <span
+                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
                         />
-                        <path
-                          d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          data-testid="ZoomInIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                          />
+                          <path
+                            d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
+                          />
+                        </svg>
+                      </button>
+                    </span>
+                    <span
+                      aria-label="Zoom in 15x"
+                      class=""
+                      data-mui-internal-clone-element="true"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        data-testid="zoom_in_more"
+                        id=":rf:"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
                         />
-                      </svg>
-                    </button>
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
+                          data-testid="ZoomInIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                          />
+                          <path
+                            d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
+                          />
+                        </svg>
+                      </button>
+                    </span>
                   </div>
                   <div
                     class="css-1n1xfjh-spacer"
@@ -953,7 +1024,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </span>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
-                    id=":ra:"
+                    id=":rg:"
                     tabindex="0"
                     title="close this track"
                     type="button"
@@ -983,7 +1054,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                     data-testid="track_menu_icon"
-                    id=":rb:"
+                    id=":rh:"
                     tabindex="0"
                     type="button"
                   >
