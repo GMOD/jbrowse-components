@@ -35,6 +35,16 @@ const ZoomControls = observer(function ({
   return (
     <div className={classes.container}>
       <IconButton
+        data-testid="zoom_out_more"
+        onClick={() => {
+          model.zoom(bpPerPx * 15)
+        }}
+        disabled={bpPerPx >= maxBpPerPx - 0.0001}
+        size="large"
+      >
+        <ZoomOut fontSize="large" />
+      </IconButton>
+      <IconButton
         data-testid="zoom_out"
         onClick={() => {
           model.zoom(bpPerPx * 2)
@@ -65,6 +75,16 @@ const ZoomControls = observer(function ({
         size="large"
       >
         <ZoomIn />
+      </IconButton>
+      <IconButton
+        data-testid="zoom_in"
+        onClick={() => {
+          model.zoom(model.bpPerPx / 15)
+        }}
+        disabled={bpPerPx <= minBpPerPx + 0.0001}
+        size="large"
+      >
+        <ZoomIn fontSize="large" />
       </IconButton>
     </div>
   )
