@@ -54,6 +54,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        linkViews: false,
+        /**
+         * #property
+         */
         interactiveOverlay: false,
         /**
          * #property
@@ -115,6 +119,24 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          onAction(self, param => {
+            if (self.linkViews) {
+              const { name, path, args } = param
+
+              // doesn't link showTrack/hideTrack, doesn't make sense in
+              // synteny views most time
+              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
+              if (actions.includes(name) && path) {
+                this.onSubviewAction(name, path, args)
+              }
+            }
+          }),
+        )
+      },
+
       // automatically removes session assemblies associated with this view
       // e.g. read vs ref
       beforeDestroy() {
@@ -163,7 +185,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         l.setHeight(newHeight)
         return l.height
       },
-
+      /**
+       * #action
+       */
+      setLinkViews(arg: boolean) {
+        self.linkViews = arg
+      },
       /**
        * #action
        */

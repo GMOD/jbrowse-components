@@ -128,6 +128,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               description: 'Draws per-base CIGAR level alignments',
             },
             {
+              label: 'Link views',
+              type: 'checkbox',
+              checked: self.linkViews,
+              icon: LinkIcon,
+              onClick: () => {
+self.setLinkViews(!self.linkViews)
+},
+            },
+            {
               label: 'Use curved lines',
               type: 'checkbox',
               checked: self.drawCurves,
