@@ -5,7 +5,7 @@ import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getPath, types } from 'mobx-state-tree'
+import { addDisposer, cast, getPath, onAction, types } from 'mobx-state-tree'
 
 import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -120,16 +120,19 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
+        // doesn't link showTrack/hideTrack, doesn't make sense in
+        // synteny views most time
+        const actions = new Set([
+          'horizontalScroll',
+          'zoomTo',
+          'setScaleFactor',
+        ])
         addDisposer(
           self,
           onAction(self, param => {
             if (self.linkViews) {
               const { name, path, args } = param
-
-              // doesn't link showTrack/hideTrack, doesn't make sense in
-              // synteny views most time
-              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
-              if (actions.includes(name) && path) {
+              if (actions.has(name) && path) {
                 this.onSubviewAction(name, path, args)
               }
             }

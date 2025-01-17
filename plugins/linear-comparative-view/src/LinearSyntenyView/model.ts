@@ -3,6 +3,7 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import CropFreeIcon from '@mui/icons-material/CropFree'
+import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { saveAs } from 'file-saver'
@@ -62,14 +63,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleCurves() {
-        self.drawCurves = !self.drawCurves
+      setDrawCurves(arg: boolean) {
+        self.drawCurves = arg
       },
       /**
        * #action
        */
-      toggleCIGAR() {
-        self.drawCIGAR = !self.drawCIGAR
+      setDrawCIGAR(arg: boolean) {
+        self.drawCIGAR = arg
       },
       /**
        * #action
@@ -122,7 +123,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Draw CIGAR',
-              onClick: self.toggleCIGAR,
+              onClick: () => {
+                self.setDrawCIGAR(!self.drawCIGAR)
+              },
               checked: self.drawCIGAR,
               type: 'checkbox',
               description: 'Draws per-base CIGAR level alignments',
@@ -133,15 +136,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: self.linkViews,
               icon: LinkIcon,
               onClick: () => {
-self.setLinkViews(!self.linkViews)
-},
+                self.setLinkViews(!self.linkViews)
+              },
             },
             {
               label: 'Use curved lines',
               type: 'checkbox',
               checked: self.drawCurves,
-              onClick: self.toggleCurves,
               icon: Curves,
+              onClick: () => {
+                self.setDrawCurves(!self.drawCurves)
+              },
             },
             {
               label: 'Export SVG',
@@ -149,7 +154,10 @@ self.setLinkViews(!self.linkViews)
               onClick: (): void => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -167,7 +175,10 @@ self.setLinkViews(!self.linkViews)
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
