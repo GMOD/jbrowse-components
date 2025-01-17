@@ -105,8 +105,8 @@ module.exports = {
               href: 'https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im',
             },
             {
-              label: 'Twitter',
-              href: 'https://twitter.com/usejbrowse',
+              label: 'Bluesky',
+              href: 'https://bsky.app/profile/jbrowse.org',
             },
             {
               label: 'Mastodon',
