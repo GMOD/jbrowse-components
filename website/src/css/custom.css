@@ -70,6 +70,12 @@
   background-position: center;
 }
 
+.navbar-social-bluesky:hover:after {
+  filter: invert(62%) sepia(57%) saturate(419%) hue-rotate(117deg)
+    brightness(101%) contrast(87%);
+  opacity: 0.8;
+}
+
 .navbar__brand:hover {
   color: rgb(70, 203, 174);
 }
