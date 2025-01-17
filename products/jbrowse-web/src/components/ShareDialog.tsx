@@ -2,6 +2,10 @@ import { lazy, useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import {
+  type AbstractSessionModel,
+  localStorageGetItem,
+} from '@jbrowse/core/util'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
@@ -10,7 +14,6 @@ import {
   DialogContent,
   DialogContentText,
   IconButton,
-  TextField,
   Typography,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
@@ -20,30 +23,11 @@ import { StringParam, useQueryParam } from 'use-query-params'
 
 import { shareSessionToDynamo } from '../sessionSharing'
 import { toUrlSafeB64 } from '../util'
-
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import ShareDialogLinkField from './ShareDialogLinkField'
 
 const SettingsDialog = lazy(() => import('./ShareSettingsDialog'))
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
-
-function LinkField({ url }: { url: string }) {
-  return (
-    <TextField
-      label="URL"
-      value={url}
-      variant="filled"
-      fullWidth
-      onClick={event => {
-        const target = event.target as HTMLTextAreaElement
-        target.select()
-      }}
-      slotProps={{
-        input: { readOnly: true },
-      }}
-    />
-  )
-}
 
 const ShareDialog = observer(function ({
   handleClose,
@@ -64,7 +48,7 @@ const ShareDialog = observer(function ({
 
   const url = session.shareURL
   const currentSetting =
-    localStorage.getItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
+    localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
   const snap = getSnapshot(session)
 
   useEffect(() => {
@@ -97,6 +81,7 @@ const ShareDialog = observer(function ({
           setLongUrl(longUrl.toString())
         }
       } catch (e) {
+        console.error(e)
         setError(e)
       } finally {
         setLoading(false)
@@ -136,10 +121,10 @@ const ShareDialog = observer(function ({
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
-              <LinkField url={shortUrl} />
+              <ShareDialogLinkField url={shortUrl} />
             )
           ) : (
-            <LinkField url={longUrl} />
+            <ShareDialogLinkField url={longUrl} />
           )}
         </DialogContent>
         <DialogActions>
@@ -157,12 +142,12 @@ const ShareDialog = observer(function ({
           </Button>
 
           <Button
+            startIcon={<ContentCopyIcon />}
+            disabled={disabled}
             onClick={() => {
               copy(shortUrl || longUrl)
               session.notify('Copied to clipboard', 'success')
             }}
-            startIcon={<ContentCopyIcon />}
-            disabled={disabled}
           >
             Copy to Clipboard
           </Button>
@@ -175,10 +160,10 @@ const ShareDialog = observer(function ({
 
       <SettingsDialog
         open={settingsDialogOpen}
+        currentSetting={currentSetting}
         onClose={() => {
           setSettingsDialogOpen(false)
         }}
-        currentSetting={currentSetting}
       />
     </>
   )

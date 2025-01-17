@@ -37,23 +37,23 @@ const ShareButton = observer(function (props: {
   return (
     <div className={classes.shareDiv}>
       <Button
-        onClick={async () => {
-          setOpen(true)
-        }}
         size="small"
         color="inherit"
         startIcon={<ShareIcon />}
         classes={{ root: classes.shareButton }}
+        onClick={async () => {
+          setOpen(true)
+        }}
       >
         Share
       </Button>
       {open ? (
         <Suspense fallback={null}>
           <ShareDialog
+            session={session}
             handleClose={() => {
               setOpen(false)
             }}
-            session={session}
           />
         </Suspense>
       ) : null}
