@@ -73,6 +73,12 @@ module.exports = {
           position: 'right',
           href: 'https://genomic.social/@usejbrowse',
         },
+        {
+          className: 'navbar-social-bluesky',
+          alt: 'Bluesky',
+          position: 'right',
+          href: 'https://bsky.app/profile/jbrowse.org',
+        },
       ],
     },
     footer: {
