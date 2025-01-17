@@ -68,12 +68,6 @@ module.exports = {
           href: 'https://github.com/GMOD/jbrowse-components',
         },
         {
-          className: 'navbar-social-twitter',
-          alt: 'Twitter',
-          position: 'right',
-          href: 'https://twitter.com/usejbrowse',
-        },
-        {
           className: 'navbar-social-mastodon',
           alt: 'Mastodon',
           position: 'right',
