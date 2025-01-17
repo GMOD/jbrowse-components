@@ -166,7 +166,5 @@ jobs:
         run: yarn lint
       - name: Test codebase
         run: yarn test-ci
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
       - name: Typecheck codebase
         run: yarn typecheck
