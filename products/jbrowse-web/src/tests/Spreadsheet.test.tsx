@@ -28,7 +28,9 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
   await user.click(await screen.findByText('Spreadsheet view'))
 
   fireEvent.change(await screen.findByTestId('urlInput', ...opts), {
-    target: { value: 'volvox.filtered.vcf.gz' },
+    target: {
+      value: 'volvox.filtered.vcf.gz',
+    },
   })
 
   await waitForReady()
@@ -44,7 +46,9 @@ test('opens a bed.gz file in the spreadsheet view', async () => {
   await user.click(await screen.findByText('Spreadsheet view'))
 
   fireEvent.change(await screen.findByTestId('urlInput', ...opts), {
-    target: { value: 'volvox-bed12.bed.gz' },
+    target: {
+      value: 'volvox-bed12.bed.gz',
+    },
   })
   await waitForReady()
   await user.click(await screen.findByTestId('open_spreadsheet'))

@@ -61,10 +61,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      importFormRemoveRow(idx: number) {
+        self.importFormSyntenyTrackSelections.splice(idx, 1)
+      },
       /**
        * #action
        */

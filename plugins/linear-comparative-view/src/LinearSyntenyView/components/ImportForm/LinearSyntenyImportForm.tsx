@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, notEmpty } from '@jbrowse/core/util'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, Container, IconButton } from '@mui/material'
@@ -57,7 +57,6 @@ const LinearSyntenyViewImportForm = observer(function ({
     defaultAssemblyName,
   ])
   const [error, setError] = useState<unknown>()
-  const { importFormSyntenyTrackSelections } = model
 
   return (
     <Container className={classes.importFormContainer}>
@@ -75,7 +74,12 @@ const LinearSyntenyViewImportForm = observer(function ({
               <IconButton
                 disabled={selectedAssemblyNames.length <= 2}
                 onClick={() => {
-                  importFormSyntenyTrackSelections.splice(idx, 1)
+                  model.importFormRemoveRow(idx)
+                  setSelectedAssemblyNames(
+                    selectedAssemblyNames
+                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
+                      .filter(notEmpty),
+                  )
                   if (selectedRow >= selectedAssemblyNames.length - 2) {
                     setSelectedRow(0)
                   }
