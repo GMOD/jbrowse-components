@@ -1,4 +1,5 @@
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { toJS } from 'mobx'
 
 import type { LinearSyntenyViewModel } from '../../model'
 
@@ -38,7 +39,7 @@ export async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    userOpenedSyntenyTracksToShow.map((f, idx) => {
+    toJS(userOpenedSyntenyTracksToShow).map((f, idx) => {
       if (f) {
         session.addTrackConf(f)
         model.toggleTrack(f.trackId, idx)

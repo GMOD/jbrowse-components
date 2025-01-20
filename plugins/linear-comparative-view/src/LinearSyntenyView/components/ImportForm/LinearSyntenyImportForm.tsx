@@ -10,9 +10,9 @@ import { makeStyles } from 'tss-react/mui'
 
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
 import Spacer from './Spacer'
+import { doSubmit } from './doSubmit'
 
 import type { LinearSyntenyViewModel } from '../../model'
-import { doSubmit } from './doSubmit'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
