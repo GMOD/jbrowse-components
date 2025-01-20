@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, Container, IconButton } from '@mui/material'
@@ -12,6 +12,7 @@ import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
 import Spacer from './Spacer'
 
 import type { LinearSyntenyViewModel } from '../../model'
+import { doSubmit } from './doSubmit'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -168,55 +169,5 @@ const LinearSyntenyViewImportForm = observer(function ({
     </Container>
   )
 })
-
-async function doSubmit({
-  selectedAssemblyNames,
-  model,
-}: {
-  selectedAssemblyNames: string[]
-  model: LinearSyntenyViewModel
-}) {
-  const session = getSession(model)
-  const { assemblyManager } = session
-  const { preConfiguredSyntenyTracksToShow, userOpenedSyntenyTracksToShow } =
-    model
-
-  model.setViews(
-    await Promise.all(
-      selectedAssemblyNames.map(async assemblyName => {
-        const asm = await assemblyManager.waitForAssembly(assemblyName)
-        if (!asm) {
-          throw new Error(`Assembly "${assemblyName}" failed to load`)
-        }
-        return {
-          type: 'LinearGenomeView' as const,
-          bpPerPx: 1,
-          offsetPx: 0,
-          hideHeader: true,
-          displayedRegions: asm.regions,
-        }
-      }),
-    ),
-  )
-  for (const view of model.views) {
-    view.setWidth(model.width)
-    view.showAllRegions()
-  }
-  if (!isSessionWithAddTracks(session)) {
-    session.notify("Can't add tracks", 'warning')
-  } else {
-    userOpenedSyntenyTracksToShow.map((f, idx) => {
-      if (f) {
-        session.addTrackConf(f)
-        model.toggleTrack(f.trackId, idx)
-      }
-    })
-  }
-  preConfiguredSyntenyTracksToShow.map((f, idx) => {
-    if (f) {
-      model.showTrack(f, idx)
-    }
-  })
-}
 
 export default LinearSyntenyViewImportForm
