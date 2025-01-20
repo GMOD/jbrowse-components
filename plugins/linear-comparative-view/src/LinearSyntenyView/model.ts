@@ -7,12 +7,13 @@ import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { saveAs } from 'file-saver'
-import { transaction } from 'mobx'
+import { observable, transaction } from 'mobx'
 import { types } from 'mobx-state-tree'
 
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
+import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
@@ -59,7 +60,32 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCurves: false,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      importFormSyntenyTrackSelections:
+        observable.array<ImportFormSyntenyTrack>(),
+    }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      importFormRemoveRow(idx: number) {
+        self.importFormSyntenyTrackSelections.splice(idx, 1)
+      },
+      /**
+       * #action
+       */
+      clearImportFormSyntenyTracks() {
+        self.importFormSyntenyTrackSelections.clear()
+      },
+      /**
+       * #action
+       */
+      setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
+        self.importFormSyntenyTrackSelections[arg] = val
+      },
       /**
        * #action
        */

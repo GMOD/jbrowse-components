@@ -65,6 +65,7 @@ const AssemblySelector = observer(function ({
   return (
     <TextField
       select
+      data-testid="assembly-selector-textfield"
       label="Assembly"
       variant="outlined"
       helperText={error || helperText}
@@ -78,7 +79,9 @@ const AssemblySelector = observer(function ({
       {...TextFieldProps}
       slotProps={{
         input: InputProps,
-        htmlInput: { 'data-testid': 'assembly-selector' },
+        htmlInput: {
+          'data-testid': 'assembly-selector',
+        },
       }}
     >
       {assemblyNames.map(name => {
