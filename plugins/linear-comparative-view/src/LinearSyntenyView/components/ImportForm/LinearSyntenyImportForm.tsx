@@ -4,7 +4,6 @@ import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import {
   getSession,
   isSessionWithAddTracks,
-  notEmpty,
 } from '@jbrowse/core/util'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
@@ -48,8 +47,6 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type Conf = SnapshotIn<AnyConfigurationModel>
-type MaybeConf = Conf | undefined
-type MaybeString = string | undefined
 
 const LinearSyntenyViewImportForm = observer(function ({
   model,
@@ -66,12 +63,8 @@ const LinearSyntenyViewImportForm = observer(function ({
     defaultAssemblyName,
   ])
   const [error, setError] = useState<unknown>()
-  const [userOpenedSyntenyTracksToShow, setUserOpenedSyntenyTracksToShow] =
-    useState<MaybeConf[]>([])
-  const [
-    preConfiguredSyntenyTracksToShow,
-    setPreConfiguredSyntenyTracksToShow,
-  ] = useState<MaybeString[]>([])
+  const { userOpenedSyntenyTracksToShow, preConfiguredSyntenyTracksToShow } =
+    model
 
   return (
     <Container className={classes.importFormContainer}>
@@ -89,21 +82,8 @@ const LinearSyntenyViewImportForm = observer(function ({
               <IconButton
                 disabled={selectedAssemblyNames.length <= 2}
                 onClick={() => {
-                  setSelectedAssemblyNames(
-                    selectedAssemblyNames
-                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                      .filter(notEmpty),
-                  )
-                  setPreConfiguredSyntenyTracksToShow(
-                    preConfiguredSyntenyTracksToShow
-                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                      .filter(notEmpty),
-                  )
-                  setUserOpenedSyntenyTracksToShow(
-                    userOpenedSyntenyTracksToShow
-                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                      .filter(notEmpty),
-                  )
+                  preConfiguredSyntenyTracksToShow.splice(idx, 1)
+                  userOpenedSyntenyTracksToShow.slice(idx, 1)
                   if (selectedRow >= selectedAssemblyNames.length - 2) {
                     setSelectedRow(0)
                   }
@@ -187,21 +167,12 @@ const LinearSyntenyViewImportForm = observer(function ({
           </div>
           <TrackSelector
             model={model}
+            selectedRow={selectedRow}
             preConfiguredSyntenyTrack={
               preConfiguredSyntenyTracksToShow[selectedRow]
             }
             assembly1={selectedAssemblyNames[selectedRow]!}
             assembly2={selectedAssemblyNames[selectedRow + 1]!}
-            setPreConfiguredSyntenyTrack={arg => {
-              const clone = [...preConfiguredSyntenyTracksToShow]
-              clone[selectedRow] = arg
-              setPreConfiguredSyntenyTracksToShow(clone)
-            }}
-            setUserOpenedSyntenyTrack={arg => {
-              const clone = [...userOpenedSyntenyTracksToShow]
-              clone[selectedRow] = arg
-              setUserOpenedSyntenyTracksToShow(clone)
-            }}
           />
         </div>
       </div>

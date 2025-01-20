@@ -12,16 +12,16 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(function ({
   model,
+  selectedRow,
   assembly1,
   assembly2,
   preConfiguredSyntenyTrack,
-  setPreConfiguredSyntenyTrack,
 }: {
   model: LinearSyntenyViewModel
+  selectedRow: number
   assembly1: string
   assembly2: string
   preConfiguredSyntenyTrack: string | undefined
-  setPreConfiguredSyntenyTrack: (arg: string) => void
 }) {
   const session = getSession(model)
   const { tracks = [], sessionTracks = [] } = session
@@ -41,9 +41,9 @@ const ImportSyntenyTrackSelector = observer(function ({
     // sets track data in a useEffect because the initial load is needed as
     // well as onChange's to the select box
     if (value !== preConfiguredSyntenyTrack) {
-      setPreConfiguredSyntenyTrack(value)
+      model.setPreConfiguredSyntenyTrack(selectedRow, value)
     }
-  }, [value, preConfiguredSyntenyTrack, setPreConfiguredSyntenyTrack])
+  }, [value, preConfiguredSyntenyTrack, model, selectedRow])
   return (
     <Paper style={{ padding: 12 }}>
       <Typography>

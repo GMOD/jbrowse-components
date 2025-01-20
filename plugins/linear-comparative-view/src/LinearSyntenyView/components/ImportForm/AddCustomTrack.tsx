@@ -13,9 +13,8 @@ import { observer } from 'mobx-react'
 
 import { basename, extName, getName, stripGz } from './util'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import type { SnapshotIn } from 'mobx-state-tree'
+import { LinearSyntenyViewModel } from '../../model'
 
 function getAdapter({
   radioOption,
@@ -92,16 +91,16 @@ function getAdapter({
   }
 }
 
-type Conf = SnapshotIn<AnyConfigurationModel>
-
 const ImportCustomTrack = observer(function ({
+  model,
   assembly1,
   assembly2,
-  setUserOpenedSyntenyTrack,
+  selectedRow,
 }: {
+  model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
-  setUserOpenedSyntenyTrack: (arg: Conf) => void
+  selectedRow: number
 }) {
   const [bed2Location, setBed2Location] = useState<FileLocation>()
   const [bed1Location, setBed1Location] = useState<FileLocation>()
@@ -120,7 +119,7 @@ const ImportCustomTrack = observer(function ({
         const trackId = `${fn}-${Date.now()}`
         setError(undefined)
 
-        setUserOpenedSyntenyTrack({
+        model.setUserOpenedSyntenyTrack(selectedRow, {
           trackId,
           name: fn,
           assemblyNames: [assembly2, assembly1],
@@ -141,6 +140,8 @@ const ImportCustomTrack = observer(function ({
       setError(e)
     }
   }, [
+    model,
+    selectedRow,
     fileName,
     assembly1,
     assembly2,
@@ -149,7 +150,6 @@ const ImportCustomTrack = observer(function ({
     fileLocation,
     indexFileLocation,
     radioOption,
-    setUserOpenedSyntenyTrack,
   ])
   return (
     <Paper style={{ padding: 12 }}>
