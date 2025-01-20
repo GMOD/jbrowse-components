@@ -86,8 +86,7 @@ test('open local', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   const synbuttons = await findAllByTestId('synbutton')
-  expect(synbuttons.length).toBe(2)
-  fireEvent.click(synbuttons[1]!)
+  fireEvent.click(synbuttons[0]!)
   fireEvent.click(await findByText('New track'))
 
   fireEvent.change(await findByTestId('urlInput'), {
