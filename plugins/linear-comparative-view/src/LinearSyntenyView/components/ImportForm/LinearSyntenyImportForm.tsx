@@ -8,8 +8,8 @@ import { Button, Container, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
 import Spacer from './Spacer'
-import TrackSelector from './TrackSelectorUtil'
 
 import type { LinearSyntenyViewModel } from '../../model'
 
@@ -156,12 +156,9 @@ const LinearSyntenyViewImportForm = observer(function ({
             Synteny dataset to display between row {selectedRow + 1} and{' '}
             {selectedRow + 2}
           </div>
-          <TrackSelector
+          <ImportSyntenyTrackSelector
             model={model}
             selectedRow={selectedRow}
-            preConfiguredSyntenyTrack={
-              preConfiguredSyntenyTracksToShow[selectedRow]
-            }
             assembly1={selectedAssemblyNames[selectedRow]!}
             assembly2={selectedAssemblyNames[selectedRow + 1]!}
           />

@@ -91,7 +91,7 @@ function getAdapter({
   }
 }
 
-const ImportCustomTrack = observer(function ({
+const ImportSyntenyOpenCustomTrack = observer(function ({
   model,
   assembly1,
   assembly2,
@@ -295,4 +295,4 @@ const ImportCustomTrack = observer(function ({
   )
 })
 
-export default ImportCustomTrack
+export default ImportSyntenyOpenCustomTrack

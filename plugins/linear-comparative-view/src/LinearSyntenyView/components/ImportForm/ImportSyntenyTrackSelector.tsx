@@ -15,15 +15,14 @@ const ImportSyntenyTrackSelector = observer(function ({
   selectedRow,
   assembly1,
   assembly2,
-  preConfiguredSyntenyTrack,
 }: {
   model: LinearSyntenyViewModel
   selectedRow: number
   assembly1: string
   assembly2: string
-  preConfiguredSyntenyTrack: string | undefined
 }) {
   const session = getSession(model)
+  const { preConfiguredSyntenyTracksToShow } = model
   const { tracks = [], sessionTracks = [] } = session
   const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
   const filteredTracks = allTracks.filter(track => {
@@ -35,15 +34,10 @@ const ImportSyntenyTrackSelector = observer(function ({
     )
   })
   const resetTrack = filteredTracks[0]?.trackId || ''
-  const [value, setValue] = useState(resetTrack)
-
   useEffect(() => {
-    // sets track data in a useEffect because the initial load is needed as
-    // well as onChange's to the select box
-    if (value !== preConfiguredSyntenyTrack) {
-      model.setPreConfiguredSyntenyTrack(selectedRow, value)
-    }
-  }, [value, preConfiguredSyntenyTrack, model, selectedRow])
+    model.setPreConfiguredSyntenyTrack(selectedRow, resetTrack)
+  }, [assembly2, assembly1, resetTrack, selectedRow, model])
+  const value = preConfiguredSyntenyTracksToShow[selectedRow]
   return (
     <Paper style={{ padding: 12 }}>
       <Typography>
@@ -51,11 +45,11 @@ const ImportSyntenyTrackSelector = observer(function ({
         you hit "Launch".
       </Typography>
 
-      {filteredTracks.length ? (
+      {filteredTracks.length && value ? (
         <Select
           value={value}
           onChange={event => {
-            setValue(event.target.value)
+            model.setPreConfiguredSyntenyTrack(selectedRow, event.target.value)
           }}
         >
           {filteredTracks.map(track => (

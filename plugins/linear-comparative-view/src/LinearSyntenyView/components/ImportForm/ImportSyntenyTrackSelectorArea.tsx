@@ -2,23 +2,21 @@ import { useEffect, useState } from 'react'
 
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
-import ImportCustomTrack from './AddCustomTrack'
-import ImportSyntenyTrackSelector from './TrackSelector'
+import ImportCustomTrack from './ImportSyntenyOpenCustomTrack'
+import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 import type { LinearSyntenyViewModel } from '../../model'
 
-export default function TrackSelector({
+export default function ImportSyntenyTrackSelectorArea({
   model,
   assembly1,
   assembly2,
   selectedRow,
-  preConfiguredSyntenyTrack,
 }: {
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
   selectedRow: number
-  preConfiguredSyntenyTrack: string | undefined
 }) {
   const [choice, setChoice] = useState('tracklist')
 
@@ -62,12 +60,10 @@ export default function TrackSelector({
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
-          key={`${assembly1}-${assembly2}`}
           model={model}
           selectedRow={selectedRow}
           assembly1={assembly1}
           assembly2={assembly2}
-          preConfiguredSyntenyTrack={preConfiguredSyntenyTrack}
         />
       ) : null}
     </div>
