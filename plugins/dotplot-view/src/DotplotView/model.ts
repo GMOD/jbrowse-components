@@ -558,7 +558,7 @@ export default function stateModelFactory(pm: PluginManager) {
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
         const session = getSession(self)
-        for (const name in self.assemblyNames) {
+        for (const name of self.assemblyNames) {
           session.removeTemporaryAssembly?.(name)
         }
       },
