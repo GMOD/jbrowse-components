@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorMessage } from '@jbrowse/core/ui'
@@ -34,10 +34,10 @@ const ImportSyntenyTrackSelector = observer(function ({
     )
   })
   const resetTrack = filteredTracks[0]?.trackId || ''
+  const value = preConfiguredSyntenyTracksToShow[selectedRow]
   useEffect(() => {
     model.setPreConfiguredSyntenyTrack(selectedRow, resetTrack)
   }, [assembly2, assembly1, resetTrack, selectedRow, model])
-  const value = preConfiguredSyntenyTracksToShow[selectedRow]
   return (
     <Paper style={{ padding: 12 }}>
       <Typography>
@@ -45,7 +45,7 @@ const ImportSyntenyTrackSelector = observer(function ({
         you hit "Launch".
       </Typography>
 
-      {filteredTracks.length && value ? (
+      {value && filteredTracks.map(r => r.trackId).includes(value) ? (
         <Select
           value={value}
           onChange={event => {
