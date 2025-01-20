@@ -19,14 +19,8 @@ afterEach(() => {
 console.warn = jest.fn()
 
 test('open tracklist file', async () => {
-  const {
-    session,
-    findByTestId,
-    findByRole,
-    findAllByText,
-    findAllByTestId,
-    findByText,
-  } = await createView()
+  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+    await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
