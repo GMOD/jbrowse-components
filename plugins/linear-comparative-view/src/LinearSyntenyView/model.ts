@@ -14,9 +14,8 @@ import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -37,8 +36,10 @@ export interface ExportSvgOptions {
 }
 
 type Conf = SnapshotIn<AnyConfigurationModel>
-type MaybeConf = Conf | undefined
-type MaybeString = string | undefined
+type ImportFormSyntenyTrack =
+  | { type: 'preConfigured'; value: string }
+  | { type: 'userOpened'; value: Conf }
+  | { type: 'none' }
 
 /**
  * #stateModel LinearSyntenyView
@@ -66,15 +67,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      preConfiguredSyntenyTracksToShow: observable.array<MaybeString>(),
-      userOpenedSyntenyTracksToShow: observable.array<MaybeConf>(),
+      importFormSyntenyTrackSelections:
+        observable.array<ImportFormSyntenyTrack>(),
     }))
     .actions(self => ({
-      setPreConfiguredSyntenyTrack(arg: number, str: MaybeString) {
-        self.preConfiguredSyntenyTracksToShow[arg] = str
-      },
-      setUserOpenedSyntenyTrack(arg: number, conf: MaybeConf) {
-        self.userOpenedSyntenyTracksToShow[arg] = conf
+      /**
+       * #action
+       */
+      setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
+        self.importFormSyntenyTrackSelections[arg] = val
       },
       /**
        * #action

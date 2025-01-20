@@ -57,8 +57,7 @@ const LinearSyntenyViewImportForm = observer(function ({
     defaultAssemblyName,
   ])
   const [error, setError] = useState<unknown>()
-  const { userOpenedSyntenyTracksToShow, preConfiguredSyntenyTracksToShow } =
-    model
+  const { importFormSyntenyTrackSelections } = model
 
   return (
     <Container className={classes.importFormContainer}>
@@ -76,8 +75,7 @@ const LinearSyntenyViewImportForm = observer(function ({
               <IconButton
                 disabled={selectedAssemblyNames.length <= 2}
                 onClick={() => {
-                  preConfiguredSyntenyTracksToShow.splice(idx, 1)
-                  userOpenedSyntenyTracksToShow.slice(idx, 1)
+                  importFormSyntenyTrackSelections.splice(idx, 1)
                   if (selectedRow >= selectedAssemblyNames.length - 2) {
                     setSelectedRow(0)
                   }

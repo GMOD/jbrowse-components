@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
 import ImportCustomTrack from './ImportSyntenyOpenCustomTrack'
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
+import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured'
 
 import type { LinearSyntenyViewModel } from '../../model'
 
@@ -22,8 +22,7 @@ export default function ImportSyntenyTrackSelectorArea({
 
   useEffect(() => {
     if (choice === 'none') {
-      model.setPreConfiguredSyntenyTrack(selectedRow, undefined)
-      model.setUserOpenedSyntenyTrack(selectedRow, undefined)
+      model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
     }
   }, [choice, model, selectedRow])
   return (

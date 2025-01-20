@@ -1,5 +1,3 @@
-import type { FileLocation } from '@jbrowse/core/util'
-
 export function getName(
   sessionTrackData?: { uri: string } | { localPath: string } | { name: string },
 ) {

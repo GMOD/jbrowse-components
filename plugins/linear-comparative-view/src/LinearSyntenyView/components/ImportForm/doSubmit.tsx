@@ -12,8 +12,7 @@ export async function doSubmit({
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
-  const { preConfiguredSyntenyTracksToShow, userOpenedSyntenyTracksToShow } =
-    model
+  const { importFormSyntenyTrackSelections } = model
 
   model.setViews(
     await Promise.all(
@@ -39,16 +38,13 @@ export async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    toJS(userOpenedSyntenyTracksToShow).map((f, idx) => {
-      if (f) {
-        session.addTrackConf(f)
-        model.toggleTrack(f.trackId, idx)
+    toJS(importFormSyntenyTrackSelections).map((f, idx) => {
+      if (f.type === 'userOpened') {
+        session.addTrackConf(f.value)
+        model.toggleTrack(f.value?.trackId, idx)
+      } else if (f.type === 'preConfigured') {
+        model.showTrack(f.value, idx)
       }
     })
   }
-  preConfiguredSyntenyTracksToShow.map((f, idx) => {
-    if (f) {
-      model.showTrack(f, idx)
-    }
-  })
 }

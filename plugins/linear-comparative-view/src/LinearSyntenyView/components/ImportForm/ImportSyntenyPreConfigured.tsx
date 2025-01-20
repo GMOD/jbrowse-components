@@ -22,7 +22,7 @@ const ImportSyntenyTrackSelector = observer(function ({
   assembly2: string
 }) {
   const session = getSession(model)
-  const { preConfiguredSyntenyTracksToShow } = model
+  const { importFormSyntenyTrackSelections } = model
   const { tracks = [], sessionTracks = [] } = session
   const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
   const filteredTracks = allTracks.filter(track => {
@@ -34,9 +34,13 @@ const ImportSyntenyTrackSelector = observer(function ({
     )
   })
   const resetTrack = filteredTracks[0]?.trackId || ''
-  const value = preConfiguredSyntenyTracksToShow[selectedRow]
+  const r = importFormSyntenyTrackSelections[selectedRow]
+  const value = r?.type === 'preConfigured' ? r.value : undefined
   useEffect(() => {
-    model.setPreConfiguredSyntenyTrack(selectedRow, resetTrack)
+    model.setImportFormSyntenyTrack(selectedRow, {
+      type: 'preConfigured',
+      value: resetTrack,
+    })
   }, [assembly2, assembly1, resetTrack, selectedRow, model])
   return (
     <Paper style={{ padding: 12 }}>
@@ -49,7 +53,10 @@ const ImportSyntenyTrackSelector = observer(function ({
         <Select
           value={value}
           onChange={event => {
-            model.setPreConfiguredSyntenyTrack(selectedRow, event.target.value)
+            model.setImportFormSyntenyTrack(selectedRow, {
+              type: 'preConfigured',
+              value: event.target.value,
+            })
           }}
         >
           {filteredTracks.map(track => (

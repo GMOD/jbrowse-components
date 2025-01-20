@@ -42,23 +42,26 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
     try {
       if (fileLocation) {
         const fn = fileName ? basename(fileName) : 'MyTrack'
-        const trackId = `${fn}-${Date.now()}`
+        const trackId = `${fn}-${Date.now()}-sessionTrack`
         setError(undefined)
 
-        model.setUserOpenedSyntenyTrack(selectedRow, {
-          trackId,
-          name: fn,
-          assemblyNames: [assembly2, assembly1],
-          type: 'SyntenyTrack',
-          adapter: getAdapter({
-            radioOption,
-            assembly1,
-            assembly2,
-            fileLocation,
-            indexFileLocation,
-            bed1Location,
-            bed2Location,
-          }),
+        model.setImportFormSyntenyTrack(selectedRow, {
+          type: 'userOpened',
+          value: {
+            trackId,
+            name: fn,
+            assemblyNames: [assembly2, assembly1],
+            type: 'SyntenyTrack',
+            adapter: getAdapter({
+              radioOption,
+              assembly1,
+              assembly2,
+              fileLocation,
+              indexFileLocation,
+              bed1Location,
+              bed2Location,
+            }),
+          },
         })
       }
     } catch (e) {
