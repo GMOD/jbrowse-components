@@ -13,9 +13,9 @@ import { types } from 'mobx-state-tree'
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
+import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -34,12 +34,6 @@ export interface ExportSvgOptions {
   themeName?: string
   trackLabels?: string
 }
-
-type Conf = SnapshotIn<AnyConfigurationModel>
-type ImportFormSyntenyTrack =
-  | { type: 'preConfigured'; value: string }
-  | { type: 'userOpened'; value: Conf }
-  | { type: 'none' }
 
 /**
  * #stateModel LinearSyntenyView
@@ -71,6 +65,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         observable.array<ImportFormSyntenyTrack>(),
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      clearImportFormSyntenyTracks() {
+        self.importFormSyntenyTrackSelections.clear()
+      },
       /**
        * #action
        */

@@ -47,4 +47,5 @@ export async function doSubmit({
       }
     })
   }
+  model.clearImportFormSyntenyTracks()
 }
