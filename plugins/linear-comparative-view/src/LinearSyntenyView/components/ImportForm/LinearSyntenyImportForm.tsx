@@ -1,10 +1,7 @@
 import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
-import {
-  getSession,
-  isSessionWithAddTracks,
-} from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, Container, IconButton } from '@mui/material'
@@ -15,8 +12,6 @@ import Spacer from './Spacer'
 import TrackSelector from './TrackSelectorUtil'
 
 import type { LinearSyntenyViewModel } from '../../model'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -45,8 +40,6 @@ const useStyles = makeStyles()(theme => ({
     width: 700,
   },
 }))
-
-type Conf = SnapshotIn<AnyConfigurationModel>
 
 const LinearSyntenyViewImportForm = observer(function ({
   model,
@@ -140,8 +133,6 @@ const LinearSyntenyViewImportForm = observer(function ({
                   try {
                     setError(undefined)
                     await doSubmit({
-                      userOpenedSyntenyTracksToShow,
-                      preConfiguredSyntenyTracksToShow,
                       selectedAssemblyNames,
                       model,
                     })
@@ -184,16 +175,14 @@ const LinearSyntenyViewImportForm = observer(function ({
 async function doSubmit({
   selectedAssemblyNames,
   model,
-  preConfiguredSyntenyTracksToShow,
-  userOpenedSyntenyTracksToShow,
 }: {
   selectedAssemblyNames: string[]
   model: LinearSyntenyViewModel
-  userOpenedSyntenyTracksToShow: Conf[]
-  preConfiguredSyntenyTracksToShow: (string | undefined)[]
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
+  const { preConfiguredSyntenyTracksToShow, userOpenedSyntenyTracksToShow } =
+    model
 
   model.setViews(
     await Promise.all(

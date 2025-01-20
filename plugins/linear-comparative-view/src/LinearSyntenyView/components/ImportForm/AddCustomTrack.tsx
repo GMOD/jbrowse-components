@@ -13,8 +13,8 @@ import { observer } from 'mobx-react'
 
 import { basename, extName, getName, stripGz } from './util'
 
+import type { LinearSyntenyViewModel } from '../../model'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import { LinearSyntenyViewModel } from '../../model'
 
 function getAdapter({
   radioOption,

@@ -54,6 +54,7 @@ export default function TrackSelector({
       </FormControl>
       {choice === 'custom' ? (
         <ImportCustomTrack
+          model={model}
           selectedRow={selectedRow}
           assembly2={assembly2}
           assembly1={assembly1}
