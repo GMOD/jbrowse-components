@@ -97,6 +97,7 @@ const LinearSyntenyViewImportForm = observer(function ({
               />
               {idx !== selectedAssemblyNames.length - 1 ? (
                 <IconButton
+                  data-testid="synbutton"
                   className={cx(
                     classes.synbutton,
                     idx === selectedRow ? classes.bg : undefined,

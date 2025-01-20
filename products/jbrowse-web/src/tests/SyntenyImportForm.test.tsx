@@ -40,3 +40,34 @@ test('open tracklist file', async () => {
 
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
 }, 40000)
+
+test('three level', async () => {
+  const { session, findByRole, findAllByTestId, findByText } =
+    await createView()
+
+  fireEvent.click(await findByText('File'))
+  fireEvent.click(await findByText('Add'))
+  fireEvent.click(await findByText('Linear synteny view'))
+  expect(session.views.length).toBe(2)
+
+  fireEvent.click(await findByText('Add row'))
+  const r = await findAllByTestId('assembly-selector-textfield')
+
+  expect(r.length).toBe(3)
+
+  fireEvent.mouseDown(await within(r[0]!).findByText('volvox'))
+  fireEvent.click(within(await findByRole('listbox')).getByText('volvox_ins'))
+
+  fireEvent.mouseDown(await within(r[2]!).findByText('volvox'))
+  fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
+
+  const synbuttons = await findAllByTestId('synbutton')
+  expect(synbuttons.length).toBe(2)
+  fireEvent.click(synbuttons[1]!)
+
+  fireEvent.click(await findByText('Launch'))
+  const canvases = await findAllByTestId('synteny_canvas', {}, delay)
+  expect(canvases.length).toBe(2)
+  expectCanvasMatch(canvases[0]!)
+  expectCanvasMatch(canvases[1]!)
+}, 40000)
