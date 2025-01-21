@@ -91,6 +91,7 @@ const Entries = {
   FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
   FormGroup: lazy(() => import('@mui/material/FormGroup')),
   Grid: lazy(() => import('@mui/material/Grid')),
+  Grid2: lazy(() => import('@mui/material/Grid2')),
   Grow: lazy(() => import('@mui/material/Grow')),
   Icon: lazy(() => import('@mui/material/Icon')),
   IconButton: lazy(() => import('@mui/material/IconButton')),
