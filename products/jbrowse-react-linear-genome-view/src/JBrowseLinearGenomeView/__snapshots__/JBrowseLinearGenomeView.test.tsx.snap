@@ -243,7 +243,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       style="width: 175px;"
                     >
                       <div
-                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
+                        class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-x50pgt-MuiFormControl-root-MuiTextField-root-headerRefName"
                         style="margin: 7px;"
                       >
                         <div

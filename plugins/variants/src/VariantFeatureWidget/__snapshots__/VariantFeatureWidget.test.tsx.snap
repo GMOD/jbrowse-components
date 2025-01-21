@@ -179,7 +179,7 @@ exports[`renders with just the required model elements 1`] = `
                   class="css-57ilie-container"
                 >
                   <div
-                    class="MuiFormControl-root MuiFormControl-marginDense css-h2948o-MuiFormControl-root-formControl"
+                    class="MuiFormControl-root css-1xdy9bc-MuiFormControl-root-formControl"
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
