@@ -58,8 +58,8 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
             type: 'SyntenyTrack',
             adapter: getAdapter({
               radioOption,
-              assembly1,
-              assembly2,
+              assembly1: swap ? assembly2 : assembly1,
+              assembly2: swap ? assembly1 : assembly2,
               fileLocation,
               indexFileLocation,
               bed1Location,
@@ -84,15 +84,20 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
     indexFileLocation,
     radioOption,
   ])
+  const helpStrings = {
+    '.paf': 'minimap2 target.fa query.fa',
+    '.pif.gz': 'minimap2 target.fa query.fa',
+    '.out': 'mashmap target.fa query.fa',
+    '.delta': 'mummer target.fa query.fa',
+    '.chain': 'e.g. queryToTarget.chain',
+  } as const
   return (
     <Paper style={{ padding: 12 }}>
       {error ? <ErrorMessage error={error} /> : null}
       <Typography style={{ textAlign: 'center' }}>
-        Add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
-        .anchors.simple (MCScan) file to view. These file types can also be
-        gzipped. The first assembly should be the query sequence (e.g. left
-        column of the PAF) and the second assembly should be the target sequence
-        (e.g. right column of the PAF)
+        Add a .paf (minimap2), .delta (Mummer), .chain (UCSC liftover), .anchors
+        or .anchors.simple (MCScan), or .pif.gz (jbrowse CLI make-pif) file to
+        view. These file types can also be gzipped.
       </Typography>
       <RadioGroup
         value={radioOption}
@@ -103,8 +108,8 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
         <Grid2 container justifyContent="center">
           {[
             '.paf',
-            '.out',
             '.delta',
+            '.out',
             '.chain',
             '.anchors',
             '.anchors.simple',
@@ -120,7 +125,11 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
         </Grid2>
       </RadioGroup>
       <Grid2 container justifyContent="center">
-        {value === '.paf' ? (
+        {value === '.paf' ||
+        value === '.out' ||
+        value === '.delta' ||
+        value === '.chain' ||
+        value === '.pif.gz' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <FileSelector
               name={value ? `${value} location` : ''}
@@ -133,14 +142,18 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
             />
             <div>
               <div>
-                Verify or click swap (e.g. match{' '}
-                <code>minimap2 query.fa target.fa</code>).{' '}
-                <Tooltip title="You might have to inspect the PAF file and verify column 1 refers to names from the query assembly and column 6 contains names from the target">
+                Verify or click swap
+                <Tooltip
+                  title={
+                    <code>
+                      {helpStrings[value as keyof typeof helpStrings]}
+                    </code>
+                  }
+                >
                   <HelpIcon />
                 </Tooltip>
-                :
               </div>
-              <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex', gap: 20 }}>
                 <div
                   style={{
                     display: 'grid',
@@ -173,37 +186,62 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
                 (more info)
               </a>
             </div>
-            <div style={{ display: 'flex' }}>
-              <div>
-                <FileSelector
-                  name=".anchors file"
-                  description=""
-                  location={fileLocation}
-                  setLocation={loc => {
-                    setFileLocation(loc)
-                  }}
-                />
+            <div>
+              <FileSelector
+                inline
+                name={value}
+                location={fileLocation}
+                setLocation={loc => {
+                  setFileLocation(loc)
+                }}
+              />
+              <FileSelector
+                inline
+                name="genome 1 .bed (left column of anchors file)"
+                description=""
+                location={bed1Location}
+                setLocation={loc => {
+                  setBed1Location(loc)
+                }}
+              />
+              <FileSelector
+                inline
+                name="genome 2 .bed (right column of anchors file)"
+                description=""
+                location={bed2Location}
+                setLocation={loc => {
+                  setBed2Location(loc)
+                }}
+              />
+            </div>
+            <div
+              style={{
+                margin: 'auto',
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 4,
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <i>{swap ? assembly2 : assembly1}</i>
+                </div>
+                <div>bed1 assembly</div>
+                <div>
+                  <i>{swap ? assembly1 : assembly2}</i>
+                </div>
+                <div>bed2 assembly</div>
               </div>
-              <div>
-                <FileSelector
-                  name="genome 1 .bed (left column of anchors file)"
-                  description=""
-                  location={bed1Location}
-                  setLocation={loc => {
-                    setBed1Location(loc)
-                  }}
-                />
-              </div>
-              <div>
-                <FileSelector
-                  name="genome 2 .bed (right column of anchors file)"
-                  description=""
-                  location={bed2Location}
-                  setLocation={loc => {
-                    setBed2Location(loc)
-                  }}
-                />
-              </div>
+              <Button variant="contained" onClick={() => setSwap(!swap)}>
+                Swap?
+              </Button>
             </div>
           </div>
         ) : value === '.pif.gz' ? (
