@@ -55,14 +55,13 @@ export function featureData(
 function parseStrand(strand: string) {
   if (strand === '+') {
     return 1
-  }
-  if (strand === '-') {
+  } else if (strand === '-') {
     return -1
-  }
-  if (strand === '.') {
+  } else if (strand === '.') {
     return 0
+  } else {
+    return undefined
   }
-  return undefined
 }
 
 export default class BedpeAdapter extends BaseFeatureDataAdapter {
