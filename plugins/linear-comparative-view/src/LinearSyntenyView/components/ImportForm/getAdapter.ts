@@ -65,7 +65,9 @@ export function getAdapter({
     return {
       type: 'PairwiseIndexedPAFAdapter',
       pifGzLocation: fileLocation,
-      index: { location: indexFileLocation },
+      index: {
+        location: indexFileLocation,
+      },
       assemblyNames: [assembly1, assembly2],
     }
   } else {

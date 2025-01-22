@@ -247,6 +247,13 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
     },
     spacing: 4,
     components: {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            fontSize: 12,
+          },
+        },
+      },
       MuiButton: {
         defaultProps: {
           size: 'small' as const,

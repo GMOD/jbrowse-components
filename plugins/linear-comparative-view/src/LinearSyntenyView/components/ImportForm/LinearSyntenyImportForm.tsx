@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
-import Spacer from './Spacer'
 import { doSubmit } from './doSubmit'
 
 import type { LinearSyntenyViewModel } from '../../model'
@@ -28,8 +27,10 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 30,
   },
+
   flex: {
     display: 'flex',
+    gap: 90,
   },
   mb: {
     marginBottom: 10,
@@ -37,8 +38,15 @@ const useStyles = makeStyles()(theme => ({
   bg: {
     background: theme.palette.divider,
   },
-  fixedWidth: {
-    width: 700,
+  rightPanel: {
+    flexGrow: 11,
+  },
+  leftPanel: {
+    // proportionally smaller than right panel
+    flexGrow: 4,
+
+    // and don't shrink when right panel grows
+    flexShrink: 0,
   },
 }))
 
@@ -62,8 +70,7 @@ const LinearSyntenyViewImportForm = observer(function ({
     <Container className={classes.importFormContainer}>
       {error ? <ErrorMessage error={error} /> : null}
       <div className={classes.flex}>
-        <Spacer />
-        <div>
+        <div className={classes.leftPanel}>
           <div className={classes.mb}>
             Select assemblies for linear synteny view
           </div>
@@ -154,8 +161,7 @@ const LinearSyntenyViewImportForm = observer(function ({
           </div>
         </div>
 
-        <Spacer />
-        <div className={classes.fixedWidth}>
+        <div className={classes.rightPanel}>
           <div>
             Synteny dataset to display between row {selectedRow + 1} and{' '}
             {selectedRow + 2}
@@ -168,7 +174,6 @@ const LinearSyntenyViewImportForm = observer(function ({
           />
         </div>
       </div>
-      <Spacer />
     </Container>
   )
 })

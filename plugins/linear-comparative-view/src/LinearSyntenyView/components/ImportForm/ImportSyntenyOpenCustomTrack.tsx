@@ -2,14 +2,17 @@ import { useEffect, useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
+  Button,
   FormControlLabel,
   Grid2,
   Paper,
   Radio,
   RadioGroup,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+import HelpIcon from '@mui/icons-material/Help'
 
 import { getAdapter } from './getAdapter'
 import { basename, extName, getName, stripGz } from './util'
@@ -28,6 +31,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
   assembly2: string
   selectedRow: number
 }) {
+  const [swap, setSwap] = useState(false)
   const [bed2Location, setBed2Location] = useState<FileLocation>()
   const [bed1Location, setBed1Location] = useState<FileLocation>()
   const [fileLocation, setFileLocation] = useState<FileLocation>()
@@ -97,30 +101,70 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
         }}
       >
         <Grid2 container justifyContent="center">
-          <FormControlLabel value=".paf" control={<Radio />} label=".paf" />
-          <FormControlLabel value=".out" control={<Radio />} label=".out" />
-
-          <FormControlLabel value=".delta" control={<Radio />} label=".delta" />
-          <FormControlLabel value=".chain" control={<Radio />} label=".chain" />
-          <FormControlLabel
-            value=".anchors"
-            control={<Radio />}
-            label=".anchors"
-          />
-          <FormControlLabel
-            value=".anchors.simple"
-            control={<Radio />}
-            label=".anchors.simple"
-          />
-          <FormControlLabel
-            value=".pif.gz"
-            control={<Radio />}
-            label=".pif.gz"
-          />
+          {[
+            '.paf',
+            '.out',
+            '.delta',
+            '.chain',
+            '.anchors',
+            '.anchors.simple',
+            '.pif.gz',
+          ].map(extension => (
+            <FormControlLabel
+              key={extension}
+              value={extension}
+              control={<Radio />}
+              label={extension}
+            />
+          ))}
         </Grid2>
       </RadioGroup>
       <Grid2 container justifyContent="center">
-        {value === '.anchors' || value === '.anchors.simple' ? (
+        {value === '.paf' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <FileSelector
+              name={value ? `${value} location` : ''}
+              inline
+              description=""
+              location={fileLocation}
+              setLocation={loc => {
+                setFileLocation(loc)
+              }}
+            />
+            <div>
+              <div>
+                Verify or click swap (e.g. match{' '}
+                <code>minimap2 query.fa target.fa</code>).{' '}
+                <Tooltip title="You might have to inspect the PAF file and verify column 1 refers to names from the query assembly and column 6 contains names from the target">
+                  <HelpIcon />
+                </Tooltip>
+                :
+              </div>
+              <div style={{ display: 'flex' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 4,
+                    alignItems: 'center',
+                  }}
+                >
+                  <div>
+                    <i>{swap ? assembly2 : assembly1}</i>
+                  </div>
+                  <div>query assembly</div>
+                  <div>
+                    <i>{swap ? assembly1 : assembly2}</i>
+                  </div>
+                  <div>target assembly</div>
+                </div>
+                <Button variant="contained" onClick={() => setSwap(!swap)}>
+                  Swap?
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : value === '.anchors' || value === '.anchors.simple' ? (
           <div>
             <div style={{ margin: 20 }}>
               Open the {value} and .bed files for both genome assemblies from
