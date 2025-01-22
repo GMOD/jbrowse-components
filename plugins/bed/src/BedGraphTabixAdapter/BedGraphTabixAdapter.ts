@@ -95,6 +95,12 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
             const start = +cols[colStart]!
             const end = +(same ? start + 1 : cols[colEnd]!)
             const rest = cols.slice(colEnd + 1)
+            if (Number.isNaN(start) || Number.isNaN(end)) {
+              throw new Error(
+                `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
+              )
+            }
+
             for (let j = 0; j < rest.length; j++) {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
               const score = Math.abs(+rest[j]!)
