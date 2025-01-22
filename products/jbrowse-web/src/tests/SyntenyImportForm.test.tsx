@@ -1,4 +1,4 @@
-import { fireEvent, within } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 
 // local
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
@@ -42,8 +42,14 @@ test('open tracklist file', async () => {
 }, 40000)
 
 test('three level', async () => {
-  const { session, findByRole, findAllByTestId, findByText } =
-    await createView()
+  const {
+    session,
+    getAllByTestId,
+    queryAllByTestId,
+    findByRole,
+    findAllByTestId,
+    findByText,
+  } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
@@ -66,8 +72,11 @@ test('three level', async () => {
   fireEvent.click(synbuttons[1]!)
 
   fireEvent.click(await findByText('Launch'))
-  const canvases = await findAllByTestId('synteny_canvas', {}, delay)
-  expect(canvases.length).toBe(2)
+  await waitFor(() => {
+    const canvases = queryAllByTestId('synteny_canvas')
+    expect(canvases.length).toBe(2)
+  }, delay)
+  const canvases = getAllByTestId('synteny_canvas')
   expectCanvasMatch(canvases[0]!)
   expectCanvasMatch(canvases[1]!)
 }, 40000)
