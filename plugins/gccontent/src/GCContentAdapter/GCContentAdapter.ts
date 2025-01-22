@@ -32,14 +32,17 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
       const sequenceAdapter = await this.configure()
       const windowSize = this.getConf('windowSize')
       const windowDelta = this.getConf('windowDelta')
-      const hw = windowSize === 1 ? 1 : windowSize / 2 // Half the window size
-      const f = windowSize === 1
+      const halfWindowSize = windowSize === 1 ? 1 : Math.ceil(windowSize / 2) // Half the window size
+      const isWindowSizeOneBp = windowSize === 1
 
-      let { start: queryStart, end: queryEnd } = query
-      queryStart = Math.max(0, queryStart - hw)
-      queryEnd += hw
+      const qs = Math.max(
+        0,
+        Math.floor((query.start - halfWindowSize) / windowSize) * windowSize,
+      )
+      const qe =
+        Math.ceil((query.end + halfWindowSize) / windowSize) * windowSize
 
-      if (queryEnd < 0 || queryStart > queryEnd) {
+      if (qe < 0 || qs > qe) {
         observer.complete()
         return
       }
@@ -49,8 +52,8 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
           .getFeatures(
             {
               ...query,
-              start: queryStart,
-              end: queryEnd,
+              start: qs,
+              end: qe,
             },
             opts,
           )
@@ -60,12 +63,18 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
 
       let start = performance.now()
       await updateStatus('Calculating GC', statusCallback, () => {
-        for (let i = hw; i < residues.length - hw; i += windowDelta) {
+        for (
+          let i = halfWindowSize;
+          i < residues.length - halfWindowSize;
+          i += windowDelta
+        ) {
           if (performance.now() - start > 400) {
             checkStopToken(stopToken)
             start = performance.now()
           }
-          const r = f ? residues[i] : residues.slice(i - hw, i + hw)
+          const r = isWindowSizeOneBp
+            ? residues[i]
+            : residues.slice(i - halfWindowSize, i + halfWindowSize)
           let nc = 0
           let ng = 0
           let len = 0
@@ -79,7 +88,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
               len++
             }
           }
-          const pos = queryStart
+          const pos = qs
           const score =
             this.gcMode === 'content'
               ? (ng + nc) / (len || 1)
