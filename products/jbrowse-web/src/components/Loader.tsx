@@ -71,21 +71,21 @@ export function Loader({
   useEffect(() => {
     setLoc(undefined, 'replaceIn')
     setTracks(undefined, 'replaceIn')
-    setHubURL(undefined, 'replaceIn')
     setAssembly(undefined, 'replaceIn')
     setPassword(undefined, 'replaceIn')
     setSessionTracks(undefined, 'replaceIn')
+    setHubURL(undefined, 'replaceIn')
     setTrackList(undefined, 'replaceIn')
     setNav(undefined, 'replaceIn')
     setHighlight(undefined, 'replaceIn')
   }, [
     setAssembly,
     setHighlight,
-    setHubURL,
     setLoc,
     setNav,
     setPassword,
     setSessionTracks,
+    setHubURL,
     setTrackList,
     setTracks,
   ])
