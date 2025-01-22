@@ -13,7 +13,7 @@ function makeAdapter() {
     }),
   )
 }
-test('basic check', async () => {
+test('basic', async () => {
   const adapter = makeAdapter()
 
   const features = await firstValueFrom(
@@ -28,6 +28,7 @@ test('basic check', async () => {
   )
 
   expect(features).toHaveLength(3) // 2 primary features + 1 mate on chr1
+
   const firstFeature = features[0]!
   expect(firstFeature.get('refName')).toBe('chr1')
   expect(firstFeature.get('start')).toBe(1000)

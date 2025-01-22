@@ -1,5 +1,5 @@
 #header line 1
 #header line 2
-chr1\t1000\t2000\tchr2\t3000\t4000\tSV1\t60\t+\t-\tDUP
-chr1\t5000\t6000\tchr1\t8000\t9000\tSV2\t80\t+\t+\tINV
-chr2\t1500\t2500\tchr3\t3500\t4500\tSV3\t70\t-\t+\tTRA
+chr1	1000	2000	chr2	3000	4000	SV1	60	+	-	DUP
+chr1	5000	6000	chr1	8000	9000	SV2	80	+	+	INV
+chr2	1500	2500	chr3	3500	4500	SV3	70	-	+	TRA
