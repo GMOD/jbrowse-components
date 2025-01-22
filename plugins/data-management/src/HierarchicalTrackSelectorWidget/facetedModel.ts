@@ -220,6 +220,6 @@ export function facetedStateTreeF() {
       },
     }))
 }
-
 export type FacetedStateModel = ReturnType<typeof facetedStateTreeF>
 export type FacetedModel = Instance<FacetedStateModel>
+export type FacetedRow = FacetedModel['filteredRows'][0]

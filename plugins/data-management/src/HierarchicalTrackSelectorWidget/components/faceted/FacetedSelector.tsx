@@ -8,9 +8,12 @@ import FacetedDataGrid from './FacetedDataGrid'
 import FacetedHeader from './FacetedHeader'
 import TrackLabelMenu from '../tree/TrackLabelMenu'
 
+import type { FacetedRow } from '../../facetedModel'
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridColDef } from '@mui/x-data-grid'
+
+type T = GridColDef<FacetedRow>
 
 export interface InfoArgs {
   target: HTMLElement
@@ -44,12 +47,9 @@ const FacetedSelector = observer(function FacetedSelector({
     rows,
     panelWidth,
     showFilters,
-    filteredRows,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
   } = faceted
-
-  type T = GridColDef<(typeof filteredRows)[0]>
 
   const columns: T[] = [
     {
