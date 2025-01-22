@@ -278,10 +278,20 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           },
         },
       },
-
+      MuiFilledInput: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
       MuiFormControl: {
         defaultProps: {
+          margin: 'dense' as const,
           size: 'small' as const,
+        },
+      },
+      MuiFormHelperText: {
+        defaultProps: {
+          margin: 'dense' as const,
         },
       },
 
@@ -290,13 +300,21 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           size: 'small' as const,
         },
       },
-
+      MuiInputBase: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
       MuiAutocomplete: {
         defaultProps: {
           size: 'small' as const,
         },
       },
-
+      MuiInputLabel: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
       MuiToolbar: {
         defaultProps: {
           variant: 'dense' as const,
@@ -307,7 +325,11 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           dense: true,
         },
       },
-
+      MuiOutlinedInput: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
       MuiFab: {
         defaultProps: {
           size: 'small' as const,
@@ -342,6 +364,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 
       MuiTextField: {
         defaultProps: {
+          margin: 'dense' as const,
           variant: 'standard' as const,
         },
       },
