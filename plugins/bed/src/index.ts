@@ -113,16 +113,39 @@ export default class BedPlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\.bed$/i
-          const adapterName = 'BedAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+          const indexFileName = index ? getFileName(index) : undefined
+          if (/\.bed$/i.test(fileName) || adapterHint === 'BedAdapter') {
             return {
-              type: adapterName,
+              type: 'BedAdapter',
               bedLocation: file,
             }
+          } else if (
+            /\.bg$/i.test(fileName) ||
+            /\.bedgraph$/i.test(fileName) ||
+            adapterHint === 'BedGraphAdaper'
+          ) {
+            return {
+              type: 'BedGraphAdapter',
+              bedGraphLocation: file,
+            }
+          } else if (
+            /\.bg.gz$/i.test(fileName) ||
+            /\.bedgraph.gz$/i.test(fileName) ||
+            adapterHint === 'BedGraphTabixAdaper'
+          ) {
+            console.log('wow')
+            return {
+              type: 'BedGraphTabixAdapter',
+              bedGraphGzLocation: file,
+              index: {
+                location: index,
+                indexType: indexFileName?.endsWith('.csi') ? 'CSI' : 'TBI',
+              },
+            }
+          } else {
+            return adapterGuesser(file, index, adapterHint)
           }
-          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
