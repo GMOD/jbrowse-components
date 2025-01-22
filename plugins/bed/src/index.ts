@@ -123,7 +123,7 @@ export default class BedPlugin extends Plugin {
           } else if (
             /\.bg$/i.test(fileName) ||
             /\.bedgraph$/i.test(fileName) ||
-            adapterHint === 'BedGraphAdaper'
+            adapterHint === 'BedGraphAdapter'
           ) {
             return {
               type: 'BedGraphAdapter',
@@ -132,9 +132,8 @@ export default class BedPlugin extends Plugin {
           } else if (
             /\.bg.gz$/i.test(fileName) ||
             /\.bedgraph.gz$/i.test(fileName) ||
-            adapterHint === 'BedGraphTabixAdaper'
+            adapterHint === 'BedGraphTabixAdapter'
           ) {
-            console.log('wow')
             return {
               type: 'BedGraphTabixAdapter',
               bedGraphGzLocation: file,
