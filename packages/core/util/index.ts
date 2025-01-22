@@ -1414,6 +1414,16 @@ export function isObject(
   return typeof x === 'object' && x !== null
 }
 
+export function localStorageGetNumber(key: string, defaultVal: number) {
+  return +(localStorageGetItem(key) ?? defaultVal)
+}
+
+export function localStorageGetBoolean(key: string, defaultVal: boolean) {
+  return Boolean(
+    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
+  )
+}
+
 export {
   type Feature,
   type SimpleFeatureSerialized,

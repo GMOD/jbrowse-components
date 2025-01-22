@@ -6,16 +6,6 @@ import { localStorageGetItem, localStorageSetItem } from '../../util'
 import type { SimpleFeatureSerialized } from '../../util'
 import type { Instance } from 'mobx-state-tree'
 
-function localStorageGetNumber(key: string, defaultVal: number) {
-  return +(localStorageGetItem(key) ?? defaultVal)
-}
-
-function localStorageGetBoolean(key: string, defaultVal: boolean) {
-  return Boolean(
-    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
-  )
-}
-
 function localStorageSetNumber(key: string, value: number) {
   localStorageSetItem(key, JSON.stringify(value))
 }
