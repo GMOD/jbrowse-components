@@ -99,9 +99,6 @@ exports[`renders one track, one region 1`] = `
             type="button"
             value="track_select"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1v19m96-MuiSvgIcon-root-buttonSpacer"
@@ -203,9 +200,6 @@ exports[`renders one track, one region 1`] = `
                       tabindex="0"
                       type="button"
                     >
-                      <span
-                        class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                      />
                       <svg
                         aria-hidden="true"
                         class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -259,9 +253,6 @@ exports[`renders one track, one region 1`] = `
                 tabindex="-1"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
@@ -288,9 +279,6 @@ exports[`renders one track, one region 1`] = `
                 tabindex="-1"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -346,9 +334,6 @@ exports[`renders one track, one region 1`] = `
                 tabindex="0"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -377,9 +362,6 @@ exports[`renders one track, one region 1`] = `
                 tabindex="0"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
@@ -540,9 +522,6 @@ exports[`renders one track, one region 1`] = `
             title="close this track"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -569,9 +548,6 @@ exports[`renders one track, one region 1`] = `
             tabindex="0"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -749,9 +725,6 @@ exports[`renders two tracks, two regions 1`] = `
             type="button"
             value="track_select"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1v19m96-MuiSvgIcon-root-buttonSpacer"
@@ -853,9 +826,6 @@ exports[`renders two tracks, two regions 1`] = `
                       tabindex="0"
                       type="button"
                     >
-                      <span
-                        class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                      />
                       <svg
                         aria-hidden="true"
                         class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -908,9 +878,6 @@ exports[`renders two tracks, two regions 1`] = `
                 tabindex="0"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
@@ -936,9 +903,6 @@ exports[`renders two tracks, two regions 1`] = `
                 tabindex="0"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -994,9 +958,6 @@ exports[`renders two tracks, two regions 1`] = `
                 tabindex="0"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -1025,9 +986,6 @@ exports[`renders two tracks, two regions 1`] = `
                 tabindex="0"
                 type="button"
               >
-                <span
-                  class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                />
                 <svg
                   aria-hidden="true"
                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
@@ -1431,9 +1389,6 @@ exports[`renders two tracks, two regions 1`] = `
             title="close this track"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -1460,9 +1415,6 @@ exports[`renders two tracks, two regions 1`] = `
             tabindex="0"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -1562,9 +1514,6 @@ exports[`renders two tracks, two regions 1`] = `
             title="close this track"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -1591,9 +1540,6 @@ exports[`renders two tracks, two regions 1`] = `
             tabindex="0"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"

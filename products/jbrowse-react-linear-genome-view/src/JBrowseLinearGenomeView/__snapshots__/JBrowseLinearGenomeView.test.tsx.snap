@@ -23,9 +23,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             tabindex="0"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
@@ -50,9 +47,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             tabindex="0"
             type="button"
           >
-            <span
-              class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-            />
             <div
               style="width: 22px; height: 22px;"
             >
@@ -190,9 +184,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     type="button"
                     value="track_select"
                   >
-                    <span
-                      class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                    />
                     <svg
                       aria-hidden="true"
                       class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1v19m96-MuiSvgIcon-root-buttonSpacer"
@@ -294,9 +285,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                               tabindex="0"
                               type="button"
                             >
-                              <span
-                                class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                              />
                               <svg
                                 aria-hidden="true"
                                 class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -349,9 +337,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         tabindex="0"
                         type="button"
                       >
-                        <span
-                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
@@ -377,9 +362,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         tabindex="0"
                         type="button"
                       >
-                        <span
-                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -435,9 +417,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         tabindex="0"
                         type="button"
                       >
-                        <span
-                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
@@ -466,9 +445,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         tabindex="0"
                         type="button"
                       >
-                        <span
-                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
@@ -1029,9 +1005,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     title="close this track"
                     type="button"
                   >
-                    <span
-                      class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                    />
                     <svg
                       aria-hidden="true"
                       class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
@@ -1058,9 +1031,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     tabindex="0"
                     type="button"
                   >
-                    <span
-                      class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                    />
                     <svg
                       aria-hidden="true"
                       class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"

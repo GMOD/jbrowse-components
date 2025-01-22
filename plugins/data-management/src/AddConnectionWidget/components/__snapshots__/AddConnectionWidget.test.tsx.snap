@@ -135,9 +135,6 @@ exports[`renders 1`] = `
                         tabindex="0"
                         target="_blank"
                       >
-                        <span
-                          class="MuiIconButton-loadingIndicator css-165vu30-MuiIconButton-loadingIndicator"
-                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
