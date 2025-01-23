@@ -1,9 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { getFileName } from '@jbrowse/core/util/tracks'
 
-import AddTrackComponentF from './AddTrackComponent'
 import BlastTabularAdapter from './BlastTabularAdapter'
 import ChainAdapterF from './ChainAdapter'
+import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent'
 import DeltaAdapterF from './DeltaAdapter'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
@@ -39,12 +39,10 @@ export default class ComparativeAdaptersPlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\.paf/i
-          const adapterName = 'PAFAdapter'
-          const fileName = getFileName(file)
-          return regexGuess.test(fileName) || adapterHint === adapterName
+          return (/\.paf/i.test(getFileName(file)) && !adapterHint) ||
+            adapterHint === 'PAFAdapter'
             ? {
-                type: adapterName,
+                type: 'PAFAdapter',
                 pafLocation: file,
               }
             : adapterGuesser(file, index, adapterHint)
@@ -60,6 +58,6 @@ export default class ComparativeAdaptersPlugin extends Plugin {
             : trackTypeGuesser(adapterName)
       },
     )
-    AddTrackComponentF(pluginManager)
+    ComparativeAddTrackComponentF(pluginManager)
   }
 }

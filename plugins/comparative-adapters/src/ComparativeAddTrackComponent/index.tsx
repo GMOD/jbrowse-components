@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const PAFWorkflow = observer(function ({ model }: any) {
+const ComparativeAddTrackComponent = observer(function ({ model }: any) {
   const session = getSession(model)
   const [r0, setR0] = useState(session.assemblies[0]?.name)
   const [r1, setR1] = useState(session.assemblies[0]?.name)
@@ -48,12 +48,16 @@ const PAFWorkflow = observer(function ({ model }: any) {
   )
 })
 
-export default function AddTrackComponentF(pluginManager: PluginManager) {
+export default function ComparativeAddTrackComponentF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addToExtensionPoint(
     'Core-addTrackComponent',
     // @ts-expect-error
     (comp, { model }: { trackAdapterType: string }) => {
-      return model.trackAdapterType === 'PAFAdapter' ? PAFWorkflow : comp
+      return model.trackAdapterType === 'PAFAdapter'
+        ? ComparativeAddTrackComponent
+        : comp
     },
   )
 }

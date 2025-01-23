@@ -118,6 +118,7 @@ test('test wrongProtocol returning false', () => {
   setWindowLoc('http://google.com')
 
   expect(widget.wrongProtocol).toBe(false)
+  // @ts-expect-error
   window.location = realLocation
 })
 
@@ -130,6 +131,7 @@ test('test wrongProtocol returning true', () => {
   })
   setWindowLoc('https://google.com')
   expect(widget.wrongProtocol).toBe(true)
+  // @ts-expect-error
   window.location = realLocation
 })
 
