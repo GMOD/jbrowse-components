@@ -110,28 +110,32 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 /**
- * creates a new location from the provided location including the appropriate suffix and location type
+ * creates a new location from the provided location including the appropriate
+ * suffix and location type
+ *
  * @param location - the FileLocation
  * @param suffix - the file suffix (e.g. .bam)
  * @returns the constructed location object from the provided parameters
  */
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {
-    return { uri: location.uri + suffix, locationType: 'UriLocation' }
-  }
-
-  if ('localPath' in location) {
+    return {
+      uri: location.uri + suffix,
+      locationType: 'UriLocation',
+    }
+  } else if ('localPath' in location) {
     return {
       localPath: location.localPath + suffix,
       locationType: 'LocalPathLocation',
     }
+  } else {
+    return location
   }
-
-  return location
 }
 
 /**
  * constructs a potential index file (with suffix) from the provided file name
+ *
  * @param name - the name of the index file
  * @param typeA - one option of a potential two file suffix (e.g. CSI, BAI)
  * @param typeB - the second option of a potential two file suffix (e.g. CSI, BAI)
@@ -190,7 +194,6 @@ export function guessAdapter(
     ) as AdapterGuesser
 
     const adapter = adapterGuesser(file, index, adapterHint)
-
     if (adapter) {
       return adapter
     }
@@ -218,7 +221,6 @@ export function guessTrackType(
     ) as TrackTypeGuesser
 
     const trackType = trackTypeGuesser(adapterType)
-
     if (trackType) {
       return trackType
     }

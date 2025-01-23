@@ -11,7 +11,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
+const TrackTypeSelector = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { trackType } = model
@@ -31,8 +35,10 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
       }}
       slotProps={{
         select: {
-          // @ts-expect-error
-          SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+          SelectDisplayProps: {
+            // @ts-expect-error
+            'data-testid': 'trackTypeSelect',
+          },
         },
       }}
     >

@@ -28,15 +28,13 @@ const AssemblyTable = observer(function ({
             rowHeight={25}
             columnHeaderHeight={35}
             hideFooter={session.assemblies.length < 25}
-            rows={session.assemblies.map(assembly => {
-              return {
-                id: readConfObject(assembly, 'name'),
-                name: readConfObject(assembly, 'name'),
-                displayName: readConfObject(assembly, 'displayName'),
-                aliases: readConfObject(assembly, 'aliases'),
-                assembly,
-              }
-            })}
+            rows={session.assemblies.map(assembly => ({
+              id: readConfObject(assembly, 'name'),
+              name: readConfObject(assembly, 'name'),
+              displayName: readConfObject(assembly, 'displayName'),
+              aliases: readConfObject(assembly, 'aliases'),
+              assembly,
+            }))}
             columns={[
               { field: 'name' },
               { field: 'displayName' },

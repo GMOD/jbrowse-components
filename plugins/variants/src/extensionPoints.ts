@@ -20,25 +20,31 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
         index?: FileLocation,
         adapterHint?: string,
       ) => {
-        const regexGuess = /\.vcf\.b?gz$/i
-        const adapterName = 'VcfTabixAdapter'
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
-        const obj = {
-          type: adapterName,
-          vcfGzLocation: file,
-          index: {
-            location: index || makeIndex(file, '.tbi'),
-            indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-          },
+        if (
+          (/\.vcf\.b?gz$/i.test(fileName) && !adapterHint) ||
+          adapterHint === 'VcfTabixAdapter'
+        ) {
+          return {
+            type: 'VcfTabixAdapter',
+            vcfGzLocation: file,
+            index: {
+              location: index || makeIndex(file, '.tbi'),
+              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+            },
+          }
+        } else if (
+          (!adapterHint && /\.vcf$/i.test(fileName)) ||
+          adapterHint === 'VcfAdapter'
+        ) {
+          return {
+            type: 'VcfAdapter',
+            vcfLocation: file,
+          }
+        } else {
+          return adapterGuesser(file, index, adapterHint)
         }
-        if (regexGuess.test(fileName) && !adapterHint) {
-          return obj
-        }
-        if (adapterHint === adapterName) {
-          return obj
-        }
-        return adapterGuesser(file, index, adapterHint)
       }
     },
   )
@@ -46,32 +52,9 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
       return (adapterName: string) => {
-        if (adapterName === 'VcfTabixAdapter' || adapterName === 'VcfAdapter') {
-          return 'VariantTrack'
-        }
-        return trackTypeGuesser(adapterName)
-      }
-    },
-  )
-
-  pluginManager.addToExtensionPoint(
-    'Core-guessAdapterForLocation',
-    (adapterGuesser: AdapterGuesser) => {
-      return (
-        file: FileLocation,
-        index?: FileLocation,
-        adapterHint?: string,
-      ) => {
-        const regexGuess = /\.vcf$/i
-        const adapterName = 'VcfAdapter'
-        const fileName = getFileName(file)
-        if (regexGuess.test(fileName) || adapterHint === adapterName) {
-          return {
-            type: adapterName,
-            vcfLocation: file,
-          }
-        }
-        return adapterGuesser(file, index, adapterHint)
+        return adapterName === 'VcfTabixAdapter' || adapterName === 'VcfAdapter'
+          ? 'VariantTrack'
+          : trackTypeGuesser(adapterName)
       }
     },
   )

@@ -63,23 +63,19 @@ export default class WigglePlugin extends Plugin {
     pm.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (cb: AdapterGuesser) => {
-        return (file: FileLocation, index?: FileLocation, hint?: string) => {
-          const regexGuess = /\.(bw|bigwig)$/i
-          const adapterName = 'BigWigAdapter'
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
           const fileName = getFileName(file)
-          const obj = {
-            type: adapterName,
-            bigWigLocation: file,
-          }
-
-          if (regexGuess.test(fileName) && !hint) {
-            return obj
-          }
-          if (hint === adapterName) {
-            return obj
-          }
-
-          return cb(file, index, hint)
+          return (/\.(bw|bigwig)$/i.test(fileName) && !adapterHint) ||
+            adapterHint === 'BigWigAdapter'
+            ? {
+                type: 'BigWigAdapter',
+                bigWigLocation: file,
+              }
+            : cb(file, index, adapterHint)
         }
       },
     )
@@ -87,10 +83,9 @@ export default class WigglePlugin extends Plugin {
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
-          if (adapterName === 'BigWigAdapter') {
-            return 'QuantitativeTrack'
-          }
-          return trackTypeGuesser(adapterName)
+          return adapterName === 'BigWigAdapter'
+            ? 'QuantitativeTrack'
+            : trackTypeGuesser(adapterName)
         }
       },
     )
