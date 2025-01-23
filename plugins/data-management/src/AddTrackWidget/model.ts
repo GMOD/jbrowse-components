@@ -252,8 +252,9 @@ export default function f(pluginManager: PluginManager) {
           resources from JBrowse when it is running on https. Please use an
           https URL for your track, or access the JBrowse app from the http
           protocol`
+        } else {
+          return ''
         }
-        return ''
       },
     }))
 }

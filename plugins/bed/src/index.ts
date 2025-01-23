@@ -47,11 +47,11 @@ export default class BedPlugin extends Plugin {
 
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj
-          }
-          if (adapterHint === adapterName) {
+          } else if (adapterHint === adapterName) {
             return obj
+          } else {
+            return adapterGuesser(file, index, adapterHint)
           }
-          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -67,13 +67,12 @@ export default class BedPlugin extends Plugin {
           const regexGuess = /\.bedpe(\.gz)?$/i
           const adapterName = 'BedpeAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              bedpeLocation: file,
-            }
-          }
-          return adapterGuesser(file, index, adapterHint)
+          return regexGuess.test(fileName) || adapterHint === adapterName
+            ? {
+                type: adapterName,
+                bedpeLocation: file,
+              }
+            : adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -90,17 +89,16 @@ export default class BedPlugin extends Plugin {
           const adapterName = 'BedTabixAdapter'
           const fileName = getFileName(file)
           const indexName = index && getFileName(index)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              bedGzLocation: file,
-              index: {
-                location: index || makeIndex(file, '.tbi'),
-                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-              },
-            }
-          }
-          return adapterGuesser(file, index, adapterHint)
+          return regexGuess.test(fileName) || adapterHint === adapterName
+            ? {
+                type: adapterName,
+                bedGzLocation: file,
+                index: {
+                  location: index || makeIndex(file, '.tbi'),
+                  indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+                },
+              }
+            : adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -114,15 +112,18 @@ export default class BedPlugin extends Plugin {
           adapterHint?: string,
         ) => {
           const fileName = getFileName(file)
-          const indexFileName = index ? getFileName(index) : undefined
-          if (/\.bed$/i.test(fileName) || adapterHint === 'BedAdapter') {
+          const indexName = index && getFileName(index)
+          if (
+            (!adapterHint && /\.bed$/i.test(fileName)) ||
+            adapterHint === 'BedAdapter'
+          ) {
             return {
               type: 'BedAdapter',
               bedLocation: file,
             }
           } else if (
-            /\.bg$/i.test(fileName) ||
-            /\.bedgraph$/i.test(fileName) ||
+            (!adapterHint &&
+              (/\.bg$/i.test(fileName) || /\.bedgraph$/i.test(fileName))) ||
             adapterHint === 'BedGraphAdapter'
           ) {
             return {
@@ -130,16 +131,17 @@ export default class BedPlugin extends Plugin {
               bedGraphLocation: file,
             }
           } else if (
-            /\.bg.gz$/i.test(fileName) ||
-            /\.bedgraph.gz$/i.test(fileName) ||
+            (!adapterHint &&
+              (/\.bg.gz$/i.test(fileName) ||
+                /\.bedgraph.gz$/i.test(fileName))) ||
             adapterHint === 'BedGraphTabixAdapter'
           ) {
             return {
               type: 'BedGraphTabixAdapter',
               bedGraphGzLocation: file,
               index: {
-                location: index,
-                indexType: indexFileName?.endsWith('.csi') ? 'CSI' : 'TBI',
+                location: index || makeIndex(file, '.tbi'),
+                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
               },
             }
           } else {
@@ -151,10 +153,15 @@ export default class BedPlugin extends Plugin {
 
     pluginManager.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
-      (trackTypeGuesser: TrackTypeGuesser) => (adapterName: string) =>
-        adapterName === 'BedpeAdapter'
-          ? 'VariantTrack'
-          : trackTypeGuesser(adapterName),
+      (trackTypeGuesser: TrackTypeGuesser) => (adapterName: string) => {
+        return (
+          {
+            BedAdapter: 'VariantTrack',
+            BedGraphAdapter: 'QuantitativeTrack',
+            BedGraphTabixAdapter: 'QuantitativeTrack',
+          }[adapterName] || trackTypeGuesser(adapterName)
+        )
+      },
     )
   }
 }

@@ -32,21 +32,14 @@ export default class HicPlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\.hic/i
-          const adapterName = 'HicAdapter'
           const fileName = getFileName(file)
-          const obj = {
-            type: adapterName,
-            hicLocation: file,
-          }
-
-          if (regexGuess.test(fileName) && !adapterHint) {
-            return obj
-          } else if (adapterHint === adapterName) {
-            return obj
-          } else {
-            return adapterGuesser(file, index, adapterHint)
-          }
+          return (/\.hic$/i.test(fileName) && !adapterHint) ||
+            adapterHint === 'HicAdapter'
+            ? {
+                type: 'HicAdapter',
+                hicLocation: file,
+              }
+            : adapterGuesser(file, index, adapterHint)
         }
       },
     )
