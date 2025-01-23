@@ -13,7 +13,17 @@ const VcfAdapter = ConfigurationSchema(
      */
     vcfLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.vcf',
+        locationType: 'UriLocation',
+      },
+    },
+    /**
+     * #slot
+     */
+    samples: {
+      type: 'frozen',
+      defaultValue: [],
     },
   },
   { explicitlyTyped: true },

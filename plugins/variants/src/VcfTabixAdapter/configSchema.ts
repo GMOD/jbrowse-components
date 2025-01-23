@@ -36,6 +36,13 @@ const VcfTabixAdapter = ConfigurationSchema(
         },
       },
     }),
+    /**
+     * #slot
+     */
+    samples: {
+      type: 'frozen',
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true },
 )
