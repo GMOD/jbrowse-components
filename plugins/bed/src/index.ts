@@ -29,79 +29,6 @@ export default class BedPlugin extends Plugin {
     BedTabixAdapterF(pluginManager)
     BedGraphAdapterF(pluginManager)
     BedGraphTabixAdapterF(pluginManager)
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const regexGuess = /\.(bb|bigbed)$/i
-          const adapterName = 'BigBedAdapter'
-          const fileName = getFileName(file)
-          const obj = {
-            type: adapterName,
-            bigBedLocation: file,
-          }
-
-          if (regexGuess.test(fileName) && !adapterHint) {
-            return obj
-          } else if (adapterHint === adapterName) {
-            return obj
-          } else {
-            return adapterGuesser(file, index, adapterHint)
-          }
-        }
-      },
-    )
-
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const regexGuess = /\.bedpe(\.gz)?$/i
-          const adapterName = 'BedpeAdapter'
-          const fileName = getFileName(file)
-          return regexGuess.test(fileName) || adapterHint === adapterName
-            ? {
-                type: adapterName,
-                bedpeLocation: file,
-              }
-            : adapterGuesser(file, index, adapterHint)
-        }
-      },
-    )
-
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const regexGuess = /\.bed\.b?gz$/i
-          const adapterName = 'BedTabixAdapter'
-          const fileName = getFileName(file)
-          const indexName = index && getFileName(index)
-          return regexGuess.test(fileName) || adapterHint === adapterName
-            ? {
-                type: adapterName,
-                bedGzLocation: file,
-                index: {
-                  location: index || makeIndex(file, '.tbi'),
-                  indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-                },
-              }
-            : adapterGuesser(file, index, adapterHint)
-        }
-      },
-    )
 
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
@@ -114,6 +41,22 @@ export default class BedPlugin extends Plugin {
           const fileName = getFileName(file)
           const indexName = index && getFileName(index)
           if (
+            (!adapterHint && /\.bedpe(\.gz)?$/i.test(fileName)) ||
+            adapterHint === 'BedpeAdapter'
+          ) {
+            return {
+              type: 'BedpeAdapter',
+              bedpeAdapter: file,
+            }
+          } else if (
+            (!adapterHint && /\.bed$/i.test(fileName)) ||
+            adapterHint === 'BigBedAdapter'
+          ) {
+            return {
+              type: 'BigBedAdapter',
+              bigBedLocation: file,
+            }
+          } else if (
             (!adapterHint && /\.bed$/i.test(fileName)) ||
             adapterHint === 'BedAdapter'
           ) {
@@ -139,6 +82,18 @@ export default class BedPlugin extends Plugin {
             return {
               type: 'BedGraphTabixAdapter',
               bedGraphGzLocation: file,
+              index: {
+                location: index || makeIndex(file, '.tbi'),
+                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+              },
+            }
+          } else if (
+            (!adapterHint && /\.bed\.b?gz$/i.test(fileName)) ||
+            adapterHint === 'BedTabixAdapter'
+          ) {
+            return {
+              type: 'BedTabixAdapter',
+              bedGzLocation: file,
               index: {
                 location: index || makeIndex(file, '.tbi'),
                 indexType: makeIndexType(indexName, 'CSI', 'TBI'),

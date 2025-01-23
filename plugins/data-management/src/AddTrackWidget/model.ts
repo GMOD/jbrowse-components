@@ -1,3 +1,5 @@
+import { getConf } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
 import {
   UNSUPPORTED,
   getFileName,
@@ -5,6 +7,7 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import deepmerge from 'deepmerge'
 import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -19,6 +22,7 @@ function isAbsoluteUrl(url = '') {
     return url.startsWith('/')
   }
 }
+
 interface IndexingAttr {
   attributes: string[]
   exclude: string[]
@@ -58,8 +62,12 @@ export default function f(pluginManager: PluginManager) {
       adapterHint: '',
       textIndexTrack: true,
       textIndexingConf: undefined as IndexingAttr | undefined,
+      mixinData: {},
     }))
     .actions(self => ({
+      setMixinData(arg: Record<string, unknown>) {
+        self.mixinData = arg
+      },
       /**
        * #action
        */
@@ -227,16 +235,74 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get trackAdapterType() {
+        return this.trackAdapter?.type
+      },
+      /**
+       * #getter
+       */
       get trackType() {
         return (
           self.altTrackType ||
-          (this.trackAdapter
-            ? guessTrackType(this.trackAdapter.type, self)
+          (this.trackAdapterType
+            ? guessTrackType(this.trackAdapterType, self)
             : '')
         )
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get trackId() {
+        const session = getSession(self)
+        return [
+          `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
+          session.adminMode ? '' : '-sessionTrack',
+        ].join('')
+      },
+      /**
+       * #getter
+       */
+      get trackConfig() {
+        const session = getSession(self)
+        const assemblyInstance = session.assemblyManager.get(self.assembly)
+        console.log(
+          self.mixinData,
+          deepmerge(
+            {
+              trackId: this.trackId,
+              type: self.trackType,
+              name: self.trackName,
+              assemblyNames: [self.assembly],
+              adapter: {
+                ...self.trackAdapter,
+              },
+            },
+            self.mixinData,
+          ),
+        )
+        return assemblyInstance &&
+          self.trackAdapter &&
+          self.trackAdapter.type !== 'UNKNOWN'
+          ? deepmerge(
+              {
+                trackId: this.trackId,
+                type: self.trackType,
+                name: self.trackName,
+                assemblyNames: [self.assembly],
+                adapter: {
+                  ...self.trackAdapter,
+                  sequenceAdapter: getConf(assemblyInstance, [
+                    'sequence',
+                    'adapter',
+                  ]),
+                },
+              },
+              self.mixinData,
+            )
+          : undefined
+      },
       /**
        * #getter
        */

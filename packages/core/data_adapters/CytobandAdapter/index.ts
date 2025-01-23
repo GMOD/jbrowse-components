@@ -9,6 +9,9 @@ export default function CytobandAdapterF(pluginManager: PluginManager) {
       new AdapterType({
         name: 'CytobandAdapter',
         configSchema,
+        adapterMetadata: {
+          hiddenFromGUI: true,
+        },
         getAdapterClass: () => import('./CytobandAdapter').then(f => f.default),
       }),
   )

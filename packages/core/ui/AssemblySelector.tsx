@@ -19,6 +19,7 @@ const useStyles = makeStyles()({
 const AssemblySelector = observer(function ({
   session,
   onChange,
+  label = 'Assembly',
   selected,
   InputProps,
   TextFieldProps,
@@ -26,6 +27,7 @@ const AssemblySelector = observer(function ({
   helperText = 'Select assembly to view',
 }: {
   session: AbstractSessionModel
+  label?: string
   helperText?: string
   onChange: (arg: string) => void
   selected?: string
@@ -66,7 +68,7 @@ const AssemblySelector = observer(function ({
     <TextField
       select
       data-testid="assembly-selector-textfield"
-      label="Assembly"
+      label={label}
       variant="outlined"
       helperText={error || helperText}
       value={selection || ''}

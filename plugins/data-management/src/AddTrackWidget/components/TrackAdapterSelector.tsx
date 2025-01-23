@@ -6,12 +6,6 @@ import { makeStyles } from 'tss-react/mui'
 import type { AddTrackModel } from '../model'
 import type AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-const useStyles = makeStyles()(theme => ({
-  spacing: {
-    marginBottom: theme.spacing(3),
-  },
-}))
-
 // collate adapters into a map with
 // key: category
 // value: array of adapters with that category
@@ -28,17 +22,14 @@ function categorizeAdapters(adaptersList: AdapterType[]) {
 }
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const { classes } = useStyles()
   const { trackAdapter } = model
   const { pluginManager } = getEnv(model)
 
   return (
     <TextField
-      className={classes.spacing}
       value={trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : ''}
       label="Adapter type"
       variant="outlined"
-      helperText="Select an adapter type"
       select
       fullWidth
       onChange={event => {
