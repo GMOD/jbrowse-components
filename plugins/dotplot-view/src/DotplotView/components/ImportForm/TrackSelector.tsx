@@ -9,21 +9,16 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 import type { DotplotViewModel } from '../../model'
-import type { Conf } from '../../types'
-import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack'
 
 const TrackSelector = observer(function ({
-  setSessionTrackData,
-  setShowTrackId,
   assembly1,
   assembly2,
   model,
 }: {
-  setSessionTrackData: (arg: Conf) => void
-  setShowTrackId: (arg?: string) => void
   model: DotplotViewModel
   assembly1: string
   assembly2: string
@@ -32,10 +27,9 @@ const TrackSelector = observer(function ({
 
   useEffect(() => {
     if (choice === 'none') {
-      setSessionTrackData(undefined)
-      setShowTrackId(undefined)
+      model.setImportFormSyntenyTrack(0, { type: 'none' })
     }
-  }, [choice, setSessionTrackData, setShowTrackId])
+  }, [model, choice])
   return (
     <>
       <FormControl>
@@ -75,7 +69,6 @@ const TrackSelector = observer(function ({
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}
-          setShowTrackId={setShowTrackId}
         />
       ) : null}
     </>

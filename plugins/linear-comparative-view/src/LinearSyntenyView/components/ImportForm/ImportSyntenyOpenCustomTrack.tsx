@@ -73,6 +73,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
       setError(e)
     }
   }, [
+    swap,
     model,
     selectedRow,
     fileName,
@@ -125,14 +126,20 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
         </Grid2>
       </RadioGroup>
       <Grid2 container justifyContent="center">
-        {value === '.paf' ||
-        value === '.out' ||
-        value === '.delta' ||
-        value === '.chain' ||
-        value === '.pif.gz' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {radioOption === '.paf' ||
+        radioOption === '.out' ||
+        radioOption === '.delta' ||
+        radioOption === '.chain' ||
+        radioOption === '.pif.gz' ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}
+          >
             <FileSelector
-              name={value ? `${value} location` : ''}
+              name={`${radioOption} location`}
               inline
               description=""
               location={fileLocation}
@@ -143,17 +150,16 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
             <div>
               <div>
                 Verify or click swap
-                <Tooltip
-                  title={
-                    <code>
-                      {helpStrings[value]}
-                    </code>
-                  }
-                >
+                <Tooltip title={<code>{helpStrings[radioOption]}</code>}>
                   <HelpIcon />
                 </Tooltip>
               </div>
-              <div style={{ display: 'flex', gap: 20 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 20,
+                }}
+              >
                 <div
                   style={{
                     display: 'grid',
@@ -171,7 +177,12 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
                   </div>
                   <div>target assembly</div>
                 </div>
-                <Button variant="contained" onClick={() => { setSwap(!swap) }}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setSwap(!swap)
+                  }}
+                >
                   Swap?
                 </Button>
               </div>
@@ -239,7 +250,12 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
                 </div>
                 <div>bed2 assembly</div>
               </div>
-              <Button variant="contained" onClick={() => { setSwap(!swap) }}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setSwap(!swap)
+                }}
+              >
                 Swap?
               </Button>
             </div>

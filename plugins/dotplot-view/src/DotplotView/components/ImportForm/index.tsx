@@ -10,14 +10,13 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { transaction } from 'mobx'
+import { toJS, transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { DotplotViewModel } from '../../model'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
 import TrackSelector from './TrackSelector'
+
+import type { DotplotViewModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -30,7 +29,35 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type Conf = SnapshotIn<AnyConfigurationModel>
+function doSubmit({
+  model,
+  assembly1,
+  assembly2,
+}: {
+  assembly1: string
+  assembly2: string
+  model: DotplotViewModel
+}) {
+  const session = getSession(model)
+  const { importFormSyntenyTrackSelections } = model
+
+  model.setError(undefined)
+  transaction(() => {
+    if (isSessionWithAddTracks(session)) {
+      toJS(importFormSyntenyTrackSelections).map((f, idx) => {
+        if (f.type === 'userOpened') {
+          session.addTrackConf(f.value)
+          model.toggleTrack(f.value?.trackId)
+        } else if (f.type === 'preConfigured') {
+          model.showTrack(f.value, idx)
+        }
+      })
+    }
+
+    model.showAllRegions()
+    model.setAssemblyNames(assembly2, assembly1)
+  })
+}
 
 const DotplotImportForm = observer(function ({
   model,
@@ -43,32 +70,6 @@ const DotplotImportForm = observer(function ({
   const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
   const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
   const [error, setError] = useState<unknown>()
-  const [sessionTrackData, setSessionTrackData] = useState<Conf>()
-  const [showTrackId, setShowTrackId] = useState<string>()
-
-  function onOpenClick() {
-    try {
-      if (!isSessionWithAddTracks(session)) {
-        return
-      }
-      setError(undefined)
-      model.setError(undefined)
-      transaction(() => {
-        if (sessionTrackData) {
-          session.addTrackConf(sessionTrackData)
-          model.toggleTrack(sessionTrackData.trackId)
-        } else if (showTrackId) {
-          model.showTrack(showTrackId)
-        }
-
-        model.showAllRegions()
-        model.setAssemblyNames(assembly2, assembly1)
-      })
-    } catch (e) {
-      console.error(e)
-      setError(e)
-    }
-  }
 
   // this is a combination of any displayed error message we have
   const displayError = error || model.error
@@ -103,16 +104,33 @@ const DotplotImportForm = observer(function ({
             }}
           />
           <FormControl>
-            <Button onClick={onOpenClick} variant="contained" color="primary">
+            <Button
+              onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                ;(async () => {
+                  try {
+                    setError(undefined)
+                    doSubmit({
+                      assembly1,
+                      assembly2,
+                      model,
+                    })
+                  } catch (e) {
+                    console.error(e)
+                    setError(e)
+                  }
+                })()
+              }}
+              variant="contained"
+              color="primary"
+            >
               Launch
             </Button>
           </FormControl>
         </Grid2>
         <TrackSelector
-          setShowTrackId={setShowTrackId}
           assembly2={assembly2}
           assembly1={assembly1}
-          setSessionTrackData={setSessionTrackData}
           model={model}
         />
       </Paper>

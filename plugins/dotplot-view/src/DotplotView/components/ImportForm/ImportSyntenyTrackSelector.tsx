@@ -24,12 +24,10 @@ const ImportSyntenyTrackSelector = observer(function ({
   model,
   assembly1,
   assembly2,
-  setShowTrackId,
 }: {
   model: DotplotViewModel
   assembly1: string
   assembly2: string
-  setShowTrackId: (arg: string) => void
 }) {
   const session = getSession(model)
   const { tracks, sessionTracks } = session
@@ -49,20 +47,20 @@ const ImportSyntenyTrackSelector = observer(function ({
   useEffect(() => {
     // sets track data in a useEffect because the initial load is needed as well as
     // onChange's to the select box
-    setShowTrackId(value)
-  }, [value, setShowTrackId])
+    model.setImportFormSyntenyTrack(0, {
+      type: 'preConfigured',
+      value,
+    })
+  }, [model, value])
 
   return (
     <Paper style={{ padding: 12 }}>
-      <Typography paragraph>
+      <Typography>
         Select a track from the select box below, the track will be shown when
-        you hit "Launch".
-      </Typography>
-
-      <Typography paragraph>
-        Note: there is a track selector <i>inside</i> the DotplotView, which can
-        turn on one or more SyntenyTracks (more than one can be displayed at
-        once). Look for the track selector icon <TrackSelectorIcon />
+        you hit "Launch". Note: there is a track selector <i>inside</i> the
+        DotplotView, which can turn on one or more SyntenyTracks (more than one
+        can be displayed at once). Look for the track selector icon{' '}
+        <TrackSelectorIcon />
       </Typography>
       {filteredTracks.length ? (
         <Select

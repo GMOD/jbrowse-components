@@ -18,7 +18,6 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-
 import { saveAs } from 'file-saver'
 import { autorun, observable, transaction } from 'mobx'
 import {
