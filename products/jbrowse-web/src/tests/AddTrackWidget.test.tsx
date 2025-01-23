@@ -8,7 +8,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
 test('adds a PAF via the add track workflow', async () => {

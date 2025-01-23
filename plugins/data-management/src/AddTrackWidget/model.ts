@@ -254,16 +254,6 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get trackId() {
-        const session = getSession(self)
-        return [
-          `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-          session.adminMode ? '' : '-sessionTrack',
-        ].join('')
-      },
-      /**
-       * #getter
-       */
       get trackConfig() {
         const session = getSession(self)
         const assemblyInstance = session.assemblyManager.get(self.assembly)
@@ -273,7 +263,10 @@ export default function f(pluginManager: PluginManager) {
           self.trackAdapter.type !== 'UNKNOWN'
           ? deepmerge(
               {
-                trackId: this.trackId,
+                trackId: [
+                  `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
+                  session.adminMode ? '' : '-sessionTrack',
+                ].join(''),
                 type: self.trackType,
                 name: self.trackName,
                 assemblyNames: [self.assembly],
