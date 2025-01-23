@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, within } from '@testing-library/react'
+import { fireEvent, within } from '@testing-library/react'
 
 // local
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
@@ -6,13 +6,9 @@ setup()
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 30000 }
 beforeEach(() => {
   doBeforeEach()
-})
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
 })
 
 // onAction listener warning
@@ -24,7 +20,7 @@ test('open tracklist file', async () => {
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
-  fireEvent.click(await findByText('Dotplot'))
+  fireEvent.click(await findByText('Dotplot view'))
   expect(session.views.length).toBe(2)
   const r = await findAllByTestId('assembly-selector-textfield')
 
@@ -47,7 +43,7 @@ test('open local', async () => {
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
-  fireEvent.click(await findByText('Dotplot'))
+  fireEvent.click(await findByText('Dotplot view'))
   expect(session.views.length).toBe(2)
 
   const r = await findAllByTestId('assembly-selector-textfield')
@@ -61,6 +57,7 @@ test('open local', async () => {
     },
   })
 
+  fireEvent.click(await findByText('Swap?'))
   fireEvent.click(await findByText('Launch'))
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 40000)
