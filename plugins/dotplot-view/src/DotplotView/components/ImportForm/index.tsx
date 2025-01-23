@@ -90,8 +90,7 @@ function TrackSelector({
       </FormControl>
       {choice === 'custom' ? (
         <ImportCustomTrack
-          setSessionTrackData={setSessionTrackData}
-          sessionTrackData={sessionTrackData}
+          model={model}
           assembly2={assembly2}
           assembly1={assembly1}
         />

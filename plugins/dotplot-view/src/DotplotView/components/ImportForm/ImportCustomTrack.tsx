@@ -2,108 +2,34 @@ import { useEffect, useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
+  Button,
   FormControlLabel,
-  Grid,
+  Grid2,
   Paper,
   Radio,
   RadioGroup,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+import HelpIcon from '@mui/icons-material/Help'
 
+import { getAdapter } from './getAdapter'
 import { basename, extName, getName, stripGz } from './util'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { DotplotViewModel } from '../../model'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import type { SnapshotIn } from 'mobx-state-tree'
 
-function getAdapter({
-  radioOption,
+const ImportSyntenyOpenCustomTrack = observer(function ({
+  model,
   assembly1,
   assembly2,
-  fileLocation,
-  indexFileLocation,
-  bed1Location,
-  bed2Location,
 }: {
-  radioOption: string
+  model: DotplotViewModel
   assembly1: string
   assembly2: string
-  fileLocation?: FileLocation
-  indexFileLocation?: FileLocation
-  bed1Location?: FileLocation
-  bed2Location?: FileLocation
 }) {
-  if (radioOption === '.paf') {
-    return {
-      type: 'PAFAdapter',
-      pafLocation: fileLocation,
-      queryAssembly: assembly1,
-      targetAssembly: assembly2,
-    }
-  } else if (radioOption === '.out') {
-    return {
-      type: 'MashMapAdapter',
-      outLocation: fileLocation,
-      queryAssembly: assembly1,
-      targetAssembly: assembly2,
-    }
-  } else if (radioOption === '.delta') {
-    return {
-      type: 'DeltaAdapter',
-      deltaLocation: fileLocation,
-      queryAssembly: assembly1,
-      targetAssembly: assembly2,
-    }
-  } else if (radioOption === '.chain') {
-    return {
-      type: 'ChainAdapter',
-      chainLocation: fileLocation,
-      queryAssembly: assembly1,
-      targetAssembly: assembly2,
-    }
-  } else if (radioOption === '.anchors') {
-    return {
-      type: 'MCScanAnchorsAdapter',
-      mcscanAnchorsLocation: fileLocation,
-      bed1Location,
-      bed2Location,
-      assemblyNames: [assembly1, assembly2],
-    }
-  } else if (radioOption === '.anchors.simple') {
-    return {
-      type: 'MCScanSimpleAnchorsAdapter',
-      mcscanSimpleAnchorsLocation: fileLocation,
-      bed1Location,
-      bed2Location,
-      assemblyNames: [assembly1, assembly2],
-    }
-  } else if (radioOption === '.pif.gz') {
-    return {
-      type: 'PairwiseIndexedPAFAdapter',
-      pifGzLocation: fileLocation,
-      index: { location: indexFileLocation },
-      assemblyNames: [assembly1, assembly2],
-    }
-  } else {
-    throw new Error(
-      `Unknown to detect type ${radioOption} from filename (select radio button to clarify)`,
-    )
-  }
-}
-
-type Conf = SnapshotIn<AnyConfigurationModel>
-
-const ImportCustomTrack = observer(function ({
-  assembly1,
-  assembly2,
-  setSessionTrackData,
-}: {
-  sessionTrackData: Conf
-  assembly1: string
-  assembly2: string
-  setSessionTrackData: (arg: Conf) => void
-}) {
+  const [swap, setSwap] = useState(false)
   const [bed2Location, setBed2Location] = useState<FileLocation>()
   const [bed1Location, setBed1Location] = useState<FileLocation>()
   const [fileLocation, setFileLocation] = useState<FileLocation>()
@@ -118,23 +44,26 @@ const ImportCustomTrack = observer(function ({
     try {
       if (fileLocation) {
         const fn = fileName ? basename(fileName) : 'MyTrack'
-        const trackId = `${fn}-${Date.now()}`
+        const trackId = `${fn}-${Date.now()}-sessionTrack`
         setError(undefined)
 
-        setSessionTrackData({
-          trackId,
-          name: fn,
-          assemblyNames: [assembly2, assembly1],
-          type: 'SyntenyTrack',
-          adapter: getAdapter({
-            radioOption,
-            assembly1,
-            assembly2,
-            fileLocation,
-            indexFileLocation,
-            bed1Location,
-            bed2Location,
-          }),
+        model.setImportFormSyntenyTrack(0, {
+          type: 'userOpened',
+          value: {
+            trackId,
+            name: fn,
+            assemblyNames: [assembly2, assembly1],
+            type: 'SyntenyTrack',
+            adapter: getAdapter({
+              radioOption,
+              assembly1: swap ? assembly2 : assembly1,
+              assembly2: swap ? assembly1 : assembly2,
+              fileLocation,
+              indexFileLocation,
+              bed1Location,
+              bed2Location,
+            }),
+          },
         })
       }
     } catch (e) {
@@ -142,6 +71,7 @@ const ImportCustomTrack = observer(function ({
       setError(e)
     }
   }, [
+    model,
     fileName,
     assembly1,
     assembly2,
@@ -150,17 +80,21 @@ const ImportCustomTrack = observer(function ({
     fileLocation,
     indexFileLocation,
     radioOption,
-    setSessionTrackData,
   ])
+  const helpStrings = {
+    '.paf': 'minimap2 target.fa query.fa',
+    '.pif.gz': 'minimap2 target.fa query.fa',
+    '.out': 'mashmap target.fa query.fa',
+    '.delta': 'mummer target.fa query.fa',
+    '.chain': 'e.g. queryToTarget.chain',
+  } as const
   return (
     <Paper style={{ padding: 12 }}>
       {error ? <ErrorMessage error={error} /> : null}
       <Typography style={{ textAlign: 'center' }}>
-        Add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
-        .anchors.simple (MCScan) file to view. These file types can also be
-        gzipped. The first assembly should be the query sequence (e.g. left
-        column of the PAF) and the second assembly should be the target sequence
-        (e.g. right column of the PAF)
+        Add a .paf (minimap2), .delta (Mummer), .chain (UCSC liftover), .anchors
+        or .anchors.simple (MCScan), or .pif.gz (jbrowse CLI make-pif) file to
+        view. These file types can also be gzipped.
       </Typography>
       <RadioGroup
         value={radioOption}
@@ -168,132 +102,181 @@ const ImportCustomTrack = observer(function ({
           setValue(event.target.value)
         }}
       >
-        <Grid container justifyContent="center">
-          <Grid item>
-            <FormControlLabel value=".paf" control={<Radio />} label=".paf" />
-          </Grid>
-          <Grid item>
-            <FormControlLabel value=".out" control={<Radio />} label=".out" />
-          </Grid>
-
-          <Grid item>
+        <Grid2 container justifyContent="center">
+          {[
+            '.paf',
+            '.delta',
+            '.out',
+            '.chain',
+            '.anchors',
+            '.anchors.simple',
+            '.pif.gz',
+          ].map(extension => (
             <FormControlLabel
-              value=".delta"
+              key={extension}
+              value={extension}
               control={<Radio />}
-              label=".delta"
+              label={extension}
             />
-          </Grid>
-          <Grid item>
-            <FormControlLabel
-              value=".chain"
-              control={<Radio />}
-              label=".chain"
-            />
-          </Grid>
-          <Grid item>
-            <FormControlLabel
-              value=".anchors"
-              control={<Radio />}
-              label=".anchors"
-            />
-          </Grid>
-          <Grid item>
-            <FormControlLabel
-              value=".anchors.simple"
-              control={<Radio />}
-              label=".anchors.simple"
-            />
-          </Grid>
-          <Grid item>
-            <FormControlLabel
-              value=".pif.gz"
-              control={<Radio />}
-              label=".pif.gz"
-            />
-          </Grid>
-        </Grid>
+          ))}
+        </Grid2>
       </RadioGroup>
-      <Grid container justifyContent="center">
-        <Grid item>
-          {value === '.anchors' || value === '.anchors.simple' ? (
-            <div>
-              <div style={{ margin: 20 }}>
-                Open the {value} and .bed files for both genome assemblies from
-                the MCScan (Python version) pipeline{' '}
-                <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
-                  (more info)
-                </a>
-              </div>
-              <div style={{ display: 'flex' }}>
-                <div>
-                  <FileSelector
-                    name=".anchors file"
-                    description=""
-                    location={fileLocation}
-                    setLocation={loc => {
-                      setFileLocation(loc)
-                    }}
-                  />
-                </div>
-                <div>
-                  <FileSelector
-                    name="genome 1 .bed (left column of anchors file)"
-                    description=""
-                    location={bed1Location}
-                    setLocation={loc => {
-                      setBed1Location(loc)
-                    }}
-                  />
-                </div>
-                <div>
-                  <FileSelector
-                    name="genome 2 .bed (right column of anchors file)"
-                    description=""
-                    location={bed2Location}
-                    setLocation={loc => {
-                      setBed2Location(loc)
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : value === '.pif.gz' ? (
-            <div style={{ display: 'flex' }}>
-              <div>
-                <FileSelector
-                  name={`${value} location`}
-                  description=""
-                  location={fileLocation}
-                  setLocation={loc => {
-                    setFileLocation(loc)
-                  }}
-                />
-              </div>
-              <div>
-                <FileSelector
-                  name={`${value} index location`}
-                  description=""
-                  location={indexFileLocation}
-                  setLocation={loc => {
-                    setIndexFileLocation(loc)
-                  }}
-                />
-              </div>
-            </div>
-          ) : (
+      <Grid2 container justifyContent="center">
+        {value === '.paf' ||
+        value === '.out' ||
+        value === '.delta' ||
+        value === '.chain' ||
+        value === '.pif.gz' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <FileSelector
               name={value ? `${value} location` : ''}
+              inline
               description=""
               location={fileLocation}
               setLocation={loc => {
                 setFileLocation(loc)
               }}
             />
-          )}
-        </Grid>
-      </Grid>
+            <div>
+              <div>
+                Verify or click swap
+                <Tooltip
+                  title={
+                    <code>
+                      {helpStrings[value as keyof typeof helpStrings]}
+                    </code>
+                  }
+                >
+                  <HelpIcon />
+                </Tooltip>
+              </div>
+              <div style={{ display: 'flex', gap: 20 }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 4,
+                    alignItems: 'center',
+                  }}
+                >
+                  <div>
+                    <i>{swap ? assembly2 : assembly1}</i>
+                  </div>
+                  <div>query assembly</div>
+                  <div>
+                    <i>{swap ? assembly1 : assembly2}</i>
+                  </div>
+                  <div>target assembly</div>
+                </div>
+                <Button variant="contained" onClick={() => setSwap(!swap)}>
+                  Swap?
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : value === '.anchors' || value === '.anchors.simple' ? (
+          <div>
+            <div style={{ margin: 20 }}>
+              Open the {value} and .bed files for both genome assemblies from
+              the MCScan (Python version) pipeline{' '}
+              <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
+                (more info)
+              </a>
+            </div>
+            <div>
+              <FileSelector
+                inline
+                name={value}
+                location={fileLocation}
+                setLocation={loc => {
+                  setFileLocation(loc)
+                }}
+              />
+              <FileSelector
+                inline
+                name="genome 1 .bed (left column of anchors file)"
+                description=""
+                location={bed1Location}
+                setLocation={loc => {
+                  setBed1Location(loc)
+                }}
+              />
+              <FileSelector
+                inline
+                name="genome 2 .bed (right column of anchors file)"
+                description=""
+                location={bed2Location}
+                setLocation={loc => {
+                  setBed2Location(loc)
+                }}
+              />
+            </div>
+            <div
+              style={{
+                margin: 'auto',
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 4,
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <i>{swap ? assembly2 : assembly1}</i>
+                </div>
+                <div>bed1 assembly</div>
+                <div>
+                  <i>{swap ? assembly1 : assembly2}</i>
+                </div>
+                <div>bed2 assembly</div>
+              </div>
+              <Button variant="contained" onClick={() => setSwap(!swap)}>
+                Swap?
+              </Button>
+            </div>
+          </div>
+        ) : value === '.pif.gz' ? (
+          <div style={{ display: 'flex' }}>
+            <div>
+              <FileSelector
+                name={`${value} location`}
+                description=""
+                location={fileLocation}
+                setLocation={loc => {
+                  setFileLocation(loc)
+                }}
+              />
+            </div>
+            <div>
+              <FileSelector
+                name={`${value} index location`}
+                description=""
+                location={indexFileLocation}
+                setLocation={loc => {
+                  setIndexFileLocation(loc)
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <FileSelector
+            name={value ? `${value} location` : ''}
+            description=""
+            location={fileLocation}
+            setLocation={loc => {
+              setFileLocation(loc)
+            }}
+          />
+        )}
+      </Grid2>
     </Paper>
   )
 })
 
-export default ImportCustomTrack
+export default ImportSyntenyOpenCustomTrack

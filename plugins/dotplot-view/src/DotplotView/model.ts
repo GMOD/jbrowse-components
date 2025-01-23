@@ -18,7 +18,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { saveAs } from 'file-saver'
-import { autorun, transaction } from 'mobx'
+import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -38,6 +38,8 @@ import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/mo
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import { ImportFormSyntenyTrack } from './types'
+import popperClasses from '@mui/material/Popper/popperClasses'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -152,18 +154,64 @@ export default function stateModelFactory(pm: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       volatileWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
-      // these are 'personal preferences', stored in volatile and
-      // loaded/written to localStorage
+      /**
+       * #volatile
+       * these are 'personal preferences', stored in volatile and loaded/written
+       * to localStorage
+       */
       cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+      /**
+       * #volatile
+       */
       showPanButtons: Boolean(
         JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
       ),
+      /**
+       * #volatile
+       */
       wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
+      /**
+       * #volatile
+       */
       borderX: 100,
+      /**
+       * #volatile
+       */
       borderY: 100,
+      /**
+       * #volatile
+       */
+      importFormSyntenyTrackSelections:
+        observable.array<ImportFormSyntenyTrack>(),
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      importFormRemoveRow(idx: number) {
+        self.importFormSyntenyTrackSelections.splice(idx, 1)
+      },
+      /**
+       * #action
+       */
+      clearImportFormSyntenyTracks() {
+        self.importFormSyntenyTrackSelections.clear()
+      },
+      /**
+       * #action
+       */
+      setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
+        self.importFormSyntenyTrackSelections[arg] = val
+      },
     }))
     .views(self => ({
       /**
