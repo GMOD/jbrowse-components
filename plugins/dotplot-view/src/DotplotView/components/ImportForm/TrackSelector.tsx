@@ -13,6 +13,7 @@ import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 import type { DotplotViewModel } from '../../model'
 import type { Conf } from '../../types'
+import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack'
 
 const TrackSelector = observer(function ({
   setSessionTrackData,

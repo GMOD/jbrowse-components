@@ -8,6 +8,7 @@ import {
   getSession,
   getTickDisplayStr,
   isSessionModelWithWidgets,
+  localStorageGetBoolean,
   localStorageGetItem,
   max,
   measureText,
@@ -17,7 +18,7 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import popperClasses from '@mui/material/Popper/popperClasses'
+
 import { saveAs } from 'file-saver'
 import { autorun, observable, transaction } from 'mobx'
 import {
@@ -165,16 +166,14 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #volatile
-       * these are 'personal preferences', stored in volatile and loaded/written
-       * to localStorage
+       * these are 'personal preferences', stored in volatile and
+       * loaded/written to localStorage
        */
       cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
       /**
        * #volatile
        */
-      showPanButtons: Boolean(
-        JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
-      ),
+      showPanButtons: localStorageGetBoolean('dotplot-showPanbuttons', true),
       /**
        * #volatile
        */
@@ -721,39 +720,28 @@ export default function stateModelFactory(pm: PluginManager) {
         return [
           {
             label: 'Return to import form',
+            icon: FolderOpenIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
-            icon: FolderOpenIcon,
           },
-          {
-            label: 'Square view - same bp per pixel',
-            onClick: () => {
-              self.squareView()
-            },
-          },
-          {
-            label: 'Rectangular view - same total bp',
-            onClick: () => {
-              self.squareView()
-            },
-          },
-          {
-            label: 'Show all regions',
-            onClick: () => {
-              self.showAllRegions()
-            },
-          },
+
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
           },

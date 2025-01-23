@@ -3,6 +3,9 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
+import CropLandscapeIcon from '@mui/icons-material/CropLandscape'
+import CropDinIcon from '@mui/icons-material/CropDin'
+import SettingsOverscanIcon from '@mui/icons-material/SettingsOverscan'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -43,61 +46,64 @@ const DotplotControls = observer(function ({
       <CascadingMenuButton
         menuItems={[
           {
+            label: 'Square view - same bp per pixel',
+            icon: CropDinIcon,
             onClick: () => {
               model.squareView()
             },
-            label: 'Square view - same base pairs per pixel',
           },
           {
+            label: 'Rectangular view - same total bp',
+            icon: CropLandscapeIcon,
             onClick: () => {
               model.squareViewProportional()
             },
-            label: 'Rectanglularize view - same total bp',
           },
           {
+            label: 'Show all regions',
+            icon: SettingsOverscanIcon,
             onClick: () => {
               model.showAllRegions()
             },
-            label: 'Show all regions',
           },
           {
-            onClick: () => {
-              model.setDrawCigar(!model.drawCigar)
-            },
             type: 'checkbox',
             label: 'Draw CIGAR',
             checked: model.drawCigar,
+            onClick: () => {
+              model.setDrawCigar(!model.drawCigar)
+            },
           },
           {
-            onClick: () => {
-              model.setShowPanButtons(!model.showPanButtons)
-            },
             label: 'Show pan buttons',
             type: 'checkbox',
             checked: model.showPanButtons,
+            onClick: () => {
+              model.setShowPanButtons(!model.showPanButtons)
+            },
           },
           {
             label: 'Click and drag mode',
             subMenu: [
               {
-                onClick: () => {
-                  model.setCursorMode('move')
-                },
                 label:
                   'Pan by default, select region when ctrl/cmd key is held',
                 icon: CursorMove,
                 type: 'radio',
                 checked: model.cursorMode === 'move',
+                onClick: () => {
+                  model.setCursorMode('move')
+                },
               },
               {
-                onClick: () => {
-                  model.setCursorMode('crosshair')
-                },
                 label:
                   'Select region by default, pan when ctrl/cmd key is held',
                 icon: CursorMouse,
                 type: 'radio',
                 checked: model.cursorMode === 'crosshair',
+                onClick: () => {
+                  model.setCursorMode('crosshair')
+                },
               },
             ],
           },
@@ -105,28 +111,28 @@ const DotplotControls = observer(function ({
             label: 'Wheel scroll mode',
             subMenu: [
               {
-                onClick: () => {
-                  model.setWheelMode('pan')
-                },
                 label: 'Pans view',
                 type: 'radio',
                 checked: model.wheelMode === 'pan',
+                onClick: () => {
+                  model.setWheelMode('pan')
+                },
               },
               {
-                onClick: () => {
-                  model.setWheelMode('zoom')
-                },
                 label: 'Zooms view',
                 type: 'radio',
                 checked: model.wheelMode === 'zoom',
+                onClick: () => {
+                  model.setWheelMode('zoom')
+                },
               },
               {
-                onClick: () => {
-                  model.setWheelMode('none')
-                },
                 label: 'Disable',
                 type: 'radio',
                 checked: model.wheelMode === 'none',
+                onClick: () => {
+                  model.setWheelMode('none')
+                },
               },
             ],
           },

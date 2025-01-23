@@ -17,6 +17,7 @@ import { makeStyles } from 'tss-react/mui'
 import type { DotplotViewModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SnapshotIn } from 'mobx-state-tree'
+import TrackSelector from './TrackSelector'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -60,10 +61,7 @@ const DotplotImportForm = observer(function ({
           model.showTrack(showTrackId)
         }
 
-        model.setViews([
-          { bpPerPx: 0.1, offsetPx: 0 },
-          { bpPerPx: 0.1, offsetPx: 0 },
-        ])
+        model.showAllRegions()
         model.setAssemblyNames(assembly2, assembly1)
       })
     } catch (e) {
