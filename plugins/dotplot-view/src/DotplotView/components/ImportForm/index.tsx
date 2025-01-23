@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
@@ -6,20 +6,13 @@ import {
   Button,
   Container,
   FormControl,
-  FormControlLabel,
-  FormLabel,
-  Grid,
+  Grid2,
   Paper,
-  Radio,
-  RadioGroup,
   Typography,
 } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-
-import ImportCustomTrack from './ImportCustomTrack'
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 import type { DotplotViewModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -38,76 +31,11 @@ const useStyles = makeStyles()(theme => ({
 
 type Conf = SnapshotIn<AnyConfigurationModel>
 
-function TrackSelector({
-  setSessionTrackData,
-  setShowTrackId,
-  sessionTrackData,
-  assembly1,
-  assembly2,
+const DotplotImportForm = observer(function ({
   model,
 }: {
-  sessionTrackData: Conf
-  setSessionTrackData: (arg: Conf) => void
-  setShowTrackId: (arg?: string) => void
   model: DotplotViewModel
-  assembly1: string
-  assembly2: string
 }) {
-  const [choice, setChoice] = useState('tracklist')
-
-  useEffect(() => {
-    if (choice === 'none') {
-      setSessionTrackData(undefined)
-      setShowTrackId(undefined)
-    }
-  }, [choice, setSessionTrackData, setShowTrackId])
-  return (
-    <>
-      <FormControl>
-        <FormLabel id="group-label">
-          (Optional) Select or add a synteny track
-        </FormLabel>
-        <RadioGroup
-          row
-          value={choice}
-          onChange={event => {
-            setChoice(event.target.value)
-          }}
-          aria-labelledby="group-label"
-        >
-          <FormControlLabel value="none" control={<Radio />} label="None" />
-          <FormControlLabel
-            value="tracklist"
-            control={<Radio />}
-            label="Existing track"
-          />
-          <FormControlLabel
-            value="custom"
-            control={<Radio />}
-            label="New track"
-          />
-        </RadioGroup>
-      </FormControl>
-      {choice === 'custom' ? (
-        <ImportCustomTrack
-          model={model}
-          assembly2={assembly2}
-          assembly1={assembly1}
-        />
-      ) : null}
-      {choice === 'tracklist' ? (
-        <ImportSyntenyTrackSelector
-          model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
-          setShowTrackId={setShowTrackId}
-        />
-      ) : null}
-    </>
-  )
-}
-
-const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
@@ -149,65 +77,47 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   return (
     <Container className={classes.importFormContainer}>
       {displayError ? <ErrorMessage error={displayError} /> : null}
-      <Grid
-        container
-        spacing={1}
-        justifyContent="center"
-        alignItems="center"
-        className={classes.assemblySelector}
-      >
-        <Grid item>
-          <Paper style={{ padding: 12 }}>
-            <Typography style={{ textAlign: 'center' }}>
-              Select assemblies for dotplot view
-            </Typography>
-            <Grid
-              container
-              spacing={1}
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Grid item>
-                <AssemblySelector
-                  selected={assembly1}
-                  onChange={val => {
-                    setAssembly1(val)
-                  }}
-                  session={session}
-                />
-              </Grid>
-              <Grid item>
-                <AssemblySelector
-                  selected={assembly2}
-                  onChange={val => {
-                    setAssembly2(val)
-                  }}
-                  session={session}
-                />
-              </Grid>
-              <Grid item>
-                <FormControl>
-                  <Button
-                    onClick={onOpenClick}
-                    variant="contained"
-                    color="primary"
-                  >
-                    Launch
-                  </Button>
-                </FormControl>
-              </Grid>
-            </Grid>
-          </Paper>
-          <TrackSelector
-            setShowTrackId={setShowTrackId}
-            assembly2={assembly2}
-            assembly1={assembly1}
-            setSessionTrackData={setSessionTrackData}
-            sessionTrackData={sessionTrackData}
-            model={model}
+
+      <Paper style={{ padding: 12 }}>
+        <Typography style={{ textAlign: 'center' }}>
+          Select assemblies for dotplot view
+        </Typography>
+        <Grid2
+          container
+          spacing={1}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <AssemblySelector
+            helperText="x-axis assembly"
+            selected={assembly2}
+            session={session}
+            onChange={val => {
+              setAssembly2(val)
+            }}
           />
-        </Grid>
-      </Grid>
+          <AssemblySelector
+            helperText="y-axis assembly"
+            selected={assembly1}
+            session={session}
+            onChange={val => {
+              setAssembly1(val)
+            }}
+          />
+          <FormControl>
+            <Button onClick={onOpenClick} variant="contained" color="primary">
+              Launch
+            </Button>
+          </FormControl>
+        </Grid2>
+        <TrackSelector
+          setShowTrackId={setShowTrackId}
+          assembly2={assembly2}
+          assembly1={assembly1}
+          setSessionTrackData={setSessionTrackData}
+          model={model}
+        />
+      </Paper>
     </Container>
   )
 })

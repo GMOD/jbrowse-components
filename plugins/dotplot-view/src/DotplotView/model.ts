@@ -17,6 +17,7 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import popperClasses from '@mui/material/Popper/popperClasses'
 import { saveAs } from 'file-saver'
 import { autorun, observable, transaction } from 'mobx'
 import {
@@ -32,14 +33,13 @@ import {
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 
+import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance, SnapshotIn } from 'mobx-state-tree'
-import { ImportFormSyntenyTrack } from './types'
-import popperClasses from '@mui/material/Popper/popperClasses'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

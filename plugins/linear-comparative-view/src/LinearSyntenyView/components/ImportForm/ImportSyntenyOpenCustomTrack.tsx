@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import HelpIcon from '@mui/icons-material/Help'
 import {
   Button,
   FormControlLabel,
@@ -12,7 +13,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import HelpIcon from '@mui/icons-material/Help'
 
 import { getAdapter } from './getAdapter'
 import { basename, extName, getName, stripGz } from './util'
@@ -146,7 +146,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
                 <Tooltip
                   title={
                     <code>
-                      {helpStrings[value as keyof typeof helpStrings]}
+                      {helpStrings[value]}
                     </code>
                   }
                 >
@@ -171,7 +171,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
                   </div>
                   <div>target assembly</div>
                 </div>
-                <Button variant="contained" onClick={() => setSwap(!swap)}>
+                <Button variant="contained" onClick={() => { setSwap(!swap) }}>
                   Swap?
                 </Button>
               </div>
@@ -239,7 +239,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
                 </div>
                 <div>bed2 assembly</div>
               </div>
-              <Button variant="contained" onClick={() => setSwap(!swap)}>
+              <Button variant="contained" onClick={() => { setSwap(!swap) }}>
                 Swap?
               </Button>
             </div>
