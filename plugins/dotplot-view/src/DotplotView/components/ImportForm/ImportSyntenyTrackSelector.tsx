@@ -39,14 +39,15 @@ const ImportSyntenyTrackSelector = observer(function ({
   const resetTrack = filteredTracks[0]?.trackId || ''
   const [value, setValue] = useState(resetTrack)
   useEffect(() => {
-    // if assembly1/assembly2 changes, then we will want to use this effect to change
-    // the state of the useState because it otherwise gets locked to a stale value
+    // if assembly1/assembly2 changes, then we will want to use this effect to
+    // change the state of the useState because it otherwise gets locked to a
+    // stale value
     setValue(resetTrack)
   }, [resetTrack])
 
   useEffect(() => {
-    // sets track data in a useEffect because the initial load is needed as well as
-    // onChange's to the select box
+    // sets track data in a useEffect because the initial load is needed as
+    // well as onChange's to the select box
     model.setImportFormSyntenyTrack(0, {
       type: 'preConfigured',
       value,
