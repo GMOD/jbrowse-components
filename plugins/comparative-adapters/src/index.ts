@@ -42,10 +42,12 @@ export default class ComparativeAdaptersPlugin extends Plugin {
           const regexGuess = /\.paf/i
           const adapterName = 'PAFAdapter'
           const fileName = getFileName(file)
-          return regexGuess.test(fileName) || adapterHint === adapterName ? {
-              type: adapterName,
-              pafLocation: file,
-            } : adapterGuesser(file, index, adapterHint)
+          return regexGuess.test(fileName) || adapterHint === adapterName
+            ? {
+                type: adapterName,
+                pafLocation: file,
+              }
+            : adapterGuesser(file, index, adapterHint)
         }
       },
     )

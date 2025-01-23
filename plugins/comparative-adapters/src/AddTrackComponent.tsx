@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react'
+
+import { AssemblySelector } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import { AssemblySelector } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
-import { useEffect, useState } from 'react'
 
 const PAFWorkflow = observer(function ({ model }: any) {
   const session = getSession(model)
@@ -16,7 +17,7 @@ const PAFWorkflow = observer(function ({ model }: any) {
         targetAssembly: r1,
       },
     })
-  }, [r0, r1])
+  }, [model, r0, r1])
   return (
     <>
       <AssemblySelector

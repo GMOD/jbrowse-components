@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import {

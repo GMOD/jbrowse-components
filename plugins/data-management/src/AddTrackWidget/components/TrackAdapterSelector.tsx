@@ -1,25 +1,10 @@
 import { getEnv } from '@jbrowse/core/util'
 import { ListSubheader, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+
+import { categorizeAdapters } from './util'
 
 import type { AddTrackModel } from '../model'
-import type AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-
-// collate adapters into a map with
-// key: category
-// value: array of adapters with that category
-function categorizeAdapters(adaptersList: AdapterType[]) {
-  const map = {} as Record<string, AdapterType[]>
-  adaptersList.forEach(adapter => {
-    const key = adapter.adapterMetadata?.category || 'Default'
-    if (!map[key]) {
-      map[key] = []
-    }
-    map[key].push(adapter)
-  })
-  return map
-}
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const { trackAdapter } = model

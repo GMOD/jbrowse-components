@@ -267,21 +267,7 @@ export default function f(pluginManager: PluginManager) {
       get trackConfig() {
         const session = getSession(self)
         const assemblyInstance = session.assemblyManager.get(self.assembly)
-        console.log(
-          self.mixinData,
-          deepmerge(
-            {
-              trackId: this.trackId,
-              type: self.trackType,
-              name: self.trackName,
-              assemblyNames: [self.assembly],
-              adapter: {
-                ...self.trackAdapter,
-              },
-            },
-            self.mixinData,
-          ),
-        )
+
         return assemblyInstance &&
           self.trackAdapter &&
           self.trackAdapter.type !== 'UNKNOWN'
