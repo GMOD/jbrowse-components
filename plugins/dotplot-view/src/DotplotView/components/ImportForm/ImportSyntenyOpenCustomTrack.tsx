@@ -17,19 +17,17 @@ import { observer } from 'mobx-react'
 import { getAdapter } from './getAdapter'
 import { basename, extName, getName, stripGz } from './util'
 
-import type { LinearSyntenyViewModel } from '../../model'
+import type { DotplotViewModel } from '../../model'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const ImportSyntenyOpenCustomTrack = observer(function ({
   model,
   assembly1,
   assembly2,
-  selectedRow,
 }: {
-  model: LinearSyntenyViewModel
+  model: DotplotViewModel
   assembly1: string
   assembly2: string
-  selectedRow: number
 }) {
   const [swap, setSwap] = useState(false)
   const [bed2Location, setBed2Location] = useState<FileLocation>()
@@ -49,7 +47,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
         const trackId = `${fn}-${Date.now()}-sessionTrack`
         setError(undefined)
 
-        model.setImportFormSyntenyTrack(selectedRow, {
+        model.setImportFormSyntenyTrack(0, {
           type: 'userOpened',
           value: {
             trackId,
@@ -75,7 +73,6 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
   }, [
     swap,
     model,
-    selectedRow,
     fileName,
     assembly1,
     assembly2,
