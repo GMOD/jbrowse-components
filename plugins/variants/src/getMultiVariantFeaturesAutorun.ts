@@ -17,7 +17,7 @@ export interface Source {
   name: string
   color?: string
   group?: string
-  [key: string]: string | undefined
+  [key: string]: unknown
 }
 
 export function getMultiVariantFeaturesAutorun(self: {

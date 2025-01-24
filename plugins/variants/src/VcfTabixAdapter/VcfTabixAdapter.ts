@@ -83,12 +83,26 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     }, opts.stopToken)
   }
-
   async getSources() {
-    const { parser } = await this.configure()
-    return parser.samples.map(name => ({
-      name,
-    }))
+    const conf = this.getConf('samplesTsvLocation')
+    if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
+      const { parser } = await this.configure()
+      return parser.samples.map(name => ({
+        name,
+      }))
+    } else {
+      const txt = await openLocation(conf).readFile('utf8')
+      const lines = txt.split(/\n|\r\n|\r/)
+      const header = lines[0]!.split('\t')
+      return lines.slice(1).map(line =>
+        Object.fromEntries(
+          line
+            .split('\t')
+            // force col 0 to be called name
+            .map((c, idx) => [idx === 0 ? 'name' : header[idx], c]),
+        ),
+      )
+    }
   }
 
   public freeResources(/* { region } */): void {}

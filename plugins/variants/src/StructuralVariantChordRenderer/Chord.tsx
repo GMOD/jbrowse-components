@@ -5,9 +5,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import type { AnyRegion, Block } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { AnyRegion, Block } from './types'
 
 function bpToRadians(block: Block, pos: number) {
   const blockStart = block.region.elided ? 0 : block.region.start

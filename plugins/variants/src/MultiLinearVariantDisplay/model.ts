@@ -1,13 +1,10 @@
 import { lazy } from 'react'
 
-import { set1 } from '@jbrowse/core/ui/colors'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
-
-import { randomColor } from '../util'
 
 import type { Source } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -24,7 +21,7 @@ const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
 /**
  * #stateModel MultiLinearVariantDisplay
  * extends
- * - [SharedVariantMixin](../sharedvariantmixin)
+ * - [LinearBareDisplay](../linearbaredisplay)
  */
 export function stateModelFactory(
   pluginManager: PluginManager,
@@ -160,15 +157,10 @@ export function stateModelFactory(
           self.sourcesVolatile?.map(s => [s.name, s]) || [],
         )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        return iter
-          ?.map(s => ({
-            ...sources[s.name],
-            ...s,
-          }))
-          .map((s, i) => ({
-            ...s,
-            color: s.color || set1[i] || randomColor(s.name),
-          }))
+        return iter?.map(s => ({
+          ...sources[s.name],
+          ...s,
+        }))
       },
     }))
 

@@ -486,6 +486,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.dup.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -532,6 +536,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox.dup.renamed.vcf.gz.tbi",
           },
+        },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1192,6 +1200,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox.test.vcf.gz.tbi",
           },
+        },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "1000genomes.tsv",
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -2132,6 +2144,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -2177,6 +2193,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
+        },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -2808,6 +2828,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -3138,6 +3162,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.inv.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -3355,6 +3383,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfAdapter",
         "vcfLocation": {
           "locationType": "UriLocation",
@@ -3461,6 +3493,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfAdapter",
         "vcfLocation": {
           "locationType": "UriLocation",
@@ -3501,6 +3537,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfAdapter",
         "vcfLocation": {
           "locationType": "UriLocation",

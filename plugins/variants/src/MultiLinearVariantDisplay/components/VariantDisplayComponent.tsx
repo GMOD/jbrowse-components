@@ -70,7 +70,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
               )
                 .filter(([key]) => key !== 'color')
                 .map(([key, value]) => `${key}:${value}`)
-                .join('\n')}
+                .join('<br/>')}
             />
           </BaseTooltip>
         </div>

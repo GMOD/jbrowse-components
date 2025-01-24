@@ -3,7 +3,7 @@ import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 
 import { makeLoc2, makeLoc, makeLocAlt } from './util'
 
-import type { RaStanza, TrackDbFile  } from '@gmod/ucsc-hub'
+import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
 import type { FileLocation } from '@jbrowse/core/util'
 
 export function generateTracks({

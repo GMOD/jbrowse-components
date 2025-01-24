@@ -21,9 +21,14 @@ const VcfAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    samples: {
-      type: 'frozen',
-      defaultValue: [],
+    samplesTsvLocation: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/samples.tsv',
+        description:
+          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
+        locationType: 'UriLocation',
+      },
     },
   },
   { explicitlyTyped: true },
