@@ -11,6 +11,9 @@ export default function SPARQLAdapterF(pluginManager: PluginManager) {
         name: 'SPARQLAdapter',
         displayName: 'SPARQL adapter',
         configSchema,
+        adapterMetadata: {
+          category: 'Uncommon',
+        },
         getAdapterClass: () => import('./SPARQLAdapter').then(r => r.default),
       }),
   )

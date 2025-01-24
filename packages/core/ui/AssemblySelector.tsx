@@ -4,7 +4,6 @@ import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import { getConf } from '../configuration'
 import { useLocalStorage } from '../util'
 
 import type { AbstractSessionModel } from '../util'
@@ -19,6 +18,7 @@ const useStyles = makeStyles()({
 const AssemblySelector = observer(function ({
   session,
   onChange,
+  label = 'Assembly',
   selected,
   InputProps,
   TextFieldProps,
@@ -26,6 +26,7 @@ const AssemblySelector = observer(function ({
   helperText = 'Select assembly to view',
 }: {
   session: AbstractSessionModel
+  label?: string
   helperText?: string
   onChange: (arg: string) => void
   selected?: string
@@ -66,7 +67,7 @@ const AssemblySelector = observer(function ({
     <TextField
       select
       data-testid="assembly-selector-textfield"
-      label="Assembly"
+      label={label}
       variant="outlined"
       helperText={error || helperText}
       value={selection || ''}
@@ -84,15 +85,11 @@ const AssemblySelector = observer(function ({
         },
       }}
     >
-      {assemblyNames.map(name => {
-        const assembly = assemblyManager.get(name)
-        const displayName = assembly ? getConf(assembly, 'displayName') : ''
-        return (
-          <MenuItem key={name} value={name}>
-            {displayName || name}
-          </MenuItem>
-        )
-      })}
+      {assemblyNames.map(name => (
+        <MenuItem key={name} value={name}>
+          {assemblyManager.get(name)?.displayName || name}
+        </MenuItem>
+      ))}
     </TextField>
   )
 })

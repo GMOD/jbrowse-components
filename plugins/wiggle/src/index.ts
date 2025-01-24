@@ -1,9 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { getFileName } from '@jbrowse/core/util/tracks'
 
 import BigWigAdapterF from './BigWigAdapter'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
 import DensityRendererF from './DensityRenderer'
+import GuessAdapterF from './GuessAdapter'
 import LinePlotRendererF from './LinePlotRenderer'
 import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
@@ -33,11 +33,6 @@ import XYPlotRendererF, {
 import * as utils from './util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
@@ -59,36 +54,7 @@ export default class WigglePlugin extends Plugin {
     MultiRowLineRendererF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
-
-    pm.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (cb: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const fileName = getFileName(file)
-          return (/\.(bw|bigwig)$/i.test(fileName) && !adapterHint) ||
-            adapterHint === 'BigWigAdapter'
-            ? {
-                type: 'BigWigAdapter',
-                bigWigLocation: file,
-              }
-            : cb(file, index, adapterHint)
-        }
-      },
-    )
-    pm.addToExtensionPoint(
-      'Core-guessTrackTypeForLocation',
-      (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          return adapterName === 'BigWigAdapter'
-            ? 'QuantitativeTrack'
-            : trackTypeGuesser(adapterName)
-        }
-      },
-    )
+    GuessAdapterF(pm)
 
     pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))

@@ -1424,6 +1424,14 @@ export function localStorageGetBoolean(key: string, defaultVal: boolean) {
   )
 }
 
+export function testAdapter(
+  fileName: string,
+  regex: RegExp,
+  adapterHint: string | undefined,
+  expected: string,
+) {
+  return (regex.test(fileName) && !adapterHint) || adapterHint === expected
+}
 export {
   type Feature,
   type SimpleFeatureSerialized,

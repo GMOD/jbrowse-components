@@ -5,8 +5,6 @@ import PluggableElementBase from './PluggableElementBase'
 import type { IAnyModelType } from 'mobx-state-tree'
 
 type BasicComponent = React.ComponentType<{
-  // TODO: can we use AbstractViewModel here?
-
   model: any
 }>
 type AddTrackWorkflowComponentType =

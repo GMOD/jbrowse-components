@@ -27,15 +27,10 @@ test('open tracklist file', async () => {
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
   const r = await findAllByTestId('assembly-selector-textfield')
-
   expect(r.length).toBe(2)
 
-  const combo = within(r[1]!)
-  const entry = await combo.findByText('volvox')
-  fireEvent.mouseDown(entry)
-
-  const listbox = within(await findByRole('listbox'))
-  fireEvent.click(listbox.getByText('volvox_del'))
+  fireEvent.mouseDown(await within(r[1]!).findByText('volvox'))
+  fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))

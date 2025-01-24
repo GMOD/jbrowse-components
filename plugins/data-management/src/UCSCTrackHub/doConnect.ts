@@ -4,11 +4,8 @@ import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 
-import {
-  fetchGenomesFile,
-  fetchTrackDbFile,
-  generateTracks,
-} from './ucscTrackHub'
+import { generateTracks } from './ucscTrackHub'
+import { fetchGenomesFile, fetchTrackDbFile } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'

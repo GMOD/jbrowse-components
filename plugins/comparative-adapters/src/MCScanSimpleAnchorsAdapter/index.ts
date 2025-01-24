@@ -14,7 +14,7 @@ export default function MCScanSimpleAnchorsAdapterF(
         displayName: 'MCScan anchors.simple adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () =>
           import('./MCScanSimpleAnchorsAdapter').then(r => r.default),

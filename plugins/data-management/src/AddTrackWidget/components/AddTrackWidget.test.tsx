@@ -98,7 +98,9 @@ test('adds a track', async () => {
   )
   expect(session.sessionTracks.length).toBe(1)
   fireEvent.change(getAllByTestId('urlInput')[0]!, {
-    target: { value: 'test.txt' },
+    target: {
+      value: 'test.txt',
+    },
   })
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
   fireEvent.mouseDown(getByTestId('adapterTypeSelect'))

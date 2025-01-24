@@ -1,3 +1,4 @@
+import { testAdapter } from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
@@ -20,8 +21,12 @@ export default function GuessGff3F(pluginManager: PluginManager) {
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
         if (
-          (!adapterHint && /\.gff3?\.b?gz$/i.test(fileName)) ||
-          adapterHint === 'Gff3TabixAdapter'
+          testAdapter(
+            fileName,
+            /\.gff3?\.b?gz$/i,
+            adapterHint,
+            'Gff3TabixAdapter',
+          )
         ) {
           return {
             type: 'Gff3TabixAdapter',
@@ -33,8 +38,7 @@ export default function GuessGff3F(pluginManager: PluginManager) {
             },
           }
         } else if (
-          (!adapterHint && /\.gff3?$/i.test(fileName)) ||
-          adapterHint === 'Gff3Adapter'
+          testAdapter(fileName, /\.gff3?$/i, adapterHint, 'Gff3Adapter')
         ) {
           return {
             type: 'Gff3Adapter',

@@ -12,7 +12,7 @@ export default function BlastTabularAdapterF(pluginManager: PluginManager) {
         displayName: 'Tabular BLAST output adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () =>
           import('./BlastTabularAdapter').then(r => r.default),
