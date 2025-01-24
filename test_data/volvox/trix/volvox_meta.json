@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2024-10-14T14:42:44.177Z",
+  "dateCreated": "2025-01-24T16:05:19.939Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -45,6 +45,10 @@
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "samplesTsvLocation": {
+          "uri": "1000genomes.tsv",
           "locationType": "UriLocation"
         },
         "index": {

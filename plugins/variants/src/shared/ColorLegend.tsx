@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import RectBg from './RectBg'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 
 const ColorLegend = observer(function ({
   model,

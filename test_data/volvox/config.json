@@ -365,7 +365,9 @@
           "type": "LinearPileupDisplay",
           "displayId": "volvox_cram_pileup_pileup",
           "height": 400,
-          "colorBy": { "type": "mappingQuality" }
+          "colorBy": {
+            "type": "mappingQuality"
+          }
         }
       ]
     },
@@ -514,7 +516,9 @@
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
             "displayId": "volvox_bam_altname_alignments_pileup",
-            "colorBy": { "type": "mappingQuality" }
+            "colorBy": {
+              "type": "mappingQuality"
+            }
           }
         }
       ]
@@ -660,6 +664,10 @@
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "samplesTsvLocation": {
+          "uri": "1000genomes.tsv",
           "locationType": "UriLocation"
         },
         "index": {
@@ -2219,7 +2227,6 @@
       },
       "assemblyNames": ["volvox"]
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox-sorted.noref.cram",

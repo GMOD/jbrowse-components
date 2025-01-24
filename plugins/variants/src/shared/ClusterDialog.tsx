@@ -19,7 +19,7 @@ import { saveAs } from 'file-saver'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

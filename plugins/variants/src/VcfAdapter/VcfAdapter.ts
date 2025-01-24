@@ -1,11 +1,10 @@
 import IntervalTree from '@flatten-js/interval-tree'
-import VCF from '@gmod/vcf'
+import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-// local
 import VcfFeature from '../VcfFeature'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -18,6 +17,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   vcfFeatures?: Promise<{
     header: string
+    parser: VcfParser
     intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
   }>
 
@@ -29,8 +29,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   async getMetadata() {
-    const { header } = await this.setup()
-    const parser = new VCF({ header })
+    const { parser } = await this.setup()
     return parser.getMetadata()
   }
 
@@ -72,7 +71,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     }
 
     const header = headerLines.join('\n')
-    const parser = new VCF({ header })
+    const parser = new VcfParser({ header })
 
     const intervalTreeMap = Object.fromEntries(
       Object.entries(featureMap).map(([refName, lines]) => [
@@ -99,6 +98,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     return {
       header,
+      parser,
       intervalTreeMap,
     }
   }
@@ -135,5 +135,26 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
+  async getSources() {
+    const conf = this.getConf('samplesTsvLocation')
+    if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
+      const { parser } = await this.setup()
+      return parser.samples.map(name => ({
+        name,
+      }))
+    } else {
+      const txt = await openLocation(conf).readFile('utf8')
+      const lines = txt.split(/\n|\r\n|\r/)
+      const header = lines[0]!.split('\t')
+      return lines.slice(1).map(line =>
+        Object.fromEntries(
+          line
+            .split('\t')
+            // force col 0 to be called name
+            .map((c, idx) => [idx === 0 ? 'name' : header[idx], c]),
+        ),
+      )
+    }
+  }
   public freeResources(): void {}
 }
