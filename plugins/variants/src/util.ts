@@ -1,11 +1,3 @@
-export interface Source {
-  baseUri?: string
-  name: string
-  color?: string
-  group?: string
-  [key: string]: unknown
-}
-
 // avoid drawing negative width features for SVG exports
 export function fillRectCtx(
   x: number,

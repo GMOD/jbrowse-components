@@ -1,23 +1,19 @@
 import { lazy } from 'react'
 
-// jbrowse imports
 import { set1 } from '@jbrowse/core/ui/colors'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import {
-  type ExportSvgDisplayOptions,
-  linearBareDisplayStateModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 
-// locals
 import { randomColor } from '../util'
 
 import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
