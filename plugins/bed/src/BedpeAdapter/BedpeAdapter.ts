@@ -1,6 +1,10 @@
 import IntervalTree from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  fetchAndMaybeUnzip,
+  fetchAndMaybeUnzipText,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -80,15 +84,11 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts?: BaseOptions) {
-    const pm = this.pluginManager
-    const bedLoc = this.getConf('bedpeLocation')
-    const loc = openLocation(bedLoc, pm)
-    const buffer = await fetchAndMaybeUnzip(loc, opts)
-    // 512MB  max chrome string length is 512MB
-    if (buffer.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-    const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
+    const data = await fetchAndMaybeUnzipText(
+      openLocation(this.getConf('bedLoc'), this.pluginManager),
+      opts,
+    )
+
     const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
     const headerLines = []
     let i = 0

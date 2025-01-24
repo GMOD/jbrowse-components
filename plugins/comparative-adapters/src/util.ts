@@ -1,4 +1,4 @@
-import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
 import type { PAFRecord } from './PAFAdapter/util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -27,9 +27,7 @@ export function parseBed(text: string) {
 }
 
 export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  const buf = await fetchAndMaybeUnzip(file, opts)
-  const decoder = new TextDecoder('utf8')
-  return decoder.decode(buf)
+  return fetchAndMaybeUnzipText(file, opts)
 }
 
 export function zip(a: number[], b: number[]) {

@@ -8,7 +8,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import VcfFeature from '../VcfFeature'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzipText, type Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
@@ -91,7 +91,9 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         name,
       }))
     } else {
-      const txt = await openLocation(conf).readFile('utf8')
+      const txt = await fetchAndMaybeUnzipText(
+        openLocation(conf, this.pluginManager),
+      )
       const lines = txt.split(/\n|\r\n|\r/)
       const header = lines[0]!.split('\t')
       return lines.slice(1).map(line =>
