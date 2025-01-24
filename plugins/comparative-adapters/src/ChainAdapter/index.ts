@@ -12,7 +12,7 @@ export default function ChainAdapterF(pluginManager: PluginManager) {
         displayName: 'Liftover chain adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () => import('./ChainAdapter').then(r => r.default),
       }),

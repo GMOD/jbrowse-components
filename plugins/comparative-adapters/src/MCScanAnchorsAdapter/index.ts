@@ -12,7 +12,7 @@ export default function MCScanAnchorsAdapterF(pluginManager: PluginManager) {
         displayName: 'MCScan anchors adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
 
         getAdapterClass: () =>

@@ -1,9 +1,11 @@
+import { testAdapter } from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
-import { testAdapter } from '@jbrowse/core/util'
+
+import { syntenyTypes } from '../syntenyTypes'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -28,19 +30,48 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'PAFAdapter',
             pafLocation: file,
           }
+        } else if (adapterHint === 'BlastTabularAdapter') {
+          return {
+            type: 'BlastTabularAdapter',
+            blastTableLocation: file,
+          }
+        } else if (
+          testAdapter(
+            fileName,
+            /\.anchors.simple(.gz)?/i,
+            adapterHint,
+            'MCScanSimpleAnchorsAdapter',
+          )
+        ) {
+          return {
+            type: 'MCScanSimpleAnchorsAdapter',
+            mcscanSimpleAnchorsLocation: file,
+          }
+        } else if (
+          testAdapter(
+            fileName,
+            /\.anchors(.gz)?/i,
+            adapterHint,
+            'MCScanAnchorsAdapter',
+          )
+        ) {
+          return {
+            type: 'MCScanAnchorsAdapter',
+            mcscanAnchorsLocation: file,
+          }
         } else if (
           testAdapter(fileName, /\.delta(.gz)?/i, adapterHint, 'DeltaAdapter')
         ) {
           return {
             type: 'DeltaAdapter',
-            deltaAdapter: file,
+            deltaLocation: file,
           }
         } else if (
           testAdapter(fileName, /\.chain(.gz)?/i, adapterHint, 'ChainAdapter')
         ) {
           return {
             type: 'ChainAdapter',
-            chainAdapter: file,
+            chainLocation: file,
           }
         } else if (
           testAdapter(fileName, /\.out(.gz)?/i, adapterHint, 'MashMapAdapter')
@@ -75,15 +106,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
       return (adapterName: string) =>
-        [
-          'PAFAdapter',
-          'ChainAdapter',
-          'DeltaAdapter',
-          'MashMapAdapter',
-          'MCScanAnchorsAdapter',
-          'MCScanSimpleAnchorsAdapter',
-          'PairwiseIndexedPAFAdapter',
-        ].includes(adapterName)
+        syntenyTypes.includes(adapterName)
           ? 'SyntenyTrack'
           : trackTypeGuesser(adapterName)
     },

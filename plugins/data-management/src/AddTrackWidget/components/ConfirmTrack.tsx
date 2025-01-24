@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import {
@@ -119,7 +119,9 @@ const ConfirmTrack = observer(function ConfirmTrack({
           <TrackAdapterSelector model={model} />
           <TrackTypeSelector model={model} />
 
-          <Component model={model} />
+          <Suspense fallback={null}>
+            <Component model={model} />
+          </Suspense>
         </div>
 
         {isElectron && supportedForIndexing && (

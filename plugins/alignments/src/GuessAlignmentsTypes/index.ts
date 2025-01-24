@@ -1,3 +1,4 @@
+import { testAdapter } from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
@@ -9,8 +10,6 @@ import type {
   AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
-import { testAdapter } from '@jbrowse/core/util'
-
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessAlignmentsTypesF(pluginManager: PluginManager) {

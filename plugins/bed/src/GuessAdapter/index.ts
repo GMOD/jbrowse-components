@@ -1,9 +1,9 @@
+import { testAdapter } from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
-import { testAdapter } from '@jbrowse/core/util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -28,7 +28,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         ) {
           return {
             type: 'BedpeAdapter',
-            bedpeAdapter: file,
+            bedpeLocation: file,
           }
         } else if (
           testAdapter(fileName, /\.bb$/i, adapterHint, 'BigBedAdapter') ||

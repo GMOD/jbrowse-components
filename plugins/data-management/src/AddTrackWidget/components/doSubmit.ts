@@ -10,7 +10,7 @@ import { getRoot } from 'mobx-state-tree'
 import type { AddTrackModel } from '../model'
 
 function doTextIndexTrack({ model }: { model: AddTrackModel }) {
-  const { textIndexingConf, trackId, trackName, assembly } = model
+  const { textIndexingConf, trackConfig, trackName, assembly } = model
   const { jobsManager } = getRoot<any>(model)
   const attr = textIndexingConf || {
     attributes: ['Name', 'ID'],
@@ -21,7 +21,7 @@ function doTextIndexTrack({ model }: { model: AddTrackModel }) {
     indexingParams: {
       ...attr,
       assemblies: [assembly],
-      tracks: [trackId],
+      tracks: [trackConfig!.trackId],
       indexType: 'perTrack',
       name: indexName,
       timestamp: new Date().toISOString(),

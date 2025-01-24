@@ -5,6 +5,7 @@ import ChainAdapterF from './ChainAdapter'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent'
 import DeltaAdapterF from './DeltaAdapter'
 import GuessAdapterF from './GuessAdapter'
+import MCScanAddTrackComponentF from './MCScanAddTrackComponent'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
@@ -26,6 +27,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MashMapAdapterF(pluginManager)
     BlastTabularAdapter(pluginManager)
     ComparativeAddTrackComponentF(pluginManager)
+    MCScanAddTrackComponentF(pluginManager)
     GuessAdapterF(pluginManager)
   }
 }

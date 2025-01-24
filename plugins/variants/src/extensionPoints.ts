@@ -1,3 +1,4 @@
+import { testAdapter } from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
@@ -10,7 +11,6 @@ import type {
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import { testAdapter } from '@jbrowse/core/util'
 
 export default function ExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
