@@ -14,7 +14,7 @@ export default function RowPalettizer({
 }) {
   return (
     <div style={{ display: 'flex', gap: 4 }}>
-      Assign palette based on...
+      Create color palette based on...
       {Object.keys(currLayout[0] ?? [])
         .filter(f => f !== 'name' && f !== 'color')
         .map(r => (
@@ -49,6 +49,18 @@ export default function RowPalettizer({
             {r}
           </Button>
         ))}
+      <Button
+        onClick={() => {
+          setCurrLayout(
+            currLayout.map(row => ({
+              ...row,
+              color: undefined,
+            })),
+          )
+        }}
+      >
+        Clear colors
+      </Button>
     </div>
   )
 }

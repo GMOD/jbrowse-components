@@ -18,6 +18,8 @@ const useStyles = makeStyles()({
   },
   fr: {
     float: 'right',
+    display: 'flex',
+    gap: 8,
   },
   textAreaFont: {
     fontFamily: 'Courier New',

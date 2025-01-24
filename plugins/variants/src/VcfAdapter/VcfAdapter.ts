@@ -146,14 +146,21 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       const txt = await openLocation(conf).readFile('utf8')
       const lines = txt.split(/\n|\r\n|\r/)
       const header = lines[0]!.split('\t')
-      return lines.slice(1).map(line =>
-        Object.fromEntries(
-          line
-            .split('\t')
-            // force col 0 to be called name
-            .map((c, idx) => [idx === 0 ? 'name' : header[idx], c]),
-        ),
-      )
+      const { parser } = await this.setup()
+      const s = new Set(parser.samples)
+      return lines
+        .slice(1)
+        .map(line => {
+          const cols = line.split('\t')
+          return {
+            name: cols[0]!,
+            ...Object.fromEntries(
+              // force col 0 to be called name
+              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
+            ),
+          }
+        })
+        .filter(f => s.has(f.name))
     }
   }
   public freeResources(): void {}
