@@ -6,7 +6,7 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 
 import type { GridColDef, GridValidRowModel } from '@mui/x-data-grid'
 
-export default function VariantAnnotPanel({
+export default function VariantConsequenceDataGridWrapper({
   rows,
   columns,
 }: {
@@ -33,8 +33,13 @@ export default function VariantAnnotPanel({
       <DataGrid
         rowHeight={25}
         rows={rows}
-        columns={columns.map((c, i) => ({ ...c, width: widths[i] }))}
-        slots={{ toolbar: checked ? GridToolbar : null }}
+        columns={columns.map((c, i) => ({
+          ...c,
+          width: widths[i],
+        }))}
+        slots={{
+          toolbar: checked ? GridToolbar : null,
+        }}
       />
     </div>
   ) : null
