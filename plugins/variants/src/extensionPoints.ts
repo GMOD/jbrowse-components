@@ -10,6 +10,7 @@ import type {
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
+import { testAdapter } from '@jbrowse/core/util'
 
 export default function ExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -23,8 +24,7 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
         if (
-          (/\.vcf\.b?gz$/i.test(fileName) && !adapterHint) ||
-          adapterHint === 'VcfTabixAdapter'
+          testAdapter(fileName, /\.vcf\.b?gz$/i, adapterHint, 'VcfTabixAdapter')
         ) {
           return {
             type: 'VcfTabixAdapter',
@@ -35,8 +35,7 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
             },
           }
         } else if (
-          (!adapterHint && /\.vcf$/i.test(fileName)) ||
-          adapterHint === 'VcfAdapter'
+          testAdapter(fileName, /\.vcf(\.gz)?$/i, adapterHint, 'VcfAdapter')
         ) {
           return {
             type: 'VcfAdapter',
@@ -52,7 +51,7 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
       return (adapterName: string) => {
-        return adapterName === 'VcfTabixAdapter' || adapterName === 'VcfAdapter'
+        return ['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)
           ? 'VariantTrack'
           : trackTypeGuesser(adapterName)
       }
