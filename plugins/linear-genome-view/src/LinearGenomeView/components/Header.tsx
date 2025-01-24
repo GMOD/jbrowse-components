@@ -1,20 +1,17 @@
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { getBpDisplayStr } from '@jbrowse/core/util'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import { Button, FormGroup, IconButton, Typography, alpha } from '@mui/material'
+import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import HeaderPanControls from './HeaderPanControls'
+import HeaderRegionWidth from './HeaderRegionWidth'
+import HeaderTrackSelectorButton from './HeaderTrackSelectorButton'
+import HeaderZoomControls from './HeaderZoomControls'
 import OverviewScalebar from './OverviewScalebar'
 import SearchBox from './SearchBox'
-import ZoomControls from './ZoomControls'
-import { SPACING } from '../consts'
 
 import type { LinearGenomeViewModel } from '..'
 
-type LGV = LinearGenomeViewModel
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   headerBar: {
     display: 'flex',
   },
@@ -25,95 +22,30 @@ const useStyles = makeStyles()(theme => ({
   spacer: {
     flexGrow: 1,
   },
-
-  panButton: {
-    background: alpha(theme.palette.background.paper, 0.8),
-    color: theme.palette.text.primary,
-    margin: SPACING,
-  },
-  bp: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: 5,
-  },
-  toggleButton: {
-    height: 44,
-    border: 'none',
-    marginLeft: theme.spacing(4),
-  },
-  buttonSpacer: {
-    marginRight: theme.spacing(2),
-  },
-}))
-
-const HeaderButtons = observer(({ model }: { model: LGV }) => {
-  const { classes } = useStyles()
-  return (
-    <IconButton
-      onClick={model.activateTrackSelector}
-      className={classes.toggleButton}
-      title="Open track selector"
-      value="track_select"
-    >
-      <TrackSelectorIcon className={classes.buttonSpacer} />
-    </IconButton>
-  )
 })
 
-function PanControls({ model }: { model: LGV }) {
-  const { classes } = useStyles()
-  return (
-    <>
-      <Button
-        variant="outlined"
-        className={classes.panButton}
-        onClick={() => {
-          model.slide(-0.9)
-        }}
-      >
-        <ArrowBackIcon />
-      </Button>
-      <Button
-        variant="outlined"
-        className={classes.panButton}
-        onClick={() => {
-          model.slide(0.9)
-        }}
-      >
-        <ArrowForwardIcon />
-      </Button>
-    </>
-  )
-}
-
-const RegionWidth = observer(function ({ model }: { model: LGV }) {
-  const { classes } = useStyles()
-  const { coarseTotalBp } = model
-  return (
-    <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {getBpDisplayStr(coarseTotalBp)}
-    </Typography>
-  )
-})
-
-const Controls = ({ model }: { model: LGV }) => {
+const Controls = function ({ model }: { model: LinearGenomeViewModel }) {
   const { classes } = useStyles()
   return (
     <div className={classes.headerBar}>
-      <HeaderButtons model={model} />
+      <HeaderTrackSelectorButton model={model} />
       <div className={classes.spacer} />
       <FormGroup row className={classes.headerForm}>
-        <PanControls model={model} />
+        <HeaderPanControls model={model} />
         <SearchBox model={model} />
       </FormGroup>
-      <RegionWidth model={model} />
-      <ZoomControls model={model} />
+      <HeaderRegionWidth model={model} />
+      <HeaderZoomControls model={model} />
       <div className={classes.spacer} />
     </div>
   )
 }
 
-const LinearGenomeViewHeader = observer(function ({ model }: { model: LGV }) {
+const LinearGenomeViewHeader = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
   const { hideHeader, hideHeaderOverview } = model
   return !hideHeader ? (
     hideHeaderOverview ? (

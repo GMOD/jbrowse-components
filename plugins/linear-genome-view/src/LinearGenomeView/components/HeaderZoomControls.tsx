@@ -20,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ZoomControls = observer(function ({
+const HeaderZoomControls = observer(function ({
   model,
 }: {
   model: LinearGenomeViewModel
@@ -103,4 +103,4 @@ const ZoomControls = observer(function ({
   )
 })
 
-export default ZoomControls
+export default HeaderZoomControls
