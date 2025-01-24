@@ -14,7 +14,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import { moveDown, moveUp } from './util'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 import type { GridColDef } from '@mui/x-data-grid'
 
 // icons

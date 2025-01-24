@@ -10,7 +10,7 @@ import { isAlive, types } from 'mobx-state-tree'
 
 import { randomColor } from '../util'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'

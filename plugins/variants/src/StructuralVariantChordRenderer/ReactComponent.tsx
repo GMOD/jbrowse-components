@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import Chord from './Chord'
 
-import type { AnyRegion, Block } from './Chord'
+import type { AnyRegion, Block } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,7 +1,8 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { Button } from '@mui/material'
 
-import { type Source, randomColor } from '../util'
+import { randomColor } from '../util'
+import { Source } from '../types'
 
 export default function RowPalettizer({
   setCurrLayout,

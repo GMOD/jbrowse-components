@@ -7,27 +7,7 @@ import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-
-export interface Region {
-  end: number
-  start: number
-  refName: string
-  elided?: false
-}
-
-export interface ElidedRegion {
-  elided: true
-  regions: Region[]
-}
-
-export type AnyRegion = Region | ElidedRegion
-
-export interface Block {
-  flipped: boolean
-  bpPerRadian: number
-  startRadians: number
-  region: AnyRegion
-}
+import type { AnyRegion, Block } from './types'
 
 function bpToRadians(block: Block, pos: number) {
   const blockStart = block.region.elided ? 0 : block.region.start

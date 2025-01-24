@@ -6,9 +6,9 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import SourcesGrid from './SourcesGrid'
-import { type Source } from '../util'
 import BulkEditPanel from './BulkEditPanel'
 import RowPalettizer from './RowPalettizer'
+import { Source } from '../types'
 
 const useStyles = makeStyles()({
   content: {

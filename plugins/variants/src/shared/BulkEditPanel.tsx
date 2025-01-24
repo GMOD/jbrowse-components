@@ -3,8 +3,7 @@ import { useState } from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { Button, TextField, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
-import { type Source } from '../util'
+import { Source } from '../types'
 
 const useStyles = makeStyles()({
   textAreaFont: {

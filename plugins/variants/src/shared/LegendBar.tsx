@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import ColorLegend from './ColorLegend'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 
 interface ReducedModel {
   scrollTop: number

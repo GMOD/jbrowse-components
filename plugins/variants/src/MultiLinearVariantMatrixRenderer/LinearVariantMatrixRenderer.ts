@@ -3,7 +3,7 @@ import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
 
 import { getCol } from '../util'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 import type { RenderArgsDeserialized as BoxRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature } from '@jbrowse/core/util'
 

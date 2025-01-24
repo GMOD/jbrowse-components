@@ -9,7 +9,7 @@ import { isAlive, types } from 'mobx-state-tree'
 
 import { randomColor } from '../util'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
