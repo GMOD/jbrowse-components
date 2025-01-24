@@ -1747,5 +1747,6 @@ export {
 
 export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'
 export { default as SearchBox } from './components/SearchBox'
+export { default as ZoomControls } from './components/ZoomControls'
 
 export { renderToSvg } from './svgcomponents/SVGLinearGenomeView'

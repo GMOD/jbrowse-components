@@ -17,8 +17,8 @@ import LinearBasicDisplayF from './LinearBasicDisplay'
 import LinearGenomeViewF, {
   LinearGenomeView,
   SearchBox,
+  ZoomControls,
 } from './LinearGenomeView'
-import ZoomControls from './LinearGenomeView/components/HeaderZoomControls'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
