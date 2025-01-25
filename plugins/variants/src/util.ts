@@ -1,6 +1,5 @@
 import { sum } from '@jbrowse/core/util'
 
-import type { Source } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
 // avoid drawing negative width features for SVG exports

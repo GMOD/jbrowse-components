@@ -21,7 +21,8 @@ const ColorLegend = observer(function ({
   const { canDisplayLabels, rowHeight, sources } = model
   const svgFontSize = clamp(rowHeight, 8, 12)
   const colorBoxWidth = 15
-  const legendWidth = labelWidth + colorBoxWidth + 5
+  const hasColors = sources?.some(s => s.color)
+  const legendWidth = labelWidth + (hasColors ? colorBoxWidth + 5 : 0)
 
   return sources ? (
     <>
@@ -49,7 +50,7 @@ const ColorLegend = observer(function ({
             {canDisplayLabels ? (
               <text
                 y={idx * rowHeight + svgFontSize}
-                x={colorBoxWidth + 2}
+                x={color ? colorBoxWidth + 2 : 0}
                 fontSize={svgFontSize}
               >
                 {label || name}

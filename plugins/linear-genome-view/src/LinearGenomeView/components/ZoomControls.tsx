@@ -10,7 +10,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
 
-
 const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',

@@ -27,13 +27,8 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       args,
       rpcDriverClassName,
     )
-    const {
-      minorAlleleFrequencyFilter,
-      sources,
-      regions,
-      adapterConfig,
-      sessionId,
-    } = deserializedArgs
+    const { minorAlleleFrequencyFilter, regions, adapterConfig, sessionId } =
+      deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     const feats = await firstValueFrom(
       (dataAdapter as BaseFeatureDataAdapter)
