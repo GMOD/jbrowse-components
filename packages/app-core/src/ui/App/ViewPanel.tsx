@@ -51,9 +51,7 @@ const ViewPanel = observer(function ({
             <ReactComponent model={view} session={session} />
           </Suspense>
         </ErrorBoundary>
-      ) : (
-        false
-      )}
+      ) : null}
     </ViewContainer>
   )
 })
