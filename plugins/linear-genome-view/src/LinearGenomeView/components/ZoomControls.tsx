@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
+import MoreVert from '@mui/icons-material/MoreVert'
 import { IconButton, Slider, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -35,19 +37,6 @@ const ZoomControls = observer(function ({
   const zoomOutDisabled = bpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
-      <Tooltip title="Zoom out 15x">
-        <span>
-          <IconButton
-            data-testid="zoom_out_more"
-            disabled={zoomOutDisabled}
-            onClick={() => {
-              model.zoom(bpPerPx * 15)
-            }}
-          >
-            <ZoomOut fontSize="large" />
-          </IconButton>
-        </span>
-      </Tooltip>
       <Tooltip title="Zoom out 2x">
         <span>
           <IconButton
@@ -86,19 +75,56 @@ const ZoomControls = observer(function ({
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Zoom in 15x">
-        <span>
-          <IconButton
-            data-testid="zoom_in_more"
-            disabled={zoomInDisabled}
-            onClick={() => {
+
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Zoom in 2x',
+            icon: ZoomIn,
+            onClick: () => {
+              model.zoom(model.bpPerPx / 2)
+            },
+          },
+          {
+            label: 'Zoom in 15x',
+            icon: ZoomIn,
+            onClick: () => {
               model.zoom(model.bpPerPx / 15)
-            }}
-          >
-            <ZoomIn fontSize="large" />
-          </IconButton>
-        </span>
-      </Tooltip>
+            },
+          },
+          {
+            label: 'Zoom in 100x',
+            icon: ZoomIn,
+            onClick: () => {
+              model.zoom(model.bpPerPx / 100)
+            },
+          },
+          {
+            label: 'Zoom out 2x',
+            icon: ZoomOut,
+            onClick: () => {
+              model.zoom(model.bpPerPx * 2)
+            },
+          },
+          {
+            label: 'Zoom out 15x',
+
+            icon: ZoomOut,
+            onClick: () => {
+              model.zoom(model.bpPerPx * 15)
+            },
+          },
+          {
+            label: 'Zoom out 100x',
+            icon: ZoomOut,
+            onClick: () => {
+              model.zoom(model.bpPerPx * 100)
+            },
+          },
+        ]}
+      >
+        <MoreVert />
+      </CascadingMenuButton>
     </div>
   )
 })

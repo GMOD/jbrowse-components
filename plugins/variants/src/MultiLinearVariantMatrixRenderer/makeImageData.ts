@@ -1,5 +1,4 @@
 import { sum } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 
 import { getCol } from '../util'
 
@@ -9,6 +8,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
+const splitter = /[/|]/
 
 function findSecondLargest(arr: Iterable<number>) {
   let firstMax = -Infinity
@@ -34,7 +34,7 @@ function calculateMinorAlleleFrequency(feat: Feature, sources: Source[]) {
     const alleleCounts = new Map()
     for (const { name } of sources) {
       const genotype = samp[name]!
-      const alleles = genotype.split(':')[0]?.split(/[\/\|]/)
+      const alleles = genotype.split(':')[0]?.split(splitter)
       if (alleles) {
         for (const allele of alleles) {
           alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
@@ -80,14 +80,17 @@ export function makeImageData({
     for (let j = 0; j < sources.length; j++) {
       const y = (j / sources.length) * canvasHeight
       const { name } = sources[j]!
-      const alleles = samp[name]!.split(':')[0]?.split(/[\/\|]/) || ''
+      const alleles = samp[name]!.split(splitter) || ''
       const total = alleles.length
       let alt = 0
       let uncalled = 0
       let alt2 = 0
+      let ref = 0
       for (const allele of alleles) {
         if (allele === '1') {
           alt++
+        } else if (allele === '0') {
+          ref++
         } else if (allele === '.') {
           uncalled++
         } else {
@@ -95,23 +98,23 @@ export function makeImageData({
         }
       }
 
-      if (alleles.length === 2) {
-        ctx.fillStyle = getCol(samp[name]!)
+      if (alt) {
+        ctx.fillStyle = `hsl(200,50%,${80 - (alt / total) * 50}%)`
         ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-      } else {
-        if (alt) {
-          ctx.fillStyle = `hsl(200,50%,${(alt / total) * 50}%)`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
-        if (alt2) {
-          ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
-        if (uncalled) {
-          ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
       }
+      if (ref === total) {
+        ctx.fillStyle = `#ccc`
+        ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+      }
+      if (alt2) {
+        ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
+        ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+      }
+      if (uncalled) {
+        ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
+        ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+      }
+      // }
     }
   }
   return { mafs }

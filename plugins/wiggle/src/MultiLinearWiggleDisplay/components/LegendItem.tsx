@@ -1,9 +1,11 @@
 import RectBg from './RectBg'
 
+import { observer } from 'mobx-react'
+
 import type { Source } from '../../util'
 import type { WiggleDisplayModel } from '../model'
 
-function LegendItem({
+const LegendItem = observer(function ({
   source,
   idx,
   rowHeight,
@@ -63,6 +65,6 @@ function LegendItem({
       ) : null}
     </>
   )
-}
+})
 
 export default LegendItem
