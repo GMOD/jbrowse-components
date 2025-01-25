@@ -154,18 +154,8 @@ export function makeImageData({
           hasPhased = true
           drawPhased(alleles, ctx, x, y, w, h)
         } else {
-          ctx.fillStyle = `#CBC3E3`
+          ctx.fillStyle = 'black'
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
-      } else if (phasedMode === 'both') {
-        if (isPhased) {
-          const alleles = genotype.split('|') || ''
-          samplePloidy[name] = alleles.length
-          hasPhased = true
-          drawPhased(alleles, ctx, x, y, w, h)
-        } else {
-          const alleles = genotype.split('/') || ''
-          drawUnphased(alleles, ctx, x, y, w, h)
         }
       } else {
         const alleles = genotype.split(/[/|]/) || ''

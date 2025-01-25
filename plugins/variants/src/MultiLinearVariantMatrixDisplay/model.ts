@@ -209,8 +209,7 @@ export default function stateModelFactory(
                     type: 'subMenu',
                     subMenu: [
                       {
-                        label:
-                          'Use unphased drawing mode (maps allele count to color)',
+                        label: 'Draw unphased (maps allele count to color)',
                         type: 'radio',
                         checked: self.phasedMode === 'none',
                         onClick: () => {
@@ -218,21 +217,11 @@ export default function stateModelFactory(
                         },
                       },
                       {
-                        label:
-                          'Only draw phased variants (split into haplotype rows)',
+                        label: 'Draw phased (split into haplotype rows)',
                         checked: self.phasedMode === 'phasedOnly',
                         type: 'radio',
                         onClick: () => {
                           self.setPhasedMode('phasedOnly')
-                        },
-                      },
-                      {
-                        label:
-                          'Draw both phased (split into haplotype rows) and unphased',
-                        type: 'radio',
-                        checked: self.phasedMode === 'both',
-                        onClick: () => {
-                          self.setPhasedMode('both')
                         },
                       },
                     ],
