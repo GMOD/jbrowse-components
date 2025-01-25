@@ -1252,7 +1252,7 @@ export function localStorageSetItem(str: string, item: string) {
   }
 }
 
-export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
+export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
     max = Math.max(entry, max)
@@ -1260,7 +1260,7 @@ export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   return max
 }
 
-export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
+export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
     min = Math.min(entry, min)
@@ -1268,7 +1268,7 @@ export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   return min
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: Iterable<number>) {
   let sum = 0
   for (const entry of arr) {
     sum += entry

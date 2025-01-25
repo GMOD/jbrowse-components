@@ -24,7 +24,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   sources?: Source[]
-  mafFilter: number
+  minorAlleleFrequencyFilter: number
   statsReadyAndRegionNotTooLarge: boolean
   adapterProps: () => Record<string, unknown>
   setError: (error: unknown) => void
@@ -42,7 +42,7 @@ export function getMultiVariantFeaturesAutorun(self: {
           }
 
           const { rpcManager } = getSession(self)
-          const { sources, mafFilter, adapterConfig } = self
+          const { sources, minorAlleleFrequencyFilter, adapterConfig } = self
           if (!sources) {
             return
           }
@@ -53,7 +53,7 @@ export function getMultiVariantFeaturesAutorun(self: {
             {
               regions: view.dynamicBlocks.contentBlocks,
               sources,
-              mafFilter,
+              minorAlleleFrequencyFilter,
               sessionId,
               adapterConfig,
             },

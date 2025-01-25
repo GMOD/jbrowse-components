@@ -48,7 +48,7 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        mafFilter: types.optional(types.number, 0.1),
+        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
 
         /**
          * #property
@@ -119,7 +119,7 @@ export default function stateModelFactory(
        * #action
        */
       setMafFilter(arg: number) {
-        self.mafFilter = arg
+        self.minorAlleleFrequencyFilter = arg
       },
       /**
        * #action
@@ -250,7 +250,7 @@ export default function stateModelFactory(
           ...superProps,
           notReady:
             superProps.notReady || !self.sources || !self.featuresVolatile,
-          mafFilter: self.mafFilter,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           height: self.totalHeight,
           sources: self.sources,
         }

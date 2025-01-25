@@ -25,7 +25,7 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
       args,
       rpcDriverClassName,
     )
-    const { sources, mafFilter, regions, adapterConfig, sessionId } =
+    const { sources, minorAlleleFrequencyFilter, regions, adapterConfig, sessionId } =
       deserializedArgs
     const adapter = await getAdapter(pm, sessionId, adapterConfig)
     const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
@@ -60,8 +60,8 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
           }
         }
         if (
-          c / sources.length > mafFilter &&
-          c2 / sources.length < 1 - mafFilter
+          c / sources.length > minorAlleleFrequencyFilter &&
+          c2 / sources.length < 1 - minorAlleleFrequencyFilter
         ) {
           mafs.push(feat)
         }

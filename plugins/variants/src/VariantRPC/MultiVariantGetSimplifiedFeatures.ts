@@ -25,7 +25,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       args,
       rpcDriverClassName,
     )
-    const { mafFilter, sources, regions, adapterConfig, sessionId } =
+    const { minorAlleleFrequencyFilter, sources, regions, adapterConfig, sessionId } =
       deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     const feats = await firstValueFrom(
@@ -59,8 +59,8 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
           }
         }
         if (
-          c / sources.length > mafFilter &&
-          c2 / sources.length < 1 - mafFilter
+          c / sources.length > minorAlleleFrequencyFilter &&
+          c2 / sources.length < 1 - minorAlleleFrequencyFilter
         ) {
           mafs.push(feat)
         }
