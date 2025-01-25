@@ -1407,6 +1407,18 @@ export async function fetchAndMaybeUnzip(
     : buf
 }
 
+export async function fetchAndMaybeUnzipText(
+  loc: GenericFilehandle,
+  opts?: BaseOptions,
+) {
+  const buffer = await fetchAndMaybeUnzip(loc, opts)
+  // 512MB  max chrome string length is 512MB
+  if (buffer.length > 536_870_888) {
+    throw new Error('Data exceeds maximum string length (512MB)')
+  }
+  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
+}
+
 // MIT https://github.com/inspect-js/is-object
 export function isObject(
   x: unknown,

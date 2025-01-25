@@ -9,7 +9,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(
     baseModel,
     types.model('VariantFeatureWidget', {
+      /**
+       * #property
+       */
+
       type: types.literal('VariantFeatureWidget'),
+      /**
+       * #property
+       */
       descriptions: types.frozen(),
     }),
   )

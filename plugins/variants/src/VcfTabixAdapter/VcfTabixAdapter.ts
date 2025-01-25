@@ -1,10 +1,10 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-// local
 import VcfFeature from '../VcfFeature'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -91,17 +91,26 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         name,
       }))
     } else {
-      const txt = await openLocation(conf).readFile('utf8')
+      const txt = await fetchAndMaybeUnzipText(
+        openLocation(conf, this.pluginManager),
+      )
       const lines = txt.split(/\n|\r\n|\r/)
       const header = lines[0]!.split('\t')
-      return lines.slice(1).map(line =>
-        Object.fromEntries(
-          line
-            .split('\t')
-            // force col 0 to be called name
-            .map((c, idx) => [idx === 0 ? 'name' : header[idx], c]),
-        ),
-      )
+      const { parser } = await this.configure()
+      const s = new Set(parser.samples)
+      return lines
+        .slice(1)
+        .map(line => {
+          const cols = line.split('\t')
+          return {
+            name: cols[0]!,
+            ...Object.fromEntries(
+              // force col 0 to be called name
+              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
+            ),
+          }
+        })
+        .filter(f => s.has(f.name))
     }
   }
 

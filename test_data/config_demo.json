@@ -4685,8 +4685,14 @@
       "type": "VariantTrack",
       "trackId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf",
       "name": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf",
+      "metadata": {
+        "samples": "The population codes were manually downloaded from internationalgenome.org, filtered and sorted for samples that have a population code"
+      },
       "adapter": {
         "type": "VcfTabixAdapter",
+        "samplesTsvLocation": {
+          "uri": "1000g.sorted.csv.gz"
+        },
         "vcfGzLocation": {
           "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz",
           "locationType": "UriLocation"

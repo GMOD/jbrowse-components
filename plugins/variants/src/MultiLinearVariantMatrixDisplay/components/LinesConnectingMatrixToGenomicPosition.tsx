@@ -60,7 +60,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
           })?.offsetPx || 0) - l
         return (
           <line
-            stroke="black"
+            stroke="#0006"
             key={f.id()}
             x1={i * w + w / 2}
             x2={c}

@@ -1,8 +1,8 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
-import AnnotGrid from './AnnotGrid'
+import VariantConsequenceDataGridWrapper from './VariantConsequenceDataGridWrapper'
 
-export default function VariantAnnotationTable({
+export default function VariantConsequencePanel({
   data,
   fields,
   title,
@@ -13,7 +13,7 @@ export default function VariantAnnotationTable({
 }) {
   return data.length ? (
     <BaseCard title={title}>
-      <AnnotGrid
+      <VariantConsequenceDataGridWrapper
         rows={data.map((elt, id) => ({
           id,
           ...Object.fromEntries(elt.split('|').map((e, i) => [fields[i], e])),

@@ -123,7 +123,7 @@ function LaunchBreakpointSplitViewPanel({
   )
 }
 
-export default function BreakendPanel(props: {
+export default function LaunchBreakendPanel(props: {
   locStrings: string[]
   model: VariantFeatureWidgetModel
   feature: SimpleFeatureSerialized
