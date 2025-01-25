@@ -1,6 +1,7 @@
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
 import { getSession } from '@jbrowse/core/util'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
@@ -8,6 +9,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -103,6 +105,17 @@ const ViewMenu = observer(function ({
                 },
               ]
             : []),
+          {
+            label: 'Copy view',
+            icon: ContentCopyIcon,
+            onClick: () => {
+              const { id, ...rest } = getSnapshot(model)
+              session.addView(model.type, rest)
+            },
+          },
+          {
+            type: 'divider',
+          },
           ...model.menuItems(),
         ]}
         popupState={popupState}
