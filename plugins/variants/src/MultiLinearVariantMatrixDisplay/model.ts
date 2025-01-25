@@ -181,7 +181,6 @@ export default function stateModelFactory(
             // make separate rows for each haplotype in phased mode
             if (self.phasedMode === 'phasedOnly') {
               const ploidy = self.samplePloidy?.[row.name]
-              console.log(self.samplePloidy, row.name, ploidy)
               if (ploidy) {
                 for (let i = 0; i < ploidy; i++) {
                   rows.push({

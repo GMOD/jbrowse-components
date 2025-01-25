@@ -43,23 +43,19 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
 
     const features = getFeaturesThatPassMinorAlleleFrequencyFilter(
       feats,
-      sources,
       minorAlleleFrequencyFilter,
     )
 
-    let samplePloidy = {} as Record<string, number>
+    const samplePloidy = {} as Record<string, number>
     let hasPhased = false
 
-    console.log({ features, feats, regions })
     for (const f of features) {
       const samp = f.get('genotypes') as Record<string, string>
-      console.log({ samp })
       for (const [key, val] of Object.entries(samp)) {
         hasPhased ||= val.includes('|')
         samplePloidy[key] = val.split(/[/|]/).length
       }
     }
-    console.log({ samplePloidy, hasPhased })
     return {
       hasPhased,
       samplePloidy,

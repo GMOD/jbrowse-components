@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
-import MoreVert from '@mui/icons-material/MoreVert'
 import { IconButton, Slider, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+
 
 const useStyles = makeStyles()(theme => ({
   container: {

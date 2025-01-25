@@ -1,7 +1,7 @@
 export interface Source {
   baseUri?: string
   name: string
-  label: string
+  label?: string
   color?: string
   group?: string
   HP?: number

@@ -1,6 +1,5 @@
-import PrerenderedCanvas from './components/LinearVariantMatrixRendering'
-
 import LinearVariantMatrixRenderer from './LinearVariantMatrixRenderer'
+import PrerenderedCanvas from './components/LinearVariantMatrixRendering'
 import configSchema from './configSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

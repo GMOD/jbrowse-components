@@ -1,5 +1,7 @@
-import { Feature, sum } from '@jbrowse/core/util'
-import { Source } from './types'
+import { sum } from '@jbrowse/core/util'
+
+import type { Source } from './types'
+import type { Feature } from '@jbrowse/core/util'
 
 // avoid drawing negative width features for SVG exports
 export function fillRectCtx(
@@ -63,10 +65,7 @@ export function findSecondLargest(arr: Iterable<number>) {
   return secondMax
 }
 
-export function calculateMinorAlleleFrequency(
-  feat: Feature,
-  sources: Source[],
-) {
+export function calculateMinorAlleleFrequency(feat: Feature) {
   // only draw smallish indels, unclear how to draw large structural variants
   // even though they are important
   if (feat.get('end') - feat.get('start') <= 10) {
@@ -89,18 +88,11 @@ export function calculateMinorAlleleFrequency(
 
 export function getFeaturesThatPassMinorAlleleFrequencyFilter(
   feats: Iterable<Feature>,
-  sources: Source[],
   minorAlleleFrequencyFilter: number,
 ) {
   const mafs = [] as Feature[]
   for (const feat of feats) {
-    console.log({
-      val: calculateMinorAlleleFrequency(feat, sources),
-      minorAlleleFrequencyFilter,
-    })
-    if (
-      calculateMinorAlleleFrequency(feat, sources) > minorAlleleFrequencyFilter
-    ) {
+    if (calculateMinorAlleleFrequency(feat) > minorAlleleFrequencyFilter) {
       mafs.push(feat)
     }
   }

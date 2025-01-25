@@ -2,11 +2,11 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { firstValueFrom, toArray } from 'rxjs'
 
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
-
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
 export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantGetGenotypeMatrix'
@@ -45,7 +45,6 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
     const genotypeFactor = new Set<string>()
     const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
       feats,
-      sources,
       minorAlleleFrequencyFilter,
     )
 

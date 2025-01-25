@@ -79,7 +79,6 @@ export function makeImageData({
   const h = canvasHeight / sources.length
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),
-    sources,
     minorAlleleFrequencyFilter,
   )
 
@@ -97,14 +96,14 @@ export function makeImageData({
       const isPhased = genotype.includes('|')
       if (phasedMode === 'phasedOnly') {
         if (isPhased) {
-          const alleles = genotype.split('|') || ''
+          const alleles = genotype.split('|')
           drawPhased(alleles, ctx, x, y, w, h, HP!)
         } else {
           ctx.fillStyle = 'black'
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
         }
       } else {
-        const alleles = genotype.split(/[/|]/) || ''
+        const alleles = genotype.split(/[/|]/)
         drawUnphased(alleles, ctx, x, y, w, h)
       }
     }
