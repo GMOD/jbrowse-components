@@ -1,4 +1,4 @@
-import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import PrerenderedCanvas from './components/LinearVariantMatrixRendering'
 
 import LinearVariantMatrixRenderer from './LinearVariantMatrixRenderer'
 import configSchema from './configSchema'

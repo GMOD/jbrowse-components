@@ -48,6 +48,66 @@ function calculateMinorAlleleFrequency(feat: Feature, sources: Source[]) {
   return -1
 }
 
+function drawUnphased(
+  alleles: string[],
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  const total = alleles.length
+  let alt = 0
+  let uncalled = 0
+  let alt2 = 0
+  let ref = 0
+  for (const allele of alleles) {
+    if (allele === '1') {
+      alt++
+    } else if (allele === '0') {
+      ref++
+    } else if (allele === '.') {
+      uncalled++
+    } else {
+      alt2++
+    }
+  }
+
+  if (alt) {
+    ctx.fillStyle = `hsl(200,50%,${80 - (alt / total) * 50}%)`
+    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  }
+  if (ref === total) {
+    ctx.fillStyle = `#ccc`
+    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  }
+  if (alt2) {
+    ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
+    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  }
+  if (uncalled) {
+    ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
+    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  }
+}
+function drawPhased(
+  alleles: string[],
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  let l = alleles.length
+  let offset = 0
+  for (let k = 0; k < l; k++) {
+    const c = +alleles[k]!
+    ctx.fillStyle = c ? set1[c - 1] || 'black' : '#ccc'
+    ctx.fillRect(x - f2, y - f2 + offset, w + f2, h / l + f2)
+    offset += h / l
+  }
+}
+
 export function makeImageData({
   ctx,
   canvasWidth,
@@ -75,7 +135,7 @@ export function makeImageData({
   const m = mafs.length
   const w = canvasWidth / m
   let samplePloidy = {} as Record<string, number>
-  let hasPhased = 0
+  let hasPhased = false
   for (let i = 0; i < m; i++) {
     const f = mafs[i]!
     const samp = f.get('genotypes') as Record<string, string>
@@ -85,109 +145,31 @@ export function makeImageData({
       const y = (j / s) * canvasHeight
       const { name } = sources[j]!
       const genotype = samp[name]!
+      const isPhased = genotype.includes('|')
+      hasPhased ||= isPhased
       if (phasedMode === 'phasedOnly') {
-        if (genotype.includes('|')) {
-          ctx.globalAlpha = 0.7
+        if (isPhased) {
           const alleles = genotype.split('|') || ''
           samplePloidy[name] = alleles.length
           hasPhased = true
-          let l = alleles.length
-          let offset = 0
-          for (let k = 0; k < l; k++) {
-            const c = +alleles[k]!
-            ctx.fillStyle = c ? set1[c] || 'black' : '#ccc'
-            ctx.fillRect(x - f2, y - f2 + offset, w + f2, h / l + f2)
-            offset += h / l
-          }
+          drawPhased(alleles, ctx, x, y, w, h)
         } else {
           ctx.fillStyle = `#CBC3E3`
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
         }
       } else if (phasedMode === 'both') {
-        if (genotype.includes('|')) {
-          ctx.globalAlpha = 0.7
+        if (isPhased) {
           const alleles = genotype.split('|') || ''
           samplePloidy[name] = alleles.length
           hasPhased = true
-          let l = alleles.length
-          let offset = 0
-          for (let k = 0; k < l; k++) {
-            const c = +alleles[k]!
-            ctx.fillStyle = c ? set1[c] || 'black' : '#ccc'
-            ctx.fillRect(x - f2, y - f2 + offset, w + f2, h / l + f2)
-            offset += h / l
-          }
+          drawPhased(alleles, ctx, x, y, w, h)
         } else {
           const alleles = genotype.split('/') || ''
-          const total = alleles.length
-          let alt = 0
-          let uncalled = 0
-          let alt2 = 0
-          let ref = 0
-          for (const allele of alleles) {
-            if (allele === '1') {
-              alt++
-            } else if (allele === '0') {
-              ref++
-            } else if (allele === '.') {
-              uncalled++
-            } else {
-              alt2++
-            }
-          }
-
-          if (alt) {
-            ctx.fillStyle = `hsl(200,50%,${80 - (alt / total) * 50}%)`
-            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-          }
-          if (ref === total) {
-            ctx.fillStyle = `#ccc`
-            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-          }
-          if (alt2) {
-            ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
-            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-          }
-          if (uncalled) {
-            ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
-            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-          }
+          drawUnphased(alleles, ctx, x, y, w, h)
         }
       } else {
         const alleles = genotype.split(/[/|]/) || ''
-        const total = alleles.length
-        let alt = 0
-        let uncalled = 0
-        let alt2 = 0
-        let ref = 0
-        for (const allele of alleles) {
-          if (allele === '1') {
-            alt++
-          } else if (allele === '0') {
-            ref++
-          } else if (allele === '.') {
-            uncalled++
-          } else {
-            alt2++
-          }
-        }
-
-        if (alt) {
-          ctx.fillStyle = `hsl(200,50%,${80 - (alt / total) * 50}%)`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
-        if (ref === total) {
-          ctx.fillStyle = `#ccc`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
-        if (alt2) {
-          ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
-        if (uncalled) {
-          ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-        }
+        drawUnphased(alleles, ctx, x, y, w, h)
       }
     }
   }

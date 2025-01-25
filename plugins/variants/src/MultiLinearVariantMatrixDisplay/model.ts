@@ -82,6 +82,10 @@ export default function stateModelFactory(
        * #volatile
        */
       lineZoneHeight: 20,
+      /**
+       * #volatile
+       */
+      hasPhased: false,
     }))
     .actions(self => ({
       /**
@@ -138,8 +142,17 @@ export default function stateModelFactory(
       setPhasedMode(arg: string) {
         self.phasedMode = arg
       },
+      /**
+       * #action
+       */
+      setHasPhased(arg: boolean) {
+        self.hasPhased = arg
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get preSources() {
         return self.layout.length ? self.layout : self.sourcesVolatile
       },
@@ -189,34 +202,43 @@ export default function stateModelFactory(
                 self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
               },
             },
-            {
-              label: 'Phased mode',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Use unphased drawing mode (count alleles)',
-                  checked: self.phasedMode === 'none',
-                  onClick: () => {
-                    self.setPhasedMode('none')
+            ...(self.hasPhased
+              ? [
+                  {
+                    label: 'Phased mode',
+                    type: 'subMenu',
+                    subMenu: [
+                      {
+                        label:
+                          'Use unphased drawing mode (maps allele count to color)',
+                        type: 'radio',
+                        checked: self.phasedMode === 'none',
+                        onClick: () => {
+                          self.setPhasedMode('none')
+                        },
+                      },
+                      {
+                        label:
+                          'Only draw phased variants (split into haplotype rows)',
+                        checked: self.phasedMode === 'phasedOnly',
+                        type: 'radio',
+                        onClick: () => {
+                          self.setPhasedMode('phasedOnly')
+                        },
+                      },
+                      {
+                        label:
+                          'Draw both phased (split into haplotype rows) and unphased',
+                        type: 'radio',
+                        checked: self.phasedMode === 'both',
+                        onClick: () => {
+                          self.setPhasedMode('both')
+                        },
+                      },
+                    ],
                   },
-                },
-                {
-                  label:
-                    'Only draw phased variants (split phase into haplotyp rows)',
-                  checked: self.phasedMode === 'phasedOnly',
-                  onClick: () => {
-                    self.setPhasedMode('phasedOnly')
-                  },
-                },
-                {
-                  label: 'Draw both phased and unphased (odd mix of both)',
-                  checked: self.phasedMode === 'both',
-                  onClick: () => {
-                    self.setPhasedMode('both')
-                  },
-                },
-              ],
-            },
+                ]
+              : []),
             {
               label: 'Set minor allele frequency filter',
               onClick: () => {
