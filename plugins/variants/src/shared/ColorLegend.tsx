@@ -34,9 +34,9 @@ const ColorLegend = observer(function ({
         />
       ) : null}
       {sources.map((source, idx) => {
-        const { color, name } = source
+        const { color, label } = source
         return (
-          <Fragment key={`${name}-${idx}`}>
+          <Fragment key={`${label}-${idx}`}>
             {color ? (
               <RectBg
                 y={idx * rowHeight + 1}
@@ -52,7 +52,7 @@ const ColorLegend = observer(function ({
                 x={colorBoxWidth + 2}
                 fontSize={svgFontSize}
               >
-                {name}
+                {label}
               </text>
             ) : null}
           </Fragment>

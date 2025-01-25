@@ -7,6 +7,7 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   minorAlleleFrequencyFilter: number
   highResolutionScaling: number
   height: number
+  phasedMode: string
 }
 
 export interface RenderArgsDeserializedWithFeaturesAndLayout

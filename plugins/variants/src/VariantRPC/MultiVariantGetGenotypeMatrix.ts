@@ -4,7 +4,9 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
+
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
 export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantGetGenotypeMatrix'
@@ -25,8 +27,13 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
       args,
       rpcDriverClassName,
     )
-    const { sources, minorAlleleFrequencyFilter, regions, adapterConfig, sessionId } =
-      deserializedArgs
+    const {
+      sources,
+      minorAlleleFrequencyFilter,
+      regions,
+      adapterConfig,
+      sessionId,
+    } = deserializedArgs
     const adapter = await getAdapter(pm, sessionId, adapterConfig)
     const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
     const region = regions[0]
@@ -35,36 +42,18 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
       dataAdapter.getFeatures(region, deserializedArgs).pipe(toArray()),
     )
 
-    // a 'factor' in the R sense of the term (ordinal)
     const genotypeFactor = new Set<string>()
-    const mafs = [] as Feature[]
-    for (const feat of feats) {
-      let c = 0
-      let c2 = 0
-      const samp = feat.get('genotypes')
+    const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
+      feats,
+      sources,
+      minorAlleleFrequencyFilter,
+    )
 
-      // only draw smallish indels
-      if (feat.get('end') - feat.get('start') <= 10) {
-        for (const { name } of sources) {
-          const s = samp[name]!
-          genotypeFactor.add(s)
-          if (s === '0|0' || s === './.') {
-            c2++
-          } else if (s === '1|0' || s === '0|1') {
-            c++
-          } else if (s === '1|1') {
-            c++
-            c2++
-          } else {
-            c++
-          }
-        }
-        if (
-          c / sources.length > minorAlleleFrequencyFilter &&
-          c2 / sources.length < 1 - minorAlleleFrequencyFilter
-        ) {
-          mafs.push(feat)
-        }
+    for (const feat of feats) {
+      const samp = feat.get('genotypes') as Record<string, string>
+      for (const { name } of sources) {
+        const s = samp[name]!
+        genotypeFactor.add(s)
       }
     }
 
@@ -76,7 +65,10 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
       const samp = feat.get('genotypes') as Record<string, string>
       for (const { name } of sources) {
         if (!rows[name]) {
-          rows[name] = { name, genotypes: [] }
+          rows[name] = {
+            name,
+            genotypes: [],
+          }
         }
         rows[name].genotypes.push(genotypeFactorMap[samp[name]!]!)
       }

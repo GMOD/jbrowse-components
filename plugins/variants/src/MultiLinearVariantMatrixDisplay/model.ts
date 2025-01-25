@@ -86,6 +86,10 @@ export default function stateModelFactory(
        * #volatile
        */
       hasPhased: false,
+      /**
+       * #volatile
+       */
+      samplePloidy: undefined as undefined | Record<string, number>,
     }))
     .actions(self => ({
       /**
@@ -148,6 +152,14 @@ export default function stateModelFactory(
       setHasPhased(arg: boolean) {
         self.hasPhased = arg
       },
+      /**
+       * #action
+       */
+      setSamplePloidy(arg: Record<string, number>) {
+        if (!deepEqual(arg, self.samplePloidy)) {
+          self.samplePloidy = arg
+        }
+      },
     }))
     .views(self => ({
       /**
@@ -160,13 +172,39 @@ export default function stateModelFactory(
        * #getter
        */
       get sources() {
-        const sources = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
-        )
-        return this.preSources?.map(s => ({
-          ...sources[s.name],
-          ...s,
-        }))
+        if (this.preSources) {
+          const rows = []
+          const sources = Object.fromEntries(
+            self.sourcesVolatile?.map(s => [s.name, s]) || [],
+          )
+          for (const row of this.preSources) {
+            // make separate rows for each haplotype in phased mode
+            if (self.phasedMode === 'phasedOnly') {
+              const ploidy = self.samplePloidy?.[row.name]
+              console.log(self.samplePloidy, row.name, ploidy)
+              if (ploidy) {
+                for (let i = 0; i < ploidy; i++) {
+                  rows.push({
+                    ...sources[row.name],
+                    ...row,
+                    label: `${row.name} HP${i}`,
+                    HP: i,
+                  })
+                }
+              }
+            }
+            // non-phased mode does not make separate rows
+            else {
+              rows.push({
+                ...sources[row.name],
+                ...row,
+                label: row.name,
+              })
+            }
+          }
+          return rows
+        }
+        return undefined
       },
     }))
     .views(self => {
@@ -325,6 +363,7 @@ export default function stateModelFactory(
               const { getMultiVariantFeaturesAutorun } = await import(
                 '../getMultiVariantFeaturesAutorun'
               )
+
               getMultiVariantSourcesAutorun(self)
               getMultiVariantFeaturesAutorun(self)
             } catch (e) {

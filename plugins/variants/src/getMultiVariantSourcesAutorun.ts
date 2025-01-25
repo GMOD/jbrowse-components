@@ -7,13 +7,7 @@ import { addDisposer, isAlive } from 'mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-export interface Source {
-  name: string
-  color?: string
-  group?: string
-  [key: string]: string | undefined
-}
+import type { Source } from './types'
 
 export function getMultiVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel

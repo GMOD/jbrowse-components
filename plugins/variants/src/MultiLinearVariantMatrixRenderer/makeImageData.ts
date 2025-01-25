@@ -1,52 +1,11 @@
-import { sum } from '@jbrowse/core/util'
-
 import { set1 } from '@jbrowse/core/ui/colors'
 
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
+
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
-import type { Source } from '../types'
-import type { Feature } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
-const splitter = /[/|]/
-
-// used for calculating minor allele
-function findSecondLargest(arr: Iterable<number>) {
-  let firstMax = -Infinity
-  let secondMax = -Infinity
-
-  for (const num of arr) {
-    if (num > firstMax) {
-      secondMax = firstMax
-      firstMax = num
-    } else if (num > secondMax && num !== firstMax) {
-      secondMax = num
-    }
-  }
-
-  return secondMax
-}
-
-function calculateMinorAlleleFrequency(feat: Feature, sources: Source[]) {
-  // only draw smallish indels, unclear how to draw large structural variants
-  // even though they are important
-  if (feat.get('end') - feat.get('start') <= 10) {
-    const samp = feat.get('genotypes') as Record<string, string>
-    const alleleCounts = new Map()
-    for (const { name } of sources) {
-      const genotype = samp[name]!
-      const alleles = genotype.split(':')[0]?.split(splitter)
-      if (alleles) {
-        for (const allele of alleles) {
-          alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
-        }
-      }
-    }
-
-    return findSecondLargest(alleleCounts.values()) / sum(alleleCounts.values())
-  }
-  return -1
-}
 
 function drawUnphased(
   alleles: string[],
@@ -97,15 +56,11 @@ function drawPhased(
   y: number,
   w: number,
   h: number,
+  HP: number,
 ) {
-  let l = alleles.length
-  let offset = 0
-  for (let k = 0; k < l; k++) {
-    const c = +alleles[k]!
-    ctx.fillStyle = c ? set1[c - 1] || 'black' : '#ccc'
-    ctx.fillRect(x - f2, y - f2 + offset, w + f2, h / l + f2)
-    offset += h / l
-  }
+  const c = +alleles[HP]!
+  ctx.fillStyle = c ? set1[c - 1] || 'black' : '#ccc'
+  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
 
 export function makeImageData({
@@ -121,21 +76,15 @@ export function makeImageData({
 }) {
   const { phasedMode, minorAlleleFrequencyFilter, sources, features } =
     renderArgs
-  const feats = [...features.values()]
   const h = canvasHeight / sources.length
-  const mafs = [] as Feature[]
-  for (const feat of feats) {
-    if (
-      calculateMinorAlleleFrequency(feat, sources) >= minorAlleleFrequencyFilter
-    ) {
-      mafs.push(feat)
-    }
-  }
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
+    features.values(),
+    sources,
+    minorAlleleFrequencyFilter,
+  )
 
   const m = mafs.length
   const w = canvasWidth / m
-  let samplePloidy = {} as Record<string, number>
-  let hasPhased = false
   for (let i = 0; i < m; i++) {
     const f = mafs[i]!
     const samp = f.get('genotypes') as Record<string, string>
@@ -143,16 +92,13 @@ export function makeImageData({
     const s = sources.length
     for (let j = 0; j < s; j++) {
       const y = (j / s) * canvasHeight
-      const { name } = sources[j]!
+      const { name, HP } = sources[j]!
       const genotype = samp[name]!
       const isPhased = genotype.includes('|')
-      hasPhased ||= isPhased
       if (phasedMode === 'phasedOnly') {
         if (isPhased) {
           const alleles = genotype.split('|') || ''
-          samplePloidy[name] = alleles.length
-          hasPhased = true
-          drawPhased(alleles, ctx, x, y, w, h)
+          drawPhased(alleles, ctx, x, y, w, h, HP!)
         } else {
           ctx.fillStyle = 'black'
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
@@ -164,8 +110,6 @@ export function makeImageData({
     }
   }
   return {
-    samplePloidy,
-    hasPhased,
     mafs,
   }
 }
