@@ -1,11 +1,11 @@
-import { getCol } from '../util'
-
 import { sum } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import type { Feature } from '@jbrowse/core/util'
+import { getCol } from '../util'
+
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
 import type { Source } from '../types'
+import type { Feature } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
@@ -14,7 +14,7 @@ function findSecondLargest(arr: Iterable<number>) {
   let firstMax = -Infinity
   let secondMax = -Infinity
 
-  for (let num of arr) {
+  for (const num of arr) {
     if (num > firstMax) {
       secondMax = firstMax
       firstMax = num
@@ -100,15 +100,15 @@ export function makeImageData({
         ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
       } else {
         if (alt) {
-          ctx.fillStyle = `hsl(200,50%,${alt / total})`
+          ctx.fillStyle = `hsl(200,50%,${(alt / total) * 50}%)`
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
         }
         if (alt2) {
-          ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total})`
+          ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
         }
         if (uncalled) {
-          ctx.fillStyle = `hsla(150,50%,50%,${uncalled / total})`
+          ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
           ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
         }
       }

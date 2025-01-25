@@ -1,8 +1,8 @@
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
 
-import type { Feature } from '@jbrowse/core/util'
 import type { RenderArgsDeserialized } from './types'
+import type { Feature } from '@jbrowse/core/util'
 export default class LinearVariantMatrixRenderer extends BoxRendererType {
   supportsSVG = true
 
