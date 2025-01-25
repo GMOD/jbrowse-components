@@ -1,7 +1,6 @@
 import { sum } from '@jbrowse/core/util'
 
 import { set1 } from '@jbrowse/core/ui/colors'
-import { getCol } from '../util'
 
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
 import type { Source } from '../types'
@@ -11,6 +10,7 @@ const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
 const splitter = /[/|]/
 
+// used for calculating minor allele
 function findSecondLargest(arr: Iterable<number>) {
   let firstMax = -Infinity
   let secondMax = -Infinity
@@ -59,7 +59,8 @@ export function makeImageData({
   canvasHeight: number
   renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
 }) {
-  const { minorAlleleFrequencyFilter, sources, features } = renderArgs
+  const { phasedMode, minorAlleleFrequencyFilter, sources, features } =
+    renderArgs
   const feats = [...features.values()]
   const h = canvasHeight / sources.length
   const mafs = [] as Feature[]
@@ -71,46 +72,89 @@ export function makeImageData({
     }
   }
 
-  const w = canvasWidth / mafs.length
-  for (let i = 0; i < mafs.length; i++) {
+  const m = mafs.length
+  const w = canvasWidth / m
+  let samplePloidy = {} as Record<string, number>
+  let hasPhased = 0
+  for (let i = 0; i < m; i++) {
     const f = mafs[i]!
-
-    // only draw smallish indels
     const samp = f.get('genotypes') as Record<string, string>
     const x = (i / mafs.length) * canvasWidth
-    for (let j = 0; j < sources.length; j++) {
-      const y = (j / sources.length) * canvasHeight
+    const s = sources.length
+    for (let j = 0; j < s; j++) {
+      const y = (j / s) * canvasHeight
       const { name } = sources[j]!
       const genotype = samp[name]!
-      if (genotype.includes('|')) {
-        const alleles = genotype.split('|') || ''
-        // const total = alleles.length
-        // let alt = 0
-        // let uncalled = 0
-        // let alt2 = 0
-        // let ref = 0
-        // for (const allele of alleles) {
-        //   if (allele === '1') {
-        //     alt++
-        //   } else if (allele === '0') {
-        //     ref++
-        //   } else if (allele === '.') {
-        //     uncalled++
-        //   } else {
-        //     alt2++
-        //   }
-        // }
-        for (let i = 0; i < alleles.length; i++) {
-          if (alleles[i] !== '0') {
-            ctx.fillStyle = set1[i]!
+      if (phasedMode === 'phasedOnly') {
+        if (genotype.includes('|')) {
+          ctx.globalAlpha = 0.7
+          const alleles = genotype.split('|') || ''
+          samplePloidy[name] = alleles.length
+          hasPhased = true
+          let l = alleles.length
+          let offset = 0
+          for (let k = 0; k < l; k++) {
+            const c = +alleles[k]!
+            ctx.fillStyle = c ? set1[c] || 'black' : '#ccc'
+            ctx.fillRect(x - f2, y - f2 + offset, w + f2, h / l + f2)
+            offset += h / l
+          }
+        } else {
+          ctx.fillStyle = `#CBC3E3`
+          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+        }
+      } else if (phasedMode === 'both') {
+        if (genotype.includes('|')) {
+          ctx.globalAlpha = 0.7
+          const alleles = genotype.split('|') || ''
+          samplePloidy[name] = alleles.length
+          hasPhased = true
+          let l = alleles.length
+          let offset = 0
+          for (let k = 0; k < l; k++) {
+            const c = +alleles[k]!
+            ctx.fillStyle = c ? set1[c] || 'black' : '#ccc'
+            ctx.fillRect(x - f2, y - f2 + offset, w + f2, h / l + f2)
+            offset += h / l
+          }
+        } else {
+          const alleles = genotype.split('/') || ''
+          const total = alleles.length
+          let alt = 0
+          let uncalled = 0
+          let alt2 = 0
+          let ref = 0
+          for (const allele of alleles) {
+            if (allele === '1') {
+              alt++
+            } else if (allele === '0') {
+              ref++
+            } else if (allele === '.') {
+              uncalled++
+            } else {
+              alt2++
+            }
+          }
+
+          if (alt) {
+            ctx.fillStyle = `hsl(200,50%,${80 - (alt / total) * 50}%)`
             ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-          } else {
-            ctx.fillStyle = '#ccc'
+          }
+          if (ref === total) {
+            ctx.fillStyle = `#ccc`
+            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+          }
+          if (alt2) {
+            ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
+            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+          }
+          if (uncalled) {
+            ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
             ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
           }
         }
       } else {
-        const alleles = genotype.split('/') || ''
+        const alleles = genotype.split(/[/|]/) || ''
         const total = alleles.length
         let alt = 0
         let uncalled = 0
@@ -147,5 +191,9 @@ export function makeImageData({
       }
     }
   }
-  return { mafs }
+  return {
+    samplePloidy,
+    hasPhased,
+    mafs,
+  }
 }

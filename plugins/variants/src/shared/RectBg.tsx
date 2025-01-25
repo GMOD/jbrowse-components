@@ -7,7 +7,7 @@ const RectBg = (props: {
   height: number
   color?: string
 }) => {
-  const { color = 'rgb(255,255,255)' } = props
+  const { color = 'rgba(255,255,255,0.5)' } = props
   return <rect pointerEvents="auto" {...props} {...getFillProps(color)} />
 }
 

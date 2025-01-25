@@ -13,4 +13,5 @@ export interface RenderArgsDeserializedWithFeaturesAndLayout
   extends RenderArgsDeserialized {
   sources: Source[]
   features: Map<string, Feature>
+  phasedMode: string
 }

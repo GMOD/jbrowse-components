@@ -54,6 +54,11 @@ export default function stateModelFactory(
          * #property
          */
         showSidebarLabelsSetting: true,
+
+        /**
+         * #property
+         */
+        phasedMode: types.optional(types.string, 'none'),
       }),
     )
     .volatile(() => ({
@@ -127,6 +132,12 @@ export default function stateModelFactory(
       setShowSidebarLabels(arg: boolean) {
         self.showSidebarLabelsSetting = arg
       },
+      /**
+       * #action
+       */
+      setPhasedMode(arg: string) {
+        self.phasedMode = arg
+      },
     }))
     .views(self => ({
       get preSources() {
@@ -178,9 +189,36 @@ export default function stateModelFactory(
                 self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
               },
             },
-
             {
-              label: 'Minimum allele frequency',
+              label: 'Phased mode',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Use unphased drawing mode (count alleles)',
+                  checked: self.phasedMode === 'none',
+                  onClick: () => {
+                    self.setPhasedMode('none')
+                  },
+                },
+                {
+                  label:
+                    'Only draw phased variants (split phase into haplotyp rows)',
+                  checked: self.phasedMode === 'phasedOnly',
+                  onClick: () => {
+                    self.setPhasedMode('phasedOnly')
+                  },
+                },
+                {
+                  label: 'Draw both phased and unphased (odd mix of both)',
+                  checked: self.phasedMode === 'both',
+                  onClick: () => {
+                    self.setPhasedMode('both')
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Set minor allele frequency filter',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   MAFFilterDialog,
@@ -250,6 +288,7 @@ export default function stateModelFactory(
           ...superProps,
           notReady:
             superProps.notReady || !self.sources || !self.featuresVolatile,
+          phasedMode: self.phasedMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           height: self.totalHeight,
           sources: self.sources,
