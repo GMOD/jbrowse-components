@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, getByRole } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test } from 'vitest'
+
 import { createView, doBeforeEach, hts } from './util'
-import { expect, afterEach, beforeEach, test } from 'vitest'
 afterEach(() => {
   cleanup()
 })

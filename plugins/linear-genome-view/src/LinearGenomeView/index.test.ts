@@ -1,21 +1,23 @@
-import { vi, it, beforeEach, describe, expect, test } from 'vitest'
-import { waitFor } from '@testing-library/react'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { waitFor } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
+import { beforeEach, describe, expect, it, test, vi } from 'vitest'
 
 // locals
-import { LinearGenomeViewModel, stateModelFactory } from '.'
+import { stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+
+import type { LinearGenomeViewModel} from '.'
 
 type LGV = LinearGenomeViewModel
 

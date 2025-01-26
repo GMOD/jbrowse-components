@@ -1,5 +1,6 @@
-import { test, expect } from 'vitest'
 import { render } from '@testing-library/react'
+import { expect, test } from 'vitest'
+
 import HelpWidget from './HelpWidget'
 
 test('renders', () => {

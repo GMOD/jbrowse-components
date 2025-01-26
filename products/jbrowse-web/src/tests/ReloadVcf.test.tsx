@@ -1,5 +1,6 @@
-import { fireEvent } from '@testing-library/react'
+import { cleanup, fireEvent  } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
+import { afterEach, beforeEach, test, vi } from 'vitest'
 
 import {
   createView,
@@ -10,8 +11,6 @@ import {
   mockFile404,
   setup,
 } from './util'
-import { vi, beforeEach, afterEach, test } from 'vitest'
-import { cleanup } from '@testing-library/react'
 
 afterEach(() => {
   cleanup()

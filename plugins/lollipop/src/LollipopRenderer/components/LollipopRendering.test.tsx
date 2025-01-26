@@ -1,10 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { cleanup, render } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
 
 import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
 import ConfigSchema from '../configSchema'
 import Rendering from './LollipopRendering'
-import { afterEach, expect, test } from 'vitest'
 afterEach(() => {
   cleanup()
 })

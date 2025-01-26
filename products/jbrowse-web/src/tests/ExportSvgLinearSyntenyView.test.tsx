@@ -3,7 +3,7 @@ import path from 'path'
 
 import { cleanup, fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
-import { expect, beforeEach, afterEach, test } from 'vitest'
+import { afterEach, beforeEach, expect, test } from 'vitest'
 
 import { createView, doBeforeEach, hts, mockConsoleWarn, setup } from './util'
 import volvoxConfig from '../../test_data/volvox/config.json'

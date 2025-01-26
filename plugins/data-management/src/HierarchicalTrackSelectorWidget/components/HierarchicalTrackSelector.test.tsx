@@ -1,15 +1,16 @@
-import { afterEach, expect, test } from 'vitest'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { cleanup, render } from '@testing-library/react'
 import { ThemeProvider } from '@mui/material'
+import { cleanup, render } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
 
 
 import HierarchicalTrackSelector2 from './HierarchicalTrackSelector'
-import { HierarchicalTrackSelectorModel } from '../model'
 
 // test data
 import conf from '../../../../../test_data/test_order/config.json'
+
+import type { HierarchicalTrackSelectorModel } from '../model'
 
 function timeout(ms: number) {
   return new Promise(res => setTimeout(res, ms))

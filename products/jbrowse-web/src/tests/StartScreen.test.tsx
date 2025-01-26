@@ -1,9 +1,9 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
 
 import StartScreen from '../components/StartScreen'
 import factoryReset from '../factoryReset'
 import { getPluginManager } from './util'
-import { expect, afterEach, test } from 'vitest'
 
 afterEach(() => {
   cleanup()

@@ -1,6 +1,7 @@
-import { test, expect } from 'vitest'
-import { render } from '@testing-library/react'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { render } from '@testing-library/react'
+import { expect, test } from 'vitest'
+
 import DivSequenceRendering from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
 

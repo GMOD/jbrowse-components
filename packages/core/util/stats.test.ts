@@ -1,13 +1,16 @@
-import { expect, test } from 'vitest'
-import SimpleFeature from './simpleFeature'
 import { from } from 'rxjs'
+import { expect, test } from 'vitest'
+
+import SimpleFeature from './simpleFeature'
 import {
+  calcPerBaseStats,
   calcStdFromSums,
   rectifyStats,
-  scoresToStats,
-  calcPerBaseStats,
-  UnrectifiedQuantitativeStats,
+  scoresToStats
 } from './stats'
+
+import type {
+  UnrectifiedQuantitativeStats} from './stats'
 
 test('calc std', () => {
   const s = [1, 2, 3]

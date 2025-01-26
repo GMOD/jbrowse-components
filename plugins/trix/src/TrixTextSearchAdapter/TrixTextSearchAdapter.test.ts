@@ -1,7 +1,9 @@
-import { expect, test } from 'vitest'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import Adapter from './TrixTextSearchAdapter'
 import path from 'path'
+
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { expect, test } from 'vitest'
+
+import Adapter from './TrixTextSearchAdapter'
 import configSchema from './configSchema'
 
 test('adapter can fetch output files', async () => {

@@ -1,4 +1,5 @@
-import { vi, test, expect } from 'vitest'
+import { expect, test, vi } from 'vitest'
+
 import PluginManager from '../PluginManager'
 import RpcMethodType from './RpcMethodType'
 

@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { readConf, ctxDir, runInTmpDir } from '../testUtil'
 import { runCommand } from '@oclif/test'
-
 import { expect, test } from 'vitest'
+
+import { ctxDir, readConf, runInTmpDir } from '../testUtil'
 const { writeFile, copyFile } = fs.promises
 
 const exists = (p: string) => fs.existsSync(p)

@@ -1,6 +1,7 @@
-import { vi, afterEach, beforeEach, expect, test } from 'vitest'
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+
 import BigBedAdapter from './BigBedAdapter'
 import configSchema from './configSchema'
 beforeEach(() => {

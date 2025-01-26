@@ -1,4 +1,5 @@
-import { vi, expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
+
 import Layout from './GranularRectLayout'
 
 test('lays out non-overlapping features end to end', () => {

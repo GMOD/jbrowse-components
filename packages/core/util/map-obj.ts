@@ -8,7 +8,7 @@ const isObjectCustom = (value: unknown) =>
   !(value instanceof RegExp) &&
   !(value instanceof Error) &&
   !(value instanceof Date)
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+ 
 // !(globalThis.Blob && value instanceof globalThis.Blob)
 
 type Obj = Record<string, unknown>

@@ -1,6 +1,6 @@
-import { describe, vi, it, afterEach, expect, test } from 'vitest'
-
 import { cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, describe, expect, it, test, vi } from 'vitest'
+
 import AssemblyManager from './AssemblyManager'
 
 afterEach(() => {

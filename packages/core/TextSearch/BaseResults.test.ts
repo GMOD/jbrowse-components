@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import BaseResult, { RefSequenceResult } from './BaseResults'
 
 test('create BaseResult', () => {

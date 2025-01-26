@@ -1,7 +1,7 @@
-import { waitFor, fireEvent, cleanup } from '@testing-library/react'
+import { cleanup, fireEvent, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test } from 'vitest'
 
-import { setup, doSetupForImportForm, doBeforeEach } from './util'
-import { expect, beforeEach, afterEach, test } from 'vitest'
+import { doBeforeEach, doSetupForImportForm, setup } from './util'
 
 afterEach(() => {
   cleanup()

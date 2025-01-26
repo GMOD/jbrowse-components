@@ -1,14 +1,15 @@
 import { cleanup, fireEvent } from '@testing-library/react'
-import config from '../../test_data/volvox/config_auth.json'
+import { afterEach, beforeEach, expect, test } from 'vitest'
+
 import {
-  setup,
-  pv,
-  hts,
   createView,
-  expectCanvasMatch,
   doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  pv,
+  setup,
 } from './util'
-import { afterEach, expect, beforeEach, test } from 'vitest'
+import config from '../../test_data/volvox/config_auth.json'
 afterEach(() => {
   cleanup()
 })

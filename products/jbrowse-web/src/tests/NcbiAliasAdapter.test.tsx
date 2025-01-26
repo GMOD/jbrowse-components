@@ -1,7 +1,8 @@
-import { setup, doBeforeEach, createView } from './util'
-import config from '../../test_data/cfam2/config.json'
-import { expect, beforeEach, afterEach, test } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test } from 'vitest'
+
+import { createView, doBeforeEach, setup } from './util'
+import config from '../../test_data/cfam2/config.json'
 
 afterEach(() => {
   cleanup()

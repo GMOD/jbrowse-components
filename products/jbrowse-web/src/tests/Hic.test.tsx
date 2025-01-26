@@ -1,4 +1,5 @@
 import { cleanup, fireEvent } from '@testing-library/react'
+import { afterEach, beforeEach, test } from 'vitest'
 
 import {
   createView,
@@ -9,7 +10,6 @@ import {
   setup,
 } from './util'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
-import { beforeEach, afterEach, test } from 'vitest'
 
 afterEach(() => {
   cleanup()

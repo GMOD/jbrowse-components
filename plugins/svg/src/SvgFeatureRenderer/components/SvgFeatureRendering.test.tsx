@@ -1,8 +1,8 @@
-import { afterEach, test, expect } from 'vitest'
-import { cleanup, render, fireEvent } from '@testing-library/react'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
 
 // locals
 import SvgRendererConfigSchema from '../configSchema'

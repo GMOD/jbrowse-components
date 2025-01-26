@@ -1,11 +1,13 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { vi, expect, test } from 'vitest'
 import path from 'path'
-import meta from '../../test_data/names/meta.json'
-import first from '../../test_data/names/0.json'
-import last from '../../test_data/names/f.json'
+
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { expect, test, vi } from 'vitest'
+
 import Adapter from './JBrowse1TextSearchAdapter'
 import configSchema from './configSchema'
+import first from '../../test_data/names/0.json'
+import last from '../../test_data/names/f.json'
+import meta from '../../test_data/names/meta.json'
 
 function mockFetch(url: RequestInfo | URL) {
   let response = {}

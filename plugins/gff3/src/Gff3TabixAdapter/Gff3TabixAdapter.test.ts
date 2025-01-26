@@ -1,8 +1,9 @@
-import { expect, test } from 'vitest'
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
-import configSchema from './configSchema'
+import { toArray } from 'rxjs/operators'
+import { expect, test } from 'vitest'
+
 import Gff3TabixAdapter from './Gff3TabixAdapter'
+import configSchema from './configSchema'
 
 test('test getfeatures on gff plain text adapter', async () => {
   const adapter = new Gff3TabixAdapter(

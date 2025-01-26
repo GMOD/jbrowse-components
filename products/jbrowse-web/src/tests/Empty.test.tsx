@@ -1,7 +1,8 @@
 import { cleanup, render } from '@testing-library/react'
-import { getPluginManager, JBrowse } from './util'
-import emptyConfig from '../../test_data/empty.json'
 import { afterEach, test } from 'vitest'
+
+import { JBrowse, getPluginManager } from './util'
+import emptyConfig from '../../test_data/empty.json'
 afterEach(() => {
   cleanup()
 })

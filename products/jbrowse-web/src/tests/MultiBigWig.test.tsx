@@ -1,4 +1,5 @@
 import { cleanup, fireEvent } from '@testing-library/react'
+import { afterEach, beforeEach, test } from 'vitest'
 
 import {
   createView,
@@ -8,7 +9,6 @@ import {
   pv,
   setup,
 } from './util'
-import { beforeEach, afterEach, test } from 'vitest'
 
 afterEach(() => {
   cleanup()

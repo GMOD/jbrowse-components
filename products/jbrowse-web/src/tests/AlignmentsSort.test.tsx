@@ -1,5 +1,6 @@
 import { cleanup, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, test } from 'vitest'
 
 import {
   createView,
@@ -9,7 +10,6 @@ import {
   pv,
   setup,
 } from './util'
-import { beforeEach, afterEach, test } from 'vitest'
 afterEach(() => {
   cleanup()
 })

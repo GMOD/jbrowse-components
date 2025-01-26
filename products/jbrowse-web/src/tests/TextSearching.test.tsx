@@ -1,8 +1,8 @@
-import { waitFor, fireEvent, cleanup } from '@testing-library/react'
+import { cleanup, fireEvent, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test } from 'vitest'
 
-import { setup, doBeforeEach, createView } from './util'
+import { createView, doBeforeEach, setup } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
-import { expect, beforeEach, afterEach, test } from 'vitest'
 
 afterEach(() => {
   cleanup()

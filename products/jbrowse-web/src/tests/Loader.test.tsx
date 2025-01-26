@@ -1,9 +1,10 @@
 import { cleanup, render, waitFor } from '@testing-library/react'
+import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { afterEach, test, vi } from 'vitest'
+
 import { App } from './loaderUtil'
-import { Image, createCanvas } from 'canvas'
-import { vi, afterEach, test } from 'vitest'
 
 afterEach(() => {
   cleanup()

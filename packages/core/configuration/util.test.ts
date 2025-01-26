@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest'
 import { types } from 'mobx-state-tree'
+import { expect, test } from 'vitest'
 
 import { ConfigurationSchema } from './configurationSchema'
 import { getTypeNamesFromExplicitlyTypedUnion } from './util'

@@ -1,5 +1,5 @@
-import { vi, test, expect } from 'vitest'
-import { render, fireEvent } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
+import { expect, test, vi } from 'vitest'
 
 import { ColorSlot } from './ColorEditor'
 

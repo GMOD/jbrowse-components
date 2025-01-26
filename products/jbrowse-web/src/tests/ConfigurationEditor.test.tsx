@@ -1,7 +1,9 @@
-import userEvent from '@testing-library/user-event'
 import { cleanup, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, expect, test } from 'vitest'
+
 import { createView, doBeforeEach, hts } from './util'
-import { afterEach, expect, beforeEach, test } from 'vitest'
+
 afterEach(() => {
   cleanup()
 })

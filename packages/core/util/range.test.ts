@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { intersection2 } from './range'
 
 const testCases = [

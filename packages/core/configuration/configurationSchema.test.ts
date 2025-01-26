@@ -1,8 +1,9 @@
-import { test, expect } from 'vitest'
-import { types, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, types } from 'mobx-state-tree'
+import { expect, test } from 'vitest'
+
+import { getConf, readConfObject } from '.'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
-import { getConf, readConfObject } from '.'
 
 test('can make a schema with a color', () => {
   const container = types.model({

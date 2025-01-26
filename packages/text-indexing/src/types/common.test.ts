@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import { expect, test } from 'vitest'
 
 import { guessAdapterFromFileName, isURL, makeLocation } from './common'
 

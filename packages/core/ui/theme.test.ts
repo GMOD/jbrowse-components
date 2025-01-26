@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { createJBrowseTheme } from './theme'
 
 test('can create a default theme', () => {

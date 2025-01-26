@@ -1,13 +1,13 @@
-import { afterEach, expect, test } from 'vitest'
-import { cleanup, render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
-import { stateModelFactory } from './stateModelFactory'
-import ReactComponent from './AlignmentsFeatureDetail'
-import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { ThemeProvider } from '@mui/material'
+import { cleanup, render } from '@testing-library/react'
+import { types } from 'mobx-state-tree'
+import { afterEach, expect, test } from 'vitest'
+
+import ReactComponent from './AlignmentsFeatureDetail'
+import { stateModelFactory } from './stateModelFactory'
 
 afterEach(() => {
   cleanup()

@@ -1,11 +1,12 @@
-import { test, expect } from 'vitest'
+import { expect, test } from 'vitest'
+
 import {
-  getMismatches,
   cigarToMismatches,
+  getMismatches,
+  getModificationPositions,
+  getNextRefPos,
   mdToMismatches,
   parseCigar,
-  getNextRefPos,
-  getModificationPositions,
 } from './index'
 
 const seq =

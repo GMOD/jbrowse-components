@@ -1,8 +1,10 @@
-import { test, expect } from 'vitest'
+import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+import { expect, test } from 'vitest'
+
 import Adapter from './BgzipFastaAdapter'
 import configSchema from './configSchema'
-import { firstValueFrom } from 'rxjs'
+
 
 test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter(

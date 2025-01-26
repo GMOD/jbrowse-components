@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
-import { moveUp, moveDown } from './util'
+
+import { moveDown, moveUp } from './util'
 
 test('moves elements up once', () => {
   let elts = [{ name: 'k1' }, { name: 'k2' }, { name: 'k3' }, { name: 'k4' }]

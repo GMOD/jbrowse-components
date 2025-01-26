@@ -1,11 +1,14 @@
 import { expect, test } from 'vitest'
+
 import {
   assembleLocString,
-  parseLocString,
-  ParsedLocString,
   compareLocStrings,
+  parseLocString,
   stringify,
 } from './index'
+
+import type {
+  ParsedLocString} from './index'
 
 const cases1: [string, ParsedLocString][] = [
   ['chr1:1..200', { start: 0, end: 200, refName: 'chr1' }],

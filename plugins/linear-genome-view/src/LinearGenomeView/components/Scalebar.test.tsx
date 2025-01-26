@@ -1,7 +1,9 @@
-import { cleanup, render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import Scalebar from './Scalebar'
+import { cleanup, render } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
+
+import Scalebar from './Scalebar'
+
 
 afterEach(() => {
   cleanup()

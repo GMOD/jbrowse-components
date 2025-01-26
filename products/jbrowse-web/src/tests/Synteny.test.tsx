@@ -3,9 +3,10 @@ import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
 // local
+import { afterEach, test, vi } from 'vitest'
+
 import { App } from './loaderUtil'
-import { setup, expectCanvasMatch } from './util'
-import { vi, afterEach, test } from 'vitest'
+import { expectCanvasMatch, setup } from './util'
 
 afterEach(() => {
   cleanup()

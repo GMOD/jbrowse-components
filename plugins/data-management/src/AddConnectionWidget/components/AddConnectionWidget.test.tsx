@@ -1,11 +1,12 @@
-import { vi, afterEach, test, expect } from 'vitest'
-import userEvent from '@testing-library/user-event'
-import { cleanup, render } from '@testing-library/react'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
-
-import AddConnectionWidget2 from './AddConnectionWidget'
 import { ThemeProvider } from '@emotion/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { cleanup, render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, expect, test, vi } from 'vitest'
+
+import AddConnectionWidget2 from './AddConnectionWidget'
+
 
 function AddConnectionWidget({ model }: { model: unknown }) {
   return (

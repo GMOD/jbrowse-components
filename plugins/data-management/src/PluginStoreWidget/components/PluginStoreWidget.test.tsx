@@ -1,13 +1,14 @@
-import { vi, afterEach, beforeEach, test, expect } from 'vitest'
-import { getSnapshot, getParent } from 'mobx-state-tree'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { getParent, getSnapshot } from 'mobx-state-tree'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import PluginStoreWidget from './PluginStoreWidget'
-import { PluginStoreModel } from '../model'
+
+import type { PluginStoreModel } from '../model'
 
 const plugins = {
   plugins: [

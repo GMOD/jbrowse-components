@@ -1,5 +1,6 @@
-import { expect, test } from 'vitest'
 import { render } from '@testing-library/react'
+import { expect, test } from 'vitest'
+
 import Sanitize from './SanitizedHTML'
 
 test('test basic escaping with bold', () => {

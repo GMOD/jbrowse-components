@@ -1,12 +1,13 @@
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
 
 import LinearGenomeView from './LinearGenomeView'
-import { LinearGenomeViewModel } from '../model'
+
+import type { LinearGenomeViewModel } from '../model'
 
 afterEach(() => {
   cleanup()

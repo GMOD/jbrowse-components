@@ -1,7 +1,7 @@
-import { toArray } from 'rxjs/operators'
-import { beforeEach, describe, it, expect } from 'vitest'
-
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+import { beforeEach, describe, expect, it } from 'vitest'
+
 import BigWigAdapter from './BigWigAdapter'
 import configSchema from './configSchema'
 

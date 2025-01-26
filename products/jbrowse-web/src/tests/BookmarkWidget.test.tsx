@@ -1,8 +1,10 @@
-import { cleanup, waitFor, fireEvent, within } from '@testing-library/react'
-import { saveAs } from 'file-saver'
+import { cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createView, setup, doBeforeEach } from './util'
-import { vi, expect, afterEach, beforeEach, test } from 'vitest'
+import { saveAs } from 'file-saver'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+
+import { createView, doBeforeEach, setup } from './util'
+
 afterEach(() => {
   cleanup()
 })

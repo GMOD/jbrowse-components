@@ -1,8 +1,8 @@
 import { cleanup, waitFor } from '@testing-library/react'
-
-import breakpointConfig from '../../test_data/breakpoint/config.json'
-import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
 import { afterEach, beforeEach, test } from 'vitest'
+
+import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+import breakpointConfig from '../../test_data/breakpoint/config.json'
 afterEach(() => {
   cleanup()
 })

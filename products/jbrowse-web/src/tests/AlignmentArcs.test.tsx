@@ -2,8 +2,9 @@ import { cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 // locals
-import { setup, expectCanvasMatch, doBeforeEach, createView, hts } from './util'
 import { afterEach, expect, test } from 'vitest'
+
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 afterEach(() => {
   cleanup()
 })

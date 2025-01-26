@@ -1,5 +1,6 @@
-import { expect, afterEach, test } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
+
 import FatalErrorDialog from './FatalErrorDialog'
 
 afterEach(() => {

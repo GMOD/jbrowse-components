@@ -1,9 +1,10 @@
 import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import configSnapshot from '../../test_data/volvox/config.json'
 import { LocalFile } from 'generic-filehandle'
-import { createView, generateReadBuffer, doBeforeEach, setup } from './util'
-import { vi, afterEach, expect, beforeEach, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+
+import { createView, doBeforeEach, generateReadBuffer, setup } from './util'
+import configSnapshot from '../../test_data/volvox/config.json'
 setup()
 afterEach(() => {
   cleanup()

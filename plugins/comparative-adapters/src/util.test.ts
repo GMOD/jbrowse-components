@@ -1,4 +1,5 @@
-import { test, expect } from 'vitest'
+import { expect, test } from 'vitest'
+
 import { flipCigar } from './util'
 
 test('flip cigar', () => {

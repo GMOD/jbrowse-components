@@ -1,5 +1,6 @@
-import { vi, expect, test } from 'vitest'
 import path from 'path'
+
+import { expect, test, vi } from 'vitest'
 
 import HttpMap from './HttpMap'
 import first from '../../test_data/names/0.json'

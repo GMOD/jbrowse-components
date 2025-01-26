@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import calculateBlocks from './calculateStaticBlocks'
 
 test('can calculate some blocks 1', () => {

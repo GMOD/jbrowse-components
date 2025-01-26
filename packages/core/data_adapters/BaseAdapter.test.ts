@@ -1,10 +1,13 @@
-import { expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
+import { expect, test } from 'vitest'
+
 import { BaseFeatureDataAdapter } from './BaseAdapter'
-import { ObservableCreate } from '../util/rxjs'
-import SimpleFeature, { Feature } from '../util/simpleFeature'
-import { Region } from '../util/types'
 import { ConfigurationSchema } from '../configuration/configurationSchema'
+import { ObservableCreate } from '../util/rxjs'
+import SimpleFeature from '../util/simpleFeature'
+
+import type { Feature } from '../util/simpleFeature'
+import type { Region } from '../util/types'
 
 test('properly propagates errors in feature fetching', async () => {
   class Adapter extends BaseFeatureDataAdapter {

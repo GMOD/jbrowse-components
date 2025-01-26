@@ -1,6 +1,7 @@
-import { expect, test } from 'vitest'
-import { render, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { fireEvent, render } from '@testing-library/react'
+import { expect, test } from 'vitest'
+
 import AddTrackWidget from './AddTrackWidget'
 
 function getSession() {

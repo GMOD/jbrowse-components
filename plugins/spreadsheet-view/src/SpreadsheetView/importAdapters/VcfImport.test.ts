@@ -1,6 +1,8 @@
-import { describe, expect, test } from 'vitest'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
+
+import { describe, expect, test } from 'vitest'
+
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
 import SpreadsheetModel from '../models/Spreadsheet'
 

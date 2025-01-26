@@ -1,11 +1,12 @@
-import { expect, test } from 'vitest'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { Image, createCanvas } from 'canvas'
+import { expect, test } from 'vitest'
+
 import DensityRenderer from './DensityRenderer'
 import configSchema from './configSchema'
 import ReactComponent from '../WiggleRendering'
 
-import { Image, createCanvas } from 'canvas'
 
 // @ts-expect-error
 global.nodeImage = Image

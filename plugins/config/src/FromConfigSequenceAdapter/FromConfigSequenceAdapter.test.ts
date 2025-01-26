@@ -1,6 +1,7 @@
+import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import { expect, test } from 'vitest'
-import { firstValueFrom } from 'rxjs'
+
 import Adapter from './FromConfigSequenceAdapter'
 import sequenceConfigSchema from './configSchema'
 

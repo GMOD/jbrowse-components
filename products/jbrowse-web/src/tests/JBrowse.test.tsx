@@ -1,16 +1,18 @@
-import { cleanup, fireEvent } from '@testing-library/react'
-import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { cleanup, fireEvent } from '@testing-library/react'
 
 // locals
-import JBrowseRootModelFactory from '../rootModel/rootModel'
-import corePlugins from '../corePlugins'
-import * as sessionSharing from '../sessionSharing'
+import { afterEach, beforeEach, test } from 'vitest'
+
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import { doBeforeEach, setup, createView, hts } from './util'
+import corePlugins from '../corePlugins'
 import TestPlugin from './TestPlugin'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
+import * as sessionSharing from '../sessionSharing'
+import { createView, doBeforeEach, hts, setup } from './util'
 import sessionModelFactory from '../sessionModel'
-import { beforeEach, afterEach, test } from 'vitest'
+
 afterEach(() => {
   cleanup()
 })

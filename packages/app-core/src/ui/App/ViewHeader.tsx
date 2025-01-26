@@ -85,7 +85,7 @@ const ViewHeader = observer(function ({
   // only once, because of the empty array second param
   useEffect(() => {
     if (typeof jest === 'undefined') {
-      scrollRef.current?.scrollIntoView?.({ block: 'center' })
+      scrollRef.current?.scrollIntoView({ block: 'center' })
     }
   }, [])
   return (

@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import Base1DView from './Base1DViewModel'
 
 test('create Base1DView and set displayedRegions', () => {

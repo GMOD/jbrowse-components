@@ -1,9 +1,9 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, waitFor  } from '@testing-library/react'
 
 // locals
-import { hts, doBeforeEach, createView, setup, expectCanvasMatch } from './util'
-import { vi, expect, beforeEach, afterEach, test } from 'vitest'
-import { cleanup } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
 afterEach(() => {
   cleanup()

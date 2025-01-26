@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { makeTicks } from './util'
 
 test('one', () => {

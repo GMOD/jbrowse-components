@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import calculateVisibleRegions from './calculateDynamicBlocks'
 
 const ctgA = { assemblyName: 'test', refName: 'ctgA', start: 0, end: 50000 }

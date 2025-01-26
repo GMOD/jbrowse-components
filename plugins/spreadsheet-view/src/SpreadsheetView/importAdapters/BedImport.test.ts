@@ -1,6 +1,7 @@
-import { test, expect } from 'vitest'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
+
+import { expect, test } from 'vitest'
 
 import { removeBedHeaders } from './BedImport'
 
