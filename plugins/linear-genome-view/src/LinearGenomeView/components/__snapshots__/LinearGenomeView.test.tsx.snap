@@ -93,7 +93,7 @@ exports[`renders one track, one region 1`] = `
         >
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hf3bf0-MuiButtonBase-root-MuiIconButton-root-toggleButton"
-            id=":ru:"
+            id=":rr:"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -118,7 +118,7 @@ exports[`renders one track, one region 1`] = `
           >
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
-              id=":rv:"
+              id=":rs:"
               tabindex="0"
               type="button"
             >
@@ -136,7 +136,7 @@ exports[`renders one track, one region 1`] = `
             </button>
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
-              id=":r10:"
+              id=":rt:"
               tabindex="0"
               type="button"
             >
@@ -172,7 +172,7 @@ exports[`renders one track, one region 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r11:"
+                    id=":ru:"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -196,7 +196,7 @@ exports[`renders one track, one region 1`] = `
                     </svg>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r13:"
+                      id=":r10:"
                       tabindex="0"
                       type="button"
                     >
@@ -241,32 +241,6 @@ exports[`renders one track, one region 1`] = `
             class="css-z84q6m-container"
           >
             <span
-              aria-label="Zoom out 15x"
-              class=""
-              data-mui-internal-clone-element="true"
-            >
-              <button
-                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                data-testid="zoom_out_more"
-                disabled=""
-                id=":r15:"
-                tabindex="-1"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
-                  data-testid="ZoomOutIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
-                  />
-                </svg>
-              </button>
-            </span>
-            <span
               aria-label="Zoom out 2x"
               class=""
               data-mui-internal-clone-element="true"
@@ -275,7 +249,7 @@ exports[`renders one track, one region 1`] = `
                 class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="zoom_out"
                 disabled=""
-                id=":r17:"
+                id=":r12:"
                 tabindex="-1"
                 type="button"
               >
@@ -330,7 +304,7 @@ exports[`renders one track, one region 1`] = `
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="zoom_in"
-                id=":r19:"
+                id=":r14:"
                 tabindex="0"
                 type="button"
               >
@@ -350,34 +324,24 @@ exports[`renders one track, one region 1`] = `
                 </svg>
               </button>
             </span>
-            <span
-              aria-label="Zoom in 15x"
-              class=""
-              data-mui-internal-clone-element="true"
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+              id=":r15:"
+              tabindex="0"
+              type="button"
             >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                data-testid="zoom_in_more"
-                id=":r1b:"
-                tabindex="0"
-                type="button"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                data-testid="MoreVertIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
-                  data-testid="ZoomInIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                  />
-                  <path
-                    d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
-                  />
-                </svg>
-              </button>
-            </span>
+                <path
+                  d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                />
+              </svg>
+            </button>
           </div>
           <div
             class="css-1n1xfjh-spacer"
@@ -517,7 +481,7 @@ exports[`renders one track, one region 1`] = `
           </span>
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
-            id=":r1c:"
+            id=":r16:"
             tabindex="0"
             title="close this track"
             type="button"
@@ -544,7 +508,7 @@ exports[`renders one track, one region 1`] = `
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
-            id=":r1d:"
+            id=":r17:"
             tabindex="0"
             type="button"
           >
@@ -719,7 +683,7 @@ exports[`renders two tracks, two regions 1`] = `
         >
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hf3bf0-MuiButtonBase-root-MuiIconButton-root-toggleButton"
-            id=":r1i:"
+            id=":r1c:"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -744,7 +708,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
-              id=":r1j:"
+              id=":r1d:"
               tabindex="0"
               type="button"
             >
@@ -762,7 +726,7 @@ exports[`renders two tracks, two regions 1`] = `
             </button>
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
-              id=":r1k:"
+              id=":r1e:"
               tabindex="0"
               type="button"
             >
@@ -798,7 +762,7 @@ exports[`renders two tracks, two regions 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r1l:"
+                    id=":r1f:"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -822,7 +786,7 @@ exports[`renders two tracks, two regions 1`] = `
                     </svg>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r1n:"
+                      id=":r1h:"
                       tabindex="0"
                       type="button"
                     >
@@ -867,31 +831,6 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-z84q6m-container"
           >
             <span
-              aria-label="Zoom out 15x"
-              class=""
-              data-mui-internal-clone-element="true"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                data-testid="zoom_out_more"
-                id=":r1p:"
-                tabindex="0"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
-                  data-testid="ZoomOutIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
-                  />
-                </svg>
-              </button>
-            </span>
-            <span
               aria-label="Zoom out 2x"
               class=""
               data-mui-internal-clone-element="true"
@@ -899,7 +838,7 @@ exports[`renders two tracks, two regions 1`] = `
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="zoom_out"
-                id=":r1r:"
+                id=":r1j:"
                 tabindex="0"
                 type="button"
               >
@@ -954,7 +893,7 @@ exports[`renders two tracks, two regions 1`] = `
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="zoom_in"
-                id=":r1t:"
+                id=":r1l:"
                 tabindex="0"
                 type="button"
               >
@@ -974,34 +913,24 @@ exports[`renders two tracks, two regions 1`] = `
                 </svg>
               </button>
             </span>
-            <span
-              aria-label="Zoom in 15x"
-              class=""
-              data-mui-internal-clone-element="true"
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+              id=":r1m:"
+              tabindex="0"
+              type="button"
             >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                data-testid="zoom_in_more"
-                id=":r1v:"
-                tabindex="0"
-                type="button"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                data-testid="MoreVertIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge css-1ivw8v3-MuiSvgIcon-root"
-                  data-testid="ZoomInIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                  />
-                  <path
-                    d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
-                  />
-                </svg>
-              </button>
-            </span>
+                <path
+                  d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                />
+              </svg>
+            </button>
           </div>
           <div
             class="css-1n1xfjh-spacer"
@@ -1384,7 +1313,7 @@ exports[`renders two tracks, two regions 1`] = `
           </span>
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
-            id=":r20:"
+            id=":r1n:"
             tabindex="0"
             title="close this track"
             type="button"
@@ -1411,7 +1340,7 @@ exports[`renders two tracks, two regions 1`] = `
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
-            id=":r21:"
+            id=":r1o:"
             tabindex="0"
             type="button"
           >
@@ -1509,7 +1438,7 @@ exports[`renders two tracks, two regions 1`] = `
           </span>
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
-            id=":r22:"
+            id=":r1p:"
             tabindex="0"
             title="close this track"
             type="button"
@@ -1536,7 +1465,7 @@ exports[`renders two tracks, two regions 1`] = `
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
-            id=":r23:"
+            id=":r1q:"
             tabindex="0"
             type="button"
           >
