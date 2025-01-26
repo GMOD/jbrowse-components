@@ -1,14 +1,28 @@
 import { getFillProps } from '@jbrowse/core/util'
 
-const RectBg = (props: {
+const RectBg = ({
+  x,
+  y,
+  width,
+  height,
+  color = 'rgba(255,255,255,0.5)',
+}: {
   x: number
   y: number
   width: number
   height: number
   color?: string
 }) => {
-  const { color = 'rgb(255,255,255)' } = props
-  return <rect pointerEvents="auto" {...props} {...getFillProps(color)} />
+  return (
+    <rect
+      pointerEvents="auto"
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      {...getFillProps(color)}
+    />
+  )
 }
 
 export default RectBg

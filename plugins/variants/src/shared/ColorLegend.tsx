@@ -21,7 +21,8 @@ const ColorLegend = observer(function ({
   const { canDisplayLabels, rowHeight, sources } = model
   const svgFontSize = clamp(rowHeight, 8, 12)
   const colorBoxWidth = 15
-  const legendWidth = labelWidth + colorBoxWidth + 5
+  const hasColors = sources?.some(s => s.color)
+  const legendWidth = labelWidth + (hasColors ? colorBoxWidth + 5 : 0)
 
   return sources ? (
     <>
@@ -34,9 +35,9 @@ const ColorLegend = observer(function ({
         />
       ) : null}
       {sources.map((source, idx) => {
-        const { color, name } = source
+        const { color, name, label } = source
         return (
-          <Fragment key={`${name}-${idx}`}>
+          <Fragment key={`${label}-${idx}`}>
             {color ? (
               <RectBg
                 y={idx * rowHeight + 1}
@@ -49,10 +50,10 @@ const ColorLegend = observer(function ({
             {canDisplayLabels ? (
               <text
                 y={idx * rowHeight + svgFontSize}
-                x={colorBoxWidth + 2}
+                x={color ? colorBoxWidth + 2 : 0}
                 fontSize={svgFontSize}
               >
-                {name}
+                {label || name}
               </text>
             ) : null}
           </Fragment>

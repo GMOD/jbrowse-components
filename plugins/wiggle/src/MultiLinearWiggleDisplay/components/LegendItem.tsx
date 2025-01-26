@@ -3,7 +3,7 @@ import RectBg from './RectBg'
 import type { Source } from '../../util'
 import type { WiggleDisplayModel } from '../model'
 
-function LegendItem({
+const LegendItem = function ({
   source,
   idx,
   rowHeight,

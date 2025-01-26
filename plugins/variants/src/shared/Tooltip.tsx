@@ -2,7 +2,6 @@ import { forwardRef } from 'react'
 
 import { observer } from 'mobx-react'
 
-// locals
 import Tooltip from '../Tooltip'
 
 import type { TooltipContentsComponent } from '../Tooltip'

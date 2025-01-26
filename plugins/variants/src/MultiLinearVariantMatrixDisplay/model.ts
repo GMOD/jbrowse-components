@@ -48,12 +48,17 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        mafFilter: types.optional(types.number, 0.1),
+        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
 
         /**
          * #property
          */
         showSidebarLabelsSetting: true,
+
+        /**
+         * #property
+         */
+        phasedMode: types.optional(types.string, 'none'),
       }),
     )
     .volatile(() => ({
@@ -77,6 +82,14 @@ export default function stateModelFactory(
        * #volatile
        */
       lineZoneHeight: 20,
+      /**
+       * #volatile
+       */
+      hasPhased: false,
+      /**
+       * #volatile
+       */
+      samplePloidy: undefined as undefined | Record<string, number>,
     }))
     .actions(self => ({
       /**
@@ -119,7 +132,7 @@ export default function stateModelFactory(
        * #action
        */
       setMafFilter(arg: number) {
-        self.mafFilter = arg
+        self.minorAlleleFrequencyFilter = arg
       },
       /**
        * #action
@@ -127,8 +140,31 @@ export default function stateModelFactory(
       setShowSidebarLabels(arg: boolean) {
         self.showSidebarLabelsSetting = arg
       },
+      /**
+       * #action
+       */
+      setPhasedMode(arg: string) {
+        self.phasedMode = arg
+      },
+      /**
+       * #action
+       */
+      setHasPhased(arg: boolean) {
+        self.hasPhased = arg
+      },
+      /**
+       * #action
+       */
+      setSamplePloidy(arg: Record<string, number>) {
+        if (!deepEqual(arg, self.samplePloidy)) {
+          self.samplePloidy = arg
+        }
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get preSources() {
         return self.layout.length ? self.layout : self.sourcesVolatile
       },
@@ -136,13 +172,38 @@ export default function stateModelFactory(
        * #getter
        */
       get sources() {
-        const sources = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
-        )
-        return this.preSources?.map(s => ({
-          ...sources[s.name],
-          ...s,
-        }))
+        if (this.preSources) {
+          const rows = []
+          const sources = Object.fromEntries(
+            self.sourcesVolatile?.map(s => [s.name, s]) || [],
+          )
+          for (const row of this.preSources) {
+            // make separate rows for each haplotype in phased mode
+            if (self.phasedMode === 'phasedOnly') {
+              const ploidy = self.samplePloidy?.[row.name]
+              if (ploidy) {
+                for (let i = 0; i < ploidy; i++) {
+                  rows.push({
+                    ...sources[row.name],
+                    ...row,
+                    label: `${row.name} HP${i}`,
+                    HP: i,
+                  })
+                }
+              }
+            }
+            // non-phased mode does not make separate rows
+            else {
+              rows.push({
+                ...sources[row.name],
+                ...row,
+                label: row.name,
+              })
+            }
+          }
+          return rows
+        }
+        return undefined
       },
     }))
     .views(self => {
@@ -178,9 +239,34 @@ export default function stateModelFactory(
                 self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
               },
             },
-
+            ...(self.hasPhased
+              ? [
+                  {
+                    label: 'Phased mode',
+                    type: 'subMenu',
+                    subMenu: [
+                      {
+                        label: 'Draw unphased (maps allele count to color)',
+                        type: 'radio',
+                        checked: self.phasedMode === 'none',
+                        onClick: () => {
+                          self.setPhasedMode('none')
+                        },
+                      },
+                      {
+                        label: 'Draw phased (split into haplotype rows)',
+                        checked: self.phasedMode === 'phasedOnly',
+                        type: 'radio',
+                        onClick: () => {
+                          self.setPhasedMode('phasedOnly')
+                        },
+                      },
+                    ],
+                  },
+                ]
+              : []),
             {
-              label: 'Minimum allele frequency',
+              label: 'Set minor allele frequency filter',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   MAFFilterDialog,
@@ -250,7 +336,8 @@ export default function stateModelFactory(
           ...superProps,
           notReady:
             superProps.notReady || !self.sources || !self.featuresVolatile,
-          mafFilter: self.mafFilter,
+          phasedMode: self.phasedMode,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           height: self.totalHeight,
           sources: self.sources,
         }
@@ -275,6 +362,7 @@ export default function stateModelFactory(
               const { getMultiVariantFeaturesAutorun } = await import(
                 '../getMultiVariantFeaturesAutorun'
               )
+
               getMultiVariantSourcesAutorun(self)
               getMultiVariantFeaturesAutorun(self)
             } catch (e) {

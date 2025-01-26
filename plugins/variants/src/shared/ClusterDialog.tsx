@@ -40,7 +40,7 @@ export default function HierarchicalCluster({
 }: {
   model: {
     sources?: Source[]
-    mafFilter?: number
+    minorAlleleFrequencyFilter?: number
     adapterConfig: AnyConfigurationModel
     setLayout: (arg: Source[]) => void
   }
@@ -61,7 +61,7 @@ export default function HierarchicalCluster({
           return
         }
         const { rpcManager } = getSession(model)
-        const { sources, mafFilter, adapterConfig } = model
+        const { sources, minorAlleleFrequencyFilter, adapterConfig } = model
         const sessionId = getRpcSessionId(model)
         const ret = (await rpcManager.call(
           sessionId,
@@ -69,7 +69,7 @@ export default function HierarchicalCluster({
           {
             regions: view.dynamicBlocks.contentBlocks,
             sources,
-            mafFilter,
+            minorAlleleFrequencyFilter,
             sessionId,
             adapterConfig,
           },

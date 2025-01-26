@@ -1,4 +1,3 @@
-// jbrowse
 import {
   SimpleFeature,
   getContainingView,
@@ -9,27 +8,23 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 
+import type { Source } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-export interface Source {
-  name: string
-  color?: string
-  group?: string
-  [key: string]: unknown
-}
 
 export function getMultiVariantFeaturesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   sources?: Source[]
-  mafFilter: number
+  minorAlleleFrequencyFilter: number
   statsReadyAndRegionNotTooLarge: boolean
   adapterProps: () => Record<string, unknown>
   setError: (error: unknown) => void
   setFeatures: (f: Feature[]) => void
   setMessage: (str: string) => void
+  setHasPhased: (arg: boolean) => void
+  setSamplePloidy: (arg: Record<string, number>) => void
 }) {
   addDisposer(
     self,
@@ -42,24 +37,30 @@ export function getMultiVariantFeaturesAutorun(self: {
           }
 
           const { rpcManager } = getSession(self)
-          const { sources, mafFilter, adapterConfig } = self
-          if (!sources) {
-            return
-          }
-          const sessionId = getRpcSessionId(self)
-          const features = (await rpcManager.call(
-            sessionId,
-            'MultiVariantGetSimplifiedFeatures',
-            {
-              regions: view.dynamicBlocks.contentBlocks,
-              sources,
-              mafFilter,
-              sessionId,
-              adapterConfig,
-            },
-          )) as SimpleFeatureSerialized[]
-          if (isAlive(self)) {
-            self.setFeatures(features.map(f => new SimpleFeature(f)))
+          const { sources, minorAlleleFrequencyFilter, adapterConfig } = self
+          if (sources) {
+            const sessionId = getRpcSessionId(self)
+            const { samplePloidy, hasPhased, features } =
+              (await rpcManager.call(
+                sessionId,
+                'MultiVariantGetSimplifiedFeatures',
+                {
+                  regions: view.dynamicBlocks.contentBlocks,
+                  sources,
+                  minorAlleleFrequencyFilter,
+                  sessionId,
+                  adapterConfig,
+                },
+              )) as {
+                samplePloidy: Record<string, number>
+                hasPhased: boolean
+                features: SimpleFeatureSerialized[]
+              }
+            if (isAlive(self)) {
+              self.setHasPhased(hasPhased)
+              self.setSamplePloidy(samplePloidy)
+              self.setFeatures(features.map(f => new SimpleFeature(f)))
+            }
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
