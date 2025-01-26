@@ -2,7 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { cleanup, fireEvent } from '@testing-library/react'
 
-// locals
 import { afterEach, beforeEach, test } from 'vitest'
 
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'

@@ -1,11 +1,16 @@
 import fs from 'fs'
+import { afterEach, expect, test } from 'vitest'
 
-import { render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 
 import SequencePanel from './SequencePanel'
 import { SequenceFeatureDetailsF } from './model'
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
+
+afterEach(() => {
+  cleanup()
+})
 
 const f = {
   start: 1200,

@@ -3,18 +3,18 @@ import React from 'react'
 
 import { Buffer } from 'buffer'
 
+import PluginManager from '@jbrowse/core/PluginManager'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import DefaultMenu from '@jbrowse/core/ui/Menu'
+import DefaultMenuButton from '@jbrowse/core/ui/MenuButton'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import PluginManager from '@jbrowse/core/PluginManager'
-import DefaultMenu from '@jbrowse/core/ui/Menu'
-import DefaultMenuButton from '@jbrowse/core/ui/MenuButton'
-import { render, waitFor } from '@testing-library/react'
 import { expect, vi } from 'vitest'
 
 

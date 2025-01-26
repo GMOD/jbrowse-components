@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`open up a widget 1`] = `
 <div>
@@ -27,7 +27,7 @@ exports[`open up a widget 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1pela2z-icon css-14500qs-MuiSvgIcon-root"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -54,7 +54,7 @@ exports[`open up a widget 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
+              class="MuiAccordionDetails-root css-1h6fokq-expansionPanelDetails css-1uc1gvv-MuiAccordionDetails-root"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
@@ -120,7 +120,7 @@ exports[`open up a widget 1`] = `
                 class="css-57ilie-container"
               >
                 <div
-                  class="MuiFormControl-root MuiFormControl-marginDense css-h2948o-MuiFormControl-root-formControl"
+                  class="MuiFormControl-root MuiFormControl-marginDense css-1x17dzq-formControl css-ylkp5u-MuiFormControl-root"
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"

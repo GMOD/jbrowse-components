@@ -1,6 +1,6 @@
 import { cleanup, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 import rangeParser from 'range-parser'
 import { afterEach, test, vi } from 'vitest'
 
@@ -64,10 +64,9 @@ vi.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
       }
       const { start, end } = range[0]!
       const len = end - start + 1
-      const buf = Buffer.alloc(len)
-      const { bytesRead } = await file.read(buf, 0, len, start)
+      const buf = await file.read(len, start)
       const stat = await file.stat()
-      return new Response(buf.slice(0, bytesRead), {
+      return new Response(buf, {
         status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
       })
