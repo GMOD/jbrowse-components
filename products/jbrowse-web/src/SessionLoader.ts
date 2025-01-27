@@ -325,8 +325,8 @@ const SessionLoader = types
     async fetchConfig() {
       // @ts-expect-error
       const path = window.__jbrowseConfigPath
-      const { hubURL, configPath = path || 'config.json' } = self
-      const shouldFetchConfig = hubURL ? configPath !== 'none' : true
+      const { configPath = path || 'config.json' } = self
+      const shouldFetchConfig = configPath !== 'none'
 
       // if ?config=none then we will not load the config, which is useful for
       // ?hubURL which may not need a config
