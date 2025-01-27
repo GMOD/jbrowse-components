@@ -130,13 +130,9 @@ export async function makeImage(
   // are located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
-  // @ts-expect-error
-  const drawingModifications = colorBy?.type === 'modifications'
-  // @ts-expect-error
-  const drawingMethylation = colorBy?.type === 'methylation'
-  const isolatedModification =
-    // @ts-expect-error
-    colorBy?.modifications?.isolatedModification
+  const drawingModifications = colorBy.type === 'modifications'
+  const drawingMethylation = colorBy.type === 'methylation'
+  const isolatedModification = colorBy.modifications?.isolatedModification
 
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of

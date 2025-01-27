@@ -1,4 +1,4 @@
-import type { ModificationTypeWithColor } from '../shared/types'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
@@ -16,4 +16,5 @@ export interface RenderArgsDeserializedWithFeatures
   ticks: { values: number[] }
   displayCrossHatches: boolean
   visibleModifications?: Record<string, ModificationTypeWithColor>
+  colorBy: ColorBy
 }

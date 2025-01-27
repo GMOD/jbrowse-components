@@ -326,7 +326,14 @@ const SessionLoader = types
       // @ts-expect-error
       const path = window.__jbrowseConfigPath
       const { hubURL, configPath = path || 'config.json' } = self
-      if (!hubURL) {
+      const shouldFetchConfig = hubURL ? configPath !== 'none' : true
+
+      // if ?config=none then we will not load the config, which is useful for
+      // ?hubURL which may not need a config
+      //
+      // however, in the rare case that you want hubs and a config (e.g. your
+      // config has plugins to load) then you can still have this too
+      if (shouldFetchConfig) {
         const text = await openLocation({
           uri:
             configPath +
@@ -536,13 +543,16 @@ const SessionLoader = types
                   this.decodeJb1StyleSession()
                 } else if (isEncodedSession) {
                   await this.decodeEncodedUrlSession()
-                } else if (isHubSession) {
-                  this.decodeHubSpec()
-                  self.setBlankSession(true)
                 } else if (isJsonSession) {
                   await this.decodeJsonUrlSession()
                 } else if (isLocalSession) {
                   await this.fetchSessionStorageSession()
+                } else if (isHubSession) {
+                  // this is later in the list: prioritiz local session of "hub
+                  // spec" since hub is left in URL even when there may be a
+                  // local session
+                  this.decodeHubSpec()
+                  self.setBlankSession(true)
                 } else if (sessionQuery) {
                   // if there was a sessionQuery and we don't recognize it
                   throw new Error('unrecognized session format')

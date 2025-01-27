@@ -11,10 +11,10 @@ export default function DeletePluginDialog({
   return (
     <Dialog
       open
+      title={`Remove ${plugin}`}
       onClose={() => {
         onClose()
       }}
-      title={`Remove ${plugin}`}
     >
       <DialogContent>
         <Typography>

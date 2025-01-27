@@ -1252,7 +1252,7 @@ export function localStorageSetItem(str: string, item: string) {
   }
 }
 
-export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
+export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
     max = Math.max(entry, max)
@@ -1260,7 +1260,7 @@ export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   return max
 }
 
-export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
+export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
     min = Math.min(entry, min)
@@ -1268,7 +1268,7 @@ export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   return min
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: Iterable<number>) {
   let sum = 0
   for (const entry of arr) {
     sum += entry
@@ -1407,6 +1407,18 @@ export async function fetchAndMaybeUnzip(
     : buf
 }
 
+export async function fetchAndMaybeUnzipText(
+  loc: GenericFilehandle,
+  opts?: BaseOptions,
+) {
+  const buffer = await fetchAndMaybeUnzip(loc, opts)
+  // 512MB  max chrome string length is 512MB
+  if (buffer.length > 536_870_888) {
+    throw new Error('Data exceeds maximum string length (512MB)')
+  }
+  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
+}
+
 // MIT https://github.com/inspect-js/is-object
 export function isObject(
   x: unknown,
@@ -1414,6 +1426,24 @@ export function isObject(
   return typeof x === 'object' && x !== null
 }
 
+export function localStorageGetNumber(key: string, defaultVal: number) {
+  return +(localStorageGetItem(key) ?? defaultVal)
+}
+
+export function localStorageGetBoolean(key: string, defaultVal: boolean) {
+  return Boolean(
+    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
+  )
+}
+
+export function testAdapter(
+  fileName: string,
+  regex: RegExp,
+  adapterHint: string | undefined,
+  expected: string,
+) {
+  return (regex.test(fileName) && !adapterHint) || adapterHint === expected
+}
 export {
   type Feature,
   type SimpleFeatureSerialized,

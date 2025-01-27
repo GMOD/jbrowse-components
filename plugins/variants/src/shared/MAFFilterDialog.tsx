@@ -22,14 +22,14 @@ const MAFFilterDialog = observer(function ({
   handleClose,
 }: {
   model: {
-    mafFilter?: number
+    minorAlleleFrequencyFilter?: number
     setMafFilter: (arg: number) => void
   }
   handleClose: () => void
 }) {
-  const { mafFilter = '' } = model
+  const { minorAlleleFrequencyFilter = '' } = model
   const { classes } = useStyles()
-  const [maf, setMaf] = useState(`${mafFilter}`)
+  const [maf, setMaf] = useState(`${minorAlleleFrequencyFilter}`)
 
   return (
     <Dialog open onClose={handleClose} title="Set minor allele frequency (MAF)">

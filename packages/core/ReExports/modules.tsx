@@ -17,6 +17,7 @@ import * as mxreact from 'mobx-react'
 import * as mst from 'mobx-state-tree'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
+import * as ReactDomClient from 'react-dom/client'
 import { makeStyles } from 'tss-react/mui'
 
 // material-ui lab
@@ -90,6 +91,7 @@ const Entries = {
   FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
   FormGroup: lazy(() => import('@mui/material/FormGroup')),
   Grid: lazy(() => import('@mui/material/Grid')),
+  Grid2: lazy(() => import('@mui/material/Grid2')),
   Grow: lazy(() => import('@mui/material/Grow')),
   Icon: lazy(() => import('@mui/material/Icon')),
   IconButton: lazy(() => import('@mui/material/IconButton')),
@@ -495,6 +497,7 @@ const libs = {
   react: React,
   'react/jsx-runtime': ReactJSXRuntime,
   'react-dom': ReactDom,
+  'react-dom/client': ReactDomClient,
   'mobx-react': mxreact,
   '@mui/x-data-grid': {
     useGridApiContext,

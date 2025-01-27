@@ -305,12 +305,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               subMenu: f[1],
             })),
 
-          {
-            label: 'Reverse view order',
-            onClick: () => {
-              self.reverseViewOrder()
-            },
-          },
+          ...(self.views.length > 1
+            ? [
+                {
+                  label: 'Reverse view order',
+                  onClick: () => {
+                    self.reverseViewOrder()
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Show intra-view links',
             type: 'checkbox',

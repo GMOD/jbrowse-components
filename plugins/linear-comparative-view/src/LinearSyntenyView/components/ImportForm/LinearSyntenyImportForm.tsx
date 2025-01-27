@@ -1,23 +1,17 @@
 import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
-import {
-  getSession,
-  isSessionWithAddTracks,
-  notEmpty,
-} from '@jbrowse/core/util'
+import { getSession, notEmpty } from '@jbrowse/core/util'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, Container, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import Spacer from './Spacer'
-import TrackSelector from './TrackSelectorUtil'
+import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
+import { doSubmit } from './doSubmit'
 
 import type { LinearSyntenyViewModel } from '../../model'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -33,8 +27,10 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 30,
   },
+
   flex: {
     display: 'flex',
+    gap: 90,
   },
   mb: {
     marginBottom: 10,
@@ -42,14 +38,17 @@ const useStyles = makeStyles()(theme => ({
   bg: {
     background: theme.palette.divider,
   },
-  fixedWidth: {
-    width: 700,
+  rightPanel: {
+    flexGrow: 11,
+  },
+  leftPanel: {
+    // proportionally smaller than right panel
+    flexGrow: 4,
+
+    // and don't shrink when right panel grows
+    flexShrink: 0,
   },
 }))
-
-type Conf = SnapshotIn<AnyConfigurationModel>
-type MaybeConf = Conf | undefined
-type MaybeString = string | undefined
 
 const LinearSyntenyViewImportForm = observer(function ({
   model,
@@ -66,19 +65,12 @@ const LinearSyntenyViewImportForm = observer(function ({
     defaultAssemblyName,
   ])
   const [error, setError] = useState<unknown>()
-  const [userOpenedSyntenyTracksToShow, setUserOpenedSyntenyTracksToShow] =
-    useState<MaybeConf[]>([])
-  const [
-    preConfiguredSyntenyTracksToShow,
-    setPreConfiguredSyntenyTracksToShow,
-  ] = useState<MaybeString[]>([])
 
   return (
     <Container className={classes.importFormContainer}>
       {error ? <ErrorMessage error={error} /> : null}
       <div className={classes.flex}>
-        <Spacer />
-        <div>
+        <div className={classes.leftPanel}>
           <div className={classes.mb}>
             Select assemblies for linear synteny view
           </div>
@@ -89,18 +81,9 @@ const LinearSyntenyViewImportForm = observer(function ({
               <IconButton
                 disabled={selectedAssemblyNames.length <= 2}
                 onClick={() => {
+                  model.importFormRemoveRow(idx)
                   setSelectedAssemblyNames(
                     selectedAssemblyNames
-                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                      .filter(notEmpty),
-                  )
-                  setPreConfiguredSyntenyTracksToShow(
-                    preConfiguredSyntenyTracksToShow
-                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                      .filter(notEmpty),
-                  )
-                  setUserOpenedSyntenyTracksToShow(
-                    userOpenedSyntenyTracksToShow
                       .map((asm, idx2) => (idx2 === idx ? undefined : asm))
                       .filter(notEmpty),
                   )
@@ -125,6 +108,7 @@ const LinearSyntenyViewImportForm = observer(function ({
               />
               {idx !== selectedAssemblyNames.length - 1 ? (
                 <IconButton
+                  data-testid="synbutton"
                   className={cx(
                     classes.synbutton,
                     idx === selectedRow ? classes.bg : undefined,
@@ -160,8 +144,6 @@ const LinearSyntenyViewImportForm = observer(function ({
                   try {
                     setError(undefined)
                     await doSubmit({
-                      userOpenedSyntenyTracksToShow,
-                      preConfiguredSyntenyTracksToShow,
                       selectedAssemblyNames,
                       model,
                     })
@@ -179,87 +161,21 @@ const LinearSyntenyViewImportForm = observer(function ({
           </div>
         </div>
 
-        <Spacer />
-        <div className={classes.fixedWidth}>
+        <div className={classes.rightPanel}>
           <div>
             Synteny dataset to display between row {selectedRow + 1} and{' '}
             {selectedRow + 2}
           </div>
-          <TrackSelector
+          <ImportSyntenyTrackSelector
             model={model}
-            preConfiguredSyntenyTrack={
-              preConfiguredSyntenyTracksToShow[selectedRow]
-            }
+            selectedRow={selectedRow}
             assembly1={selectedAssemblyNames[selectedRow]!}
             assembly2={selectedAssemblyNames[selectedRow + 1]!}
-            setPreConfiguredSyntenyTrack={arg => {
-              const clone = [...preConfiguredSyntenyTracksToShow]
-              clone[selectedRow] = arg
-              setPreConfiguredSyntenyTracksToShow(clone)
-            }}
-            setUserOpenedSyntenyTrack={arg => {
-              const clone = [...userOpenedSyntenyTracksToShow]
-              clone[selectedRow] = arg
-              setUserOpenedSyntenyTracksToShow(clone)
-            }}
           />
         </div>
       </div>
-      <Spacer />
     </Container>
   )
 })
-
-async function doSubmit({
-  selectedAssemblyNames,
-  model,
-  preConfiguredSyntenyTracksToShow,
-  userOpenedSyntenyTracksToShow,
-}: {
-  selectedAssemblyNames: string[]
-  model: LinearSyntenyViewModel
-  userOpenedSyntenyTracksToShow: Conf[]
-  preConfiguredSyntenyTracksToShow: (string | undefined)[]
-}) {
-  const session = getSession(model)
-  const { assemblyManager } = session
-
-  model.setViews(
-    await Promise.all(
-      selectedAssemblyNames.map(async assemblyName => {
-        const asm = await assemblyManager.waitForAssembly(assemblyName)
-        if (!asm) {
-          throw new Error(`Assembly "${assemblyName}" failed to load`)
-        }
-        return {
-          type: 'LinearGenomeView' as const,
-          bpPerPx: 1,
-          offsetPx: 0,
-          hideHeader: true,
-          displayedRegions: asm.regions,
-        }
-      }),
-    ),
-  )
-  for (const view of model.views) {
-    view.setWidth(model.width)
-    view.showAllRegions()
-  }
-  if (!isSessionWithAddTracks(session)) {
-    session.notify("Can't add tracks", 'warning')
-  } else {
-    userOpenedSyntenyTracksToShow.map((f, idx) => {
-      if (f) {
-        session.addTrackConf(f)
-        model.toggleTrack(f.trackId, idx)
-      }
-    })
-  }
-  preConfiguredSyntenyTracksToShow.map((f, idx) => {
-    if (f) {
-      model.showTrack(f, idx)
-    }
-  })
-}
 
 export default LinearSyntenyViewImportForm

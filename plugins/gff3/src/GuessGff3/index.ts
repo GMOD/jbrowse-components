@@ -1,3 +1,4 @@
+import { testAdapter } from '@jbrowse/core/util'
 import {
   getFileName,
   makeIndex,
@@ -17,13 +18,18 @@ export default function GuessGff3F(pluginManager: PluginManager) {
         index?: FileLocation,
         adapterHint?: string,
       ) => {
-        const regexGuess = /\.gff3?\.b?gz$/i
-        const adapterName = 'Gff3TabixAdapter'
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
-        if (regexGuess.test(fileName) || adapterHint === adapterName) {
+        if (
+          testAdapter(
+            fileName,
+            /\.gff3?\.b?gz$/i,
+            adapterHint,
+            'Gff3TabixAdapter',
+          )
+        ) {
           return {
-            type: adapterName,
+            type: 'Gff3TabixAdapter',
             bamLocation: file,
             gffGzLocation: file,
             index: {
@@ -31,34 +37,16 @@ export default function GuessGff3F(pluginManager: PluginManager) {
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }
+        } else if (
+          testAdapter(fileName, /\.gff3?$/i, adapterHint, 'Gff3Adapter')
+        ) {
+          return {
+            type: 'Gff3Adapter',
+            gffLocation: file,
+          }
+        } else {
+          return adapterGuesser(file, index, adapterHint)
         }
-        return adapterGuesser(file, index, adapterHint)
-      }
-    },
-  )
-
-  pluginManager.addToExtensionPoint(
-    'Core-guessAdapterForLocation',
-    (adapterGuesser: AdapterGuesser) => {
-      return (
-        file: FileLocation,
-        index?: FileLocation,
-        adapterHint?: string,
-      ) => {
-        const regexGuess = /\.gff3?$/i
-        const adapterName = 'Gff3Adapter'
-        const fileName = getFileName(file)
-        const obj = {
-          type: adapterName,
-          gffLocation: file,
-        }
-        if (regexGuess.test(fileName) && !adapterHint) {
-          return obj
-        }
-        if (adapterHint === adapterName) {
-          return obj
-        }
-        return adapterGuesser(file, index, adapterHint)
       }
     },
   )

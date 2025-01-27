@@ -1,4 +1,4 @@
-import idMaker from '../util/idMaker'
+import { adapterConfigCacheKey } from './util'
 
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationSchemaType } from '../configuration'
@@ -6,10 +6,6 @@ import type { AnyDataAdapter } from './BaseAdapter'
 import type { SnapshotIn } from 'mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
-
-export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
-  return `${idMaker(conf)}`
-}
 
 interface AdapterCacheEntry {
   dataAdapter: AnyDataAdapter

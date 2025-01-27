@@ -10,11 +10,11 @@ export default function InfoDialog({
 }) {
   return (
     <Dialog
+      open={open}
+      title="Info about session URLs"
       onClose={() => {
         onClose()
       }}
-      open={open}
-      title="Info about session URLs"
     >
       <DialogContent>
         <DialogContentText>

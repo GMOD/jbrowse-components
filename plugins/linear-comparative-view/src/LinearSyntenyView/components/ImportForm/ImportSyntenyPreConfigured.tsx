@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorMessage } from '@jbrowse/core/ui'
@@ -12,18 +12,17 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(function ({
   model,
+  selectedRow,
   assembly1,
   assembly2,
-  preConfiguredSyntenyTrack,
-  setPreConfiguredSyntenyTrack,
 }: {
   model: LinearSyntenyViewModel
+  selectedRow: number
   assembly1: string
   assembly2: string
-  preConfiguredSyntenyTrack: string | undefined
-  setPreConfiguredSyntenyTrack: (arg: string) => void
 }) {
   const session = getSession(model)
+  const { importFormSyntenyTrackSelections } = model
   const { tracks = [], sessionTracks = [] } = session
   const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
   const filteredTracks = allTracks.filter(track => {
@@ -35,15 +34,14 @@ const ImportSyntenyTrackSelector = observer(function ({
     )
   })
   const resetTrack = filteredTracks[0]?.trackId || ''
-  const [value, setValue] = useState(resetTrack)
-
+  const r = importFormSyntenyTrackSelections[selectedRow]
+  const value = r?.type === 'preConfigured' ? r.value : undefined
   useEffect(() => {
-    // sets track data in a useEffect because the initial load is needed as
-    // well as onChange's to the select box
-    if (value !== preConfiguredSyntenyTrack) {
-      setPreConfiguredSyntenyTrack(value)
-    }
-  }, [value, preConfiguredSyntenyTrack, setPreConfiguredSyntenyTrack])
+    model.setImportFormSyntenyTrack(selectedRow, {
+      type: 'preConfigured',
+      value: resetTrack,
+    })
+  }, [assembly2, assembly1, resetTrack, selectedRow, model])
   return (
     <Paper style={{ padding: 12 }}>
       <Typography>
@@ -51,11 +49,14 @@ const ImportSyntenyTrackSelector = observer(function ({
         you hit "Launch".
       </Typography>
 
-      {filteredTracks.length ? (
+      {value && filteredTracks.map(r => r.trackId).includes(value) ? (
         <Select
           value={value}
           onChange={event => {
-            setValue(event.target.value)
+            model.setImportFormSyntenyTrack(selectedRow, {
+              type: 'preConfigured',
+              value: event.target.value,
+            })
           }}
         >
           {filteredTracks.map(track => (

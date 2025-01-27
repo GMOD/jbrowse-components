@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 

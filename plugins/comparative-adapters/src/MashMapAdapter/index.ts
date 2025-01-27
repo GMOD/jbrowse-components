@@ -12,7 +12,7 @@ export default function MashMapAdapterF(pluginManager: PluginManager) {
         displayName: 'MashMap adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () => import('./MashMapAdapter').then(r => r.default),
       }),

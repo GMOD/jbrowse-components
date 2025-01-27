@@ -60,6 +60,7 @@ export function generateUcscTranscript(data: TranscriptFeat) {
         },
         {
           type: 'CDS',
+          phase: 0,
           start: thickStart,
           end,
           refName,
@@ -69,6 +70,7 @@ export function generateUcscTranscript(data: TranscriptFeat) {
       // CDS
       subfeatures.push({
         type: 'CDS',
+        phase: 0,
         start,
         end,
         refName,
@@ -84,6 +86,7 @@ export function generateUcscTranscript(data: TranscriptFeat) {
         },
         {
           type: 'CDS',
+          phase: 0,
           start: thickStart,
           end: thickEnd,
           refName,
@@ -100,6 +103,7 @@ export function generateUcscTranscript(data: TranscriptFeat) {
       subfeatures.push(
         {
           type: 'CDS',
+          phase: 0,
           start,
           end: thickEnd,
           refName,

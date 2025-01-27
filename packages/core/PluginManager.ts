@@ -322,18 +322,18 @@ export default class PluginManager {
       }
 
       if (typeRecord.has(newElement.name)) {
-        throw new Error(
+        console.warn(
           `${groupName} ${newElement.name} already registered, cannot register it again`,
         )
+      } else {
+        typeRecord.add(
+          newElement.name,
+          this.evaluateExtensionPoint(
+            'Core-extendPluggableElement',
+            newElement,
+          ) as PluggableElementType,
+        )
       }
-
-      typeRecord.add(
-        newElement.name,
-        this.evaluateExtensionPoint(
-          'Core-extendPluggableElement',
-          newElement,
-        ) as PluggableElementType,
-      )
     })
 
     return this

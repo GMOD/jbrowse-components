@@ -7,6 +7,7 @@ import {
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { Button, TextField } from '@mui/material'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -39,14 +40,12 @@ const PasteConfigAddTrackWorkflow = observer(function ({
         multiline
         rows={10}
         value={val}
+        placeholder="Paste track config or array of track configs in JSON format"
+        variant="outlined"
+        className={classes.textbox}
         onChange={event => {
           setVal(event.target.value)
         }}
-        placeholder={
-          'Paste track config or array of track configs in JSON format'
-        }
-        variant="outlined"
-        className={classes.textbox}
       />
       <Button
         variant="contained"
@@ -61,11 +60,16 @@ const PasteConfigAddTrackWorkflow = observer(function ({
               isSessionWithAddTracks(session) &&
               isSessionModelWithWidgets(session)
             ) {
-              confs.forEach(c => {
-                session.addTrackConf(c)
+              transaction(() => {
+                confs.forEach(c => {
+                  session.addTrackConf(c)
+                })
+                confs.forEach(c => {
+                  model.view.showTrack(c.trackId)
+                })
+                model.clearData()
               })
-              confs.forEach(c => model.view.showTrack(c.trackId))
-              model.clearData()
+
               session.hideWidget(model)
             }
           } catch (e) {

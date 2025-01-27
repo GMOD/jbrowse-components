@@ -2,48 +2,39 @@ import { useEffect, useState } from 'react'
 
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
-import ImportCustomTrack from './AddCustomTrack'
-import ImportSyntenyTrackSelector from './TrackSelector'
+import ImportCustomTrack from './ImportSyntenyOpenCustomTrack'
+import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured'
 
 import type { LinearSyntenyViewModel } from '../../model'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
 
-type Conf = SnapshotIn<AnyConfigurationModel>
-
-export default function TrackSelector({
+export default function ImportSyntenyTrackSelectorArea({
   model,
   assembly1,
   assembly2,
-  preConfiguredSyntenyTrack,
-  setPreConfiguredSyntenyTrack,
-  setUserOpenedSyntenyTrack,
+  selectedRow,
 }: {
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
-  preConfiguredSyntenyTrack: string | undefined
-  setUserOpenedSyntenyTrack: (arg: Conf) => void
-  setPreConfiguredSyntenyTrack: (arg?: string) => void
+  selectedRow: number
 }) {
   const [choice, setChoice] = useState('tracklist')
 
   useEffect(() => {
     if (choice === 'none') {
-      setPreConfiguredSyntenyTrack(undefined)
-      setUserOpenedSyntenyTrack(undefined)
+      model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
     }
-  }, [choice, setPreConfiguredSyntenyTrack, setUserOpenedSyntenyTrack])
+  }, [choice, model, selectedRow])
   return (
     <div>
       <FormControl>
         <RadioGroup
           row
           value={choice}
+          aria-labelledby="group-label"
           onChange={event => {
             setChoice(event.target.value)
           }}
-          aria-labelledby="group-label"
         >
           <FormControlLabel value="none" control={<Radio />} label="None" />
           <FormControlLabel
@@ -60,19 +51,18 @@ export default function TrackSelector({
       </FormControl>
       {choice === 'custom' ? (
         <ImportCustomTrack
-          setUserOpenedSyntenyTrack={setUserOpenedSyntenyTrack}
+          model={model}
+          selectedRow={selectedRow}
           assembly2={assembly2}
           assembly1={assembly1}
         />
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
-          key={`${assembly1}-${assembly2}`}
           model={model}
+          selectedRow={selectedRow}
           assembly1={assembly1}
           assembly2={assembly2}
-          preConfiguredSyntenyTrack={preConfiguredSyntenyTrack}
-          setPreConfiguredSyntenyTrack={setPreConfiguredSyntenyTrack}
         />
       ) : null}
     </div>

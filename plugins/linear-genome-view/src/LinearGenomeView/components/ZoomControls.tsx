@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
-import { IconButton, Slider } from '@mui/material'
+import { IconButton, Slider, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -15,7 +17,7 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
   },
   slider: {
-    width: 70,
+    width: 100,
     color: theme.palette.text.secondary,
   },
 }))
@@ -31,19 +33,23 @@ const ZoomControls = observer(function ({
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
   }, [bpPerPx])
-
+  const zoomInDisabled = bpPerPx <= minBpPerPx + 0.0001
+  const zoomOutDisabled = bpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
-      <IconButton
-        data-testid="zoom_out"
-        onClick={() => {
-          model.zoom(bpPerPx * 2)
-        }}
-        disabled={bpPerPx >= maxBpPerPx - 0.0001}
-        size="large"
-      >
-        <ZoomOut />
-      </IconButton>
+      <Tooltip title="Zoom out 2x">
+        <span>
+          <IconButton
+            data-testid="zoom_out"
+            disabled={zoomOutDisabled}
+            onClick={() => {
+              model.zoom(bpPerPx * 2)
+            }}
+          >
+            <ZoomOut />
+          </IconButton>
+        </span>
+      </Tooltip>
 
       <Slider
         size="small"
@@ -51,21 +57,74 @@ const ZoomControls = observer(function ({
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
+        onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
         onChange={(_, val) => {
           setValue(val as number)
         }}
-        onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
       />
-      <IconButton
-        data-testid="zoom_in"
-        onClick={() => {
-          model.zoom(model.bpPerPx / 2)
-        }}
-        disabled={bpPerPx <= minBpPerPx + 0.0001}
-        size="large"
+      <Tooltip title="Zoom in 2x">
+        <span>
+          <IconButton
+            data-testid="zoom_in"
+            disabled={zoomInDisabled}
+            onClick={() => {
+              model.zoom(model.bpPerPx / 2)
+            }}
+          >
+            <ZoomIn />
+          </IconButton>
+        </span>
+      </Tooltip>
+
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Zoom in 2x',
+            icon: ZoomIn,
+            onClick: () => {
+              model.zoom(model.bpPerPx / 2)
+            },
+          },
+          {
+            label: 'Zoom in 15x',
+            icon: ZoomIn,
+            onClick: () => {
+              model.zoom(model.bpPerPx / 15)
+            },
+          },
+          {
+            label: 'Zoom in 100x',
+            icon: ZoomIn,
+            onClick: () => {
+              model.zoom(model.bpPerPx / 100)
+            },
+          },
+          {
+            label: 'Zoom out 2x',
+            icon: ZoomOut,
+            onClick: () => {
+              model.zoom(model.bpPerPx * 2)
+            },
+          },
+          {
+            label: 'Zoom out 15x',
+
+            icon: ZoomOut,
+            onClick: () => {
+              model.zoom(model.bpPerPx * 15)
+            },
+          },
+          {
+            label: 'Zoom out 100x',
+            icon: ZoomOut,
+            onClick: () => {
+              model.zoom(model.bpPerPx * 100)
+            },
+          },
+        ]}
       >
-        <ZoomIn />
-      </IconButton>
+        <MoreVert />
+      </CascadingMenuButton>
     </div>
   )
 })

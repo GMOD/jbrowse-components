@@ -91,6 +91,29 @@
       }
     },
     {
+      "name": "hs1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "P6R5xbRqRr3",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chromAlias.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
       "name": "chm13v2.0",
       "sequence": {
         "type": "ReferenceSequenceTrack",
@@ -1140,7 +1163,6 @@
         }
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
@@ -1797,7 +1819,6 @@
         }
       }
     },
-
     {
       "type": "QuantitativeTrack",
       "category": ["Mappability"],
@@ -3799,6 +3820,20 @@
     },
     {
       "type": "SyntenyTrack",
+      "trackId": "hg38ToHs1.over.chain.gz-1645073157673",
+      "name": "hg38ToHs1.over.chain.gz",
+      "assemblyNames": ["hg38", "hs1"],
+      "adapter": {
+        "type": "ChainAdapter",
+        "assemblyNames": ["hs1", "hg38"],
+        "chainLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/liftOver/hg38ToHs1.over.chain.gz"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
       "trackId": "grch38-chm13v2.paf",
       "name": "grch38-chm13v2.paf",
       "adapter": {
@@ -4632,8 +4667,14 @@
       "type": "VariantTrack",
       "trackId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf",
       "name": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf",
+      "metadata": {
+        "samples": "The population codes were manually downloaded from internationalgenome.org, filtered and sorted for samples that have a population code"
+      },
       "adapter": {
         "type": "VcfTabixAdapter",
+        "samplesTsvLocation": {
+          "uri": "1000g.sorted.csv.gz"
+        },
         "vcfGzLocation": {
           "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz",
           "locationType": "UriLocation"
@@ -4667,6 +4708,19 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chm13v2.0_rmsk",
+      "name": "chm13v2.0_rmsk",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg1"]
     }
   ],
   "connections": [],

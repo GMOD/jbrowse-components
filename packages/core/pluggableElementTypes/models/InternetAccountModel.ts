@@ -217,6 +217,7 @@ export const InternetAccount = types
       return {
         ...init,
         headers: new Headers({
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
           ...init?.headers,
           ...(token
             ? {

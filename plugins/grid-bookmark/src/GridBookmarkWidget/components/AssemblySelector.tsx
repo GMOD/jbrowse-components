@@ -31,19 +31,20 @@ const AssemblySelector = observer(function ({
         multiple
         value={selectedAssemblies}
         onChange={event => {
-          model.setSelectedAssemblies([...event.target.value])
+          model.setSelectedAssemblies(
+            typeof event.target.value === 'string'
+              ? [event.target.value]
+              : event.target.value,
+          )
         }}
         input={<OutlinedInput label={label} />}
         renderValue={selected => selected.join(', ')}
       >
         <MenuItem
           onClickCapture={event => {
-            // onClickCapture allows us to avoid the parent Select onChange from triggering
-            if (isAllSelected) {
-              model.setSelectedAssemblies([])
-            } else {
-              model.setSelectedAssemblies(undefined)
-            }
+            // onClickCapture allows us to avoid the parent Select onChange
+            // from triggering
+            model.setSelectedAssemblies(isAllSelected ? [] : undefined)
             event.preventDefault()
           }}
         >

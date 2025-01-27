@@ -57,6 +57,7 @@ const PluginStoreWidget = observer(function ({
 }) {
   const { classes } = useStyles()
   const { plugins, error } = useFetchPlugins()
+  const { filterText } = model
   const session = getSession(model)
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
@@ -94,7 +95,7 @@ const PluginStoreWidget = observer(function ({
       )}
       <TextField
         label="Filter plugins"
-        value={model.filterText}
+        value={filterText}
         onChange={event => {
           model.setFilterText(event.target.value)
         }}
@@ -135,15 +136,12 @@ const PluginStoreWidget = observer(function ({
           <Typography color="error">{`${error}`}</Typography>
         ) : plugins ? (
           plugins
-            .filter(plugin => {
-              // If plugin only has cjsUrl, don't display outside desktop
-              return (
+            .filter(
+              plugin =>
+                // If plugin only has cjsUrl, don't display outside desktop
                 !(isElectron && plugin.cjsUrl) &&
-                plugin.name
-                  .toLowerCase()
-                  .includes(model.filterText.toLowerCase())
-              )
-            })
+                plugin.name.toLowerCase().includes(filterText.toLowerCase()),
+            )
             .map(plugin => (
               <PluginCard key={plugin.name} plugin={plugin} model={model} />
             ))

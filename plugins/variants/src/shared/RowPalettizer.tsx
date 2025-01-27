@@ -1,7 +1,9 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { Button } from '@mui/material'
 
-import { type Source, randomColor } from '../util'
+import { randomColor } from '../util'
+
+import type { Source } from '../types'
 
 export default function RowPalettizer({
   setCurrLayout,
@@ -11,41 +13,54 @@ export default function RowPalettizer({
   setCurrLayout: (arg: Source[]) => void
 }) {
   return (
-    <div>
+    <div style={{ display: 'flex', gap: 4 }}>
+      Create color palette based on...
       {Object.keys(currLayout[0] ?? [])
         .filter(f => f !== 'name' && f !== 'color')
-        .map(r => {
-          return (
-            <Button
-              key={r}
-              onClick={() => {
-                const map = new Map<string, number>()
-                for (const row of currLayout) {
-                  const val = map.get(row[r] as string)
-                  if (!val) {
-                    map.set(row[r] as string, 1)
-                  } else {
-                    map.set(row[r] as string, val + 1)
-                  }
+        .map(r => (
+          <Button
+            key={r}
+            variant="contained"
+            color="inherit"
+            onClick={() => {
+              const map = new Map<string, number>()
+              for (const row of currLayout) {
+                const val = map.get(row[r] as string)
+                if (!val) {
+                  map.set(row[r] as string, 1)
+                } else {
+                  map.set(row[r] as string, val + 1)
                 }
-                const ret = Object.fromEntries(
-                  [...map.entries()]
-                    .sort((a, b) => a[1] - b[1])
-                    .map((r, idx) => [r[0], set1[idx] || randomColor(r[0])]),
-                )
+              }
+              const ret = Object.fromEntries(
+                [...map.entries()]
+                  .sort((a, b) => a[1] - b[1])
+                  .map((r, idx) => [r[0], set1[idx] || randomColor(r[0])]),
+              )
 
-                setCurrLayout(
-                  currLayout.map(row => ({
-                    ...row,
-                    color: ret[row[r] as string],
-                  })),
-                )
-              }}
-            >
-              Palettize {r}
-            </Button>
+              setCurrLayout(
+                currLayout.map(row => ({
+                  ...row,
+                  color: ret[row[r] as string],
+                })),
+              )
+            }}
+          >
+            {r}
+          </Button>
+        ))}
+      <Button
+        onClick={() => {
+          setCurrLayout(
+            currLayout.map(row => ({
+              ...row,
+              color: undefined,
+            })),
           )
-        })}
+        }}
+      >
+        Clear colors
+      </Button>
     </div>
   )
 }

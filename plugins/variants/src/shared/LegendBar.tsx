@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import ColorLegend from './ColorLegend'
 
-import type { Source } from '../util'
+import type { Source } from '../types'
 
 interface ReducedModel {
   scrollTop: number
@@ -13,6 +13,7 @@ interface ReducedModel {
   sources?: Source[]
   canDisplayLabels: boolean
   height: number
+  samplePloidy?: Record<string, number>
   id: string
 }
 
@@ -69,7 +70,7 @@ export const LegendBar = observer(function (props: {
         model={model}
         labelWidth={Math.max(
           ...sources
-            .map(s => measureText(s.name, svgFontSize) + 10)
+            .map(s => measureText(s.label, svgFontSize) + 10)
             .map(width => (canDisplayLabels ? width : 20)),
         )}
       />
