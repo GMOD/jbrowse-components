@@ -82,7 +82,7 @@ function CascadingSubmenu({
   })
   return (
     <>
-      <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
+      <MenuItem {...bindFocus(popupState)}>
         {Icon ? (
           <ListItemIcon>
             <Icon />
