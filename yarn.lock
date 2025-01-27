@@ -4118,7 +4118,7 @@
     react-dom "^16.8.0 || ^17.0.0 || ^18.0.0"
     ts-dedent "^2.0.0"
 
-"@storybook/addon-essentials@~8.5.2":
+"@storybook/addon-essentials@^8.5.2":
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/@storybook/addon-essentials/-/addon-essentials-8.5.2.tgz#f92dcc55b00a5a7c90da4b362c109b4b24596995"
   integrity sha512-MfojJKxDg0bnjOE0MfLSaPweAud1Esjaf1D9M8EYnpeFnKGZApcGJNRpHCDiHrS5BMr8hHa58RDVc7ObFTI4Dw==
@@ -4311,7 +4311,7 @@
   resolved "https://registry.yarnpkg.com/@storybook/react-dom-shim/-/react-dom-shim-8.5.2.tgz#4abf4d40c714ade13fb5e3ef3790693c04f0dcb5"
   integrity sha512-lt7XoaeWI8iPlWnWzIm/Wam9TpRFhlqP0KZJoKwDyHiCByqkeMrw5MJREyWq626nf34bOW8D6vkuyTzCHGTxKg==
 
-"@storybook/react-webpack5@~8.5.2":
+"@storybook/react-webpack5@^8.5.2":
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/@storybook/react-webpack5/-/react-webpack5-8.5.2.tgz#bb4871dc84ba1b45adad1418ce481b9a5731a801"
   integrity sha512-OrHaOSaabqOJ3433B0Ea5gVhsR1WaZRs49Y+S/z33VX9iILlougXVx9zNPoeZzgDSG4xEEn2uimFpjjcLLkWzA==
@@ -15011,7 +15011,7 @@ statuses@2.0.1:
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==
 
-storybook@~8.5.2:
+storybook@^8.5.2:
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/storybook/-/storybook-8.5.2.tgz#8d71481c019510c9ed1bdb6c1593d965be3826b6"
   integrity sha512-pf84emQ7Pd5jBdT2gzlNs4kRaSI3pq0Lh8lSfV+YqIVXztXIHU+Lqyhek2Lhjb7btzA1tExrhJrgQUsIji7i7A==
