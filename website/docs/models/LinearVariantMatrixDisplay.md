@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 extends
 
-- [LinearBareDisplay](../linearbaredisplay)
+- [MultiVariantBaseModel](../multivariantbasemodel)
 
 ### LinearVariantMatrixDisplay - Properties
 
@@ -35,66 +35,16 @@ ISimpleType<"LinearVariantMatrixDisplay">
 type: types.literal('LinearVariantMatrixDisplay')
 ```
 
-#### property: layout
-
-```js
-// type signature
-IOptionalIType<IType<Source[], Source[], Source[]>, [undefined]>
-// code
-layout: types.optional(types.frozen<Source[]>(), [])
-```
-
-#### property: configuration
-
-```js
-// type signature
-AnyConfigurationSchemaType
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: minorAlleleFrequencyFilter
+#### property: rowHeightSetting
 
 ```js
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minorAlleleFrequencyFilter: types.optional(types.number, 0.1)
-```
-
-#### property: showSidebarLabelsSetting
-
-```js
-// type signature
-true
-// code
-showSidebarLabelsSetting: true
-```
-
-#### property: phasedMode
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-phasedMode: types.optional(types.string, 'none')
+rowHeightSetting: types.optional(types.number, 1)
 ```
 
 ### LinearVariantMatrixDisplay - Getters
-
-#### getter: preSources
-
-```js
-// type
-Source[]
-```
-
-#### getter: sources
-
-```js
-// type
-any[]
-```
 
 #### getter: blockType
 
@@ -126,20 +76,6 @@ boolean
 
 ### LinearVariantMatrixDisplay - Methods
 
-#### method: adapterProps
-
-```js
-// type signature
-adapterProps: () => any
-```
-
-#### method: trackMenuItems
-
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
-```
-
 #### method: renderProps
 
 ```js
@@ -148,76 +84,6 @@ renderProps: () => any
 ```
 
 ### LinearVariantMatrixDisplay - Actions
-
-#### action: setFeatures
-
-```js
-// type signature
-setFeatures: (f: Feature[]) => void
-```
-
-#### action: setLayout
-
-```js
-// type signature
-setLayout: (layout: Source[]) => void
-```
-
-#### action: clearLayout
-
-```js
-// type signature
-clearLayout: () => void
-```
-
-#### action: setSourcesLoading
-
-```js
-// type signature
-setSourcesLoading: (str: string) => void
-```
-
-#### action: setSources
-
-```js
-// type signature
-setSources: (sources: Source[]) => void
-```
-
-#### action: setMafFilter
-
-```js
-// type signature
-setMafFilter: (arg: number) => void
-```
-
-#### action: setShowSidebarLabels
-
-```js
-// type signature
-setShowSidebarLabels: (arg: boolean) => void
-```
-
-#### action: setPhasedMode
-
-```js
-// type signature
-setPhasedMode: (arg: string) => void
-```
-
-#### action: setHasPhased
-
-```js
-// type signature
-setHasPhased: (arg: boolean) => void
-```
-
-#### action: setSamplePloidy
-
-```js
-// type signature
-setSamplePloidy: (arg: Record<string, number>) => void
-```
 
 #### action: renderSvg
 

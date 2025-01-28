@@ -31,6 +31,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         minorAlleleFrequencyFilter: types.optional(types.number, 0),
+        /**
+         * #property
+         */
+        autoHeight: false,
       }),
     )
     .views(() => ({

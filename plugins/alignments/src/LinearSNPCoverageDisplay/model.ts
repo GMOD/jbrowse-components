@@ -57,7 +57,7 @@ function stateModelFactory(
         /**
          * #property
          */
-        showIndicators: types.maybe(types.boolean),
+        showInterbaseIndicators: types.maybe(types.boolean),
         /**
          * #property
          */
@@ -159,17 +159,15 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
-          const {
-            showArcs: showArcs,
-            showInterbaseCounts,
-            showIndicators: showIndicators,
-          } = self
+          const { showArcs, showInterbaseCounts, showInterbaseIndicators } =
+            self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
               showInterbaseCounts:
                 showInterbaseCounts ?? configBlob.showInterbaseCounts,
-              showIndicators: showIndicators ?? configBlob.showIndicators,
+              showInterbaseIndicators:
+                showInterbaseIndicators ?? configBlob.showInterbaseIndicators,
               showArcs: showArcs ?? configBlob.showArcs,
             },
             getEnv(self),
@@ -195,10 +193,10 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get showIndicatorsSetting() {
+        get showInterbaseIndicatorsSetting() {
           return (
-            self.showIndicators ??
-            readConfObject(this.rendererConfig, 'showIndicators')
+            self.showInterbaseIndicators ??
+            readConfObject(this.rendererConfig, 'showInterbaseIndicators')
           )
         },
 
@@ -238,8 +236,8 @@ function stateModelFactory(
       /**
        * #action
        */
-      setShowIndicators(arg: boolean) {
-        self.showIndicators = arg
+      setShowInterbaseIndicators(arg: boolean) {
+        self.showInterbaseIndicators = arg
       },
       /**
        * #action
@@ -368,9 +366,11 @@ function stateModelFactory(
               label: 'Show insertion/clipping indicators',
               icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.showIndicatorsSetting,
+              checked: self.showInterbaseIndicatorsSetting,
               onClick: () => {
-                self.setShowIndicators(!self.showIndicatorsSetting)
+                self.setShowInterbaseIndicators(
+                  !self.showInterbaseIndicatorsSetting,
+                )
               },
             },
             {

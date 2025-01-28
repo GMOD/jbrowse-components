@@ -68,7 +68,7 @@ export default function MultiVariantBaseModelF(
          * #property
          * used only if autoHeight is false
          */
-        rowHeightSetting: types.optional(types.number, 1),
+        rowHeightSetting: types.optional(types.number, 8),
 
         /**
          * #property
