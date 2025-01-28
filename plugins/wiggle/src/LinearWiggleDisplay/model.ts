@@ -186,6 +186,7 @@ function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            { type: 'divider' },
             {
               label: 'Score',
               subMenu: self.scoreTrackMenuItems(),
@@ -225,19 +226,6 @@ function stateModelFactory(
                 ]
               : []),
 
-            ...(self.needsScalebar
-              ? [
-                  {
-                    type: 'checkbox',
-                    icon: VisibilityIcon,
-                    label: 'Show cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
             {
               label: 'Color',
               icon: PaletteIcon,
@@ -251,6 +239,20 @@ function stateModelFactory(
                 ])
               },
             },
+
+            ...(self.needsScalebar
+              ? [
+                  {
+                    type: 'checkbox',
+                    icon: VisibilityIcon,
+                    label: 'Show cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
+                  },
+                ]
+              : []),
           ]
         },
       }
