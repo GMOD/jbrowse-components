@@ -39,7 +39,7 @@
     "@gmod/nclist": "^2.0.0",
     "crc": "^4.0.0",
     "generic-filehandle2": "^1.0.0",
-    "get-value": "^3.0.1",
+    "get-value": "^3.0.0",
     "set-value": "^4.0.1"
   },
   "peerDependencies": {
