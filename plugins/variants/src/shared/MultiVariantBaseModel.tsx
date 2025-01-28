@@ -57,7 +57,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        renderingMode: types.optional(types.string, 'none'),
+        renderingMode: types.optional(types.string, 'alleleCount'),
       }),
     )
     .volatile(() => ({
@@ -256,26 +256,20 @@ export default function MultiVariantBaseModelF(
             ...(self.hasPhased
               ? [
                   {
-                    label: 'Rendering mode',
-                    type: 'subMenu',
-                    subMenu: [
-                      {
-                        label: 'Allele count mode',
-                        type: 'radio',
-                        checked: self.renderingMode === 'none',
-                        onClick: () => {
-                          self.setPhasedMode('none')
-                        },
-                      },
-                      {
-                        label: 'Phased',
-                        checked: self.renderingMode === 'phased',
-                        type: 'radio',
-                        onClick: () => {
-                          self.setPhasedMode('phased')
-                        },
-                      },
-                    ],
+                    label: 'Allele count',
+                    type: 'radio',
+                    checked: self.renderingMode === 'alleleCount',
+                    onClick: () => {
+                      self.setPhasedMode('alleleCount')
+                    },
+                  },
+                  {
+                    label: 'Phased',
+                    checked: self.renderingMode === 'phased',
+                    type: 'radio',
+                    onClick: () => {
+                      self.setPhasedMode('phased')
+                    },
                   },
                 ]
               : []),
