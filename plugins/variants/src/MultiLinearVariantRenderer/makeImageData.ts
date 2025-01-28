@@ -1,4 +1,5 @@
 import { featureSpanPx } from '@jbrowse/core/util'
+import RBush from 'rbush'
 
 import {
   getColorAlleleCount,
@@ -55,20 +56,27 @@ export async function makeImageData(
     features.values(),
     minorAlleleFrequencyFilter,
   )
+  const rbush = new RBush()
   for (const feature of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>
-    let t = -scrollTop
+    let y = -scrollTop
 
     const s = sources.length
     for (let j = 0; j < s; j++) {
       const { name, HP } = sources[j]!
       const genotype = samp[name]
       const x = Math.floor(leftPx)
-      const y = t
       const h = Math.max(rowHeight, 1)
       if (genotype) {
+        rbush.insert({
+          minX: x - f2,
+          maxX: x + w + f2,
+          minY: y - f2,
+          maxY: y + h + f2,
+          genotype,
+        })
         const isPhased = genotype.includes('|')
         if (renderingMode === 'phased') {
           if (isPhased) {
@@ -83,7 +91,10 @@ export async function makeImageData(
           drawColorAlleleCount(alleles, ctx, x, y, w, h)
         }
       }
-      t += rowHeight
+      y += rowHeight
     }
+  }
+  return {
+    rbush: rbush.toJSON(),
   }
 }

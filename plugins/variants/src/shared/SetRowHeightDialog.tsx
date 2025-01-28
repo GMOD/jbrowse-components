@@ -22,7 +22,9 @@ export default function SetRowHeight({
       <DialogContent>
         <TextField
           value={value}
-          onChange={event => { setValue(event.target.value) }}
+          onChange={event => {
+            setValue(event.target.value)
+          }}
         />
       </DialogContent>
       <DialogActions>

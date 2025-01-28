@@ -15,17 +15,11 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
 
     const { makeImageData } = await import('./makeImageData')
 
-    const rest = await renderToAbstractCanvas(
-      width,
-      height,
-      renderProps,
-      async ctx => {
-        await makeImageData(ctx, {
-          ...renderProps,
-          features,
-        })
-        return undefined
-      },
+    const rest = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+      makeImageData(ctx, {
+        ...renderProps,
+        features,
+      }),
     )
 
     const results = await super.render({
