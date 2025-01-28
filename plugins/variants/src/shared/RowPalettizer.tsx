@@ -17,7 +17,12 @@ export default function RowPalettizer({
       Create color palette based on...
       {Object.keys(currLayout[0] ?? [])
         .filter(
-          f => f !== 'name' && f !== 'color' && f !== 'label' && f !== 'id',
+          f =>
+            f !== 'name' &&
+            f !== 'color' &&
+            f !== 'label' &&
+            f !== 'id' &&
+            f !== 'HP',
         )
         .map(r => (
           <Button
