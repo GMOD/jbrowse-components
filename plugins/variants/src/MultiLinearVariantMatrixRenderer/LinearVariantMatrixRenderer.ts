@@ -15,7 +15,7 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     const width = (end - start) / bpPerPx
     const { makeImageData } = await import('./makeImageData')
     // @ts-expect-error
-    const { mafs, rbush, ...res } = await renderToAbstractCanvas(
+    const { mafs, ...res } = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
@@ -44,7 +44,6 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     return {
       ...results,
       ...res,
-      rbush: rbush.toJSON(),
       features: new Map(),
       simplifiedFeatures: mafs.map(
         (s: Feature) =>

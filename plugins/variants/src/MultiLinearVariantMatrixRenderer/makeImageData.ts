@@ -58,27 +58,22 @@ export function makeImageData({
     minorAlleleFrequencyFilter,
   )
 
+  const arr = [] as string[][]
   const m = mafs.length
   const w = canvasWidth / m
-  const rbush = new RBush()
   for (let i = 0; i < m; i++) {
     const f = mafs[i]!
     const samp = f.get('genotypes') as Record<string, string>
 
     const x = (i / mafs.length) * canvasWidth
     const s = sources.length
+    const arr2 = [] as string[]
     for (let j = 0; j < s; j++) {
       const y = (j / s) * canvasHeight
       const { name, HP } = sources[j]!
       const genotype = samp[name]
       if (genotype) {
-        rbush.insert({
-          minX: x - f2,
-          minY: y - f2,
-          maxX: x - f2 + w + f2,
-          maxY: y - f2 + h + f2,
-          genotype,
-        })
+        arr2.push(genotype)
         const isPhased = genotype.includes('|')
         if (renderingMode === 'phased') {
           if (isPhased) {
@@ -94,9 +89,10 @@ export function makeImageData({
         }
       }
     }
+    arr.push(arr2)
   }
   return {
     mafs,
-    rbush,
+    arr,
   }
 }

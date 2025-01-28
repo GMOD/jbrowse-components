@@ -8,13 +8,15 @@ const LinearVariantMatrixRendering = observer(function (props: {
   height: number
   rbush: any
   displayModel: any
+  arr: string[]
 }) {
-  const { height, displayModel, rbush } = props
-  const clickMap2 = useMemo(
-    () => new RBush<{ genotype: string }>().fromJSON(rbush),
-    [rbush],
-  )
+  const { arr, width, height, displayModel, rbush } = props
+  //const clickMap2 = useMemo(
+  //  () => new RBush<{ genotype: string }>().fromJSON(rbush),
+  //  [rbush],
+  //)
   const ref = useRef<HTMLDivElement>(null)
+  console.log({ arr })
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     // calculates feature under mouse
@@ -25,13 +27,18 @@ const LinearVariantMatrixRendering = observer(function (props: {
       offsetX = eventClientX - r.left
       offsetY = eventClientY - r.top
     }
-    const ret = clickMap2.search({
-      minX: offsetX,
-      minY: offsetY,
-      maxX: offsetX + 3,
-      maxY: offsetY + 3,
-    })
-    return ret[0]?.genotype
+
+    const dimY = arr.length
+    const dimX = arr[0]?.length || 0
+    //console.log(arr, {
+    //  w: Math.round((offsetX / width) * dimY),
+    //  h: Math.round((offsetY / height) * dimX),
+    //  dimX,
+    //  dimY,
+    //})
+    return arr[Math.floor((offsetX / width) * dimY)]?.[
+      Math.floor((offsetY / height) * dimX)
+    ]
   }
   return (
     <div
