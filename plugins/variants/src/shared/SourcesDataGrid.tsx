@@ -35,6 +35,7 @@ export default function SourcesDataGrid({
   const {
     id: _id,
     name: _name,
+    label: _label,
     color: _color,
     baseUri: _baseUri,
     HP: _HP,
@@ -77,9 +78,9 @@ export default function SourcesDataGrid({
             },
           },
           {
-            field: 'name',
+            field: 'label',
             headerName: 'Name',
-            width: measureGridWidth(rows.map(r => r.name)),
+            width: measureGridWidth(rows.map(r => r.label)),
           },
           ...Object.keys(rest).map(
             val =>
