@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 extends
 
-- [SharedVariantMixin](../sharedvariantmixin)
+- [LinearBareDisplay](../linearbaredisplay)
 
 ### MultiLinearVariantDisplay - Properties
 
@@ -95,7 +95,7 @@ React.ComponentType<any>
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; group?: string; }[]
+{ [x: string]: unknown; baseUri?: string; name: string; label?: string; color?: string; group?: string; HP?: number; }[]
 ```
 
 #### getter: rowHeight
