@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 extends
 
-- [LinearBasicDisplay](../linearbasicdisplay)
+- [LinearBareDisplay](../linearbaredisplay)
 
 ### LinearVariantMatrixDisplay - Properties
 
@@ -53,13 +53,13 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: mafFilter
+#### property: minorAlleleFrequencyFilter
 
 ```js
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-mafFilter: types.optional(types.number, 0.1)
+minorAlleleFrequencyFilter: types.optional(types.number, 0.1)
 ```
 
 #### property: showSidebarLabelsSetting
@@ -71,13 +71,29 @@ true
 showSidebarLabelsSetting: true
 ```
 
+#### property: phasedMode
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+phasedMode: types.optional(types.string, 'none')
+```
+
 ### LinearVariantMatrixDisplay - Getters
+
+#### getter: preSources
+
+```js
+// type
+Source[]
+```
 
 #### getter: sources
 
 ```js
 // type
-any
+any[]
 ```
 
 #### getter: blockType
@@ -121,7 +137,7 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 #### method: renderProps
@@ -180,6 +196,27 @@ setMafFilter: (arg: number) => void
 ```js
 // type signature
 setShowSidebarLabels: (arg: boolean) => void
+```
+
+#### action: setPhasedMode
+
+```js
+// type signature
+setPhasedMode: (arg: string) => void
+```
+
+#### action: setHasPhased
+
+```js
+// type signature
+setHasPhased: (arg: boolean) => void
+```
+
+#### action: setSamplePloidy
+
+```js
+// type signature
+setSamplePloidy: (arg: Record<string, number>) => void
 ```
 
 #### action: renderSvg

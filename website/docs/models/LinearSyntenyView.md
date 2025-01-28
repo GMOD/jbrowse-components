@@ -74,18 +74,39 @@ menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuIte
 
 ### LinearSyntenyView - Actions
 
-#### action: toggleCurves
+#### action: importFormRemoveRow
 
 ```js
 // type signature
-toggleCurves: () => void
+importFormRemoveRow: (idx: number) => void
 ```
 
-#### action: toggleCIGAR
+#### action: clearImportFormSyntenyTracks
 
 ```js
 // type signature
-toggleCIGAR: () => void
+clearImportFormSyntenyTracks: () => void
+```
+
+#### action: setImportFormSyntenyTrack
+
+```js
+// type signature
+setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
+```
+
+#### action: setDrawCurves
+
+```js
+// type signature
+setDrawCurves: (arg: boolean) => void
+```
+
+#### action: setDrawCIGAR
+
+```js
+// type signature
+setDrawCIGAR: (arg: boolean) => void
 ```
 
 #### action: showAllRegions
