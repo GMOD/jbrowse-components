@@ -247,7 +247,6 @@ export default function MultiVariantBaseModelF(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            { type: 'divider' },
             {
               label: 'Show sidebar labels',
               icon: VisibilityIcon,

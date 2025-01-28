@@ -319,8 +319,6 @@ function stateModelFactory(
           }))
           return [
             ...superTrackMenuItems(),
-
-            { type: 'divider' },
             {
               type: 'subMenu',
               label: 'Pileup settings',

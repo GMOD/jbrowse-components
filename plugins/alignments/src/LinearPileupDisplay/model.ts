@@ -291,7 +291,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
 
-            { type: 'divider' },
             {
               label: 'Sort by...',
               icon: SwapVertIcon,
