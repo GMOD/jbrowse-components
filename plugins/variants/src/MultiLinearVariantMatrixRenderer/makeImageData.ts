@@ -1,5 +1,7 @@
-import { set1 } from '@jbrowse/core/ui/colors'
-
+import {
+  getColorAlleleCount,
+  getColorPhased,
+} from '../shared/multiVariantColor'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
@@ -7,7 +9,7 @@ import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
 
-function drawUnphased(
+function drawColorAlleleCount(
   alleles: string[],
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -15,40 +17,10 @@ function drawUnphased(
   w: number,
   h: number,
 ) {
-  const total = alleles.length
-  let alt = 0
-  let uncalled = 0
-  let alt2 = 0
-  let ref = 0
-  for (const allele of alleles) {
-    if (allele === '1') {
-      alt++
-    } else if (allele === '0') {
-      ref++
-    } else if (allele === '.') {
-      uncalled++
-    } else {
-      alt2++
-    }
-  }
-
-  if (alt) {
-    ctx.fillStyle = `hsl(200,50%,${80 - (alt / total) * 50}%)`
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-  }
-  if (ref === total) {
-    ctx.fillStyle = `#ccc`
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-  }
-  if (alt2) {
-    ctx.fillStyle = `hsla(0,50%,50%,${alt2 / total / 2})`
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-  }
-  if (uncalled) {
-    ctx.fillStyle = `hsla(50,50%,50%,${uncalled / total / 2})`
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-  }
+  ctx.fillStyle = getColorAlleleCount(alleles)
+  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
+
 function drawPhased(
   alleles: string[],
   ctx: CanvasRenderingContext2D,
@@ -58,8 +30,7 @@ function drawPhased(
   h: number,
   HP: number,
 ) {
-  const c = +alleles[HP]!
-  ctx.fillStyle = c ? set1[c - 1] || 'black' : '#ccc'
+  ctx.fillStyle = getColorPhased(alleles, HP)
   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
 
@@ -109,7 +80,7 @@ export function makeImageData({
           }
         } else {
           const alleles = genotype.split(/[/|]/)
-          drawUnphased(alleles, ctx, x, y, w, h)
+          drawColorAlleleCount(alleles, ctx, x, y, w, h)
         }
       }
     }

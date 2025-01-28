@@ -1,33 +1,42 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { featureSpanPx, renderToAbstractCanvas } from '@jbrowse/core/util'
 
-// locals
-import { getCol } from '../util'
+import { getCol, getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
-import type { Source } from '../types'
-import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
-import type { ThemeOptions } from '@mui/material'
+import type { MultiRenderArgsDeserialized } from './types'
+import {
+  getColorAlleleCount,
+  getColorPhased,
+} from '../shared/multiVariantColor'
 
-export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
-  bpPerPx: number
-  height: number
-  highResolutionScaling: number
-  themeOptions: ThemeOptions
+const fudgeFactor = 0.6
+const f2 = fudgeFactor / 2
+
+function drawColorAlleleCount(
+  alleles: string[],
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  ctx.fillStyle = getColorAlleleCount(alleles)
+  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
-  features: Map<string, Feature>
+function drawPhased(
+  alleles: string[],
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  HP: number,
+) {
+  ctx.fillStyle = getColorPhased(alleles, HP)
+  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
-
-export interface MultiRenderArgsDeserialized
-  extends RenderArgsDeserializedWithFeatures {
-  sources: Source[]
-  rowHeight: number
-  scrollTop: number
-}
-
 export default class MultiVariantBaseRenderer extends FeatureRendererType {
   supportsSVG = true
 
@@ -71,20 +80,50 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
     ctx: CanvasRenderingContext2D,
     props: MultiRenderArgsDeserialized,
   ) {
-    const { scrollTop, sources, rowHeight, features, regions, bpPerPx } = props
+    const {
+      scrollTop,
+      minorAlleleFrequencyFilter,
+      sources,
+      rowHeight,
+      features,
+      regions,
+      bpPerPx,
+      renderingMode,
+    } = props
     const region = regions[0]!
-
+    const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
+      features.values(),
+      minorAlleleFrequencyFilter,
+    )
     for (const feature of features.values()) {
-      if (feature.get('end') - feature.get('start') <= 10) {
-        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-        const w = Math.max(Math.round(rightPx - leftPx), 2)
-        const genotypes = feature.get('genotypes') as Record<string, string>
-        let t = -scrollTop
-        for (const { name } of sources) {
-          ctx.fillStyle = getCol(genotypes[name]!)
-          ctx.fillRect(Math.floor(leftPx), t, w, Math.max(t + rowHeight, 1))
-          t += rowHeight
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const w = Math.max(Math.round(rightPx - leftPx), 2)
+      const samp = feature.get('genotypes') as Record<string, string>
+      let t = -scrollTop
+
+      const s = sources.length
+      for (let j = 0; j < s; j++) {
+        const { name, HP } = sources[j]!
+        const genotype = samp[name]
+        const x = Math.floor(leftPx)
+        const y = t
+        const h = Math.max(rowHeight, 1)
+        if (genotype) {
+          const isPhased = genotype.includes('|')
+          if (renderingMode === 'phased') {
+            if (isPhased) {
+              const alleles = genotype.split('|')
+              drawPhased(alleles, ctx, x, y, w, h, HP!)
+            } else {
+              ctx.fillStyle = 'black'
+              ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+            }
+          } else {
+            const alleles = genotype.split(/[/|]/)
+            drawColorAlleleCount(alleles, ctx, x, y, w, h)
+          }
         }
+        t += rowHeight
       }
     }
   }
