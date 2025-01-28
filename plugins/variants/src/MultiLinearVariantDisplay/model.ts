@@ -34,6 +34,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * adjust to height of track/display
          */
         autoHeight: false,
+        /**
+         * #property
+         */
+        minorAlleleFrequencyFilter: types.optional(types.number, 0),
       }),
     )
     .actions(self => ({

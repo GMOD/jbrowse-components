@@ -92,7 +92,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredGenotype: '',
+      hoveredGenotype: undefined as string | undefined,
     }))
     .actions(self => ({
       /**
