@@ -107,6 +107,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
               },
             ]
           : []),
+        { type: 'divider' },
       ]
     },
   }))
