@@ -1,5 +1,8 @@
 import { lazy } from 'react'
 
+import PaletteIcon from '@mui/icons-material/Palette'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -244,8 +247,10 @@ export default function MultiVariantBaseModelF(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            { type: 'divider' },
             {
               label: 'Show sidebar labels',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showSidebarLabelsSetting,
               onClick: () => {
@@ -253,37 +258,49 @@ export default function MultiVariantBaseModelF(
               },
             },
 
-            ...(self.hasPhased
-              ? [
-                  {
-                    label: 'Allele count',
-                    type: 'radio',
-                    checked: self.renderingMode === 'alleleCount',
-                    onClick: () => {
-                      self.setPhasedMode('alleleCount')
-                    },
-                  },
-                  {
-                    label: 'Phased',
-                    checked: self.renderingMode === 'phased',
-                    type: 'radio',
-                    onClick: () => {
-                      self.setPhasedMode('phased')
-                    },
-                  },
-                ]
-              : []),
             {
-              label: 'Filter by minor allele frequency',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  MAFFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
+              label: 'Color by',
+              icon: PaletteIcon,
+              subMenu: [
+                ...(self.hasPhased
+                  ? [
+                      {
+                        label: 'Allele count',
+                        type: 'radio',
+                        checked: self.renderingMode === 'alleleCount',
+                        onClick: () => {
+                          self.setPhasedMode('alleleCount')
+                        },
+                      },
+                      {
+                        label: 'Phased',
+                        checked: self.renderingMode === 'phased',
+                        type: 'radio',
+                        onClick: () => {
+                          self.setPhasedMode('phased')
+                        },
+                      },
+                    ]
+                  : []),
+              ],
+            },
+            {
+              label: 'Filter by',
+              icon: FilterListIcon,
+              subMenu: [
+                {
+                  label: 'Minor allele frequency',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      MAFFilterDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
                   },
-                ])
-              },
+                },
+              ],
             },
             {
               label: 'Cluster by genotype',
@@ -298,7 +315,7 @@ export default function MultiVariantBaseModelF(
               },
             },
             {
-              label: 'Edit colors/arrangement...',
+              label: 'Edit group colors/arrangement...',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,

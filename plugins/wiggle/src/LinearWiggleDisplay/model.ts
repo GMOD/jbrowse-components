@@ -1,5 +1,7 @@
 import { lazy } from 'react'
 
+import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
@@ -207,19 +209,6 @@ function stateModelFactory(
                 ]
               : []),
 
-            ...(self.needsScalebar
-              ? [
-                  {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
-
             ...(hasRenderings
               ? [
                   {
@@ -236,8 +225,22 @@ function stateModelFactory(
                 ]
               : []),
 
+            ...(self.needsScalebar
+              ? [
+                  {
+                    type: 'checkbox',
+                    icon: VisibilityIcon,
+                    label: 'Show cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
+                  },
+                ]
+              : []),
             {
-              label: 'Set color',
+              label: 'Color',
+              icon: PaletteIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,

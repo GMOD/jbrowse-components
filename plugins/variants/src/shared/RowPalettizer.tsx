@@ -13,10 +13,12 @@ export default function RowPalettizer({
   setCurrLayout: (arg: Source[]) => void
 }) {
   return (
-    <div style={{ display: 'flex', gap: 4 }}>
+    <div>
       Create color palette based on...
       {Object.keys(currLayout[0] ?? [])
-        .filter(f => f !== 'name' && f !== 'color')
+        .filter(
+          f => f !== 'name' && f !== 'color' && f !== 'label' && f !== 'id',
+        )
         .map(r => (
           <Button
             key={r}

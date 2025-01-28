@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
@@ -233,19 +234,19 @@ function stateModelFactory(
       /**
        * #action
        */
-      toggleDrawIndicators() {
+      toggleShowIndicators() {
         self.drawIndicators = !self.drawIndicatorsSetting
       },
       /**
        * #action
        */
-      toggleDrawInterbaseCounts() {
+      toggleShowInterbaseCounts() {
         self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
       },
       /**
        * #action
        */
-      toggleDrawArcs() {
+      toggleShowArcs() {
         self.drawArcs = !self.drawArcsSetting
       },
     }))
@@ -360,27 +361,30 @@ function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Draw insertion/clipping indicators',
+              label: 'Show insertion/clipping indicators',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.drawIndicatorsSetting,
               onClick: () => {
-                self.toggleDrawIndicators()
+                self.toggleShowIndicators()
               },
             },
             {
-              label: 'Draw insertion/clipping counts',
+              label: 'Show insertion/clipping counts',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.drawInterbaseCountsSetting,
               onClick: () => {
-                self.toggleDrawInterbaseCounts()
+                self.toggleShowInterbaseCounts()
               },
             },
             {
-              label: 'Draw arcs',
+              label: 'Show arcs',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.drawArcsSetting,
               onClick: () => {
-                self.toggleDrawArcs()
+                self.toggleShowArcs()
               },
             },
           ]
