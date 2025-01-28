@@ -113,6 +113,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             rpcDriverName: self.rpcDriverName,
             height: self.height,
             totalHeight: self.totalHeight,
+            renderingMode: self.renderingMode,
+            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             rowHeight: self.rowHeight,
             sources: self.sources,
             scrollTop: self.scrollTop,
