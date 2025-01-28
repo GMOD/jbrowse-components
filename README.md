@@ -30,7 +30,7 @@ On macOS with homebrew:
 
 On Ubuntu, with apt:
 
-    sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+    sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
 ## Install (Linux/Mac)
 
