@@ -24,6 +24,11 @@ export default function stateModelFactory(
          * #property
          */
         type: types.literal('LinearVariantMatrixDisplay'),
+
+        /**
+         * #property
+         */
+        rowHeightSetting: types.optional(types.number, 1),
       }),
     )
 
@@ -38,16 +43,21 @@ export default function stateModelFactory(
        * #getter
        */
       get totalHeight() {
-        return self.height - self.lineZoneHeight
+        return self.autoHeight
+          ? self.height - self.lineZoneHeight
+          : (self.sources?.length || 1) * self.rowHeightSetting
       },
 
       /**
        * #getter
        */
       get rowHeight() {
-        return this.totalHeight / (self.sources?.length || 1)
+        return self.autoHeight
+          ? self.height / (self.sources?.length || 1)
+          : self.rowHeightSetting
       },
     }))
+
     .views(self => ({
       /**
        * #method

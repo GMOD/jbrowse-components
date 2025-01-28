@@ -35,7 +35,7 @@ const Crosshair = observer(function ({
   const { hoveredGenotype, height, scrollTop, rowHeight, sources } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = sources?.[Math.floor(mouseY / rowHeight)]
-  const y = mouseY - scrollTop
+  const y = mouseY - lineZoneHeight - scrollTop
   return source ? (
     <div className={classes.rel}>
       <svg

@@ -22,105 +22,25 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         type: types.literal('MultiLinearVariantDisplay'),
-
         /**
          * #property
          * used only if autoHeight is false
          */
         rowHeightSetting: types.optional(types.number, 11),
-
-        /**
-         * #property
-         * adjust to height of track/display
-         */
-        autoHeight: false,
         /**
          * #property
          */
         minorAlleleFrequencyFilter: types.optional(types.number, 0),
       }),
     )
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setRowHeight(arg: number) {
-        self.rowHeightSetting = arg
-      },
-      /**
-       * #action
-       */
-      setAutoHeight(arg: boolean) {
-        self.autoHeight = arg
-      },
-    }))
-
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        */
       get rendererTypeName() {
         return 'MultiVariantRenderer'
       },
-      /**
-       * #getter
-       */
-      get rowHeight() {
-        const { autoHeight, sources, rowHeightSetting, height } = self
-        return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
-      },
     }))
-    .views(self => {
-      return {
-        get canDisplayLabels() {
-          return self.rowHeight > 8 && self.showSidebarLabelsSetting
-        },
-        /**
-         * #getter
-         */
-        get totalHeight() {
-          return self.rowHeight * (self.sources?.length || 1)
-        },
-      }
-    })
-
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      return {
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Adjust to height of display?',
-              type: 'checkbox',
-              checked: self.autoHeight,
-              onClick: () => {
-                self.setAutoHeight(!self.autoHeight)
-              },
-            },
-          ]
-        },
-
-        renderProps() {
-          const superProps = self.adapterProps()
-          return {
-            ...superProps,
-            notReady:
-              superProps.notReady || !self.sources || !self.featuresVolatile,
-            height: self.height,
-            totalHeight: self.totalHeight,
-            renderingMode: self.renderingMode,
-            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-            rowHeight: self.rowHeight,
-            sources: self.sources,
-            scrollTop: self.scrollTop,
-          }
-        },
-      }
-    })
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {

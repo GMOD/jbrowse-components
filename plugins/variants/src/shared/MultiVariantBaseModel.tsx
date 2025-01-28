@@ -5,6 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
@@ -19,6 +20,7 @@ import type { Instance } from 'mobx-state-tree'
 const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('../shared/MAFFilterDialog'))
 const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
+const SetRowHeightDialog = lazy(() => import('../shared/SetRowHeightDialog'))
 
 /**
  * #stateModel MultiVariantBaseModel
@@ -61,6 +63,18 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         renderingMode: types.optional(types.string, 'alleleCount'),
+
+        /**
+         * #property
+         * used only if autoHeight is false
+         */
+        rowHeightSetting: types.optional(types.number, 1),
+
+        /**
+         * #property
+         * used only if autoHeight is false
+         */
+        autoHeight: true,
       }),
     )
     .volatile(() => ({
@@ -98,6 +112,12 @@ export default function MultiVariantBaseModelF(
       hoveredGenotype: undefined as string | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setRowHeight(arg: number) {
+        self.rowHeightSetting = arg
+      },
       /**
        * #action
        */
@@ -157,6 +177,12 @@ export default function MultiVariantBaseModelF(
        */
       setPhasedMode(arg: string) {
         self.renderingMode = arg
+      },
+      /**
+       * #action
+       */
+      setAutoHeight(arg: boolean) {
+        self.autoHeight = arg
       },
       /**
        * #action
@@ -230,6 +256,13 @@ export default function MultiVariantBaseModelF(
 
       return {
         /**
+         * #getter
+         */
+        get rowHeight() {
+          const { sources, autoHeight, rowHeightSetting, height } = self
+          return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
+        },
+        /**
          * #method
          */
         adapterProps() {
@@ -257,6 +290,33 @@ export default function MultiVariantBaseModelF(
               },
             },
 
+            {
+              label: 'Row height',
+              icon: HeightIcon,
+              subMenu: [
+                {
+                  label: 'Manually set row height',
+                  disabled: self.autoHeight,
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetRowHeightDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+                {
+                  label: 'Auto-adjust to display height',
+                  type: 'checkbox',
+                  checked: self.autoHeight,
+                  onClick: () => {
+                    self.setAutoHeight(!self.autoHeight)
+                  },
+                },
+              ],
+            },
             {
               label: 'Color by',
               icon: PaletteIcon,
@@ -329,6 +389,34 @@ export default function MultiVariantBaseModelF(
         },
       }
     })
+    .views(self => ({
+      get canDisplayLabels() {
+        return self.rowHeight > 8 && self.showSidebarLabelsSetting
+      },
+      /**
+       * #getter
+       */
+      get totalHeight() {
+        return self.rowHeight * (self.sources?.length || 1)
+      },
+    }))
+    .views(self => ({
+      renderProps() {
+        const superProps = self.adapterProps()
+        return {
+          ...superProps,
+          notReady:
+            superProps.notReady || !self.sources || !self.featuresVolatile,
+          height: self.height,
+          totalHeight: self.totalHeight,
+          renderingMode: self.renderingMode,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          rowHeight: self.rowHeight,
+          sources: self.sources,
+          scrollTop: self.scrollTop,
+        }
+      },
+    }))
 }
 
 export type MultiVariantBaseStateModel = ReturnType<
