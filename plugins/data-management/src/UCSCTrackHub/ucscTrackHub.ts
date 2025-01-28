@@ -1,7 +1,7 @@
 import { isUriLocation, notEmpty, objectHash } from '@jbrowse/core/util'
 import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 
-import { makeLoc2, makeLoc, makeLocAlt } from './util'
+import { makeLoc2, makeLoc, makeLocAlt, resolve } from './util'
 
 import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
 import type { FileLocation } from '@jbrowse/core/util'
@@ -11,11 +11,13 @@ export function generateTracks({
   trackDbLoc,
   assemblyName,
   sequenceAdapter,
+  baseUrl,
 }: {
   trackDb: TrackDbFile
   trackDbLoc: FileLocation
   assemblyName: string
   sequenceAdapter: any
+  baseUrl: string
 }) {
   const parentTrackKeys = new Set([
     'superTrack',
@@ -38,16 +40,32 @@ export function generateTracks({
             parentTracks.push(trackDb.data[currentTrackName])
           }
         } while (currentTrackName)
-        return makeTrackConfig({
-          track,
-          trackDbLoc,
-          trackDb,
-          sequenceAdapter,
-          categories: parentTracks
-            .reverse()
-            .map(p => p?.data.shortLabel)
-            .filter((f): f is string => !!f),
-        })
+        parentTracks.reverse()
+
+        return {
+          metadata: {
+            ucscConfig: {
+              ...track.data,
+              ...(track.data.html
+                ? {
+                    html: `<a href="${resolve(track.data.html, baseUrl)}">${track.data.html}</a>`,
+                  }
+                : {}),
+            },
+          },
+          category: [
+            track.data.group,
+            ...parentTracks
+              .map(p => p?.data.group)
+              .filter((f): f is string => !!f),
+          ].filter(f => !!f),
+          ...makeTrackConfig({
+            track,
+            trackDbLoc,
+            trackDb,
+            sequenceAdapter,
+          }),
+        }
       }
     })
     .filter(notEmpty)
@@ -60,13 +78,11 @@ export function generateTracks({
 
 function makeTrackConfig({
   track,
-  categories,
   trackDbLoc,
   trackDb,
   sequenceAdapter,
 }: {
   track: RaStanza
-  categories: string[]
   trackDbLoc: FileLocation
   trackDb: TrackDbFile
   sequenceAdapter: any
@@ -94,7 +110,6 @@ function makeTrackConfig({
       type: 'AlignmentsTrack',
       name,
       description: data.longLabel,
-      category: categories,
       adapter: {
         type: 'BamAdapter',
         bamLocation: bigDataLocation,
@@ -110,7 +125,6 @@ function makeTrackConfig({
       type: 'AlignmentsTrack',
       name,
       description: data.longLabel,
-      category: categories,
       adapter: {
         type: 'CramAdapter',
         cramLocation: bigDataLocation,
@@ -125,7 +139,6 @@ function makeTrackConfig({
       type: 'QuantitativeTrack',
       name,
       description: data.longLabel,
-      category: categories,
       adapter: {
         type: 'BigWigAdapter',
         bigWigLocation: bigDataLocation,
@@ -136,7 +149,6 @@ function makeTrackConfig({
       type: 'FeatureTrack',
       name,
       description: data.longLabel,
-      category: categories,
       adapter: {
         type: 'BigBedAdapter',
         bigBedLocation: bigDataLocation,
@@ -147,7 +159,6 @@ function makeTrackConfig({
       type: 'VariantTrack',
       name,
       description: data.longLabel,
-      category: categories,
       adapter: {
         type: 'VcfTabixAdapter',
         vcfGzLocation: bigDataLocation,
@@ -163,7 +174,6 @@ function makeTrackConfig({
       type: 'HicTrack',
       name,
       description: data.longLabel,
-      category: categories,
       adapter: {
         type: 'HicAdapter',
         hicLocation: bigDataLocation,
@@ -184,7 +194,7 @@ function makeTrackConfig({
     //     case 'bedRnaElements':
     //     case 'broadPeak':
     //     case 'coloredExon':
-    return generateUnknownTrackConf(name, baseTrackType, categories)
+    return generateUnknownTrackConf(name, baseTrackType)
   }
 }
 

@@ -61,7 +61,9 @@ const AboutDialogContents = observer(function ({
       },
     },
     { session, config },
-  ) as Record<string, unknown>
+  ) as {
+    config: { metadata?: Record<string, unknown>; [key: string]: unknown }
+  }
 
   const ExtraPanel = pluginManager.evaluateExtensionPoint(
     'Core-extraAboutPanel',
@@ -99,11 +101,20 @@ const AboutDialogContents = observer(function ({
           </span>
         ) : null}
         <Attributes
-          attributes={confPostExt}
-          omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+          attributes={confPostExt.config}
+          omit={['displays', 'baseUri', 'refNames', 'formatAbout', 'metadata']}
           hideUris={hideUris}
         />
       </BaseCard>
+      {confPostExt.config.metadata ? (
+        <BaseCard title="Metadata">
+          <Attributes
+            attributes={confPostExt.config.metadata}
+            omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+            hideUris={hideUris}
+          />
+        </BaseCard>
+      ) : null}
       {ExtraPanel ? (
         <BaseCard title={ExtraPanel.name}>
           <ExtraPanel.Component config={config} />

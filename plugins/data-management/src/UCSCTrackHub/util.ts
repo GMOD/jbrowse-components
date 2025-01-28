@@ -38,3 +38,7 @@ export function makeLoc2(first: string, alt?: string) {
         locationType: 'UriLocation',
       }
 }
+
+export function resolve(uri: string, baseUri: string) {
+  return new URL(uri, baseUri).href
+}
