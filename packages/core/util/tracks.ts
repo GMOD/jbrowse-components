@@ -247,7 +247,7 @@ export function generateUnsupportedTrackConf(
 export function generateUnknownTrackConf(
   trackName: string,
   trackUrl: string,
-  categories: string[] | undefined,
+  categories?: string[],
 ) {
   const conf = {
     type: 'FeatureTrack',
