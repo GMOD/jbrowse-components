@@ -8,10 +8,17 @@ import type { MultiLinearVariantDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
+  rel: {
+    position: 'relative',
+  },
   cursor: {
     pointerEvents: 'none',
     zIndex: 1000,
-    position: 'relative',
+    position: 'absolute',
+  },
+  color: {
+    width: 10,
+    height: 10,
   },
 })
 
@@ -25,18 +32,17 @@ const Crosshair = observer(function ({
   model: MultiLinearVariantDisplayModel
 }) {
   const { classes } = useStyles()
-  const { height, scrollTop, rowHeight, sources } = model
+  const { hoveredGenotype, height, scrollTop, rowHeight, sources } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = sources?.[Math.floor(mouseY / rowHeight)]
   const y = mouseY - scrollTop
   return source ? (
-    <div style={{ position: 'relative' }}>
+    <div className={classes.rel}>
       <svg
         className={classes.cursor}
         width={width}
         height={height}
         style={{
-          position: 'absolute',
           top: scrollTop,
         }}
       >
@@ -46,17 +52,20 @@ const Crosshair = observer(function ({
       <BaseTooltip>
         {source.color ? (
           <div
+            className={classes.color}
             style={{
-              width: 10,
-              height: 10,
               backgroundColor: source.color,
             }}
           />
         ) : null}
         <SanitizedHTML
-          html={Object.entries(source)
+          html={Object.entries({ ...source, genotype: hoveredGenotype })
             .filter(
-              ([key]) => key !== 'color' && key !== 'name' && key !== 'HP',
+              ([key, val]) =>
+                key !== 'color' &&
+                key !== 'name' &&
+                key !== 'HP' &&
+                val !== undefined,
             )
             .map(([key, value]) => `${key}:${value}`)
             .join('<br/>')}
