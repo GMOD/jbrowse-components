@@ -8,7 +8,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 
-import type { Source } from './types'
+import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -24,7 +24,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   setFeatures: (f: Feature[]) => void
   setMessage: (str: string) => void
   setHasPhased: (arg: boolean) => void
-  setSampleInfo: (arg: Record<string, number>) => void
+  setSampleInfo: (arg: Record<string, SampleInfo>) => void
 }) {
   addDisposer(
     self,
@@ -51,7 +51,7 @@ export function getMultiVariantFeaturesAutorun(self: {
                 adapterConfig,
               },
             )) as {
-              sampleInfo: Record<string, number>
+              sampleInfo: Record<string, SampleInfo>
               hasPhased: boolean
               features: SimpleFeatureSerialized[]
             }
@@ -62,8 +62,8 @@ export function getMultiVariantFeaturesAutorun(self: {
             }
           }
         } catch (e) {
+          console.error(e)
           if (!isAbortException(e) && isAlive(self)) {
-            console.error(e)
             getSession(self).notifyError(`${e}`, e)
           }
         }
