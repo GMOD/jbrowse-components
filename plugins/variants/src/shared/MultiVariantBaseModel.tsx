@@ -1,12 +1,12 @@
 import { lazy } from 'react'
 
-import PaletteIcon from '@mui/icons-material/Palette'
-import FilterListIcon from '@mui/icons-material/FilterList'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 import { types } from 'mobx-state-tree'
 

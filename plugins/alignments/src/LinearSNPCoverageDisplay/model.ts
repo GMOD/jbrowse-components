@@ -1,10 +1,10 @@
 import { lazy } from 'react'
 
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
