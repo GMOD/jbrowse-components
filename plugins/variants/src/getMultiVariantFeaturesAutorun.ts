@@ -24,7 +24,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   setFeatures: (f: Feature[]) => void
   setMessage: (str: string) => void
   setHasPhased: (arg: boolean) => void
-  setSamplePloidy: (arg: Record<string, number>) => void
+  setSampleInfo: (arg: Record<string, number>) => void
 }) {
   addDisposer(
     self,
@@ -40,25 +40,24 @@ export function getMultiVariantFeaturesAutorun(self: {
           const { sources, minorAlleleFrequencyFilter, adapterConfig } = self
           if (sources) {
             const sessionId = getRpcSessionId(self)
-            const { samplePloidy, hasPhased, features } =
-              (await rpcManager.call(
+            const { sampleInfo, hasPhased, features } = (await rpcManager.call(
+              sessionId,
+              'MultiVariantGetSimplifiedFeatures',
+              {
+                regions: view.dynamicBlocks.contentBlocks,
+                sources,
+                minorAlleleFrequencyFilter,
                 sessionId,
-                'MultiVariantGetSimplifiedFeatures',
-                {
-                  regions: view.dynamicBlocks.contentBlocks,
-                  sources,
-                  minorAlleleFrequencyFilter,
-                  sessionId,
-                  adapterConfig,
-                },
-              )) as {
-                samplePloidy: Record<string, number>
-                hasPhased: boolean
-                features: SimpleFeatureSerialized[]
-              }
+                adapterConfig,
+              },
+            )) as {
+              sampleInfo: Record<string, number>
+              hasPhased: boolean
+              features: SimpleFeatureSerialized[]
+            }
             if (isAlive(self)) {
               self.setHasPhased(hasPhased)
-              self.setSamplePloidy(samplePloidy)
+              self.setSampleInfo(sampleInfo)
               self.setFeatures(features.map(f => new SimpleFeature(f)))
             }
           }

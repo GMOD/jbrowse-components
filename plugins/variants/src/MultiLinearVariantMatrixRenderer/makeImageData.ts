@@ -92,19 +92,21 @@ export function makeImageData({
     for (let j = 0; j < s; j++) {
       const y = (j / s) * canvasHeight
       const { name, HP } = sources[j]!
-      const genotype = samp[name]!
-      const isPhased = genotype.includes('|')
-      if (phasedMode === 'phasedOnly') {
-        if (isPhased) {
-          const alleles = genotype.split('|')
-          drawPhased(alleles, ctx, x, y, w, h, HP!)
+      const genotype = samp[name]
+      if (genotype) {
+        const isPhased = genotype.includes('|')
+        if (phasedMode === 'phasedOnly') {
+          if (isPhased) {
+            const alleles = genotype.split('|')
+            drawPhased(alleles, ctx, x, y, w, h, HP!)
+          } else {
+            ctx.fillStyle = 'black'
+            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+          }
         } else {
-          ctx.fillStyle = 'black'
-          ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+          const alleles = genotype.split(/[/|]/)
+          drawUnphased(alleles, ctx, x, y, w, h)
         }
-      } else {
-        const alleles = genotype.split(/[/|]/)
-        drawUnphased(alleles, ctx, x, y, w, h)
       }
     }
   }

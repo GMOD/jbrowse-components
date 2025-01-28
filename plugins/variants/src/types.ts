@@ -7,3 +7,8 @@ export interface Source {
   HP?: number
   [key: string]: unknown
 }
+
+export interface SampleInfo {
+  isPhased: boolean
+  maxPloidy: number
+}

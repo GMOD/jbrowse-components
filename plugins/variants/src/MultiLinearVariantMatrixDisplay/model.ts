@@ -7,7 +7,7 @@ import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genom
 import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 
-import type { Source } from '../types'
+import type { SampleInfo, Source } from '../types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -89,7 +89,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      samplePloidy: undefined as undefined | Record<string, number>,
+      sampleInfo: undefined as undefined | Record<string, SampleInfo>,
     }))
     .actions(self => ({
       /**
@@ -155,9 +155,9 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setSamplePloidy(arg: Record<string, number>) {
-        if (!deepEqual(arg, self.samplePloidy)) {
-          self.samplePloidy = arg
+      setSampleInfo(arg: Record<string, SampleInfo>) {
+        if (!deepEqual(arg, self.sampleInfo)) {
+          self.sampleInfo = arg
         }
       },
     }))
