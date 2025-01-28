@@ -24,9 +24,11 @@ export function getColorAlleleCount(alleles: string[]) {
   } else {
     let a1 = colord(`hsl(200,50%,${80 - (alt / total) * 50}%)`)
     if (alt2) {
+      // @ts-ignore
       a1 = a1.mix(`hsla(0,100%,20%,${alt2 / total})`)
     }
     if (uncalled) {
+      // @ts-ignore
       a1 = a1.mix(`hsla(50,50%,50%,${uncalled / total / 2})`)
     }
     return a1.toHex()
