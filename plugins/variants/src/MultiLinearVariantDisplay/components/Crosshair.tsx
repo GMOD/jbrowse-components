@@ -55,7 +55,9 @@ const Crosshair = observer(function ({
         ) : null}
         <SanitizedHTML
           html={Object.entries(source)
-            .filter(([key]) => key !== 'color')
+            .filter(
+              ([key]) => key !== 'color' && key !== 'name' && key !== 'HP',
+            )
             .map(([key, value]) => `${key}:${value}`)
             .join('<br/>')}
         />

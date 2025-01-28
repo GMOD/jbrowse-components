@@ -25,7 +25,7 @@ const Crosshair = observer(function ({
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { classes } = useStyles()
-  const { lineZoneHeight, height, rowHeight, sources } = model
+  const { hoveredGenotype, lineZoneHeight, height, rowHeight, sources } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = sources?.[Math.floor((mouseY - lineZoneHeight) / rowHeight)]
   return source ? (
@@ -45,7 +45,7 @@ const Crosshair = observer(function ({
           />
         ) : null}
         <SanitizedHTML
-          html={Object.entries(source)
+          html={Object.entries({ ...source, genotype: hoveredGenotype })
             .filter(
               ([key]) => key !== 'color' && key !== 'name' && key !== 'HP',
             )

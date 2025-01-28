@@ -78,49 +78,18 @@ const ZoomControls = observer(function ({
 
       <CascadingMenuButton
         menuItems={[
-          {
-            label: 'Zoom in 2x',
-            icon: ZoomIn,
+          ...[100, 50, 10].map(r => ({
+            label: `Zoom in ${r}x`,
             onClick: () => {
-              model.zoom(model.bpPerPx / 2)
+              model.zoom(model.bpPerPx / r)
             },
-          },
-          {
-            label: 'Zoom in 15x',
-            icon: ZoomIn,
+          })),
+          ...[10, 50, 100].map(r => ({
+            label: `Zoom out ${r}x`,
             onClick: () => {
-              model.zoom(model.bpPerPx / 15)
+              model.zoom(model.bpPerPx * r)
             },
-          },
-          {
-            label: 'Zoom in 100x',
-            icon: ZoomIn,
-            onClick: () => {
-              model.zoom(model.bpPerPx / 100)
-            },
-          },
-          {
-            label: 'Zoom out 2x',
-            icon: ZoomOut,
-            onClick: () => {
-              model.zoom(model.bpPerPx * 2)
-            },
-          },
-          {
-            label: 'Zoom out 15x',
-
-            icon: ZoomOut,
-            onClick: () => {
-              model.zoom(model.bpPerPx * 15)
-            },
-          },
-          {
-            label: 'Zoom out 100x',
-            icon: ZoomOut,
-            onClick: () => {
-              model.zoom(model.bpPerPx * 100)
-            },
-          },
+          })),
         ]}
       >
         <MoreVert />

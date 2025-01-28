@@ -15,12 +15,12 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     const width = (end - start) / bpPerPx
     const { makeImageData } = await import('./makeImageData')
     // @ts-expect-error
-    const { mafs, ...res } = await renderToAbstractCanvas(
+    const { mafs, rbush, ...res } = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
-      ctx => {
-        return makeImageData({
+      ctx =>
+        makeImageData({
           ctx,
           canvasWidth: width,
           canvasHeight: height,
@@ -29,8 +29,7 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
             features,
             sources,
           },
-        })
-      },
+        }),
     )
 
     const results = await super.render({
@@ -41,9 +40,11 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
       width,
     })
 
+    console.log({ res })
     return {
       ...results,
       ...res,
+      rbush: rbush.toJSON(),
       features: new Map(),
       simplifiedFeatures: mafs.map(
         (s: Feature) =>

@@ -89,8 +89,18 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       sampleInfo: undefined as undefined | Record<string, SampleInfo>,
+      /**
+       * #volatile
+       */
+      hoveredGenotype: '',
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setHoveredGenotype(arg: string) {
+        self.hoveredGenotype = arg
+      },
       /**
        * #action
        */

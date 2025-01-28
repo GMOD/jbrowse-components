@@ -74,6 +74,9 @@ export default function stateModelFactory(
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {
+        setHoveredGenotype(arg: string) {
+          self.hoveredGenotype = arg
+        },
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {

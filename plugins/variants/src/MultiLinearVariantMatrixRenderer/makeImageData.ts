@@ -1,3 +1,4 @@
+import RBush from 'rbush'
 import {
   getColorAlleleCount,
   getColorPhased,
@@ -59,9 +60,11 @@ export function makeImageData({
 
   const m = mafs.length
   const w = canvasWidth / m
+  const rbush = new RBush()
   for (let i = 0; i < m; i++) {
     const f = mafs[i]!
     const samp = f.get('genotypes') as Record<string, string>
+
     const x = (i / mafs.length) * canvasWidth
     const s = sources.length
     for (let j = 0; j < s; j++) {
@@ -69,6 +72,13 @@ export function makeImageData({
       const { name, HP } = sources[j]!
       const genotype = samp[name]
       if (genotype) {
+        rbush.insert({
+          minX: x - f2,
+          minY: y - f2,
+          maxX: x - f2 + w + f2,
+          maxY: y - f2 + h + f2,
+          genotype,
+        })
         const isPhased = genotype.includes('|')
         if (renderingMode === 'phased') {
           if (isPhased) {
@@ -87,5 +97,6 @@ export function makeImageData({
   }
   return {
     mafs,
+    rbush,
   }
 }
