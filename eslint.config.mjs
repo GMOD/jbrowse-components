@@ -18,6 +18,7 @@ export default tseslint.config(
       '**/esm/**/*',
       '**/public/**/*',
       '**/storybook-static/**',
+      'docs/*',
       'website/*',
       'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',
