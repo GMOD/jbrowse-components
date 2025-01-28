@@ -10,7 +10,6 @@ import { types } from 'mobx-state-tree'
 import type { SampleInfo, Source } from '../types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
@@ -58,7 +57,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        phasedMode: types.optional(types.string, 'none'),
+        renderingMode: types.optional(types.string, 'none'),
       }),
     )
     .volatile(() => ({
@@ -144,7 +143,7 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setPhasedMode(arg: string) {
-        self.phasedMode = arg
+        self.renderingMode = arg
       },
       /**
        * #action
@@ -179,7 +178,7 @@ export default function MultiVariantBaseModelF(
           )
           for (const row of this.preSources) {
             // make separate rows for each haplotype in phased mode
-            if (self.phasedMode === 'phasedOnly') {
+            if (self.renderingMode === 'phased') {
               const info = self.sampleInfo?.[row.name]
               if (info?.isPhased) {
                 const ploidy = info.maxPloidy
@@ -240,26 +239,27 @@ export default function MultiVariantBaseModelF(
                 self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
               },
             },
+
             ...(self.hasPhased
               ? [
                   {
-                    label: 'Phased mode',
+                    label: 'Rendering mode',
                     type: 'subMenu',
                     subMenu: [
                       {
-                        label: 'Draw unphased (maps allele count to color)',
+                        label: 'Allele count mode',
                         type: 'radio',
-                        checked: self.phasedMode === 'none',
+                        checked: self.renderingMode === 'none',
                         onClick: () => {
                           self.setPhasedMode('none')
                         },
                       },
                       {
-                        label: 'Draw phased (split into haplotype rows)',
-                        checked: self.phasedMode === 'phasedOnly',
+                        label: 'Phased mode',
+                        checked: self.renderingMode === 'phased',
                         type: 'radio',
                         onClick: () => {
-                          self.setPhasedMode('phasedOnly')
+                          self.setPhasedMode('phased')
                         },
                       },
                     ],
@@ -267,7 +267,7 @@ export default function MultiVariantBaseModelF(
                 ]
               : []),
             {
-              label: 'Set minor allele frequency filter',
+              label: 'Filter by minor allele frequency',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   MAFFilterDialog,

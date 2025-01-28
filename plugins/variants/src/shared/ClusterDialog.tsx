@@ -34,7 +34,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function HierarchicalCluster({
+export default function ClusterDialog({
   model,
   handleClose,
 }: {

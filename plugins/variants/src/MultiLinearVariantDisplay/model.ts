@@ -1,12 +1,11 @@
 import { getSession } from '@jbrowse/core/util'
 import { isAlive, types } from 'mobx-state-tree'
 
-import type { Source } from '../types'
+import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
-import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
 /**
  * #stateModel MultiLinearVariantDisplay

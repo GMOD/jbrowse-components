@@ -4,10 +4,10 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
+import type { SampleInfo } from '../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
-import { SampleInfo } from '../types'
 
 export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantGetSimplifiedFeatures'
@@ -53,7 +53,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
         sampleInfo[key] = {
           maxPloidy: Math.max(
             sampleInfo[key]?.maxPloidy || 0,
-            val.split(/|/).length,
+            val.split('|').length,
           ),
           isPhased: sampleInfo[key]?.isPhased || isPhased,
         }

@@ -74,8 +74,12 @@ export function makeImageData({
   canvasHeight: number
   renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
 }) {
-  const { phasedMode, minorAlleleFrequencyFilter, sources, features } =
-    renderArgs
+  const {
+    renderingMode: renderingMode,
+    minorAlleleFrequencyFilter,
+    sources,
+    features,
+  } = renderArgs
   const h = canvasHeight / sources.length
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),
@@ -95,7 +99,7 @@ export function makeImageData({
       const genotype = samp[name]
       if (genotype) {
         const isPhased = genotype.includes('|')
-        if (phasedMode === 'phasedOnly') {
+        if (renderingMode === 'phased') {
           if (isPhased) {
             const alleles = genotype.split('|')
             drawPhased(alleles, ctx, x, y, w, h, HP!)
