@@ -1,14 +1,14 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { featureSpanPx, renderToAbstractCanvas } from '@jbrowse/core/util'
 
-import { getCol, getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
-
-import type { Feature } from '@jbrowse/core/util'
-import type { MultiRenderArgsDeserialized } from './types'
 import {
   getColorAlleleCount,
   getColorPhased,
 } from '../shared/multiVariantColor'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
+
+import type { MultiRenderArgsDeserialized } from './types'
+import type { Feature } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
@@ -95,7 +95,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
       features.values(),
       minorAlleleFrequencyFilter,
     )
-    for (const feature of features.values()) {
+    for (const feature of mafs) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = Math.max(Math.round(rightPx - leftPx), 2)
       const samp = feature.get('genotypes') as Record<string, string>

@@ -1,4 +1,3 @@
-import RBush from 'rbush'
 import {
   getColorAlleleCount,
   getColorPhased,

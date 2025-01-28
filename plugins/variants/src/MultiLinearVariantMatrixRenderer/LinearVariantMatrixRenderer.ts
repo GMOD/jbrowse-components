@@ -40,7 +40,6 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
       width,
     })
 
-    console.log({ res })
     return {
       ...results,
       ...res,

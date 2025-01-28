@@ -20,4 +20,5 @@ export interface MultiRenderArgsDeserialized
   sources: Source[]
   rowHeight: number
   scrollTop: number
+  minorAlleleFrequencyFilter: number
 }
