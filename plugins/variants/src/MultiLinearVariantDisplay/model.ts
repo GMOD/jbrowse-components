@@ -73,7 +73,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       return {
         get canDisplayLabels() {
-          return self.rowHeight > 8
+          return self.rowHeight > 8 && self.showSidebarLabelsSetting
         },
         /**
          * #getter
@@ -108,9 +108,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const superProps = self.adapterProps()
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.sources,
-            displayModel: self,
-            rpcDriverName: self.rpcDriverName,
+            notReady:
+              superProps.notReady || !self.sources || !self.featuresVolatile,
             height: self.height,
             totalHeight: self.totalHeight,
             renderingMode: self.renderingMode,
@@ -132,7 +131,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               const { getMultiVariantSourcesAutorun } = await import(
                 '../getMultiVariantSourcesAutorun'
               )
+              const { getMultiVariantFeaturesAutorun } = await import(
+                '../getMultiVariantFeaturesAutorun'
+              )
+
               getMultiVariantSourcesAutorun(self)
+              getMultiVariantFeaturesAutorun(self)
             } catch (e) {
               if (isAlive(self)) {
                 console.error(e)

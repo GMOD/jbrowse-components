@@ -1,8 +1,8 @@
-import { SanitizedHTML } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
+import MultiVariantTooltip from '../../shared/MultiVariantTooltip'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -34,25 +34,7 @@ const Crosshair = observer(function ({
         <line x1={0} x2={width} y1={mouseY} y2={mouseY} stroke="black" />
         <line x1={mouseX} x2={mouseX} y1={0} y2={height} stroke="black" />
       </svg>
-      <BaseTooltip>
-        {source.color ? (
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              backgroundColor: source.color,
-            }}
-          />
-        ) : null}
-        <SanitizedHTML
-          html={Object.entries({ ...source, genotype: hoveredGenotype })
-            .filter(
-              ([key]) => key !== 'color' && key !== 'name' && key !== 'HP',
-            )
-            .map(([key, value]) => `${key}:${value}`)
-            .join('<br/>')}
-        />
-      </BaseTooltip>
+      <MultiVariantTooltip source={{ ...source, hoveredGenotype }} />
     </>
   ) : null
 })

@@ -193,11 +193,13 @@ export default function MultiVariantBaseModelF(
               if (info?.isPhased) {
                 const ploidy = info.maxPloidy
                 for (let i = 0; i < ploidy; i++) {
+                  const id = `${row.name} HP${i}`
                   rows.push({
                     ...sources[row.name],
                     ...row,
-                    label: `${row.name} HP${i}`,
+                    label: id,
                     HP: i,
+                    id: id,
                   })
                 }
               }
@@ -208,6 +210,7 @@ export default function MultiVariantBaseModelF(
                 ...sources[row.name],
                 ...row,
                 label: row.name,
+                id: row.name,
               })
             }
           }

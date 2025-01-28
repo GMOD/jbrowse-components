@@ -50,7 +50,6 @@ export async function makeImageData(
     bpPerPx,
     renderingMode,
   } = props
-  console.log({ minorAlleleFrequencyFilter })
   const region = regions[0]!
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),
