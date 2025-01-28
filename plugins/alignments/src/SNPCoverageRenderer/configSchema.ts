@@ -28,7 +28,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    drawArcs: {
+    showArcs: {
       type: 'boolean',
       description: 'Draw sashimi-style arcs for intron features',
       defaultValue: true,
@@ -36,7 +36,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    drawInterbaseCounts: {
+    showInterbaseCounts: {
       type: 'boolean',
       description:
         'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
@@ -45,7 +45,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    drawIndicators: {
+    showInterbaseIndicators: {
       type: 'boolean',
       description:
         'draw a triangular indicator where an event has been detected',

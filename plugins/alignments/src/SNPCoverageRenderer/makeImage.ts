@@ -71,9 +71,9 @@ export async function makeImage(
   const originLinear = getOrigin('linear')
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
-  const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
-  const drawArcs = readConfObject(cfg, 'drawArcs')
-  const drawIndicators = readConfObject(cfg, 'drawIndicators')
+  const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
+  const showArcs = readConfObject(cfg, 'showArcs')
+  const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
   // get the y coordinate that we are plotting at, this can be log scale
   const toY = (n: number) => height - (viewScale(n) || 0) + offset
@@ -295,7 +295,7 @@ export async function makeImage(
     }
 
     const interbaseEvents = Object.keys(snpinfo.noncov)
-    if (drawInterbaseCounts) {
+    if (showInterbaseCounts) {
       let curr = 0
       for (const base of interbaseEvents) {
         const { entryDepth } = snpinfo.noncov[base]!
@@ -311,7 +311,7 @@ export async function makeImage(
       }
     }
 
-    if (drawIndicators) {
+    if (showInterbaseIndicators) {
       let accum = 0
       let max = 0
       let maxBase = ''
@@ -343,7 +343,7 @@ export async function makeImage(
     prevTotal = score0
   }
 
-  if (drawArcs) {
+  if (showArcs) {
     for (const f of feats) {
       if (f.get('type') !== 'skip') {
         continue

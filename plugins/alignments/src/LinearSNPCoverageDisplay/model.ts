@@ -53,15 +53,15 @@ function stateModelFactory(
         /**
          * #property
          */
-        drawInterbaseCounts: types.maybe(types.boolean),
+        showInterbaseCounts: types.maybe(types.boolean),
         /**
          * #property
          */
-        drawIndicators: types.maybe(types.boolean),
+        showIndicators: types.maybe(types.boolean),
         /**
          * #property
          */
-        drawArcs: types.maybe(types.boolean),
+        showArcs: types.maybe(types.boolean),
         /**
          * #property
          */
@@ -159,14 +159,18 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
-          const { drawArcs, drawInterbaseCounts, drawIndicators } = self
+          const {
+            showArcs: showArcs,
+            showInterbaseCounts,
+            showIndicators: showIndicators,
+          } = self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
-              drawInterbaseCounts:
-                drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: drawArcs ?? configBlob.drawArcs,
+              showInterbaseCounts:
+                showInterbaseCounts ?? configBlob.showInterbaseCounts,
+              showIndicators: showIndicators ?? configBlob.showIndicators,
+              showArcs: showArcs ?? configBlob.showArcs,
             },
             getEnv(self),
           )
@@ -174,27 +178,27 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get drawArcsSetting() {
+        get showArcsSetting() {
           return (
-            self.drawArcs ?? readConfObject(this.rendererConfig, 'drawArcs')
+            self.showArcs ?? readConfObject(this.rendererConfig, 'showArcs')
           )
         },
         /**
          * #getter
          */
-        get drawInterbaseCountsSetting() {
+        get showInterbaseCountsSetting() {
           return (
-            self.drawInterbaseCounts ??
-            readConfObject(this.rendererConfig, 'drawInterbaseCounts')
+            self.showInterbaseCounts ??
+            readConfObject(this.rendererConfig, 'showInterbaseCounts')
           )
         },
         /**
          * #getter
          */
-        get drawIndicatorsSetting() {
+        get showIndicatorsSetting() {
           return (
-            self.drawIndicators ??
-            readConfObject(this.rendererConfig, 'drawIndicators')
+            self.showIndicators ??
+            readConfObject(this.rendererConfig, 'showIndicators')
           )
         },
 
@@ -234,20 +238,20 @@ function stateModelFactory(
       /**
        * #action
        */
-      toggleShowIndicators() {
-        self.drawIndicators = !self.drawIndicatorsSetting
+      setShowIndicators(arg: boolean) {
+        self.showIndicators = arg
       },
       /**
        * #action
        */
-      toggleShowInterbaseCounts() {
-        self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
+      setShowInterbaseCounts(arg: boolean) {
+        self.showInterbaseCounts = arg
       },
       /**
        * #action
        */
-      toggleShowArcs() {
-        self.drawArcs = !self.drawArcsSetting
+      setShowArcs(arg: boolean) {
+        self.showArcs = arg
       },
     }))
     .actions(self => ({
@@ -364,27 +368,27 @@ function stateModelFactory(
               label: 'Show insertion/clipping indicators',
               icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.drawIndicatorsSetting,
+              checked: self.showIndicatorsSetting,
               onClick: () => {
-                self.toggleShowIndicators()
+                self.setShowIndicators(!self.showIndicatorsSetting)
               },
             },
             {
               label: 'Show insertion/clipping counts',
               icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.drawInterbaseCountsSetting,
+              checked: self.showInterbaseCountsSetting,
               onClick: () => {
-                self.toggleShowInterbaseCounts()
+                self.setShowInterbaseCounts(self.showInterbaseCountsSetting)
               },
             },
             {
               label: 'Show arcs',
               icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.drawArcsSetting,
+              checked: self.showArcsSetting,
               onClick: () => {
-                self.toggleShowArcs()
+                self.setShowArcs(self.showArcsSetting)
               },
             },
           ]
