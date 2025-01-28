@@ -23,6 +23,23 @@ test('matrix', async () => {
   expectCanvasMatch(await findByTestId(/prerendered_canvas/, ...opts))
 }, 40000)
 
+test('matrix phased', async () => {
+  const { view, findByTestId, findByText } = await createView()
+  await view.navToLocString('ctgA')
+  fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
+
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await findByText('Display types', ...opts))
+  fireEvent.click(await findByText('Multi-variant display (matrix)', ...opts))
+
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await findByText('Rendering mode', ...opts))
+  fireEvent.click(await findByText('Phased', ...opts))
+
+  fireEvent.click(await findByText('Force load', ...opts))
+  expectCanvasMatch(await findByTestId(/prerendered_canvas/, ...opts))
+}, 40000)
+
 test('regular', async () => {
   const { view, findByTestId, findByText, findAllByTestId } = await createView()
 
@@ -32,6 +49,24 @@ test('regular', async () => {
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
   fireEvent.click(await findByText('Multi-variant display (regular)', ...opts))
+  fireEvent.click(await findByText('Force load', ...opts))
+  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
+}, 40000)
+
+test('regular phased', async () => {
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
+
+  await view.navToLocString('ctgA')
+  fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
+
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await findByText('Display types', ...opts))
+  fireEvent.click(await findByText('Multi-variant display (regular)', ...opts))
+
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await findByText('Rendering mode', ...opts))
+  fireEvent.click(await findByText('Phased', ...opts))
+
   fireEvent.click(await findByText('Force load', ...opts))
   expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
 }, 40000)

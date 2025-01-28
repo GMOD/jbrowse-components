@@ -268,7 +268,7 @@ export default function MultiVariantBaseModelF(
                         },
                       },
                       {
-                        label: 'Phased mode',
+                        label: 'Phased',
                         checked: self.renderingMode === 'phased',
                         type: 'radio',
                         onClick: () => {
