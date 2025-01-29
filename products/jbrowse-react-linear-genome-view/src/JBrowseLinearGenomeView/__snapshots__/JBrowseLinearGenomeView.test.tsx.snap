@@ -318,7 +318,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1l0h175-MuiTypography-root-bp"
+                    class="MuiTypography-root MuiTypography-body2 css-lqhf8e-MuiTypography-root-bp"
                   >
                     40bp
                   </p>
