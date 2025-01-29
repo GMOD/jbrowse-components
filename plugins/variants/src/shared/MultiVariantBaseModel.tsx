@@ -328,10 +328,10 @@ export default function MultiVariantBaseModelF(
                 {
                   label:
                     'Phased' +
-                    (self.hasPhased
+                    (!self.hasPhased
                       ? ' (disabled, no phased variants found)'
                       : ''),
-                  disabled: self.hasPhased,
+                  disabled: !self.hasPhased,
                   checked: self.renderingMode === 'phased',
                   type: 'radio',
                   onClick: () => {
