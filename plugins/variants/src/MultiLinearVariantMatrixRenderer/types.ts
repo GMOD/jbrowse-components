@@ -7,12 +7,12 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   minorAlleleFrequencyFilter: number
   highResolutionScaling: number
   height: number
-  phasedMode: string
+  renderingMode: string
 }
 
 export interface RenderArgsDeserializedWithFeaturesAndLayout
   extends RenderArgsDeserialized {
   sources: Source[]
   features: Map<string, Feature>
-  phasedMode: string
+  renderingMode: string
 }

@@ -1,10 +1,13 @@
+import { featureSpanPx } from '@jbrowse/core/util'
+import RBush from 'rbush'
+
 import {
   getColorAlleleCount,
   getColorPhased,
 } from '../shared/multiVariantColor'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
-import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
+import type { MultiRenderArgsDeserialized } from './types'
 
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
@@ -34,45 +37,46 @@ function drawPhased(
   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
 
-export function makeImageData({
-  ctx,
-  canvasWidth,
-  canvasHeight,
-  renderArgs,
-}: {
-  ctx: CanvasRenderingContext2D
-  canvasWidth: number
-  canvasHeight: number
-  renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
-}) {
+export async function makeImageData(
+  ctx: CanvasRenderingContext2D,
+  props: MultiRenderArgsDeserialized,
+) {
   const {
-    renderingMode: renderingMode,
+    scrollTop,
     minorAlleleFrequencyFilter,
     sources,
+    rowHeight,
     features,
-  } = renderArgs
-  const h = canvasHeight / sources.length
+    regions,
+    bpPerPx,
+    renderingMode,
+  } = props
+  const region = regions[0]!
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),
     minorAlleleFrequencyFilter,
   )
+  const rbush = new RBush()
+  for (const feature of mafs) {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const w = Math.max(Math.round(rightPx - leftPx), 2)
+    const samp = feature.get('genotypes') as Record<string, string>
+    let y = -scrollTop
 
-  const arr = [] as string[][]
-  const m = mafs.length
-  const w = canvasWidth / m
-  for (let i = 0; i < m; i++) {
-    const f = mafs[i]!
-    const samp = f.get('genotypes') as Record<string, string>
-
-    const x = (i / mafs.length) * canvasWidth
     const s = sources.length
-    const arr2 = [] as string[]
     for (let j = 0; j < s; j++) {
-      const y = (j / s) * canvasHeight
       const { name, HP } = sources[j]!
       const genotype = samp[name]
+      const x = Math.floor(leftPx)
+      const h = Math.max(rowHeight, 1)
       if (genotype) {
-        arr2.push(genotype)
+        rbush.insert({
+          minX: x - f2,
+          maxX: x + w + f2,
+          minY: y - f2,
+          maxY: y + h + f2,
+          genotype,
+        })
         const isPhased = genotype.includes('|')
         if (renderingMode === 'phased') {
           if (isPhased) {
@@ -87,11 +91,10 @@ export function makeImageData({
           drawColorAlleleCount(alleles, ctx, x, y, w, h)
         }
       }
+      y += rowHeight
     }
-    arr.push(arr2)
   }
   return {
-    mafs,
-    arr,
+    rbush: rbush.toJSON(),
   }
 }

@@ -1,4 +1,5 @@
 import {
+  offset,
   useClientPoint,
   useFloating,
   useInteractions,
@@ -43,6 +44,7 @@ export default function BaseTooltip({
   const { refs, floatingStyles, context } = useFloating({
     placement,
     strategy: 'fixed',
+    middleware: [offset(5)],
   })
 
   const clientPoint = useClientPoint(context, clientPointCoords)

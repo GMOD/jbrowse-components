@@ -1,17 +1,24 @@
-import { SanitizedHTML } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
+import MultiVariantTooltip from '../../shared/MultiVariantTooltip'
 
 import type { MultiLinearVariantDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
+  rel: {
+    position: 'relative',
+  },
   cursor: {
     pointerEvents: 'none',
     zIndex: 1000,
-    position: 'relative',
+    position: 'absolute',
+  },
+  color: {
+    width: 10,
+    height: 10,
   },
 })
 
@@ -25,41 +32,25 @@ const Crosshair = observer(function ({
   model: MultiLinearVariantDisplayModel
 }) {
   const { classes } = useStyles()
-  const { height, scrollTop, rowHeight, sources } = model
+  const { hoveredGenotype, height, scrollTop, rowHeight, sources } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = sources?.[Math.floor(mouseY / rowHeight)]
   const y = mouseY - scrollTop
   return source ? (
-    <div style={{ position: 'relative' }}>
+    <div className={classes.rel}>
       <svg
         className={classes.cursor}
         width={width}
         height={height}
         style={{
-          position: 'absolute',
           top: scrollTop,
         }}
       >
         <line x1={0} x2={width} y1={y} y2={y} stroke="black" />
         <line x1={mouseX} x2={mouseX} y1={0} y2={height} stroke="black" />
       </svg>
-      <BaseTooltip>
-        {source.color ? (
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              backgroundColor: source.color,
-            }}
-          />
-        ) : null}
-        <SanitizedHTML
-          html={Object.entries(source)
-            .filter(([key]) => key !== 'color')
-            .map(([key, value]) => `${key}:${value}`)
-            .join('<br/>')}
-        />
-      </BaseTooltip>
+
+      <MultiVariantTooltip source={{ ...source, hoveredGenotype }} />
     </div>
   ) : null
 })

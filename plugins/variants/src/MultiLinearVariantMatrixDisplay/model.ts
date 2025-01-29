@@ -1,27 +1,16 @@
-import { lazy } from 'react'
-
-import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
-import deepEqual from 'fast-deep-equal'
 import { isAlive, types } from 'mobx-state-tree'
 
-import type { Source } from '../types'
+import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
-
-// lazies
-const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
-const MAFFilterDialog = lazy(() => import('../shared/MAFFilterDialog'))
-const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
 
 /**
  * #stateModel LinearVariantMatrixDisplay
  * extends
- * - [LinearBareDisplay](../linearbaredisplay)
+ * - [MultiVariantBaseModel](../multivariantbasemodel)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -29,7 +18,7 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearVariantMatrixDisplay',
-      linearBareDisplayStateModelFactory(configSchema),
+      MultiVariantBaseModelF(configSchema),
       types.model({
         /**
          * #property
@@ -39,272 +28,10 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        layout: types.optional(types.frozen<Source[]>(), []),
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
-
-        /**
-         * #property
-         */
-        showSidebarLabelsSetting: true,
-
-        /**
-         * #property
-         */
-        phasedMode: types.optional(types.string, 'none'),
+        rowHeightSetting: types.optional(types.number, 1),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      sourcesLoadingStopToken: undefined as string | undefined,
-      /**
-       * #volatile
-       */
-      featureUnderMouseVolatile: undefined as Feature | undefined,
-      /**
-       * #volatile
-       */
-      sourcesVolatile: undefined as Source[] | undefined,
-      /**
-       * #volatile
-       */
-      featuresVolatile: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       */
-      lineZoneHeight: 20,
-      /**
-       * #volatile
-       */
-      hasPhased: false,
-      /**
-       * #volatile
-       */
-      samplePloidy: undefined as undefined | Record<string, number>,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setFeatures(f: Feature[]) {
-        self.featuresVolatile = f
-      },
-      /**
-       * #action
-       */
-      setLayout(layout: Source[]) {
-        self.layout = layout
-      },
-      /**
-       * #action
-       */
-      clearLayout() {
-        self.layout = []
-      },
-      /**
-       * #action
-       */
-      setSourcesLoading(str: string) {
-        if (self.sourcesLoadingStopToken) {
-          stopStopToken(self.sourcesLoadingStopToken)
-        }
-        self.sourcesLoadingStopToken = str
-      },
 
-      /**
-       * #action
-       */
-      setSources(sources: Source[]) {
-        if (!deepEqual(sources, self.sourcesVolatile)) {
-          self.sourcesVolatile = sources
-        }
-      },
-      /**
-       * #action
-       */
-      setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilter = arg
-      },
-      /**
-       * #action
-       */
-      setShowSidebarLabels(arg: boolean) {
-        self.showSidebarLabelsSetting = arg
-      },
-      /**
-       * #action
-       */
-      setPhasedMode(arg: string) {
-        self.phasedMode = arg
-      },
-      /**
-       * #action
-       */
-      setHasPhased(arg: boolean) {
-        self.hasPhased = arg
-      },
-      /**
-       * #action
-       */
-      setSamplePloidy(arg: Record<string, number>) {
-        if (!deepEqual(arg, self.samplePloidy)) {
-          self.samplePloidy = arg
-        }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get preSources() {
-        return self.layout.length ? self.layout : self.sourcesVolatile
-      },
-      /**
-       * #getter
-       */
-      get sources() {
-        if (this.preSources) {
-          const rows = []
-          const sources = Object.fromEntries(
-            self.sourcesVolatile?.map(s => [s.name, s]) || [],
-          )
-          for (const row of this.preSources) {
-            // make separate rows for each haplotype in phased mode
-            if (self.phasedMode === 'phasedOnly') {
-              const ploidy = self.samplePloidy?.[row.name]
-              if (ploidy) {
-                for (let i = 0; i < ploidy; i++) {
-                  rows.push({
-                    ...sources[row.name],
-                    ...row,
-                    label: `${row.name} HP${i}`,
-                    HP: i,
-                  })
-                }
-              }
-            }
-            // non-phased mode does not make separate rows
-            else {
-              rows.push({
-                ...sources[row.name],
-                ...row,
-                label: row.name,
-              })
-            }
-          }
-          return rows
-        }
-        return undefined
-      },
-    }))
-    .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        renderProps: superRenderProps,
-      } = self
-
-      return {
-        /**
-         * #method
-         */
-        adapterProps() {
-          const superProps = superRenderProps()
-          return {
-            ...superProps,
-            rpcDriverName: self.rpcDriverName,
-            displayModel: self,
-            config: self.rendererConfig,
-          }
-        },
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Show sidebar labels',
-              type: 'checkbox',
-              checked: self.showSidebarLabelsSetting,
-              onClick: () => {
-                self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
-              },
-            },
-            ...(self.hasPhased
-              ? [
-                  {
-                    label: 'Phased mode',
-                    type: 'subMenu',
-                    subMenu: [
-                      {
-                        label: 'Draw unphased (maps allele count to color)',
-                        type: 'radio',
-                        checked: self.phasedMode === 'none',
-                        onClick: () => {
-                          self.setPhasedMode('none')
-                        },
-                      },
-                      {
-                        label: 'Draw phased (split into haplotype rows)',
-                        checked: self.phasedMode === 'phasedOnly',
-                        type: 'radio',
-                        onClick: () => {
-                          self.setPhasedMode('phasedOnly')
-                        },
-                      },
-                    ],
-                  },
-                ]
-              : []),
-            {
-              label: 'Set minor allele frequency filter',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  MAFFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-            {
-              label: 'Cluster by genotype',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ClusterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-            {
-              label: 'Edit colors/arrangement...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetColorDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-          ]
-        },
-      }
-    })
     .views(self => ({
       /**
        * #getter
@@ -316,16 +43,21 @@ export default function stateModelFactory(
        * #getter
        */
       get totalHeight() {
-        return self.height - self.lineZoneHeight
+        return self.autoHeight
+          ? self.height - self.lineZoneHeight
+          : (self.sources?.length || 1) * self.rowHeightSetting
       },
 
       /**
        * #getter
        */
       get rowHeight() {
-        return this.totalHeight / (self.sources?.length || 1)
+        return self.autoHeight
+          ? self.height / (self.sources?.length || 1)
+          : self.rowHeightSetting
       },
     }))
+
     .views(self => ({
       /**
        * #method
@@ -336,7 +68,7 @@ export default function stateModelFactory(
           ...superProps,
           notReady:
             superProps.notReady || !self.sources || !self.featuresVolatile,
-          phasedMode: self.phasedMode,
+          renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           height: self.totalHeight,
           sources: self.sources,

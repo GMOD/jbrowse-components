@@ -553,7 +553,6 @@ export function SharedLinearPileupDisplayMixin(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-
             {
               label: 'Set feature height...',
               priority: 1,

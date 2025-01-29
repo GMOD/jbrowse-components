@@ -4691,7 +4691,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "samplesTsvLocation": {
-          "uri": "1000g.sorted.csv.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz"
         },
         "vcfGzLocation": {
           "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz",
