@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
+import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton, Slider, Tooltip } from '@mui/material'
@@ -7,6 +10,9 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
+
+// lazies
+const RegionWidthEditorDialog = lazy(() => import('./RegionWidthEditorDialog'))
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -35,19 +41,6 @@ const HeaderZoomControls = observer(function ({
   const zoomOutDisabled = bpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
-      <Tooltip title="Zoom out 15x">
-        <span>
-          <IconButton
-            data-testid="zoom_out_more"
-            disabled={zoomOutDisabled}
-            onClick={() => {
-              model.zoom(bpPerPx * 15)
-            }}
-          >
-            <ZoomOut fontSize="large" />
-          </IconButton>
-        </span>
-      </Tooltip>
       <Tooltip title="Zoom out 2x">
         <span>
           <IconButton
@@ -86,19 +79,37 @@ const HeaderZoomControls = observer(function ({
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Zoom in 15x">
-        <span>
-          <IconButton
-            data-testid="zoom_in_more"
-            disabled={zoomInDisabled}
-            onClick={() => {
-              model.zoom(model.bpPerPx / 15)
-            }}
-          >
-            <ZoomIn fontSize="large" />
-          </IconButton>
-        </span>
-      </Tooltip>
+
+      <CascadingMenuButton
+        menuItems={[
+          ...[100, 50, 10].map(r => ({
+            label: `Zoom in ${r}x`,
+            onClick: () => {
+              model.zoom(model.bpPerPx / r)
+            },
+          })),
+          ...[10, 50, 100].map(r => ({
+            label: `Zoom out ${r}x`,
+            onClick: () => {
+              model.zoom(model.bpPerPx * r)
+            },
+          })),
+          {
+            label: 'Custom zoom',
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                RegionWidthEditorDialog,
+                {
+                  model,
+                  handleClose,
+                },
+              ])
+            },
+          },
+        ]}
+      >
+        <MoreVert />
+      </CascadingMenuButton>
     </div>
   )
 })

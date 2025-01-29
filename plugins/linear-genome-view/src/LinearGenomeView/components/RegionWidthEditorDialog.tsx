@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { toLocale } from '@jbrowse/core/util'
 import {
   Button,
   DialogActions,
@@ -21,29 +22,33 @@ const RegionWidthEditorDialog = observer(function ({
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
-  const [val, setVal] = useState(`${toP(model.bpPerPx)}`)
+  const { bpPerPx, width } = model
+  const [val, setVal] = useState(toLocale(toP(bpPerPx * width)))
+  useEffect(() => {
+    setVal(toLocale(bpPerPx * width))
+  }, [bpPerPx, width])
+  const val2 = val.replace(/,/g, '')
   return (
     <Dialog title="Edit zoom level" open onClose={handleClose}>
       <DialogContent
-        style={{ display: 'flex', flexDirection: 'column', gap: 30 }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 30,
+        }}
       >
         <Typography>
-          Allows editing the zoom level using the 'base pairs per pixel'
-          measurement
-        </Typography>
-        <Typography>
-          Large numbers e.g. 10 means there are 10 base pairs in each pixel,
-          small numbers e.g. 0.1 means there are 10 pixels for each base pair
+          Enter a specific number of base pairs to change the viewport to show.
+          This is approximate and does not account for padding between regions
+          or off-screen scrolling
         </Typography>
         <TextField
-          helperText="current bpPerPx"
+          helperText="current zoom level (in bp)"
           value={val}
           onChange={event => {
             setVal(event.target.value)
           }}
         />
-        Resulting region width: approximatly{' '}
-        {!Number.isNaN(+val) ? model.width / +val : '(error parsing number)'}
       </DialogContent>
       <DialogActions>
         <Button
@@ -59,7 +64,7 @@ const RegionWidthEditorDialog = observer(function ({
           variant="contained"
           color="primary"
           onClick={() => {
-            model.zoomTo(+val)
+            model.zoomTo(+val2 / model.width)
             handleClose()
           }}
         >
