@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "3.0.0",
+  "version": "2.18.0",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
     "jbrowse",
@@ -38,7 +38,7 @@
   "dependencies": {
     "@gmod/bgzf-filehandle": "^2.0.1",
     "@gmod/vcf": "^6.0.0",
-    "@jbrowse/plugin-variants": "^3.0.0",
+    "@jbrowse/plugin-variants": "^2.18.0",
     "@mui/icons-material": "^6.0.0"
   },
   "peerDependencies": {

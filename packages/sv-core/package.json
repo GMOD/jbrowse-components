@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/sv-core",
-  "version": "3.0.0",
+  "version": "2.18.0",
   "description": "JBrowse 2 code shared between sv type code",
   "keywords": [
     "jbrowse",
@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@gmod/vcf": "^6.0.0",
-    "@jbrowse/core": "^3.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^3.0.0",
+    "@jbrowse/core": "^2.18.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.18.0",
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0"
   },
