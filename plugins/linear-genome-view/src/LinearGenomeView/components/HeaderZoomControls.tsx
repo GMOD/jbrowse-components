@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
@@ -9,6 +10,9 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
+
+// lazies
+const RegionWidthEditorDialog = lazy(() => import('./RegionWidthEditorDialog'))
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -22,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ZoomControls = observer(function ({
+const HeaderZoomControls = observer(function ({
   model,
 }: {
   model: LinearGenomeViewModel
@@ -90,6 +94,18 @@ const ZoomControls = observer(function ({
               model.zoom(model.bpPerPx * r)
             },
           })),
+          {
+            label: 'Custom zoom',
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                RegionWidthEditorDialog,
+                {
+                  model,
+                  handleClose,
+                },
+              ])
+            },
+          },
         ]}
       >
         <MoreVert />
@@ -98,4 +114,4 @@ const ZoomControls = observer(function ({
   )
 })
 
-export default ZoomControls
+export default HeaderZoomControls

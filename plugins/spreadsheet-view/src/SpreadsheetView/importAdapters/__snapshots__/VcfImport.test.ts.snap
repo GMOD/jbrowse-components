@@ -142,6 +142,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "1",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs144271100",
           ],
@@ -249,6 +250,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "1",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs6337",
           ],
@@ -409,6 +411,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1126497",
           ],
@@ -573,6 +576,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2303426",
           ],
@@ -717,6 +721,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs768805063",
           ],
@@ -836,6 +841,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3732183",
           ],
@@ -1002,6 +1008,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1042820",
           ],
@@ -1166,6 +1173,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs55927047",
           ],
@@ -1324,6 +1332,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800931",
           ],
@@ -1484,6 +1493,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800932",
           ],
@@ -1650,6 +1660,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800935",
           ],
@@ -1812,6 +1823,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2020911",
           ],
@@ -1964,6 +1976,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2234731",
             "rs767177736",
@@ -2121,6 +2134,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3136367",
           ],
@@ -2252,6 +2266,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs771393147",
           ],
@@ -2363,6 +2378,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2070093",
           ],
@@ -2515,6 +2531,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2070096",
           ],
@@ -2658,6 +2675,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs56130510",
           ],
@@ -2769,6 +2787,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs35933323",
           ],
@@ -2919,6 +2938,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1129804",
           ],
@@ -3069,6 +3089,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs17489363",
           ],
@@ -3207,6 +3228,7 @@ exports[`vcf file import 1`] = `
           "FILTER": [
             "QDFilter",
           ],
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": undefined,
           "INFO": {
             "DP": [
@@ -3317,6 +3339,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "3",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs9876116",
           ],
@@ -3472,6 +3495,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": undefined,
           "INFO": {
             "AC": [
@@ -3621,6 +3645,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2229992",
           ],
@@ -3779,6 +3804,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs351771",
           ],
@@ -3937,6 +3963,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs41115",
           ],
@@ -4095,6 +4122,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs42427",
           ],
@@ -4253,6 +4281,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs866006",
           ],
@@ -4415,6 +4444,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs459552",
           ],
@@ -4587,6 +4617,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs465899",
           ],
@@ -4755,6 +4786,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2229995",
           ],
@@ -4921,6 +4953,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4526098",
           ],
@@ -5069,6 +5102,7 @@ exports[`vcf file import 1`] = `
           "FILTER": [
             "MQFilter",
           ],
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1805326",
           ],
@@ -5229,6 +5263,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2228006",
           ],
@@ -5395,6 +5430,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1805321",
           ],
@@ -5559,6 +5595,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1805319",
           ],
@@ -5702,6 +5739,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs60794673",
           ],
@@ -5815,6 +5853,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs62456182",
           ],
@@ -5958,6 +5997,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs112241458",
           ],
@@ -6057,6 +6097,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs753027677",
           ],
@@ -6172,6 +6213,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs11515",
           ],
@@ -6322,6 +6364,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4647534",
           ],
@@ -6472,6 +6515,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2236406",
           ],
@@ -6622,6 +6666,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066829",
           ],
@@ -6774,6 +6819,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066836",
           ],
@@ -6919,6 +6965,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs587780530",
           ],
@@ -7040,6 +7087,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800858",
           ],
@@ -7208,6 +7256,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800860",
           ],
@@ -7378,6 +7427,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs760466",
           ],
@@ -7540,6 +7590,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800861",
           ],
@@ -7712,6 +7763,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2075912",
           ],
@@ -7861,6 +7913,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs771859047",
           ],
@@ -7974,6 +8027,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs555895",
           ],
@@ -8134,6 +8188,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2959656",
           ],
@@ -8298,6 +8353,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs540012",
           ],
@@ -8458,6 +8514,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2071313",
           ],
@@ -8620,6 +8677,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs509606",
           ],
@@ -8772,6 +8830,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs641936",
           ],
@@ -8928,6 +8987,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs497763",
           ],
@@ -9076,6 +9136,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066734",
             "rs766396464",
@@ -9210,6 +9271,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs779838075",
           ],
@@ -9308,6 +9370,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs34325032",
           ],
@@ -9406,6 +9469,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs373881770",
           ],
@@ -9502,6 +9566,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3218681",
           ],
@@ -9607,6 +9672,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs659243",
           ],
@@ -9757,6 +9823,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "12",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2069502",
           ],
@@ -9909,6 +9976,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1799943",
           ],
@@ -10071,6 +10139,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs144848",
           ],
@@ -10243,6 +10312,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1801406",
           ],
@@ -10407,6 +10477,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs206075",
           ],
@@ -10563,6 +10634,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs206076",
           ],
@@ -10717,6 +10789,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs169547",
           ],
@@ -10879,6 +10952,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "16",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3743674",
           ],
@@ -11033,6 +11107,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "16",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs35187787",
           ],
@@ -11197,6 +11272,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1042522",
           ],
@@ -11357,6 +11433,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1642785",
           ],
@@ -11506,6 +11583,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs765008499",
           ],
@@ -11617,6 +11695,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2285892",
           ],
@@ -11765,6 +11844,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066736",
           ],
@@ -11907,6 +11987,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs59745739",
           ],
@@ -12049,6 +12130,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs56874702",
             "rs72813695",
@@ -12194,6 +12276,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs553817239",
             "rs7406039",
@@ -12339,6 +12422,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs7405740",
           ],
@@ -12489,6 +12573,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1799966",
           ],
@@ -12661,6 +12746,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1060915",
           ],
@@ -12829,6 +12915,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs16942",
           ],
@@ -13003,6 +13090,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs16941",
           ],
@@ -13177,6 +13265,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs799917",
           ],
@@ -13349,6 +13438,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs16940",
           ],
@@ -13515,6 +13605,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1799949",
           ],
@@ -13683,6 +13774,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986850",
           ],
@@ -13838,6 +13930,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs373413425",
           ],
@@ -13949,6 +14042,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs28363318",
           ],
@@ -14099,6 +14193,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986763",
           ],
@@ -14251,6 +14346,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986764",
           ],
@@ -14407,6 +14503,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986765",
           ],
@@ -14557,6 +14654,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4988351",
           ],
@@ -14694,6 +14792,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "18",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs760402978",
           ],
@@ -14807,6 +14906,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "19",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs34928889",
           ],
@@ -14965,6 +15065,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "19",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2075607",
           ],
