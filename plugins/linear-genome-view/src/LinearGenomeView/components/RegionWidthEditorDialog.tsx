@@ -42,6 +42,8 @@ const RegionWidthEditorDialog = observer(function ({
             setVal(event.target.value)
           }}
         />
+        Resulting region width: approximatly{' '}
+        {!Number.isNaN(+val) ? model.width / +val : '(error parsing number)'}
       </DialogContent>
       <DialogActions>
         <Button
