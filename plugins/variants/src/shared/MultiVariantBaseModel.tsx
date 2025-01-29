@@ -6,7 +6,7 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
-import PaletteIcon from '@mui/icons-material/Palette'
+import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 import { types } from 'mobx-state-tree'
@@ -314,29 +314,30 @@ export default function MultiVariantBaseModelF(
               ],
             },
             {
-              label: 'Color by',
-              icon: PaletteIcon,
+              label: 'Rendering mode',
+              icon: SplitscreenIcon,
               subMenu: [
-                ...(self.hasPhased
-                  ? [
-                      {
-                        label: 'Allele count',
-                        type: 'radio',
-                        checked: self.renderingMode === 'alleleCount',
-                        onClick: () => {
-                          self.setPhasedMode('alleleCount')
-                        },
-                      },
-                      {
-                        label: 'Phased',
-                        checked: self.renderingMode === 'phased',
-                        type: 'radio',
-                        onClick: () => {
-                          self.setPhasedMode('phased')
-                        },
-                      },
-                    ]
-                  : []),
+                {
+                  label: 'Allele count',
+                  type: 'radio',
+                  checked: self.renderingMode === 'alleleCount',
+                  onClick: () => {
+                    self.setPhasedMode('alleleCount')
+                  },
+                },
+                {
+                  label:
+                    'Phased' +
+                    (self.hasPhased
+                      ? ' (disabled, no phased variants found)'
+                      : ''),
+                  disabled: self.hasPhased,
+                  checked: self.renderingMode === 'phased',
+                  type: 'radio',
+                  onClick: () => {
+                    self.setPhasedMode('phased')
+                  },
+                },
               ],
             },
             {

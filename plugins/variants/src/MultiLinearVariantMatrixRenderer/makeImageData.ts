@@ -1,6 +1,7 @@
 import {
   getColorAlleleCount,
   getColorPhased,
+  getColorPhasedWithPhaseSet,
 } from '../shared/multiVariantColor'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
@@ -29,8 +30,12 @@ function drawPhased(
   w: number,
   h: number,
   HP: number,
+  PS?: string,
 ) {
-  ctx.fillStyle = getColorPhased(alleles, HP)
+  ctx.fillStyle =
+    PS !== undefined
+      ? getColorPhasedWithPhaseSet(alleles, HP, PS)
+      : getColorPhased(alleles, HP)
   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
 }
 
@@ -65,30 +70,62 @@ export function makeImageData({
   const m = mafs.length
   const w = canvasWidth / m
   for (let i = 0; i < m; i++) {
-    const f = mafs[i]!
-    const samp = f.get('genotypes') as Record<string, string>
-
-    const x = (i / mafs.length) * canvasWidth
-    const s = sources.length
     const arr2 = [] as string[]
-    for (let j = 0; j < s; j++) {
-      const y = (j / s) * canvasHeight
-      const { name, HP } = sources[j]!
-      const genotype = samp[name]
-      if (genotype) {
-        arr2.push(genotype)
-        const isPhased = genotype.includes('|')
-        if (renderingMode === 'phased') {
-          if (isPhased) {
-            const alleles = genotype.split('|')
-            drawPhased(alleles, ctx, x, y, w, h, HP!)
-          } else {
-            ctx.fillStyle = 'black'
-            ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+    const f = mafs[i]!
+    const hasPhaseSet = (f.get('format') as string).includes('PS')
+    if (hasPhaseSet) {
+      const samp = f.get('samples') as Record<string, Record<string, string[]>>
+      const x = (i / mafs.length) * canvasWidth
+      const sln = sources.length
+      for (let j = 0; j < sln; j++) {
+        const y = (j / sln) * canvasHeight
+        const { name, HP } = sources[j]!
+        const s = samp[name]
+        if (s) {
+          const genotype = s.GT?.[0]
+          if (genotype) {
+            arr2.push(genotype)
+            const isPhased = genotype.includes('|')
+            if (renderingMode === 'phased') {
+              if (isPhased) {
+                const PS = s.PS?.[0]
+                const alleles = genotype.split('|')
+                drawPhased(alleles, ctx, x, y, w, h, HP!, PS)
+              } else {
+                ctx.fillStyle = 'black'
+                ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+              }
+            } else {
+              const alleles = genotype.split(/[/|]/)
+              drawColorAlleleCount(alleles, ctx, x, y, w, h)
+            }
           }
-        } else {
-          const alleles = genotype.split(/[/|]/)
-          drawColorAlleleCount(alleles, ctx, x, y, w, h)
+        }
+      }
+    } else {
+      const samp = f.get('genotypes') as Record<string, string>
+      const x = (i / mafs.length) * canvasWidth
+      const sln = sources.length
+      const arr2 = [] as string[]
+      for (let j = 0; j < sln; j++) {
+        const y = (j / sln) * canvasHeight
+        const { name, HP } = sources[j]!
+        const genotype = samp[name]
+        if (genotype) {
+          arr2.push(genotype)
+          const isPhased = genotype.includes('|')
+          if (renderingMode === 'phased') {
+            if (isPhased) {
+              const alleles = genotype.split('|')
+              drawPhased(alleles, ctx, x, y, w, h, HP!)
+            } else {
+              ctx.fillStyle = 'black'
+              ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+            }
+          } else {
+            const alleles = genotype.split(/[/|]/)
+            drawColorAlleleCount(alleles, ctx, x, y, w, h)
+          }
         }
       }
     }

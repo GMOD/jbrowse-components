@@ -44,9 +44,12 @@ export function randomColor(str: string) {
   for (let i = 0; i < str.length; i++) {
     sum += str.charCodeAt(i)
   }
-  return `hsl(${sum * 10}, 50%, 50%)`
+  return `hsl(${colorify(sum * 10)}, 50%, 50%)`
 }
 
+export function colorify(n: number) {
+  return `hsl(${n % 255}, 50%, 50%)`
+}
 // used for calculating minor allele
 export function findSecondLargest(arr: Iterable<number>) {
   let firstMax = 0
@@ -91,7 +94,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter(
 ) {
   const mafs = [] as Feature[]
   for (const feat of feats) {
-    if (calculateMinorAlleleFrequency(feat) > minorAlleleFrequencyFilter) {
+    if (calculateMinorAlleleFrequency(feat) >= minorAlleleFrequencyFilter) {
       mafs.push(feat)
     }
   }
