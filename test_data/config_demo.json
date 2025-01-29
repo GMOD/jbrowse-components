@@ -4469,6 +4469,26 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "illumina_hg002",
+      "name": "HG002 Illumina hs37d5.2x250",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002",
       "name": "HG002 Pacbio hs37d5.11kb",
       "category": ["GIAB"],
