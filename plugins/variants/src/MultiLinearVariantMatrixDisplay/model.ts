@@ -32,7 +32,16 @@ export default function stateModelFactory(
       }),
     )
 
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      lineZoneHeight: 20,
+    }))
     .views(self => ({
+      get nrow() {
+        return self.sources?.length || 1
+      },
       /**
        * #getter
        */
@@ -45,7 +54,7 @@ export default function stateModelFactory(
       get totalHeight() {
         return self.autoHeight
           ? self.height - self.lineZoneHeight
-          : (self.sources?.length || 1) * self.rowHeightSetting
+          : this.nrow * self.rowHeightSetting
       },
 
       /**
@@ -53,7 +62,7 @@ export default function stateModelFactory(
        */
       get rowHeight() {
         return self.autoHeight
-          ? self.height / (self.sources?.length || 1)
+          ? self.totalHeight / this.nrow
           : self.rowHeightSetting
       },
     }))

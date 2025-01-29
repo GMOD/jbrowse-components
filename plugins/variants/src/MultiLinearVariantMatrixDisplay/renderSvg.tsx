@@ -18,11 +18,12 @@ export async function renderSvg(
 ) {
   await when(() => !!model.regionCannotBeRenderedText)
   const { offsetPx } = getContainingView(model) as LinearGenomeViewModel
+  const { lineZoneHeight } = model
   return (
     <>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
         <LinesConnectingMatrixToGenomicPosition exportSVG model={model} />
-        <g transform={`translate(0,${model.lineZoneHeight})`}>
+        <g transform={`translate(0,${lineZoneHeight})`}>
           <g>{await superRenderSvg(opts)}</g>
           <LegendBar model={model} orientation="left" exportSVG />
         </g>

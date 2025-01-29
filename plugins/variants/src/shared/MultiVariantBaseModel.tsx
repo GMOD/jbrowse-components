@@ -97,10 +97,6 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      lineZoneHeight: 20,
-      /**
-       * #volatile
-       */
       hasPhased: false,
       /**
        * #volatile
