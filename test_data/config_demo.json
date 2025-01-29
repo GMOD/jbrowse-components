@@ -4469,6 +4469,26 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "pacbio_hg002",
+      "name": "HG002 Pacbio hs37d5.11kb",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "hg002_cram",
       "name": "HG002 CRAM nanopore+whatshap",
       "assemblyNames": ["hg19"],
