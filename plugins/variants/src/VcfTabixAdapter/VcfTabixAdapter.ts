@@ -73,7 +73,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query
-      const { statusCallback = () => {} } = opts || {}
+      const { statusCallback = () => {} } = opts
       const { vcf, parser } = await this.configure()
 
       await updateStatus('Downloading variants', statusCallback, () =>

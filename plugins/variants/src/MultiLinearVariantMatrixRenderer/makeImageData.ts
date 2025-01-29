@@ -51,6 +51,10 @@ export function makeImageData({
     sources,
     features,
   } = renderArgs
+
+  const { statusCallback = () => {} } = renderArgs
+  // @ts-expect-error
+  statusCallback('Drawing variant matrix')
   const h = canvasHeight / sources.length
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),

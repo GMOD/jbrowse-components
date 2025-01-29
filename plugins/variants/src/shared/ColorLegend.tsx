@@ -40,7 +40,7 @@ const ColorLegend = observer(function ({
           <Fragment key={`${label}-${idx}`}>
             {color ? (
               <RectBg
-                y={idx * rowHeight + 1}
+                y={idx * rowHeight}
                 x={0}
                 width={colorBoxWidth + 0.5}
                 height={rowHeight + 0.5}
