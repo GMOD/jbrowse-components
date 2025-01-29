@@ -1,6 +1,8 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
+import { colorify } from '../util'
+
 export function getColorAlleleCount(alleles: string[]) {
   const total = alleles.length
   let alt = 0
@@ -38,4 +40,13 @@ export function getColorAlleleCount(alleles: string[]) {
 export function getColorPhased(alleles: string[], HP: number) {
   const c = +alleles[HP]!
   return c ? set1[c - 1] || 'black' : '#ccc'
+}
+
+export function getColorPhasedWithPhaseSet(
+  alleles: string[],
+  HP: number,
+  PS: string,
+) {
+  const c = +alleles[HP]!
+  return c ? colorify(+PS) || 'black' : '#ccc'
 }
