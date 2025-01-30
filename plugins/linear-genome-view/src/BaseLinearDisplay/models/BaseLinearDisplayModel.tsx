@@ -10,13 +10,14 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
+  mergeIntervals,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
+import { autorun, when } from 'mobx'
+import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
 import FeatureDensityMixin from './FeatureDensityMixin'
 import TrackHeightMixin from './TrackHeightMixin'
@@ -178,6 +179,19 @@ function stateModelFactory() {
       /**
        * #getter
        */
+      get layoutFeatures() {
+        const featureMaps = []
+        for (const block of self.blockState.values()) {
+          if (block.layout) {
+            featureMaps.push(block.layout.rectangles)
+          }
+        }
+        return new CompositeMap<string, LayoutRecord>(featureMaps)
+      },
+
+      /**
+       * #getter
+       */
       getFeatureOverlapping(
         blockKey: string,
         x: number,
@@ -313,6 +327,23 @@ function stateModelFactory() {
        * #method
        */
       contextMenuItems(): MenuItem[] {
+        const { contextMenuFeature } = self
+        const singleTranscript = contextMenuFeature?.get('subfeatures')?.[0]
+        const exons =
+          singleTranscript
+            ?.get('subfeatures')
+            ?.filter(
+              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
+            ) || []
+        const cds =
+          singleTranscript
+            ?.get('subfeatures')
+            ?.filter(
+              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
+            ) || []
+
+        // some GFF3 features have CDS and no exon subfeatures
+        const subs = exons.length ? exons : cds.length ? cds : []
         return [
           ...(self.contextMenuFeature
             ? [
@@ -334,6 +365,50 @@ function stateModelFactory() {
                     }
                   },
                 },
+                ...(exons.length > 0 && contextMenuFeature
+                  ? [
+                      {
+                        label: 'Collapse introns',
+                        onClick: async () => {
+                          const view = getContainingView(self) as LGV
+                          const { assemblyManager } = getSession(self)
+                          const assemblyName = view.assemblyNames[0]
+                          const assembly = assemblyName
+                            ? assemblyManager.get(assemblyName)
+                            : undefined
+                          const r0 = contextMenuFeature.get('refName')
+                          const refName =
+                            assembly?.getCanonicalRefName(r0) || r0
+                          const w = 100
+
+                          // need to strip ID before copying view snap
+                          const { id, ...rest } = getSnapshot(view)
+                          const newView = getSession(self).addView(
+                            'LinearGenomeView',
+                            {
+                              ...rest,
+                              tracks: rest.tracks.map(track => {
+                                const { id, ...rest } = track
+                                return { ...rest }
+                              }),
+                              displayedRegions: mergeIntervals(
+                                subs.map(f => ({
+                                  refName,
+                                  start: f.get('start') - w,
+                                  end: f.get('end') + w,
+                                  assemblyName: view.assemblyNames[0],
+                                })),
+                                w,
+                              ),
+                            },
+                          ) as LGV
+                          await when(() => newView.initialized)
+
+                          newView.showAllRegions()
+                        },
+                      },
+                    ]
+                  : []),
               ]
             : []),
         ]
