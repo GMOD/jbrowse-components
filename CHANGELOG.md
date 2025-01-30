@@ -1,7 +1,3 @@
-yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.0.1
-
-Done in 0.74s.
-
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.0.0
 
 ## 3.0.0 (2025-01-29)
