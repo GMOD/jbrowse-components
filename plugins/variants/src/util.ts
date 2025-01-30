@@ -44,7 +44,7 @@ export function randomColor(str: string) {
   for (let i = 0; i < str.length; i++) {
     sum += str.charCodeAt(i)
   }
-  return `hsl(${colorify(sum * 10)}, 50%, 50%)`
+  return colorify(sum * 10)
 }
 
 export function colorify(n: number) {
