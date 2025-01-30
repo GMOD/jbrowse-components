@@ -29,7 +29,7 @@
     "prepack": "npm run build",
     "build:esm": "tsc -b tsconfig.build.esm.json",
     "build:commonjs": "tsc -b tsconfig.build.commonjs.json",
-    "build:webpack": "cd dist && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.production.min.js && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.development.js",
+    "build:webpack": "cd dist && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.production.min.js && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.development.js && cd -",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build"
