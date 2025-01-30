@@ -142,6 +142,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "1",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs144271100",
           ],
@@ -172,6 +173,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion A -> AGTGT",
           "end": 156845492,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs144271100",
           "refName": "1",
           "samples": {
@@ -249,6 +251,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "1",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs6337",
           ],
@@ -330,6 +333,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 156848995,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs6337",
           "refName": "1",
           "samples": {
@@ -409,6 +413,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1126497",
           ],
@@ -496,6 +501,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 47601106,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1126497",
           "refName": "2",
           "samples": {
@@ -573,6 +579,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2303426",
           ],
@@ -654,6 +661,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 47630550,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2303426",
           "refName": "2",
           "samples": {
@@ -717,6 +725,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs768805063",
           ],
@@ -753,6 +762,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion TAAAAA -> T,TAA",
           "end": 47641564,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs768805063",
           "refName": "2",
           "samples": {
@@ -836,6 +846,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3732183",
           ],
@@ -923,6 +934,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 47693959,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs3732183",
           "refName": "2",
           "samples": {
@@ -1002,6 +1014,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1042820",
           ],
@@ -1089,6 +1102,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> A",
           "end": 48010558,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1042820",
           "refName": "2",
           "samples": {
@@ -1166,6 +1180,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs55927047",
           ],
@@ -1247,6 +1262,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 48010654,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs55927047",
           "refName": "2",
           "samples": {
@@ -1324,6 +1340,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800931",
           ],
@@ -1405,6 +1422,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 48018030,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1800931",
           "refName": "2",
           "samples": {
@@ -1484,6 +1502,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800932",
           ],
@@ -1571,6 +1590,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 48018081,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1800932",
           "refName": "2",
           "samples": {
@@ -1650,6 +1670,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800935",
           ],
@@ -1737,6 +1758,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 48023115,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1800935",
           "refName": "2",
           "samples": {
@@ -1812,6 +1834,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2020911",
           ],
@@ -1887,6 +1910,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> T",
           "end": 48030838,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2020911",
           "refName": "2",
           "samples": {
@@ -1964,6 +1988,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2234731",
             "rs767177736",
@@ -2048,6 +2073,7 @@ exports[`vcf file import 1`] = `
           ],
           "description": "deletion ACTAT -> A",
           "end": 48032878,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2234731,rs767177736",
           "refName": "2",
           "samples": {
@@ -2121,6 +2147,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3136367",
           ],
@@ -2190,6 +2217,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 48033551,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs3136367",
           "refName": "2",
           "samples": {
@@ -2252,6 +2280,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs771393147",
           ],
@@ -2288,6 +2317,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion C -> CT",
           "end": 48033890,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs771393147",
           "refName": "2",
           "samples": {
@@ -2363,6 +2393,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2070093",
           ],
@@ -2438,6 +2469,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 215632256,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2070093",
           "refName": "2",
           "samples": {
@@ -2515,6 +2547,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2070096",
           ],
@@ -2596,6 +2629,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 215645545,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2070096",
           "refName": "2",
           "samples": {
@@ -2658,6 +2692,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs56130510",
           ],
@@ -2694,6 +2729,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion TA -> T",
           "end": 215657183,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs56130510",
           "refName": "2",
           "samples": {
@@ -2769,6 +2805,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs35933323",
           ],
@@ -2844,6 +2881,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> G",
           "end": 215674090,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs35933323",
           "refName": "2",
           "samples": {
@@ -2919,6 +2957,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1129804",
           ],
@@ -2994,6 +3033,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 215674323,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1129804",
           "refName": "2",
           "samples": {
@@ -3069,6 +3109,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "2",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs17489363",
           ],
@@ -3144,6 +3185,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 215674341,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs17489363",
           "refName": "2",
           "samples": {
@@ -3207,6 +3249,7 @@ exports[`vcf file import 1`] = `
           "FILTER": [
             "QDFilter",
           ],
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": undefined,
           "INFO": {
             "DP": [
@@ -3240,6 +3283,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> G",
           "end": 10191523,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": undefined,
           "refName": "3",
           "samples": {
@@ -3317,6 +3361,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "3",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs9876116",
           ],
@@ -3398,6 +3443,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 37083740,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs9876116",
           "refName": "3",
           "samples": {
@@ -3472,6 +3518,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": undefined,
           "INFO": {
             "AC": [
@@ -3544,6 +3591,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 112103135,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": undefined,
           "refName": "5",
           "samples": {
@@ -3621,6 +3669,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2229992",
           ],
@@ -3702,6 +3751,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 112162854,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2229992",
           "refName": "5",
           "samples": {
@@ -3779,6 +3829,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs351771",
           ],
@@ -3860,6 +3911,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 112164561,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs351771",
           "refName": "5",
           "samples": {
@@ -3937,6 +3989,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs41115",
           ],
@@ -4018,6 +4071,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 112175770,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs41115",
           "refName": "5",
           "samples": {
@@ -4095,6 +4149,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs42427",
           ],
@@ -4176,6 +4231,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 112176325,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs42427",
           "refName": "5",
           "samples": {
@@ -4253,6 +4309,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs866006",
           ],
@@ -4334,6 +4391,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> G",
           "end": 112176559,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs866006",
           "refName": "5",
           "samples": {
@@ -4415,6 +4473,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs459552",
           ],
@@ -4508,6 +4567,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> A",
           "end": 112176756,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs459552",
           "refName": "5",
           "samples": {
@@ -4587,6 +4647,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs465899",
           ],
@@ -4674,6 +4735,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 112177171,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs465899",
           "refName": "5",
           "samples": {
@@ -4755,6 +4817,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2229995",
           ],
@@ -4848,6 +4911,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 112178795,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2229995",
           "refName": "5",
           "samples": {
@@ -4921,6 +4985,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "5",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4526098",
           ],
@@ -4990,6 +5055,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 131892979,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4526098",
           "refName": "5",
           "samples": {
@@ -5069,6 +5135,7 @@ exports[`vcf file import 1`] = `
           "FILTER": [
             "MQFilter",
           ],
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1805326",
           ],
@@ -5150,6 +5217,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 6022626,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1805326",
           "refName": "7",
           "samples": {
@@ -5229,6 +5297,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2228006",
           ],
@@ -5316,6 +5385,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 6026775,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2228006",
           "refName": "7",
           "samples": {
@@ -5395,6 +5465,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1805321",
           ],
@@ -5482,6 +5553,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 6026988,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1805321",
           "refName": "7",
           "samples": {
@@ -5559,6 +5631,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1805319",
           ],
@@ -5640,6 +5713,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> C",
           "end": 6036980,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1805319",
           "refName": "7",
           "samples": {
@@ -5702,6 +5776,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs60794673",
           ],
@@ -5738,6 +5813,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion GA -> G",
           "end": 6037058,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs60794673",
           "refName": "7",
           "samples": {
@@ -5815,6 +5891,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs62456182",
           ],
@@ -5896,6 +5973,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 6038722,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs62456182",
           "refName": "7",
           "samples": {
@@ -5958,6 +6036,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs112241458",
           ],
@@ -5994,6 +6073,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion GT -> G",
           "end": 116381122,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs112241458",
           "refName": "7",
           "samples": {
@@ -6057,6 +6137,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "7",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs753027677",
           ],
@@ -6093,6 +6174,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion CTT -> C,CT",
           "end": 116409677,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs753027677",
           "refName": "7",
           "samples": {
@@ -6172,6 +6254,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs11515",
           ],
@@ -6247,6 +6330,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 21968199,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs11515",
           "refName": "9",
           "samples": {
@@ -6322,6 +6406,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4647534",
           ],
@@ -6397,6 +6482,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 97873957,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4647534",
           "refName": "9",
           "samples": {
@@ -6472,6 +6558,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2236406",
           ],
@@ -6547,6 +6634,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 98221861,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2236406",
           "refName": "9",
           "samples": {
@@ -6622,6 +6710,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066829",
           ],
@@ -6697,6 +6786,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 98229389,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2066829",
           "refName": "9",
           "samples": {
@@ -6774,6 +6864,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066836",
           ],
@@ -6855,6 +6946,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 98238358,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2066836",
           "refName": "9",
           "samples": {
@@ -6919,6 +7011,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "9",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs587780530",
           ],
@@ -6961,6 +7054,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion T -> TGCC",
           "end": 98270646,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs587780530",
           "refName": "9",
           "samples": {
@@ -7040,6 +7134,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800858",
           ],
@@ -7127,6 +7222,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 43595968,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1800858",
           "refName": "10",
           "samples": {
@@ -7208,6 +7304,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800860",
           ],
@@ -7301,6 +7398,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 43606687,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1800860",
           "refName": "10",
           "samples": {
@@ -7378,6 +7476,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs760466",
           ],
@@ -7459,6 +7558,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 43612226,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs760466",
           "refName": "10",
           "samples": {
@@ -7540,6 +7640,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1800861",
           ],
@@ -7633,6 +7734,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> T",
           "end": 43613843,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1800861",
           "refName": "10",
           "samples": {
@@ -7712,6 +7814,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2075912",
           ],
@@ -7799,6 +7902,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 43622217,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2075912",
           "refName": "10",
           "samples": {
@@ -7861,6 +7965,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs771859047",
           ],
@@ -7897,6 +8002,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion CT -> C",
           "end": 89720634,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs771859047",
           "refName": "10",
           "samples": {
@@ -7974,6 +8080,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "10",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs555895",
           ],
@@ -8055,6 +8162,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> G",
           "end": 89720907,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs555895",
           "refName": "10",
           "samples": {
@@ -8134,6 +8242,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2959656",
           ],
@@ -8221,6 +8330,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 64572018,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2959656",
           "refName": "11",
           "samples": {
@@ -8298,6 +8408,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs540012",
           ],
@@ -8379,6 +8490,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 64572557,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs540012",
           "refName": "11",
           "samples": {
@@ -8458,6 +8570,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2071313",
           ],
@@ -8545,6 +8658,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 64572602,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2071313",
           "refName": "11",
           "samples": {
@@ -8620,6 +8734,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs509606",
           ],
@@ -8695,6 +8810,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> C",
           "end": 64577620,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs509606",
           "refName": "11",
           "samples": {
@@ -8772,6 +8888,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs641936",
           ],
@@ -8853,6 +8970,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 94197260,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs641936",
           "refName": "11",
           "samples": {
@@ -8928,6 +9046,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs497763",
           ],
@@ -9003,6 +9122,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 94225920,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs497763",
           "refName": "11",
           "samples": {
@@ -9076,6 +9196,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066734",
             "rs766396464",
@@ -9148,6 +9269,7 @@ exports[`vcf file import 1`] = `
           ],
           "description": "deletion TAA -> T",
           "end": 108098461,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2066734,rs766396464",
           "refName": "11",
           "samples": {
@@ -9210,6 +9332,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs779838075",
           ],
@@ -9246,6 +9369,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion AT -> A",
           "end": 108114662,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs779838075",
           "refName": "11",
           "samples": {
@@ -9308,6 +9432,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs34325032",
           ],
@@ -9344,6 +9469,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion C -> CT",
           "end": 108121410,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs34325032",
           "refName": "11",
           "samples": {
@@ -9406,6 +9532,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs373881770",
           ],
@@ -9442,6 +9569,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion CT -> C",
           "end": 108141956,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs373881770",
           "refName": "11",
           "samples": {
@@ -9502,6 +9630,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3218681",
           ],
@@ -9532,6 +9661,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion T -> TA",
           "end": 108151707,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs3218681",
           "refName": "11",
           "samples": {
@@ -9607,6 +9737,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "11",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs659243",
           ],
@@ -9682,6 +9813,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 108183167,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs659243",
           "refName": "11",
           "samples": {
@@ -9757,6 +9889,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "12",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2069502",
           ],
@@ -9832,6 +9965,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 58144665,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2069502",
           "refName": "12",
           "samples": {
@@ -9909,6 +10043,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1799943",
           ],
@@ -9990,6 +10125,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 32890572,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1799943",
           "refName": "13",
           "samples": {
@@ -10071,6 +10207,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs144848",
           ],
@@ -10164,6 +10301,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> C",
           "end": 32906729,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs144848",
           "refName": "13",
           "samples": {
@@ -10243,6 +10381,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1801406",
           ],
@@ -10330,6 +10469,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 32911888,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1801406",
           "refName": "13",
           "samples": {
@@ -10407,6 +10547,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs206075",
           ],
@@ -10488,6 +10629,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 32913055,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs206075",
           "refName": "13",
           "samples": {
@@ -10563,6 +10705,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs206076",
           ],
@@ -10638,6 +10781,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> C",
           "end": 32915005,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs206076",
           "refName": "13",
           "samples": {
@@ -10717,6 +10861,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "13",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs169547",
           ],
@@ -10804,6 +10949,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 32929387,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs169547",
           "refName": "13",
           "samples": {
@@ -10879,6 +11025,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "16",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs3743674",
           ],
@@ -10954,6 +11101,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 68771372,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs3743674",
           "refName": "16",
           "samples": {
@@ -11033,6 +11181,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "16",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs35187787",
           ],
@@ -11120,6 +11269,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 68855966,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs35187787",
           "refName": "16",
           "samples": {
@@ -11197,6 +11347,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1042522",
           ],
@@ -11278,6 +11429,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> C",
           "end": 7579472,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1042522",
           "refName": "17",
           "samples": {
@@ -11357,6 +11509,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1642785",
           ],
@@ -11444,6 +11597,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> C",
           "end": 7579801,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1642785",
           "refName": "17",
           "samples": {
@@ -11506,6 +11660,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs765008499",
           ],
@@ -11542,6 +11697,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "deletion AT -> A",
           "end": 29508820,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs765008499",
           "refName": "17",
           "samples": {
@@ -11617,6 +11773,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2285892",
           ],
@@ -11692,6 +11849,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 29553485,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2285892",
           "refName": "17",
           "samples": {
@@ -11765,6 +11923,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2066736",
           ],
@@ -11834,6 +11993,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> A",
           "end": 29559932,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2066736",
           "refName": "17",
           "samples": {
@@ -11907,6 +12067,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs59745739",
           ],
@@ -11976,6 +12137,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion T -> TG",
           "end": 29563076,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs59745739",
           "refName": "17",
           "samples": {
@@ -12049,6 +12211,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs56874702",
             "rs72813695",
@@ -12121,6 +12284,7 @@ exports[`vcf file import 1`] = `
           ],
           "description": "insertion T -> TG",
           "end": 29563085,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs56874702,rs72813695",
           "refName": "17",
           "samples": {
@@ -12194,6 +12358,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs553817239",
             "rs7406039",
@@ -12266,6 +12431,7 @@ exports[`vcf file import 1`] = `
           ],
           "description": "insertion T -> TA",
           "end": 29663625,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs553817239,rs7406039",
           "refName": "17",
           "samples": {
@@ -12339,6 +12505,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs7405740",
           ],
@@ -12408,6 +12575,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 29670190,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs7405740",
           "refName": "17",
           "samples": {
@@ -12489,6 +12657,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1799966",
           ],
@@ -12582,6 +12751,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 41223094,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1799966",
           "refName": "17",
           "samples": {
@@ -12661,6 +12831,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1060915",
           ],
@@ -12748,6 +12919,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 41234470,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1060915",
           "refName": "17",
           "samples": {
@@ -12829,6 +13001,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs16942",
           ],
@@ -12922,6 +13095,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 41244000,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs16942",
           "refName": "17",
           "samples": {
@@ -13003,6 +13177,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs16941",
           ],
@@ -13096,6 +13271,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 41244435,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs16941",
           "refName": "17",
           "samples": {
@@ -13177,6 +13353,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs799917",
           ],
@@ -13270,6 +13447,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 41244936,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs799917",
           "refName": "17",
           "samples": {
@@ -13349,6 +13527,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs16940",
           ],
@@ -13436,6 +13615,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 41245237,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs16940",
           "refName": "17",
           "samples": {
@@ -13515,6 +13695,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs1799949",
           ],
@@ -13602,6 +13783,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 41245466,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs1799949",
           "refName": "17",
           "samples": {
@@ -13683,6 +13865,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986850",
           ],
@@ -13776,6 +13959,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> T",
           "end": 41245471,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4986850",
           "refName": "17",
           "samples": {
@@ -13838,6 +14022,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs373413425",
           ],
@@ -13874,6 +14059,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "14bp DEL",
           "end": 41256103,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs373413425",
           "refName": "17",
           "samples": {
@@ -13949,6 +14135,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs28363318",
           ],
@@ -14024,6 +14211,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 56798207,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs28363318",
           "refName": "17",
           "samples": {
@@ -14099,6 +14287,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986763",
           ],
@@ -14174,6 +14363,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 59760996,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4986763",
           "refName": "17",
           "samples": {
@@ -14251,6 +14441,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986764",
           ],
@@ -14332,6 +14523,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV A -> G",
           "end": 59763347,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4986764",
           "refName": "17",
           "samples": {
@@ -14407,6 +14599,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4986765",
           ],
@@ -14482,6 +14675,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV T -> C",
           "end": 59763465,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4986765",
           "refName": "17",
           "samples": {
@@ -14557,6 +14751,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "17",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs4988351",
           ],
@@ -14632,6 +14827,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV C -> G",
           "end": 59857809,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs4988351",
           "refName": "17",
           "samples": {
@@ -14694,6 +14890,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "18",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs760402978",
           ],
@@ -14730,6 +14927,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "insertion A -> ATT",
           "end": 48584855,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs760402978",
           "refName": "18",
           "samples": {
@@ -14807,6 +15005,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "19",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs34928889",
           ],
@@ -14888,6 +15087,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> A",
           "end": 1219274,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs34928889",
           "refName": "19",
           "samples": {
@@ -14965,6 +15165,7 @@ exports[`vcf file import 1`] = `
           ],
           "CHROM": "19",
           "FILTER": "PASS",
+          "FORMAT": "GT:AD:DP:GQ:PL:SB",
           "ID": [
             "rs2075607",
           ],
@@ -15046,6 +15247,7 @@ exports[`vcf file import 1`] = `
           "aliases": undefined,
           "description": "SNV G -> C",
           "end": 1222012,
+          "format": "GT:AD:DP:GQ:PL:SB",
           "name": "rs2075607",
           "refName": "19",
           "samples": {

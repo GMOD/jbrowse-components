@@ -186,7 +186,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1v19m96-MuiSvgIcon-root-buttonSpacer"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
@@ -318,7 +318,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-6vvmul-MuiTypography-root-bp"
+                    class="MuiTypography-root MuiTypography-body2 css-lqhf8e-MuiTypography-root-bp"
                   >
                     40bp
                   </p>

@@ -22,6 +22,7 @@
   },
   "exclude": [
     "**/build/",
+    "**/docs/",
     "**/dist/",
     "**/esm/",
     "**/lib/",

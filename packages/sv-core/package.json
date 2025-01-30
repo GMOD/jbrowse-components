@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/sv-core",
-  "version": "2.18.0",
+  "version": "3.0.1",
   "description": "JBrowse 2 code shared between sv type code",
   "keywords": [
     "jbrowse",
@@ -42,19 +42,19 @@
   },
   "dependencies": {
     "@gmod/vcf": "^6.0.0",
-    "@jbrowse/core": "^2.18.0",
-    "@jbrowse/plugin-linear-genome-view": "^2.18.0",
+    "@jbrowse/core": "^3.0.1",
+    "@jbrowse/plugin-linear-genome-view": "^3.0.1",
     "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0"
-  },
-  "peerDependencies": {
+    "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=17.0.0",
-    "react-dom": ">=17.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

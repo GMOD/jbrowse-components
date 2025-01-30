@@ -1,32 +1,8 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { featureSpanPx, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util'
 
-// locals
-import { getCol } from '../util'
-
-import type { Source } from '../types'
-import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import type { MultiRenderArgsDeserialized } from './types'
 import type { Feature } from '@jbrowse/core/util'
-import type { ThemeOptions } from '@mui/material'
-
-export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
-  bpPerPx: number
-  height: number
-  highResolutionScaling: number
-  themeOptions: ThemeOptions
-}
-
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
-  features: Map<string, Feature>
-}
-
-export interface MultiRenderArgsDeserialized
-  extends RenderArgsDeserializedWithFeatures {
-  sources: Source[]
-  rowHeight: number
-  scrollTop: number
-}
 
 export default class MultiVariantBaseRenderer extends FeatureRendererType {
   supportsSVG = true
@@ -37,17 +13,13 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    const rest = await renderToAbstractCanvas(
-      width,
-      height,
-      renderProps,
-      async ctx => {
-        await this.draw(ctx, {
-          ...renderProps,
-          features,
-        })
-        return undefined
-      },
+    const { makeImageData } = await import('./makeImageData')
+
+    const rest = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+      makeImageData(ctx, {
+        ...renderProps,
+        features,
+      }),
     )
 
     const results = await super.render({
@@ -65,27 +37,6 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
       height,
       width,
       containsNoTransferables: true,
-    }
-  }
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: MultiRenderArgsDeserialized,
-  ) {
-    const { scrollTop, sources, rowHeight, features, regions, bpPerPx } = props
-    const region = regions[0]!
-
-    for (const feature of features.values()) {
-      if (feature.get('end') - feature.get('start') <= 10) {
-        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-        const w = Math.max(Math.round(rightPx - leftPx), 2)
-        const genotypes = feature.get('genotypes') as Record<string, string>
-        let t = -scrollTop
-        for (const { name } of sources) {
-          ctx.fillStyle = getCol(genotypes[name]!)
-          ctx.fillRect(Math.floor(leftPx), t, w, Math.max(t + rowHeight, 1))
-          t += rowHeight
-        }
-      }
     }
   }
 }

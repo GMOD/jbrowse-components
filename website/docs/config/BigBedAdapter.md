@@ -45,6 +45,6 @@ scoreColumn: {
 aggregateField: {
       type: 'string',
       description: 'An attribute to aggregate features with',
-      defaultValue: 'geneName',
+      defaultValue: 'geneName2',
     }
 ```

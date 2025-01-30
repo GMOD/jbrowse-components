@@ -1,8 +1,8 @@
-import { SanitizedHTML } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
+import MultiVariantTooltip from '../../shared/MultiVariantTooltip'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -25,34 +25,25 @@ const Crosshair = observer(function ({
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { classes } = useStyles()
-  const { lineZoneHeight, height, rowHeight, sources } = model
+  const { hoveredGenotype, lineZoneHeight, totalHeight, rowHeight, sources } =
+    model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = sources?.[Math.floor((mouseY - lineZoneHeight) / rowHeight)]
+  const yoff = mouseY - lineZoneHeight
   return source ? (
     <>
-      <svg className={classes.cursor} width={width} height={height}>
-        <line x1={0} x2={width} y1={mouseY} y2={mouseY} stroke="black" />
-        <line x1={mouseX} x2={mouseX} y1={0} y2={height} stroke="black" />
+      <svg
+        className={classes.cursor}
+        width={width}
+        height={totalHeight}
+        style={{
+          top: lineZoneHeight,
+        }}
+      >
+        <line x1={0} x2={width} y1={yoff} y2={yoff} stroke="black" />
+        <line x1={mouseX} x2={mouseX} y1={0} y2={totalHeight} stroke="black" />
       </svg>
-      <BaseTooltip>
-        {source.color ? (
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              backgroundColor: source.color,
-            }}
-          />
-        ) : null}
-        <SanitizedHTML
-          html={Object.entries(source)
-            .filter(
-              ([key]) => key !== 'color' && key !== 'name' && key !== 'HP',
-            )
-            .map(([key, value]) => `${key}:${value}`)
-            .join('<br/>')}
-        />
-      </BaseTooltip>
+      <MultiVariantTooltip source={{ ...source, hoveredGenotype }} />
     </>
   ) : null
 })

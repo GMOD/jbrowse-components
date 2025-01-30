@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
@@ -9,6 +10,9 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
+
+// lazies
+const RegionWidthEditorDialog = lazy(() => import('./RegionWidthEditorDialog'))
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -22,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ZoomControls = observer(function ({
+const HeaderZoomControls = observer(function ({
   model,
 }: {
   model: LinearGenomeViewModel
@@ -78,47 +82,28 @@ const ZoomControls = observer(function ({
 
       <CascadingMenuButton
         menuItems={[
-          {
-            label: 'Zoom in 2x',
-            icon: ZoomIn,
+          ...[100, 50, 10].map(r => ({
+            label: `Zoom in ${r}x`,
             onClick: () => {
-              model.zoom(model.bpPerPx / 2)
+              model.zoom(model.bpPerPx / r)
             },
-          },
-          {
-            label: 'Zoom in 15x',
-            icon: ZoomIn,
+          })),
+          ...[10, 50, 100].map(r => ({
+            label: `Zoom out ${r}x`,
             onClick: () => {
-              model.zoom(model.bpPerPx / 15)
+              model.zoom(model.bpPerPx * r)
             },
-          },
+          })),
           {
-            label: 'Zoom in 100x',
-            icon: ZoomIn,
+            label: 'Custom zoom',
             onClick: () => {
-              model.zoom(model.bpPerPx / 100)
-            },
-          },
-          {
-            label: 'Zoom out 2x',
-            icon: ZoomOut,
-            onClick: () => {
-              model.zoom(model.bpPerPx * 2)
-            },
-          },
-          {
-            label: 'Zoom out 15x',
-
-            icon: ZoomOut,
-            onClick: () => {
-              model.zoom(model.bpPerPx * 15)
-            },
-          },
-          {
-            label: 'Zoom out 100x',
-            icon: ZoomOut,
-            onClick: () => {
-              model.zoom(model.bpPerPx * 100)
+              getSession(model).queueDialog(handleClose => [
+                RegionWidthEditorDialog,
+                {
+                  model,
+                  handleClose,
+                },
+              ])
             },
           },
         ]}
@@ -129,4 +114,4 @@ const ZoomControls = observer(function ({
   )
 })
 
-export default ZoomControls
+export default HeaderZoomControls

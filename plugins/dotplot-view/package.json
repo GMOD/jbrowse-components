@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-dotplot-view",
-  "version": "2.18.0",
+  "version": "3.0.1",
   "description": "JBrowse 2 dotplot view",
   "keywords": [
     "jbrowse",
@@ -36,22 +36,22 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
+    "@jbrowse/core": "^3.0.1",
+    "@jbrowse/plugin-alignments": "^3.0.1",
     "@mui/icons-material": "^6.0.0",
+    "@mui/material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
     "@types/file-saver": "^2.0.1",
-    "file-saver": "^2.0.0"
-  },
-  "peerDependencies": {
-    "@jbrowse/core": "^2.0.0",
-    "@jbrowse/plugin-alignments": "^2.0.0",
-    "@mui/material": "^6.0.0",
+    "file-saver": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",

@@ -4,6 +4,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
 
+import type { SampleInfo } from '../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -41,19 +42,26 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       minorAlleleFrequencyFilter,
     )
 
-    const samplePloidy = {} as Record<string, number>
+    const sampleInfo = {} as Record<string, SampleInfo>
     let hasPhased = false
 
     for (const f of features) {
       const samp = f.get('genotypes') as Record<string, string>
       for (const [key, val] of Object.entries(samp)) {
-        hasPhased ||= val.includes('|')
-        samplePloidy[key] = val.split(/[/|]/).length
+        const isPhased = val.includes('|')
+        hasPhased ||= isPhased
+        sampleInfo[key] = {
+          maxPloidy: Math.max(
+            sampleInfo[key]?.maxPloidy || 0,
+            val.split('|').length,
+          ),
+          isPhased: sampleInfo[key]?.isPhased || isPhased,
+        }
       }
     }
     return {
       hasPhased,
-      samplePloidy,
+      sampleInfo,
       features: features.map(f => ({
         id: f.id(),
         data: {

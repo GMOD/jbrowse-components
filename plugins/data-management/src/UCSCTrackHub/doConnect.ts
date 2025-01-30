@@ -5,14 +5,10 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 
 import { generateTracks } from './ucscTrackHub'
-import { fetchGenomesFile, fetchTrackDbFile } from './util'
+import { fetchGenomesFile, fetchTrackDbFile, resolve } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-
-function resolve(uri: string, baseUri: string) {
-  return new URL(uri, baseUri).href
-}
 
 export async function doConnect(self: {
   configuration: AnyConfigurationModel
@@ -38,6 +34,15 @@ export async function doConnect(self: {
           name: genomeName,
           sequence: {
             type: 'ReferenceSequenceTrack',
+            metadata: {
+              // eslint-disable-next-line @typescript-eslint/no-misused-spread
+              ...genome,
+              ...(genome.data.htmlPath
+                ? {
+                    htmlPath: `<a href="${resolve(genome.data.htmlPath, hubUri)}">${genome.data.htmlPath}</a>`,
+                  }
+                : {}),
+            },
             trackId: `${genomeName}-${nanoid()}`,
             adapter: {
               type: 'TwoBitAdapter',
@@ -58,6 +63,7 @@ export async function doConnect(self: {
         trackDbLoc: hubFileLocation,
         assemblyName: genomeName,
         sequenceAdapter,
+        baseUrl: hubUri,
       })
       self.addTrackConfs(tracksNew)
     } else {
@@ -113,6 +119,7 @@ export async function doConnect(self: {
           trackDbLoc: loc,
           assemblyName: genomeName,
           sequenceAdapter,
+          baseUrl: hubUri,
         })
         self.addTrackConfs(tracks)
         map[genomeName] = tracks.length

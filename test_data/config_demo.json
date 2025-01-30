@@ -4451,6 +4451,79 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "illumina_hg002",
+      "name": "HG002 Illumina hs37d5.2x250",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "pacbio_hg002",
+      "name": "HG002 Pacbio hs37d5.11kb",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hg002_cram",
+      "name": "HG002 CRAM nanopore+whatshap",
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.bam",
       "name": "Paired-end stranded RNA-seq (BAM,TS)",
       "category": ["RNA-seq"],
@@ -4673,7 +4746,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "samplesTsvLocation": {
-          "uri": "1000g.sorted.csv.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz"
         },
         "vcfGzLocation": {
           "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz",
@@ -4721,6 +4794,26 @@
         }
       },
       "assemblyNames": ["hg1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878.whatshap.strandseq-pacbio-phasing.2017-07-19.vcf",
+      "name": "NA12878.whatshap.strandseq-pacbio-phasing.2017-07-19.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg38/NA12878/NA12878.whatshap.strandseq-pacbio-phasing.2017-07-19.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg38/NA12878/NA12878.whatshap.strandseq-pacbio-phasing.2017-07-19.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],

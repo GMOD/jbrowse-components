@@ -8,7 +8,7 @@ import {
   getAllFiles,
   removeComments,
   rm,
-} from './util'
+} from './util.ts'
 
 interface Action {
   name: string

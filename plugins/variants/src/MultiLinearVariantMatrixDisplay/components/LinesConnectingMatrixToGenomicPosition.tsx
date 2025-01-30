@@ -43,7 +43,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
 }) {
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { featuresVolatile } = model
+  const { lineZoneHeight, featuresVolatile } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
@@ -60,11 +60,11 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
           })?.offsetPx || 0) - l
         return (
           <line
-            stroke="#0006"
+            stroke="#0004"
             key={f.id()}
             x1={i * w + w / 2}
             x2={c}
-            y1={20}
+            y1={lineZoneHeight}
             y2={0}
           />
         )

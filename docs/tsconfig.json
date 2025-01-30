@@ -10,6 +10,8 @@
     "strict": true,
     "declaration": true,
     "module": "commonjs",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "moduleResolution": "node"
   },
   "include": ["generateConfigDocs.ts", "generateStateModelDocs.ts", "util.ts"]

@@ -144,9 +144,7 @@ show the "center line"
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCenterLine: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
-          ),
+          localStorageGetBoolean('lgv-showCenterLine', false),
         )
 ```
 
@@ -159,9 +157,7 @@ show the "cytobands" in the overview scale bar
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCytobandsSetting: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showCytobands', true),
         )
 ```
 
@@ -216,7 +212,7 @@ color by CDS
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 colorByCDS: types.optional(types.boolean, () =>
-          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+          localStorageGetBoolean('lgv-colorByCDS', false),
         )
 ```
 
@@ -229,9 +225,7 @@ color by CDS
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showTrackOutlines: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showTrackOutlines', true),
         )
 ```
 

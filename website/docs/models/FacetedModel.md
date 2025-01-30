@@ -38,7 +38,7 @@ filterText: types.optional(types.string, '')
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showSparse: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
+        localStorageGetBoolean('facet-showSparse', false),
       )
 ```
 
@@ -49,7 +49,7 @@ showSparse: types.optional(types.boolean, () =>
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showFilters: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showFilters') || 'true'),
+        localStorageGetBoolean('facet-showFilters', true),
       )
 ```
 
@@ -60,7 +60,7 @@ showFilters: types.optional(types.boolean, () =>
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showOptions: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showTableOptions') || 'false'),
+        localStorageGetBoolean('facet-showTableOptions', false),
       )
 ```
 
@@ -71,7 +71,7 @@ showOptions: types.optional(types.boolean, () =>
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 panelWidth: types.optional(types.number, () =>
-        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
+        localStorageGetNumber('facet-panelWidth', 400),
       )
 ```
 
@@ -103,6 +103,13 @@ string[] | readonly ["category", "adapter", "description"]
 ```js
 // type
 any[]
+```
+
+#### getter: filteredMetadataKeys
+
+```js
+// type
+any
 ```
 
 #### getter: fields

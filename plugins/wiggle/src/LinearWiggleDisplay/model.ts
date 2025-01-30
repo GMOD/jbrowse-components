@@ -2,6 +2,9 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import EqualizerIcon from '@mui/icons-material/Equalizer'
+import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
@@ -184,8 +187,10 @@ function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            { type: 'divider' },
             {
               label: 'Score',
+              icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
 
@@ -207,19 +212,6 @@ function stateModelFactory(
                 ]
               : []),
 
-            ...(self.needsScalebar
-              ? [
-                  {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
-
             ...(hasRenderings
               ? [
                   {
@@ -237,7 +229,8 @@ function stateModelFactory(
               : []),
 
             {
-              label: 'Set color',
+              label: 'Color',
+              icon: PaletteIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
@@ -248,6 +241,20 @@ function stateModelFactory(
                 ])
               },
             },
+
+            ...(self.needsScalebar
+              ? [
+                  {
+                    type: 'checkbox',
+                    icon: VisibilityIcon,
+                    label: 'Show cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
+                  },
+                ]
+              : []),
           ]
         },
       }

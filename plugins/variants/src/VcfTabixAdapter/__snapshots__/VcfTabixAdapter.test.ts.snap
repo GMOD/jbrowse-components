@@ -14,6 +14,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     ],
     "CHROM": "ctgA",
     "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
     "ID": undefined,
     "INFO": {
       "AC1": [
@@ -47,6 +48,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "aliases": undefined,
     "description": "SNV T -> C",
     "end": 277,
+    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -74,6 +76,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     ],
     "CHROM": "ctgA",
     "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
     "ID": undefined,
     "INFO": {
       "AC1": [
@@ -113,6 +116,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "aliases": undefined,
     "description": "SNV T -> C",
     "end": 1694,
+    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -140,6 +144,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     ],
     "CHROM": "ctgA",
     "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
     "ID": undefined,
     "INFO": {
       "AC1": [
@@ -179,6 +184,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "aliases": undefined,
     "description": "SNV T -> G",
     "end": 2644,
+    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -206,6 +212,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     ],
     "CHROM": "ctgA",
     "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
     "ID": undefined,
     "INFO": {
       "AC1": [
@@ -239,6 +246,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "aliases": undefined,
     "description": "SNV T -> A",
     "end": 3213,
+    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -266,6 +274,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     ],
     "CHROM": "ctgA",
     "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
     "ID": undefined,
     "INFO": {
       "AC1": [
@@ -300,6 +309,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "aliases": undefined,
     "description": "deletion ctt -> ct",
     "end": 3860,
+    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {

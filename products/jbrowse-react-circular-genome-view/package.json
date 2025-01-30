@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-circular-genome-view",
-  "version": "2.18.0",
+  "version": "3.0.1",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
     "jbrowse",
@@ -29,9 +29,7 @@
     "prepack": "npm run build",
     "build:esm": "tsc -b tsconfig.build.esm.json",
     "build:commonjs": "tsc -b tsconfig.build.commonjs.json",
-    "build:webpack": "npm-run-all build:webpack:*",
-    "build:webpack:dev": "cross-env NODE_ENV=development webpack",
-    "build:webpack:prod": "cross-env NODE_ENV=production webpack",
+    "build:webpack": "cd dist && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.production.min.js && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.development.js && cd -",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build"
@@ -41,17 +39,17 @@
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
-    "@jbrowse/core": "^2.18.0",
-    "@jbrowse/embedded-core": "^2.18.0",
-    "@jbrowse/plugin-authentication": "^2.18.0",
-    "@jbrowse/plugin-circular-view": "^2.18.0",
-    "@jbrowse/plugin-config": "^2.18.0",
-    "@jbrowse/plugin-data-management": "^2.18.0",
-    "@jbrowse/plugin-linear-genome-view": "^2.18.0",
-    "@jbrowse/plugin-sequence": "^2.18.0",
-    "@jbrowse/plugin-variants": "^2.18.0",
-    "@jbrowse/plugin-wiggle": "^2.18.0",
-    "@jbrowse/product-core": "^2.18.0",
+    "@jbrowse/core": "^3.0.1",
+    "@jbrowse/embedded-core": "^3.0.1",
+    "@jbrowse/plugin-authentication": "^3.0.1",
+    "@jbrowse/plugin-circular-view": "^3.0.1",
+    "@jbrowse/plugin-config": "^3.0.1",
+    "@jbrowse/plugin-data-management": "^3.0.1",
+    "@jbrowse/plugin-linear-genome-view": "^3.0.1",
+    "@jbrowse/plugin-sequence": "^3.0.1",
+    "@jbrowse/plugin-variants": "^3.0.1",
+    "@jbrowse/plugin-wiggle": "^3.0.1",
+    "@jbrowse/product-core": "^3.0.1",
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "mobx": "^6.6.0",
@@ -61,7 +59,7 @@
     "tss-react": "^4.4.1"
   },
   "peerDependencies": {
-    "react": ">=16.8.0"
+    "react": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

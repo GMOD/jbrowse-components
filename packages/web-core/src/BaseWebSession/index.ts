@@ -417,6 +417,7 @@ export function BaseWebSession({
             },
             icon: CopyIcon,
           },
+          { type: 'divider' },
         ]
       },
 

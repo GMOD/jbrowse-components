@@ -35,31 +35,31 @@ ISimpleType<"LinearSNPCoverageDisplay">
 type: types.literal('LinearSNPCoverageDisplay')
 ```
 
-#### property: drawInterbaseCounts
+#### property: showInterbaseCounts
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-drawInterbaseCounts: types.maybe(types.boolean)
+showInterbaseCounts: types.maybe(types.boolean)
 ```
 
-#### property: drawIndicators
+#### property: showInterbaseIndicators
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-drawIndicators: types.maybe(types.boolean)
+showInterbaseIndicators: types.maybe(types.boolean)
 ```
 
-#### property: drawArcs
+#### property: showArcs
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-drawArcs: types.maybe(types.boolean)
+showArcs: types.maybe(types.boolean)
 ```
 
 #### property: filterBySetting
@@ -112,21 +112,21 @@ any
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
-#### getter: drawArcsSetting
+#### getter: showArcsSetting
 
 ```js
 // type
 any
 ```
 
-#### getter: drawInterbaseCountsSetting
+#### getter: showInterbaseCountsSetting
 
 ```js
 // type
 any
 ```
 
-#### getter: drawIndicatorsSetting
+#### getter: showInterbaseIndicatorsSetting
 
 ```js
 // type
@@ -266,23 +266,23 @@ updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 setModificationsReady: (flag: boolean) => void
 ```
 
-#### action: toggleDrawIndicators
+#### action: setShowInterbaseIndicators
 
 ```js
 // type signature
-toggleDrawIndicators: () => void
+setShowInterbaseIndicators: (arg: boolean) => void
 ```
 
-#### action: toggleDrawInterbaseCounts
+#### action: setShowInterbaseCounts
 
 ```js
 // type signature
-toggleDrawInterbaseCounts: () => void
+setShowInterbaseCounts: (arg: boolean) => void
 ```
 
-#### action: toggleDrawArcs
+#### action: setShowArcs
 
 ```js
 // type signature
-toggleDrawArcs: () => void
+setShowArcs: (arg: boolean) => void
 ```

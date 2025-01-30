@@ -25,6 +25,23 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 vcfLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.vcf',
+        locationType: 'UriLocation',
+      },
+    }
+```
+
+#### slot: samplesTsvLocation
+
+```js
+samplesTsvLocation: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/samples.tsv',
+        description:
+          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
+        locationType: 'UriLocation',
+      },
     }
 ```

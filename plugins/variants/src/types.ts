@@ -5,5 +5,11 @@ export interface Source {
   color?: string
   group?: string
   HP?: number
+  id?: string
   [key: string]: unknown
+}
+
+export interface SampleInfo {
+  isPhased: boolean
+  maxPloidy: number
 }

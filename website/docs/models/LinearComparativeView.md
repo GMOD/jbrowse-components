@@ -62,6 +62,15 @@ true
 showIntraviewLinks: true
 ```
 
+#### property: linkViews
+
+```js
+// type signature
+false
+// code
+linkViews: false
+```
+
 #### property: interactiveOverlay
 
 ```js
@@ -185,6 +194,13 @@ removeView: (view: { id: string; displayName: string; minimized: boolean; type: 
 ```js
 // type signature
 setLevelHeight: (newHeight: number, level?: number) => number
+```
+
+#### action: setLinkViews
+
+```js
+// type signature
+setLinkViews: (arg: boolean) => void
 ```
 
 #### action: activateTrackSelector

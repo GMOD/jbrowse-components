@@ -1,4 +1,4 @@
-import { clamp, getContainingView, measureText } from '@jbrowse/core/util'
+import { clamp, getContainingView, max, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './ColorLegend'
@@ -68,10 +68,11 @@ export const LegendBar = observer(function (props: {
     <Wrapper {...props}>
       <ColorLegend
         model={model}
-        labelWidth={Math.max(
-          ...sources
+        labelWidth={max(
+          sources
             .map(s => measureText(s.label, svgFontSize) + 10)
             .map(width => (canDisplayLabels ? width : 20)),
+          0,
         )}
       />
     </Wrapper>

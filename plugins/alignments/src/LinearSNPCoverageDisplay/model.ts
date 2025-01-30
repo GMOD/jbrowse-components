@@ -4,6 +4,7 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
@@ -52,15 +53,15 @@ function stateModelFactory(
         /**
          * #property
          */
-        drawInterbaseCounts: types.maybe(types.boolean),
+        showInterbaseCounts: types.maybe(types.boolean),
         /**
          * #property
          */
-        drawIndicators: types.maybe(types.boolean),
+        showInterbaseIndicators: types.maybe(types.boolean),
         /**
          * #property
          */
-        drawArcs: types.maybe(types.boolean),
+        showArcs: types.maybe(types.boolean),
         /**
          * #property
          */
@@ -158,14 +159,16 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
-          const { drawArcs, drawInterbaseCounts, drawIndicators } = self
+          const { showArcs, showInterbaseCounts, showInterbaseIndicators } =
+            self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
-              drawInterbaseCounts:
-                drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: drawArcs ?? configBlob.drawArcs,
+              showInterbaseCounts:
+                showInterbaseCounts ?? configBlob.showInterbaseCounts,
+              showInterbaseIndicators:
+                showInterbaseIndicators ?? configBlob.showInterbaseIndicators,
+              showArcs: showArcs ?? configBlob.showArcs,
             },
             getEnv(self),
           )
@@ -173,27 +176,27 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get drawArcsSetting() {
+        get showArcsSetting() {
           return (
-            self.drawArcs ?? readConfObject(this.rendererConfig, 'drawArcs')
+            self.showArcs ?? readConfObject(this.rendererConfig, 'showArcs')
           )
         },
         /**
          * #getter
          */
-        get drawInterbaseCountsSetting() {
+        get showInterbaseCountsSetting() {
           return (
-            self.drawInterbaseCounts ??
-            readConfObject(this.rendererConfig, 'drawInterbaseCounts')
+            self.showInterbaseCounts ??
+            readConfObject(this.rendererConfig, 'showInterbaseCounts')
           )
         },
         /**
          * #getter
          */
-        get drawIndicatorsSetting() {
+        get showInterbaseIndicatorsSetting() {
           return (
-            self.drawIndicators ??
-            readConfObject(this.rendererConfig, 'drawIndicators')
+            self.showInterbaseIndicators ??
+            readConfObject(this.rendererConfig, 'showInterbaseIndicators')
           )
         },
 
@@ -233,20 +236,20 @@ function stateModelFactory(
       /**
        * #action
        */
-      toggleDrawIndicators() {
-        self.drawIndicators = !self.drawIndicatorsSetting
+      setShowInterbaseIndicators(arg: boolean) {
+        self.showInterbaseIndicators = arg
       },
       /**
        * #action
        */
-      toggleDrawInterbaseCounts() {
-        self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
+      setShowInterbaseCounts(arg: boolean) {
+        self.showInterbaseCounts = arg
       },
       /**
        * #action
        */
-      toggleDrawArcs() {
-        self.drawArcs = !self.drawArcsSetting
+      setShowArcs(arg: boolean) {
+        self.showArcs = arg
       },
     }))
     .actions(self => ({
@@ -360,27 +363,32 @@ function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Draw insertion/clipping indicators',
+              label: 'Show insertion/clipping indicators',
+              icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.drawIndicatorsSetting,
+              checked: self.showInterbaseIndicatorsSetting,
               onClick: () => {
-                self.toggleDrawIndicators()
+                self.setShowInterbaseIndicators(
+                  !self.showInterbaseIndicatorsSetting,
+                )
               },
             },
             {
-              label: 'Draw insertion/clipping counts',
+              label: 'Show insertion/clipping counts',
+              icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.drawInterbaseCountsSetting,
+              checked: self.showInterbaseCountsSetting,
               onClick: () => {
-                self.toggleDrawInterbaseCounts()
+                self.setShowInterbaseCounts(self.showInterbaseCountsSetting)
               },
             },
             {
-              label: 'Draw arcs',
+              label: 'Show arcs',
+              icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.drawArcsSetting,
+              checked: self.showArcsSetting,
               onClick: () => {
-                self.toggleDrawArcs()
+                self.setShowArcs(self.showArcsSetting)
               },
             },
           ]

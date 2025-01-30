@@ -19,8 +19,8 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
       width,
       height,
       renderProps,
-      ctx => {
-        return makeImageData({
+      ctx =>
+        makeImageData({
           ctx,
           canvasWidth: width,
           canvasHeight: height,
@@ -29,8 +29,7 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
             features,
             sources,
           },
-        })
-      },
+        }),
     )
 
     const results = await super.render({
