@@ -36,10 +36,10 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^2.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
-    "@jbrowse/plugin-sequence": "^2.0.0",
-    "@jbrowse/plugin-wiggle": "^2.0.0",
+    "@jbrowse/core": "^3.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^3.0.0",
+    "@jbrowse/plugin-sequence": "^3.0.0",
+    "@jbrowse/plugin-wiggle": "^3.0.0",
     "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

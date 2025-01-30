@@ -42,7 +42,7 @@
     "react-dropzone": "^14.2.1"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/core": "^3.0.0",
     "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
