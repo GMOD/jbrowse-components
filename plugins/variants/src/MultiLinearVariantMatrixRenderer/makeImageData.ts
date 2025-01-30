@@ -106,7 +106,6 @@ export function makeImageData({
       const samp = f.get('genotypes') as Record<string, string>
       const x = (i / mafs.length) * canvasWidth
       const sln = sources.length
-      const arr2 = [] as string[]
       for (let j = 0; j < sln; j++) {
         const y = (j / sln) * canvasHeight
         const { name, HP } = sources[j]!
