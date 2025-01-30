@@ -37,10 +37,12 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@jbrowse/core": "^2.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "mobx-state-tree": "^5.0.0"
+  },
+  "peerDependencies": {
     "react": ">=16.8.0"
   },
   "publishConfig": {
