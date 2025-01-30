@@ -42,9 +42,7 @@
     "deepmerge": "^4.3.1",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-vtree": "^3.0.0-beta.1",
-    "react-window": "^1.8.6"
-  },
-  "peerDependencies": {
+    "react-window": "^1.8.6",
     "@jbrowse/core": "^3.0.0",
     "@jbrowse/plugin-config": "^3.0.0",
     "@jbrowse/product-core": "^3.0.0",
@@ -52,8 +50,10 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0",
     "tss-react": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

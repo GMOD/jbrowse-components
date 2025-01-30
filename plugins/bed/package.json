@@ -40,9 +40,7 @@
     "@gmod/bbi": "^6.0.0",
     "@gmod/bed": "^2.1.2",
     "@gmod/bgzf-filehandle": "^2.0.1",
-    "@gmod/tabix": "^2.0.0"
-  },
-  "peerDependencies": {
+    "@gmod/tabix": "^2.0.0",
     "@jbrowse/core": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

@@ -35,7 +35,7 @@
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@jbrowse/core": "^3.0.0",
     "@jbrowse/plugin-linear-genome-view": "^3.0.0",
     "@jbrowse/plugin-wiggle": "^3.0.0",
@@ -43,9 +43,11 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
     "rxjs": "^7.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",

@@ -37,17 +37,17 @@
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
-    "generic-filehandle2": "^1.0.0"
-  },
-  "peerDependencies": {
+    "generic-filehandle2": "^1.0.0",
     "@jbrowse/core": "^3.0.0",
     "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
     "rxjs": "^7.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

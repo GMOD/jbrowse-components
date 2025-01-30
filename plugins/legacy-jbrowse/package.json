@@ -40,9 +40,7 @@
     "crc": "^4.0.0",
     "generic-filehandle2": "^1.0.0",
     "get-value": "^3.0.0",
-    "set-value": "^4.0.1"
-  },
-  "peerDependencies": {
+    "set-value": "^4.0.1",
     "@jbrowse/core": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

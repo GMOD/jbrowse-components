@@ -36,15 +36,15 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "dependencies": {
+    "@gmod/trix": "^3.0.0",
     "@jbrowse/core": "^3.0.0",
     "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0"
-  },
-  "dependencies": {
-    "@gmod/trix": "^3.0.0"
+    "mobx-state-tree": "^5.0.0"
   },
   "publishConfig": {
     "access": "public"

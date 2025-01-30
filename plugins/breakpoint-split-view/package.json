@@ -39,18 +39,18 @@
     "@gmod/vcf": "^6.0.0",
     "@mui/icons-material": "^6.0.0",
     "@types/file-saver": "^2.0.1",
-    "file-saver": "^2.0.0"
-  },
-  "peerDependencies": {
+    "file-saver": "^2.0.0",
     "@jbrowse/core": "^3.0.0",
     "@jbrowse/plugin-linear-genome-view": "^3.0.0",
     "@mui/material": "^6.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.4",
-    "react-dom": ">=16.8.4",
     "tss-react": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.4",
+    "react-dom": ">=16.8.4"
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
