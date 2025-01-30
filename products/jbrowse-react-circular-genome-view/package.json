@@ -29,9 +29,7 @@
     "prepack": "npm run build",
     "build:esm": "tsc -b tsconfig.build.esm.json",
     "build:commonjs": "tsc -b tsconfig.build.commonjs.json",
-    "build:webpack": "npm-run-all build:webpack:*",
-    "build:webpack:dev": "cross-env NODE_ENV=development webpack",
-    "build:webpack:prod": "cross-env NODE_ENV=production webpack",
+    "build:webpack": "cd dist && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.production.min.js && wget https://unpkg.com/@jbrowse/react-circular-genome-view@2.18.0/dist/react-circular-genome-view.umd.development.js",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build"
