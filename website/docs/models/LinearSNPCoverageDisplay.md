@@ -44,13 +44,13 @@ IMaybe<ISimpleType<boolean>>
 showInterbaseCounts: types.maybe(types.boolean)
 ```
 
-#### property: showIndicators
+#### property: showInterbaseIndicators
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-showIndicators: types.maybe(types.boolean)
+showInterbaseIndicators: types.maybe(types.boolean)
 ```
 
 #### property: showArcs
@@ -126,7 +126,7 @@ any
 any
 ```
 
-#### getter: showIndicatorsSetting
+#### getter: showInterbaseIndicatorsSetting
 
 ```js
 // type
@@ -266,11 +266,11 @@ updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
 setModificationsReady: (flag: boolean) => void
 ```
 
-#### action: setShowIndicators
+#### action: setShowInterbaseIndicators
 
 ```js
 // type signature
-setShowIndicators: (arg: boolean) => void
+setShowInterbaseIndicators: (arg: boolean) => void
 ```
 
 #### action: setShowInterbaseCounts

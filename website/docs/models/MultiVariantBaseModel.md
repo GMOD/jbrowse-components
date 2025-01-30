@@ -88,7 +88,7 @@ used only if autoHeight is false
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeightSetting: types.optional(types.number, 1)
+rowHeightSetting: types.optional(types.number, 8)
 ```
 
 #### property: autoHeight
@@ -145,7 +145,7 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### MultiVariantBaseModel - Actions

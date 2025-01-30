@@ -55,6 +55,15 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 minorAlleleFrequencyFilter: types.optional(types.number, 0)
 ```
 
+#### property: autoHeight
+
+```js
+// type signature
+false
+// code
+autoHeight: false
+```
+
 ### MultiLinearVariantDisplay - Getters
 
 #### getter: rendererTypeName
