@@ -7,13 +7,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export { default as configSchema } from './configSchema'
 
 export default function VcfTabixAdapterF(pluginManager: PluginManager) {
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'VcfTabixAdapter',
-        displayName: 'VCF tabix adapter',
-        configSchema,
-        getAdapterClass: () => import('./VcfTabixAdapter').then(r => r.default),
-      }),
-  )
+  pluginManager.addAdapterType(() => {
+    return new AdapterType({
+      name: 'VcfTabixAdapter',
+      displayName: 'VCF tabix adapter',
+      configSchema,
+      getAdapterClass: () => import('./VcfTabixAdapter').then(r => r.default),
+    })
+  })
 }
