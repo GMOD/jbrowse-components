@@ -2204,7 +2204,7 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-1.0.0.tgz#2fd6251d5ad040b8658e3d4c17987f89bc741322"
   integrity sha512-BTMPPUS667K2eGQ6ASc69908l3hDWF2sV/ZoTuMqIz1AfiHuaDMpcdELNf61bVeTWvUUFG5qkOQApcWMvlIvjw==
 
-"@gmod/vcf@^6.0.0":
+"@gmod/vcf@^6.0.0", "@gmod/vcf@^6.0.7":
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.7.tgz#15fb42ccb23f1fe094be3412ef799ebbcb2e4abf"
   integrity sha512-Sn3bEhLBXTu1StofTMeqcwmSxinvThvdst+na/3s6CbUPtkM/AYerMIOrztKvHP6z7CnYgxQ3MQEAuH0BqVeOA==
@@ -6551,9 +6551,9 @@ ci-info@^4.0.0:
   integrity sha512-HutrvTNsF48wnxkzERIXOe5/mlcfFcbfCmwcg6CJnizbSue78AbDt+1cgl26zwn61WFxhcPykPfZrbqjGmBb4A==
 
 cjs-module-lexer@^1.0.0, cjs-module-lexer@^1.2.3:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-1.4.1.tgz#707413784dbb3a72aa11c2f2b042a0bef4004170"
-  integrity sha512-cuSVIHi9/9E/+821Qjdvngor+xpnlwnuwIyZOaLmHBVdXL+gP+I6QQB9VkO7RI77YIcTV+S1W9AreJ5eN63JBA==
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-1.4.3.tgz#0f79731eb8cfe1ec72acd4066efac9d61991b00d"
+  integrity sha512-9z8TZaGM1pfswYeXrUpzPrkx8UnWYdhJclsiYMm6x/w5+nN+8Tf/LnAgfLGQCm59qAOxU8WwHEq2vNwF6i4j+Q==
 
 classnames@^2.2.6:
   version "2.5.1"
@@ -7847,9 +7847,9 @@ domhandler@^5.0.2, domhandler@^5.0.3:
     domelementtype "^2.3.0"
 
 dompurify@^3.2.0:
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.2.3.tgz#05dd2175225324daabfca6603055a09b2382a4cd"
-  integrity sha512-U1U5Hzc2MO0oW3DF+G9qYN0aT7atAou4AgI0XjWz061nyBPbdxkfdhfy5uMgGn6+oLFCfn44ZGbdDqCzVmlOWA==
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.2.4.tgz#af5a5a11407524431456cf18836c55d13441cd8e"
+  integrity sha512-ysFSFEDVduQpyhzAob/kkuJjf5zWkZD8/A9ywSp1byueyuCfHamrCBa14/Oc2iiB0e51B+NpxSl5gmzn+Ms/mg==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
@@ -7992,9 +7992,9 @@ electron-publish@25.1.7:
     mime "^2.5.2"
 
 electron-to-chromium@^1.5.73:
-  version "1.5.88"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.88.tgz#cdb6e2dda85e6521e8d7d3035ba391c8848e073a"
-  integrity sha512-K3C2qf1o+bGzbilTDCTBhTQcMS9KW60yTAaTeeXsfvQuTDDwlokLam/AdqlqcSy9u4UainDgsHV23ksXAOgamw==
+  version "1.5.90"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.90.tgz#4717e5a5413f95bbb12d0af14c35057e9c65e0b6"
+  integrity sha512-C3PN4aydfW91Natdyd449Kw+BzhLmof6tzy5W1pFC5SpQxVXT+oyiyOG9AgYYSN9OdA/ik3YkCrpwqI8ug5Tug==
 
 electron-updater@^6.1.1:
   version "6.3.9"
@@ -8771,9 +8771,9 @@ fastest-levenshtein@^1.0.12, fastest-levenshtein@^1.0.7:
   integrity sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==
 
 fastq@^1.6.0:
-  version "1.18.0"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.18.0.tgz#d631d7e25faffea81887fe5ea8c9010e1b36fee0"
-  integrity sha512-QKHXPW0hD8g4UET03SdOdunzSouc9N4AuHdsX8XNcTsuz+yYFILVNIX4l9yHABMhiEI9Db0JTTIpu0wB+Y1QQw==
+  version "1.19.0"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.19.0.tgz#a82c6b7c2bb4e44766d865f07997785fecfdcb89"
+  integrity sha512-7SFSRCNjBQIZH/xZR3iy5iQYR8aGBE0h3VG6/cwlbrpdciNYBMotQav8c1XI3HjHH+NikUpP53nPdlZSdWmFzA==
   dependencies:
     reusify "^1.0.4"
 
@@ -12091,9 +12091,9 @@ mobx-state-tree@^5.0.0, mobx-state-tree@^5.1.7:
   integrity sha512-SGXAh2KCBQbWVcxeQbZEr5pchTgcfNZmGVRL2a2Me+pSMH98bZWXD6EOuuijbTGbc0hOoOsbab3JdwJyr+fW7Q==
 
 mobx@^6.0.0, mobx@^6.6.0:
-  version "6.13.5"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.13.5.tgz#957d9df88c7f8b4baa7c6f8bdcb6d68b432a6ed5"
-  integrity sha512-/HTWzW2s8J1Gqt+WmUj5Y0mddZk+LInejADc79NJadrWla3rHzmRHki/mnEUH1AvOmbNTZ1BRbKxr8DSgfdjMA==
+  version "6.13.6"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.13.6.tgz#3b80895c7c9df456efc86ae0b6983ccea1da6cc6"
+  integrity sha512-r19KNV0uBN4b+ER8Z0gA4y+MzDYIQ2SvOmn3fUrqPnWXdQfakd9yfbPBDBF/p5I+bd3N5Rk1fHONIvMay+bJGA==
 
 modify-values@^1.0.1:
   version "1.0.1"
@@ -12605,9 +12605,9 @@ obuf@^1.0.0, obuf@^1.1.2:
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
 oclif@^4.0.0:
-  version "4.17.20"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.17.20.tgz#b841da4102e65778bd623a4f3e558f589d9600f6"
-  integrity sha512-8zhZ8M2Of5oB3zLLZAr6rVEozCeXMYGJpnj/iTyefZSX9O9frimGqnpUgHnKhl3GAJS5UnPgJ9s3yLzv5IMudA==
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.17.21.tgz#cbed26814b2cb4b4f971e5d0c00780451258c6b8"
+  integrity sha512-ix0H1xSWrk12jxALgub+6Eo9uvV+t42EQVeapDmPCUw78QVivOxmnpTws5ZU2DDbviLGDDIZrWGywfK8OS87rQ==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.726.1"
     "@aws-sdk/client-s3" "^3.735.0"
@@ -15783,9 +15783,9 @@ typescript-eslint@^8.0.1:
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
 
 typescript@^5.8.0-dev.20241213:
-  version "5.8.0-dev.20250129"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.0-dev.20250129.tgz#73473644db6599f8e3caa4a2450e1430d0520230"
-  integrity sha512-02x0dvITiMrpFF7O55RqWGvOgeuv7HOUkUiObmiI0j+MuO7EJq++6wkRGRZW23FxZYB7vV6xlC+UC65nvYvmbQ==
+  version "5.8.0-dev.20250131"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.0-dev.20250131.tgz#da81dbe6821f52db8c00af47fb6207bdb81ab82d"
+  integrity sha512-q7nLABAsnnq3BdqOdWnRGVhe7Gv3QkditzT6YMfWpKHsZoJ1TVo+C4ZCZHK4fCuu2vHYUwV0zUUsEZZXdnxB2w==
 
 uglify-js@^3.1.4:
   version "3.19.3"
