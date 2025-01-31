@@ -17,6 +17,7 @@ import VcfTabixAdapterF from './VcfTabixAdapter'
 import ExtensionPointsF from './extensionPoints'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import HapIbdAdapterF from './HapIbdAdapter'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -34,6 +35,7 @@ export default class VariantsPlugin extends Plugin {
     LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
+    HapIbdAdapterF(pluginManager)
 
     pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
     pluginManager.addRpcMethod(

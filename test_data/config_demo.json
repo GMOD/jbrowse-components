@@ -4832,6 +4832,16 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "trackId": "hapibd",
+      "type": "FeatureTrack",
+      "name": "hapIbd",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "HapIbdAdapter",
+        "hapIbdLocation": { "uri": "out.gz" }
+      }
     }
   ],
   "connections": [],
