@@ -4832,6 +4832,19 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ltr",
+      "name": "ltr",
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "ltr.gff3",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
     }
   ],
   "connections": [],

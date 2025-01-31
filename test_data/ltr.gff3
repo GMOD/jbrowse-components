@@ -1,0 +1,18 @@
+##gff-version	3
+##date	Wed	May	20	22:34:48	UTC	2020
+##seqid	source	repeat_class/superfamily	start	end	score	strand	phase	attributes
+##sequence-region	chr1	1	307421186
+chr1	LTR_retriever	repeat_region	54481	63973	.	-	.	ID=repeat_region1;Sequence_ontology=SO:0000657;Name=chr1:54486..63968#LTR/Copia;motif=TGCA;tsd=GAGTG;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	target_site_duplication	54481	54485	.	-	.	ID=lTSD_1;Parent=repeat_region1;Sequence_ontology=SO:0000434;Name=chr1:54486..63968#LTR/Copia;motif=TGCA;tsd=GAGTG;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	long_terminal_repeat	54486	55806	.	-	.	ID=lLTR_1;Parent=repeat_region1;Sequence_ontology=SO:0000286;Name=chr1:54486..63968#LTR/Copia;motif=TGCA;tsd=GAGTG;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	LTR/Copia	54486	63968	.	-	.	ID=LTRRT_1;Parent=repeat_region1;Sequence_ontology=SO:0000186;Name=chr1:54486..63968#LTR/Copia;motif=TGCA;tsd=GAGTG;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	long_terminal_repeat	62647	63968	.	-	.	ID=rLTR_1;Parent=repeat_region1;Sequence_ontology=SO:0000286;Name=chr1:54486..63968#LTR/Copia;motif=TGCA;tsd=GAGTG;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	target_site_duplication	63969	63973	.	-	.	ID=rTSD_1;Parent=repeat_region1;Sequence_ontology=SO:0000434;Name=chr1:54486..63968#LTR/Copia;motif=TGCA;tsd=GAGTG;ltr_identity=1.0000;Method=structural
+###
+chr1	LTR_retriever	repeat_region	146557	156096	.	-	.	ID=repeat_region2;Sequence_ontology=SO:0000657;Name=chr1:146565..156091#LTR/Copia;motif=TGCA;tsd=CTCCT;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	target_site_duplication	146557	146561	.	-	.	ID=lTSD_2;Parent=repeat_region2;Sequence_ontology=SO:0000434;Name=chr1:146565..156091#LTR/Copia;motif=TGCA;tsd=CTCCT;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	long_terminal_repeat	146565	147888	.	-	.	ID=lLTR_2;Parent=repeat_region2;Sequence_ontology=SO:0000286;Name=chr1:146565..156091#LTR/Copia;motif=TGCA;tsd=CTCCT;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	LTR/Copia	146565	156091	.	-	.	ID=LTRRT_2;Parent=repeat_region2;Sequence_ontology=SO:0000186;Name=chr1:146565..156091#LTR/Copia;motif=TGCA;tsd=CTCCT;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	long_terminal_repeat	154768	156091	.	-	.	ID=rLTR_2;Parent=repeat_region2;Sequence_ontology=SO:0000286;Name=chr1:146565..156091#LTR/Copia;motif=TGCA;tsd=CTCCT;ltr_identity=1.0000;Method=structural
+chr1	LTR_retriever	target_site_duplication	156092	156096	.	-	.	ID=rTSD_2;Parent=repeat_region2;Sequence_ontology=SO:0000434;Name=chr1:146565..156091#LTR/Copia;motif=TGCA;tsd=CTCCT;ltr_identity=1.0000;Method=structural
+###
