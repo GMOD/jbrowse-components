@@ -4192,6 +4192,60 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox-sorted.noref.cram",
       "type": "AlignmentsTrack",
     },
+    {
+      "adapter": {
+        "bedLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_repeat_minus.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "color": "jexl:repeatColor(feature)",
+              "type": "XYPlotRenderer",
+            },
+          },
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "volvox_repeats (minus)",
+      "trackId": "volvox_repeats_minus",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bedLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_repeat_plus.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_repeat-plus-LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "color": "jexl:repeatColor(feature)",
+              "type": "XYPlotRenderer",
+            },
+          },
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "volvox_repeats (plus)",
+      "trackId": "volvox_repeats_plus",
+      "type": "QuantitativeTrack",
+    },
   ],
 }
 `;
