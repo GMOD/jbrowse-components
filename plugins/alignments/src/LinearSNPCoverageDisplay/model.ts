@@ -379,7 +379,7 @@ function stateModelFactory(
               type: 'checkbox',
               checked: self.showInterbaseCountsSetting,
               onClick: () => {
-                self.setShowInterbaseCounts(self.showInterbaseCountsSetting)
+                self.setShowInterbaseCounts(!self.showInterbaseCountsSetting)
               },
             },
             {
@@ -388,7 +388,7 @@ function stateModelFactory(
               type: 'checkbox',
               checked: self.showArcsSetting,
               onClick: () => {
-                self.setShowArcs(self.showArcsSetting)
+                self.setShowArcs(!self.showArcsSetting)
               },
             },
           ]
