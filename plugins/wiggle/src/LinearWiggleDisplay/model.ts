@@ -49,8 +49,20 @@ function stateModelFactory(
          * #property
          */
         type: types.literal('LinearWiggleDisplay'),
+        /**
+         * #property
+         */
+        invertedSetting: types.maybe(types.boolean),
       }),
     )
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setInverted(arg: boolean) {
+        self.invertedSetting = arg
+      },
+    }))
 
     .views(self => ({
       /**
@@ -79,6 +91,12 @@ function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         return self.stats?.currStatsBpPerPx === view.bpPerPx
       },
+      /**
+       * #getter
+       */
+      get inverted() {
+        return self.invertedSetting ?? getConf(self, 'inverted')
+      },
     }))
 
     .views(self => {
@@ -106,9 +124,8 @@ function stateModelFactory(
          * #getter
          */
         get ticks() {
-          const { scaleType, domain, height } = self
+          const { inverted, scaleType, domain, height } = self
           const minimalTicks = getConf(self, 'minimalTicks')
-          const inverted = getConf(self, 'inverted')
           if (domain) {
             const ticks = axisPropsFromTickScale(
               getScale({
@@ -136,13 +153,14 @@ function stateModelFactory(
        * #method
        */
       renderProps() {
-        const { ticks, height } = self
+        const { inverted, ticks, height } = self
         const superProps = self.adapterProps()
         return {
           ...self.adapterProps(),
           notReady: superProps.notReady || !self.stats,
           height,
           ticks,
+          inverted,
         }
       },
 
@@ -187,11 +205,18 @@ function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            { type: 'divider' },
             {
               label: 'Score',
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
+            },
+            {
+              label: 'Inverted',
+              type: 'checkbox',
+              checked: self.inverted,
+              onClick: () => {
+                self.setInverted(!self.inverted)
+              },
             },
 
             ...(self.canHaveFill

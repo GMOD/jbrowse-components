@@ -132,7 +132,12 @@
       })
     }
 
-    configure(/* pluginManager */) {}
+    configure(pluginManager) {
+      pluginManager.jexl.addFunction('repeatColor', feature => {
+        let type = feature.get('repeatClass')
+        return { R: 'red', RC: 'green', F: 'blue', C: 'orange' }[type]
+      })
+    }
   }
 
   // the plugin will be included in both the main thread and web worker, so

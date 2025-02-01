@@ -11,7 +11,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const { stopToken, features, config } = props
+    const { inverted, stopToken, features, config } = props
     const { drawXY } = await import('../drawXY')
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -23,14 +23,15 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
 
     return drawXY(ctx, {
       ...props,
-      colorCallback:
-        readConfObject(config, 'color') === '#f0f'
-          ? (_: Feature, score: number) =>
-              score < pivotValue ? negColor : posColor
-          : (feature: Feature, _score: number) =>
-              readConfObject(config, 'color', { feature }),
+      colorCallback: !config.color.isCallback
+        ? (_: Feature, score: number) =>
+            score < pivotValue ? negColor : posColor
+        : (feature: Feature, _score: number) => {
+            return readConfObject(config, 'color', { feature })
+          },
       offset: YSCALEBAR_LABEL_OFFSET,
       features: [...features.values()],
+      inverted,
       stopToken,
     })
   }
