@@ -4,7 +4,6 @@ import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
-import type { Feature } from '@jbrowse/core/util'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   async draw(
@@ -24,11 +23,8 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     return drawXY(ctx, {
       ...props,
       colorCallback: !config.color.isCallback
-        ? (_: Feature, score: number) =>
-            score < pivotValue ? negColor : posColor
-        : (feature: Feature, _score: number) => {
-            return readConfObject(config, 'color', { feature })
-          },
+        ? (_feature, score) => (score < pivotValue ? negColor : posColor)
+        : (feature, _score) => readConfObject(config, 'color', { feature }),
       offset: YSCALEBAR_LABEL_OFFSET,
       features: [...features.values()],
       inverted,
