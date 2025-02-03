@@ -147,7 +147,7 @@ export function stateModelFactory(
       /**
        * #getter
        */
-      get needsScalebar() {
+      get graphType() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
@@ -438,7 +438,7 @@ export function stateModelFactory(
                 ]
               : []),
 
-            ...(self.needsScalebar
+            ...(self.graphType
               ? [
                   {
                     type: 'checkbox',

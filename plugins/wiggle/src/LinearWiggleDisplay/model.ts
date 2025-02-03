@@ -91,6 +91,16 @@ function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         return self.stats?.currStatsBpPerPx === view.bpPerPx
       },
+
+      /**
+       * #getter
+       */
+      get graphType() {
+        return (
+          self.rendererTypeName === 'XYPlotRenderer' ||
+          self.rendererTypeName === 'LinePlotRenderer'
+        )
+      },
       /**
        * #getter
        */
@@ -167,15 +177,6 @@ function stateModelFactory(
       /**
        * #getter
        */
-      get needsScalebar() {
-        return (
-          self.rendererTypeName === 'XYPlotRenderer' ||
-          self.rendererTypeName === 'LinePlotRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
       get fillSetting() {
         if (self.filled) {
           return 0
@@ -210,14 +211,18 @@ function stateModelFactory(
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
-            {
-              label: 'Inverted',
-              type: 'checkbox',
-              checked: self.inverted,
-              onClick: () => {
-                self.setInverted(!self.inverted)
-              },
-            },
+            ...(self.graphType
+              ? [
+                  {
+                    label: 'Inverted',
+                    type: 'checkbox',
+                    checked: self.inverted,
+                    onClick: () => {
+                      self.setInverted(!self.inverted)
+                    },
+                  },
+                ]
+              : []),
 
             ...(self.canHaveFill
               ? [
@@ -267,7 +272,7 @@ function stateModelFactory(
               },
             },
 
-            ...(self.needsScalebar
+            ...(self.graphType
               ? [
                   {
                     type: 'checkbox',

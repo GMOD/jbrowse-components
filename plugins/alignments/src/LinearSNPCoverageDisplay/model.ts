@@ -345,7 +345,7 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get needsScalebar() {
+        get graphType() {
           return true
         },
 

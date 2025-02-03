@@ -21,7 +21,7 @@ const LegendItem = function ({
   const boxHeight = Math.min(20, rowHeight)
   const {
     needsCustomLegend,
-    needsScalebar,
+    graphType,
     needsFullHeightScalebar,
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
@@ -32,7 +32,7 @@ const LegendItem = function ({
   const legendWidth = labelWidth + colorBoxWidth + 5
   const svgOffset = exportSVG ? 10 : 0
   const extraOffset =
-    svgOffset || (needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0)
+    svgOffset || (graphType && !rowHeightTooSmallForScalebar ? 50 : 0)
   return (
     <>
       {needsFullHeightScalebar ? null : (

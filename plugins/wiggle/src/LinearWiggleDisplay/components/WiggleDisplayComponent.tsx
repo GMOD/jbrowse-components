@@ -16,7 +16,7 @@ type LGV = LinearGenomeViewModel
 
 const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
-  const { stats, height, needsScalebar } = model
+  const { stats, height, graphType } = model
 
   const { trackLabels } = getContainingView(model) as LGV
   const track = getContainingTrack(model)
@@ -27,7 +27,7 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   return (
     <div>
       <BaseLinearDisplayComponent {...props} />
-      {stats && needsScalebar ? (
+      {stats && graphType ? (
         <svg
           style={{
             position: 'absolute',
