@@ -13,18 +13,18 @@ export interface ModificationOpts {
 }
 
 export async function getUniqueModifications({
-  self,
+  model,
   adapterConfig,
   blocks,
   opts,
 }: {
-  self: IAnyStateTreeNode
+  model: IAnyStateTreeNode
   adapterConfig: AnyConfigurationModel
   blocks: BlockSet
   opts?: ModificationOpts
 }) {
-  const { rpcManager } = getSession(self)
-  const sessionId = getRpcSessionId(self)
+  const { rpcManager } = getSession(model)
+  const sessionId = getRpcSessionId(model)
   const values = await rpcManager.call(
     sessionId,
     'PileupGetVisibleModifications',
@@ -33,8 +33,7 @@ export async function getUniqueModifications({
       sessionId,
       regions: blocks.contentBlocks,
       statusCallback: (arg: string) => {
-        console.log(arg)
-        self.setMessage(arg)
+        model.setMessage(arg)
       },
       ...opts,
     },

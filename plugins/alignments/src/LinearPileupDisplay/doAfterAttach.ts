@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from 'mobx-state-tree'
@@ -14,17 +14,18 @@ type LGV = LinearGenomeViewModel
 export function doAfterAttach(model: {
   autorunReady: boolean
   sortedBy?: SortedBy
-  adapterConfig: any
+  adapterConfig: AnyConfigurationModel
   rendererType: { name: string }
   sortReady: boolean
   currSortBpPerPx: number
   parentTrack: any
+  renderPropsPre: () => Record<string, unknown>
   setCurrSortBpPerPx: (arg: number) => void
   setError: (arg: unknown) => void
-  renderPropsPre: () => Record<string, unknown>
   updateVisibleModifications: (arg: ModificationType[]) => void
   setModificationsReady: (arg: boolean) => void
   setSortReady: (arg: boolean) => void
+  setMessage: (arg: string) => void
 }) {
   createAutorun(
     model,
@@ -69,6 +70,9 @@ export function doAfterAttach(model: {
           sessionId: getRpcSessionId(model),
           layoutId: view.id,
           timeout: 1_000_000,
+          statusCallback: (arg: string) => {
+            model.setMessage(arg)
+          },
           ...model.renderPropsPre(),
         })
       }
@@ -86,10 +90,11 @@ export function doAfterAttach(model: {
       if (!model.autorunReady) {
         return
       }
+      const { adapterConfig } = model
       const { staticBlocks } = getContainingView(model) as LGV
       const vals = await getUniqueModifications({
-        self: model,
-        adapterConfig: getConf(model.parentTrack, 'adapter'),
+        model,
+        adapterConfig,
         blocks: staticBlocks,
       })
       if (isAlive(model)) {
