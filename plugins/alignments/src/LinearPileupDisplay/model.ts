@@ -6,21 +6,15 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { observable } from 'mobx'
-import { isAlive, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { getUniqueModifications } from '../shared/getUniqueModifications'
-import {
-  createAutorun,
-  getColorForModification,
-  modificationData,
-} from '../util'
+import { getColorForModification, modificationData } from '../util'
 
 import type {
   ModificationType,
@@ -453,78 +447,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     })
     .actions(self => ({
       afterAttach() {
-        createAutorun(
-          self,
-          async () => {
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            self.setCurrSortBpPerPx(view.bpPerPx)
-          },
-          { delay: 1000 },
-        )
-        createAutorun(
-          self,
-          async () => {
-            const { rpcManager } = getSession(self)
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { sortedBy, adapterConfig, rendererType, sortReady } = self
-            const { bpPerPx } = view
-
-            if (
-              sortedBy &&
-              (!sortReady || self.currSortBpPerPx === view.bpPerPx)
-            ) {
-              const { pos, refName, assemblyName } = sortedBy
-              // render just the sorted region first
-              // @ts-expect-error
-              await self.rendererType.renderInClient(rpcManager, {
-                assemblyName,
-                regions: [
-                  {
-                    start: pos,
-                    end: pos + 1,
-                    refName,
-                    assemblyName,
-                  },
-                ],
-                adapterConfig,
-                rendererType: rendererType.name,
-                sessionId: getRpcSessionId(self),
-                layoutId: view.id,
-                timeout: 1_000_000,
-                ...self.renderPropsPre(),
-              })
-            }
-            if (isAlive(self)) {
-              self.setCurrSortBpPerPx(bpPerPx)
-              self.setSortReady(true)
-            }
-          },
-          { delay: 1000 },
-        )
-
-        createAutorun(self, async () => {
-          if (!self.autorunReady) {
-            return
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./doAfterAttach')
+            doAfterAttach(self)
+          } catch (e) {
+            getSession(self).notifyError(`${e}`, e)
+            console.error(e)
           }
-          const { staticBlocks } = getContainingView(self) as LGV
-          const vals = await getUniqueModifications({
-            self,
-            adapterConfig: getConf(self.parentTrack, 'adapter'),
-            blocks: staticBlocks,
-          })
-          if (isAlive(self)) {
-            self.updateVisibleModifications(vals)
-            self.setModificationsReady(true)
-          }
-        })
+        })()
       },
     }))
 }
