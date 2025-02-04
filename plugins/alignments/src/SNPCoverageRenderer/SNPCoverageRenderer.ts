@@ -1,7 +1,7 @@
+import { updateStatus } from '@jbrowse/core/util'
 import { WiggleBaseRenderer } from '@jbrowse/plugin-wiggle'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
-import { updateStatus } from '@jbrowse/core/util'
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   // note: the snps are drawn on linear scale even if the data is drawn in log

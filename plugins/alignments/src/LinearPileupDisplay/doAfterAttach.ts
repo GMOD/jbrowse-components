@@ -1,4 +1,3 @@
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from 'mobx-state-tree'
@@ -6,8 +5,9 @@ import { isAlive } from 'mobx-state-tree'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ModificationType, SortedBy } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
