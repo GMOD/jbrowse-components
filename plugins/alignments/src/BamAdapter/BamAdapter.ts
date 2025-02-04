@@ -83,35 +83,40 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     const { bam } = await this.configure()
+    console.log('wow')
     this.samHeader = await updateStatus(
       'Downloading index',
       statusCallback,
       async () => {
-        const samHeader = await bam.getHeader()
+        return new Promise(res =>
+          setTimeout(async () => {
+            const samHeader = await bam.getHeader()
 
-        // use the @SQ lines in the header to figure out the
-        // mapping between ref ref ID numbers and names
-        const idToName: string[] = []
-        const nameToId: Record<string, number> = {}
-        samHeader
-          ?.filter(l => l.tag === 'SQ')
-          .forEach((sqLine, refId) => {
-            const SN = sqLine.data.find(item => item.tag === 'SN')
-            if (SN) {
-              // this is the ref name
-              const refName = SN.value
-              nameToId[refName] = refId
-              idToName[refId] = refName
-            }
-          })
+            // use the @SQ lines in the header to figure out the
+            // mapping between ref ref ID numbers and names
+            const idToName: string[] = []
+            const nameToId: Record<string, number> = {}
+            samHeader
+              ?.filter(l => l.tag === 'SQ')
+              .forEach((sqLine, refId) => {
+                const SN = sqLine.data.find(item => item.tag === 'SN')
+                if (SN) {
+                  // this is the ref name
+                  const refName = SN.value
+                  nameToId[refName] = refId
+                  idToName[refId] = refName
+                }
+              })
 
-        return { idToName, nameToId }
+            res({ idToName, nameToId })
+          }, 4000),
+        )
       },
     )
     return this.samHeader
   }
 
-  async setup(opts?: BaseOptions) {
+  async setupPre2(opts?: BaseOptions) {
     if (!this.setupP) {
       this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
@@ -119,6 +124,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       })
     }
     return this.setupP
+  }
+
+  async setup(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.setupPre2(opts),
+    )
   }
 
   async getRefNames(opts?: BaseOptions) {
