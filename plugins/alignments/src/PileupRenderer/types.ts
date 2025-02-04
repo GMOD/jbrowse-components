@@ -20,6 +20,7 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   sortedBy?: SortedBy
   showSoftClip: boolean
   highResolutionScaling: number
+  statusCallback?: (arg: string) => void
 }
 
 export interface ProcessedRenderArgs extends RenderArgsDeserialized {

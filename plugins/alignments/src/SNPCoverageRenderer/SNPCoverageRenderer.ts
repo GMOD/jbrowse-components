@@ -1,3 +1,4 @@
+import { updateStatus } from '@jbrowse/core/util'
 import { WiggleBaseRenderer } from '@jbrowse/plugin-wiggle'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
@@ -10,8 +11,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
+    const { statusCallback = () => {} } = props
     const { makeImage } = await import('./makeImage')
-    await makeImage(ctx, props)
+    await updateStatus('Rendering coverage', statusCallback, () =>
+      makeImage(ctx, props),
+    )
     return undefined
   }
 }

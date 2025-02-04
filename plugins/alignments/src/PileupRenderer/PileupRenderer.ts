@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
 import { fetchSequence } from '../util'
@@ -53,39 +53,39 @@ export default class PileupRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
-    const { colorBy, regions, bpPerPx } = renderProps
+    const { statusCallback = () => {}, colorBy, regions, bpPerPx } = renderProps
     const region = regions[0]!
-
-    const regionSequence =
-      colorBy?.type === 'methylation' && features.size
-        ? await this.fetchSequence(renderProps, region)
-        : undefined
-
+    const width = (region.end - region.start) / bpPerPx
     const { layoutRecords, height } = layoutFeats({
       ...renderProps,
       features,
       layout,
     })
-    const width = (region.end - region.start) / bpPerPx
-    const { makeImageData } = await import('./makeImageData')
 
-    const res = await renderToAbstractCanvas(
-      width,
-      height,
-      renderProps,
-      ctx => {
-        makeImageData({
-          ctx,
-          layoutRecords,
-          canvasWidth: width,
-          renderArgs: {
-            ...renderProps,
-            layout,
-            features,
-            regionSequence,
-          },
+    const res = await updateStatus(
+      'Rendering alignments',
+      statusCallback,
+      async () => {
+        const regionSequence =
+          colorBy?.type === 'methylation' && features.size
+            ? await this.fetchSequence(renderProps, region)
+            : undefined
+        const { makeImageData } = await import('./makeImageData')
+
+        return renderToAbstractCanvas(width, height, renderProps, ctx => {
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...renderProps,
+              layout,
+              features,
+              regionSequence,
+            },
+          })
+          return undefined
         })
-        return undefined
       },
     )
 

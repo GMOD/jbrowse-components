@@ -21,14 +21,17 @@ export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
     },
     rpcDriver: string,
   ) {
-    const { adapterConfig, sessionId, regions, tag } =
-      await this.deserializeArguments(args, rpcDriver)
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+    const { adapterConfig, sessionId, regions, tag } = deserializedArgs
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const features = dataAdapter.getFeaturesInMultipleRegions(regions)
+    const features = dataAdapter.getFeaturesInMultipleRegions(
+      regions,
+      deserializedArgs,
+    )
     const featuresArray = await firstValueFrom(features.pipe(toArray()))
     return [
       ...new Set(

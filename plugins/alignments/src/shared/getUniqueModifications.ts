@@ -6,23 +6,25 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
+export interface ModificationOpts {
+  headers?: Record<string, string>
+  stopToken?: string
+  filters: string[]
+}
+
 export async function getUniqueModifications({
-  self,
+  model,
   adapterConfig,
   blocks,
   opts,
 }: {
-  self: IAnyStateTreeNode
+  model: IAnyStateTreeNode
   adapterConfig: AnyConfigurationModel
   blocks: BlockSet
-  opts?: {
-    headers?: Record<string, string>
-    stopToken?: string
-    filters: string[]
-  }
+  opts?: ModificationOpts
 }) {
-  const { rpcManager } = getSession(self)
-  const sessionId = getRpcSessionId(self)
+  const { rpcManager } = getSession(model)
+  const sessionId = getRpcSessionId(model)
   const values = await rpcManager.call(
     sessionId,
     'PileupGetVisibleModifications',
@@ -30,6 +32,9 @@ export async function getUniqueModifications({
       adapterConfig,
       sessionId,
       regions: blocks.contentBlocks,
+      statusCallback: (arg: string) => {
+        model.setMessage(arg)
+      },
       ...opts,
     },
   )
