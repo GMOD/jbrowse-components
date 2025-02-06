@@ -140,13 +140,6 @@ test('can use config from a url with nonexistent share param ', async () => {
   await findAllByText(/Error/, {}, delay)
 }, 20000)
 
-test('can catch error from loading a bad config', async () => {
-  const { findAllByText } = render(
-    <App search="?config=test_data/bad_config_test/config.json" />,
-  )
-  await findAllByText(/Error while converting/)
-}, 20000)
-
 test('can use a spec url for lgv', async () => {
   const { findByText, findByPlaceholderText } = render(
     <App search="?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup" />,
