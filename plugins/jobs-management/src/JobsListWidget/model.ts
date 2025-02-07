@@ -62,9 +62,11 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        */
       removeJob(jobName: string) {
         const indx = self.jobs.findIndex(job => job.name === jobName)
-        const removed = self.jobs[indx]
-        self.jobs.splice(indx, 1)
-        return removed
+        if (indx === -1) {
+          return undefined
+        }
+        const removed = self.jobs.splice(indx, 1)
+        return removed[0]
       },
       /**
        * #action
@@ -110,9 +112,11 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        */
       removeQueuedJob(jobName: string) {
         const indx = self.queued.findIndex(job => job.name === jobName)
-        const removed = self.queued[indx]
-        self.queued.splice(indx, 1)
-        return removed
+        if (indx === -1) {
+          return undefined
+        }
+        const removed = self.queued.splice(indx, 1)
+        return removed[0]
       },
       /**
        * #action
