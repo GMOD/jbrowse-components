@@ -56,11 +56,16 @@ export default class PileupRenderer extends BoxRendererType {
     const { statusCallback = () => {}, colorBy, regions, bpPerPx } = renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
-    const { layoutRecords, height } = layoutFeats({
-      ...renderProps,
-      features,
-      layout,
-    })
+    const { layoutRecords, height } = await updateStatus(
+      'Creating layout',
+      statusCallback,
+      () =>
+        layoutFeats({
+          ...renderProps,
+          features,
+          layout,
+        }),
+    )
 
     const res = await updateStatus(
       'Rendering alignments',
