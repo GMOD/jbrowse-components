@@ -50,6 +50,7 @@ export function randomColor(str: string) {
 export function colorify(n: number) {
   return `hsl(${n % 255}, 50%, 50%)`
 }
+
 // used for calculating minor allele
 export function findSecondLargest(arr: Iterable<number>) {
   let firstMax = 0
@@ -67,25 +68,25 @@ export function findSecondLargest(arr: Iterable<number>) {
   return secondMax
 }
 
-export function calculateMinorAlleleFrequency(feat: Feature) {
-  // only draw smallish indels, unclear how to draw large structural variants
-  // even though they are important
-  if (feat.get('end') - feat.get('start') <= 10) {
-    const samp = feat.get('genotypes') as Record<string, string>
-    const alleleCounts = new Map()
-    for (const val of Object.values(samp)) {
-      const alleles = val.split(/[/|]/)
-      for (const allele of alleles) {
-        alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
-      }
+export function calculateAlleleCounts(feat: Feature) {
+  const samp = feat.get('genotypes') as Record<string, string>
+  const alleleCounts = new Map()
+  for (const val of Object.values(samp)) {
+    const alleles = val.split(/[/|]/)
+    for (const allele of alleles) {
+      alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
     }
-
-    return (
-      findSecondLargest(alleleCounts.values()) /
-      (sum(alleleCounts.values()) || 1)
-    )
   }
-  return -1
+
+  return alleleCounts
+}
+
+export function calculateMinorAlleleFrequency(
+  alleleCounts: Map<string, number>,
+) {
+  return (
+    findSecondLargest(alleleCounts.values()) / (sum(alleleCounts.values()) || 1)
+  )
 }
 
 export function getFeaturesThatPassMinorAlleleFrequencyFilter(
@@ -94,8 +95,14 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter(
 ) {
   const mafs = [] as Feature[]
   for (const feat of feats) {
-    if (calculateMinorAlleleFrequency(feat) >= minorAlleleFrequencyFilter) {
-      mafs.push(feat)
+    if (feat.get('end') - feat.get('start') <= 10) {
+      const alleleCounts = calculateAlleleCounts(feat)
+      if (
+        calculateMinorAlleleFrequency(alleleCounts) >=
+        minorAlleleFrequencyFilter
+      ) {
+        mafs.push(feat)
+      }
     }
   }
   return mafs

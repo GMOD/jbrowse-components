@@ -15,4 +15,5 @@ export interface RenderArgsDeserializedWithFeaturesAndLayout
   sources: Source[]
   features: Map<string, Feature>
   renderingMode: string
+  statusCallback?: (arg: string) => void
 }
