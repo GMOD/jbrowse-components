@@ -47,7 +47,11 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       addJob(job: NewJob) {
-        const { cancelCallback } = job
+        const { cancelCallback, name } = job
+        const existing = self.jobs.find(job => job.name === name)
+        if (existing) {
+          return existing
+        }
         const length = self.jobs.push(job)
         const addedJob = self.jobs[length - 1]!
         addedJob.setCancelCallback(cancelCallback)
@@ -66,22 +70,40 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       addFinishedJob(job: NewJob) {
-        self.finished.push(job)
-        return self.finished
+        const existing = self.finished.find(
+          finishedJob => finishedJob.name === job.name,
+        )
+        if (existing) {
+          return existing
+        }
+        const length = self.finished.push(job)
+        return self.finished[length - 1]
       },
       /**
        * #action
        */
       addQueuedJob(job: NewJob) {
-        self.queued.push(job)
-        return self.finished
+        const existing = self.queued.find(
+          queuedJob => queuedJob.name === job.name,
+        )
+        if (existing) {
+          return existing
+        }
+        const length = self.queued.push(job)
+        return self.queued[length - 1]
       },
       /**
        * #action
        */
       addAbortedJob(job: NewJob) {
-        self.aborted.push(job)
-        return self.aborted
+        const existing = self.aborted.find(
+          abortedJob => abortedJob.name === job.name,
+        )
+        if (existing) {
+          return existing
+        }
+        const length = self.aborted.push(job)
+        return self.aborted[length - 1]
       },
       /**
        * #action
