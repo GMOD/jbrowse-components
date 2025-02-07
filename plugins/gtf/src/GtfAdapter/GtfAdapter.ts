@@ -197,7 +197,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         } else {
           observer.next(
             new SimpleFeature({
-              id: `${this.id}-${feat.uniqueId}`,
+              id: feat.uniqueId,
               data: feat,
             }),
           )
@@ -211,7 +211,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           const { uniqueId, strand } = subfeatures[0]!
           observer.next(
             new SimpleFeature({
-              id: `${this.id}-${uniqueId}-parent`,
+              id: `${uniqueId}-parent`,
               data: {
                 type: 'gene',
                 subfeatures,
