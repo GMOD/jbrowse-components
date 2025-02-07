@@ -16,6 +16,13 @@ const GtfAdapter = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
     },
+    /**
+     * #slot
+     */
+    aggregateField: {
+      type: 'string',
+      defaultValue: 'gene_name',
+    },
   },
   { explicitlyTyped: true },
 )

@@ -24,7 +24,10 @@ function configSchemaFactory(pluginManager: PluginManager) {
        * #slot
        * currently unused
        */
-      middle: { type: 'boolean', defaultValue: true },
+      middle: {
+        type: 'boolean',
+        defaultValue: true,
+      },
     },
     {
       /**

@@ -11,7 +11,7 @@ export interface FeatureLoc {
   attributes: Record<string, unknown[]>
 }
 
-export function featureData(data: FeatureLoc) {
+export function featureData(data: FeatureLoc, id?: string) {
   const f: Record<string, unknown> = { ...data }
   ;(f.start as number) -= 1 // convert to interbase
   f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
@@ -71,6 +71,9 @@ export function featureData(data: FeatureLoc) {
 
   if (f.transcript_id) {
     f.name = f.transcript_id
+  }
+  if (id !== undefined) {
+    f.uniqueId = id
   }
   return f
 }
