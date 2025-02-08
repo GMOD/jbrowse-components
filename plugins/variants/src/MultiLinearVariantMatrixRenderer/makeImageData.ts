@@ -40,7 +40,7 @@ export async function makeImageData({
   await updateStatus('Drawing variant matrix', statusCallback, () => {
     for (let i = 0; i < m; i++) {
       const arr2 = [] as string[]
-      const { feature } = mafs[i]!
+      const { feature, mostFrequentAlt } = mafs[i]!
       const hasPhaseSet = (feature.get('format') as string).includes('PS')
       if (hasPhaseSet) {
         const samp = feature.get('samples') as Record<string, SampleGenotype>
@@ -66,7 +66,7 @@ export async function makeImageData({
                 }
               } else {
                 const alleles = genotype.split(/[/|]/)
-                drawColorAlleleCount(alleles, ctx, x, y, w, h)
+                drawColorAlleleCount(alleles, ctx, x, y, w, h, mostFrequentAlt)
               }
             }
           }
@@ -92,7 +92,7 @@ export async function makeImageData({
               }
             } else {
               const alleles = genotype.split(/[/|]/)
-              drawColorAlleleCount(alleles, ctx, x, y, w, h)
+              drawColorAlleleCount(alleles, ctx, x, y, w, h, mostFrequentAlt)
             }
           }
         }

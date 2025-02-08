@@ -28,7 +28,7 @@ export async function makeImageData(
     minorAlleleFrequencyFilter,
   )
   const rbush = new RBush()
-  for (const { feature } of mafs) {
+  for (const { mostFrequentAlt, feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>
@@ -59,7 +59,7 @@ export async function makeImageData(
           }
         } else {
           const alleles = genotype.split(/[/|]/)
-          drawColorAlleleCount(alleles, ctx, x, y, w, h)
+          drawColorAlleleCount(alleles, ctx, x, y, w, h, mostFrequentAlt)
         }
       }
       y += rowHeight

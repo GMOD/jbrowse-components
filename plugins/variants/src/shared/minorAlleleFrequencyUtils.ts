@@ -1,6 +1,6 @@
 import { sum } from '@jbrowse/core/util'
 
-import type { Feature} from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 export function findSecondLargestNumber(arr: Iterable<number>) {
   let firstMax = 0
@@ -27,8 +27,18 @@ export function calculateAlleleCounts(feat: Feature) {
       alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
     }
   }
+  let mostFrequentAlt
+  let max = 0
+  for (const [alt, altCount] of alleleCounts.entries()) {
+    if (alt !== '.' && alt !== '0') {
+      if (altCount > max) {
+        mostFrequentAlt = alt
+        max = altCount
+      }
+    }
+  }
 
-  return alleleCounts
+  return { alleleCounts, mostFrequentAlt }
 }
 
 export function calculateMinorAlleleFrequency(
@@ -46,16 +56,19 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter(
 ) {
   const results = [] as {
     feature: Feature
-    alleleCounts: Map<string, number>
+    mostFrequentAlt: string
   }[]
-  for (const feat of feats) {
-    if (feat.get('end') - feat.get('start') <= 10) {
-      const alleleCounts = calculateAlleleCounts(feat)
+  for (const feature of feats) {
+    if (feature.get('end') - feature.get('start') <= 10) {
+      const { mostFrequentAlt, alleleCounts } = calculateAlleleCounts(feature)
       if (
         calculateMinorAlleleFrequency(alleleCounts) >=
         minorAlleleFrequencyFilter
       ) {
-        results.push({ feature: feat, alleleCounts })
+        results.push({
+          feature,
+          mostFrequentAlt,
+        })
       }
     }
   }

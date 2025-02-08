@@ -1,5 +1,17 @@
+import { set1 } from '@jbrowse/core/ui/colors'
+
 import { f2 } from './constants'
-import { getColorPhased, getColorPhasedWithPhaseSet } from './multiVariantColor'
+import { colorify } from './util'
+
+function getColorPhased(alleles: string[], HP: number) {
+  const c = +alleles[HP]!
+  return c ? set1[c - 1] || 'black' : '#ccc'
+}
+
+function getColorPhasedWithPhaseSet(alleles: string[], HP: number, PS: string) {
+  const c = +alleles[HP]!
+  return c ? colorify(+PS) || 'black' : '#ccc'
+}
 
 export function drawPhased(
   alleles: string[],
