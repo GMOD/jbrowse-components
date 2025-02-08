@@ -11,16 +11,16 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 import { types } from 'mobx-state-tree'
 
-import type { SampleInfo, Source } from '../types'
+import type { SampleInfo, Source } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
-const SetColorDialog = lazy(() => import('./SetColorDialog'))
-const MAFFilterDialog = lazy(() => import('./MAFFilterDialog'))
-const ClusterDialog = lazy(() => import('./ClusterDialog'))
-const SetRowHeightDialog = lazy(() => import('./SetRowHeightDialog'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
+const ClusterDialog = lazy(() => import('./components/ClusterDialog'))
+const SetRowHeightDialog = lazy(() => import('./components/SetRowHeightDialog'))
 
 /**
  * #stateModel MultiVariantBaseModel
