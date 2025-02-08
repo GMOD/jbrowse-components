@@ -1,4 +1,4 @@
-import type { Source } from '../types'
+import type { Source } from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'

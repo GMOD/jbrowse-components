@@ -1,41 +1,12 @@
 import { featureSpanPx } from '@jbrowse/core/util'
 import RBush from 'rbush'
 
-import {
-  getColorAlleleCount,
-  getColorPhased,
-} from '../shared/multiVariantColor'
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
+import { drawPhased } from '../shared/drawPhased'
+import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import { f2 } from '../shared/constants'
 
 import type { MultiRenderArgsDeserialized } from './types'
-
-const fudgeFactor = 0.6
-const f2 = fudgeFactor / 2
-
-function drawColorAlleleCount(
-  alleles: string[],
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) {
-  ctx.fillStyle = getColorAlleleCount(alleles)
-  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-}
-
-function drawPhased(
-  alleles: string[],
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  HP: number,
-) {
-  ctx.fillStyle = getColorPhased(alleles, HP)
-  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-}
 
 export async function makeImageData(
   ctx: CanvasRenderingContext2D,
@@ -57,7 +28,7 @@ export async function makeImageData(
     minorAlleleFrequencyFilter,
   )
   const rbush = new RBush()
-  for (const feature of mafs) {
+  for (const { feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>

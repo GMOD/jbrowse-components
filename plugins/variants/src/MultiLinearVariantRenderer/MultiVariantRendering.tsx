@@ -4,7 +4,7 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import RBush from 'rbush'
 
-import type { Source } from '../types'
+import type { Source } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 

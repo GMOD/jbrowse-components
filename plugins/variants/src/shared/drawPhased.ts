@@ -1,7 +1,4 @@
-import {
-  getColorPhased,
-  getColorPhasedWithPhaseSet,
-} from '../shared/multiVariantColor'
+import { getColorPhased, getColorPhasedWithPhaseSet } from './multiVariantColor'
 import { f2 } from './constants'
 
 export function drawPhased(

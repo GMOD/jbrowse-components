@@ -1,7 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { colorify } from '../util'
+import { colorify } from './util'
 
 export function getColorAlleleCount(alleles: string[]) {
   const total = alleles.length

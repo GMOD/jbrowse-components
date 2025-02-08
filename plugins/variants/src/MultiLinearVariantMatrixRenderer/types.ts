@@ -1,4 +1,4 @@
-import type { Source } from '../types'
+import type { Source } from '../shared/types'
 import type { RenderArgsDeserialized as BoxRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature } from '@jbrowse/core/util'
 

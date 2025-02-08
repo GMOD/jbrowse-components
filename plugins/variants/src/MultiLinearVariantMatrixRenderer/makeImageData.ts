@@ -1,9 +1,9 @@
 import { updateStatus } from '@jbrowse/core/util'
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
-import { drawColorAlleleCount } from './drawAlleleCount'
-import { drawPhased } from './drawPhased'
+import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import { drawPhased } from '../shared/drawPhased'
 
 const fudgeFactor = 0.6
 const f2 = fudgeFactor / 2
@@ -41,10 +41,10 @@ export function makeImageData({
   updateStatus('Drawing variant matrix', statusCallback, () => {
     for (let i = 0; i < m; i++) {
       const arr2 = [] as string[]
-      const f = mafs[i]!
-      const hasPhaseSet = (f.get('format') as string).includes('PS')
+      const { feature } = mafs[i]!
+      const hasPhaseSet = (feature.get('format') as string).includes('PS')
       if (hasPhaseSet) {
-        const samp = f.get('samples') as Record<string, SampleGenotype>
+        const samp = feature.get('samples') as Record<string, SampleGenotype>
         const x = (i / mafs.length) * canvasWidth
         const sln = sources.length
         for (let j = 0; j < sln; j++) {
@@ -73,7 +73,7 @@ export function makeImageData({
           }
         }
       } else {
-        const samp = f.get('genotypes') as Record<string, string>
+        const samp = feature.get('genotypes') as Record<string, string>
         const x = (i / mafs.length) * canvasWidth
         const sln = sources.length
         for (let j = 0; j < sln; j++) {

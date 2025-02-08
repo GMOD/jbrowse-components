@@ -1,22 +1,19 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 
-import type { Source } from './types'
-import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import type { Source } from './shared/types'
+import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
 
-// locals
-
-export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
+export interface RenderArgs extends RenderArgsDeserialized {
   bpPerPx: number
   height: number
   highResolutionScaling: number
   themeOptions: ThemeOptions
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
+export interface RenderArgsDeserializedWithFeatures extends RenderArgs {
   features: Map<string, Feature>
 }
 
@@ -28,7 +25,7 @@ export interface MultiRenderArgsDeserialized
 export default abstract class MultiVariantBaseRenderer extends FeatureRendererType {
   supportsSVG = true
 
-  async render(renderProps: RenderArgsDeserialized) {
+  async render(renderProps: RenderArgs) {
     const features = await this.getFeatures(renderProps)
     const { height, regions, bpPerPx } = renderProps
     const region = regions[0]!

@@ -1,8 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-// locals
-import LegendBar from '../shared/LegendBar'
+import LegendBar from '../shared/components/LegendBar'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
 
 import type { MultiLinearVariantMatrixDisplayModel } from './model'

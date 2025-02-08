@@ -17,10 +17,10 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
-const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
-const MAFFilterDialog = lazy(() => import('../shared/MAFFilterDialog'))
-const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
-const SetRowHeightDialog = lazy(() => import('../shared/SetRowHeightDialog'))
+const SetColorDialog = lazy(() => import('./SetColorDialog'))
+const MAFFilterDialog = lazy(() => import('./MAFFilterDialog'))
+const ClusterDialog = lazy(() => import('./ClusterDialog'))
+const SetRowHeightDialog = lazy(() => import('./SetRowHeightDialog'))
 
 /**
  * #stateModel MultiVariantBaseModel
