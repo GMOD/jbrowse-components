@@ -4,9 +4,7 @@ import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAl
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
 import { drawColorAlleleCount } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
-
-const fudgeFactor = 0.6
-const f2 = fudgeFactor / 2
+import { f2 } from '../shared/constants'
 
 type SampleGenotype = Record<string, string[]>
 

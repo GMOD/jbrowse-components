@@ -45,13 +45,13 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
       ...res,
       features: new Map(),
       simplifiedFeatures: mafs.map(
-        (s: Feature) =>
+        ({ feature }: { feature: Feature }) =>
           new SimpleFeature({
-            id: s.id(),
+            id: feature.id(),
             data: {
-              start: s.get('start'),
-              end: s.get('end'),
-              refName: s.get('refName'),
+              start: feature.get('start'),
+              end: feature.get('end'),
+              refName: feature.get('refName'),
             },
           }),
       ),
