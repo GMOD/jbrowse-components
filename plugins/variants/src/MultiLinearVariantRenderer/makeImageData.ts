@@ -1,10 +1,10 @@
 import { featureSpanPx } from '@jbrowse/core/util'
 import RBush from 'rbush'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
-import { drawPhased } from '../shared/drawPhased'
-import { drawColorAlleleCount } from '../shared/drawAlleleCount'
 import { f2 } from '../shared/constants'
+import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import { drawPhased } from '../shared/drawPhased'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
 import type { MultiRenderArgsDeserialized } from './types'
 

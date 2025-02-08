@@ -1,4 +1,6 @@
-import { Feature, sum } from '@jbrowse/core/util'
+import { sum } from '@jbrowse/core/util'
+
+import type { Feature} from '@jbrowse/core/util'
 
 export function findSecondLargestNumber(arr: Iterable<number>) {
   let firstMax = 0

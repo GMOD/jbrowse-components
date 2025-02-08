@@ -1,5 +1,5 @@
-import { getColorAlleleCount } from './multiVariantColor'
 import { f2 } from './constants'
+import { getColorAlleleCount } from './multiVariantColor'
 
 export function drawColorAlleleCount(
   alleles: string[],

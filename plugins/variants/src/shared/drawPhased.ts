@@ -1,5 +1,5 @@
-import { getColorPhased, getColorPhasedWithPhaseSet } from './multiVariantColor'
 import { f2 } from './constants'
+import { getColorPhased, getColorPhasedWithPhaseSet } from './multiVariantColor'
 
 export function drawPhased(
   alleles: string[],

@@ -1,14 +1,15 @@
 import { updateStatus } from '@jbrowse/core/util'
+
+import { f2 } from '../shared/constants'
+import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
 import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
-import { drawColorAlleleCount } from '../shared/drawAlleleCount'
-import { drawPhased } from '../shared/drawPhased'
-import { f2 } from '../shared/constants'
 
 type SampleGenotype = Record<string, string[]>
 
-export function makeImageData({
+export async function makeImageData({
   ctx,
   canvasWidth,
   canvasHeight,
@@ -36,7 +37,7 @@ export function makeImageData({
   const m = mafs.length
   const w = canvasWidth / m
 
-  updateStatus('Drawing variant matrix', statusCallback, () => {
+  await updateStatus('Drawing variant matrix', statusCallback, () => {
     for (let i = 0; i < m; i++) {
       const arr2 = [] as string[]
       const { feature } = mafs[i]!
