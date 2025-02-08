@@ -2,7 +2,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import MultiVariantTooltip from '../../shared/MultiVariantTooltip'
+import MultiVariantTooltip from '../../shared/components/MultiVariantTooltip'
 
 import type { MultiLinearVariantDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

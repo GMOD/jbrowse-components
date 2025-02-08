@@ -4,7 +4,7 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshair from './Crosshair'
-import LegendBar from '../../shared/LegendBar'
+import LegendBar from '../../shared/components/LegendBar'
 
 import type { MultiLinearVariantDisplayModel } from '../model'
 
