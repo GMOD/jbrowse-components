@@ -2,9 +2,9 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../util'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
-import type { SampleInfo } from '../types'
+import type { SampleInfo } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -45,8 +45,8 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
     const sampleInfo = {} as Record<string, SampleInfo>
     let hasPhased = false
 
-    for (const f of features) {
-      const samp = f.get('genotypes') as Record<string, string>
+    for (const { feature } of features) {
+      const samp = feature.get('genotypes') as Record<string, string>
       for (const [key, val] of Object.entries(samp)) {
         const isPhased = val.includes('|')
         hasPhased ||= isPhased
@@ -62,12 +62,12 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
     return {
       hasPhased,
       sampleInfo,
-      features: features.map(f => ({
-        id: f.id(),
+      features: features.map(({ feature }) => ({
+        id: feature.id(),
         data: {
-          start: f.get('start'),
-          end: f.get('end'),
-          refName: f.get('refName'),
+          start: feature.get('start'),
+          end: feature.get('end'),
+          refName: feature.get('refName'),
         },
       })),
     }

@@ -7,7 +7,7 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import { Button } from '@mui/material'
 
-import { moveDown, moveUp } from './util'
+import { moveDown, moveUp } from '../sourcesGridUtils'
 
 import type { Source } from '../types'
 

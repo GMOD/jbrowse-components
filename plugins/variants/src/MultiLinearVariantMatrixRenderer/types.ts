@@ -1,4 +1,4 @@
-import type { Source } from '../types'
+import type { Source } from '../shared/types'
 import type { RenderArgsDeserialized as BoxRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -15,4 +15,5 @@ export interface RenderArgsDeserializedWithFeaturesAndLayout
   sources: Source[]
   features: Map<string, Feature>
   renderingMode: string
+  statusCallback?: (arg: string) => void
 }

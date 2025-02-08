@@ -42,6 +42,7 @@ export interface RenderArgsDeserialized
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: HicFeature[]
+  statusCallback?: (arg: string) => void
 }
 
 export type ResultsSerialized = ServerSideResultsSerialized
@@ -95,10 +96,9 @@ export default class HicRenderer extends ServerSideRendererType {
         .getFeatures(regions[0]!, args)
         .pipe(toArray()),
     )
-    // cast to any to avoid return-type conflict, because the
-    // types of features returned by our getFeatures are quite
-    // different from the base interface
 
+    // cast to any to avoid return-type conflict, because the types of features
+    // returned by our getFeatures are quite different from the base interface
     return features as any
   }
 }

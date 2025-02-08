@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import Crosshair from './Crosshair'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
-import LegendBar from '../../shared/LegendBar'
+import LegendBar from '../../shared/components/LegendBar'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 
