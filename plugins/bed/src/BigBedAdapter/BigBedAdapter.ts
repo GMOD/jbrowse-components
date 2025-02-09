@@ -1,7 +1,13 @@
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, doesIntersect2, max, min } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  doesIntersect2,
+  max,
+  min,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom, toArray } from 'rxjs'
@@ -95,18 +101,22 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { stopToken } = opts
+    const { stopToken, statusCallback = () => {} } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
-    const { parser, bigbed } = await this.configure(opts)
-    const feats = await bigbed.getFeatures(
-      query.refName,
-      query.start,
-      query.end,
-      {
-        stopToken,
-        basesPerSpan: query.end - query.start,
-      },
+    const { parser, bigbed } = await updateStatus(
+      'Downloading header',
+      statusCallback,
+      () => this.configure(opts),
+    )
+    const feats = await updateStatus(
+      'Downloading features',
+      statusCallback,
+      () =>
+        bigbed.getFeatures(query.refName, query.start, query.end, {
+          stopToken,
+          basesPerSpan: query.end - query.start,
+        }),
     )
     if (allowRedispatch && feats.length) {
       let minStart = Number.POSITIVE_INFINITY
