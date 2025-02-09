@@ -17,8 +17,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     parser: VcfParser
   }>
 
-  private async configurePre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+  private async configurePre(_opts?: BaseOptions) {
     const vcfGzLocation = this.getConf('vcfGzLocation')
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
@@ -36,16 +35,15 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
-    const header = await updateStatus('Downloading index', statusCallback, () =>
-      vcf.getHeader(),
-    )
     return {
       vcf,
-      parser: new VcfParser({ header }),
+      parser: new VcfParser({
+        header: await vcf.getHeader(),
+      }),
     }
   }
 
-  protected async configure() {
+  protected async configurePre2() {
     if (!this.configured) {
       this.configured = this.configurePre().catch((e: unknown) => {
         this.configured = undefined
@@ -56,25 +54,27 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const { vcf } = await this.configure()
+    const { vcf } = await this.configure(opts)
     return vcf.getReferenceSequenceNames(opts)
   }
 
-  async getHeader() {
-    const { vcf } = await this.configure()
+  async getHeader(opts?: BaseOptions) {
+    const { vcf } = await this.configure(opts)
     return vcf.getHeader()
   }
 
-  async getMetadata() {
-    const { parser } = await this.configure()
-    return parser.getMetadata()
+  async configure(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.configurePre2(),
+    )
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query
       const { statusCallback = () => {} } = opts
-      const { vcf, parser } = await this.configure()
+      const { vcf, parser } = await this.configure(opts)
 
       await updateStatus('Downloading variants', statusCallback, () =>
         vcf.getLines(refName, start, end, {
@@ -93,6 +93,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     }, opts.stopToken)
   }
+
   async getSources() {
     const conf = this.getConf('samplesTsvLocation')
     if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
