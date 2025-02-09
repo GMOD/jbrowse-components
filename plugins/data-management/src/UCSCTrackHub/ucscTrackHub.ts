@@ -44,14 +44,12 @@ export function generateTracks({
 
         return {
           metadata: {
-            ucscConfig: {
-              ...track.data,
-              ...(track.data.html
-                ? {
-                    html: `<a href="${resolve(track.data.html, baseUrl)}">${track.data.html}</a>`,
-                  }
-                : {}),
-            },
+            ...track.data,
+            ...(track.data.html
+              ? {
+                  html: `<a href="${resolve(track.data.html, baseUrl)}">${track.data.html}</a>`,
+                }
+              : {}),
           },
           category: [
             track.data.group,
