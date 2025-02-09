@@ -1,6 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -9,10 +9,7 @@ import { parseStringSync } from 'gff-nostream'
 
 import { featureData } from '../featureData'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
@@ -25,48 +22,67 @@ interface LineFeature {
 }
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
-  protected gff: TabixIndexedFile
+  private configured?: Promise<{
+    gff: TabixIndexedFile
+    dontRedispatch: string[]
+  }>
 
-  protected dontRedispatch: string[]
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const gffGzLocation = readConfObject(config, 'gffGzLocation')
-    const indexType = readConfObject(config, ['index', 'indexType'])
-    const location = readConfObject(config, ['index', 'location'])
-    const dontRedispatch = readConfObject(config, 'dontRedispatch')
-
-    this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
-    this.gff = new TabixIndexedFile({
+  private async configurePre(_opts?: BaseOptions) {
+    const gffGzLocation = this.getConf('gffGzLocation')
+    const indexType = this.getConf(['index', 'indexType'])
+    const loc = this.getConf(['index', 'location'])
+    const dontRedispatch = this.getConf('dontRedispatch') || [
+      'chromosome',
+      'contig',
+      'region',
+    ]
+    const gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation, this.pluginManager),
       csiFilehandle:
-        indexType === 'CSI'
-          ? openLocation(location, this.pluginManager)
-          : undefined,
+        indexType === 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
       tbiFilehandle:
-        indexType !== 'CSI'
-          ? openLocation(location, this.pluginManager)
-          : undefined,
+        indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })
+
+    return {
+      gff,
+      dontRedispatch,
+      header: await gff.getHeader(),
+    }
   }
 
+  protected async configurePre2() {
+    if (!this.configured) {
+      this.configured = this.configurePre().catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
+    }
+    return this.configured
+  }
+
+  async configure(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.configurePre2(),
+    )
+  }
   public async getRefNames(opts: BaseOptions = {}) {
-    return this.gff.getReferenceSequenceNames(opts)
+    const { gff } = await this.configure(opts)
+    return gff.getReferenceSequenceNames(opts)
   }
 
-  public async getHeader() {
-    return this.gff.getHeader()
+  public async getHeader(opts: BaseOptions = {}) {
+    const { gff } = await this.configure(opts)
+    return gff.getHeader()
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const metadata = await this.gff.getMetadata()
+      const { gff } = await this.configure(opts)
+      const metadata = await gff.getMetadata()
       await this.getFeaturesHelper(query, opts, metadata, observer, true)
     }, opts.stopToken)
   }
@@ -79,16 +95,20 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean,
     originalQuery = query,
   ) {
+    const { statusCallback = () => {} } = opts
     try {
       const lines: LineFeature[] = []
 
-      await this.gff.getLines(
-        query.refName,
-        query.start,
-        query.end,
-        (line, fileOffset) => {
-          lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
-        },
+      const { dontRedispatch, gff } = await this.configure(opts)
+      await updateStatus('Downloading features', statusCallback, () =>
+        gff.getLines(
+          query.refName,
+          query.start,
+          query.end,
+          (line, fileOffset) => {
+            lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
+          },
+        ),
       )
       if (allowRedispatch && lines.length) {
         let minStart = Number.POSITIVE_INFINITY
@@ -97,7 +117,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           const featureType = line.fields[2]!
           // only expand redispatch range if feature is not a "dontRedispatch"
           // type skips large regions like chromosome,region
-          if (!this.dontRedispatch.includes(featureType)) {
+          if (!dontRedispatch.includes(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
