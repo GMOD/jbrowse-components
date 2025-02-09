@@ -53,6 +53,12 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     return this.configured
   }
 
+  async configure(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.configurePre2(),
+    )
+  }
   public async getRefNames(opts: BaseOptions = {}) {
     const { vcf } = await this.configure(opts)
     return vcf.getReferenceSequenceNames(opts)
@@ -61,13 +67,6 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   async getHeader(opts?: BaseOptions) {
     const { vcf } = await this.configure(opts)
     return vcf.getHeader()
-  }
-
-  async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
-    return updateStatus('Downloading index', statusCallback, () =>
-      this.configurePre2(),
-    )
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
