@@ -1558,7 +1558,7 @@
     "@babel/plugin-transform-modules-commonjs" "^7.25.9"
     "@babel/plugin-transform-typescript" "^7.25.9"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.2", "@babel/runtime@^7.11.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.17.8", "@babel/runtime@^7.17.9", "@babel/runtime@^7.18.3", "@babel/runtime@^7.20.6", "@babel/runtime@^7.25.7", "@babel/runtime@^7.26.0", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.2", "@babel/runtime@^7.11.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.17.8", "@babel/runtime@^7.17.9", "@babel/runtime@^7.18.3", "@babel/runtime@^7.20.6", "@babel/runtime@^7.25.7", "@babel/runtime@^7.26.0", "@babel/runtime@^7.26.7", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7":
   version "7.26.9"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.26.9.tgz#aa4c6facc65b9cb3f87d75125ffd47781b475433"
   integrity sha512-aA63XwOkcl4xxQa3HjPMqOP6LiK0ZDv3mUPYEFXkpHbaFjtGggE1A61FjFzJnB+p7/oy2gA8E+rcBNl/zC1tMg==
@@ -2838,28 +2838,28 @@
   dependencies:
     "@types/mdx" "^2.0.0"
 
-"@mui/core-downloads-tracker@^6.4.4":
-  version "6.4.4"
-  resolved "https://registry.yarnpkg.com/@mui/core-downloads-tracker/-/core-downloads-tracker-6.4.4.tgz#7ea43a1185e9cb1dbec77b9fc543b3d8a338d1f0"
-  integrity sha512-r+J0EditrekkTtO2CnCBCOGpNaDYwJqz8lH4rj6o/anDcskZFJodBlG8aCJkS8DL/CF/9EHS+Gz53EbmYEnQbw==
+"@mui/core-downloads-tracker@^7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/core-downloads-tracker/-/core-downloads-tracker-7.0.0-alpha.1.tgz#7e846cbec4d1b57f063d23d55d24a2128a929ba1"
+  integrity sha512-1QepeNfdSwMZ1UH2dtRNpWisDmy9bkY/81XIALrgDYR5Ym44RY9m5KLhKS1OSR56mKqpggSH5XwxlSdMNRfJDQ==
 
-"@mui/icons-material@^6.0.0":
-  version "6.4.4"
-  resolved "https://registry.yarnpkg.com/@mui/icons-material/-/icons-material-6.4.4.tgz#cbc2c9e9c9bbb66f4062085dc69c0b886cd7f888"
-  integrity sha512-uF1chGaoFmYdRUomK6f8kgJfWosk9A3HXWiVD0vQm+2mE7f25eTQ1E8RRO11LXpnUBqu8Rbv/uGlpnjT/u1Ksg==
+"@mui/icons-material@^7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/icons-material/-/icons-material-7.0.0-alpha.1.tgz#033f2a4cc3ae273b64365ea44dda725dc999c379"
+  integrity sha512-RzPmjQ5euZnbsZn2k3T4tUJpse4jEAl1jZR0X0csNqSfDYnSpho5zVZq3kNTfEoTiTYf04DT+A/Dnco5xrJVkQ==
   dependencies:
-    "@babel/runtime" "^7.26.0"
+    "@babel/runtime" "^7.26.7"
 
-"@mui/material@^6.0.0":
-  version "6.4.4"
-  resolved "https://registry.yarnpkg.com/@mui/material/-/material-6.4.4.tgz#fd2879cae5f3ed8a13b6257dbc051e0bbeefa8ee"
-  integrity sha512-ISVPrIsPQsxnwvS40C4u03AuNSPigFeS2+n1qpuEZ94hDsdMi19dQM2JcC9CHEhXecSIQjP1RTyY0mPiSpSrFQ==
+"@mui/material@^7.0.0-alpha.0", "@mui/material@^7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/material/-/material-7.0.0-alpha.1.tgz#8860b28370b643df2172bd2a247eb69e7b3228a3"
+  integrity sha512-tRVwNsGvKy28Cn6nP9b8MuUiE6J3nnCCEAVE4iSE6d1XvCvTcBM2dK6WHfRHmZtL3Y7HLDas21ZdOqWot9IHUw==
   dependencies:
-    "@babel/runtime" "^7.26.0"
-    "@mui/core-downloads-tracker" "^6.4.4"
-    "@mui/system" "^6.4.3"
-    "@mui/types" "^7.2.21"
-    "@mui/utils" "^6.4.3"
+    "@babel/runtime" "^7.26.7"
+    "@mui/core-downloads-tracker" "^7.0.0-alpha.1"
+    "@mui/system" "7.0.0-alpha.1"
+    "@mui/types" "^7.2.22"
+    "@mui/utils" "7.0.0-alpha.1"
     "@popperjs/core" "^2.11.8"
     "@types/react-transition-group" "^4.4.12"
     clsx "^2.1.1"
@@ -2868,6 +2868,15 @@
     react-is "^19.0.0"
     react-transition-group "^4.4.5"
 
+"@mui/private-theming@7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/private-theming/-/private-theming-7.0.0-alpha.1.tgz#845f12d29c370670442a8d3006603c735242e0e6"
+  integrity sha512-qtvJ3Rg92Flen8pqHMgc5X9mT29w+OXG7dmBWpMXcXc9uojuPgGMZ0x1q3ZaMfKvEuSH16bp6PzkAxfZMscRPQ==
+  dependencies:
+    "@babel/runtime" "^7.26.7"
+    "@mui/utils" "7.0.0-alpha.1"
+    prop-types "^15.8.1"
+
 "@mui/private-theming@^6.4.3":
   version "6.4.3"
   resolved "https://registry.yarnpkg.com/@mui/private-theming/-/private-theming-6.4.3.tgz#40d7d95316e9e52d465f0c96da23f9fb8f6a989f"
@@ -2875,6 +2884,18 @@
   dependencies:
     "@babel/runtime" "^7.26.0"
     "@mui/utils" "^6.4.3"
+    prop-types "^15.8.1"
+
+"@mui/styled-engine@7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/styled-engine/-/styled-engine-7.0.0-alpha.1.tgz#9d65882e7d264ef81ac68f00b44fd9f8e6264acc"
+  integrity sha512-Te9v0RzrV+hwfAlr1LRO2zicIt1teerd7BrRLZCRp56t6wLFw82CVo4GyR3MGAcT4aXhmCvC1m62HB8KBf4AbQ==
+  dependencies:
+    "@babel/runtime" "^7.26.7"
+    "@emotion/cache" "^11.13.5"
+    "@emotion/serialize" "^1.3.3"
+    "@emotion/sheet" "^1.4.0"
+    csstype "^3.1.3"
     prop-types "^15.8.1"
 
 "@mui/styled-engine@^6.4.3":
@@ -2889,7 +2910,21 @@
     csstype "^3.1.3"
     prop-types "^15.8.1"
 
-"@mui/system@^6.0.0", "@mui/system@^6.4.3":
+"@mui/system@7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/system/-/system-7.0.0-alpha.1.tgz#de006c931ee361930a66762eeaffa8929424d80a"
+  integrity sha512-gnEf2YLwkPcamWAUvW8vISauisJjG9qhEaiv9OBxw7mGD80PUpxnJooVCMHZ3eC4MoxFUxRty+rHR/rwuwLaYQ==
+  dependencies:
+    "@babel/runtime" "^7.26.7"
+    "@mui/private-theming" "7.0.0-alpha.1"
+    "@mui/styled-engine" "7.0.0-alpha.1"
+    "@mui/types" "^7.2.22"
+    "@mui/utils" "7.0.0-alpha.1"
+    clsx "^2.1.1"
+    csstype "^3.1.3"
+    prop-types "^15.8.1"
+
+"@mui/system@^6.0.0":
   version "6.4.3"
   resolved "https://registry.yarnpkg.com/@mui/system/-/system-6.4.3.tgz#f1e093850c8cc23c6605297c8a4134bea6fe290b"
   integrity sha512-Q0iDwnH3+xoxQ0pqVbt8hFdzhq1g2XzzR4Y5pVcICTNtoCLJmpJS3vI4y/OIM1FHFmpfmiEC2IRIq7YcZ8nsmg==
@@ -2907,6 +2942,23 @@
   version "7.2.21"
   resolved "https://registry.yarnpkg.com/@mui/types/-/types-7.2.21.tgz#63f50874eda8e4a021a69aaa8ba9597369befda2"
   integrity sha512-6HstngiUxNqLU+/DPqlUJDIPbzUBxIVHb1MmXP0eTWDIROiCR2viugXpEif0PPe2mLqqakPzzRClWAnK+8UJww==
+
+"@mui/types@^7.2.22":
+  version "7.2.22"
+  resolved "https://registry.yarnpkg.com/@mui/types/-/types-7.2.22.tgz#6fcabf121ee1959c368df5f9a5548ab5ac2a0c2f"
+  integrity sha512-yVb9KzUczVeASFrIWWBh4SDNKk22ub+nN1CGZTbqia0UGtCJJGeqiMcZe9wAmym1fhDCoGO+KSibwPhle7Zh6w==
+
+"@mui/utils@7.0.0-alpha.1":
+  version "7.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@mui/utils/-/utils-7.0.0-alpha.1.tgz#86fbb0a1e96d86febf7fde1996b4026f1e593b67"
+  integrity sha512-7JLlKd8YimrxIOu+5q+8YiQjiS/SKjhjl8I6mabXbOCigYlWN7uHSG6NnMdb0OaUj0r1NzLMlDnG+TBZ++9awQ==
+  dependencies:
+    "@babel/runtime" "^7.26.7"
+    "@mui/types" "^7.2.22"
+    "@types/prop-types" "^15.7.14"
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
+    react-is "^19.0.0"
 
 "@mui/utils@^5.16.6 || ^6.0.0", "@mui/utils@^6.4.3":
   version "6.4.3"
@@ -2941,25 +2993,25 @@
     delaunator "^5.0.1"
     robust-predicates "^3.0.2"
 
-"@mui/x-data-grid@^7.0.0":
-  version "7.26.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-7.26.0.tgz#6e516bc215633213ff040e1dfb7a88f4b3a02613"
-  integrity sha512-9RNQeT2OL6jBOCE0MSUH11ol3fV5Zs9MkGxUIAGXcy/Fui0rZRNFO1yLmWDZU5yvskiNmUZJHWV/qXh++ZFarA==
+"@mui/x-data-grid@next":
+  version "8.0.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-8.0.0-alpha.11.tgz#34d634cd97af8484dc6a97e987f645373f221e58"
+  integrity sha512-/hIo9VHMVPjr09EOb0nSpWjhMzZRxnDXBtWkx3MDdTVikhlH70/FTFLZoQV8/DPhpiq0vjwGK9T27vfxl8ursA==
   dependencies:
-    "@babel/runtime" "^7.25.7"
+    "@babel/runtime" "^7.26.7"
     "@mui/utils" "^5.16.6 || ^6.0.0"
-    "@mui/x-internals" "7.26.0"
+    "@mui/x-internals" "8.0.0-alpha.11"
     clsx "^2.1.1"
     prop-types "^15.8.1"
     reselect "^5.1.1"
     use-sync-external-store "^1.0.0"
 
-"@mui/x-internals@7.26.0":
-  version "7.26.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-7.26.0.tgz#e8c3060582c102127ab55b0a93e881930dac107b"
-  integrity sha512-VxTCYQcZ02d3190pdvys2TDg9pgbvewAVakEopiOgReKAUhLdRlgGJHcOA/eAuGLyK1YIo26A6Ow6ZKlSRLwMg==
+"@mui/x-internals@8.0.0-alpha.11":
+  version "8.0.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-8.0.0-alpha.11.tgz#e3dc3e7ecac5cff4fbc3258c2cf4baa86df3ef39"
+  integrity sha512-fOM9O7aTmVV4IEZhu7T190ST8w5lYAjVhndBe7cECBuHO3NKGT4yhN1fWRIZ3X3ssQU+ily90p1CZDyMGRJ0kg==
   dependencies:
-    "@babel/runtime" "^7.25.7"
+    "@babel/runtime" "^7.26.7"
     "@mui/utils" "^5.16.6 || ^6.0.0"
 
 "@napi-rs/wasm-runtime@0.2.4":
