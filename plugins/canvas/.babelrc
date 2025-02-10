@@ -1,9 +1,0 @@
-{
-  "presets": [
-    // need this to be able to use spread operator on Set and Map
-    // see https://github.com/formium/tsdx/issues/376#issuecomment-566750042
-    ["@babel/preset-env", { "loose": false }],
-    // can remove this if all .js files are converted to .ts
-    "@babel/preset-react"
-  ]
-}
