@@ -1,6 +1,6 @@
 import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 
@@ -14,6 +14,7 @@ export async function doConnect(self: {
   configuration: AnyConfigurationModel
   addTrackConfs: (arg: Record<string, unknown>[]) => void
 }) {
+  const { pluginManager } = getEnv(self)
   const session = getSession(self)
   const notLoadedAssemblies = [] as string[]
   try {
@@ -26,17 +27,18 @@ export async function doConnect(self: {
       const hub = new SingleFileHub(hubFileText)
       const { genome, tracks } = hub
       const genomeName = genome.name!
+      const shortLabel = genome.data.description
 
       const asm = assemblyManager.get(genomeName)
       if (!asm) {
         // @ts-expect-error
         session.addSessionAssembly({
           name: genomeName,
+          displayName: shortLabel,
           sequence: {
             type: 'ReferenceSequenceTrack',
             metadata: {
-              // eslint-disable-next-line @typescript-eslint/no-misused-spread
-              ...genome,
+              ...genome.data,
               ...(genome.data.htmlPath
                 ? {
                     htmlPath: `<a href="${resolve(genome.data.htmlPath, hubUri)}">${genome.data.htmlPath}</a>`,
@@ -66,6 +68,12 @@ export async function doConnect(self: {
         baseUrl: hubUri,
       })
       self.addTrackConfs(tracksNew)
+      pluginManager.evaluateExtensionPoint('LaunchView-LinearGenomeView', {
+        session,
+        assembly: genomeName,
+        tracklist: true,
+        loc: genome.data.defaultPos,
+      })
     } else {
       const hubFile = new HubFile(hubFileText)
       const genomeFile = hubFile.data.genomesFile

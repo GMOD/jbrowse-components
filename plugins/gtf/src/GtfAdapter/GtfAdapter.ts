@@ -157,6 +157,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       if (allowRedispatch && feats.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
+        let hasAnyAggregateField = false
         for (const feat of feats) {
           if (feat.start < minStart) {
             minStart = feat.start
@@ -164,8 +165,15 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           if (feat.end > maxEnd) {
             maxEnd = feat.end
           }
+          if (feat[aggregateField]) {
+            hasAnyAggregateField = true
+          }
         }
-        if (maxEnd > query.end || minStart < query.start) {
+
+        if (
+          hasAnyAggregateField &&
+          (maxEnd > query.end || minStart < query.start)
+        ) {
           await this.getFeaturesHelper({
             query: {
               ...query,

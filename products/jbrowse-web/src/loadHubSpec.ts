@@ -14,15 +14,20 @@ export async function loadHubSpec(
   const rootModel = pluginManager.rootModel!
 
   try {
-    const r = await fetch(hubURL[0]!)
-    if (!r.ok) {
-      throw new Error(`HTTP ${r.status} fetching ${hubURL[0]}`)
+    const res = await fetch(hubURL[0]!)
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} fetching ${hubURL[0]}`)
     }
-    // const d = await r.text()
+    const d = await res.text()
+    const sessionLabel = d
+      .split('\n')
+      .find(d => d.startsWith('shortLabel'))
+      ?.replace('shortLabel', '')
+      .trim()
 
     // @ts-expect-error
     rootModel.setSession({
-      name: hubURL.join(','),
+      name: sessionLabel || hubURL[0],
       sessionConnections: hubURL.map(r => ({
         type: 'UCSCTrackHubConnection',
         connectionId: r,

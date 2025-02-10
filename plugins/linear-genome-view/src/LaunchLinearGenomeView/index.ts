@@ -31,11 +31,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
     }) => {
       try {
         const { assemblyManager } = session
-
-        const { isValidRefName } = assemblyManager
-
         const view = session.addView('LinearGenomeView', {}) as LGV
-
         await when(() => !!view.volatileWidth)
 
         if (!assembly) {
@@ -60,7 +56,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
         if (highlight !== undefined) {
           highlight.forEach(async h => {
             const p = parseLocString(h, refName =>
-              isValidRefName(refName, assembly),
+              assemblyManager.isValidRefName(refName, assembly),
             )
             const { start, end } = p
             if (start !== undefined && end !== undefined) {
