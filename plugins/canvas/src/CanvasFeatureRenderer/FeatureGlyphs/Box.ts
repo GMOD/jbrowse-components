@@ -102,6 +102,7 @@ export default class Box extends FeatureGlyph {
     const description = showDescriptions
       ? this.makeFeatureDescriptionLabel(f, fRect)
       : undefined
+
     if (description?.text) {
       fRect.h += description.h
       fRect.w = Math.max(description.w, fRect.w)
@@ -136,7 +137,6 @@ export default class Box extends FeatureGlyph {
     this.renderBox(context, viewInfo, fRect.f, fRect.t, fRect.rect.h)
   }
 
-  // top and height are in px
   renderBox(
     context: CanvasRenderingContext2D,
     viewInfo: ViewInfo,
@@ -159,9 +159,11 @@ export default class Box extends FeatureGlyph {
       top += (overallHeight - height) / 2
     }
 
-    context.fillStyle = this.isUTR(feature)
-      ? readConfObject(config, 'color3', { feature })
-      : readConfObject(config, 'color1', { feature })
+    context.fillStyle = readConfObject(
+      config,
+      this.isUTR(feature) ? 'color3' : 'color1',
+      { feature },
+    )
     context.fillRect(left, top, width, height)
   }
 
