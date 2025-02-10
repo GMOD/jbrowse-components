@@ -2251,6 +2251,56 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_repeats_minus",
+      "name": "volvox_repeats (minus)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_repeat_minus.bed"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer",
+              "color": "jexl:repeatColor(feature)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_repeats_plus",
+      "name": "volvox_repeats (plus)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_repeat_plus.bed"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "volvox_repeat-plus-LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer",
+              "color": "jexl:repeatColor(feature)"
+            }
+          }
+        }
+      ]
     }
   ],
   "plugins": [

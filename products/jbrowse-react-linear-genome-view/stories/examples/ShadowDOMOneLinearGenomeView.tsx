@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
@@ -90,14 +89,16 @@ const ShadowComponent = () => {
   }, [])
   return (
     <div ref={node}>
-      {rootNode &&
-        createPortal(
-          <CacheProvider value={cacheNode}>
-            <JBrowseLinearGenomeView viewState={config} />
-            <div ref={nodeForPin} />
-          </CacheProvider>,
-          rootNode,
-        )}
+      {rootNode && config
+        ? createPortal(
+            // @ts-expect-error
+            <CacheProvider value={cacheNode}>
+              <JBrowseLinearGenomeView viewState={config} />
+              <div ref={nodeForPin} />
+            </CacheProvider>,
+            rootNode,
+          )
+        : null}
     </div>
   )
 }
@@ -112,6 +113,7 @@ export const ShadowDOMOneLinearGenomeView = () => {
   }
   return (
     <div>
+      {/* @ts-expect-error */}
       <jbrowse-linear-view />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/ShadowDOMOneLinearGenomeView.tsx">
         Source code

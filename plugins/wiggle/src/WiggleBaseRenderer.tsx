@@ -20,12 +20,14 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
   displayCrossHatches: boolean
   ticks: { values: number[] }
+  inverted: boolean
   themeOptions: ThemeOptions
 }
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
+  inverted: boolean
 }
 
 export interface MultiRenderArgsDeserialized
@@ -38,7 +40,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, regions, bpPerPx } = renderProps
+    const { inverted, height, regions, bpPerPx } = renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
@@ -51,6 +53,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
         this.draw(ctx, {
           ...renderProps,
           features,
+          inverted,
         }),
     )
 

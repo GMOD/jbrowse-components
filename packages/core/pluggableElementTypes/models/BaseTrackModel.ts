@@ -87,6 +87,13 @@ export function createBaseTrackModel(
       /**
        * #getter
        */
+      get adapterConfig() {
+        return getConf(self, 'adapter')
+      },
+
+      /**
+       * #getter
+       */
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
         if (!adapterConfig) {

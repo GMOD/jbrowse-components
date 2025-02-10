@@ -263,11 +263,11 @@ function stateModelFactory(
             }
             const view = getContainingView(self) as LGV
             const { staticBlocks } = view
-            const { colorBy } = self
+            const { colorBy, adapterConfig } = self
             if (colorBy?.type === 'modifications') {
               const vals = await getUniqueModifications({
-                self,
-                adapterConfig: getConf(self.parentTrack, 'adapter'),
+                model: self,
+                adapterConfig,
                 blocks: staticBlocks,
               })
               if (isAlive(self)) {
@@ -345,7 +345,7 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get needsScalebar() {
+        get graphType() {
           return true
         },
 
@@ -379,7 +379,7 @@ function stateModelFactory(
               type: 'checkbox',
               checked: self.showInterbaseCountsSetting,
               onClick: () => {
-                self.setShowInterbaseCounts(self.showInterbaseCountsSetting)
+                self.setShowInterbaseCounts(!self.showInterbaseCountsSetting)
               },
             },
             {
@@ -388,7 +388,7 @@ function stateModelFactory(
               type: 'checkbox',
               checked: self.showArcsSetting,
               onClick: () => {
-                self.setShowArcs(self.showArcsSetting)
+                self.setShowArcs(!self.showArcsSetting)
               },
             },
           ]

@@ -277,7 +277,7 @@ export function getTooltip({
     identity ? `Identity: ${identity.toPrecision(2)}` : '',
     cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
     n1 ? `Name 1: ${n1}` : '',
-    n2 ? `Name 1: ${n2}` : '',
+    n2 ? `Name 2: ${n2}` : '',
   ]
     .filter(f => !!f)
     .join('<br/>')

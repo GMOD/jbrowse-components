@@ -231,7 +231,7 @@ export default function assemblyFactory(
        * #getter
        */
       get displayName(): string | undefined {
-        return self.getConf('displayName')
+        return self.getConf('displayName') || self.getConf('name') || ''
       },
       /**
        * #method

@@ -159,9 +159,12 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
-        observer.next(f)
-      })
+      const features = intervalTree?.search([start, end])
+      if (features) {
+        for (const f of features) {
+          observer.next(f)
+        }
+      }
       observer.complete()
     }, opts.stopToken)
   }

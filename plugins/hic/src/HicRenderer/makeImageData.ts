@@ -43,7 +43,6 @@ export async function makeImageData(
   } = props
 
   const { statusCallback = () => {} } = props
-  // @ts-expect-error
   statusCallback('Drawing Hi-C matrix')
   const region = regions[0]!
   const { dataAdapter } = await getAdapter(

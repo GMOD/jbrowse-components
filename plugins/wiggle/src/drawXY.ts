@@ -39,6 +39,7 @@ export function drawXY(
     ticks: { values: number[] }
     config: AnyConfigurationModel
     displayCrossHatches: boolean
+    inverted: boolean
     offset?: number
     colorCallback: (f: Feature, score: number) => string
   },
@@ -54,6 +55,7 @@ export function drawXY(
     displayCrossHatches,
     offset = 0,
     colorCallback,
+    inverted,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -69,7 +71,7 @@ export function drawXY(
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const minSize = readConfObject(config, 'minSize')
 
-  const scale = getScale({ ...scaleOpts, range: [0, height] })
+  const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
   const originY = getOrigin(scaleOpts.scaleType)
   const domain = scale.domain()
   const niceMin = domain[0]!

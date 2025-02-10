@@ -1,12 +1,8 @@
-import { pluginDescriptionString } from '@jbrowse/core/PluginLoader'
+import { useState } from 'react'
+
+import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
-import WarningIcon from '@mui/icons-material/Warning'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-} from '@mui/material'
+import { Alert, Button, DialogActions, DialogContent } from '@mui/material'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
@@ -19,19 +15,35 @@ export default function SessionWarningDialog({
   onCancel: () => void
   reason: PluginDefinition[]
 }) {
+  const [show, setShow] = useState(false)
   return (
     <Dialog open maxWidth="xl" title="Warning" onClose={onCancel}>
       <DialogContent>
-        <WarningIcon fontSize="large" />
-        <DialogContentText>
+        <Alert severity="warning" style={{ width: 800 }}>
           This link contains a session that has the following unknown plugins:
           <ul>
             {reason.map(r => (
-              <li key={JSON.stringify(r)}>{pluginDescriptionString(r)}</li>
+              <li key={JSON.stringify(r)}>
+                {pluginDescriptionString(r)} - ({pluginUrl(r)})
+              </li>
             ))}
           </ul>
           Please ensure you trust the source of this session.
-        </DialogContentText>
+          <Button
+            onClick={() => {
+              setShow(!show)
+            }}
+          >
+            Why am I seeing this?
+          </Button>
+          {show ? (
+            <div>
+              Sessions can load arbitrary javascript files via session plugins.
+              For security purposes, we display this message when sessions
+              contain plugins that are not from our plugin store
+            </div>
+          ) : null}
+        </Alert>
       </DialogContent>
       <DialogActions>
         <Button

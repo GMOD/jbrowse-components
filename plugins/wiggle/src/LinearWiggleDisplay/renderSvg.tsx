@@ -15,12 +15,12 @@ export async function renderSvg(
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
   await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
-  const { needsScalebar, stats } = self
+  const { graphType, stats } = self
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   return (
     <>
       <g>{await superRenderSvg(opts)}</g>
-      {needsScalebar && stats ? (
+      {graphType && stats ? (
         <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
           <YScaleBar model={self} orientation="left" />
         </g>
