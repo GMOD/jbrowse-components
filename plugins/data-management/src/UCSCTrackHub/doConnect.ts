@@ -38,7 +38,6 @@ export async function doConnect(self: {
           sequence: {
             type: 'ReferenceSequenceTrack',
             metadata: {
-               
               ...genome.data,
               ...(genome.data.htmlPath
                 ? {
