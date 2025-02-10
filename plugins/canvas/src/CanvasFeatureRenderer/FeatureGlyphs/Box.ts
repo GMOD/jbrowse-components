@@ -30,8 +30,9 @@ export default class Box extends FeatureGlyph {
     fRect: FeatureRect,
     param?: string,
   ) {
-    const text = param || this.getFeatureDescription(feature)
-    return this.makeBottomOrTopLabel(text)
+    return this.makeBottomOrTopLabel(
+      param || this.getFeatureDescription(feature),
+    )
   }
 
   makeSideLabel(text = '') {
@@ -50,7 +51,7 @@ export default class Box extends FeatureGlyph {
     const t2 = text.length > 100 ? `${text.slice(0, 100)}…` : text
     return {
       text: t2,
-      w: measureText(t2),
+      w: measureText(t2, 10),
       h: 10, // FIXME
       offsetY: 0,
     }
@@ -61,16 +62,6 @@ export default class Box extends FeatureGlyph {
     const { l, h } = fRect
 
     const w = Math.max(fRect.w, 2)
-
-    // fixme maybe
-    // const i = { width: 16 }
-    // if (strand === -1) {
-    //   fRect.w += i.width
-    //   fRect.l -= i.width
-    // } else if (strand === 1) {
-    //   fRect.w += i.width
-    // }
-
     return this.expandRectangleWithLabels(viewArgs, feature, {
       ...fRect,
       w,
@@ -83,8 +74,6 @@ export default class Box extends FeatureGlyph {
     })
   }
 
-  // given an under-construction feature layout rectangle, expand it to
-  // accommodate label and/or a description
   expandRectangleWithLabels<T extends PreLaidOutFeatureRect>(
     view: ViewInfo,
     f: Feature,
@@ -105,7 +94,7 @@ export default class Box extends FeatureGlyph {
 
     if (description?.text) {
       fRect.h += description.h
-      fRect.w = Math.max(description.w, fRect.w)
+      // fRect.w = Math.max(description.w, fRect.w)
       description.offsetY = fRect.h // -marginBottom removed in jb2
     }
     return {
@@ -113,20 +102,6 @@ export default class Box extends FeatureGlyph {
       description,
       label,
     }
-  }
-
-  _embeddedImages = {
-    plusArrow: {
-      data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAYAAACXU8ZrAAAATUlEQVQIW2NkwATGQKFYIG4A4g8gacb///+7AWlBmNq+vj6V4uLiJiD/FRBXA/F8xu7u7kcVFRWyMEVATQz//v0Dcf9CxaYRZxIxbgIARiAhmifVe8UAAAAASUVORK5CYII=',
-      width: 9,
-      height: 5,
-    },
-
-    minusArrow: {
-      data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAYAAACXU8ZrAAAASklEQVQIW2NkQAABILMBiBcD8VkkcQZGIAeEE4G4FYjFent764qKiu4gKXoPUjAJiLOggsxMTEwMjIwgYQjo6Oh4TLRJME043QQA+W8UD/sdk9IAAAAASUVORK5CYII=',
-      width: 9,
-      height: 5,
-    },
   }
 
   renderFeature(

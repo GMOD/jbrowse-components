@@ -3,7 +3,7 @@ import ProcessedTranscriptGlyph from './ProcessedTranscript'
 
 import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
 import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Feature } from '@jbrowse/core/util'
 
 interface FeatureRectWithGlyph extends LaidOutFeatureRect {
   label: any
@@ -99,6 +99,7 @@ export default class Gene extends BoxGlyph {
     layout: BaseLayout<Feature>,
     feature: Feature,
   ) {
+    console.log({ viewInfo })
     const fRect = super.layoutFeature(viewInfo, layout, feature)
 
     // @ts-expect-error
@@ -124,8 +125,7 @@ export default class Gene extends BoxGlyph {
     fRect: LaidOutFeatureRectWithSubRects,
   ) {
     fRect.subRects?.forEach(sub => {
-      const glyph = this.getSubGlyph(sub.f)
-      glyph.renderFeature(context, viewInfo, sub)
+      this.getSubGlyph(sub.f).renderFeature(context, viewInfo, sub)
     })
   }
 }
