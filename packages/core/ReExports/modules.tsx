@@ -4,7 +4,7 @@ import type { LazyExoticComponent } from 'react'
 import * as React from 'react'
 import { Suspense, forwardRef, lazy } from 'react'
 
-import { useTheme } from '@mui/material'
+import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
 import {
@@ -198,6 +198,12 @@ const FeatureDetails = lazy(
 )
 const BaseCard = lazy(
   () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard'),
+)
+const BaseAttributes = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseAttributes'),
+)
+const BaseCoreDetails = lazy(
+  () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCoreDetails'),
 )
 
 const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
@@ -514,7 +520,7 @@ const libs = {
   '@material-ui/core': {
     ...LazyMUICore,
     useTheme,
-    alpha: MUIStyles.alpha,
+    alpha,
 
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
@@ -523,8 +529,9 @@ const libs = {
   },
   '@mui/material': {
     ...LazyMUICore,
-    alpha: MUIStyles.alpha,
-    useTheme: MUIStyles.useTheme,
+    alpha,
+    useTheme,
+    createTheme,
   },
 
   // end special case
@@ -593,6 +600,8 @@ const libs = {
     Attributes: LazyAttributes,
     FeatureDetails: LazyFeatureDetails,
     BaseCard: LazyBaseCard,
+    BaseCoreDetails,
+    BaseAttributes,
   },
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
