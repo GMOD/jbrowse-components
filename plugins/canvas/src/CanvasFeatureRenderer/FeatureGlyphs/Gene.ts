@@ -1,7 +1,5 @@
-// locals
 import BoxGlyph from './Box'
 import ProcessedTranscriptGlyph from './ProcessedTranscript'
-import NoncodingGlyph from './UnprocessedTranscript'
 
 import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
 import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'

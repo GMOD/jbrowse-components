@@ -1,6 +1,5 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-// locals
 import BoxGlyph from './Box'
 
 import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
@@ -24,11 +23,8 @@ export default class Segments extends BoxGlyph {
     const { bpPerPx, region } = viewInfo
     const thickness = 1
     context.fillStyle = 'black'
-    const {
-      f,
-      t,
-      rect: { h },
-    } = fRect
+    const { f, t, rect } = fRect
+    const { h } = rect
     const [leftPx, rightPx] = bpSpanPx(
       f.get('start'),
       f.get('end'),

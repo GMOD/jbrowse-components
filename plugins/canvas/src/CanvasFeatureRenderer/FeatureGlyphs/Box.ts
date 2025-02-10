@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
 
-// locals
 import FeatureGlyph from '../FeatureGlyph'
 
 import type {

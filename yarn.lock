@@ -5936,9 +5936,9 @@ babel-plugin-polyfill-regenerator@^0.6.1:
     "@babel/helper-define-polyfill-provider" "^0.6.3"
 
 babel-plugin-react-compiler@^19.0.0-beta-6fc168f-20241025:
-  version "19.0.0-beta-714736e-20250131"
-  resolved "https://registry.yarnpkg.com/babel-plugin-react-compiler/-/babel-plugin-react-compiler-19.0.0-beta-714736e-20250131.tgz#8efad3433e56701e19015713741f493e228c700f"
-  integrity sha512-frj2l6fRWVi26iw9WthFKyFyE4u5ZSHH3KdKiscOOwpz210seTtwnp0QbJmi8Zoa5HK7Fk2fH40JffN2y8GvLg==
+  version "19.0.0-beta-e552027-20250112"
+  resolved "https://registry.yarnpkg.com/babel-plugin-react-compiler/-/babel-plugin-react-compiler-19.0.0-beta-e552027-20250112.tgz#f06f0436420bd09df5abf37337ecd8fb43b0d847"
+  integrity sha512-pUTT0mAZ4XLewC6bvqVeX015nVRLVultcSQlkzGdC10G6YV6K2h4E7cwGlLAuLKWTj3Z08mTO9uTnPP/opUBsg==
   dependencies:
     "@babel/types" "^7.19.0"
 
@@ -8401,9 +8401,9 @@ eslint-plugin-import@^2.31.0:
     tsconfig-paths "^3.15.0"
 
 eslint-plugin-react-compiler@^19.0.0-beta-6fc168f-20241025:
-  version "19.0.0-beta-714736e-20250131"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react-compiler/-/eslint-plugin-react-compiler-19.0.0-beta-714736e-20250131.tgz#e08de50bfd3f6a593f21630a3f0703202fbe227f"
-  integrity sha512-iTPUaHzvBejGqicSwZLCDBgWBxLzU1Dvqjs31loNoOPRnsey5dcOupaZajECKVvXmB1wcbIWNp6/VR5+dM9d6w==
+  version "19.0.0-beta-e552027-20250112"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-compiler/-/eslint-plugin-react-compiler-19.0.0-beta-e552027-20250112.tgz#f4ad9cebe47615ebf6097a8084a30d761ee164f4"
+  integrity sha512-VjkIXHouCYyJHgk5HmZ1LH+fAK5CX+ULRX9iNYtwYJ+ljbivFhIT+JJyxNT/USQpCeS2Dt5ahjFeeMv0RRwTww==
   dependencies:
     "@babel/core" "^7.24.4"
     "@babel/parser" "^7.24.4"
@@ -15797,9 +15797,9 @@ typescript-eslint@^8.0.1:
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
 
 typescript@^5.8.0-dev.20241213:
-  version "5.8.0-dev.20250209"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.0-dev.20250209.tgz#747d8067552c0580c6786aed97339e0901ba3e9e"
-  integrity sha512-FVdVTxFbTR7jhSRnYcvv46vf+L7byLonnfUbpfzNFUP4/zDze2ovy+cEIHhNv+Nl9x3qE/eko0YKwzhitiOr3g==
+  version "5.8.0-dev.20250210"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.0-dev.20250210.tgz#f3d140c1e82e43c847c942378f131ca1ee60eac5"
+  integrity sha512-6obwAtYV+jgxdpESDO+wGAyiLKQ6tunIjP4TFHqtcL4u5j15XUG2fSjaRN1W006kxHxFigADy9uDHb50l8UxGA==
 
 uglify-js@^3.1.4:
   version "3.19.3"
