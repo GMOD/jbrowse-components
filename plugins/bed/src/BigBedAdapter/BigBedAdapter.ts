@@ -118,9 +118,11 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           basesPerSpan: query.end - query.start,
         }),
     )
+
     if (allowRedispatch && feats.length) {
       let minStart = Number.POSITIVE_INFINITY
       let maxEnd = Number.NEGATIVE_INFINITY
+      let hasAnyAggregationField = false
       for (const feat of feats) {
         if (feat.start < minStart) {
           minStart = feat.start
@@ -128,8 +130,16 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         if (feat.end > maxEnd) {
           maxEnd = feat.end
         }
+        // @ts-expect-error
+        if (feat[aggregateField]) {
+          hasAnyAggregationField = true
+        }
       }
-      if (maxEnd > query.end || minStart < query.start) {
+
+      if (
+        hasAnyAggregationField &&
+        (maxEnd > query.end || minStart < query.start)
+      ) {
         await this.getFeaturesHelper({
           query: {
             ...query,
@@ -157,7 +167,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         `${feat.end}`,
         ...(feat.rest?.split('\t') || []),
       ]
-      const data = parser.parseLine(splitLine, { uniqueId: feat.uniqueId! })
+      const data = parser.parseLine(splitLine, {
+        uniqueId: feat.uniqueId!,
+      })
 
       const aggr = data[aggregateField]
       if (!parentAggregation[aggr]) {
