@@ -144,7 +144,6 @@ function stateModelFactory() {
       get selectedFeatureId() {
         if (isAlive(self)) {
           const { selection } = getSession(self)
-          // does it quack like a feature?
           if (isFeature(selection)) {
             return selection.id()
           }
