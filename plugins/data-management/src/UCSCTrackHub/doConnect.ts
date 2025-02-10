@@ -38,7 +38,7 @@ export async function doConnect(self: {
           sequence: {
             type: 'ReferenceSequenceTrack',
             metadata: {
-              // eslint-disable-next-line @typescript-eslint/no-misused-spread
+               
               ...genome.data,
               ...(genome.data.htmlPath
                 ? {
