@@ -168,7 +168,7 @@ export default class Box extends FeatureGlyph {
 
   getFeatureHeight(viewInfo: ViewInfo, feature: Feature) {
     const height = super.getFeatureHeight(viewInfo, feature)
-    return this.isUTR(feature) ? height * 0.2 : height
+    return this.isUTR(feature) ? height * 0.7 : height
   }
 
   protected isUTR(feature: Feature) {

@@ -1,4 +1,3 @@
-
 // locals
 import BoxGlyph from './Box'
 import ProcessedTranscriptGlyph from './ProcessedTranscript'
@@ -113,14 +112,12 @@ export default class Gene extends BoxGlyph {
   }
 
   getSubGlyph(feature: Feature) {
-    const transcriptType = 'mRNA'
-    const noncodingType = ['transcript']
+    const transcriptTypes = ['mRNA', 'transcript']
     const subType = feature.get('type')
-    return subType === transcriptType
+
+    return transcriptTypes.includes(subType)
       ? new ProcessedTranscriptGlyph()
-      : noncodingType.includes(subType)
-        ? new NoncodingGlyph()
-        : new BoxGlyph()
+      : new BoxGlyph()
   }
 
   renderFeature(

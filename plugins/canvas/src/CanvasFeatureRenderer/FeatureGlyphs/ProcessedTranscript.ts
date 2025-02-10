@@ -20,8 +20,8 @@ function filterSubpart(feature: Feature) {
 
 export default class ProcessedTranscript extends SegmentsGlyph {
   protected getSubparts(f: Feature) {
-    const c = f.children()
-
+    const subfeatures = f.children()
+    const hasCDS = subfeatures?.some(f => f.get('type') === 'CDS')
     //     if (c && this.config.inferCdsParts) {
     //       c = this.makeCDSs(f, c)
     //     }
@@ -30,7 +30,11 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     //       c = this.makeUTRs(f, c)
     //     }
 
-    return !c ? [] : c.filter(element => filterSubpart(element))
+    return !subfeatures
+      ? []
+      : hasCDS
+        ? subfeatures.filter(element => filterSubpart(element))
+        : subfeatures
   }
 
   renderSegments(
@@ -39,8 +43,7 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     fRect: LaidOutFeatureRect,
   ) {
     const { t, f } = fRect
-    const subfeatures = this.getSubparts(f)
-    subfeatures.forEach(sub => {
+    this.getSubparts(f).forEach(sub => {
       this.renderSegment(context, viewInfo, sub, t, fRect.rect.h)
     })
   }
