@@ -52,6 +52,7 @@ const Entries = {
   Accordion: lazy(() => import('@mui/material/Accordion')),
   AccordionActions: lazy(() => import('@mui/material/AccordionActions')),
   AccordionDetails: lazy(() => import('@mui/material/AccordionDetails')),
+  AccordionSummary: lazy(() => import('@mui/material/AccordionSummary')),
   Alert: lazy(() => import('@mui/material/Alert')),
   AlertTitle: lazy(() => import('@mui/material/AlertTitle')),
   Autocomplete: lazy(() => import('@mui/material/Autocomplete')),
