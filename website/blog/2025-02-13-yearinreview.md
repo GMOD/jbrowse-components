@@ -128,8 +128,8 @@ https://github.com/GMOD/Apollo3/releases/tag/v0.3.0
 
 The Apollo 3 editor can run as a 'collaboration server' (shared annotation
 editing on a website) or as a standalone JBrowse 2 desktop plugin. It is able to
-take full advantag of JBrowse 2 capabilities, and users can annotate e.g. inside
-of a synteny view
+take full advantage of JBrowse 2 capabilities, and users can annotate e.g.
+inside of a synteny view
 
 ![image](https://github.com/user-attachments/assets/7ab19499-57a0-4c71-8014-cbb749f91b04)
 
@@ -138,4 +138,5 @@ Feel free to get in touch for more information on the project!
 ## The year ahead
 
 We look forward to hear from more users. Our office hours outreach effort has
-been very successful with over 100 one-on-one meetings with users!
+been very successful with over 100 one-on-one meetings with users! Feel free to
+sign up for one at https://jbrowse.org/jb2/contact :)
