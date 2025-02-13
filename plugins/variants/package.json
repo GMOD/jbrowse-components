@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-variants",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -40,10 +40,10 @@
     "@gmod/bgzf-filehandle": "^2.0.1",
     "@gmod/tabix": "^2.0.0",
     "@gmod/vcf": "^6.0.8",
-    "@jbrowse/core": "^3.0.1",
-    "@jbrowse/plugin-circular-view": "^3.0.1",
-    "@jbrowse/plugin-linear-genome-view": "^3.0.1",
-    "@jbrowse/sv-core": "^3.0.1",
+    "@jbrowse/core": "^3.0.2",
+    "@jbrowse/plugin-circular-view": "^3.0.2",
+    "@jbrowse/plugin-linear-genome-view": "^3.0.2",
+    "@jbrowse/sv-core": "^3.0.2",
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
