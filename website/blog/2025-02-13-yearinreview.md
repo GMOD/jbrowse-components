@@ -52,21 +52,19 @@ from a single data file, and easier UI workflows for setting up multi-way views
 ## Inversion SVs enhancements for breakpoint split view
 
 We created new enhancements to the breakpoint split view to allow it to work
-better in a 'single row' configuration, and to color reads by e.g. their pair
-orientation, or by changes in direction in a split alignment
+better in a 'single row' configuration, and to color reads by pair orientation
+or by changes in direction in a split alignment
 
 ![](https://github.com/user-attachments/assets/cacdf84e-6fad-43f3-9fc4-9705709d7d89)
 
 Screenshot showing read pairs being connected from a variety of sequencing runs
 from Illumina, PacBio, and Nanopore from the Genome in a Bottle dataset
 
-Note: There were many other aimprovements to the breakpoint split view
-including, importantly, the ability to launch it from non-SV-inspector
-workflows. Previously, the SV inspector was the only way to really launch a
-breakpoint split view, but now it can be launched from just clicking the feature
-details of a read or VCF feature.
-
-![](https://github.com/GMOD/jbrowse-components/assets/6511937/dcd37230-5992-4663-8fdb-f56ecf662fcd)
+Note: There were many other improvements to the breakpoint split view including,
+importantly, the ability to launch it from non-SV-inspector workflows.
+Previously, the SV inspector was the only way to really launch a breakpoint
+split view, but now it can be launched from just clicking the feature details of
+a read or VCF feature.
 
 ## New "SV inspector" improvements
 
