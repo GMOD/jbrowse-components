@@ -4832,6 +4832,26 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878.vcf",
+      "name": "NA12878.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/platinumGenomes/NA12878.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/platinumGenomes/NA12878.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],
