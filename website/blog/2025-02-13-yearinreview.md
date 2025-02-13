@@ -43,11 +43,9 @@ based on "series of pairwise" comparison rendering, which has certain drawbacks
 
 ![](https://github.com/user-attachments/assets/4df008cb-13d4-44e0-b1c1-44bfbbc7c34a)
 
-Further improvements improved the user interface for importing "synteny tracks",
-and setting up multi-way synteny views
-
-We anticipate more improvements allowing users to load multi-way comparisons
-from a single data file, and easier UI workflows for setting up multi-way views
+We intend to create more improvements allowing users to load multi-way
+comparisons from a single data file, and easier UI workflows for setting up
+multi-way views in the future
 
 ## Inversion SVs enhancements for breakpoint split view
 
