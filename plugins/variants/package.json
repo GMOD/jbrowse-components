@@ -39,7 +39,7 @@
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^2.0.1",
     "@gmod/tabix": "^2.0.0",
-    "@gmod/vcf": "^6.0.7",
+    "@gmod/vcf": "^6.0.8",
     "@jbrowse/core": "^3.0.1",
     "@jbrowse/plugin-circular-view": "^3.0.1",
     "@jbrowse/plugin-linear-genome-view": "^3.0.1",

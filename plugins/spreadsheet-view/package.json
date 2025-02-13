@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@gmod/bgzf-filehandle": "^2.0.1",
-    "@gmod/vcf": "^6.0.0",
+    "@gmod/vcf": "^6.0.8",
     "@jbrowse/core": "^3.0.1",
     "@jbrowse/plugin-linear-genome-view": "^3.0.1",
     "@jbrowse/plugin-variants": "^3.0.1",
