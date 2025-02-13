@@ -10,6 +10,33 @@ progress JBrowse made in 2024!
 
 Without further ado, here are some highlights
 
+## New multi-sample VCF displays
+
+To help render population-scale data, we created new "multi-variant" rendering
+modes. This includes a "matrix" rendering mode that is a dense visualization of
+variation patterns.
+
+This was an exciting development that has created a flurry of feature
+development
+
+One particularly interesting feature is the "phased rendering mode", which can
+split the phased genotypes into separate rows, which effectively shows the
+individual haplotypes.
+
+The "phased rendering mode" has the unique ability to help spot patterns of
+inheritance in e.g. trio datasets. You can visually see where a child inherited
+particular variants from a particular parent
+
+![](https://github.com/user-attachments/assets/a9308a40-ab74-48c0-9ab6-035b50a1ae0b)
+
+The data in the multi-variant viewe can be sorted according to sample metadata,
+which can be imported from a "samples TSV", so users can group and color the
+samples by e.g. the population code
+
+![image](https://github.com/user-attachments/assets/4adbafcb-1b37-47be-8f91-05a71d03b273)
+
+Screenshot showing how to access the new display modes
+
 ## Multi-way synteny views
 
 We created the basis for rendering multi-way synteny views. Currently, this is
@@ -21,12 +48,10 @@ based on "series of pairwise" comparison rendering, which has certain drawbacks
 Further improvements improved the user interface for importing "synteny tracks",
 and setting up multi-way synteny views
 
-![](https://github.com/user-attachments/assets/75da5058-50cc-413e-aee9-e57362d2d0c0)
-
 We anticipate more improvements allowing users to load multi-way comparisons
 from a single data file, and easier UI workflows for setting up multi-way views
 
-## Improved rendering of inversion SVs in the breakpoint split view
+## Inversion SVs enhancements for breakpoint split view
 
 We created new enhancements to the breakpoint split view to allow it to work
 better in a 'single row' configuration, and to color reads by e.g. their pair
@@ -45,7 +70,7 @@ details of a read or VCF feature.
 
 ![](https://github.com/GMOD/jbrowse-components/assets/6511937/dcd37230-5992-4663-8fdb-f56ecf662fcd)
 
-## New SV inspector improvements
+## New "SV inspector" improvements
 
 - Allows opening tracks from the config.json in the SV inspector and spreadsheet
 - Uses @mui/x-data-grid for display of the spreadsheet
@@ -61,17 +86,16 @@ details of a read or VCF feature.
 
 Screenshot showing the new SV inspector user interface
 
-## Improved ability to access recent sessions
+## New "Recent sessions" menu with autosaves
 
-We saw many users have trouble where they would close their tab containing
-JBrowse 2 and they would lose their work. It would be difficult to restore where
-they were at
+We saw users have trouble where they would close their tab containing JBrowse 2
+and they would lose their work.
+
+It would be difficult to restore where they were at
 
 To help this situation, we created a new system where sessions are AUTOSAVED!
-Yes, autosaved! It uses IndexedDB which has generous storage limits
-
-So if you accidentally close a tab, it is easy for you to go back and restore
-where you were at:
+Yes, autosaved! So if you accidentally close a tab or come back the next day, it
+is easy for you to go back and restore where you were at:
 
 ![](https://github.com/user-attachments/assets/08f05b2a-6426-45b9-96ba-edcc14bb5ae2)
 
@@ -83,15 +107,20 @@ Screenshot showing the ability to access "File->Recent sessions"
 If you have any feedback about this feature let us know. I think the
 discoverability of this feature could use more improvement
 
-## "Group by" for alignments tracks
+## New "Group by" functionality for alignments tracks
 
 We released new "Group by" functionality for the alignments tracks. This
 functionality is somewhat unique because applying it creates multiple
-functionally independent subtracks
+functionally independent subtracks.
+
+The effect of being split into independent subtracks is actually different from
+e.g. the Group by feature in IGV, because in IGV, only the "read stack" is split
+into different rows, whereas with JBrowse, each group gets its own read stack
+and coverage calculation
 
 ![image8](https://github.com/user-attachments/assets/b4ddb20c-9b34-473c-a223-039cdf65bca5)
 
-Example with splitting a alignments track by the HP tag
+Example with splitting an alignments track by the HP tag
 
 ## Apollo 3 beta release
 
@@ -104,23 +133,9 @@ https://github.com/GMOD/Apollo3/releases/tag/v0.3.0
 The Apollo 3 editor can run as a 'collaboration server' (shared annotation
 editing on a website) or as a standalone JBrowse 2 desktop plugin
 
-We are very interested to hear any feedback from users
+Feel free to get in touch for more information on the project!
 
-## New plugins!
+## The year ahead
 
-Continued improvements, or new plugins, listed below!
-
-- https://github.com/cmdcolin/jbrowse-plugin-graphgenomeviewer/
-- https://github.com/cmdcolin/jbrowse-plugin-ldviewer
-- https://github.com/cmdcolin/jbrowse-plugin-mafviewer (added phylogenetic tree)
-- https://github.com/cmdcolin/jbrowse-plugin-gwas (added interactive mouseovers)
-- https://github.com/gringer/jbrowse-plugin-repaver
-
-![](https://github.com/user-attachments/assets/03ec2b20-1238-4832-93a0-ea1504a2e562)
-
-The GWAS plugin, showing the mouseover of particular variants
-
-## Looking forward!
-
-We look forward to the new year, and thank everyone for their support, bug
-reports, and participation
+We look forward to hear from more users. Our office hours outreach effort has
+been very successful with over 100 one-on-one meetings with users!
