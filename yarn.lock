@@ -2141,11 +2141,10 @@
     pako "^1.0.11"
 
 "@gmod/cram@^4.0.1":
-  version "4.0.7"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-4.0.7.tgz#76c194d5071cbae17e71bdd671e51bfff6ba479e"
-  integrity sha512-N0VsoDCb+HhTxRLImveXy5lC6dTVIw2D9fsag2oQboFZg+hFRQw4WdAN9MdyKMCulLM+1O0QMuMUER4BhnOFGA==
+  version "4.0.10"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-4.0.10.tgz#382ac3b8cdfb1fd4b886efb7c0cf87c9d398a1f2"
+  integrity sha512-kYN24I7AT61cBUIl/jdZxt3MATi1wa0w+DIkteNGGA70F7pkhlHHtHm6lOBIq8mOQCWNlhXu+ia7HI+ck8LKzg==
   dependencies:
-    bzip2 "^0.1.1"
     crc "^4.3.2"
     generic-filehandle2 "^1.0.0"
     md5 "^2.2.1"
@@ -6241,11 +6240,6 @@ bytes@3.1.2:
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"
   integrity sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==
 
-bzip2@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/bzip2/-/bzip2-0.1.1.tgz#b0d232bd0f0f750d2023306d40a886ee51b901f4"
-  integrity sha512-wMvOIQ5jX3ikcCxWO1HjYVOAB+sjKzMTYLQmFPi4d6GBF01cYpnIwQ4RaDX4F3QSJeiB6gFqt5hh9fbebCSspw==
-
 cacache@^15.2.0:
   version "15.3.0"
   resolved "https://registry.yarnpkg.com/cacache/-/cacache-15.3.0.tgz#dc85380fb2f556fe3dda4c719bfa0ec875a7f1eb"
@@ -8006,9 +8000,9 @@ electron-publish@25.1.7:
     mime "^2.5.2"
 
 electron-to-chromium@^1.5.73:
-  version "1.5.97"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.97.tgz#5c4a4744c79e7c85b187adf5160264ac130c776f"
-  integrity sha512-HKLtaH02augM7ZOdYRuO19rWDeY+QSJ1VxnXFa/XDFLf07HvM90pALIJFgrO+UVaajI3+aJMMpojoUTLZyQ7JQ==
+  version "1.5.98"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.98.tgz#bdd59c95042fa8f6483893602b1530c8752baebc"
+  integrity sha512-bI/LbtRBxU2GzK7KK5xxFd2y9Lf9XguHooPYbcXWy6wUoT8NMnffsvRhPmSeUHLSDKAEtKuTaEtK4Ms15zkIEA==
 
 electron-updater@^6.1.1:
   version "6.3.9"
