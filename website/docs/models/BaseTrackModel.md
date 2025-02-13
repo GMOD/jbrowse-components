@@ -96,6 +96,13 @@ any
 any
 ```
 
+#### getter: adapterConfig
+
+```js
+// type
+any
+```
+
 #### getter: adapterType
 
 ```js

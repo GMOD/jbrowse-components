@@ -67,7 +67,7 @@ React.ComponentType<any>
 string
 ```
 
-#### getter: needsScalebar
+#### getter: graphType
 
 ```js
 // type

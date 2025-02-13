@@ -28,3 +28,12 @@ gtfLocation: {
       defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
     }
 ```
+
+#### slot: aggregateField
+
+```js
+aggregateField: {
+      type: 'string',
+      defaultValue: 'gene_name',
+    }
+```

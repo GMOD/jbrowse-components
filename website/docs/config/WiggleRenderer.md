@@ -29,6 +29,7 @@ color: {
       type: 'color',
       description: 'the color of track, overrides posColor and negColor',
       defaultValue: '#f0f',
+      contextVariable: ['feature'],
     }
 ```
 
@@ -39,6 +40,7 @@ posColor: {
       type: 'color',
       description: 'the color to use when the score is positive',
       defaultValue: 'blue',
+      contextVariable: ['feature'],
     }
 ```
 
@@ -49,6 +51,7 @@ negColor: {
       type: 'color',
       description: 'the color to use when the score is negative',
       defaultValue: 'red',
+      contextVariable: ['feature'],
     }
 ```
 

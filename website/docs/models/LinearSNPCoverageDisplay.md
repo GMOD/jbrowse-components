@@ -178,7 +178,7 @@ LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: n
 string
 ```
 
-#### getter: needsScalebar
+#### getter: graphType
 
 ```js
 // type
