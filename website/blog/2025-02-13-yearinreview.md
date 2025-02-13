@@ -29,13 +29,11 @@ particular variants from a particular parent
 
 ![](https://github.com/user-attachments/assets/a9308a40-ab74-48c0-9ab6-035b50a1ae0b)
 
-The data in the multi-variant viewe can be sorted according to sample metadata,
-which can be imported from a "samples TSV", so users can group and color the
-samples by e.g. the population code
+The data in the multi-variant display can be sorted according to sample
+metadata, which can be imported from a "samples TSV", so users can group and
+color the samples by e.g. the population code (here showing 1000 genomes data)
 
-![image](https://github.com/user-attachments/assets/4adbafcb-1b37-47be-8f91-05a71d03b273)
-
-Screenshot showing how to access the new display modes
+![](https://github.com/user-attachments/assets/ba7b99ab-53eb-4719-a6de-1cf9ff16511a)
 
 ## Multi-way synteny views
 
