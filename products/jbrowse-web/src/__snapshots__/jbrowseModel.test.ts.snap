@@ -4203,6 +4203,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+      ],
       "displays": [
         {
           "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
@@ -4229,6 +4233,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
       ],
       "displays": [
         {

@@ -2257,6 +2257,7 @@
       "trackId": "volvox_repeats_minus",
       "name": "volvox_repeats (minus)",
       "assemblyNames": ["volvox"],
+      "category": ["Integration test", "Wiggle"],
       "adapter": {
         "type": "BedAdapter",
         "bedLocation": {
@@ -2282,6 +2283,7 @@
       "trackId": "volvox_repeats_plus",
       "name": "volvox_repeats (plus)",
       "assemblyNames": ["volvox"],
+      "category": ["Integration test", "Wiggle"],
       "adapter": {
         "type": "BedAdapter",
         "bedLocation": {
