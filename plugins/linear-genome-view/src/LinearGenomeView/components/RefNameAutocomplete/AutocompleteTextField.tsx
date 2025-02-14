@@ -1,7 +1,5 @@
 import { TextField } from '@mui/material'
 
-import EndAdornment from './EndAdornment'
-
 import type {
   AutocompleteRenderInputParams,
   TextFieldProps as TFP,
@@ -11,18 +9,15 @@ export default function AutocompleteTextField({
   TextFieldProps,
   inputBoxVal,
   params,
-  showHelp,
   setInputValue,
   setCurrentSearch,
 }: {
   TextFieldProps: TFP
   inputBoxVal: string
-  showHelp?: boolean
   params: AutocompleteRenderInputParams
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
-  const { helperText } = TextFieldProps
   return (
     <TextField
       onBlur={() => {
@@ -33,18 +28,6 @@ export default function AutocompleteTextField({
       {...params}
       {...TextFieldProps}
       size="small"
-      helperText={helperText}
-      slotProps={{
-        input: {
-          ...params.InputProps,
-          endAdornment: (
-            <EndAdornment
-              showHelp={showHelp}
-              endAdornment={params.InputProps.endAdornment}
-            />
-          ),
-        },
-      }}
       placeholder="Search for location"
       onChange={e => {
         setCurrentSearch(e.target.value)

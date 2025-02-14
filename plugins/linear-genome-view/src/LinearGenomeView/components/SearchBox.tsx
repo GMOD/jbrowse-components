@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import RefNameAutocomplete from './RefNameAutocomplete'
+import EndAdornment from './RefNameAutocomplete/EndAdornment'
 import { fetchResults } from './util'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import { SPACING, WIDGET_HEIGHT } from '../consts'
@@ -18,7 +19,7 @@ const useStyles = makeStyles()(() => ({
 
 const SearchBox = observer(function ({
   model,
-  showHelp,
+  showHelp = true,
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
@@ -35,7 +36,6 @@ const SearchBox = observer(function ({
 
   return (
     <RefNameAutocomplete
-      showHelp={showHelp}
       onSelect={async option => {
         try {
           if (option.hasLocation()) {
@@ -72,11 +72,14 @@ const SearchBox = observer(function ({
         style: {
           margin: SPACING,
         },
-        InputProps: {
-          style: {
-            padding: 0,
-            height: WIDGET_HEIGHT,
-            background: alpha(theme.palette.background.paper, 0.8),
+        slotProps: {
+          input: {
+            style: {
+              padding: 0,
+              height: WIDGET_HEIGHT,
+              background: alpha(theme.palette.background.paper, 0.8),
+            },
+            endAdornment: <EndAdornment showHelp={showHelp} />,
           },
         },
       }}

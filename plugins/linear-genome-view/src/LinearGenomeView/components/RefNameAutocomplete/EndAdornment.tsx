@@ -32,20 +32,13 @@ function HelpAdornment() {
   )
 }
 
-export default function EndAdornment({
-  showHelp,
-  endAdornment,
-}: {
-  showHelp?: boolean
-  endAdornment: React.ReactNode
-}) {
+export default function EndAdornment({ showHelp }: { showHelp?: boolean }) {
   return (
     <>
       <InputAdornment position="end" style={{ marginRight: 7 }}>
         <SearchIcon fontSize="small" />
         {showHelp ? <HelpAdornment /> : null}
       </InputAdornment>
-      {endAdornment}
     </>
   )
 }
