@@ -18,6 +18,7 @@ export default function AutocompleteTextField({
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
+  const { helperText, slotProps = {} } = TextFieldProps
   return (
     <TextField
       onBlur={() => {
@@ -28,6 +29,14 @@ export default function AutocompleteTextField({
       {...params}
       {...TextFieldProps}
       size="small"
+      helperText={helperText}
+      slotProps={{
+        input: {
+          ...params.InputProps,
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...slotProps.input,
+        },
+      }}
       placeholder="Search for location"
       onChange={e => {
         setCurrentSearch(e.target.value)
