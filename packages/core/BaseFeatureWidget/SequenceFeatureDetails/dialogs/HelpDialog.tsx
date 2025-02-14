@@ -17,7 +17,7 @@ export default function HelpDialog({
       title="Feature sequence panel help"
     >
       <DialogContent>
-        <Typography paragraph>
+        <Typography>
           The "Feature sequence" panel shows the underlying genomic sequence for
           a given feature, fetched from the reference genome.
         </Typography>
@@ -41,9 +41,7 @@ export default function HelpDialog({
             highlighted
           </li>
         </ul>
-        <Typography paragraph>
-          For other feature types, the options are:
-        </Typography>
+        <Typography>For other feature types, the options are:</Typography>
         <ul>
           <li>
             Genomic +/- Nbp up+down stream - the reference genome sequence

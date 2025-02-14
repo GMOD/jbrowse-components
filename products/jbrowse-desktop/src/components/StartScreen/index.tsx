@@ -1,4 +1,4 @@
-import { Grid2, Paper, Typography } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import LauncherPanel from './LauncherPanel'
@@ -11,8 +11,9 @@ const useStyles = makeStyles()(theme => ({
   root: {
     marginLeft: 100,
     marginRight: 100,
+    marginTop: 100,
     display: 'flex',
-    gap: theme.spacing(2),
+    gap: 10,
   },
 
   panel: {
@@ -43,14 +44,14 @@ export default function StartScreen({
 
       <div className={classes.root}>
         <Paper
-          elevation={6}
+          elevation={3}
           className={`${classes.panel} ${classes.launchPanel}`}
         >
           <Typography variant="h5">Launch new session</Typography>
           <LauncherPanel setPluginManager={setPluginManager} />
         </Paper>
         <Paper
-          elevation={6}
+          elevation={3}
           className={`${classes.panel} ${classes.recentPanel}`}
         >
           <Typography variant="h5">Recently opened sessions</Typography>

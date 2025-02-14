@@ -18,13 +18,11 @@ const useStyles = makeStyles()({
 export default function Logo() {
   const { classes } = useStyles()
   return (
-    <div>
-      <div className={classes.logo}>
-        <LogoFull />
-        <Typography className={classes.text} variant="h6">
-          v{packageJSON.version}
-        </Typography>
-      </div>
+    <div className={classes.logo}>
+      <LogoFull />
+      <Typography className={classes.text} variant="h6">
+        v{packageJSON.version}
+      </Typography>
     </div>
   )
 }

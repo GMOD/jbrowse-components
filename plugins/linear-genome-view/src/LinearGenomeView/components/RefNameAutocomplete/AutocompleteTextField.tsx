@@ -22,7 +22,7 @@ export default function AutocompleteTextField({
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
-  const { helperText, InputProps = {} } = TextFieldProps
+  const { helperText } = TextFieldProps
   return (
     <TextField
       onBlur={() => {
@@ -37,8 +37,6 @@ export default function AutocompleteTextField({
       slotProps={{
         input: {
           ...params.InputProps,
-          ...InputProps,
-
           endAdornment: (
             <EndAdornment
               showHelp={showHelp}
