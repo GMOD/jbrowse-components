@@ -1,10 +1,9 @@
-import { LogoFull } from '@jbrowse/core/ui/Logo'
-import { Grid, Paper, Typography } from '@mui/material'
+import { Grid2, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import LauncherPanel from './LauncherPanel'
+import Logo from './Logo'
 import RecentSessionPanel from './RecentSessionsPanel'
-import packageJSON from '../../../package.json'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,30 +11,23 @@ const useStyles = makeStyles()(theme => ({
   root: {
     marginLeft: 100,
     marginRight: 100,
-    flexGrow: 1,
+    display: 'flex',
+    gap: theme.spacing(2),
   },
 
   panel: {
-    margin: theme.spacing(1),
     padding: theme.spacing(4),
   },
-  logo: {
-    margin: '0 auto',
-    width: 500,
+
+  launchPanel: {
+    flex: 1,
+  },
+
+  recentPanel: {
+    flex: 2,
   },
 }))
 
-function LogoWithVersion() {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.logo}>
-      <LogoFull />
-      <Typography variant="h6" style={{ float: 'right' }}>
-        v{packageJSON.version}
-      </Typography>
-    </div>
-  )
-}
 export default function StartScreen({
   setPluginManager,
   setError,
@@ -47,26 +39,26 @@ export default function StartScreen({
 
   return (
     <div>
-      <LogoWithVersion />
+      <Logo />
 
       <div className={classes.root}>
-        <Grid container spacing={3}>
-          <Grid item xs={4}>
-            <Paper elevation={6} className={classes.panel}>
-              <Typography variant="h5">Launch new session</Typography>
-              <LauncherPanel setPluginManager={setPluginManager} />
-            </Paper>
-          </Grid>
-          <Grid item xs={8}>
-            <Paper elevation={6} className={classes.panel}>
-              <Typography variant="h5">Recently opened sessions</Typography>
-              <RecentSessionPanel
-                setPluginManager={setPluginManager}
-                setError={setError}
-              />
-            </Paper>
-          </Grid>
-        </Grid>
+        <Paper
+          elevation={6}
+          className={`${classes.panel} ${classes.launchPanel}`}
+        >
+          <Typography variant="h5">Launch new session</Typography>
+          <LauncherPanel setPluginManager={setPluginManager} />
+        </Paper>
+        <Paper
+          elevation={6}
+          className={`${classes.panel} ${classes.recentPanel}`}
+        >
+          <Typography variant="h5">Recently opened sessions</Typography>
+          <RecentSessionPanel
+            setPluginManager={setPluginManager}
+            setError={setError}
+          />
+        </Paper>
       </div>
     </div>
   )
