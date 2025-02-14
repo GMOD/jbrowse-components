@@ -22,7 +22,6 @@ const RefNameAutocomplete = observer(function ({
   fetchResults,
   onChange,
   value,
-  showHelp = true,
   minWidth = 200,
   maxWidth = 550,
   TextFieldProps = {},
@@ -36,7 +35,6 @@ const RefNameAutocomplete = observer(function ({
   style?: React.CSSProperties
   minWidth?: number
   maxWidth?: number
-  showHelp?: boolean
   TextFieldProps?: TFP
 }) {
   const session = getSession(model)
@@ -137,7 +135,6 @@ const RefNameAutocomplete = observer(function ({
       filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
       renderInput={params => (
         <AutocompleteTextField
-          showHelp={showHelp}
           params={params}
           inputBoxVal={inputBoxVal}
           TextFieldProps={TextFieldProps}
