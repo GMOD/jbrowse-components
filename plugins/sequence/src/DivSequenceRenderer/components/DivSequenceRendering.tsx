@@ -21,6 +21,7 @@ function Translation({
   codonTable,
   seq,
   frame,
+  width,
   bpPerPx,
   colorByCDS,
   region,
@@ -31,6 +32,7 @@ function Translation({
   theme,
 }: {
   codonTable: Record<string, string>
+  width: number
   seq: string
   frame: Frame
   colorByCDS: boolean
@@ -62,7 +64,6 @@ function Translation({
     })
   }
 
-  const width = (region.end - region.start) / bpPerPx
   const codonWidth = (1 / bpPerPx) * 3
   const renderLetter = 1 / bpPerPx >= 12
   const frameOffset = frameShift / bpPerPx
@@ -186,6 +187,7 @@ function Sequence({
 
 function SequenceSVG({
   regions,
+  width,
   theme: configTheme,
   colorByCDS,
   features = new Map(),
@@ -197,6 +199,7 @@ function SequenceSVG({
   rowHeight,
 }: {
   regions: Region[]
+  width: number
   theme?: Theme
   features: Map<string, Feature>
   colorByCDS: boolean
@@ -238,6 +241,7 @@ function SequenceSVG({
       {topFrames.map(index => (
         <Translation
           key={`translation-${index}`}
+          width={width}
           colorByCDS={colorByCDS}
           seq={seq}
           y={(currY += rowHeight)}
@@ -281,6 +285,7 @@ function SequenceSVG({
       {bottomFrames.map(index => (
         <Translation
           key={`rev-translation-${index}`}
+          width={width}
           colorByCDS={colorByCDS}
           seq={seq}
           y={(currY += rowHeight)}
@@ -329,7 +334,19 @@ function Wrapper({
   )
 }
 
-const DivSequenceRendering = observer(function (props: {
+const DivSequenceRendering = observer(function ({
+  exportSVG,
+  features,
+  regions,
+  colorByCDS,
+  bpPerPx,
+  rowHeight,
+  sequenceHeight,
+  theme,
+  showForward,
+  showReverse,
+  showTranslation,
+}: {
   exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
@@ -343,13 +360,23 @@ const DivSequenceRendering = observer(function (props: {
   showReverse?: boolean
   showTranslation?: boolean
 }) {
-  const { regions, bpPerPx, sequenceHeight } = props
   const region = regions[0]!
-  const width = (region.end - region.start) / bpPerPx
+  const width = Math.ceil((region.end - region.start) / bpPerPx)
 
   return (
-    <Wrapper {...props} totalHeight={sequenceHeight} width={width}>
-      <SequenceSVG {...props} />
+    <Wrapper exportSVG={exportSVG} totalHeight={sequenceHeight} width={width}>
+      <SequenceSVG
+        width={width}
+        showReverse={showReverse}
+        showForward={showForward}
+        theme={theme}
+        showTranslation={showTranslation}
+        colorByCDS={colorByCDS}
+        bpPerPx={bpPerPx}
+        rowHeight={rowHeight}
+        features={features}
+        regions={regions}
+      />
     </Wrapper>
   )
 })
