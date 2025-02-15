@@ -14470,13 +14470,6 @@ sentence-case@^3.0.4:
     tslib "^2.0.3"
     upper-case-first "^2.0.2"
 
-serialize-error@^12.0.0:
-  version "12.0.0"
-  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-12.0.0.tgz#aed3d5abff192c855707513929bf8bf48d712194"
-  integrity sha512-ZYkZLAvKTKQXWuh5XpBw7CdbSzagarX39WyZ2H07CDLC5/KfsRGlIXV8d4+tfqX1M7916mRqR1QfNHSij+c9Pw==
-  dependencies:
-    type-fest "^4.31.0"
-
 serialize-error@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-7.0.1.tgz#f1360b0447f61ffb483ec4157c737fab7d778e18"

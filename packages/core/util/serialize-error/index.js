@@ -1,17 +1,17 @@
-import {errorConstructors} from './error-constructors.js';
+import { errorConstructors } from './error-constructors.js'
 
 export class NonError extends Error {
-	name = 'NonError';
+	name = 'NonError'
 
 	constructor(message) {
-		super(NonError._prepareSuperMessage(message));
+		super(NonError._prepareSuperMessage(message))
 	}
 
 	static _prepareSuperMessage(message) {
 		try {
-			return JSON.stringify(message);
+			return JSON.stringify(message)
 		} catch {
-			return String(message);
+			return String(message)
 		}
 	}
 }
@@ -41,23 +41,23 @@ const errorProperties = [
 		property: 'errors',
 		enumerable: false,
 	},
-];
+]
 
-const toJsonWasCalled = new WeakSet();
+const toJsonWasCalled = new WeakSet()
 
 const toJSON = from => {
-	toJsonWasCalled.add(from);
-	const json = from.toJSON();
-	toJsonWasCalled.delete(from);
-	return json;
-};
+	toJsonWasCalled.add(from)
+	const json = from.toJSON()
+	toJsonWasCalled.delete(from)
+	return json
+}
 
 const newError = name => {
-	const ErrorConstructor = errorConstructors.get(name) ?? Error;
+	const ErrorConstructor = errorConstructors.get(name) ?? Error
 	return ErrorConstructor === AggregateError
 		? new ErrorConstructor([])
-		: new ErrorConstructor();
-};
+		: new ErrorConstructor()
+}
 
 // eslint-disable-next-line complexity
 const destroyCircular = ({
@@ -72,92 +72,103 @@ const destroyCircular = ({
 }) => {
 	if (!to) {
 		if (Array.isArray(from)) {
-			to = [];
+			to = []
 		} else if (!serialize && isErrorLike(from)) {
-			to = newError(from.name);
+			to = newError(from.name)
 		} else {
-			to = {};
+			to = {}
 		}
 	}
 
-	seen.push(from);
+	seen.push(from)
 
 	if (depth >= maxDepth) {
-		return to;
+		return to
 	}
 
-	if (useToJSON && typeof from.toJSON === 'function' && !toJsonWasCalled.has(from)) {
-		return toJSON(from);
+	if (
+		useToJSON &&
+		typeof from.toJSON === 'function' &&
+		!toJsonWasCalled.has(from)
+	) {
+		return toJSON(from)
 	}
 
-	const continueDestroyCircular = value => destroyCircular({
-		from: value,
-		seen: [...seen],
-		forceEnumerable,
-		maxDepth,
-		depth,
-		useToJSON,
-		serialize,
-	});
+	const continueDestroyCircular = value =>
+		destroyCircular({
+			from: value,
+			seen: [...seen],
+			forceEnumerable,
+			maxDepth,
+			depth,
+			useToJSON,
+			serialize,
+		})
 
 	for (const [key, value] of Object.entries(from)) {
-		if (value && value instanceof Uint8Array && value.constructor.name === 'Buffer') {
-			to[key] = '[object Buffer]';
-			continue;
+		if (
+			value &&
+			value instanceof Uint8Array &&
+			value.constructor.name === 'Buffer'
+		) {
+			to[key] = '[object Buffer]'
+			continue
 		}
 
 		// TODO: Use `stream.isReadable()` when targeting Node.js 18.
-		if (value !== null && typeof value === 'object' && typeof value.pipe === 'function') {
-			to[key] = '[object Stream]';
-			continue;
+		if (
+			value !== null &&
+			typeof value === 'object' &&
+			typeof value.pipe === 'function'
+		) {
+			to[key] = '[object Stream]'
+			continue
 		}
 
 		if (typeof value === 'function') {
-			continue;
+			continue
 		}
 
 		if (!value || typeof value !== 'object') {
 			// Gracefully handle non-configurable errors like `DOMException`.
 			try {
-				to[key] = value;
+				to[key] = value
 			} catch {}
 
-			continue;
+			continue
 		}
 
 		if (!seen.includes(from[key])) {
-			depth++;
-			to[key] = continueDestroyCircular(from[key]);
+			depth++
+			to[key] = continueDestroyCircular(from[key])
 
-			continue;
+			continue
 		}
 
-		to[key] = '[Circular]';
+		to[key] = '[Circular]'
 	}
 
 	if (serialize || to instanceof Error) {
-		for (const {property, enumerable} of errorProperties) {
+		for (const { property, enumerable } of errorProperties) {
 			if (from[property] !== undefined && from[property] !== null) {
 				Object.defineProperty(to, property, {
-					value: isErrorLike(from[property]) || Array.isArray(from[property])
-						? continueDestroyCircular(from[property])
-						: from[property],
+					value:
+						isErrorLike(from[property]) || Array.isArray(from[property])
+							? continueDestroyCircular(from[property])
+							: from[property],
 					enumerable: forceEnumerable ? true : enumerable,
 					configurable: true,
 					writable: true,
-				});
+				})
 			}
 		}
 	}
 
-	return to;
-};
+	return to
+}
 
 export function serializeError(value, options = {}) {
-	const {
-		maxDepth = Number.POSITIVE_INFINITY,
-		useToJSON = true,
-	} = options;
+	const { maxDepth = Number.POSITIVE_INFINITY, useToJSON = true } = options
 
 	if (typeof value === 'object' && value !== null) {
 		return destroyCircular({
@@ -168,24 +179,24 @@ export function serializeError(value, options = {}) {
 			depth: 0,
 			useToJSON,
 			serialize: true,
-		});
+		})
 	}
 
 	// People sometimes throw things besides Error objects…
 	if (typeof value === 'function') {
 		// `JSON.stringify()` discards functions. We do too, unless a function is thrown directly.
 		// We intentionally use `||` because `.name` is an empty string for anonymous functions.
-		return `[Function: ${value.name || 'anonymous'}]`;
+		return `[Function: ${value.name || 'anonymous'}]`
 	}
 
-	return value;
+	return value
 }
 
 export function deserializeError(value, options = {}) {
-	const {maxDepth = Number.POSITIVE_INFINITY} = options;
+	const { maxDepth = Number.POSITIVE_INFINITY } = options
 
 	if (value instanceof Error) {
-		return value;
+		return value
 	}
 
 	if (isMinimumViableSerializedError(value)) {
@@ -196,26 +207,30 @@ export function deserializeError(value, options = {}) {
 			maxDepth,
 			depth: 0,
 			serialize: false,
-		});
+		})
 	}
 
-	return new NonError(value);
+	return new NonError(value)
 }
 
 export function isErrorLike(value) {
-	return Boolean(value)
-	&& typeof value === 'object'
-	&& typeof value.name === 'string'
-	&& typeof value.message === 'string'
-	&& typeof value.stack === 'string';
+	return (
+		Boolean(value) &&
+		typeof value === 'object' &&
+		typeof value.name === 'string' &&
+		typeof value.message === 'string' &&
+		typeof value.stack === 'string'
+	)
 }
 
 // Used as a weak check for immediately-passed objects, whereas `isErrorLike` is used for nested values to avoid bad detection
 function isMinimumViableSerializedError(value) {
-	return Boolean(value)
-	&& typeof value === 'object'
-	&& typeof value.message === 'string'
-	&& !Array.isArray(value);
+	return (
+		Boolean(value) &&
+		typeof value === 'object' &&
+		typeof value.message === 'string' &&
+		!Array.isArray(value)
+	)
 }
 
-export {addKnownErrorConstructor} from './error-constructors.js';
+export { addKnownErrorConstructor } from './error-constructors.js'
