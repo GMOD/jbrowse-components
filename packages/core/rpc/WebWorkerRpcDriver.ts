@@ -1,5 +1,5 @@
+import Rpc from '@jbrowse/core/util/librpc-web'
 import { deserializeError } from '@jbrowse/core/util/serialize-error'
-import Rpc from 'librpc-web-mod'
 
 import BaseRpcDriver from './BaseRpcDriver'
 import { nanoid } from '../util/nanoid'
