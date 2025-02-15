@@ -69,6 +69,11 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     return vcf.getHeader()
   }
 
+  async getMetadata(opts?: BaseOptions) {
+    const { parser } = await this.configure(opts)
+    return parser.getMetadata()
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query

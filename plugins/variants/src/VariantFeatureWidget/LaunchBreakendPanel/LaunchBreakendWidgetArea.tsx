@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react'
 
 import { parseBreakend } from '@gmod/vcf'
 
-import type { VariantFeatureWidgetModel } from './stateModelFactory'
+import type { VariantFeatureWidgetModel } from '../stateModelFactory'
 
 // lazies
 const LaunchBreakendPanel = lazy(() => import('./LaunchBreakendPanel'))
