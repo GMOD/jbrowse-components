@@ -59,6 +59,8 @@ async function readQuickstart(quickstartPath: string): Promise<unknown> {
   }
 }
 
+app.disableHardwareAcceleration()
+
 // manual auto-updates https://github.com/electron-userland/electron-builder/blob/docs/encapsulated%20manual%20update%20via%20menu.js
 autoUpdater.autoDownload = false
 
