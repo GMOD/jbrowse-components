@@ -21,6 +21,7 @@ export default tseslint.config(
       'docs/*',
       'website/*',
       'packages/core/util/nanoid.js',
+      'packages/core/util/serialize-error',
       'products/**/webpack.config.js',
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',

@@ -1,7 +1,7 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { serializeError } from '@jbrowse/core/util/serialize-error'
 import RpcServer from 'librpc-web-mod'
-import { serializeError } from 'serialize-error'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
