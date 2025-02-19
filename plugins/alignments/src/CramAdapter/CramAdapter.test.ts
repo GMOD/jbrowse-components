@@ -28,7 +28,7 @@ function makeAdapter(arg: string) {
         locationType: 'LocalPathLocation',
       },
       craiLocation: {
-        localPath: require.resolve(arg + '.crai'),
+        localPath: require.resolve(`${arg}.crai`),
         locationType: 'LocalPathLocation',
       },
       sequenceAdapter: {},

@@ -94,6 +94,7 @@ export default tseslint.config(
         },
       ],
 
+      'prefer-template': 'error',
       'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',
