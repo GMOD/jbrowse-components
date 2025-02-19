@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { clamp, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from 'mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
@@ -29,15 +29,12 @@ export default function stateModelFactory(
          * #property
          */
         rowHeightSetting: types.optional(types.number, 1),
+        /**
+         * #property
+         */
+        lineZoneHeight: 20,
       }),
     )
-
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      lineZoneHeight: 20,
-    }))
     .views(self => ({
       get nrow() {
         return self.sources?.length || 1
@@ -90,9 +87,25 @@ export default function stateModelFactory(
         return self.rowHeight > 8 && self.showSidebarLabelsSetting
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setLineZoneHeight(n: number) {
+        self.lineZoneHeight = clamp(n, 10, 1000)
+        return self.lineZoneHeight
+      },
+    }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {
+        /**
+         * #action
+         */
+        setLineZoneHeight(n: number) {
+          self.lineZoneHeight = clamp(n, 10, 1000)
+          return self.lineZoneHeight
+        },
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
