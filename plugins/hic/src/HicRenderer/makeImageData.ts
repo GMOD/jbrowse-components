@@ -26,7 +26,10 @@ export interface RenderArgs extends ServerSideRenderArgs {
 
 export async function makeImageData(
   ctx: CanvasRenderingContext2D,
-  props: RenderArgsDeserializedWithFeatures & { pluginManager: PluginManager },
+  props: RenderArgsDeserializedWithFeatures & {
+    yScalar: number
+    pluginManager: PluginManager
+  },
 ) {
   const {
     features,
@@ -40,6 +43,7 @@ export async function makeImageData(
     colorScheme,
     regions,
     pluginManager,
+    yScalar,
   } = props
 
   const { statusCallback = () => {} } = props
@@ -93,6 +97,9 @@ export async function makeImageData(
     const scale = useLogScale
       ? scaleSequentialLog(x1).domain([1, m])
       : scaleSequential(x1).domain([0, m])
+    if (yScalar) {
+      ctx.scale(1, yScalar)
+    }
     ctx.save()
 
     if (region.reversed === true) {
