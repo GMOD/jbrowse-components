@@ -7,7 +7,7 @@ import type { Feature } from '@jbrowse/core/util'
 type FeatureData = ReturnType<typeof dataFromVariant>
 
 function dataFromVariant(variant: Variant, parser: VCFParser) {
-  const { FORMAT, REF = '', ALT, POS, CHROM, ID } = variant
+  const { REF = '', ALT, POS, CHROM, ID } = variant
   const start = POS - 1
   const [type, description] = getSOTermAndDescription(REF, ALT, parser)
 
