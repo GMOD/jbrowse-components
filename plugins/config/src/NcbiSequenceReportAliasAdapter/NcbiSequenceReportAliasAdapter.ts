@@ -19,15 +19,11 @@ export default class NcbiSequenceReportAliasAdapter
       .slice(1)
       .filter(f => !!f.trim())
       .map(row => row.split('\t'))
-      .map(cols => {
-        return {
-          refName: cols[11]!,
-          aliases: [cols[11], cols[8], cols[9], cols[6]].filter(
-            (f): f is string => !!f,
-          ),
-          override,
-        }
-      })
+      .map(cols => ({
+        refName: cols[11]!,
+        aliases: [cols[8], cols[9], cols[6]].filter((f): f is string => !!f),
+        override,
+      }))
       .filter(f => !!f.refName)
   }
 
