@@ -246,11 +246,19 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
+  const [initialMousePos, setInitialMousePos] = useState<{
+    x: number
+    y: number
+  }>()
 
   const mouseDown = useCallback(
     (event: React.MouseEvent) => {
       setMouseIsDown(true)
       setMovedDuringLastMouseDown(false)
+      setInitialMousePos({
+        x: event.clientX,
+        y: event.clientY,
+      })
       return onMouseDown?.(event)
     },
     [onMouseDown],
@@ -259,6 +267,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   const mouseUp = useCallback(
     (event: React.MouseEvent) => {
       setMouseIsDown(false)
+      setInitialMousePos(undefined)
       return onMouseUp?.(event)
     },
     [onMouseUp],
@@ -269,8 +278,12 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
       if (!ref.current) {
         return
       }
-      if (mouseIsDown) {
-        setMovedDuringLastMouseDown(true)
+      if (mouseIsDown && initialMousePos) {
+        const dx = event.clientX - initialMousePos.x
+        const dy = event.clientY - initialMousePos.y
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+          setMovedDuringLastMouseDown(true)
+        }
       }
       const { left, top } = ref.current.getBoundingClientRect()
       const offsetX = event.clientX - left
@@ -289,6 +302,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
       }
     },
     [
+      initialMousePos,
       blockKey,
       bpPerPx,
       mouseIsDown,
