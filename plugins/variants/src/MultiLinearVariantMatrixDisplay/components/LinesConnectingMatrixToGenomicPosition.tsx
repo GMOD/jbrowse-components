@@ -1,11 +1,22 @@
 import { useState } from 'react'
 
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const useStyles = makeStyles()({
+  resizeHandle: {
+    height: 4,
+    background: '#ccc',
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  },
+})
 
 const Wrapper = observer(function ({
   children,
@@ -43,6 +54,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   model: MultiLinearVariantMatrixDisplayModel
   exportSVG?: boolean
 }) {
+  const { classes } = useStyles()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const [mouseOverLine, setMouseOverLine] = useState<{
@@ -56,23 +68,37 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
   const w = b0 / (featuresVolatile?.length || 1)
   return assembly && featuresVolatile ? (
-    <Wrapper exportSVG={exportSVG} model={model}>
-      <AllLines model={model} setMouseOverLine={setMouseOverLine} />
-      {mouseOverLine ? (
-        <line
-          stroke="#f00c"
-          strokeWidth={3}
-          key={mouseOverLine.f.id()}
-          x1={mouseOverLine.idx * w + w / 2}
-          x2={mouseOverLine.c}
-          y1={lineZoneHeight}
-          y2={0}
-          onMouseLeave={() => {
-            setMouseOverLine(undefined)
+    <>
+      <Wrapper exportSVG={exportSVG} model={model}>
+        <AllLines model={model} setMouseOverLine={setMouseOverLine} />
+        {mouseOverLine ? (
+          <line
+            stroke="#f00c"
+            strokeWidth={2}
+            style={{
+              pointerEvents: 'none',
+            }}
+            x1={mouseOverLine.idx * w + w / 2}
+            x2={mouseOverLine.c}
+            y1={lineZoneHeight}
+            y2={0}
+            onMouseLeave={() => {
+              setMouseOverLine(undefined)
+            }}
+          />
+        ) : null}
+      </Wrapper>
+      {!exportSVG ? (
+        <ResizeHandle
+          style={{
+            position: 'absolute',
+            top: lineZoneHeight - 4,
           }}
+          onDrag={n => model.setLineZoneHeight(lineZoneHeight + n)}
+          className={classes.resizeHandle}
         />
       ) : null}
-    </Wrapper>
+    </>
   ) : null
 })
 
