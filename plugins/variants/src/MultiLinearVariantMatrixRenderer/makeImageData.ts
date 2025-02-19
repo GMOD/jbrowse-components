@@ -41,7 +41,9 @@ export async function makeImageData({
     for (let i = 0; i < m; i++) {
       const arr2 = [] as string[]
       const { feature, mostFrequentAlt } = mafs[i]!
-      const hasPhaseSet = (feature.get('format') as string).includes('PS')
+      const hasPhaseSet = (
+        feature.get('FORMAT') as string | undefined
+      )?.includes('PS')
       if (hasPhaseSet) {
         const samp = feature.get('samples') as Record<string, SampleGenotype>
         const x = (i / mafs.length) * canvasWidth
