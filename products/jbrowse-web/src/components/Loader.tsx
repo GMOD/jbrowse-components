@@ -40,6 +40,7 @@ export function Loader({
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
+  const [data] = useQueryParam('data', Str)
   const [session] = useQueryParam('session', Str)
   const [adminKey] = useQueryParam('adminKey', Str)
   const [password, setPassword] = useQueryParam('password', Str)
@@ -54,6 +55,7 @@ export function Loader({
 
   const loader = SessionLoader.create({
     configPath: normalize(config),
+    dataDir: normalize(data),
     sessionQuery: normalize(session),
     password: normalize(password),
     adminKey: normalize(adminKey),
