@@ -19,7 +19,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-iwqq6r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
-            id=":r0:"
             tabindex="0"
             type="button"
           >
@@ -43,7 +42,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           />
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-            id=":r1:"
             tabindex="0"
             type="button"
           >
@@ -178,7 +176,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hf3bf0-MuiButtonBase-root-MuiIconButton-root-toggleButton"
-                    id=":rf:"
                     tabindex="0"
                     title="Open track selector"
                     type="button"
@@ -203,7 +200,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
-                      id=":rg:"
                       tabindex="0"
                       type="button"
                     >
@@ -221,7 +217,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </button>
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
-                      id=":rh:"
                       tabindex="0"
                       type="button"
                     >
@@ -257,7 +252,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                             autocapitalize="none"
                             autocomplete="off"
                             class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                            id=":ri:"
+                            id=":r5:"
                             placeholder="Search for location"
                             role="combobox"
                             spellcheck="false"
@@ -281,7 +276,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                             </svg>
                             <button
                               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                              id=":rk:"
                               tabindex="0"
                               type="button"
                             >
@@ -333,7 +327,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                         data-testid="zoom_out"
-                        id=":rm:"
                         tabindex="0"
                         type="button"
                       >
@@ -388,7 +381,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                         data-testid="zoom_in"
-                        id=":ro:"
                         tabindex="0"
                         type="button"
                       >
@@ -410,7 +402,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </span>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                      id=":rp:"
                       tabindex="0"
                       type="button"
                     >
@@ -965,7 +956,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </span>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
-                    id=":rq:"
                     tabindex="0"
                     title="close this track"
                     type="button"
@@ -992,7 +982,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                     data-testid="track_menu_icon"
-                    id=":rr:"
                     tabindex="0"
                     type="button"
                   >
