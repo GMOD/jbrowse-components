@@ -216,7 +216,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
       opts,
     )
     const columns: string = readConfObject(this.config, 'columns')
-    return parseLineByLine(buf, createBlastLineParser(columns))
+    return parseLineByLine(buf, createBlastLineParser(columns), opts)
   }
 
   async hasDataForRefName() {
