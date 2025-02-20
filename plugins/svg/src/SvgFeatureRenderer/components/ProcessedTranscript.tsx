@@ -3,7 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import Segments from './Segments'
-import { layOutFeature, layOutSubfeatures } from './util'
+import { isUTR, layOutFeature, layOutSubfeatures } from './util'
 
 import type { ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -27,12 +27,6 @@ function makeSubpartsFilter(
 
 function filterSubpart(feature: Feature, config: AnyConfigurationModel) {
   return makeSubpartsFilter('subParts', config)(feature)
-}
-
-function isUTR(feature: Feature) {
-  return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
-    feature.get('type') || '',
-  )
 }
 
 function makeUTRs(parent: Feature, subs: Feature[]) {

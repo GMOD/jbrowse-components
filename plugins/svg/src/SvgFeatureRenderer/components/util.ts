@@ -172,7 +172,7 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
 }
 
 export function isUTR(feature: Feature) {
-  return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
+  return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
     feature.get('type') || '',
   )
 }

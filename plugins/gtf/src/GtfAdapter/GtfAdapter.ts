@@ -212,7 +212,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      Object.entries(parentAggregation).map(([name, subfeatures]) => {
+      for (const [name, subfeatures] of Object.entries(parentAggregation)) {
         const s = min(subfeatures.map(f => f.start))
         const e = max(subfeatures.map(f => f.end))
         if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
@@ -232,7 +232,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
             }),
           )
         }
-      })
+      }
     }
     observer.complete()
   }
