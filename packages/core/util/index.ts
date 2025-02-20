@@ -1164,6 +1164,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =
+        // eslint-disable-next-line unicorn/no-instanceof-builtins
         value instanceof Function ? value(storedValue) : value
       setStoredValue(valueToStore)
       if (typeof window !== 'undefined') {
