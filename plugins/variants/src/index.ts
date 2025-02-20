@@ -6,6 +6,7 @@ import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay'
 import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay'
 import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer'
 import MultiVariantRendererF from './MultiLinearVariantRenderer'
+import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
 import VariantFeatureWidgetF from './VariantFeatureWidget'
 import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix'
@@ -24,6 +25,7 @@ export default class VariantsPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     VcfAdapterF(pluginManager)
     VcfTabixAdapterF(pluginManager)
+    SplitVcfTabixAdapterF(pluginManager)
     VariantFeatureWidgetF(pluginManager)
     VariantTrackF(pluginManager)
     ExtensionPointsF(pluginManager)
