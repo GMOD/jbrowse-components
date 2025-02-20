@@ -20,7 +20,7 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
       },
     },
 
-    useUcscNameOverride: {
+    useNameOverride: {
       type: 'boolean',
       defaultValue: true,
       description:
