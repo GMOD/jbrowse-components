@@ -239,7 +239,7 @@ const blockState = types
           if (renderArgs) {
             await rendererType.freeResourcesInClient(
               rpcManager,
-              JSON.parse(JSON.stringify(renderArgs)),
+              structuredClone(renderArgs),
             )
           }
         } catch (e) {
@@ -305,7 +305,7 @@ export function renderBlockData(
         layoutId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
-        timeout: 1000000, // 10000,
+        timeout: 1_000_000,
       },
     }
   } catch (e) {
