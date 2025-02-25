@@ -239,7 +239,8 @@ const blockState = types
           if (renderArgs) {
             await rendererType.freeResourcesInClient(
               rpcManager,
-              structuredClone(renderArgs),
+              // error if use structuredClone: can't clone Function, presumably a statusCallback
+              JSON.parse(JSON.stringify(renderArgs)),
             )
           }
         } catch (e) {

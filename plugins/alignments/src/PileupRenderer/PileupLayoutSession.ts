@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/LayoutSession'
 import deepEqual from 'fast-deep-equal'
 
 import type { FilterBy, SortedBy } from '../shared/types'
