@@ -89,10 +89,12 @@ const BaseLinearDisplay = observer(function (props: {
           setContextCoord(undefined)
           model.setContextMenuFeature(undefined)
         }}
-        TransitionProps={{
-          onExit: () => {
-            setContextCoord(undefined)
-            model.setContextMenuFeature(undefined)
+        slotProps={{
+          transition: {
+            onExit: () => {
+              setContextCoord(undefined)
+              model.setContextMenuFeature(undefined)
+            },
           },
         }}
         anchorReference="anchorPosition"
