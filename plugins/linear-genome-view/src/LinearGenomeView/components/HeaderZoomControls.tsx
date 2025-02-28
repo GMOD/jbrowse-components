@@ -63,7 +63,7 @@ const HeaderZoomControls = observer(function ({
         max={-Math.log2(minBpPerPx) * 100}
         onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
         onChange={(_, val) => {
-          setValue(val as number)
+          setValue(val)
         }}
       />
       <Tooltip title="Zoom in 2x">
