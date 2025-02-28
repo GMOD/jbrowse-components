@@ -71,11 +71,9 @@ export default function TrackLabel({ data }: { data: NodeData }) {
                 onChange(trackId)
               }}
               disabled={isUnsupported(name)}
-              slotProps={{
-                input: {
-                  // @ts-expect-error
-                  'data-testid': `htsTrackEntry-${id}`,
-                },
+              inputProps={{
+                // @ts-expect-error
+                'data-testid': `htsTrackEntry-${id}`,
               }}
             />
           }

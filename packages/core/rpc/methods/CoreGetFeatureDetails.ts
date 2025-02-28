@@ -1,7 +1,8 @@
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { getLayoutId, renameRegionsIfNeeded } from '../../util'
+import { renameRegionsIfNeeded } from '../../util'
 
 import type { RenderArgs, RenderArgsSerialized } from './util'
+import type { BoxRendererType } from '../../pluggableElementTypes'
 
 /**
  * fetches features from an adapter and call a renderer with them
@@ -35,12 +36,16 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
     const { rendererType, featureId } = deserializedArgs
-    const RendererType = this.pluginManager.getRendererType(rendererType)!
+    const RendererType = this.pluginManager.getRendererType(
+      rendererType,
+    )! as BoxRendererType
 
     return {
       // @ts-expect-error
-      feature: RendererType.sessions[getLayoutId(args)]?.cachedLayout.layout
-        .getDataByID(featureId)
+      feature: RendererType.getLayoutSession(args)
+        // @ts-expect-error
+        ?.cachedLayout.layout.getDataByID(featureId)
+        // @ts-expect-error
         ?.toJSON(),
     }
   }

@@ -5,9 +5,11 @@ import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 
 import type { AnyConfigurationModel } from '../../configuration'
+import type { Region } from '../../util'
 import type SerializableFilterChain from './util/serializableFilterChain'
 
 export interface LayoutSessionProps {
+  regions: Region[]
   config: AnyConfigurationModel
   bpPerPx: number
   filters?: SerializableFilterChain
@@ -17,50 +19,40 @@ export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 
 export interface CachedLayout {
   layout: MyMultiLayout
-  config: AnyConfigurationModel
-  filters?: SerializableFilterChain
+  props: LayoutSessionProps
 }
 
 export class LayoutSession {
-  config: AnyConfigurationModel
-
-  bpPerPx: number
-
-  filters?: SerializableFilterChain
+  props: LayoutSessionProps
 
   cachedLayout: CachedLayout | undefined
 
-  constructor(args: LayoutSessionProps) {
-    this.config = args.config
-    this.bpPerPx = args.bpPerPx
-    this.filters = args.filters
+  constructor(props: LayoutSessionProps) {
+    this.props = props
   }
 
-  update(args: LayoutSessionProps) {
-    this.config = args.config
-    this.bpPerPx = args.bpPerPx
-    this.filters = args.filters
+  update(props: LayoutSessionProps) {
+    this.props = props
     return this
   }
 
   makeLayout() {
     return new MultiLayout(GranularRectLayout, {
-      maxHeight: readConfObject(this.config, 'maxHeight'),
-      displayMode: readConfObject(this.config, 'displayMode'),
-      pitchX: this.bpPerPx,
-      pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
+      maxHeight: readConfObject(this.props.config, 'maxHeight'),
+      displayMode: readConfObject(this.props.config, 'displayMode'),
+      pitchX: this.props.bpPerPx,
+      pitchY: readConfObject(this.props.config, 'noSpacing') ? 1 : 3,
     })
   }
 
-  /**
-   * @param layout -
-   * @returns true if the given layout is a valid one to use for this session
-   */
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (
-      cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
-      deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters)
+      cachedLayout.props.bpPerPx === this.props.bpPerPx &&
+      deepEqual(
+        readConfObject(this.props.config),
+        readConfObject(cachedLayout.props.config),
+      ) &&
+      deepEqual(this.props.filters, cachedLayout.props.filters)
     )
   }
 
@@ -68,8 +60,7 @@ export class LayoutSession {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),
-        config: readConfObject(this.config),
-        filters: this.filters,
+        props: this.props,
       }
     }
     return this.cachedLayout.layout

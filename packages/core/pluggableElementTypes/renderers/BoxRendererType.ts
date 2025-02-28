@@ -59,6 +59,10 @@ export default class BoxRendererType extends FeatureRendererType {
     return new LayoutSession(props)
   }
 
+  getLayoutSession(props: { sessionId: string; layoutId: string }) {
+    return this.layoutSessions[getLayoutId(props)]
+  }
+
   getWorkerSession(
     props: LayoutSessionProps & { sessionId: string; layoutId: string },
   ) {
@@ -118,7 +122,10 @@ export default class BoxRendererType extends FeatureRendererType {
   deserializeResultsInClient(result: ResultsSerialized, args: RenderArgs) {
     const layout = this.deserializeLayoutInClient(result.layout)
     return super.deserializeResultsInClient(
-      { ...result, layout } as FeatureResultsSerialized,
+      {
+        ...result,
+        layout,
+      } as FeatureResultsSerialized,
       args,
     ) as ResultsDeserialized
   }

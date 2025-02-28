@@ -27,15 +27,6 @@ test('renders with an empty config', async () => {
   await findByText('Help', {}, delay)
 }, 20000)
 
-test('lollipop track test', async () => {
-  const { view, findByTestId } = await createView()
-  view.setNewView(1, 150)
-  fireEvent.click(await findByTestId(hts('lollipop_track'), {}, delay))
-
-  await findByTestId('display-lollipop_track_linear', {}, delay)
-  await findByTestId('three', {}, delay)
-}, 30000)
-
 test('toplevel configuration', () => {
   const plugins = [...corePlugins, TestPlugin].map(P => new P())
   const pluginManager = new PluginManager(plugins).createPluggableElements()

@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/LayoutSession'
 import deepEqual from 'fast-deep-equal'
 
@@ -19,44 +18,31 @@ export interface PileupLayoutSessionProps extends LayoutSessionProps {
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 
 interface CachedPileupLayout extends CachedLayout {
-  filterBy?: FilterBy
-  sortedBy?: SortedBy
-  showSoftClip: boolean
+  props: PileupLayoutSessionProps
 }
 
-// The pileup layout session adds
-// - sorting and revealing soft clip changes the layout of pileup renderer
-// - extra conditions to see if cached layout is valid
 export class PileupLayoutSession extends LayoutSession {
-  sortedBy?: SortedBy
-
-  filterBy?: FilterBy
-
-  showSoftClip = false
+  props: PileupLayoutSessionProps
 
   cachedLayout: CachedPileupLayout | undefined
 
-  constructor(args: PileupLayoutSessionProps) {
-    super(args)
-    this.sortedBy = args.sortedBy
-    this.filterBy = args.filterBy
-    this.showSoftClip = args.showSoftClip
+  constructor(props: PileupLayoutSessionProps) {
+    super(props)
+    this.props = props
   }
 
-  update(args: PileupLayoutSessionProps) {
-    super.update(args)
-    this.filterBy = args.filterBy
-    this.sortedBy = args.sortedBy
-    this.showSoftClip = args.showSoftClip
+  update(props: PileupLayoutSessionProps) {
+    super.update(props)
+    this.props = props
     return this
   }
 
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
-      this.showSoftClip === cachedLayout.showSoftClip &&
-      deepEqual(this.sortedBy, cachedLayout.sortedBy) &&
-      deepEqual(this.filterBy, cachedLayout.filterBy)
+      this.props.showSoftClip === cachedLayout.props.showSoftClip &&
+      deepEqual(this.props.sortedBy, cachedLayout.props.sortedBy) &&
+      deepEqual(this.props.filterBy, cachedLayout.props.filterBy)
     )
   }
 
@@ -64,11 +50,7 @@ export class PileupLayoutSession extends LayoutSession {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),
-        config: readConfObject(this.config),
-        filters: this.filters,
-        filterBy: this.filterBy,
-        sortedBy: this.sortedBy,
-        showSoftClip: this.showSoftClip,
+        props: this.props,
       }
     }
     return this.cachedLayout.layout
