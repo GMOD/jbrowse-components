@@ -4,7 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
-  getContainingView,
+  getContainingTrack,
   getSession,
   getViewParams,
   makeAbortableReaction,
@@ -283,7 +283,9 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = getContainingView(display).id
+    // @ts-expect-error
+    const layoutId = getContainingTrack(display).id
+
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {

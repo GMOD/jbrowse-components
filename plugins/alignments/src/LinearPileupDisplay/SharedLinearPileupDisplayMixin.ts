@@ -428,7 +428,9 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingView(self).id,
+
+                      // @ts-expect-error
+                      layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -462,7 +464,9 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingView(self).id,
+
+                      // @ts-expect-error
+                      layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -672,14 +676,14 @@ export function SharedLinearPileupDisplayMixin(
                   self.setFeatureUnderMouse(undefined)
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const view = getContainingView(self)
                   const { feature } = (await session.rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
                       featureId,
                       sessionId,
-                      layoutId: view.id,
+                      // @ts-expect-error
+                      layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
