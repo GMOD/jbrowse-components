@@ -21,7 +21,7 @@ export interface CachedLayout {
   filters?: SerializableFilterChain
 }
 
-export class LayoutSession implements LayoutSessionProps {
+export class LayoutSession {
   config: AnyConfigurationModel
 
   bpPerPx: number

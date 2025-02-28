@@ -3,15 +3,14 @@ import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/Lay
 import deepEqual from 'fast-deep-equal'
 
 import type { FilterBy, SortedBy } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type {
+  CachedLayout,
+  LayoutSessionProps,
+} from '@jbrowse/core/pluggableElementTypes/renderers/LayoutSession'
 import type GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import type MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 
-export interface PileupLayoutSessionProps {
-  config: AnyConfigurationModel
-  bpPerPx: number
-  filters: SerializableFilterChain
+export interface PileupLayoutSessionProps extends LayoutSessionProps {
   filterBy: FilterBy
   sortedBy: SortedBy
   showSoftClip: boolean
@@ -19,10 +18,7 @@ export interface PileupLayoutSessionProps {
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 
-interface CachedPileupLayout {
-  layout: MyMultiLayout
-  config: AnyConfigurationModel
-  filters?: SerializableFilterChain
+interface CachedPileupLayout extends CachedLayout {
   filterBy?: FilterBy
   sortedBy?: SortedBy
   showSoftClip: boolean
@@ -33,13 +29,24 @@ interface CachedPileupLayout {
 // - extra conditions to see if cached layout is valid
 export class PileupLayoutSession extends LayoutSession {
   sortedBy?: SortedBy
+
   filterBy?: FilterBy
 
   showSoftClip = false
 
   constructor(args: PileupLayoutSessionProps) {
     super(args)
-    this.config = args.config
+    this.sortedBy = args.sortedBy
+    this.filterBy = args.filterBy
+    this.showSoftClip = args.showSoftClip
+  }
+
+  update(args: PileupLayoutSessionProps) {
+    super.update(args)
+    this.filterBy = args.filterBy
+    this.sortedBy = args.sortedBy
+    this.showSoftClip = args.showSoftClip
+    return this
   }
 
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
