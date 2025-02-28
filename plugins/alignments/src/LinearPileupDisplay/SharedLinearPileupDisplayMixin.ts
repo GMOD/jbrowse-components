@@ -428,8 +428,6 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-
-                      // @ts-expect-error
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
@@ -464,8 +462,6 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-
-                      // @ts-expect-error
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
@@ -682,7 +678,6 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId,
                       sessionId,
-                      // @ts-expect-error
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },

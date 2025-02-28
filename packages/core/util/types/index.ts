@@ -295,6 +295,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 }
 
 export interface AbstractTrackModel {
+  id: string
   displays: AbstractDisplayModel[]
   configuration: AnyConfigurationModel
 }

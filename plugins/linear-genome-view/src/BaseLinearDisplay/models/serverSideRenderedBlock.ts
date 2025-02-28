@@ -283,9 +283,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    // @ts-expect-error
     const layoutId = getContainingTrack(display).id
-
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {

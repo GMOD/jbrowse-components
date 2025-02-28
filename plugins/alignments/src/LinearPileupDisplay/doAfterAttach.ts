@@ -72,8 +72,6 @@ export function doAfterAttach(model: {
           adapterConfig,
           rendererType: rendererType.name,
           sessionId: getRpcSessionId(model),
-
-          // @ts-expect-error
           layoutId: getContainingTrack(model).id,
           timeout: 1_000_000,
           statusCallback: (arg: string) => {
