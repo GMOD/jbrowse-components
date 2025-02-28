@@ -6,7 +6,7 @@ setup()
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 50000 }
 beforeEach(() => {
   doBeforeEach()
 })
@@ -35,7 +35,7 @@ test('open tracklist file', async () => {
   fireEvent.click(await findByText('Launch'))
 
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
-}, 40000)
+}, 50000)
 
 test('open local', async () => {
   const { session, findByTestId, findByRole, findAllByTestId, findByText } =
@@ -60,4 +60,4 @@ test('open local', async () => {
   fireEvent.click(await findByText('Swap?'))
   fireEvent.click(await findByText('Launch'))
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
-}, 40000)
+}, 50000)

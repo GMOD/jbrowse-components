@@ -1,4 +1,8 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from 'mobx-state-tree'
 
@@ -68,7 +72,7 @@ export function doAfterAttach(model: {
           adapterConfig,
           rendererType: rendererType.name,
           sessionId: getRpcSessionId(model),
-          layoutId: view.id,
+          layoutId: getContainingTrack(model).id,
           timeout: 1_000_000,
           statusCallback: (arg: string) => {
             model.setMessage(arg)

@@ -10,21 +10,13 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 export default class CoreFreeResources extends RpcMethodType {
   name = 'CoreFreeResources'
 
-  async execute(specification: Record<string, unknown>) {
-    let deleteCount = 0
-
-    deleteCount += freeAdapterResources(specification)
-
-    // pass the freeResources hint along to all the renderers as well
+  async execute(args: Record<string, unknown>) {
+    freeAdapterResources(args)
     this.pluginManager.getRendererTypes().forEach(renderer => {
-      const count = renderer.freeResources(/* specification */)
-      if (count) {
-        deleteCount += count
-      }
+      renderer.freeResources(args)
     })
-
-    return deleteCount
   }
+
   async serializeArguments(args: Record<string, unknown>, _rpcDriver: string) {
     return args
   }
