@@ -1,4 +1,4 @@
-import { Grid2 } from '@mui/material'
+import { Grid } from '@mui/material'
 
 import SessionCard from './SessionCard'
 import { loadPluginManager } from './util'
@@ -22,7 +22,7 @@ export default function RecentSessionsCards({
   addToQuickstartList: (arg: RecentSessionData) => void
 }) {
   return (
-    <Grid2 container spacing={4}>
+    <Grid container spacing={4}>
       {sessions.map(session => (
         <SessionCard
           key={session.path}
@@ -43,6 +43,6 @@ export default function RecentSessionsCards({
           onAddToQuickstartList={addToQuickstartList}
         />
       ))}
-    </Grid2>
+    </Grid>
   )
 }

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import ClearIcon from '@mui/icons-material/Clear'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Grid2, IconButton, InputAdornment, TextField } from '@mui/material'
+import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
 
 import ShoppingCart from '../ShoppingCart'
 
@@ -20,7 +20,7 @@ export default function FacetedHeader({
 
   return (
     <>
-      <Grid2 container spacing={4} alignItems="center">
+      <Grid container spacing={4} alignItems="center">
         <TextField
           label="Search..."
           value={faceted.filterText}
@@ -51,7 +51,7 @@ export default function FacetedHeader({
           <MoreVert />
         </IconButton>
         <ShoppingCart model={model} />
-      </Grid2>
+      </Grid>
       <Menu
         anchorEl={anchorEl}
         open={!!anchorEl}
