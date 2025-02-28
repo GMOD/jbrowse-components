@@ -28,6 +28,8 @@ export class LayoutSession {
 
   filters?: SerializableFilterChain
 
+  cachedLayout: CachedLayout | undefined
+
   constructor(args: LayoutSessionProps) {
     this.config = args.config
     this.bpPerPx = args.bpPerPx
@@ -61,8 +63,6 @@ export class LayoutSession {
       deepEqual(this.filters, cachedLayout.filters)
     )
   }
-
-  cachedLayout: CachedLayout | undefined
 
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {

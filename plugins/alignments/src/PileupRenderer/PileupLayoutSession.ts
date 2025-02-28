@@ -34,6 +34,8 @@ export class PileupLayoutSession extends LayoutSession {
 
   showSoftClip = false
 
+  cachedLayout: CachedPileupLayout | undefined
+
   constructor(args: PileupLayoutSessionProps) {
     super(args)
     this.sortedBy = args.sortedBy
@@ -57,8 +59,6 @@ export class PileupLayoutSession extends LayoutSession {
       deepEqual(this.filterBy, cachedLayout.filterBy)
     )
   }
-
-  cachedLayout: CachedPileupLayout | undefined
 
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {

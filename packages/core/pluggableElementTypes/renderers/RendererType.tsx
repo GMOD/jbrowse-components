@@ -41,10 +41,5 @@ export default class RendererType extends PluggableElementBase {
     }
   }
 
-  /**
-   * frees resources associated with the given range, session, etc. optionally
-   * returns the number of data items deleted
-   */
-
   freeResources(_args: any) {}
 }

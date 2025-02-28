@@ -115,7 +115,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  createSession(args: PileupLayoutSessionProps) {
+  createLayoutSession(args: PileupLayoutSessionProps) {
     return new PileupLayoutSession(args)
   }
 }

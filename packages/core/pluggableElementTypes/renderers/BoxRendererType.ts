@@ -1,11 +1,9 @@
-// layouts
 import FeatureRendererType from './FeatureRendererType'
 import { LayoutSession } from './LayoutSession'
 import { readConfObject } from '../../configuration'
 import { getLayoutId } from '../../util'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
 
-// other
 import type {
   RenderArgs as FeatureRenderArgs,
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
@@ -55,16 +53,20 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
 }
 
 export default class BoxRendererType extends FeatureRendererType {
-  sessions: Record<string, LayoutSession> = {}
+  layoutSessions: Record<string, LayoutSession> = {}
+
+  createLayoutSession(props: LayoutSessionProps) {
+    return new LayoutSession(props)
+  }
 
   getWorkerSession(
     props: LayoutSessionProps & { sessionId: string; layoutId: string },
   ) {
     const key = getLayoutId(props)
-    if (!this.sessions[key]) {
-      this.sessions[key] = new LayoutSession(props)
+    if (!this.layoutSessions[key]) {
+      this.layoutSessions[key] = this.createLayoutSession(props)
     }
-    return this.sessions[key].update(props)
+    return this.layoutSessions[key].update(props)
   }
 
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
@@ -79,8 +81,8 @@ export default class BoxRendererType extends FeatureRendererType {
     }
   }
 
+  // renaming function to make clear it runs in worker
   freeResources(args: Record<string, any>) {
-    // renaming function to make clear it runs in worker
     this.freeResourcesInWorker(args)
   }
 
@@ -89,7 +91,7 @@ export default class BoxRendererType extends FeatureRendererType {
 
     // @ts-expect-error
     const key = getLayoutId(args)
-    const session = this.sessions[key]
+    const session = this.layoutSessions[key]
 
     if (session) {
       const region = regions[0]!
@@ -100,7 +102,7 @@ export default class BoxRendererType extends FeatureRendererType {
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const { regions } = args
     const key = getLayoutId(args)
-    const session = this.sessions[key]
+    const session = this.layoutSessions[key]
 
     if (session) {
       const region = regions[0]!
