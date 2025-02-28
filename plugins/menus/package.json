@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.0.3",
-    "@mui/icons-material": "^7.0.0-alpha.1",
-    "@mui/material": "^7.0.0-alpha.1",
+    "@mui/icons-material": "^7.0.0-beta.2",
+    "@mui/material": "^7.0.0-beta.2",
     "date-fns": "^4.1.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

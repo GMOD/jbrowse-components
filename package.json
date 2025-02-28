@@ -36,7 +36,7 @@
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
-    "@mui/material": "^7.0.0-alpha.1",
+    "@mui/material": "^7.0.0-beta.2",
     "@mui/system": "^6.0.0",
     "@mui/x-data-grid": "next",
     "@node-oauth/express-oauth-server": "^4.0.0",

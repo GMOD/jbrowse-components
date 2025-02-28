@@ -38,7 +38,7 @@
   "dependencies": {
     "@jbrowse/core": "^3.0.3",
     "@jbrowse/plugin-linear-genome-view": "^3.0.3",
-    "@mui/material": "^7.0.0-alpha.1",
+    "@mui/material": "^7.0.0-beta.2",
     "@mui/x-charts-vendor": "^7.12.0",
     "hic-straw": "^2.0.3",
     "mobx": "^6.0.0",

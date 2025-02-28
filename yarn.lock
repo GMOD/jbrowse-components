@@ -2835,14 +2835,14 @@
   resolved "https://registry.yarnpkg.com/@mui/core-downloads-tracker/-/core-downloads-tracker-7.0.0-beta.2.tgz#cfe187fa4c6a733489de5730430ff94eb06e15e5"
   integrity sha512-LjSAaNLOKQK27zSJSzOQ4UKg9IwlZ9AS+AdIyTx6KHl6HLW44jhCbpvWVQnblfo6hno8lYia89ziGHNUncVZrw==
 
-"@mui/icons-material@^7.0.0-alpha.1":
+"@mui/icons-material@^7.0.0-beta.2":
   version "7.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/@mui/icons-material/-/icons-material-7.0.0-beta.2.tgz#16ad6ec9c17fd9d09e8b56cc980768822e99f68f"
   integrity sha512-zbsaFnrpXkbdC5bFJjDFOhRsAGI6OD+mLm0mBP0F0Bd1O13vejNSZWJLsh3hR/rcI9ikJLr4FYZyuoXiFIw40w==
   dependencies:
     "@babel/runtime" "^7.26.9"
 
-"@mui/material@^7.0.0-alpha.1":
+"@mui/material@^7.0.0-beta.2":
   version "7.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/@mui/material/-/material-7.0.0-beta.2.tgz#bb74c09dce065bb235406599b1f6648dbc1ab98f"
   integrity sha512-GBm31BCSqHFOIc2lQqeke1KNBzqWf3N0VrtaCyji9SSYnML+CtDlEeDYJrNBvbOcXFw2hBc9dhE+/ReA3BnJmQ==
