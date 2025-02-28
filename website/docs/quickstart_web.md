@@ -18,7 +18,7 @@ import config from '../docusaurus.config.json'
   or `brew install samtools`, used for creating FASTA index and BAM/CRAM
   processing for creating tabix GFF
 - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
-  `sudo apt install tabix` and `brew install htslib`, used for creating tabix
+  `sudo apt install tabix` or `brew install htslib`, used for creating tabix
   indexes for BED/VCF/GFF files
 
 ## Installing the JBrowse CLI
