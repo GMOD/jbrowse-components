@@ -10,13 +10,13 @@ import { autorun, observable, toJS } from 'mobx'
 import { addDisposer, getParent, getSnapshot, types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 import type { Instance } from 'mobx-state-tree'
 
 const { ipcRenderer } = window.require('electron')
 
 const ONE_HOUR = 60 * 60 * 1000
-
-type Track = Record<string, any>
 
 interface TrackTextIndexing {
   attributes: string[]
@@ -90,13 +90,16 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get session() {
-        return getParent<any>(self).session
+        return getParent<any>(self).session as AbstractSessionModel &
+          SessionWithDrawerWidgets
       },
       /**
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<any>(self).jbrowse.aggregateTextSearchAdapters
+        return getParent<any>(self).jbrowse.aggregateTextSearchAdapters as {
+          textSearchAdapterId: string
+        }[]
       },
     }))
     .actions(self => ({
@@ -141,6 +144,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         }
         this.setWidgetStatus()
       },
+
       /**
        * #action
        */
@@ -149,6 +153,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         jobStatusWidget.updateJobStatusMessage(self.jobName, self.statusMessage)
         jobStatusWidget.updateJobProgressPct(self.jobName, self.progressPct)
       },
+
       /**
        * #action
        */
@@ -254,7 +259,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 exclude,
                 outLocation,
               })
-              self.session?.notify(
+              self.session.notify(
                 `Successfully indexed track with trackId: ${trackId} `,
                 'success',
               )
@@ -273,7 +278,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 assemblyName,
                 outLocation,
               })
-              self.session?.notify(
+
+              self.session.notify(
                 `Successfully indexed assembly: ${assemblyName} `,
                 'success',
               )
@@ -299,7 +305,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } catch (e) {
           console.error(e)
 
-          self.session?.notify(
+          self.session.notify(
             `An error occurred while indexing: ${e}`,
             'error',
             {
@@ -316,6 +322,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         // clear
         this.clear()
       },
+
+      /**
+       * #action
+       */
       async runJob() {
         const { session } = self
         if (self.jobsQueue.length) {
@@ -353,9 +363,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         outLocation: string
       }) {
         const currentTrackIdx = self.session.tracks.findIndex(
-          (t: Track) => trackId === t.trackId,
+          t => trackId === t.trackId,
         )
-        // name of index
         const id = `${trackId}-index`
         const adapterConf = createTextSearchConf(
           id,
@@ -363,17 +372,20 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           assemblies,
           outLocation,
         )
-        self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
+        self.session.tracks[currentTrackIdx]?.textSearching.setSubschema(
           'textSearchAdapter',
           adapterConf,
         )
-        self.session?.tracks[
+        self.session.tracks[
           currentTrackIdx
-        ].textSearching.indexingAttributes.set(attributes)
-        self.session?.tracks[
+        ]?.textSearching.indexingAttributes.set(attributes)
+        self.session.tracks[
           currentTrackIdx
-        ].textSearching.indexingFeatureTypesToExclude.set(exclude)
+        ]?.textSearching.indexingFeatureTypesToExclude.set(exclude)
       },
+      /**
+       * #action
+       */
       addAggregateTextSearchConf({
         trackIds,
         assemblyName,
@@ -383,10 +395,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         assemblyName: string
         outLocation: string
       }) {
-        // name of index
         const id = `${assemblyName}-index`
         const foundIdx = self.aggregateTextSearchAdapters.findIndex(
-          (x: any) => x.textSearchAdapterId === id,
+          x => x.textSearchAdapterId === id,
         )
         const trixConf = createTextSearchConf(
           id,
@@ -400,13 +411,19 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           self.aggregateTextSearchAdapters[foundIdx] = trixConf
         }
       },
+
       afterCreate() {
         addDisposer(
           self,
           autorun(
             async () => {
-              if (self.jobsQueue.length > 0 && !self.running) {
-                await this.runJob()
+              try {
+                if (self.jobsQueue.length > 0 && !self.running) {
+                  await this.runJob()
+                }
+              } catch (e) {
+                console.error(e)
+                self.session.notifyError(`${e}`, e)
               }
             },
             { delay: 1000 },

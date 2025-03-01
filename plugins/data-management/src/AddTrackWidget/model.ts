@@ -254,7 +254,7 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get trackConfig() {
+      getTrackConfig(timestamp: number) {
         const session = getSession(self)
         const assemblyInstance = session.assemblyManager.get(self.assembly)
 
@@ -264,7 +264,7 @@ export default function f(pluginManager: PluginManager) {
           ? deepmerge(
               {
                 trackId: [
-                  `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
+                  `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${timestamp}`,
                   session.adminMode ? '' : '-sessionTrack',
                 ].join(''),
                 type: self.trackType,

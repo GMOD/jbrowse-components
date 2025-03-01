@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import {
+  Dialog,
+  ErrorMessage,
+  FileSelector,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -189,7 +194,9 @@ const OpenSequenceDialog = ({
         ) : null}
 
         {loading ? (
-          <Typography className={classes.message}>{loading}</Typography>
+          <LoadingEllipses className={classes.message}>
+            {loading}
+          </LoadingEllipses>
         ) : null}
 
         {error ? <ErrorMessage error={error} /> : null}

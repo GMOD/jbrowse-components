@@ -9,8 +9,14 @@ import { getRoot } from 'mobx-state-tree'
 
 import type { AddTrackModel } from '../model'
 
-function doTextIndexTrack({ model }: { model: AddTrackModel }) {
-  const { textIndexingConf, trackConfig, trackName, assembly } = model
+function doTextIndexTrack({
+  trackId,
+  model,
+}: {
+  trackId: string
+  model: AddTrackModel
+}) {
+  const { textIndexingConf, trackName, assembly } = model
   const { jobsManager } = getRoot<any>(model)
   const attr = textIndexingConf || {
     attributes: ['Name', 'ID'],
@@ -21,7 +27,7 @@ function doTextIndexTrack({ model }: { model: AddTrackModel }) {
     indexingParams: {
       ...attr,
       assemblies: [assembly],
-      tracks: [trackConfig!.trackId],
+      tracks: [trackId],
       indexType: 'perTrack',
       name: indexName,
       timestamp: new Date().toISOString(),
@@ -32,21 +38,26 @@ function doTextIndexTrack({ model }: { model: AddTrackModel }) {
 }
 
 export function doSubmit({ model }: { model: AddTrackModel }) {
-  const { textIndexTrack, trackConfig, trackAdapter, view } = model
+  const { textIndexTrack, trackAdapter, view } = model
   const session = getSession(model)
+  const trackConfig = model.getTrackConfig(Date.now())
 
   if (!isSessionWithAddTracks(session)) {
     throw new Error("Can't add tracks to this session")
   } else if (trackConfig && trackAdapter) {
+    const { trackId } = trackConfig
     session.addTrackConf(trackConfig)
-    view?.showTrack?.(trackConfig.trackId)
+    view?.showTrack?.(trackId)
 
     if (
       isElectron &&
       textIndexTrack &&
       isSupportedIndexingAdapter(trackAdapter.type)
     ) {
-      doTextIndexTrack({ model })
+      doTextIndexTrack({
+        model,
+        trackId,
+      })
     }
     model.clearData()
     if (isSessionModelWithWidgets(session)) {
