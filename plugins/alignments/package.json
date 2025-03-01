@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-alignments",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -38,10 +38,10 @@
   "dependencies": {
     "@gmod/bam": "^5.0.0",
     "@gmod/cram": "^4.0.1",
-    "@jbrowse/core": "^3.0.3",
-    "@jbrowse/plugin-linear-genome-view": "^3.0.3",
-    "@jbrowse/plugin-wiggle": "^3.0.3",
-    "@jbrowse/sv-core": "^3.0.3",
+    "@jbrowse/core": "^3.0.4",
+    "@jbrowse/plugin-linear-genome-view": "^3.0.4",
+    "@jbrowse/plugin-wiggle": "^3.0.4",
+    "@jbrowse/sv-core": "^3.0.4",
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "canvas2svg": "^1.0.16",
