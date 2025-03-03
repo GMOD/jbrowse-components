@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 
 import { Menu, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -19,7 +20,6 @@ const useStyles = makeStyles()({
     cursor: 'crosshair',
     width: '100%',
     minHeight: 8,
-    position: 'sticky',
     zIndex: 825,
   },
 })
@@ -33,6 +33,7 @@ const Rubberband = observer(function ({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
+  const session = getSession(model)
 
   const {
     guideX,
@@ -71,6 +72,7 @@ const Rubberband = observer(function ({
           width={width}
           left={left}
           top={rubberbandControlTop}
+          sticky={session.stickyViewHeaders}
         />
       ) : null}
       {anchorPosition ? (
@@ -89,7 +91,10 @@ const Rubberband = observer(function ({
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
-        style={{ top: rubberbandControlTop }}
+        style={{
+          top: rubberbandControlTop,
+          position: session.stickyViewHeaders ? 'sticky' : undefined,
+        }}
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}

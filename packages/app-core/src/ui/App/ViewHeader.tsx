@@ -25,7 +25,6 @@ const useStyles = makeStyles()(theme => ({
   viewHeader: {
     display: 'flex',
     height: VIEW_HEADER_HEIGHT,
-    position: 'sticky',
     top: 0,
     zIndex: 900,
     background: theme.palette.secondary.main,
@@ -76,6 +75,7 @@ const ViewHeader = observer(function ({
   const { classes, cx } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
+  const { stickyViewHeaders } = session
 
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
@@ -85,7 +85,11 @@ const ViewHeader = observer(function ({
     }
   }, [])
   return (
-    <div ref={scrollRef} className={cx(classes.viewHeader, className)}>
+    <div
+      ref={scrollRef}
+      className={cx(classes.viewHeader, className)}
+      style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
+    >
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
       <div className={classes.grow} />
       <div className={classes.viewTitle}>

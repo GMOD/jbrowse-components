@@ -23,7 +23,6 @@ const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 const useStyles = makeStyles()(theme => ({
   header: {
     background: theme.palette.background.paper,
-    position: 'sticky',
     top: VIEW_HEADER_HEIGHT,
     zIndex: 850,
   },
@@ -80,11 +79,14 @@ const LinearGenomeViewContainer = observer(function ({
     }
   }, [session, model])
 
-  let pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
-  if (!model.hideHeader) {
-    pinnedTracksTop += HEADER_BAR_HEIGHT
-    if (!model.hideHeaderOverview) {
-      pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+  let pinnedTracksTop = 0
+  if (session.stickyViewHeaders) {
+    pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
+    if (!model.hideHeader) {
+      pinnedTracksTop += HEADER_BAR_HEIGHT
+      if (!model.hideHeaderOverview) {
+        pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+      }
     }
   }
 
@@ -107,7 +109,10 @@ const LinearGenomeViewContainer = observer(function ({
         session.setHovered({ hoverPosition, hoverFeature })
       }}
     >
-      <div className={classes.header}>
+      <div
+        className={classes.header}
+        style={{ position: session.stickyViewHeaders ? 'sticky' : undefined }}
+      >
         <HeaderComponent model={model} />
         <MiniControlsComponent model={model} />
       </div>

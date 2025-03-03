@@ -22,7 +22,6 @@ const useStyles = makeStyles()(theme => {
     },
     rubberbandText: {
       color: tertiary.contrastText,
-      position: 'sticky',
     },
     popover: {
       mouseEvents: 'none',
@@ -80,6 +79,7 @@ export default function RubberbandSpan({
   left,
   width,
   top = 0,
+  sticky = false,
 }: {
   leftBpOffset: Offset
   rightBpOffset: Offset
@@ -87,6 +87,7 @@ export default function RubberbandSpan({
   left: number
   width: number
   top?: number
+  sticky?: boolean
 }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLSpanElement | null>(null)
@@ -114,7 +115,10 @@ export default function RubberbandSpan({
             }}
             variant="h6"
             className={classes.rubberbandText}
-            style={{ top }}
+            style={{
+              top,
+              position: sticky ? 'sticky' : undefined,
+            }}
           >
             {toLocale(numOfBpSelected)} bp
           </Typography>
