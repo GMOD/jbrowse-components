@@ -2186,10 +2186,10 @@
     generic-filehandle2 "^1.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/trix@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-3.0.1.tgz#541284dff3c085c5d8ba81447a5f4802d48a51aa"
-  integrity sha512-0qz99ynSRiS9wF4UCJiwDN4NJfLn68OrqG3oQPSlu48nw+2lACuK0U8NjycdXRYmg8Qe9xJsfxaEJWmlp1Tl9Q==
+"@gmod/trix@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-3.0.2.tgz#80d84406ede72e89a086c60eb3cb0634d5c57262"
+  integrity sha512-bVAWWT+dWhKmL+Pjl2P7cKeqeLzl3Ip504nFgK5NwDgsDziQjutl1lU4cEgPf+KN1r1HoR1PT5DbDnb5AEPH8A==
 
 "@gmod/twobit@^4.0.1":
   version "4.0.1"
