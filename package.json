@@ -25,7 +25,8 @@
     "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node --experimental-strip-types docs/generateStateModelDocs.ts",
     "autogen": "yarn statedocs && yarn configdocs && yarn prettier --write website",
     "releasenotes": "yarn prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
-    "copynotes": "yarn --silent releasenotes | xclip -selection clipboard"
+    "copynotes": "yarn --silent releasenotes | xclip -selection clipboard",
+    "analyze-genomic-data": "python3 modules/mutation_analysis.py"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
@@ -151,6 +152,13 @@
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.0.0",
     "webpack-manifest-plugin": "^5.0.0"
+  },
+  "dependencies": {
+    "openai": "^3.2.1",
+    "pandas": "^1.3.3",
+    "requests": "^2.26.0",
+    "streamlit": "^0.89.0",
+    "python-dotenv": "^0.19.2"
   },
   "version": "0.0.0"
 }

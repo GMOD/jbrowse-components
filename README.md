@@ -89,3 +89,41 @@ See CONTRIBUTING.md for more info
 
 If you are installing JBrowse on your server, check out our quick start guides
 here https://jbrowse.org/jb2/docs/
+
+## Integration of `mutation_analysis.py` Module
+
+The `mutation_analysis.py` module from the specified GitHub repository has been integrated into this project. This module provides functionalities for genomic data analysis, including fetching data from ClinVar and COSMIC databases, and generating AI-driven insights.
+
+### Usage Instructions
+
+1. **Upload Genomic Data File**: Upload your genomic data file in TXT, CSV, or JSON format.
+2. **Analyze Genomic Data**: The module will analyze the uploaded genomic data and provide results.
+3. **Fetch ClinVar Data**: The module will fetch relevant data from the ClinVar database.
+4. **Fetch COSMIC Data**: The module will fetch relevant data from the COSMIC database.
+5. **AI-Driven Insights**: The module will generate AI-driven insights based on the analysis results.
+
+### Example
+
+```python
+import streamlit as st
+from modules.mutation_analysis import analyze_genomic_data, fetch_clinvar_data, fetch_cosmic_data
+
+st.title("Genomic Data Analysis")
+
+uploaded_file = st.file_uploader("Upload your genomic data file", type=["txt", "csv", "json"])
+
+if uploaded_file is not None:
+    genomic_data = uploaded_file.read()
+    analysis_results = analyze_genomic_data(genomic_data)
+    
+    st.subheader("Analysis Results")
+    st.write(analysis_results)
+    
+    st.subheader("ClinVar Data")
+    clinvar_results = fetch_clinvar_data(analysis_results.get("query"))
+    st.write(clinvar_results)
+    
+    st.subheader("COSMIC Data")
+    cosmic_results = fetch_cosmic_data(analysis_results.get("query"))
+    st.write(cosmic_results)
+```
