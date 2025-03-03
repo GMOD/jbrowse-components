@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
     width: '100%',
     minHeight: 8,
     position: 'sticky',
-    zIndex: 3,
+    zIndex: 825,
   },
 })
 

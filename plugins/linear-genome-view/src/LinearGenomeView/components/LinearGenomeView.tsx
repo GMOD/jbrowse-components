@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.paper,
     position: 'sticky',
     top: VIEW_HEADER_HEIGHT,
-    zIndex: 5,
+    zIndex: 850,
   },
   pinnedTracks: {
     position: 'sticky',
@@ -33,9 +33,6 @@ const useStyles = makeStyles()(theme => ({
   },
   rel: {
     position: 'relative',
-  },
-  top: {
-    zIndex: 1000,
   },
 }))
 

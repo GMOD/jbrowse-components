@@ -12,7 +12,7 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background,
       position: 'absolute',
-      zIndex: 4,
+      zIndex: 830,
       textAlign: 'center',
     },
     rubberbandControl: {

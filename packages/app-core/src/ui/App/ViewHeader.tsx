@@ -27,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
     height: VIEW_HEADER_HEIGHT,
     position: 'sticky',
     top: 0,
-    zIndex: 7,
+    zIndex: 900,
     background: theme.palette.secondary.main,
   },
   viewTitle: {
