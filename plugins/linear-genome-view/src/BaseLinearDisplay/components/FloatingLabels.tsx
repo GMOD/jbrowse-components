@@ -22,15 +22,11 @@ const FloatingLabels = observer(function ({
   return assembly ? (
     <div style={{ position: 'relative' }}>
       {[...model.layoutFeatures.entries()]
-        .filter(f => {
-          console.log(f[1])
-          return !!f[1]?.feature
-        })
+
+        .filter(f => !!f[1]?.[4])
         .map(([key, val]) => {
-          // @ts-expect-error
           const [left, , right, bottom, feature] = val!
-          const { refName, description, label } = feature!
-          console.log({ label, description, feature })
+          const { refName, description, label } = feature
           const r0 = assembly.getCanonicalRefName(refName) || refName
           const r = view.bpToPx({
             refName: r0,
