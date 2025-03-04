@@ -37,7 +37,6 @@ export interface AbstractViewContainer
     typeName: string,
     initialState?: Record<string, unknown>,
   ): AbstractViewModel
-  stickyViewHeaders: boolean
 }
 export function isViewContainer(
   thing: unknown,

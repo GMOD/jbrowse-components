@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -79,8 +80,13 @@ const LinearGenomeViewContainer = observer(function ({
     }
   }, [session, model])
 
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
+
   let pinnedTracksTop = 0
-  if (session.stickyViewHeaders) {
+  if (stickyViewHeaders) {
     pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
     if (!model.hideHeader) {
       pinnedTracksTop += HEADER_BAR_HEIGHT
@@ -111,7 +117,7 @@ const LinearGenomeViewContainer = observer(function ({
     >
       <div
         className={classes.header}
-        style={{ position: session.stickyViewHeaders ? 'sticky' : undefined }}
+        style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
       >
         <HeaderComponent model={model} />
         <MiniControlsComponent model={model} />

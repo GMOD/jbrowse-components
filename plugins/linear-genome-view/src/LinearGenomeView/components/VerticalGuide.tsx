@@ -1,5 +1,6 @@
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession, stringify } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -34,11 +35,20 @@ const VerticalGuide = observer(function VerticalGuide({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  let tooltipTop = VIEW_HEADER_HEIGHT
-  if (!model.hideHeader) {
-    tooltipTop += HEADER_BAR_HEIGHT
-    if (!model.hideHeaderOverview) {
-      tooltipTop += HEADER_OVERVIEW_HEIGHT
+
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
+
+  let tooltipTop = 0
+  if (stickyViewHeaders) {
+    tooltipTop = VIEW_HEADER_HEIGHT
+    if (!model.hideHeader) {
+      tooltipTop += HEADER_BAR_HEIGHT
+      if (!model.hideHeaderOverview) {
+        tooltipTop += HEADER_OVERVIEW_HEIGHT
+      }
     }
   }
   return (
@@ -54,7 +64,7 @@ const VerticalGuide = observer(function VerticalGuide({
           style={{
             left: coordX + 6,
             top: tooltipTop,
-            position: session.stickyViewHeaders ? 'sticky' : undefined,
+            position: stickyViewHeaders ? 'sticky' : undefined,
           }}
         />
       </Tooltip>

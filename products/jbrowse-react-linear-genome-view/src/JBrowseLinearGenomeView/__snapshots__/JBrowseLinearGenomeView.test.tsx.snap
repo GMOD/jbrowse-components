@@ -83,7 +83,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             class="css-1v4ghfe-rel"
           >
             <div
-              class="css-1qdjf66-header"
+              class="css-1atg2qy-header"
             >
               <div>
                 <div
@@ -800,9 +800,9 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </div>
               </div>
               <div
-                class="css-bhrdal-rubberbandControl"
+                class="css-fe416x-rubberbandControl"
                 data-testid="rubberband_controls"
-                style="top: 96px;"
+                style="top: 0px;"
               >
                 <div
                   class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-gcizdo-MuiPaper-root-container"

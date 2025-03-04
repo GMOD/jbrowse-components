@@ -2,6 +2,7 @@ import { useRef } from 'react'
 
 import { Menu, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -52,11 +53,19 @@ const Rubberband = observer(function ({
     mouseOut,
   } = useRangeSelect(ref, model)
 
-  let rubberbandControlTop = VIEW_HEADER_HEIGHT
-  if (!model.hideHeader) {
-    rubberbandControlTop += HEADER_BAR_HEIGHT
-    if (!model.hideHeaderOverview) {
-      rubberbandControlTop += HEADER_OVERVIEW_HEIGHT
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
+
+  let rubberbandControlTop = 0
+  if (stickyViewHeaders) {
+    rubberbandControlTop = VIEW_HEADER_HEIGHT
+    if (!model.hideHeader) {
+      rubberbandControlTop += HEADER_BAR_HEIGHT
+      if (!model.hideHeaderOverview) {
+        rubberbandControlTop += HEADER_OVERVIEW_HEIGHT
+      }
     }
   }
 
@@ -72,7 +81,7 @@ const Rubberband = observer(function ({
           width={width}
           left={left}
           top={rubberbandControlTop}
-          sticky={session.stickyViewHeaders}
+          sticky={stickyViewHeaders}
         />
       ) : null}
       {anchorPosition ? (
@@ -93,7 +102,7 @@ const Rubberband = observer(function ({
         className={classes.rubberbandControl}
         style={{
           top: rubberbandControlTop,
-          position: session.stickyViewHeaders ? 'sticky' : undefined,
+          position: stickyViewHeaders ? 'sticky' : undefined,
         }}
         ref={ref}
         onMouseDown={mouseDown}

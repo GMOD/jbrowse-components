@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
@@ -75,7 +76,10 @@ const ViewHeader = observer(function ({
   const { classes, cx } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
-  const { stickyViewHeaders } = session
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
 
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
