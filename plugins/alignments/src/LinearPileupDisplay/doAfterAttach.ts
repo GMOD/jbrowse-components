@@ -75,7 +75,9 @@ export function doAfterAttach(model: {
           layoutId: getContainingTrack(model).id,
           timeout: 1_000_000,
           statusCallback: (arg: string) => {
-            model.setMessage(arg)
+            if (isAlive(model)) {
+              model.setMessage(arg)
+            }
           },
           ...model.renderPropsPre(),
         })

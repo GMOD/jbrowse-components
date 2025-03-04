@@ -4,7 +4,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import type { ModificationType } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import { isAlive, type IAnyStateTreeNode } from 'mobx-state-tree'
 
 export interface ModificationOpts {
   headers?: Record<string, string>
@@ -33,7 +33,9 @@ export async function getUniqueModifications({
       sessionId,
       regions: blocks.contentBlocks,
       statusCallback: (arg: string) => {
-        model.setMessage(arg)
+        if (isAlive(model)) {
+          model.setMessage(arg)
+        }
       },
       ...opts,
     },
