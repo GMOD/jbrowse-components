@@ -1,2 +1,2 @@
-
 node scripts/pre-commit.js
+yarn lint-staged
