@@ -49,8 +49,8 @@ export function makeImageData({
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
   const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
-  const colorForBase = getColorBaseMap(theme)
-  const contrastForBase = getContrastBaseMap(theme)
+  const colorMap = getColorBaseMap(theme)
+  const colorContrastMap = getContrastBaseMap(theme)
   ctx.font = 'bold 10px Courier New,monospace'
 
   const { charWidth, charHeight } = getCharWidthHeight()
@@ -67,8 +67,8 @@ export function makeImageData({
       feat,
       renderArgs,
       defaultColor,
-      colorForBase,
-      contrastForBase,
+      colorMap,
+      colorContrastMap,
       charWidth,
       charHeight,
       canvasWidth,
@@ -85,8 +85,8 @@ export function makeImageData({
       minSubfeatureWidth,
       charWidth,
       charHeight,
-      colorForBase,
-      contrastForBase,
+      colorMap,
+      colorContrastMap,
       canvasWidth,
     })
     if (showSoftClip) {
@@ -94,7 +94,7 @@ export function makeImageData({
         ctx,
         feat,
         renderArgs,
-        colorForBase,
+        colorMap,
         config,
         theme,
         canvasWidth,
