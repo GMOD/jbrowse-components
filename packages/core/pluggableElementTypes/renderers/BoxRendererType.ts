@@ -153,7 +153,12 @@ export default class BoxRendererType extends FeatureRendererType {
       ...rest,
       layout,
       maxHeightReached: layout.maxHeightReached,
-      features: features.filter(f => !!layout.rectangles[f.uniqueId]),
+      features:
+        // floating layout has no rectangles
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        layout.rectangles !== undefined
+          ? features.filter(f => !!layout.rectangles[f.uniqueId])
+          : features,
     }
   }
 
