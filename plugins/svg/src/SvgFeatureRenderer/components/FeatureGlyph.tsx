@@ -1,7 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-
-import FeatureLabel from './FeatureLabel'
 
 import type { DisplayModel } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -25,23 +22,9 @@ const FeatureGlyph = observer(function (props: {
   reversed?: boolean
   topLevel?: boolean
   region: Region
-  viewParams: {
-    end: number
-    start: number
-    offsetPx: number
-    offsetPx1: number
-  }
   bpPerPx: number
 }) {
-  const {
-    feature,
-    rootLayout,
-    config,
-    name,
-    description,
-    shouldShowName,
-    shouldShowDescription,
-  } = props
+  const { feature, rootLayout } = props
 
   // bad or old code might not be a string id but try to assume it is
 
@@ -51,33 +34,7 @@ const FeatureGlyph = observer(function (props: {
   }
   const { GlyphComponent } = featureLayout.data || {}
 
-  return (
-    <g>
-      <GlyphComponent featureLayout={featureLayout} {...props} />
-      {shouldShowName ? (
-        <FeatureLabel
-          text={name}
-          x={rootLayout.getSubRecord('nameLabel')?.absolute.left || 0}
-          y={rootLayout.getSubRecord('nameLabel')?.absolute.top || 0}
-          color={readConfObject(config, ['labels', 'nameColor'], { feature })}
-          featureWidth={featureLayout.width}
-          {...props}
-        />
-      ) : null}
-      {shouldShowDescription ? (
-        <FeatureLabel
-          text={description}
-          x={rootLayout.getSubRecord('descriptionLabel')?.absolute.left || 0}
-          y={rootLayout.getSubRecord('descriptionLabel')?.absolute.top || 0}
-          color={readConfObject(config, ['labels', 'descriptionColor'], {
-            feature,
-          })}
-          featureWidth={featureLayout.width}
-          {...props}
-        />
-      ) : null}
-    </g>
-  )
+  return <GlyphComponent featureLayout={featureLayout} {...props} />
 })
 
 export default FeatureGlyph

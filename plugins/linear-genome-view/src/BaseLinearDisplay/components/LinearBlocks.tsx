@@ -87,8 +87,6 @@ const RenderedBlocks = observer(function ({
   )
 })
 
-export { RenderedBlocks }
-
 const LinearBlocks = observer(function ({
   model,
 }: {
