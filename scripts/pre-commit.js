@@ -14,6 +14,8 @@ if (changedFiles.some(fileName => fileName.includes('jbrowse-cli'))) {
     stdio: 'inherit',
   })
   if (!changedFiles.includes('products/jbrowse-cli/README.md')) {
-    changedFiles.push('products/jbrowse-cli/README.md')
+    spawn.sync('git', ['add', 'products/jbrowse-cli/README.md'], {
+      stdio: 'inherit',
+    })
   }
 }
