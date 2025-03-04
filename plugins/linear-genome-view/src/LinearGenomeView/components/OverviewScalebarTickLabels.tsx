@@ -1,4 +1,4 @@
-import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -7,7 +7,6 @@ import { makeStyles } from 'tss-react/mui'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts'
 import { chooseGridPitch } from '../util'
 
-import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -25,19 +24,14 @@ const OverviewScalebarTickLabels = observer(function ({
   block,
   scale,
   overview,
-  model,
 }: {
-  model: LinearGenomeViewModel
   scale: number
   block: ContentBlock
   overview: Base1DViewModel
 }) {
   const { classes } = useStyles()
-  const { start, end, reversed, refName, assemblyName } = block
+  const { start, end, reversed } = block
   const { majorPitch } = chooseGridPitch(scale, 120, 15)
-  const { assemblyManager } = getSession(model)
-  const assembly = assemblyManager.get(assemblyName)
-  const refNameColor = assembly?.getRefNameColor(refName)
 
   const tickLabels = []
   for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
@@ -52,7 +46,6 @@ const OverviewScalebarTickLabels = observer(function ({
       style={{
         left: ((labelIdx + 1) * majorPitch) / scale,
         pointerEvents: 'none',
-        color: refNameColor,
       }}
     >
       {getTickDisplayStr(tickLabel, overview.bpPerPx)}

@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-// core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { Typography, alpha, useTheme } from '@mui/material'
@@ -82,25 +81,19 @@ const OverviewBox = observer(function ({
   overview: Base1DViewModel
 }) {
   const { classes, cx } = useStyles()
-  const theme = useTheme()
   const { cytobandOffset, showCytobands } = model
   const { reversed, refName, assemblyName } = block
   const { assemblyManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
-  const refNameColor = assembly?.getRefNameColor(refName)
 
   const canDisplayCytobands =
     showCytobands && getCytobands(assembly, block.refName).length
 
   return (
     <div>
-      {/* name of sequence */}
       <Typography
         style={{
           left: block.offsetPx + 3,
-          color: canDisplayCytobands
-            ? theme.palette.text.primary
-            : refNameColor,
         }}
         className={classes.scalebarRefName}
       >
@@ -119,7 +112,6 @@ const OverviewBox = observer(function ({
         style={{
           left: block.offsetPx + cytobandOffset,
           width: block.widthPx,
-          borderColor: refNameColor,
         }}
       >
         {canDisplayCytobands ? (
@@ -128,7 +120,6 @@ const OverviewBox = observer(function ({
           </svg>
         ) : (
           <OverviewScalebarTickLabels
-            model={model}
             overview={overview}
             scale={scale}
             block={block}

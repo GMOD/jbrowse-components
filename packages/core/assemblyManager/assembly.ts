@@ -5,6 +5,7 @@ import { getConf } from '../configuration'
 import { adapterConfigCacheKey } from '../data_adapters/util'
 import { when } from '../util'
 import QuickLRU from '../util/QuickLRU'
+import { makeContrasting } from '../util/color'
 
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationModel } from '../configuration'
@@ -15,6 +16,7 @@ import type {
 } from '../data_adapters/BaseAdapter'
 import type RpcManager from '../rpc/RpcManager'
 import type { Feature, Region } from '../util'
+import type { Theme } from '@mui/material'
 import type { IAnyType, Instance } from 'mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
@@ -28,7 +30,7 @@ const refNameRegex = new RegExp(
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
 // Some colors darkened to have at least a 3:1 contrast ratio on a white
 // background
-const refNameColors = ['rgb(153, 102, 0)']
+const refNameColors = ['rgb(0,0, 0)']
 
 async function loadRefNameMap(
   assembly: Assembly,
@@ -296,6 +298,22 @@ export default function assemblyFactory(
         return idx === -1
           ? undefined
           : self.refNameColors[idx % self.refNameColors.length]
+      },
+      getRefNameColorContrast(refName: string, theme: Theme) {
+        let refNameColor = this.getRefNameColor(refName)
+        if (refNameColor) {
+          try {
+            refNameColor = makeContrasting(
+              refNameColor,
+              theme.palette.background.paper,
+            )
+          } catch (error) {
+            refNameColor = theme.palette.text.primary
+          }
+        } else {
+          refNameColor = theme.palette.text.primary
+        }
+        return refNameColor
       },
       /**
        * #method
