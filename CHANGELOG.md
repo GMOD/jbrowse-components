@@ -1,3 +1,16 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.0.5
+
+## 3.0.5 (2025-03-04)
+
+#### :bug: Bug Fix
+
+- [#4864](https://github.com/GMOD/jbrowse-components/pull/4864) Bump trix to fix
+  bug fetching some search results ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.24s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.0.4
 
 ## 3.0.4 (2025-03-01)
