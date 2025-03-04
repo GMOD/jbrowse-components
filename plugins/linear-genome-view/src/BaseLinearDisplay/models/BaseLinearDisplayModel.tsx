@@ -45,7 +45,13 @@ export interface Layout {
   name: string
 }
 
-type LayoutRecord = [number, number, number, number]
+type LayoutRecord = [
+  number,
+  number,
+  number,
+  number,
+  { label?: string; description?: string; refName: string } | undefined,
+]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   overrideHeight: number

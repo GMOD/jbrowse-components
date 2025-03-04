@@ -129,6 +129,11 @@ function RenderedFeatureGlyph(props: {
     feature.get('start'),
     feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
     rootLayout.height + yPadding,
+    {
+      label: feature.get('name') || feature.get('id'),
+      description: feature.get('description') || feature.get('note'),
+      refName: feature.get('refName'),
+    },
   )
   if (topPx === null) {
     return null
