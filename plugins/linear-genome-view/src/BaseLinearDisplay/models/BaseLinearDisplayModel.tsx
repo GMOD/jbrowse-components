@@ -45,13 +45,15 @@ export interface Layout {
   name: string
 }
 
-type LayoutRecord = [
-  number,
-  number,
-  number,
-  number,
-  { label?: string; description?: string; refName: string } | undefined,
-]
+type LayoutRecord =
+  | [number, number, number, number]
+  | [
+      number,
+      number,
+      number,
+      number,
+      { label?: string; description?: string; refName: string },
+    ]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   overrideHeight: number
@@ -333,7 +335,10 @@ function stateModelFactory() {
        */
       contextMenuItems(): MenuItem[] {
         const { contextMenuFeature } = self
-        const singleTranscript = contextMenuFeature?.get('subfeatures')?.[0]
+        const singleTranscript =
+          contextMenuFeature?.get('type') === 'mRNA'
+            ? contextMenuFeature
+            : contextMenuFeature?.get('subfeatures')?.[0]
         const exons =
           singleTranscript
             ?.get('subfeatures')

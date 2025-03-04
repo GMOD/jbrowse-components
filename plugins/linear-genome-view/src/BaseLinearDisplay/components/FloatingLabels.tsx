@@ -26,7 +26,7 @@ const FloatingLabels = observer(function ({
         .filter(f => !!f[1]?.[4])
         .map(([key, val]) => {
           const [left, , right, bottom, feature] = val!
-          const { refName, description, label } = feature
+          const { refName = '', description, label } = feature || {}
           const r0 = assembly.getCanonicalRefName(refName) || refName
           const r = view.bpToPx({
             refName: r0,
@@ -50,11 +50,11 @@ const FloatingLabels = observer(function ({
                     ? r2 - offsetPx - measureText(label)
                     : Number.POSITIVE_INFINITY,
                 ),
-                top: bottom - 14,
+                top: bottom - 14 * (+!!label + +!!description),
               }}
             >
               <div>{label}</div>
-              <div>{description}</div>
+              <div style={{ color: 'blue' }}>{description}</div>
             </div>
           ) : null
         })}
