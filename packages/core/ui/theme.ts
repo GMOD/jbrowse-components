@@ -6,13 +6,24 @@ import type { ThemeOptions } from '@mui/material/styles'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,
+  PaletteColorOptions,
 } from '@mui/material/styles/createPalette'
 
+type MaybePaletteColor = PaletteColor | undefined
+type Frames = [
+  null,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+]
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
-    tertiary: Palette['primary']
-    quaternary: Palette['primary']
-    highlight: Palette['primary']
+    tertiary: PaletteColor
+    quaternary: PaletteColor
+    highlight: PaletteColor
     stopCodon: string
     startCodon: string
     insertion: string
@@ -21,34 +32,18 @@ declare module '@mui/material/styles/createPalette' {
     hardclip: string
     deletion: string
     bases: {
-      A: Palette['primary']
-      C: Palette['primary']
-      G: Palette['primary']
-      T: Palette['primary']
+      A: PaletteColor
+      C: PaletteColor
+      G: PaletteColor
+      T: PaletteColor
     }
-    frames: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
-    framesCDS: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
+    frames: Frames
+    framesCDS: Frames
   }
   interface PaletteOptions {
-    tertiary?: PaletteOptions['primary']
-    quaternary?: PaletteOptions['primary']
-    highlight?: PaletteOptions['primary']
+    tertiary?: PaletteColorOptions
+    quaternary?: PaletteColorOptions
+    highlight?: PaletteColorOptions
     stopCodon?: string
     startCodon?: string
     hardclip?: string
@@ -57,41 +52,15 @@ declare module '@mui/material/styles/createPalette' {
     skip?: string
     deletion?: string
     bases?: {
-      A?: PaletteOptions['primary']
-      C?: PaletteOptions['primary']
-      G?: PaletteOptions['primary']
-      T?: PaletteOptions['primary']
+      A?: PaletteColorOptions
+      C?: PaletteColorOptions
+      G?: PaletteColorOptions
+      T?: PaletteColorOptions
     }
-    framesCDS?: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
-    frames?: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
+    framesCDS?: Frames
+    frames?: Frames
   }
 }
-
-type Frames = [
-  null,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-]
 
 const refTheme = createTheme()
 const midnight = '#0D233F'

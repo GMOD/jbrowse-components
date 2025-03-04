@@ -65,7 +65,7 @@ export default tseslint.config(
     },
     rules: eslintPluginReactHooks.configs.recommended.rules,
   },
-  eslintPluginUnicorn.configs['flat/recommended'],
+  eslintPluginUnicorn.configs.recommended,
   {
     // in main config for TSX/JSX source files
     plugins: {
