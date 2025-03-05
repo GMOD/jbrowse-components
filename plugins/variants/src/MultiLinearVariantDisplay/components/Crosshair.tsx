@@ -13,7 +13,7 @@ const useStyles = makeStyles()({
   },
   cursor: {
     pointerEvents: 'none',
-    zIndex: 1000,
+    zIndex: 800,
     position: 'absolute',
   },
   color: {

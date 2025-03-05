@@ -13,7 +13,6 @@ const useStyles = makeStyles()(theme => ({
   background: {
     position: 'absolute',
     right: 0,
-    zIndex: 1001,
     background: theme.palette.background.paper,
   },
   focusedBackground: {

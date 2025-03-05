@@ -17,7 +17,7 @@ const useStyles = makeStyles()({
     margin: 0,
     position: 'absolute',
     right: 50,
-    zIndex: 1000,
+    zIndex: 500,
     top: 50,
   },
   icon: {

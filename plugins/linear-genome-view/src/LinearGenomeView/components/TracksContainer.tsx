@@ -23,7 +23,6 @@ const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
-    overflow: 'hidden',
   },
 })
 
@@ -66,7 +65,7 @@ const TracksContainer = observer(function TracksContainer({
   return (
     <div
       ref={ref}
-      data-testid="trackContainer"
+      data-testid="tracksContainer"
       className={classes.tracksContainer}
       onMouseDown={event => {
         mouseDown1(event)

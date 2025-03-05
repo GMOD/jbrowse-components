@@ -8,12 +8,14 @@ import HeaderTrackSelectorButton from './HeaderTrackSelectorButton'
 import HeaderZoomControls from './HeaderZoomControls'
 import OverviewScalebar from './OverviewScalebar'
 import SearchBox from './SearchBox'
+import { HEADER_BAR_HEIGHT } from '../consts'
 
 import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()({
   headerBar: {
     display: 'flex',
+    height: HEADER_BAR_HEIGHT,
   },
   headerForm: {
     flexWrap: 'nowrap',

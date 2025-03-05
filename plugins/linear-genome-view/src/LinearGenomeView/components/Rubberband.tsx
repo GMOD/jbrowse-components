@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
+import { Menu, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -8,6 +10,7 @@ import RubberbandSpan from './RubberbandSpan'
 import VerticalGuide from './VerticalGuide'
 // hooks
 import { useRangeSelect } from './useRangeSelect'
+import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -18,6 +21,7 @@ const useStyles = makeStyles()({
     cursor: 'crosshair',
     width: '100%',
     minHeight: 8,
+    zIndex: 825,
   },
 })
 
@@ -30,6 +34,7 @@ const Rubberband = observer(function ({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
+  const session = getSession(model)
 
   const {
     guideX,
@@ -48,6 +53,22 @@ const Rubberband = observer(function ({
     mouseOut,
   } = useRangeSelect(ref, model)
 
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
+
+  let rubberbandControlTop = 0
+  if (stickyViewHeaders) {
+    rubberbandControlTop = VIEW_HEADER_HEIGHT
+    if (!model.hideHeader) {
+      rubberbandControlTop += HEADER_BAR_HEIGHT
+      if (!model.hideHeaderOverview) {
+        rubberbandControlTop += HEADER_OVERVIEW_HEIGHT
+      }
+    }
+  }
+
   return (
     <>
       {guideX !== undefined ? (
@@ -59,6 +80,8 @@ const Rubberband = observer(function ({
           numOfBpSelected={numOfBpSelected}
           width={width}
           left={left}
+          top={rubberbandControlTop}
+          sticky={stickyViewHeaders}
         />
       ) : null}
       {anchorPosition ? (
@@ -77,6 +100,10 @@ const Rubberband = observer(function ({
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
+        style={{
+          top: rubberbandControlTop,
+          position: stickyViewHeaders ? 'sticky' : undefined,
+        }}
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}

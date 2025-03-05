@@ -58,6 +58,10 @@ export function createBaseTrackModel(
       /**
        * #property
        */
+      pinned: false,
+      /**
+       * #property
+       */
       displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
@@ -127,6 +131,12 @@ export function createBaseTrackModel(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setPinned(flag: boolean) {
+        self.pinned = flag
+      },
       /**
        * #action
        */
