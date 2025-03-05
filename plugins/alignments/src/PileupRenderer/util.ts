@@ -22,13 +22,17 @@ export function fillRect(
 }
 
 export function getColorBaseMap(theme: Theme) {
-  const { bases } = theme.palette
+  const { skip, deletion, insertion, hardclip, softclip, bases } = theme.palette
   return {
     A: bases.A.main,
     C: bases.C.main,
     G: bases.G.main,
     T: bases.T.main,
-    deletion: '#808080', // gray
+    deletion,
+    insertion,
+    hardclip,
+    softclip,
+    skip,
   }
 }
 

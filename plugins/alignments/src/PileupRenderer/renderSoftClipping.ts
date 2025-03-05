@@ -16,14 +16,14 @@ export function renderSoftClipping({
   renderArgs,
   config,
   theme,
-  colorForBase,
+  colorMap,
   canvasWidth,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: ProcessedRenderArgs
   config: AnyConfigurationModel
-  colorForBase: Record<string, string>
+  colorMap: Record<string, string>
   theme: Theme
   canvasWidth: number
 }) {
@@ -57,7 +57,7 @@ export function renderSoftClipping({
 
         // Black accounts for IUPAC ambiguity code bases such as N that
         // show in soft clipping
-        const baseColor = colorForBase[base] || '#000000'
+        const baseColor = colorMap[base] || '#000000'
         ctx.fillStyle = baseColor
         fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth)
 

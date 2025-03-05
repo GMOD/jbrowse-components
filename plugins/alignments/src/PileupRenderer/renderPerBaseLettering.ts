@@ -10,8 +10,8 @@ export function renderPerBaseLettering({
   feat,
   region,
   bpPerPx,
-  colorForBase,
-  contrastForBase,
+  colorMap,
+  colorContrastMap,
   charWidth,
   charHeight,
   canvasWidth,
@@ -21,8 +21,8 @@ export function renderPerBaseLettering({
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  colorForBase: Record<string, string>
-  contrastForBase: Record<string, string>
+  colorMap: Record<string, string>
+  colorContrastMap: Record<string, string>
   charWidth: number
   charHeight: number
   canvasWidth: number
@@ -51,12 +51,12 @@ export function renderPerBaseLettering({
         const letter = seq[soffset + m]!
         const r = start + roffset + m
         const [leftPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-        const c = colorForBase[letter]
+        const c = colorMap[letter]
         fillRect(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
 
         if (w >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
-          ctx.fillStyle = contrastForBase[letter]!
+          ctx.fillStyle = colorContrastMap[letter]!
           ctx.fillText(
             letter,
             leftPx + (w - charWidth) / 2 + 1,

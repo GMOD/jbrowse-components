@@ -16,8 +16,8 @@ export function renderMismatches({
   mismatchAlpha,
   charWidth,
   charHeight,
-  colorForBase,
-  contrastForBase,
+  colorMap,
+  colorContrastMap,
   hideSmallIndels,
   canvasWidth,
   drawSNPsMuted,
@@ -26,8 +26,8 @@ export function renderMismatches({
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: ProcessedRenderArgs
-  colorForBase: Record<string, string>
-  contrastForBase: Record<string, string>
+  colorMap: Record<string, string>
+  colorContrastMap: Record<string, string>
   mismatchAlpha?: boolean
   drawIndels?: boolean
   drawSNPsMuted?: boolean
@@ -65,7 +65,7 @@ export function renderMismatches({
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
     if (mismatch.type === 'mismatch') {
       if (!drawSNPsMuted) {
-        const baseColor = colorForBase[mismatch.base] || '#888'
+        const baseColor = colorMap[mismatch.base] || '#888'
         const c =
           mismatchAlpha && mismatch.qual !== undefined
             ? colord(baseColor)
@@ -88,7 +88,7 @@ export function renderMismatches({
         // normal SNP coloring
         const contrastColor = drawSNPsMuted
           ? 'black'
-          : contrastForBase[mismatch.base] || 'black'
+          : colorContrastMap[mismatch.base] || 'black'
         ctx.fillStyle =
           mismatchAlpha && mismatch.qual !== undefined
             ? colord(contrastColor)
@@ -111,12 +111,12 @@ export function renderMismatches({
           Math.abs(leftPx - rightPx),
           heightPx,
           canvasWidth,
-          colorForBase.deletion,
+          colorMap.deletion,
         )
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && heightPx >= heightLim) {
-          ctx.fillStyle = contrastForBase.deletion!
+          ctx.fillStyle = colorContrastMap.deletion!
           ctx.fillText(
             txt,
             (leftPx + rightPx) / 2 - rwidth / 2,
@@ -130,7 +130,15 @@ export function renderMismatches({
       const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))
       if (len < 10) {
         if (!hideSmallIndels) {
-          fillRect(ctx, pos, topPx, insW, heightPx, canvasWidth, 'purple')
+          fillRect(
+            ctx,
+            pos,
+            topPx,
+            insW,
+            heightPx,
+            canvasWidth,
+            colorMap.insertion,
+          )
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             const l = Math.round(pos - insW)
             fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
@@ -141,7 +149,7 @@ export function renderMismatches({
       }
     } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
       const pos = leftPx + extraHorizontallyFlippedOffset
-      const c = mismatch.type === 'hardclip' ? 'red' : 'blue'
+      const c = colorMap[mismatch.type]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRect(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
       if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
@@ -162,7 +170,7 @@ export function renderMismatches({
         const t = topPx + heightPx / 2 - 1
         const w = adjustPx + Math.min(leftPx, 0)
         const h = 1
-        fillRect(ctx, l, t, w, h, canvasWidth, 'rgb(151,184,201)')
+        fillRect(ctx, l, t, w, h, canvasWidth, colorMap.skip)
       }
     }
   }
@@ -177,7 +185,15 @@ export function renderMismatches({
         const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
         const txt = `${len}`
         if (bpPerPx > largeInsertionIndicatorScale) {
-          fillRect(ctx, leftPx - 1, topPx, 2, heightPx, canvasWidth, 'purple')
+          fillRect(
+            ctx,
+            leftPx - 1,
+            topPx,
+            2,
+            heightPx,
+            canvasWidth,
+            colorMap.insertion,
+          )
         } else if (heightPx > charHeight) {
           const rwidth = measureText(txt)
           const padding = 5
@@ -190,7 +206,7 @@ export function renderMismatches({
             canvasWidth,
             'purple',
           )
-          ctx.fillStyle = 'white'
+          ctx.fillStyle = colorContrastMap.insertion!
           ctx.fillText(txt, leftPx - rwidth / 2, topPx + heightPx)
         } else {
           const padding = 2
@@ -201,7 +217,7 @@ export function renderMismatches({
             2 * padding,
             heightPx,
             canvasWidth,
-            'purple',
+            colorMap.insertion,
           )
         }
       }

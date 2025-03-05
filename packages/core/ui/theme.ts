@@ -6,82 +6,61 @@ import type { ThemeOptions } from '@mui/material/styles'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,
+  PaletteColorOptions,
 } from '@mui/material/styles/createPalette'
 
-declare module '@mui/material/styles/createPalette' {
-  interface Palette {
-    tertiary: Palette['primary']
-    quaternary: Palette['primary']
-    highlight: Palette['primary']
-    stopCodon?: string
-    startCodon?: string
-    bases: {
-      A: Palette['primary']
-      C: Palette['primary']
-      G: Palette['primary']
-      T: Palette['primary']
-    }
-    frames: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
-    framesCDS: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
-  }
-  interface PaletteOptions {
-    tertiary?: PaletteOptions['primary']
-    quaternary?: PaletteOptions['primary']
-    highlight?: PaletteOptions['primary']
-    stopCodon?: string
-    startCodon?: string
-    bases?: {
-      A?: PaletteOptions['primary']
-      C?: PaletteOptions['primary']
-      G?: PaletteOptions['primary']
-      T?: PaletteOptions['primary']
-    }
-    framesCDS?: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
-    frames?: [
-      null,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-      Palette['primary'] | undefined,
-    ]
-  }
-}
-
+type MaybePaletteColor = PaletteColor | undefined
 type Frames = [
   null,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
-  PaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
+  MaybePaletteColor,
 ]
+declare module '@mui/material/styles/createPalette' {
+  interface Palette {
+    tertiary: PaletteColor
+    quaternary: PaletteColor
+    highlight: PaletteColor
+    stopCodon: string
+    startCodon: string
+    insertion: string
+    softclip: string
+    skip: string
+    hardclip: string
+    deletion: string
+    bases: {
+      A: PaletteColor
+      C: PaletteColor
+      G: PaletteColor
+      T: PaletteColor
+    }
+    frames: Frames
+    framesCDS: Frames
+  }
+  interface PaletteOptions {
+    tertiary?: PaletteColorOptions
+    quaternary?: PaletteColorOptions
+    highlight?: PaletteColorOptions
+    stopCodon?: string
+    startCodon?: string
+    hardclip?: string
+    softclip?: string
+    insertion?: string
+    skip?: string
+    deletion?: string
+    bases?: {
+      A?: PaletteColorOptions
+      C?: PaletteColorOptions
+      G?: PaletteColorOptions
+      T?: PaletteColorOptions
+    }
+    framesCDS?: Frames
+    frames?: Frames
+  }
+}
 
 const refTheme = createTheme()
 const midnight = '#0D233F'
@@ -115,21 +94,35 @@ const frames = [
 ] as Frames
 const stopCodon = '#e22'
 const startCodon = '#3e3'
+const insertion = '#800080'
+const deletion = '#808080'
+const hardclip = '#f00'
+const softclip = '#00f'
+const skip = '#97b8c9'
+
+const defaults = {
+  quaternary: mandarin,
+  highlight: mandarin,
+  stopCodon,
+  startCodon,
+  insertion,
+  deletion,
+  softclip,
+  hardclip,
+  bases,
+  frames,
+  framesCDS,
+  skip,
+}
 
 function stockTheme() {
   return {
     palette: {
+      ...defaults,
       mode: undefined,
       primary: { main: midnight },
       secondary: { main: grape },
       tertiary: forest,
-      quaternary: mandarin,
-      highlight: mandarin,
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
     },
     components: {
       MuiLink: {
@@ -163,17 +156,8 @@ function getDarkStockTheme() {
   return {
     name: 'Dark (stock)',
     palette: {
+      ...defaults,
       mode: 'dark',
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: forest,
-      quaternary: mandarin,
-      highlight: mandarin,
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
     },
     components: {
       MuiAppBar: {
@@ -181,9 +165,7 @@ function getDarkStockTheme() {
           enableColorOnDark: true,
         },
         styleOverrides: {
-          root: ({ theme }) => {
-            return theme.palette.primary.main
-          },
+          root: ({ theme }) => theme.palette.primary.main,
         },
       },
     },
@@ -194,17 +176,11 @@ function getDarkMinimalTheme() {
   return {
     name: 'Dark (minimal)',
     palette: {
+      ...defaults,
       mode: 'dark' as const,
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: mandarin,
-      highlight: mandarin,
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
     },
   } satisfies ThemeOptions & { name: string }
 }
@@ -213,16 +189,10 @@ function getMinimalTheme() {
   return {
     name: 'Light (minimal)',
     palette: {
+      ...defaults,
       primary: { main: grey[900] },
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: mandarin,
-      highlight: mandarin,
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
     },
   } satisfies ThemeOptions & { name: string }
 }
@@ -508,12 +478,20 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
 
 // adds missing colors to users theme
 function addMissingColors(theme: ThemeOptions = {}) {
+  const { palette } = theme
   return augmentThemeColors(
     deepmerge(theme, {
       palette: {
-        quaternary: theme.palette?.quaternary || lightgrey,
-        tertiary: theme.palette?.tertiary || lightgrey,
-        highlight: theme.palette?.highlight || mandarin,
+        quaternary: palette?.quaternary || lightgrey,
+        tertiary: palette?.tertiary || lightgrey,
+        highlight: palette?.highlight || mandarin,
+        insertion: palette?.insertion || insertion,
+        softclip: palette?.softclip || softclip,
+        skip: palette?.skip || skip,
+        hardclip: palette?.hardclip || hardclip,
+        deletion: palette?.deletion || deletion,
+        startCodon: palette?.startCodon || startCodon,
+        stopCodon: palette?.stopCodon || stopCodon,
       },
     }),
   )
