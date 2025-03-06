@@ -371,7 +371,6 @@ const SessionLoader = types
       const sessionStr = sessionStorage.getItem('current')
       const query = self.sessionQuery!.replace('local-', '')
 
-      // check if
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
@@ -379,6 +378,7 @@ const SessionLoader = types
         }
       }
 
+      console.log(self.bc1)
       if (self.bc1) {
         self.bc1.postMessage(query)
         try {
