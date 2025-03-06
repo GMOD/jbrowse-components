@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import FloatingLabels from './FloatingLabels'
 import LinearBlocks from './LinearBlocks'
 
 import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
@@ -27,7 +28,6 @@ const BaseLinearDisplay = observer(function (props: {
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
   const ref = useRef<HTMLDivElement>(null)
   const [clientRect, setClientRect] = useState<DOMRect>()
   const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
@@ -35,7 +35,6 @@ const BaseLinearDisplay = observer(function (props: {
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
   const { TooltipComponent, DisplayMessageComponent, height } = model
-  const items = model.contextMenuItems()
   return (
     <div
       ref={ref}
@@ -67,6 +66,7 @@ const BaseLinearDisplay = observer(function (props: {
         <LinearBlocks {...props} />
       )}
       {children}
+      <FloatingLabels model={model} />
 
       <Suspense fallback={null}>
         <TooltipComponent
@@ -78,39 +78,61 @@ const BaseLinearDisplay = observer(function (props: {
           mouseCoord={offsetMouseCoord}
         />
       </Suspense>
-
-      <Menu
-        open={Boolean(contextCoord) && items.length > 0}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setContextCoord(undefined)
-        }}
-        onClose={() => {
-          setContextCoord(undefined)
-          model.setContextMenuFeature(undefined)
-        }}
-        slotProps={{
-          transition: {
-            onExit: () => {
-              setContextCoord(undefined)
-              model.setContextMenuFeature(undefined)
-            },
-          },
-        }}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          contextCoord
-            ? { top: contextCoord[1], left: contextCoord[0] }
-            : undefined
-        }
-        style={{
-          zIndex: theme.zIndex.tooltip,
-        }}
-        menuItems={items}
-      />
+      {contextCoord ? (
+        <MenuPage
+          contextCoord={contextCoord}
+          model={model}
+          onClose={() => {
+            setContextCoord(undefined)
+          }}
+        />
+      ) : null}
     </div>
   )
 })
+
+function MenuPage({
+  onClose,
+  contextCoord,
+  model,
+}: {
+  model: BaseLinearDisplayModel
+  contextCoord: Coord
+  onClose: () => void
+}) {
+  const items = model.contextMenuItems()
+  const theme = useTheme()
+  return (
+    <Menu
+      open={items.length > 0}
+      onMenuItemClick={(_, callback) => {
+        callback()
+        onClose()
+      }}
+      onClose={() => {
+        onClose()
+        model.setContextMenuFeature(undefined)
+      }}
+      slotProps={{
+        transition: {
+          onExit: () => {
+            onClose()
+            model.setContextMenuFeature(undefined)
+          },
+        },
+      }}
+      anchorReference="anchorPosition"
+      anchorPosition={{
+        top: contextCoord[1],
+        left: contextCoord[0],
+      }}
+      style={{
+        zIndex: theme.zIndex.tooltip,
+      }}
+      menuItems={items}
+    />
+  )
+}
 
 export default BaseLinearDisplay
 
