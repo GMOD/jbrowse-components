@@ -78,6 +78,15 @@ string
 activeNormalization: 'KR'
 ```
 
+#### property: mode
+
+```js
+// type signature
+string
+// code
+mode: 'triangular'
+```
+
 ### LinearHicDisplay - Getters
 
 #### getter: blockType
@@ -94,13 +103,6 @@ string
 string
 ```
 
-#### getter: trackMenuItems
-
-```js
-// type
-() => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
-```
-
 ### LinearHicDisplay - Methods
 
 #### method: renderProps
@@ -108,6 +110,13 @@ string
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearHicDisplay - Actions
@@ -145,4 +154,11 @@ setActiveNormalization: (f: string) => void
 ```js
 // type signature
 setAvailableNormalizations: (f: string[]) => void
+```
+
+#### action: setMode
+
+```js
+// type signature
+setMode: (arg: string) => void
 ```

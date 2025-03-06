@@ -231,6 +231,20 @@ showTrackOutlines: types.optional(types.boolean, () =>
 
 ### LinearGenomeView - Getters
 
+#### getter: pinnedTracks
+
+```js
+// type
+any[]
+```
+
+#### getter: unpinnedTracks
+
+```js
+// type
+any[]
+```
+
 #### getter: trackLabelsSetting
 
 this is the effective value of the track labels setting, incorporating both the

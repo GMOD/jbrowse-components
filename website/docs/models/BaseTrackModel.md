@@ -62,6 +62,15 @@ false
 minimized: false
 ```
 
+#### property: pinned
+
+```js
+// type signature
+false
+// code
+pinned: false
+```
+
 #### property: displays
 
 ```js
@@ -134,6 +143,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```
 
 ### BaseTrackModel - Actions
+
+#### action: setPinned
+
+```js
+// type signature
+setPinned: (flag: boolean) => void
+```
 
 #### action: setMinimized
 
