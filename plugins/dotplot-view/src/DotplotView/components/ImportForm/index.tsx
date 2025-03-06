@@ -6,7 +6,7 @@ import {
   Button,
   Container,
   FormControl,
-  Grid2,
+  Grid,
   Paper,
   Typography,
 } from '@mui/material'
@@ -81,7 +81,7 @@ const DotplotImportForm = observer(function ({
         <Typography style={{ textAlign: 'center' }}>
           Select assemblies for dotplot view
         </Typography>
-        <Grid2
+        <Grid
           container
           spacing={1}
           justifyContent="center"
@@ -127,7 +127,7 @@ const DotplotImportForm = observer(function ({
               Launch
             </Button>
           </FormControl>
-        </Grid2>
+        </Grid>
         <TrackSelector
           assembly2={assembly2}
           assembly1={assembly1}

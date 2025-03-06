@@ -37,7 +37,7 @@
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@mui/material": "^7.0.0-beta.3",
-    "@mui/system": "^6.0.0",
+    "@mui/system": "^7.0.0-beta.3",
     "@mui/x-data-grid": "next",
     "@node-oauth/express-oauth-server": "^4.0.0",
     "@oclif/core": "^4.0.37",
@@ -152,5 +152,9 @@
     "webpack-dev-server": "^5.0.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "resolutions": {
+    "@mui/utils": "7.0.0-beta.3",
+    "@mui/system": "7.0.0-beta.3"
+  }
 }
