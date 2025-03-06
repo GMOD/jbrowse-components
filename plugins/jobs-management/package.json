@@ -38,8 +38,8 @@
   "dependencies": {
     "@jbrowse/core": "^3.0.3",
     "@jbrowse/text-indexing": "^3.0.3",
-    "@mui/icons-material": "^7.0.0-beta.2",
-    "@mui/material": "^7.0.0-beta.2",
+    "@mui/icons-material": "^7.0.0-beta.3",
+    "@mui/material": "^7.0.0-beta.3",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

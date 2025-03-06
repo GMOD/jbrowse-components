@@ -44,8 +44,8 @@
   "dependencies": {
     "@babel/runtime": "^7.16.3",
     "@jbrowse/core": "^3.0.3",
-    "@mui/icons-material": "^7.0.0-beta.2",
-    "@mui/material": "^7.0.0-beta.2",
+    "@mui/icons-material": "^7.0.0-beta.3",
+    "@mui/material": "^7.0.0-beta.3",
     "copy-to-clipboard": "^3.3.1",
     "librpc-web-mod": "^1.0.0",
     "mobx": "^6.0.0",

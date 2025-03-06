@@ -38,8 +38,8 @@
   "dependencies": {
     "@jbrowse/core": "^3.0.3",
     "@jbrowse/plugin-alignments": "^3.0.3",
-    "@mui/icons-material": "^7.0.0-beta.2",
-    "@mui/material": "^7.0.0-beta.2",
+    "@mui/icons-material": "^7.0.0-beta.3",
+    "@mui/material": "^7.0.0-beta.3",
     "@mui/x-data-grid": "next",
     "@types/file-saver": "^2.0.1",
     "file-saver": "^2.0.0",
