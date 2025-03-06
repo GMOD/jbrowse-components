@@ -378,7 +378,6 @@ const SessionLoader = types
         }
       }
 
-      console.log(self.bc1)
       if (self.bc1) {
         self.bc1.postMessage(query)
         try {
