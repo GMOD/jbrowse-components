@@ -100,6 +100,9 @@
           "twoBitLocation": {
             "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.2bit",
             "locationType": "UriLocation"
+          },
+          "chromSizesLocation": {
+            "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chrom.sizes"
           }
         }
       },
@@ -4833,6 +4836,179 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "1KGP_3202.Illumina_ensemble_callset.freeze_V1_MEI_SVA.vcf",
+      "name": "1KGP_3202.Illumina_ensemble_callset.freeze_V1_MEI_SVA.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "1KGP_3202.Illumina_ensemble_callset.freeze_V1_MEI_SVA.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "1KGP_3202.Illumina_ensemble_callset.freeze_V1_MEI_SVA.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variants_T2T-CHM13_indel_insdel_alt_HGSVC2024v1.0.vcf",
+      "name": "variants_T2T-CHM13_indel_insdel_alt_HGSVC2024v1.0.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_indel_insdel_alt_HGSVC2024v1.0.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_indel_insdel_alt_HGSVC2024v1.0.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variants_T2T-CHM13_snv_snv_alt_HGSVC2024v1.0.vcf",
+      "name": "variants_T2T-CHM13_snv_snv_alt_HGSVC2024v1.0.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_snv_snv_alt_HGSVC2024v1.0.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_snv_snv_alt_HGSVC2024v1.0.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variants_T2T-CHM13_sv_insdel_sym_HGSVC2024v1.0.vcf",
+      "name": "variants_T2T-CHM13_sv_insdel_sym_HGSVC2024v1.0.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_sv_insdel_sym_HGSVC2024v1.0.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_sv_insdel_sym_HGSVC2024v1.0.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variants_T2T-CHM13_sv_inv_sym_HGSVC2024v1.0.vcf",
+      "name": "variants_T2T-CHM13_sv_inv_sym_HGSVC2024v1.0.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_sv_inv_sym_HGSVC2024v1.0.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/T2T-CHM13/variants_T2T-CHM13_sv_inv_sym_HGSVC2024v1.0.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "complex_variants_T2T-CHM13_HGSVC2024v1.0.bed",
+      "name": "complex_variants_T2T-CHM13_HGSVC2024v1.0.bed",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/hs1/1000g/complex_variants_T2T-CHM13_HGSVC2024v1.0.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/hs1/1000g/complex_variants_T2T-CHM13_HGSVC2024v1.0.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "vamos.VNTR.q-0.1.CHM13_anotations.vcf",
+      "name": "vamos.VNTR.q-0.1.CHM13_anotations.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/working/20240829_vamos_vntr/vamos.VNTR.q-0.1.CHM13_anotations.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/working/20240829_vamos_vntr/vamos.VNTR.q-0.1.CHM13_anotations.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "shapeit-pangenie_chm13_all.vcf",
+      "name": "shapeit-pangenie_chm13_all.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Genotyping_1kGP/shapeit-phasing/1.0/shapeit-pangenie_chm13_all.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Genotyping_1kGP/shapeit-phasing/1.0/shapeit-pangenie_chm13_all.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "MEI_Callset_T2T-CHM13.ALL.20241211",
+      "name": "MEI_Callset_T2T-CHM13.ALL.20241211",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hs1/1000g/MEI_Callset_T2T-CHM13.ALL.20241211.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hs1"]
     }
   ],
   "connections": [],
