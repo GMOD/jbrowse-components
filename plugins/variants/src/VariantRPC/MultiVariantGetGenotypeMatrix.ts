@@ -56,7 +56,7 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
     }
 
     const rows = {} as Record<string, { name: string; genotypes: string[] }>
-    for (const { feature, alleleCounts } of mafs) {
+    for (const { feature } of mafs) {
       const genotypes = feature.get('genotypes') as Record<string, string>
       for (const { name } of sources) {
         if (!rows[name]) {
