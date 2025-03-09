@@ -5010,6 +5010,76 @@
         }
       },
       "assemblyNames": ["hs1"]
+    },
+    {
+      "type": "VariantTrack",
+      "category": ["1000 Genomes", "HGSVC"],
+      "trackId": "Ortho_MEI_GRCh38.ALL.20241211",
+      "name": "Ortho_MEI_GRCh38.ALL.20241211",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "Ortho_MEI_GRCh38.ALL.20241211.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "category": ["1000 Genomes", "HGSVC"],
+      "trackId": "MEI_Callset_GRCh38.ALL.20241211",
+      "name": "MEI_Callset_GRCh38.ALL.20241211",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "MEI_Callset_GRCh38.ALL.20241211.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38-vcfbub.a100k.wave.norm.vcf",
+      "name": "hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38-vcfbub.a100k.wave.norm.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Graph_Genomes/1.0/2024_02_23_minigraph_cactus_hgsvc3_hprc/hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38-vcfbub.a100k.wave.norm.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Graph_Genomes/1.0/2024_02_23_minigraph_cactus_hgsvc3_hprc/hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38-vcfbub.a100k.wave.norm.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "category": ["1000 Genomes", "HGSVC"],
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38.raw.vcf",
+      "name": "hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38.raw.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Graph_Genomes/1.0/2024_02_23_minigraph_cactus_hgsvc3_hprc/hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38.raw.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Graph_Genomes/1.0/2024_02_23_minigraph_cactus_hgsvc3_hprc/hgsvc3-hprc-2024-02-23-mc-chm13.GRCh38.raw.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "category": ["1000 Genomes", "HGSVC"],
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],
