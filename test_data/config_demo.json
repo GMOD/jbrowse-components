@@ -154,7 +154,7 @@
         "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },
       "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "NCBI RefSeq"],
       "metadata": {
         "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
         "dateaccessed": "12/03/2020"
@@ -179,7 +179,7 @@
         "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },
       "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "NCBI RefSeq"],
       "metadata": {
         "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
         "dateaccessed": "12/03/2020"
@@ -217,7 +217,7 @@
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
       "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "Gencode"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -354,7 +354,7 @@
       "trackId": "clinvar_hg19",
       "name": "ClinVar variants (UCSC)",
       "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "ClinVar"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -368,7 +368,7 @@
       "trackId": "clinvar_ncbi",
       "name": "ClinVar variants (NCBI)",
       "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "ClinVar"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -402,7 +402,7 @@
       "trackId": "clinvar_ncbi_hg38",
       "name": "ClinVar variants (NCBI)",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "ClinVar"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -450,7 +450,7 @@
       "trackId": "gencode_nclist_hg38",
       "name": "Gencode v32",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "Gencode"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -504,7 +504,7 @@
       "trackId": "clinvar_cnv_hg38",
       "name": "ClinVar CNV (UCSC)",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "ClinVar"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -518,7 +518,7 @@
       "trackId": "clinvar_hg38",
       "name": "ClinVar variants (UCSC)",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "ClinVar"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -532,7 +532,7 @@
       "trackId": "mane_hg38",
       "name": "MANE 1.0",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "MANE"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -586,7 +586,7 @@
       "trackId": "ncbi_refseq_109_hg38",
       "name": "NCBI RefSeq analysis set (GFF3Tabix)",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "NCBI RefSeq"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -606,7 +606,7 @@
       "trackId": "ncbi_refseq_109_hg38_latest",
       "name": "NCBI RefSeq (GFF3Tabix)",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "NCBI RefSeq"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -626,7 +626,7 @@
       "trackId": "ncbi_refseq_analysis_set",
       "name": "NCBI RefSeq (NCList)",
       "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "category": ["Annotation", "NCBI RefSeq"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -1968,7 +1968,7 @@
       "trackId": "clinGenGeneDisease",
       "name": "ClinGen Gene-Disease mapping",
       "assemblyNames": ["hg38"],
-      "category": ["ClinGen"],
+      "category": ["Annotation", "ClinGen"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1982,7 +1982,7 @@
       "trackId": "clinGenHaplo",
       "name": "ClinGen haplosensitivity",
       "assemblyNames": ["hg38"],
-      "category": ["ClinGen"],
+      "category": ["Annotation", "ClinGen"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1996,7 +1996,7 @@
       "trackId": "clinGenTriplo",
       "name": "ClinGen triplosensitivity",
       "assemblyNames": ["hg38"],
-      "category": ["ClinGen"],
+      "category": ["Annotation", "ClinGen"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2010,7 +2010,7 @@
       "trackId": "clinGenDiesease_hg19",
       "name": "ClinGen Gene-Disease mapping",
       "assemblyNames": ["hg19"],
-      "category": ["ClinGen"],
+      "category": ["Annotation", "ClinGen"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2024,7 +2024,7 @@
       "trackId": "clinGenHaplo_hg19",
       "name": "ClinGen haplosensitivity",
       "assemblyNames": ["hg19"],
-      "category": ["ClinGen"],
+      "category": ["Annotation", "ClinGen"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2038,7 +2038,7 @@
       "trackId": "clinGenTriplo_hg19",
       "name": "ClinGen triplosensitivity",
       "assemblyNames": ["hg19"],
-      "category": ["ClinGen"],
+      "category": ["Annotation", "ClinGen"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2709,7 +2709,7 @@
       "type": "FeatureTrack",
       "trackId": "gencode.v36lift37.annotation.sort.gff3",
       "name": "Gencode v36 (GRCh37 liftover)",
-      "category": ["Annotation"],
+      "category": ["Annotation", "Gencode"],
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "Gff3TabixAdapter",
@@ -2742,7 +2742,7 @@
       "type": "FeatureTrack",
       "trackId": "gencode.v36.annotation.sort.gff3",
       "name": "Gencode v36",
-      "category": ["Annotation"],
+      "category": ["Annotation", "Gencode"],
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "Gff3TabixAdapter",
@@ -3808,6 +3808,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "hg19ToHg38.over.chain.gz-1645073157673",
       "name": "hg19ToHg38.over.chain.gz",
       "assemblyNames": ["hg38", "hg19"],
@@ -3822,6 +3823,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "hg38ToHs1.over.chain.gz-1645073157673",
       "name": "hg38ToHs1.over.chain.gz",
       "assemblyNames": ["hg38", "hs1"],
@@ -3836,6 +3838,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "grch38-chm13v2.paf",
       "name": "grch38-chm13v2.paf",
       "adapter": {
@@ -4240,7 +4243,7 @@
       "type": "FeatureTrack",
       "trackId": "gencode_47",
       "name": "Gencode v47",
-      "category": ["Annotation"],
+      "category": ["Annotation", "Gencode"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -4261,7 +4264,7 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_08_24",
       "name": "NCBI RefSeq (Aug 2024)",
-      "category": ["Annotation"],
+      "category": ["Annotation", "NCBI RefSeq"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -4282,6 +4285,7 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002_WGS_fiberseq.MAGEL2_2",
       "name": "HG002_WGS_fiberseq.MAGEL2",
+      "category": ["GIAB"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -4823,6 +4827,7 @@
       "type": "VariantTrack",
       "trackId": "NA12878.vcf",
       "name": "NA12878.vcf",
+      "category": ["NA12878"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -5004,6 +5009,7 @@
       "type": "FeatureTrack",
       "trackId": "hs1.ncbiRefSeq",
       "name": "NCBI RefSeq genes",
+      "category": ["Annotation", "NCBI RefSeq"],
       "adapter": {
         "type": "GtfAdapter",
         "gtfLocation": {
@@ -5187,6 +5193,107 @@
       },
       "category": ["1000 Genomes", "Integrated SV Map"],
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "sgdp_memstrs_1.release.sorted.vcf",
+      "name": "sgdp_memstrs_1.release.sorted.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/genotype/nstd128/sgdp_memstrs_1.release.sorted.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/genotype/nstd128/sgdp_memstrs_1.release.sorted.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "category": ["1000 Genomes", "STRs"],
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinvar_non_pathogenic",
+      "category": ["Annotation", "ClinVar"],
+      "name": "ClinVar Non-pathogenic SVs",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/sandbox/dbvarhubtest/hg38/clinvar_non_pathogenic.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinvar_pathogenic",
+      "category": ["Annotation", "ClinVar"],
+      "name": "ClinVar Pathogenic SVs",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/sandbox/dbvarhubtest/hg38/clinvar_pathogenic.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "MANE.GRCh38.v1.4.refseq",
+      "name": "MANE 1.4 (w/ RefSeq IDs)",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Annotation", "MANE"],
+      "assemblyNames": ["hg38"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "MANE.GRCh38.v1.4.refseq-LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:get(feature,'geneSymbol')"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "MANE.GRCh38.v1.4.ensembl",
+      "name": "MANE 1.4 (w/ ensembl IDs)",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.ensembl.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Annotation", "MANE"],
+      "assemblyNames": ["hg38"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "MANE.GRCh38.v1.4.ensembl-LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:get(feature,'geneSymbol')"
+            }
+          }
+        }
+      ]
     }
   ],
   "connections": [],
