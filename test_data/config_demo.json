@@ -5019,7 +5019,7 @@
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "uri": "Ortho_MEI_GRCh38.ALL.20241211.vcf",
+          "uri": "https://jbrowse.org/genomes/GRCh38/Ortho_MEI_GRCh38.ALL.20241211.vcf.gz",
           "locationType": "UriLocation"
         }
       },
@@ -5033,7 +5033,7 @@
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "uri": "MEI_Callset_GRCh38.ALL.20241211.vcf",
+          "uri": "https://jbrowse.org/genomes/GRCh38/MEI_Callset_GRCh38.ALL.20241211.vcf.gz",
           "locationType": "UriLocation"
         }
       },
