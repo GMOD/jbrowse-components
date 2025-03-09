@@ -36,10 +36,11 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
     } = deserializedArgs
     const adapter = await getAdapter(pm, sessionId, adapterConfig)
     const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
-    const region = regions[0]
 
     const feats = await firstValueFrom(
-      dataAdapter.getFeatures(region, deserializedArgs).pipe(toArray()),
+      dataAdapter
+        .getFeaturesInMultipleRegions(regions, deserializedArgs)
+        .pipe(toArray()),
     )
 
     const genotypeFactor = new Set<string>()
@@ -48,20 +49,15 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
       minorAlleleFrequencyFilter,
     )
 
-    for (const feat of feats) {
-      const samp = feat.get('genotypes') as Record<string, string>
-      for (const { name } of sources) {
-        const s = samp[name]!
-        genotypeFactor.add(s)
+    for (const { alleleCounts } of mafs) {
+      for (const alt of alleleCounts.keys()) {
+        genotypeFactor.add(alt)
       }
     }
 
-    const genotypeFactorMap = Object.fromEntries(
-      [...genotypeFactor].map((type, idx) => [type, idx]),
-    )
-    const rows = {} as Record<string, { name: string; genotypes: number[] }>
+    const rows = {} as Record<string, { name: string; genotypes: string[] }>
     for (const { feature } of mafs) {
-      const samp = feature.get('genotypes') as Record<string, string>
+      const genotypes = feature.get('genotypes') as Record<string, string>
       for (const { name } of sources) {
         if (!rows[name]) {
           rows[name] = {
@@ -69,7 +65,34 @@ export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRe
             genotypes: [],
           }
         }
-        rows[name].genotypes.push(genotypeFactorMap[samp[name]!]!)
+        const val = genotypes[name]!
+        const alleles = val.split(/[/|]/)
+
+        // Calculate '012' status of the allele for a VCF genotype matrix
+        // Similar to vcftools --012 https://vcftools.github.io/man_latest.html
+        // Note: could also consider https://www.rdocumentation.org/packages/fastcluster/versions/1.2.6/topics/hclust.vector for clustering true multi-dimensional allele count vectors
+        let genotypeStatus = '0'
+        let nonRefCount = 0
+        let uncalledCount = 0
+        for (const l of alleles) {
+          if (l === '.') {
+            uncalledCount++
+          } else if (l !== '0') {
+            nonRefCount++
+          }
+        }
+
+        if (uncalledCount === alleles.length) {
+          genotypeStatus = '-1' // All no-call
+        } else if (nonRefCount === 0) {
+          genotypeStatus = '0' // Homozygous reference
+        } else if (nonRefCount === alleles.length) {
+          genotypeStatus = '2' // Homozygous alternate
+        } else {
+          genotypeStatus = '1' // Heterozygous
+        }
+
+        rows[name].genotypes.push(genotypeStatus)
       }
     }
 

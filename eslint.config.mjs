@@ -78,7 +78,7 @@ export default tseslint.config(
       'no-restricted-globals': ['error', 'Buffer'],
       'no-empty': 'off',
       'no-console': [
-        'warn',
+        'error',
         {
           allow: ['error', 'warn'],
         },
@@ -96,7 +96,7 @@ export default tseslint.config(
 
       'prefer-template': 'error',
       'one-var': ['error', 'never'],
-      'react-refresh/only-export-components': 'warn',
+      'react-refresh/only-export-components': 'error',
       'react/no-unescaped-entities': 'off',
       'react/no-is-mounted': 'off',
       'react/react-in-jsx-scope': 'off',
@@ -203,7 +203,7 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           argsIgnorePattern: '^_',
           ignoreRestSiblings: true,

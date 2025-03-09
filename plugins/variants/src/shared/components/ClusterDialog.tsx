@@ -9,8 +9,10 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
+  FormControlLabel,
   TextField,
   Typography,
 } from '@mui/material'
@@ -50,6 +52,7 @@ export default function ClusterDialog({
   const [results, setResults] = useState<string>()
   const [error, setError] = useState<unknown>()
   const [paste, setPaste] = useState('')
+  const [useCompleteMethod, setUseCompleteMethod] = useState(false)
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -77,11 +80,12 @@ export default function ClusterDialog({
 
         const entries = Object.values(ret)
         const keys = Object.keys(ret)
+        const clusterMethod = useCompleteMethod ? 'complete' : 'single'
         const text = `try(library(fastcluster), silent=TRUE)
 inputMatrix<-matrix(c(${entries.map(val => val.genotypes.join(',')).join(',\n')}
 ),nrow=${entries.length},byrow=TRUE)
 rownames(inputMatrix)<-c(${keys.map(key => `'${key}'`).join(',')})
-resultClusters<-hclust(dist(inputMatrix), method='single')
+resultClusters<-hclust(dist(inputMatrix), method='${clusterMethod}')
 cat(resultClusters$order,sep='\\n')`
         setResults(text)
       } catch (e) {
@@ -91,7 +95,7 @@ cat(resultClusters$order,sep='\\n')`
         }
       }
     })()
-  }, [model])
+  }, [model, useCompleteMethod])
 
   return (
     <Dialog open title="Cluster by genotype" onClose={handleClose}>
@@ -131,6 +135,17 @@ cat(resultClusters$order,sep='\\n')`
                 >
                   Copy Rscript to clipboard
                 </Button>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={useCompleteMethod}
+                      onChange={e => {
+                        setUseCompleteMethod(e.target.checked)
+                      }}
+                    />
+                  }
+                  label="Use 'complete' linkage method instead of 'single'"
+                />
                 <div>
                   <TextField
                     multiline

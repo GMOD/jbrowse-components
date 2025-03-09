@@ -27,18 +27,8 @@ export function calculateAlleleCounts(feat: Feature) {
       alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
     }
   }
-  let mostFrequentAlt
-  let max = 0
-  for (const [alt, altCount] of alleleCounts.entries()) {
-    if (alt !== '.' && alt !== '0') {
-      if (altCount > max) {
-        mostFrequentAlt = alt
-        max = altCount
-      }
-    }
-  }
 
-  return { alleleCounts, mostFrequentAlt }
+  return alleleCounts
 }
 
 export function calculateMinorAlleleFrequency(
@@ -50,24 +40,42 @@ export function calculateMinorAlleleFrequency(
   )
 }
 
+function getMostFrequentAlt(alleleCounts: Map<string, number>) {
+  let mostFrequentAlt
+  let max = 0
+  for (const [alt, altCount] of alleleCounts.entries()) {
+    if (alt !== '.' && alt !== '0') {
+      if (altCount > max) {
+        mostFrequentAlt = alt
+        max = altCount
+      }
+    }
+  }
+  return mostFrequentAlt
+}
+
 export function getFeaturesThatPassMinorAlleleFrequencyFilter(
   feats: Iterable<Feature>,
   minorAlleleFrequencyFilter: number,
+  lengthCutoffFilter = 10,
 ) {
   const results = [] as {
     feature: Feature
     mostFrequentAlt: string
+    alleleCounts: Map<string, number>
   }[]
   for (const feature of feats) {
-    if (feature.get('end') - feature.get('start') <= 10) {
-      const { mostFrequentAlt, alleleCounts } = calculateAlleleCounts(feature)
+    if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
+      const alleleCounts = calculateAlleleCounts(feature)
       if (
         calculateMinorAlleleFrequency(alleleCounts) >=
         minorAlleleFrequencyFilter
       ) {
+        const mostFrequentAlt = getMostFrequentAlt(alleleCounts)!
         results.push({
           feature,
           mostFrequentAlt,
+          alleleCounts,
         })
       }
     }
