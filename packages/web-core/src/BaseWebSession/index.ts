@@ -21,13 +21,7 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
+import { addDisposer, cast, getParent, types } from 'mobx-state-tree'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections'
 
@@ -120,6 +114,12 @@ export function BaseWebSession({
       task: undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
       /**
        * #getter
        */
@@ -368,6 +368,7 @@ export function BaseWebSession({
                 {
                   config,
                   handleClose,
+                  session: self,
                 },
               ])
             },
@@ -396,13 +397,13 @@ export function BaseWebSession({
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              const snap = structuredClone(getSnapshot(config)) as {
+              const snap = structuredClone(config) as {
                 [key: string]: unknown
-                displays: Display[]
+                displays?: Display[]
               }
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach(display => {
+              snap.displays?.forEach(display => {
                 display.displayId += `-${now}`
               })
               // the -sessionTrack suffix to trackId is used as metadata for
