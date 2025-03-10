@@ -19,26 +19,32 @@ const BedGraphTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    index: ConfigurationSchema('VcfIndex', {
-      /**
-       * #slot index.indexType
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-      /**
-       * #slot index.location
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
-          locationType: 'UriLocation',
+    index: ConfigurationSchema(
+      'VcfIndex',
+      {
+        /**
+         * #slot index.indexType
+         */
+        indexType: {
+          model: types.enumeration('IndexType', ['TBI', 'CSI']),
+          type: 'stringEnum',
+          defaultValue: 'TBI',
+        },
+        /**
+         * #slot index.location
+         */
+        location: {
+          type: 'fileLocation',
+          defaultValue: {
+            uri: '/path/to/my.vcf.gz.tbi',
+            locationType: 'UriLocation',
+          },
         },
       },
-    }),
+      {
+        defaultValue: {},
+      },
+    ),
     /**
      * #slot
      */
@@ -48,6 +54,22 @@ const BedGraphTabixAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    defaultValue: { index: {} },
+    preProcessSnapshot: snap => {
+      if (!snap.index && snap.bedGraphGzLocation?.uri) {
+        return {
+          ...snap,
+          index: {
+            location: {
+              uri: `${snap.bedGraphGzLocation.uri}.tbi`,
+            },
+          },
+        }
+      }
+      return snap
+    },
+  },
 )
 export default BedGraphTabixAdapter
