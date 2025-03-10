@@ -52,6 +52,24 @@ const configSchema = ConfigurationSchema(
       defaultValue: null,
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            cramLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            craiLocation: {
+              uri: `${snap.uri}.crai`,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 export default configSchema

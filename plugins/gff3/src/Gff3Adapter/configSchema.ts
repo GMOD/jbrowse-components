@@ -14,10 +14,28 @@ const Gff3Adapter = ConfigurationSchema(
      */
     gffLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.gff',
+        locationType: 'UriLocation',
+      },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            gffLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default Gff3Adapter

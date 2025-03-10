@@ -93,6 +93,8 @@ function generateConfigDocs(files: string[]) {
       current.slots.push({ ...obj, name, docs, code })
     } else if (obj.type === 'config') {
       current.config = { ...obj, name, docs, id, category }
+    } else if (obj.type === 'preProcessSnapshot') {
+      current.config = { ...obj, name, docs, id, category }
     }
   })
   return contents

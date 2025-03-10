@@ -37,7 +37,21 @@ const BigWigAdapter = ConfigurationSchema(
       description: 'Initial resolution multiplier',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            bigWigLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default BigWigAdapter

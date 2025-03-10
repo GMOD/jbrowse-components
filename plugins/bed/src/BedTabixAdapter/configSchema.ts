@@ -14,7 +14,10 @@ const BedTabixAdapter = ConfigurationSchema(
      */
     bedGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bed.gz',
+        locationType: 'UriLocation',
+      },
     },
 
     index: ConfigurationSchema('TabixIndex', {
@@ -65,7 +68,28 @@ const BedTabixAdapter = ConfigurationSchema(
       defaultValue: '',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bedGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default BedTabixAdapter

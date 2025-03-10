@@ -19,26 +19,32 @@ const BedGraphTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    index: ConfigurationSchema('VcfIndex', {
-      /**
-       * #slot index.indexType
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-      /**
-       * #slot index.location
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
-          locationType: 'UriLocation',
+    index: ConfigurationSchema(
+      'VcfIndex',
+      {
+        /**
+         * #slot index.indexType
+         */
+        indexType: {
+          model: types.enumeration('IndexType', ['TBI', 'CSI']),
+          type: 'stringEnum',
+          defaultValue: 'TBI',
+        },
+        /**
+         * #slot index.location
+         */
+        location: {
+          type: 'fileLocation',
+          defaultValue: {
+            uri: '/path/to/my.vcf.gz.tbi',
+            locationType: 'UriLocation',
+          },
         },
       },
-    }),
+      {
+        defaultValue: {},
+      },
+    ),
     /**
      * #slot
      */
@@ -48,6 +54,27 @@ const BedGraphTabixAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bedGraphGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 export default BedGraphTabixAdapter

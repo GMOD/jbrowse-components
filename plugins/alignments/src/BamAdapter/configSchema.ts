@@ -15,7 +15,10 @@ const configSchema = ConfigurationSchema(
      */
     bamLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bam',
+        locationType: 'UriLocation',
+      },
     },
 
     index: ConfigurationSchema('BamIndex', {
@@ -59,7 +62,28 @@ const configSchema = ConfigurationSchema(
       defaultValue: null,
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bamLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.bai`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default configSchema
