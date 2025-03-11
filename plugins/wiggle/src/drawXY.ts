@@ -15,13 +15,19 @@ import type { Colord } from '@jbrowse/core/util/colord'
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()
   const l = hslColor.l * (1 + amount)
-  return colord({ ...hslColor, l: clamp(l, 0, 100) })
+  return colord({
+    ...hslColor,
+    l: clamp(l, 0, 100),
+  })
 }
 
 function darken(color: Colord, amount: number) {
   const hslColor = color.toHsl()
   const l = hslColor.l * (1 - amount)
-  return colord({ ...hslColor, l: clamp(l, 0, 100) })
+  return colord({
+    ...hslColor,
+    l: clamp(l, 0, 100),
+  })
 }
 
 const fudgeFactor = 0.3

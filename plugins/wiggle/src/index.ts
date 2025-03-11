@@ -21,6 +21,7 @@ import MultiXYPlotRendererF from './MultiXYPlotRenderer'
 import QuantitativeTrackF from './QuantitativeTrack'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import {
+  MultiWiggleGetScoreMatrix,
   MultiWiggleGetSources,
   WiggleGetGlobalQuantitativeStats,
   WiggleGetMultiRegionQuantitativeStats,
@@ -59,6 +60,7 @@ export default class WigglePlugin extends Plugin {
     pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))
     pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
+    pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
   }
 
   exports = {
