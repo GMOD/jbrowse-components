@@ -7,7 +7,14 @@ import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg'
 
-const BlockError = observer(function ({ model }: { model: any }) {
+const BlockErrorMessage = observer(function ({
+  model,
+}: {
+  model: {
+    error?: unknown
+    reload: () => void
+  }
+}) {
   return (
     <BlockMsg
       message={`${model.error}`}
@@ -29,7 +36,10 @@ const BlockError = observer(function ({ model }: { model: any }) {
               onClick={() => {
                 getSession(model).queueDialog(onClose => [
                   ErrorMessageStackTraceDialog,
-                  { onClose, error: model.error as Error },
+                  {
+                    onClose,
+                    error: model.error as Error,
+                  },
                 ])
               }}
             >
@@ -42,4 +52,4 @@ const BlockError = observer(function ({ model }: { model: any }) {
   )
 })
 
-export default BlockError
+export default BlockErrorMessage
