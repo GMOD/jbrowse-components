@@ -1,7 +1,8 @@
 import { Suspense, lazy, useRef } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
+import { Menu, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
+import { getEnv, getSession } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -9,7 +10,11 @@ import Gridlines from './Gridlines'
 import Rubberband from './Rubberband'
 import Scalebar from './Scalebar'
 import VerticalGuide from './VerticalGuide'
-import { SCALE_BAR_HEIGHT } from '../consts'
+import {
+  HEADER_BAR_HEIGHT,
+  HEADER_OVERVIEW_HEIGHT,
+  SCALE_BAR_HEIGHT,
+} from '../consts'
 import { useRangeSelect } from './useRangeSelect'
 import { useSideScroll } from './useSideScroll'
 import { useWheelScroll } from './useWheelScroll'
@@ -62,6 +67,22 @@ const TracksContainer = observer(function TracksContainer({
     undefined,
     { model },
   ) as React.ReactNode
+  const session = getSession(model)
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
+
+  let rubberbandSpanTop = 0
+  if (stickyViewHeaders) {
+    rubberbandSpanTop = VIEW_HEADER_HEIGHT
+    if (!model.hideHeader) {
+      rubberbandSpanTop += HEADER_BAR_HEIGHT
+      if (!model.hideHeaderOverview) {
+        rubberbandSpanTop += HEADER_OVERVIEW_HEIGHT
+      }
+    }
+  }
   return (
     <div
       ref={ref}
@@ -88,6 +109,8 @@ const TracksContainer = observer(function TracksContainer({
             numOfBpSelected={numOfBpSelected}
             width={width}
             left={left}
+            top={rubberbandSpanTop}
+            sticky={stickyViewHeaders}
           />
         </Suspense>
       ) : null}
