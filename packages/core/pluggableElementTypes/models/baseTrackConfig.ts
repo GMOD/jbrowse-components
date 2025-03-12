@@ -1,13 +1,15 @@
-import { types } from 'mobx-state-tree'
-
-import { getSession, notEmpty } from '../../util'
-import { ConfigurationSchema, readConfObject } from '../../configuration'
-import PluginManager from '../../PluginManager'
-import { AssemblyManager, notEmpty } from '../../util'
 import { autorun } from 'mobx'
+import { addDisposer, getRoot, types } from 'mobx-state-tree'
+
+import { ConfigurationSchema, readConfObject } from '../../configuration'
 
 import type PluginManager from '../../PluginManager'
+import type { AssemblyManager } from '../../util'
 import type { Instance } from 'mobx-state-tree'
+
+interface BasicRootModel {
+  assemblyManager: AssemblyManager
+}
 
 /**
  * #config BaseTrack
@@ -199,24 +201,15 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           const length = self.displays.push(conf)
           return self.displays[length - 1]
         },
-        setSequenceAdapters(a: Record<string, unknown>) {
-          self.sequenceAdapters = a
-        },
         afterAttach() {
           addDisposer(
             self,
             autorun(() => {
-              const { assemblyManager } = getRoot<{
-                assemblyManager: AssemblyManager
-              }>(self)
-              const assemblyNames = readConfObject(
-                self,
-                'assemblyNames',
-              )
-
+              const { assemblyManager } = getRoot<BasicRootModel>(self)
+              const assemblyNames = readConfObject(self, 'assemblyNames')
               const c = assemblyManager.get(assemblyNames[0])?.configuration
               if (c) {
-                self.adapter.setSequenceAdapter?.(
+                self.adapter.setSequenceAdapterIfUndefined?.(
                   readConfObject(c.sequence.adapter),
                 )
               }

@@ -755,13 +755,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
