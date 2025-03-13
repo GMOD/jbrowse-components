@@ -1,22 +1,20 @@
-import { cleanup } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { waitFor } from '@testing-library/dom'
 
 import { createView, doBeforeEach, setup } from './util'
 import config from '../../test_data/cfam2/config.json'
 
-afterEach(() => {
-  cleanup()
-})
 setup()
 
-beforeEach(() => {
-  doBeforeEach(url => require.resolve(`../../test_data/cfam2/${url}`))
-})
-
-const delay = { timeout: 30000 }
+const delay = { timeout: 50000 }
 const opts = [{}, delay]
+
 test('ncbi config', async () => {
-  const { findByTestId } = await createView(config)
-  const features = await findByTestId('svgfeatures', ...opts)
+  doBeforeEach(url => require.resolve(`../../test_data/cfam2/${url}`))
+  const { queryAllByTestId, getAllByTestId } = await createView(config)
+
+  await waitFor(() => {
+    expect(queryAllByTestId('svgfeatures').length).toBe(2)
+  }, delay)
+  const features = getAllByTestId('svgfeatures', ...opts)
   expect(features).toMatchSnapshot()
-}, 30000)
+}, 50000)

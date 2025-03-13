@@ -1,11 +1,9 @@
-import { cleanup, fireEvent, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import '@testing-library/jest-dom'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts, setup } from './util'
 import configSnapshot from '../../test_data/volvox/config.json'
-afterEach(() => {
-  cleanup()
-})
+
 setup()
 
 beforeEach(() => {

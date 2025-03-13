@@ -1,11 +1,8 @@
-import { cleanup, fireEvent, waitFor  } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import '@testing-library/jest-dom'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
 
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 beforeEach(() => {
@@ -13,6 +10,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 40000 }
+
 test('opens a vcf.gz file in the sv inspector view', () => {
   return mockConsoleWarn(async () => {
     const { session, findByTestId, getByTestId, findByText } =

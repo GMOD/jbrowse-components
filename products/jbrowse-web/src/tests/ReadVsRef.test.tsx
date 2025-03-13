@@ -1,13 +1,7 @@
-import { cleanup, fireEvent, waitFor  } from '@testing-library/react'
-
-// locals
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 beforeEach(() => {
@@ -17,19 +11,19 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('launch read vs ref panel', async () => {
-  const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
   const { view, findByTestId, findByText, findAllByTestId } = await createView()
   view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
-  const track = await findAllByTestId('pileup-overlay', {}, delay)
+  const track = await findAllByTestId('pileup-overlay-normal', {}, delay)
   fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Linear read vs ref', {}, delay))
-  const elt = await findByText('Submit')
+  const elt = await findByText('Submit', {}, delay)
 
   // https://stackoverflow.com/a/62443937/2129219
   await waitFor(() => {
@@ -48,7 +42,7 @@ test('launch read vs ref dotplot', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
-  const track = await findAllByTestId('pileup-overlay', {}, delay)
+  const track = await findAllByTestId('pileup-overlay-normal', {}, delay)
   fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 20 })

@@ -1,6 +1,5 @@
-import { cleanup, fireEvent  } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import { afterEach, beforeEach, test, vi } from 'vitest'
 
 import {
   createView,
@@ -14,9 +13,6 @@ import {
   setup,
 } from './util'
 
-afterEach(() => {
-  cleanup()
-})
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
 )
@@ -38,7 +34,8 @@ test('reloads alignments track (BAI 404)', async () => {
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
+    // @ts-expect-error
+    fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
@@ -54,7 +51,8 @@ test('reloads alignments track (BAM 404)', async () => {
     fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
+    // @ts-expect-error
+    fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))

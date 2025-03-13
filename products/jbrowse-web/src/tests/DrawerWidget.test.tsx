@@ -1,10 +1,9 @@
-import { cleanup, fireEvent, getByRole } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import '@testing-library/jest-dom'
+
+import { fireEvent, getByRole } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts } from './util'
-afterEach(() => {
-  cleanup()
-})
+
 const delay = { timeout: 15000 }
 
 beforeEach(() => {

@@ -1,14 +1,10 @@
 import path from 'path'
 
-import { cleanup, within } from '@testing-library/react'
-import { afterEach, beforeEach, test } from 'vitest'
+import { within } from '@testing-library/react'
 
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 import config from '../../test_data/methylation_test/config.json'
 
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 beforeEach(() => {

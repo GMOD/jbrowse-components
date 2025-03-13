@@ -1,7 +1,11 @@
+// we use mainthread rpc so we mock the makeWorkerInstance to an empty file
+
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import { Loader } from '../components/Loader'
+
+jest.mock('../makeWorkerInstance', () => () => {})
 
 export function App({ search }: { search: string }) {
   const location = {

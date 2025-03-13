@@ -1,6 +1,5 @@
-import { cleanup, fireEvent  } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import { afterEach, beforeEach, test, vi } from 'vitest'
 
 import {
   createView,
@@ -12,9 +11,6 @@ import {
   setup,
 } from './util'
 
-afterEach(() => {
-  cleanup()
-})
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
 )
@@ -37,7 +33,8 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
+    // @ts-expect-error
+    fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
@@ -53,7 +50,8 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     view.setNewView(0.05, 5000)
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    global.fetch = vi.fn().mockImplementation(res => readBuffer(res))
+    // @ts-expect-error
+    fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 

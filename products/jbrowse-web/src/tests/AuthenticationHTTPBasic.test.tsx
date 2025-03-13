@@ -1,5 +1,4 @@
-import { cleanup, fireEvent } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { fireEvent } from '@testing-library/react'
 
 import {
   createView,
@@ -10,9 +9,7 @@ import {
   setup,
 } from './util'
 import config from '../../test_data/volvox/config_auth.json'
-afterEach(() => {
-  cleanup()
-})
+
 setup()
 
 beforeEach(() => {

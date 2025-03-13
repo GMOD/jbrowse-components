@@ -1,5 +1,4 @@
-import { cleanup, fireEvent } from '@testing-library/react'
-import { afterEach, beforeEach, test } from 'vitest'
+import { fireEvent } from '@testing-library/react'
 
 import {
   createView,
@@ -10,10 +9,6 @@ import {
   setup,
 } from './util'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
-
-afterEach(() => {
-  cleanup()
-})
 
 beforeEach(() => {
   doBeforeEach(url => require.resolve(`../../../../extra_test_data/${url}`))

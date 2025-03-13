@@ -1,14 +1,10 @@
-import { cleanup, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import rangeParser from 'range-parser'
-import { afterEach, test, vi } from 'vitest'
 
+// local
 import { App } from './loaderUtil'
 import { expectCanvasMatch, setup } from './util'
-
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 const getFile = (url: string) =>
@@ -16,9 +12,11 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
+jest.mock('../makeWorkerInstance', () => () => {})
+
 const delay = { timeout: 20000 }
 
-vi.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
   // this is the analytics
   if (/jb2=true/.exec(`${url}`)) {
     return new Response('{}')
@@ -54,7 +52,7 @@ afterEach(() => {
 })
 
 // onAction listener warning
-console.warn = vi.fn()
+console.warn = jest.fn()
 
 test('horizontally flipped inverted alignment', async () => {
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(

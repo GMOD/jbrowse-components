@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { cleanup, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
 
 import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
@@ -9,13 +9,14 @@ import volvoxConfig from '../../test_data/volvox/config.json'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
+
+// mock from https://stackoverflow.com/questions/44686077
+jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
+
 setup()
 
-afterEach(() => {
-  cleanup()
-})
-
 beforeEach(() => {
+  jest.clearAllMocks()
   doBeforeEach()
 })
 

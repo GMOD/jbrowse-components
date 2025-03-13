@@ -1,6 +1,5 @@
-import { cleanup, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, expect, test } from 'vitest'
 
 import {
   createView,
@@ -11,9 +10,6 @@ import {
   setup,
 } from './util'
 
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 beforeEach(() => {
@@ -57,12 +53,12 @@ test('filter by HP tag bam', async () => {
 }, 50000)
 
 // snapshot not working but appears to work in browser
-// xtest('filter by RG tag cram (special case tag))', async () => {
-//   const { container, view } = await createView()
-//   await view.navToLocString('ctgA:1000..2000')
-//   await testFilterTrack('volvox_cram', 'RG', '6', '1002..2002-0')
-//   expect(container).toMatchSnapshot()
-// }, 50000)
+xtest('filter by RG tag cram (special case tag))', async () => {
+  const { container, view } = await createView()
+  await view.navToLocString('ctgA:1000..2000')
+  await testFilterTrack('volvox_cram', 'RG', '6', '1002..2002-0')
+  expect(container).toMatchSnapshot()
+}, 50000)
 
 test('set jexl filters on bam pileup display', async () => {
   const { view } = await createView()

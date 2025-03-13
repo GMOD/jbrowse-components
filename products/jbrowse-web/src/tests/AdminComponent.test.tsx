@@ -1,5 +1,4 @@
 import { render } from '@testing-library/react'
-import { expect, test } from 'vitest'
 
 import { JBrowse, getPluginManager } from './util'
 

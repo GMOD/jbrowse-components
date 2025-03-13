@@ -1,16 +1,6 @@
-import {
-  cleanup,
-  createEvent,
-  fireEvent,
-  screen,
-  waitFor,
-} from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts, setup } from './util'
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 beforeEach(() => {

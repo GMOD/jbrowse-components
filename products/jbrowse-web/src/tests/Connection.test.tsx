@@ -1,14 +1,11 @@
-import { cleanup, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LocalFile } from 'generic-filehandle2'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { createView, doBeforeEach, generateReadBuffer, setup } from './util'
+import { createView, doBeforeEach, generateReadBuffer } from './util'
 import configSnapshot from '../../test_data/volvox/config.json'
-setup()
-afterEach(() => {
-  cleanup()
-})
+
+jest.mock('../makeWorkerInstance', () => () => {})
 
 beforeEach(() => {
   doBeforeEach()
@@ -27,12 +24,16 @@ const opts = [{}, delay]
 const root = 'https://jbrowse.org/volvoxhub/'
 
 test('Open up a UCSC trackhub connection', async () => {
-  global.fetch = vi.fn().mockImplementation(url => {
-    return url.startsWith(root)
-      ? readBuffer2(url.replace(root, ''))
-      : readBuffer(url)
-  })
   const user = userEvent.setup()
+  // @ts-expect-error
+  fetch.mockResponse(async request => {
+    if (request.url.startsWith(root)) {
+      const str = request.url.replace(root, '')
+      // @ts-expect-error
+      return readBuffer2({ url: str, headers: new Map() })
+    }
+    return readBuffer(request)
+  })
 
   const { findByText, findByTestId } = await createView(configSnapshot)
 

@@ -1,6 +1,5 @@
-import { cleanup, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, test } from 'vitest'
 
 import {
   createView,
@@ -10,9 +9,7 @@ import {
   pv,
   setup,
 } from './util'
-afterEach(() => {
-  cleanup()
-})
+
 setup()
 
 beforeEach(() => {
@@ -42,4 +39,4 @@ test('selects a sort, sort by base pair', async () => {
   await screen.findAllByTestId('pileup-overlay-Base pair-normal', ...opts)
   const f2 = within(await screen.findByTestId('Blockset-pileup'))
   expectCanvasMatch(await f2.findByTestId(pv('13161..13230-0'), ...opts))
-}, 30000)
+}, 35000)

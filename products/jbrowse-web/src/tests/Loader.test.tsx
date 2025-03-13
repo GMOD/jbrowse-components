@@ -1,14 +1,12 @@
-import { cleanup, render, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import rangeParser from 'range-parser'
-import { afterEach, test, vi } from 'vitest'
 
+// local
 import { App } from './loaderUtil'
 
-afterEach(() => {
-  cleanup()
-})
+jest.mock('../makeWorkerInstance', () => () => {})
 
 // @ts-ignore
 global.nodeImage = Image
@@ -20,9 +18,11 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
+jest.mock('../makeWorkerInstance', () => () => {})
+
 const delay = { timeout: 20000 }
 
-vi.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
   if (/plugin-store/.exec(`${url}`)) {
     return new Response(
       JSON.stringify({
@@ -84,7 +84,7 @@ afterEach(() => {
 })
 
 test('errors with config in URL that does not exist', async () => {
-  console.error = vi.fn()
+  console.error = jest.fn()
   const { findByText } = render(<App search="?config=doesNotExist.json" />)
   await findByText(/HTTP 404 fetching doesNotExist.json/)
 })
@@ -160,21 +160,21 @@ test('can use a spec url for lgv', async () => {
 }, 40000)
 
 test('can use a spec url for spreadsheet view', async () => {
-  console.warn = vi.fn()
+  console.warn = jest.fn()
   const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SpreadsheetView","uri":"test_data/volvox/volvox.filtered.vcf.gz","assembly":"volvox"}]}' />,
   )
 
-  await findByText('ctgA:8470..8471', {}, delay)
+  await findByText('ctgA:8,471', {}, delay)
 }, 40000)
 
 test('can use a spec url for sv inspector view', async () => {
-  console.warn = vi.fn()
+  console.warn = jest.fn()
   const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}' />,
   )
 
-  await findByText('ctgB:1982..1983', {}, delay)
+  await findByText('ctgB:1,982', {}, delay)
 }, 40000)
 
 test('can use a spec url for dotplot view', async () => {

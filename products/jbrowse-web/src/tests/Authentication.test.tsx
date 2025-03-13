@@ -1,6 +1,5 @@
-import { cleanup, fireEvent, waitFor, within } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 import { RemoteFile } from 'generic-filehandle2'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import {
   createView,
@@ -12,9 +11,6 @@ import {
 } from './util'
 import config from '../../test_data/volvox/config_auth.json'
 
-afterEach(() => {
-  cleanup()
-})
 setup()
 
 beforeEach(() => {
@@ -50,8 +46,10 @@ test('open a bigwig track that needs oauth authentication and has existing token
   await waitFor(() => {
     expect(rootModel.internetAccounts.length).toBe(4)
   })
-  rootModel.internetAccounts[0]!.validateToken = vi.fn().mockReturnValue(token)
-  rootModel.internetAccounts[0]!.openLocation = vi
+  rootModel.internetAccounts[0]!.validateToken = jest
+    .fn()
+    .mockReturnValue(token)
+  rootModel.internetAccounts[0]!.openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
   view.setNewView(5, 0)
