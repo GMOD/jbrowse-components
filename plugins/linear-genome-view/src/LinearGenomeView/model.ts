@@ -3,6 +3,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   assembleLocString,
@@ -24,6 +25,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -327,6 +329,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
+      },
+      get stickyViewHeaders() {
+        const session = getSession(self)
+        return isSessionWithMultipleViews(session)
+          ? session.stickyViewHeaders
+          : false
+      },
+
+      get pinnedTracksTop() {
+        let pinnedTracksTop = 0
+        if (this.stickyViewHeaders) {
+          pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
+          if (!self.hideHeader) {
+            pinnedTracksTop += HEADER_BAR_HEIGHT
+            if (!self.hideHeaderOverview) {
+              pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+            }
+          }
+        }
+        return pinnedTracksTop
       },
     }))
     .views(self => ({
