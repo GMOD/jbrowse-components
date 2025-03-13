@@ -144,6 +144,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       hideWidget(widget: WidgetStateModel) {
         self.activeWidgets.delete(widget.id)
+        self.widgets.delete(widget.id)
       },
 
       /**
