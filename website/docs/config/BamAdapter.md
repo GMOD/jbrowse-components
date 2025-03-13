@@ -27,7 +27,10 @@ used to configure BAM adapter
 ```js
 bamLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bam',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

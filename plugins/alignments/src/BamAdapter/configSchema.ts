@@ -65,6 +65,11 @@ const configSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     * if only uri is passed to snapshot, adds bamLocation and index.location
+     * with tbi index
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri
