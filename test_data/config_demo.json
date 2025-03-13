@@ -5294,6 +5294,19 @@
           }
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "homo_sapiens.grch38.regulatory_build.regulatory_features",
+      "name": "Ensembl Regulatory build",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz"
+        }
+      }
     }
   ],
   "connections": [],
