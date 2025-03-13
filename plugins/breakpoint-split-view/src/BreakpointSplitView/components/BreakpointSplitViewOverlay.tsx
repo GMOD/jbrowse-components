@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
     // pointerEvents:'auto' to retoggle it back on for a single e.g. svg line
     pointerEvents: 'none',
     width: '100%',
-    zIndex: 10,
+    zIndex: 1001, // above the 1000 z-index of the floating view header
   },
 })
 
