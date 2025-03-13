@@ -51,7 +51,6 @@ export interface ConfigurationSchemaOptions<
   explicitIdentifier?: EXPLICIT_IDENTIFIER
   implicitIdentifier?: string | boolean
   baseConfiguration?: BASE_SCHEMA
-  defaultValue?: Record<string, any>
 
   actions?: (self: unknown) => any
   views?: (self: unknown) => any
@@ -198,20 +197,14 @@ function makeConfigurationSchemaModel<
 
   const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const modelDefault = options.explicitlyTyped
-    ? {
-        type: modelName,
-        ...identifierDefault,
-        ...options.defaultValue,
-      }
-    : {
-        ...identifierDefault,
-        ...options.defaultValue,
-      }
+    ? { type: modelName, ...identifierDefault }
+    : identifierDefault
 
   const defaultSnap = getSnapshot(completeModel.create(modelDefault))
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap: SnapshotOut<typeof completeModel> = {}
     let matchesDefault = true
+    // let keyCount = 0
     for (const [key, value] of Object.entries(snap)) {
       if (matchesDefault) {
         if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
