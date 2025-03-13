@@ -3,9 +3,6 @@ import path from 'path'
 
 import { cleanup, fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
-
-
-// locals
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { createView, doBeforeEach, setup } from './util'

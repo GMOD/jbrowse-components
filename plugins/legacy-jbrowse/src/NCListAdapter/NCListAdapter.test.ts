@@ -1,6 +1,6 @@
 import path from 'path'
 
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import { beforeEach, expect, test, vi } from 'vitest'
@@ -8,7 +8,7 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
 
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 function generateReadBuffer(
   getFileFunction: (str: string) => GenericFilehandle,

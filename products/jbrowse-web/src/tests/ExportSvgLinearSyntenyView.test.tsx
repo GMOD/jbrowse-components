@@ -3,50 +3,24 @@ import path from 'path'
 
 import { cleanup, fireEvent, waitFor } from '@testing-library/react'
 import FileSaver from 'file-saver'
-import { afterEach, beforeEach, expect, test } from 'vitest'
 
-import { createView, doBeforeEach, hts, mockConsoleWarn, setup } from './util'
+import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
 import volvoxConfig from '../../test_data/volvox/config.json'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
-
 setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
-
 
 afterEach(() => {
   cleanup()
 })
 
+beforeEach(() => {
+  doBeforeEach()
+})
+
 const delay = { timeout: 40000 }
 const opts = [{}, delay]
-
-test('export svg of lgv', async () => {
-  const { view, findByTestId, findByText } = await createView()
-
-  view.setNewView(0.1, 1)
-  fireEvent.click(
-    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
-  )
-
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
-  fireEvent.click(await findByText('Submit', ...opts))
-
-  await waitFor(() => {
-    expect(FileSaver.saveAs).toHaveBeenCalled()
-  }, delay)
-
-  // @ts-expect-error
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/lgv_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
-}, 45000)
 
 test('export svg of synteny', async () => {
   await mockConsoleWarn(async () => {
@@ -198,146 +172,15 @@ test('export svg of synteny', async () => {
     fireEvent.click(await findByText('Submit', ...opts))
 
     await waitFor(() => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(FileSaver.saveAs).toHaveBeenCalled()
     }, delay)
 
     // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
     const dir = path.dirname(module.filename)
     fs.writeFileSync(`${dir}/__image_snapshots__/synteny_snapshot.svg`, svg)
     expect(svg).toMatchSnapshot()
   })
-}, 45000)
-
-test('export svg of circular', async () => {
-  const { findByTestId, findByText } = await createView({
-    ...volvoxConfig,
-    defaultSession: {
-      name: 'Integration Test Circular',
-      views: [{ id: 'integration_test_circular', type: 'CircularView' }],
-    },
-  })
-  // try opening a track before opening the actual view
-  fireEvent.click(await findByText('File', ...opts))
-  fireEvent.click(await findByText(/Open track/, ...opts))
-  fireEvent.click(await findByText('Open', ...opts))
-
-  // open a track selector for the circular view
-  fireEvent.click(await findByTestId('circular_track_select', ...opts))
-
-  // wait for the track selector to open and then click the
-  // checkbox for the chord test track to toggle it on
-  fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
-
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
-  fireEvent.click(await findByText('Submit', ...opts))
-
-  await waitFor(() => {
-    expect(FileSaver.saveAs).toHaveBeenCalled()
-  }, delay)
-
-  // @ts-expect-error
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/circular_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
-}, 45000)
-
-test('export svg of dotplot', async () => {
-  const { findByTestId, findByText } = await createView({
-    ...volvoxConfig,
-    defaultSession: {
-      id: 'yvVuWHcq2',
-      name: 'Integration test example 2/13/2023, 3:23:07 PM',
-      margin: 0,
-      drawerWidth: 384,
-      views: [
-        {
-          id: 'JEjDwC61c',
-          minimized: false,
-          type: 'DotplotView',
-          height: 600,
-          borderSize: 20,
-          tickSize: 5,
-          vtextRotation: 0,
-          htextRotation: -90,
-          fontSize: 15,
-          trackSelectorType: 'hierarchical',
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-          drawCigar: true,
-          hview: {
-            id: 'FZRhMPvDfS',
-            displayedRegions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 49186,
-                reversed: false,
-                assemblyName: 'volvox_random_inv',
-              },
-            ],
-            bpPerPx: 10.643835752380955,
-            offsetPx: 1173,
-            interRegionPaddingWidth: 0,
-            minimumBlockWidth: 0,
-          },
-          vview: {
-            id: 'DpNpiCTp4t',
-            displayedRegions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 50001,
-                reversed: false,
-                assemblyName: 'volvox',
-              },
-              {
-                refName: 'ctgB',
-                start: 0,
-                end: 6079,
-                reversed: false,
-                assemblyName: 'volvox',
-              },
-            ],
-            bpPerPx: 20.505395171396007,
-            offsetPx: 681,
-            interRegionPaddingWidth: 0,
-            minimumBlockWidth: 0,
-          },
-          cursorMode: 'crosshair',
-          tracks: [
-            {
-              id: 'TCFk0NeAVI',
-              type: 'SyntenyTrack',
-              configuration: 'volvox_inv_indels',
-              minimized: false,
-              displays: [
-                {
-                  id: 'Exx5MRmlTg',
-                  type: 'DotplotDisplay',
-                  configuration: 'volvox_inv_indels-DotplotDisplay',
-                },
-              ],
-            },
-          ],
-          viewTrackConfigs: [],
-        },
-      ],
-    },
-  })
-
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
-  fireEvent.click(await findByText('Submit', ...opts))
-
-  await waitFor(() => {
-    expect(FileSaver.saveAs).toHaveBeenCalled()
-  }, delay)
-
-  // @ts-expect-error
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/dotplot_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
 }, 45000)

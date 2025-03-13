@@ -73,11 +73,13 @@ test('adapter can fetch features from volvox.bam', async () => {
   const featuresJsonArrayCSI = featuresArrayCSI.map(f => f.toJSON())
   expect(
     featuresJsonArrayCSI.map(s => {
+      // @ts-expect-error
       delete s.uniqueId
       return s
     }),
   ).toEqual(
     featuresJsonArray.map(s => {
+      // @ts-expect-error
       delete s.uniqueId
       return s
     }),
