@@ -28,7 +28,22 @@ const HicAdapter = ConfigurationSchema(
       description: 'Initial resolution multiplier',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            hicLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default HicAdapter

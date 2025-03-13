@@ -25,7 +25,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 bigBedLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bb',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

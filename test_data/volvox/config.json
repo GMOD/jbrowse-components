@@ -290,16 +290,7 @@
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "volvox.dup.renamed.vcf.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.dup.renamed.vcf.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        }
+        "uri": "volvox.dup.renamed.vcf.gz"
       }
     },
     {
@@ -310,14 +301,7 @@
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "volvox-sorted-altname.cram",
-          "locationType": "UriLocation"
-        },
-        "craiLocation": {
-          "uri": "volvox-sorted-altname.cram.crai",
-          "locationType": "UriLocation"
-        },
+        "uri": "volvox-sorted-altname.cram",
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
@@ -500,12 +484,6 @@
         "bamLocation": {
           "uri": "volvox-sorted.bam",
           "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox-sorted.bam.bai",
-            "locationType": "UriLocation"
-          }
         }
       },
       "displays": [
@@ -1445,10 +1423,7 @@
       "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "volvox-sorted.bam.coverage.bw",
-          "locationType": "UriLocation"
-        }
+        "uri": "volvox-sorted.bam.coverage.bw"
       }
     },
     {
@@ -1459,10 +1434,7 @@
       "assemblyNames": ["volvox", "volvox"],
       "adapter": {
         "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "volvox_fake_synteny_alt.paf",
-          "locationType": "UriLocation"
-        },
+        "uri": "volvox_fake_synteny_alt.paf",
         "assemblyNames": ["volvox", "volvox"]
       }
     },

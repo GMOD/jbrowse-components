@@ -13,7 +13,10 @@ const BedAdapter = ConfigurationSchema(
      */
     bedLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bed.gz',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
@@ -64,6 +67,21 @@ const BedAdapter = ConfigurationSchema(
       defaultValue: 2,
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bedLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 export default BedAdapter

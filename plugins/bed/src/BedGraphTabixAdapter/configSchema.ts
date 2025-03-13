@@ -48,6 +48,27 @@ const BedGraphTabixAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bedGraphGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 export default BedGraphTabixAdapter

@@ -446,16 +446,16 @@ export default class TextIndex extends JBrowseCommand {
       let loc: UriLocation | LocalPathLocation
       if (type === 'Gff3TabixAdapter') {
         // @ts-expect-error
-        loc = adapter.gffGzLocation
+        loc = adapter.gffGzLocation || adapter
       } else if (type === 'Gff3Adapter') {
         // @ts-expect-error
-        loc = adapter.gffLocation
+        loc = adapter.gffLocation || adapter
       } else if (type === 'VcfAdapter') {
         // @ts-expect-error
-        loc = adapter.vcfLocation
+        loc = adapter.vcfLocation || adapter
       } else if (type === 'VcfTabixAdapter') {
         // @ts-expect-error
-        loc = adapter.vcfGzLocation
+        loc = adapter.vcfGzLocation || adapter
       } else {
         return
       }

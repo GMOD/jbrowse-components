@@ -14,7 +14,10 @@ const GtfAdapter = ConfigurationSchema(
      */
     gtfLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.gtf',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
@@ -24,7 +27,21 @@ const GtfAdapter = ConfigurationSchema(
       defaultValue: 'gene_name',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            gtfLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default GtfAdapter

@@ -30,6 +30,20 @@ const BedpeAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bedpeLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 export default BedpeAdapter
