@@ -1,3 +1,5 @@
+import { expect, test } from 'vitest'
+
 import { parseBedPEBuffer } from './BedpeImport'
 
 function stringToUint8Array(str: string): Uint8Array {

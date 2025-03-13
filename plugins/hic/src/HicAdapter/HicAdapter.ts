@@ -1,17 +1,15 @@
-import {
-  BaseFeatureDataAdapter
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { openLocation } from '@jbrowse/core/util/io'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import HicStraw from 'hic-straw'
 
+import { openHicFilehandle } from './HicFilehandle'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  BaseOptions} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import type { FileLocation, Region } from '@jbrowse/core/util/types'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface ContactRecord {
   bin1: number
@@ -36,32 +34,7 @@ interface Ref {
 interface HicOptions extends BaseOptions {
   resolution?: number
   bpPerPx?: number
-}
-
-// wraps generic-filehandle so the read function only takes a position and
-// length in some ways, generic-filehandle wishes it was just this but it has
-// to adapt to the node.js fs promises API
-class GenericFilehandleWrapper {
-  constructor(private filehandle: GenericFilehandle) {}
-
-  async read(position: number, length: number) {
-    const { buffer } = await this.filehandle.read(
-      Buffer.alloc(length),
-      0,
-      length,
-      position,
-    )
-    return buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength,
-    )
-  }
-}
-function openFilehandleWrapper(
-  location: FileLocation,
-  pluginManager?: PluginManager,
-) {
-  return new GenericFilehandleWrapper(openLocation(location, pluginManager))
+  normalization?: string
 }
 
 interface HicParser {
@@ -84,24 +57,23 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const hicLocation = this.getConf('hicLocation')
     this.hic = new HicStraw({
-      file: openFilehandleWrapper(hicLocation, this.pluginManager),
+      file: openHicFilehandle(this.getConf('hicLocation'), this.pluginManager),
     })
   }
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    statusCallback('Downloading .hic header')
-    const result = await this.hic.getMetaData()
-    statusCallback('')
-    return result
+    return updateStatus('Downloading .hic header', statusCallback, () =>
+      this.hic.getMetaData(),
+    )
   }
 
   public async getHeader(opts?: BaseOptions) {
-    const ret = await this.setup(opts)
-    const { chromosomes, ...rest } = ret
-    return rest
+    const { chromosomes, ...rest } = await this.setup(opts)
+    // @ts-expect-error
+    const norms = await this.hic.getNormalizationOptions()
+    return { ...rest, norms }
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -109,14 +81,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     return metadata.chromosomes.map(chr => chr.name)
   }
 
-  async getResolution(bpPerPx: number, opts?: BaseOptions) {
+  async getResolution(res: number, opts?: BaseOptions) {
     const { resolutions } = await this.setup(opts)
-
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
     let chosenResolution = resolutions.at(-1)!
-
     for (let i = resolutions.length - 1; i >= 0; i -= 1) {
       const r = resolutions[i]!
-      if (r <= 2 * bpPerPx) {
+      if (r <= 2 * res * resolutionMultiplier) {
         chosenResolution = r
       }
     }
@@ -126,28 +97,35 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: HicOptions = {}) {
     return ObservableCreate<ContactRecord>(async observer => {
       const { refName: chr, start, end } = region
-      const { resolution, bpPerPx = 1, statusCallback = () => {} } = opts
+      const {
+        resolution,
+        normalization = 'KR',
+        bpPerPx = 1,
+        statusCallback = () => {},
+      } = opts
       const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
-      statusCallback('Downloading .hic data')
 
-      const records = await this.hic.getContactRecords(
-        'KR',
-        { start, chr, end },
-        { start, chr, end },
-        'BP',
-        res,
-      )
-      for (const record of records) {
-        observer.next(record)
-      }
-      statusCallback('')
+      await updateStatus('Downloading .hic data', statusCallback, async () => {
+        const records = await this.hic.getContactRecords(
+          normalization,
+          { start, chr, end },
+          { start, chr, end },
+          'BP',
+          res,
+        )
+        for (const record of records) {
+          observer.next(record)
+        }
+      })
       observer.complete()
-    }, opts.signal) as any
+    }, opts.stopToken) as any
   }
 
   // don't do feature stats estimation, similar to bigwigadapter
   async getMultiRegionFeatureDensityStats(_regions: Region[]) {
-    return { featureDensity: 0 }
+    return {
+      featureDensity: 0,
+    }
   }
 
   freeResources(/* { region } */): void {}

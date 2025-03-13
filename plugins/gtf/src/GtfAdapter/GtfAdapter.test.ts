@@ -1,10 +1,9 @@
 import { firstValueFrom } from 'rxjs'
-import { vi, beforeEach, afterEach, expect, test } from 'vitest'
 import { toArray } from 'rxjs/operators'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import GtfAdapter from './GtfAdapter'
 import configSchema from './configSchema'
-
 
 beforeEach(() => {
   // tell vitest we use mocked time

@@ -1,8 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
-import { Buffer } from 'buffer'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import DefaultMenu from '@jbrowse/core/ui/Menu'
@@ -10,13 +8,12 @@ import DefaultMenuButton from '@jbrowse/core/ui/MenuButton'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { expect, vi } from 'vitest'
-
 
 import configSnapshot from '../../test_data/volvox/config.json'
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
@@ -26,7 +23,7 @@ import sessionModelFactory from '../sessionModel'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { GenericFilehandle } from 'generic-filehandle'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 type LGV = LinearGenomeViewModel
 
@@ -94,6 +91,7 @@ export function setup() {
 }
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
+  // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
@@ -243,7 +241,7 @@ export async function mockConsoleWarn(fn: () => Promise<void>) {
 
 export function mockFile404(
   str: string,
-  readBuffer: (request: string) => Promise<Response>,
+  readBuffer: (request: Request) => Promise<Response>,
 ) {
   global.fetch = vi
     .fn()

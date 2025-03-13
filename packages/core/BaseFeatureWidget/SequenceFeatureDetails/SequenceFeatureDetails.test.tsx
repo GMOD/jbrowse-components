@@ -1,7 +1,7 @@
 import fs from 'fs'
-import { afterEach, expect, test } from 'vitest'
 
 import { cleanup, render } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
 
 import SequencePanel from './SequencePanel'
 import { SequenceFeatureDetailsF } from './model'

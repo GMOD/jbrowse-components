@@ -60,12 +60,14 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(
     featArray.map(r => {
       const s = r.toJSON()
+      // @ts-expect-error
       delete s.uniqueId
       return s
     }),
   ).toEqual(
     csiFeaturesArray.map(r => {
       const s = r.toJSON()
+      // @ts-expect-error
       delete s.uniqueId
       return s
     }),

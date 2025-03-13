@@ -1,8 +1,8 @@
-import { test, expect } from 'vitest'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+import { expect, test } from 'vitest'
 
 import Adapter from './CramAdapter'
 import { SequenceAdapter } from './CramTestAdapters'
