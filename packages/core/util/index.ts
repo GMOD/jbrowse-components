@@ -1103,13 +1103,26 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
-export function getBpDisplayStr(totalBp: number) {
-  if (Math.floor(totalBp / 1_000_000) > 0) {
-    return `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
-  } else if (Math.floor(totalBp / 1_000) > 0) {
-    return `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+export function getBpDisplayStr(total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${r(total / 1_000_000)}Mbp`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${r(total / 1_000)}Kbp`
   } else {
-    return `${toLocale(Math.floor(totalBp))}bp`
+    return `${Math.floor(total)}bp`
+  }
+}
+
+function r(s: number) {
+  return toLocale(Number.parseFloat(s.toPrecision(3)))
+}
+export function getProgressDisplayStr(current: number, total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${r(total / 1_000_000)}/${r(current / 1_000_000)}Mb`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${r(total / 1_000)}/${r(current / 1_000)}Kb`
+  } else {
+    return `${r(current)}/${r(total)}}bytes`
   }
 }
 

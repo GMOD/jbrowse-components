@@ -1,4 +1,7 @@
-import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+import {
+  fetchAndMaybeUnzipText,
+  getProgressDisplayStr,
+} from '@jbrowse/core/util'
 
 import type { PAFRecord } from './PAFAdapter/util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -60,7 +63,7 @@ export function parseLineByLine<T>(
     }
     if (i++ % 10_000 === 0) {
       statusCallback(
-        `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
       )
     }
     blockStart = n + 1

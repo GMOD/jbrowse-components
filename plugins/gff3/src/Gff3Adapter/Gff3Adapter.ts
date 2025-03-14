@@ -1,6 +1,6 @@
 import IntervalTree from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip, getProgressDisplayStr } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -55,7 +55,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       }
       if (i++ % 10_000 === 0) {
         statusCallback(
-          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
         )
       }
 

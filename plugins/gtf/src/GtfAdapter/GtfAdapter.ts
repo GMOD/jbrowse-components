@@ -4,6 +4,7 @@ import {
   SimpleFeature,
   doesIntersect2,
   fetchAndMaybeUnzip,
+  getProgressDisplayStr,
   max,
   min,
 } from '@jbrowse/core/util'
@@ -61,7 +62,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       }
       if (i++ % 10_000 === 0) {
         statusCallback(
-          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
         )
       }
 

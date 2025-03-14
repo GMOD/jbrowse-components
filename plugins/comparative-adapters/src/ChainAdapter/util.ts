@@ -23,6 +23,8 @@
  * SOFTWARE.
  */
 
+import { getProgressDisplayStr } from '@jbrowse/core/util'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function generate_record(
@@ -73,7 +75,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   while (blockStart < buffer.length) {
     if (i++ % 10_000 === 0) {
       statusCallback(
-        `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
       )
     }
     const n = buffer.indexOf(10, blockStart)
