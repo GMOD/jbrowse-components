@@ -31,7 +31,7 @@
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "build:webpack": "cd dist && wget https://unpkg.com/@jbrowse/react-linear-genome-view@2.18.0/dist/react-linear-genome-view.umd.production.min.js && wget https://unpkg.com/@jbrowse/react-linear-genome-view@2.18.0/dist/react-linear-genome-view.umd.development.js && cd -",
+    "build:webpack": "zcat react-linear-genome-view.umd.production.min.js.gz > dist/react-linear-genome-view.umd.production.min.js && zcat react-linear-genome-view.umd.development.js.gz > dist/react-linear-genome-view.umd.development.js",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
