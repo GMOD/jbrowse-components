@@ -5,19 +5,22 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   Button,
-  Checkbox,
   DialogActions,
   DialogContent,
   FormControlLabel,
+  Radio,
+  RadioGroup,
   TextField,
   Typography,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
 import { saveAs } from 'file-saver'
+import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
@@ -36,7 +39,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function ClusterDialog({
+const ClusterDialog = observer(function ({
   model,
   handleClose,
 }: {
@@ -49,16 +52,22 @@ export default function ClusterDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const [results, setResults] = useState<string>()
+  const [ret, setRet] = useState<Record<string, any>>()
   const [error, setError] = useState<unknown>()
+  const [loading, setLoading] = useState(false)
   const [paste, setPaste] = useState('')
-  const [useCompleteMethod, setUseCompleteMethod] = useState(false)
+  const [clusterMethod, setClusterMethod] = useLocalStorage(
+    'cluster-clusterMethod',
+    'single',
+  )
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         setError(undefined)
+        setRet(undefined)
+        setLoading(true)
         const view = getContainingView(model) as LinearGenomeViewModel
         if (!view.initialized) {
           return
@@ -78,24 +87,30 @@ export default function ClusterDialog({
           },
         )) as Record<string, { genotypes: number[] }>
 
-        const entries = Object.values(ret)
-        const keys = Object.keys(ret)
-        const clusterMethod = useCompleteMethod ? 'complete' : 'single'
-        const text = `try(library(fastcluster), silent=TRUE)
-inputMatrix<-matrix(c(${entries.map(val => val.genotypes.join(',')).join(',\n')}
-),nrow=${entries.length},byrow=TRUE)
-rownames(inputMatrix)<-c(${keys.map(key => `'${key}'`).join(',')})
-resultClusters<-hclust(dist(inputMatrix), method='${clusterMethod}')
-cat(resultClusters$order,sep='\\n')`
-        setResults(text)
+        setRet(ret)
       } catch (e) {
         if (!isAbortException(e) && isAlive(model)) {
           console.error(e)
           setError(e)
         }
+      } finally {
+        setLoading(false)
       }
     })()
-  }, [model, useCompleteMethod])
+  }, [model])
+
+  const results = ret
+    ? `try(library(fastcluster), silent=TRUE)
+inputMatrix<-matrix(c(${Object.values(ret)
+        .map(val => val.genotypes.join(','))
+        .join(',\n')}
+),nrow=${Object.values(ret).length},byrow=TRUE)
+rownames(inputMatrix)<-c(${Object.keys(ret)
+        .map(key => `'${key}'`)
+        .join(',')})
+resultClusters<-hclust(dist(inputMatrix), method='${clusterMethod}')
+cat(resultClusters$order,sep='\\n')`
+    : undefined
 
   return (
     <Dialog open title="Cluster by genotype" onClose={handleClose}>
@@ -109,6 +124,34 @@ cat(resultClusters$order,sep='\\n')`
             You can then paste the results in this form to specify the row
             ordering.
           </Typography>
+
+          <Typography variant="subtitle2" gutterBottom>
+            Clustering method:
+          </Typography>
+          <RadioGroup>
+            <FormControlLabel
+              control={
+                <Radio
+                  checked={clusterMethod === 'single'}
+                  onChange={() => {
+                    setClusterMethod('single')
+                  }}
+                />
+              }
+              label="Single linkage"
+            />
+            <FormControlLabel
+              control={
+                <Radio
+                  checked={clusterMethod === 'complete'}
+                  onChange={() => {
+                    setClusterMethod('complete')
+                  }}
+                />
+              }
+              label="Complete linkage"
+            />
+          </RadioGroup>
           {results ? (
             <div>
               <div>
@@ -135,17 +178,6 @@ cat(resultClusters$order,sep='\\n')`
                 >
                   Copy Rscript to clipboard
                 </Button>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={useCompleteMethod}
-                      onChange={e => {
-                        setUseCompleteMethod(e.target.checked)
-                      }}
-                    />
-                  }
-                  label="Use 'complete' linkage method instead of 'single'"
-                />
                 <div>
                   <TextField
                     multiline
@@ -168,10 +200,11 @@ cat(resultClusters$order,sep='\\n')`
                 </div>
               </div>
             </div>
-          ) : (
+          ) : loading ? (
             <LoadingEllipses variant="h6" title="Generating genotype matrix" />
-          )}
-          {error ? <ErrorMessage error={error} /> : null}
+          ) : error ? (
+            <ErrorMessage error={error} />
+          ) : null}
         </div>
       </DialogContent>
       <DialogActions>
@@ -218,4 +251,6 @@ cat(resultClusters$order,sep='\\n')`
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default ClusterDialog

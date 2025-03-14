@@ -29,37 +29,34 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
       deserializedArgs
     const adapter = await getAdapter(pm, sessionId, adapterConfig)
     const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
-    const resolution = 2
-    const bpScale = bpPerPx / resolution
 
     const r0 = regions[0]
     const r0len = r0.end - r0.start
-    const w = Math.floor(r0len / bpScale)
+    const w = Math.floor(r0len / bpPerPx)
     const feats = await firstValueFrom(
       dataAdapter.getFeatures(r0, deserializedArgs).pipe(toArray()),
     )
 
     const groups = groupBy(feats, f => f.get('source'))
     const rows = {} as Record<string, { name: string; scores: string[] }>
+
     for (const source of sources) {
       const { name } = source
       const features = groups[name] || []
+
+      const arr = new Array(w).fill(0)
       for (const feat of features) {
-        if (!rows[name]) {
-          rows[name] = {
-            name,
-            scores: new Array(w),
-          }
-        }
         const fstart = feat.get('start')
         const fend = feat.get('end')
         const score = feat.get('score')
-        for (let i = fstart; i < fend; i += bpScale) {
-          if (i > r0.start && i < r0.end) {
-            rows[name].scores[Math.floor((i - r0.start) / bpScale)] ||= score
+        for (let i = fstart; i < fend; i += bpPerPx) {
+          const x = Math.floor((i - r0.start) / bpPerPx)
+          if (x >= 0 && x < w) {
+            arr[x] ||= score
           }
         }
       }
+      rows[name] = { name, scores: arr }
     }
 
     return rows
