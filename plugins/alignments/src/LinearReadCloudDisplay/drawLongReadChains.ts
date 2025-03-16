@@ -5,9 +5,15 @@ import { fillRectCtx, strokeRectCtx } from './util'
 import { fillColor, strokeColor } from '../shared/color'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ChainData } from '../shared/fetchChains'
+import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+interface ComputedChain {
+  distance: number
+  minX: number
+  chain: ReducedFeature[]
+}
 
 export function drawLongReadChains({
   ctx,
@@ -22,8 +28,7 @@ export function drawLongReadChains({
   view: LinearGenomeViewModel
   asm: Assembly
 }) {
-  const distances: number[] = []
-  const minXs: number[] = []
+  const computedChains: ComputedChain[] = []
   const { chains } = chainData
   const { height } = self
   const featureHeight = getConf(self, 'featureHeight')
@@ -42,23 +47,24 @@ export function drawLongReadChains({
         maxX = Math.max(maxX, re)
       }
     }
-    const distance = Math.abs(maxX - minX)
-    distances.push(distance)
-    minXs.push(minX)
+    computedChains.push({
+      distance: Math.abs(maxX - minX),
+      minX,
+      chain,
+    })
   }
 
+  const distances = computedChains.map(d => d.distance)
   const maxD = Math.log(max(distances))
   const minD = Math.max(Math.log(min(distances)) - 1, 0)
   const scaler = (height - 20) / (maxD - minD)
   const halfHeight = featureHeight / 2 - 0.5
 
   // draw split long read 'chains' as connected entities
-  for (const [i, chain_] of chains.entries()) {
-    const chain = chain_
-    const w = distances[i]!
+  for (const { minX, distance, chain } of computedChains) {
+    const w = distance
     const top = (Math.log(w) - minD) * scaler
-    const min = minXs[i]!
-    fillRectCtx(min - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
+    fillRectCtx(minX - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
     const c1 = chain[0]!
     let primaryStrand: undefined | number
     if (!(c1.flags & 2048)) {
