@@ -10,6 +10,7 @@ export default class MultiDensityPlotRenderer extends WiggleBaseRenderer {
   // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { stopToken, sources, features } = props
+    checkStopToken(stopToken)
     const groups = groupBy(features.values(), f => f.get('source'))
     const height = props.height / sources.length
     let feats = [] as Feature[]
