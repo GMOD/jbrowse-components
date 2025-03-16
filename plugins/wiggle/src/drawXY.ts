@@ -62,6 +62,7 @@ export function drawXY(
     offset = 0,
     colorCallback,
     inverted,
+    stopToken,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -103,7 +104,7 @@ export function drawXY(
     start = performance.now()
     for (const feature of features.values()) {
       if (performance.now() - start > 400) {
-        checkStopToken()
+        checkStopToken(stopToken)
         start = performance.now()
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -125,7 +126,7 @@ export function drawXY(
     start = performance.now()
     for (const feature of features.values()) {
       if (performance.now() - start > 400) {
-        checkStopToken()
+        checkStopToken(stopToken)
         start = performance.now()
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -157,7 +158,7 @@ export function drawXY(
     start = performance.now()
     for (const feature of features.values()) {
       if (performance.now() - start > 400) {
-        checkStopToken()
+        checkStopToken(stopToken)
         start = performance.now()
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -180,7 +181,7 @@ export function drawXY(
     start = performance.now()
     for (const feature of features.values()) {
       if (performance.now() - start > 400) {
-        checkStopToken()
+        checkStopToken(stopToken)
         start = performance.now()
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -217,7 +218,7 @@ export function drawXY(
     start = performance.now()
     for (const feature of features.values()) {
       if (performance.now() - start > 400) {
-        checkStopToken()
+        checkStopToken(stopToken)
         start = performance.now()
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -235,12 +236,12 @@ export function drawXY(
   if (displayCrossHatches) {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    ticks.values.forEach(tick => {
+    for (const tick of ticks.values) {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))
       ctx.lineTo(width, Math.round(toY(tick)))
       ctx.stroke()
-    })
+    }
   }
 
   return { reducedFeatures }

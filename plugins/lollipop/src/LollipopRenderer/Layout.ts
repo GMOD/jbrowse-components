@@ -75,8 +75,8 @@ export class FloatingLayout {
     // bump them
     let maxBottom = 0
     const layoutEntries: [string, LayoutEntry][] = new Array(sorted.length)
-    for (let i = 0; i < sorted.length; i += 1) {
-      const currentItem = sorted[i]!
+    for (const [i, element] of sorted.entries()) {
+      const currentItem = element
       const { anchorLocation, width, height } = currentItem
       const start = anchorLocation - width / 2
       const end = start + width

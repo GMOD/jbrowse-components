@@ -64,16 +64,18 @@ const SessionManager = observer(function ({
           variant="contained"
           onClick={() => {
             let i = 0
-            session.savedSessionMetadata?.forEach(elt => {
-              if (
-                differenceInDays(+Date.now(), elt.createdAt) > 1 &&
-                !elt.favorite
-              ) {
-                // @ts-expect-error
-                session.deleteSavedSession(elt.id)
-                i++
+            if (session.savedSessionMetadata) {
+              for (const elt of session.savedSessionMetadata) {
+                if (
+                  differenceInDays(+Date.now(), elt.createdAt) > 1 &&
+                  !elt.favorite
+                ) {
+                  // @ts-expect-error
+                  session.deleteSavedSession(elt.id)
+                  i++
+                }
               }
-            })
+            }
             session.notify(`${i} sessions deleted`, 'info')
           }}
         >

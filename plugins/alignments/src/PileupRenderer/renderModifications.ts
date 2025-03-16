@@ -38,8 +38,10 @@ export function renderModifications({
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
 
-  getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
-    ({ allProbs, prob, type }, pos) => {
+  const probs = getMaxProbModAtEachPosition(feature, cigarOps)
+  if (probs) {
+    let pos = 0
+    for (const { allProbs, prob, type } of probs) {
       const r = start + pos
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
       const mod = visibleModifications[type]
@@ -61,6 +63,7 @@ export function renderModifications({
         const w = rightPx - leftPx + 0.5
         fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       }
-    },
-  )
+      pos++
+    }
+  }
 }

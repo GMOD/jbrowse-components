@@ -1,4 +1,5 @@
 import { updateStatus } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount } from '../shared/drawAlleleCount'
@@ -25,20 +26,28 @@ export async function makeImageData({
     minorAlleleFrequencyFilter,
     sources,
     features,
+    stopToken,
   } = renderArgs
 
   const { statusCallback = () => {} } = renderArgs
   const h = canvasHeight / sources.length
+  checkStopToken(stopToken)
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),
     minorAlleleFrequencyFilter,
   )
+  checkStopToken(stopToken)
   const arr = [] as string[][]
   const m = mafs.length
   const w = canvasWidth / m
 
   await updateStatus('Drawing variant matrix', statusCallback, () => {
+    let start = performance.now()
     for (let i = 0; i < m; i++) {
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
       const arr2 = [] as string[]
       const { feature, mostFrequentAlt } = mafs[i]!
       const hasPhaseSet = (

@@ -106,7 +106,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const flip = index === 0
-        feats.forEach(f => {
+        for (const f of feats) {
           const [r1, r2, score, rowNum] = f
           const [f1, f2] = !flip ? [r2, r1] : [r1, r2]
           if (
@@ -131,7 +131,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
               }),
             )
           }
-        })
+        }
       }
 
       observer.complete()

@@ -177,7 +177,7 @@ export function readData({
     configData.tracks = []
   }
 
-  trackList.forEach(track => {
+  for (const track of trackList) {
     const [type, opts] = track
     const [file, ...rest] = opts
     const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
@@ -347,7 +347,7 @@ export function readData({
         },
       ]
     }
-  })
+  }
 
   if (!defaultSession) {
     // don't use defaultSession from config.json file, can result in assembly
@@ -374,7 +374,7 @@ function process(
   }
   const currentTrack = view.showTrack(extra(track))
   const display = currentTrack.displays[0]
-  opts.forEach(opt => {
+  for (const opt of opts) {
     // apply height to any track
     if (opt.startsWith('height:')) {
       const [, height] = opt.split(':')
@@ -452,7 +452,7 @@ function process(
       }
       display.setResolution(+val)
     }
-  })
+  }
 }
 
 export async function renderRegion(opts: Opts) {
@@ -484,9 +484,9 @@ export async function renderRegion(opts: Opts) {
     console.warn('No loc specified')
   }
 
-  trackList.forEach(track => {
+  for (const track of trackList) {
     process(track, view, extra => path.basename(extra))
-  })
+  }
 
   return renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,

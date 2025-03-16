@@ -198,12 +198,12 @@ function stateModelFactory() {
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
         let ret: LayoutRecord | undefined
-        self.blockState.forEach(block => {
+        for (const block of self.blockState.values()) {
           const val = block.layout?.getByID(id)
           if (val) {
             ret = val
           }
-        })
+        }
         return ret
       },
     }))
@@ -293,9 +293,9 @@ function stateModelFactory() {
           self.setError()
           self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
-          ;[...self.blockState.values()].forEach(val => {
+          for (const val of self.blockState.values()) {
             val.doReload()
-          })
+          }
           superReload()
         },
       }
@@ -408,17 +408,17 @@ function stateModelFactory() {
             if (!view.initialized) {
               return
             }
-            self.blockDefinitions.contentBlocks.forEach(block => {
+            for (const block of self.blockDefinitions.contentBlocks) {
               blocksPresent[block.key] = true
               if (!self.blockState.has(block.key)) {
                 self.addBlock(block.key, block)
               }
-            })
-            self.blockState.forEach((_, key) => {
+            }
+            for (const key of self.blockState.keys()) {
               if (!blocksPresent[key]) {
-                self.deleteBlock(key as string)
+                self.deleteBlock(key)
               }
-            })
+            }
           }),
         )
       },

@@ -135,9 +135,9 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
+      for (const f of intervalTree?.search([start, end]) || []) {
         observer.next(f)
-      })
+      }
       observer.complete()
     }, opts.stopToken)
   }

@@ -211,12 +211,12 @@ export function SharedLinearPileupDisplayMixin(
           'lightsalmon',
         ]
 
-        uniqueTag.forEach(value => {
+        for (const value of uniqueTag) {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
             self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
-        })
+        }
       },
 
       /**

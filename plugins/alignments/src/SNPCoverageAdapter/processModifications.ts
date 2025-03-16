@@ -25,8 +25,10 @@ export function processModifications({
   const fend = feature.get('end')
   const twoColor = colorBy?.modifications?.twoColor
   const isolatedModification = colorBy?.modifications?.isolatedModification
-  getMaxProbModAtEachPosition(feature)?.forEach(
-    ({ type, prob, allProbs }, pos) => {
+  const probs = getMaxProbModAtEachPosition(feature)
+  if (probs) {
+    let pos = 0
+    for (const { type, prob, allProbs } of probs) {
       if (isolatedModification && type !== isolatedModification) {
         return
       }
@@ -60,6 +62,7 @@ export function processModifications({
           incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
         }
       }
-    },
-  )
+      pos++
+    }
+  }
 }

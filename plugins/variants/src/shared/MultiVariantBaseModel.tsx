@@ -396,14 +396,19 @@ export default function MultiVariantBaseModelF(
       get totalHeight() {
         return self.rowHeight * (self.sources?.length || 1)
       },
+      /**
+       * #getter
+       */
+      get featuresReady() {
+        return !!self.featuresVolatile
+      },
     }))
     .views(self => ({
       renderProps() {
         const superProps = self.adapterProps()
         return {
           ...superProps,
-          notReady:
-            superProps.notReady || !self.sources || !self.featuresVolatile,
+          notReady: superProps.notReady || !self.sources || !self.featuresReady,
           height: self.height,
           totalHeight: self.totalHeight,
           renderingMode: self.renderingMode,

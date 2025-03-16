@@ -30,7 +30,7 @@ export function getSOTermAndDescription(
 
   const soTerms = new Set<string>()
   let descriptions = new Set<string>()
-  alt.forEach(a => {
+  for (const a of alt) {
     let [soTerm, description] = getSOAndDescFromAltDefs(a, parser)
     if (!soTerm) {
       ;[soTerm, description] = getSOAndDescByExamination(ref, a)
@@ -39,7 +39,7 @@ export function getSOTermAndDescription(
       soTerms.add(soTerm)
       descriptions.add(description)
     }
-  })
+  }
 
   // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
   if (descriptions.size > 1) {

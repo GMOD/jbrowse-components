@@ -41,9 +41,11 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     }
     const names = (await this.getNames())?.slice(3) || []
     const intervalTree = new IntervalTree()
+    // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
       const [refName, s, e, ...rest] = line.split('\t')
+      // eslint-disable-next-line unicorn/no-for-loop
       for (let j = 0; j < rest.length; j++) {
         const uniqueId = `${this.id}-${refName}-${i}-${j}`
         const start = +s!
@@ -136,9 +138,9 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
-        observer.next(f)
-      })
+      for (const feature of intervalTree?.search([start, end]) || []) {
+        observer.next(feature)
+      }
       observer.complete()
     })
   }

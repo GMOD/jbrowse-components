@@ -79,12 +79,12 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   let start: number | undefined
   let end: number | undefined
   if (!haveLeftUTR) {
-    for (let i = 0; i < exons.length; i++) {
-      start = exons[i]!.get('start')
+    for (const [i, exon] of exons.entries()) {
+      start = exon.get('start')
       if (start >= codeStart) {
         break
       }
-      end = Math.min(codeStart, exons[i]!.get('end'))
+      end = Math.min(codeStart, exon.get('end'))
       const type = strand >= 0 ? 'five_prime_UTR' : 'three_prime_UTR'
       subparts.unshift(
         new SimpleFeature({
