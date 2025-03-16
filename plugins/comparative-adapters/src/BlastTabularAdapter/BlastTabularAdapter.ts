@@ -275,8 +275,9 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
         return
       }
 
-      for (const [i, blastRecord] of blastRecords.entries()) {
-        const r = blastRecord
+      // eslint-disable-next-line unicorn/no-for-loop
+      for (let i = 0; i < blastRecords.length; i++) {
+        const r = blastRecords[i]!
         let start: number
         let end: number
         let refName: string

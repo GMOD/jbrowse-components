@@ -101,9 +101,10 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
               )
             }
 
-            for (const [j, element] of rest.entries()) {
+            // eslint-disable-next-line unicorn/no-for-loop
+            for (let j = 0; j < rest.length; j++) {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
-              const score = Math.abs(+element)
+              const score = Math.abs(+rest[j]!)
               const source = names[j] || `col${j}`
               if (score) {
                 observer.next(

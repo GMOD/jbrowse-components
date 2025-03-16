@@ -16,11 +16,13 @@ import type BED from '@gmod/bed'
 function defaultParser(fields: string[], splitLine: string[]) {
   let hasBlockCount = false
   const r = [] as [string, string][]
-  for (const [i, element] of splitLine.entries()) {
+
+  // eslint-disable-next-line unicorn/no-for-loop
+  for (let i = 0; i < splitLine.length; i++) {
     if (fields[i] === 'blockCount') {
       hasBlockCount = true
     }
-    r.push([fields[i]!, element] as const)
+    r.push([fields[i]!, splitLine[i]!] as const)
   }
   // heuristically try to determine whether to follow 'slow path' as there can
   // be many features in e.g. GWAS type data

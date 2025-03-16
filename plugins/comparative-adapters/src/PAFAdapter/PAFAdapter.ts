@@ -108,8 +108,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         observer.complete()
       }
 
-      for (const [i, pafRecord] of pafRecords.entries()) {
-        const r = pafRecord
+      // eslint-disable-next-line unicorn/no-for-loop
+      for (let i = 0; i < pafRecords.length; i++) {
+        const r = pafRecords[i]!
         let start = 0
         let end = 0
         let refName = ''

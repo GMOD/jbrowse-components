@@ -125,6 +125,7 @@ export function drawRef(
         let px1 = 0
         let px2 = 0
         const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
 
@@ -200,8 +201,10 @@ export function drawRef(
   }
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
-  for (const [i, featPosition] of featPositions.entries()) {
-    const feature = featPosition
+
+  // eslint-disable-next-line unicorn/no-for-loop
+  for (let i = 0; i < featPositions.length; i++) {
+    const feature = featPositions[i]!
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 
