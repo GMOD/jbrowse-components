@@ -12,7 +12,7 @@ export default class NcbiSequenceReportAliasAdapter
     if (loc.uri === '' || loc.uri === '/path/to/my/sequence_report.tsv') {
       return []
     }
-    const override = this.getConf('useUcscNameOverride')
+    const override = this.getConf('useNameOverride')
     const results = await openLocation(loc, this.pluginManager).readFile('utf8')
     const lines = results
       .split(/\n|\r\n|\r/)
