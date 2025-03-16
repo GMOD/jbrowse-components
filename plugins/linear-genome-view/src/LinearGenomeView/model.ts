@@ -573,7 +573,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * modifies view menu action onClick to apply to all tracks of same type
        */
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
-        viewMenuActions.forEach(action => {
+        for (const action of viewMenuActions) {
           // go to lowest level menu
           if ('subMenu' in action) {
             this.rewriteOnClicks(trackType, action.subMenu)
@@ -581,28 +581,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if ('onClick' in action) {
             const holdOnClick = action.onClick
             action.onClick = (...args: unknown[]) => {
-              self.tracks.forEach(track => {
+              for (const track of self.tracks) {
                 if (track.type === trackType) {
                   holdOnClick.apply(track, [track, ...args])
                 }
-              })
+              }
             }
           }
-        })
+        }
       },
       /**
        * #getter
        */
       get trackTypeActions() {
         const allActions = new Map<string, MenuItem[]>()
-        self.tracks.forEach(track => {
+        for (const track of self.tracks) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = structuredClone(track.viewMenuActions)
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }
-        })
+        }
 
         return allActions
       },
@@ -822,11 +822,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
     }))
     .actions(self => ({
@@ -1346,7 +1348,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               { type: 'divider' },
               { type: 'subHeader', label: key },
             )
-            value.forEach(action => menuItems.push(action))
+            for (const action of value) {
+              menuItems.push(action)
+            }
           }
         }
 

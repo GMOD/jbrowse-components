@@ -16,7 +16,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const { drawXY } = await import('../drawXY')
     let feats = [] as Feature[]
     ctx.save()
-    sources.forEach(source => {
+    for (const source of sources) {
       const { reducedFeatures } = drawXY(ctx, {
         ...props,
         features: groups[source.name] || [],
@@ -30,7 +30,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       ctx.stroke()
       ctx.translate(0, height)
       feats = feats.concat(reducedFeatures)
-    })
+    }
     ctx.restore()
     return { reducedFeatures: feats }
   }

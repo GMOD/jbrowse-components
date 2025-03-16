@@ -53,8 +53,8 @@ export function drawLongReadChains({
   const halfHeight = featureHeight / 2 - 0.5
 
   // draw split long read 'chains' as connected entities
-  for (let i = 0; i < chains.length; i++) {
-    const chain = chains[i]!
+  for (const [i, chain_] of chains.entries()) {
+    const chain = chain_
     const w = distances[i]!
     const top = (Math.log(w) - minD) * scaler
     const min = minXs[i]!

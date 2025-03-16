@@ -275,8 +275,8 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
         return
       }
 
-      for (let i = 0; i < blastRecords.length; i++) {
-        const r = blastRecords[i]!
+      for (const [i, blastRecord] of blastRecords.entries()) {
+        const r = blastRecord
         let start: number
         let end: number
         let refName: string

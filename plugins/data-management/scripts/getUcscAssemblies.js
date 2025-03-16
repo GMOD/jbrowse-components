@@ -40,9 +40,9 @@ function parseDownloadsPageContent(pageContent) {
 function checkAssembliesFor2bit(uncheckedAssemblies, checkedAssemblies) {
   if (!uncheckedAssemblies.length) {
     checkedAssemblies.sort()
-    checkedAssemblies.forEach(assemblyName => {
+    for (const assemblyName of checkedAssemblies) {
       console.log(assemblyName)
-    })
+    }
     return
   }
   const [assemblyName] = uncheckedAssemblies

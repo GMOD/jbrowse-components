@@ -123,11 +123,12 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = region
         const { intervalTreeMap } = await this.setup()
-        intervalTreeMap[refName]?.(opts.statusCallback)
-          .search([start, end])
-          .forEach(f => {
-            observer.next(f)
-          })
+        for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
+          start,
+          end,
+        ]) || []) {
+          observer.next(f)
+        }
         observer.complete()
       } catch (e) {
         observer.error(e)

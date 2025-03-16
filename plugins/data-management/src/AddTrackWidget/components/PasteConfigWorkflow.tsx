@@ -61,12 +61,12 @@ const PasteConfigAddTrackWorkflow = observer(function ({
               isSessionModelWithWidgets(session)
             ) {
               transaction(() => {
-                confs.forEach(c => {
+                for (const c of confs) {
                   session.addTrackConf(c)
-                })
-                confs.forEach(c => {
+                }
+                for (const c of confs) {
                   model.view.showTrack(c.trackId)
-                })
+                }
                 model.clearData()
               })
 

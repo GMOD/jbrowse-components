@@ -12,14 +12,14 @@ export default class MultiLineRenderer extends WiggleBaseRenderer {
     const groups = groupBy(features.values(), f => f.get('source'))
     const { drawLine } = await import('../drawLine')
     let feats = [] as Feature[]
-    sources.forEach(source => {
+    for (const source of sources) {
       const { reducedFeatures } = drawLine(ctx, {
         ...props,
         features: groups[source.name] || [],
         colorCallback: () => source.color || 'blue',
       })
       feats = feats.concat(reducedFeatures)
-    })
+    }
     return { reducedFeatures: feats }
   }
 }

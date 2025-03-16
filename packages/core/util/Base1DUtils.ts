@@ -126,8 +126,8 @@ export function pxToBp(
 
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
   let currBlock = 0
-  for (let i = 0; i < displayedRegions.length; i++) {
-    const r = displayedRegions[i]!
+  for (const [i, displayedRegion] of displayedRegions.entries()) {
+    const r = displayedRegion
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (len + bpSoFar > bp && bpSoFar <= bp) {

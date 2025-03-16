@@ -189,9 +189,11 @@ export default function rootModelFactory({
                           model: self,
                           onClose: (confs?: AnyConfigurationModel[]) => {
                             try {
-                              confs?.forEach(conf => {
-                                self.jbrowse.addAssemblyConf(conf)
-                              })
+                              if (confs) {
+                                for (const conf of confs) {
+                                  self.jbrowse.addAssemblyConf(conf)
+                                }
+                              }
                             } catch (e) {
                               console.error(e)
                               self.session?.notifyError(`${e}`, e)

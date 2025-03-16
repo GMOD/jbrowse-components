@@ -98,9 +98,9 @@ export function filterSessionInPlace(
         }
       }
     }
-    array.forEach(el => {
+    for (const el of array) {
       filterSessionInPlace(el, childType)
-    })
+    }
   } else if (isMapType(type)) {
     const map = node as MSTMap
     const childType = getChildType(map)
@@ -112,16 +112,16 @@ export function filterSessionInPlace(
         }
       }
     }
-    map.forEach(child => {
+    for (const child of map) {
       filterSessionInPlace(child, childType)
-    })
+    }
   } else if (isModelType(type)) {
     // iterate over children
     const { properties } = getPropertyMembers(node)
 
-    Object.entries(properties).forEach(([pname, ptype]) => {
+    for (const [pname, ptype] of Object.entries(properties)) {
       // @ts-ignore
       filterSessionInPlace(node[pname], ptype)
-    })
+    }
   }
 }

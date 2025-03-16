@@ -76,15 +76,12 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GTF data')
             const intervalTree = new IntervalTree()
-            ;(parseStringSync(lines) as FeatureLoc[][])
+            for (const obj of (parseStringSync(lines) as FeatureLoc[][])
               .flat()
-              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))
-              .forEach(obj =>
-                intervalTree.insert(
-                  [obj.start as number, obj.end as number],
-                  obj,
-                ),
-              )
+              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))) {
+              intervalTree.insert([obj.start as number, obj.end as number], obj)
+            }
+
             this.calculatedIntervalTreeMap[refName] = intervalTree
           }
           return this.calculatedIntervalTreeMap[refName]

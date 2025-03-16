@@ -355,8 +355,8 @@ export default class TextIndex extends JBrowseCommand {
       .filter(fileConfig => supported(fileConfig.adapter?.type))
 
     if (fileId?.length) {
-      for (let i = 0; i < fileId.length; i++) {
-        trackConfigs[i]!.trackId = fileId[i]!
+      for (const [i, element] of fileId.entries()) {
+        trackConfigs[i]!.trackId = element!
       }
     }
 

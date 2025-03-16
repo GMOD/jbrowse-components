@@ -93,9 +93,9 @@ export function linearSyntenyViewHelperModelFactory(
         const config = resolveIdentifier(schema, getRoot(self), trackId)
         const shownTracks = self.tracks.filter(t => t.configuration === config)
         transaction(() => {
-          shownTracks.forEach(t => {
+          for (const t of shownTracks) {
             self.tracks.remove(t)
-          })
+          }
         })
         return shownTracks.length
       },

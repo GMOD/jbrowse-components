@@ -235,12 +235,12 @@ export function drawXY(
   if (displayCrossHatches) {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    ticks.values.forEach(tick => {
+    for (const tick of ticks.values) {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))
       ctx.lineTo(width, Math.round(toY(tick)))
       ctx.stroke()
-    })
+    }
   }
 
   return { reducedFeatures }

@@ -41,14 +41,14 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     }
     const names = (await this.getNames())?.slice(3) || []
     const intervalTree = new IntervalTree()
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!
+    for (const [i, line_] of lines.entries()) {
+      const line = line_
       const [refName, s, e, ...rest] = line.split('\t')
-      for (let j = 0; j < rest.length; j++) {
+      for (const [j, element] of rest.entries()) {
         const uniqueId = `${this.id}-${refName}-${i}-${j}`
         const start = +s!
         const end = +e!
-        const score = +rest[j]!
+        const score = +element
         const source = names[j] || `col${j}`
         if (score) {
           intervalTree.insert(
@@ -136,9 +136,9 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
+      for (const f of intervalTree?.search([start, end]) || []) {
         observer.next(f)
-      })
+      }
       observer.complete()
     })
   }

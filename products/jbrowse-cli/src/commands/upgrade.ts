@@ -114,11 +114,11 @@ export default class Upgrade extends JBrowseCommand {
 
     if (clean) {
       fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
-      fs.readdirSync(argsPath)
-        .filter(f => f.includes('worker.js'))
-        .forEach(f => {
-          fs.unlinkSync(path.join(argsPath, f))
-        })
+      for (const f of fs
+        .readdirSync(argsPath)
+        .filter(f => f.includes('worker.js'))) {
+        fs.unlinkSync(path.join(argsPath, f))
+      }
     }
 
     await decompress(Buffer.from(await response.arrayBuffer()), argsPath)

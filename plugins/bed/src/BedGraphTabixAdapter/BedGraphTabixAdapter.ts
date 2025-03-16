@@ -101,9 +101,9 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
               )
             }
 
-            for (let j = 0; j < rest.length; j++) {
+            for (const [j, element] of rest.entries()) {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
-              const score = Math.abs(+rest[j]!)
+              const score = Math.abs(+element)
               const source = names[j] || `col${j}`
               if (score) {
                 observer.next(

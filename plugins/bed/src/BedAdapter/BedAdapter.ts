@@ -122,8 +122,8 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!
+    for (const [i, line_] of lines.entries()) {
+      const line = line_
       const uniqueId = `${this.id}-${refName}-${i}`
       const feat = new SimpleFeature(
         featureData({

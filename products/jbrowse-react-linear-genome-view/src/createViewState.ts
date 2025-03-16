@@ -78,7 +78,7 @@ export default function createViewState(opts: ViewStateOptions) {
     },
     { pluginManager },
   )
-  stateTree.config.internetAccounts.forEach(account => {
+  for (const account of stateTree.config.internetAccounts) {
     const internetAccountType = pluginManager.getInternetAccountType(
       account.type,
     )
@@ -89,7 +89,7 @@ export default function createViewState(opts: ViewStateOptions) {
       type: account.type,
       configuration: account,
     })
-  })
+  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
@@ -104,7 +104,7 @@ export default function createViewState(opts: ViewStateOptions) {
           assembly.name,
         )
         if (highlight) {
-          highlight.forEach(h => {
+          for (const h of highlight) {
             if (h) {
               const p = parseLocString(h, refName =>
                 isValidRefName(refName, assembly.name),
@@ -119,7 +119,7 @@ export default function createViewState(opts: ViewStateOptions) {
                 })
               }
             }
-          })
+          }
         }
       } catch (e) {
         session.notifyError(`${e}`, e)

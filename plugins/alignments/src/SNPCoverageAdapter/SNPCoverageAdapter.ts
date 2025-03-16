@@ -55,7 +55,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         fetchSequence: (region: Region) => this.fetchSequence(region),
       })
 
-      bins.forEach((bin, index) => {
+      for (const [index, bin] of bins.entries()) {
         const start = region.start + index
         observer.next(
           new SimpleFeature({
@@ -69,10 +69,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             },
           }),
         )
-      })
+      }
 
       // make fake features from the coverage
-      Object.entries(skipmap).forEach(([key, skip]) => {
+      for (const [key, skip] of Object.entries(skipmap)) {
         observer.next(
           new SimpleFeature({
             id: key,
@@ -86,7 +86,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             },
           }),
         )
-      })
+      }
 
       observer.complete()
     }, opts.stopToken)

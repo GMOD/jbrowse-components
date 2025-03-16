@@ -16,7 +16,7 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
     const { drawLine } = await import('../drawLine')
     let feats = [] as Feature[]
     ctx.save()
-    sources.forEach(source => {
+    for (const source of sources) {
       const { reducedFeatures } = drawLine(ctx, {
         ...props,
         features: groups[source.name] || [],
@@ -30,7 +30,7 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
       ctx.stroke()
       ctx.translate(0, height)
       feats = feats.concat(reducedFeatures)
-    })
+    }
     ctx.restore()
     return { reducedFeatures: feats }
   }

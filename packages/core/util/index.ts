@@ -851,9 +851,9 @@ export function reverse(str: string) {
 
 export function complement(str: string) {
   let comp = ''
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < str.length; i++) {
-    comp += complementTable[str[i]!] ?? str[i]
+
+  for (const element of str) {
+    comp += complementTable[element] ?? element
   }
   return comp
 }
@@ -977,7 +977,7 @@ export const defaultCodonTable = {
  */
 export function generateCodonTable(table: any) {
   const tempCodonTable: Record<string, string> = {}
-  Object.keys(table).forEach(codon => {
+  for (const codon of Object.keys(table)) {
     const aa = table[codon]
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
@@ -997,7 +997,7 @@ export function generateCodonTable(table: any) {
         }
       }
     }
-  })
+  }
   return tempCodonTable
 }
 

@@ -89,22 +89,22 @@ export function freeAdapterResources(args: Record<string, any>) {
   // with that session
   if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
     const { sessionId } = args
-    Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
+    for (const [cacheKey, cacheEntry] of Object.entries(adapterCache)) {
       cacheEntry.sessionIds.delete(sessionId)
       if (cacheEntry.sessionIds.size === 0) {
         delete adapterCache[cacheKey]
       }
-    })
+    }
   } else {
     // otherwise call freeResources on all the cached data adapters
-    Object.values(adapterCache).forEach(cacheEntry => {
+    for (const cacheEntry of Object.values(adapterCache)) {
       const regions = args.regions || (args.region ? [args.region] : [])
       for (const region of regions) {
         if (region.refName !== undefined) {
           cacheEntry.dataAdapter.freeResources(region)
         }
       }
-    })
+    }
   }
 }
 

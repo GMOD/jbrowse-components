@@ -200,8 +200,8 @@ export function drawRef(
   }
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
-  for (let i = 0; i < featPositions.length; i++) {
-    const feature = featPositions[i]!
+  for (const [i, featPosition] of featPositions.entries()) {
+    const feature = featPosition
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 

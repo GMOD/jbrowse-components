@@ -69,7 +69,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GFF data')
             const intervalTree = new IntervalTree()
-            parseStringSync(lines)
+            for (const obj of parseStringSync(lines)
               .flat()
               .map(
                 (f, i) =>
@@ -77,10 +77,10 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
                     data: featureData(f),
                     id: `${this.id}-${refName}-${i}`,
                   }),
-              )
-              .forEach(obj =>
-                intervalTree.insert([obj.get('start'), obj.get('end')], obj),
-              )
+              )) {
+              intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+            }
+
             this.calculatedIntervalTreeMap[refName] = intervalTree
           }
           return this.calculatedIntervalTreeMap[refName]
@@ -120,11 +120,12 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = query
         const { intervalTreeMap } = await this.loadData(opts)
-        intervalTreeMap[refName]?.(opts.statusCallback)
-          .search([start, end])
-          .forEach(f => {
-            observer.next(f)
-          })
+        for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
+          start,
+          end,
+        ]) || []) {
+          observer.next(f)
+        }
         observer.complete()
       } catch (e) {
         observer.error(e)

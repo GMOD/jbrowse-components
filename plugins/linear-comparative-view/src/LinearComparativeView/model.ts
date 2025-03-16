@@ -150,13 +150,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
             // @ts-expect-error
             view[actionName](args?.[0])
           }
-        })
+        }
       },
 
       /**
