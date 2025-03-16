@@ -1118,9 +1118,9 @@ function r(s: number) {
 }
 export function getProgressDisplayStr(current: number, total: number) {
   if (Math.floor(total / 1_000_000) > 0) {
-    return `${r(total / 1_000_000)}/${r(current / 1_000_000)}Mb`
+    return `${r(current / 1_000_000)}/${r(total / 1_000_000)}Mb`
   } else if (Math.floor(total / 1_000) > 0) {
-    return `${r(total / 1_000)}/${r(current / 1_000)}Kb`
+    return `${r(current / 1_000)}/${r(total / 1_000)}Kb`
   } else {
     return `${r(current)}/${r(total)}}bytes`
   }
