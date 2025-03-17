@@ -54,6 +54,7 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
+    "p-limit": "^6.2.0",
     "rbush": "^3.0.1",
     "react-draggable": "^4.4.5",
     "rxjs": "^7.0.0",

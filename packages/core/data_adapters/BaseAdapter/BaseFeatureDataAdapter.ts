@@ -1,4 +1,5 @@
-import { firstValueFrom, merge } from 'rxjs'
+import pLimit from 'p-limit'
+import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter'
@@ -109,13 +110,39 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the regions
    */
-  public getFeaturesInMultipleRegions(
+  public async getFeaturesInMultipleRegions(
     regions: Region[],
     opts: BaseOptions = {},
   ) {
-    return merge(
-      ...regions.map(region => this.getFeaturesInRegion(region, opts)),
-    )
+    const limit = pLimit(10)
+    return ObservableCreate<Feature>(observer => {
+      Promise.all(
+        regions.map(region =>
+          limit(
+            () =>
+              new Promise<void>((resolve, reject) => {
+                this.getFeaturesInRegion(region, opts).subscribe({
+                  next: feature => {
+                    observer.next(feature)
+                  },
+                  error: err => {
+                    reject(err as Error)
+                  },
+                  complete: () => {
+                    resolve()
+                  },
+                })
+              }),
+          ),
+        ),
+      )
+        .then(() => {
+          observer.complete()
+        })
+        .catch((error: unknown) => {
+          observer.error(error)
+        })
+    })
   }
 
   /**
@@ -147,8 +174,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
+
+    const limit = pLimit(10)
     const feats = await Promise.all(
-      regions.map(region => this.getRegionQuantitativeStats(region, opts)),
+      regions.map(region =>
+        limit(() => this.getRegionQuantitativeStats(region, opts)),
+      ),
     )
 
     const scoreMax = max(feats.map(a => a.scoreMax))

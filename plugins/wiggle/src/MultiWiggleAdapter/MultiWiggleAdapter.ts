@@ -1,7 +1,7 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, max, min } from '@jbrowse/core/util'
+import { SimpleFeature, max, min, notEmpty } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { merge } from 'rxjs'
+import pLimit from 'p-limit'
 import { map } from 'rxjs/operators'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -65,47 +65,76 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // note: can't really have dis-agreeing refNames
   public async getRefNames(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
+    const limit = pLimit(10)
     const allNames = await Promise.all(
-      adapters.map(a => a.dataAdapter.getRefNames(opts)),
+      adapters.map(a => limit(() => a.dataAdapter.getRefNames(opts))),
     )
     return [...new Set(allNames.flat())]
   }
 
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
+    const limit = pLimit(10)
     const stats = (
       (await Promise.all(
         // @ts-expect-error
-        adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
+        limit(() =>
+          // @ts-expect-error
+          adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
+        ),
       )) as MaybeStats[]
-    ).filter(f => !!f)
-    const scoreMin = min(stats.map(s => s.scoreMin))
-    const scoreMax = max(stats.map(s => s.scoreMax))
+    ).filter(notEmpty)
+
     return {
-      scoreMin,
-      scoreMax,
+      scoreMin: min(stats.map(s => s.scoreMin)),
+      scoreMax: max(stats.map(s => s.scoreMax)),
     }
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
+    const limit = pLimit(10)
     return ObservableCreate<Feature>(async observer => {
       const adapters = await this.getAdapters()
-      merge(
-        ...adapters.map(adp =>
-          adp.dataAdapter.getFeatures(region, opts).pipe(
-            map(p =>
-              // add source field if it does not exist
-              p.get('source')
-                ? p
-                : new SimpleFeature({
-                    ...p.toJSON(),
-                    uniqueId: `${adp.source}-${p.id()}`,
-                    source: adp.source,
-                  }),
-            ),
+      Promise.all(
+        adapters.map(adp =>
+          limit(
+            () =>
+              new Promise<void>((resolve, reject) => {
+                adp.dataAdapter
+                  .getFeatures(region, opts)
+                  .pipe(
+                    map(p =>
+                      // add source field if it does not exist
+                      p.get('source')
+                        ? p
+                        : new SimpleFeature({
+                            ...p.toJSON(),
+                            uniqueId: `${adp.source}-${p.id()}`,
+                            source: adp.source,
+                          }),
+                    ),
+                  )
+                  .subscribe({
+                    next: feature => {
+                      observer.next(feature)
+                    },
+                    error: err => {
+                      reject(err as Error)
+                    },
+                    complete: () => {
+                      resolve()
+                    },
+                  })
+              }),
           ),
         ),
-      ).subscribe(observer)
+      )
+        .then(() => {
+          observer.complete()
+        })
+        .catch((error: unknown) => {
+          observer.error(error)
+        })
     }, opts.stopToken)
   }
 
