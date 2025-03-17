@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import Segments from './Segments'
 import { isUTR, layOutFeature, layOutSubfeatures } from './util'
 
-import type { ExtraGlyphValidator } from './util'
+import type { ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
