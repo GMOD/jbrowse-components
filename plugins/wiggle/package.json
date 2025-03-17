@@ -48,6 +48,7 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
+    "p-limit": "^6.2.0",
     "react-d3-axis-mod": "^0.1.9",
     "react-draggable": "^4.4.5",
     "rxjs": "^7.0.0",
