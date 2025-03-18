@@ -202,6 +202,25 @@ export default function MultiVariantBaseModelF(
       get preSources() {
         return self.layout.length ? self.layout : self.sourcesVolatile
       },
+
+      get nonLayoutSources() {
+        if (self.sourcesVolatile) {
+          const rows = []
+          const sources = Object.fromEntries(
+            self.sourcesVolatile.map(s => [s.name, s]),
+          )
+          for (const row of self.sourcesVolatile) {
+            rows.push({
+              ...sources[row.name],
+              ...row,
+              label: row.name,
+              id: row.name,
+            })
+          }
+          return rows
+        }
+        return undefined
+      },
       /**
        * #getter
        */
