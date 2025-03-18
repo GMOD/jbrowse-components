@@ -57,6 +57,33 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return Object.keys(header.refsByName)
   }
 
+  // allow using BigBedAdapter for aliases with chromAlias.bb file from UCSC
+  public async getRefNameAliases(opts?: BaseOptions) {
+    const { header } = await this.configure(opts)
+    const ret = await Promise.all(
+      Object.keys(header.refsByName).map(
+        async r =>
+          (
+            await firstValueFrom(
+              this.getFeatures({
+                assemblyName: '',
+                refName: r,
+                start: 0,
+                end: 1,
+              }).pipe(toArray()),
+            )
+          )[0]!,
+      ),
+    )
+    return ret
+      .map(r => r.toJSON())
+      .map(r => ({
+        refName: r.ucsc,
+        aliases: [r.ncbi, r.refseq, r.genbank],
+        override: true,
+      }))
+  }
+
   public async getData() {
     const refNames = await this.getRefNames()
     const features = []

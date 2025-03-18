@@ -13,7 +13,10 @@ const TwoBitAdapter = ConfigurationSchema(
      */
     twoBitLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.2bit',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
@@ -28,7 +31,29 @@ const TwoBitAdapter = ConfigurationSchema(
         'An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            twoBitLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            ...(snap.chromSizes
+              ? {
+                  chromSizesLocation: {
+                    uri: snap.chromSizes,
+                    baseUri: snap.baseUri,
+                  },
+                }
+              : {}),
+          }
+        : snap
+    },
+  },
 )
 
 export default TwoBitAdapter
