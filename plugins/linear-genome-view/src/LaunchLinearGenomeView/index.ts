@@ -70,7 +70,11 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
           }
         }
 
-        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
+        await handleSelectedRegion({
+          input: loc,
+          model: view,
+          assembly: asm,
+        })
 
         const idsNotFound = [] as string[]
         for (const track of tracks) {

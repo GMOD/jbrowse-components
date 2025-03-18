@@ -228,6 +228,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
+        /**
+         * #property
+         * this is a non-serialized property that can be used for loading the
+         * linear genome view as an alternative
+         */
+        navigateTo: types.frozen<
+          | {
+              loc: string
+              assembly: string
+              tracks?: string[]
+            }
+          | undefined
+        >(),
       }),
     )
     .volatile(() => ({
@@ -1072,6 +1085,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.scrollTo(0)
         self.zoomTo(10)
       },
+      /**
+       * #action
+       */
+      setNavigateTo(arg?: {
+        loc: string
+        assembly: string
+        trackIds: string[]
+      }) {
+        self.navigateTo = arg
+      },
 
       /**
        * #method
@@ -1434,31 +1457,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
       },
-
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              if (self.initialized) {
-                this.setCoarseDynamicBlocks(self.dynamicBlocks)
-              }
-            },
-            { delay: 150 },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
-            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
-            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-          }),
-        )
-      },
     }))
     .actions(self => ({
       /**
@@ -1762,6 +1760,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
           document.removeEventListener('keydown', handler)
         })
       },
+
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const { navigateTo } = self
+            if (navigateTo) {
+              self
+                .navToLocString(navigateTo.loc, navigateTo.assembly)
+                .catch((e: unknown) => {
+                  getSession(self).notifyError(`${e}`, e)
+                })
+
+              navigateTo.tracks?.map(t => self.showTrack(t))
+
+              // clear navigateTo state
+              self.setNavigateTo(undefined)
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.initialized) {
+                self.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
+            },
+            { delay: 150 },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+          }),
+        )
+      },
     }))
     .preProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -1775,6 +1816,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? highlight
             : [highlight],
         ...rest,
+      }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      } else {
+        const { navigateTo, ...rest } = snap as Omit<typeof snap, symbol>
+        return rest
       }
     })
 }
