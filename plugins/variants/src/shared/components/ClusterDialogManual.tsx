@@ -42,8 +42,6 @@ const useStyles = makeStyles()(theme => ({
 
 const ClusterDialogManuals = observer(function ({
   model,
-  paste,
-  setPaste,
   handleClose,
   children,
 }: {
@@ -54,12 +52,11 @@ const ClusterDialogManuals = observer(function ({
     setLayout: (arg: Source[]) => void
     clearLayout: () => void
   }
-  paste: string
-  setPaste: (arg: string) => void
   handleClose: () => void
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
+  const [paste, setPaste] = useState('')
   const [ret, setRet] = useState<Record<string, any>>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)

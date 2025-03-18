@@ -2,8 +2,10 @@
 // https://raw.githubusercontent.com/greenelab/hclust/refs/heads/master/src/hclust.js
 // license: MIT
 
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
 // get euclidean distance between two equal-dimension vectors
-export const euclideanDistance = (a: number[], b: number[]) => {
+export function euclideanDistance(a: number[], b: number[]) {
   const size = Math.min(a.length, b.length)
   let sum = 0
   for (let index = 0; index < size; index++) {
@@ -13,11 +15,11 @@ export const euclideanDistance = (a: number[], b: number[]) => {
 }
 
 // get average distance between sets of indexes, given distance matrix
-export const averageDistance = (
+export function averageDistance(
   setA: number[],
   setB: number[],
   distances: number[][],
-) => {
+) {
   let distance = 0
   for (const a of setA) {
     for (const b of setB) {
@@ -29,27 +31,29 @@ export const averageDistance = (
 }
 
 // update progress by calling user onProgress and postMessage for web workers
-const updateProgress = (
+function updateProgress(
   stepNumber: number,
   stepProgress: number,
   onProgress: (arg: number) => void,
-) => {
+) {
   // currently only two distinct steps: computing distance matrix and clustering
   onProgress(stepNumber / 2 + stepProgress / 2)
 }
 
 // the main clustering function
-export const clusterData = ({
+export function clusterData({
   data,
   distance = euclideanDistance,
   linkage = averageDistance,
   onProgress,
+  stopToken,
 }: {
   data: number[][]
   distance?: (a: number[], b: number[]) => number
   linkage?: (a: number[], b: number[], distances: number[][]) => number
   onProgress?: (a: number) => void
-}) => {
+  stopToken?: string
+}) {
   // compute distance between each data point and every other data point
   // N x N matrix where N = data.length
   const distances = data.map((datum, index) => {
@@ -70,8 +74,13 @@ export const clusterData = ({
   // keep track of all tree slices
   let clustersGivenK = []
 
+  let start = performance.now()
   // iterate through data
   for (let iteration = 0; iteration < data.length; iteration++) {
+    if (performance.now() - start > 2000) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
     if (onProgress) {
       updateProgress(1, (iteration + 1) / data.length, onProgress)
     }

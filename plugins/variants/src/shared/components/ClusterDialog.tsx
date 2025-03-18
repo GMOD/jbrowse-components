@@ -70,26 +70,25 @@ const ClusterDialog = observer(function ({
   }
   handleClose: () => void
 }) {
-  const [paste, setPaste] = useState('')
   const [activeMode, setActiveMode] = useState('auto')
 
   return (
-    <Dialog open title="Cluster by genotype" onClose={handleClose}>
+    <Dialog
+      open
+      title="Cluster by genotype"
+      onClose={(_, reason) => {
+        // don't close on backdrop click
+        if (reason !== 'backdropClick') {
+          handleClose()
+        }
+      }}
+    >
       {activeMode === 'auto' ? (
-        <ClusterDialogAuto
-          model={model}
-          setPaste={setPaste}
-          handleClose={handleClose}
-        >
+        <ClusterDialogAuto model={model} handleClose={handleClose}>
           <Header activeMode={activeMode} setActiveMode={setActiveMode} />
         </ClusterDialogAuto>
       ) : (
-        <ClusterDialogManual
-          model={model}
-          paste={paste}
-          setPaste={setPaste}
-          handleClose={handleClose}
-        >
+        <ClusterDialogManual model={model} handleClose={handleClose}>
           <Header activeMode={activeMode} setActiveMode={setActiveMode} />
         </ClusterDialogManual>
       )}

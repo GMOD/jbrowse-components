@@ -6,6 +6,7 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -15,7 +16,11 @@ import type { Source } from '../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface AutoClusterButtonProps {
+const ClusterDialogAuto = observer(function ({
+  model,
+  children,
+  handleClose,
+}: {
   model: {
     sourcesWithoutLayout?: Source[]
     minorAlleleFrequencyFilter?: number
@@ -23,18 +28,12 @@ interface AutoClusterButtonProps {
     setLayout: (arg: Source[]) => void
     clearLayout: () => void
   }
-  setPaste: (paste: string) => void
   children: React.ReactNode
   handleClose: () => void
-}
-
-const ClusterDialogAuto = observer(function ({
-  model,
-  children,
-  handleClose,
-}: AutoClusterButtonProps) {
+}) {
   const [progress, setProgress] = useState('')
   const [error, setError] = useState<unknown>()
+  const [stopToken, setStopToken] = useState('')
 
   return (
     <>
@@ -42,7 +41,16 @@ const ClusterDialogAuto = observer(function ({
         {children}
         <div>
           {progress ? (
-            <div style={{ padding: 100 }}>Progress: {progress}</div>
+            <div style={{ padding: 50 }}>
+              <span style={{ width: 400 }}>Progress: {progress}</span>
+              <Button
+                onClick={() => {
+                  stopStopToken(stopToken)
+                }}
+              >
+                Stop
+              </Button>
+            </div>
           ) : null}
           {error ? <ErrorMessage error={error} /> : null}
         </div>
@@ -65,6 +73,8 @@ const ClusterDialogAuto = observer(function ({
               } = model
               if (sourcesWithoutLayout) {
                 const sessionId = getRpcSessionId(model)
+                const stopToken = createStopToken()
+                setStopToken(stopToken)
                 const ret = (await rpcManager.call(
                   sessionId,
                   'MultiVariantClusterGenotypeMatrix',
@@ -74,6 +84,7 @@ const ClusterDialogAuto = observer(function ({
                     minorAlleleFrequencyFilter,
                     sessionId,
                     adapterConfig,
+                    stopToken,
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },
@@ -90,6 +101,7 @@ const ClusterDialogAuto = observer(function ({
                   }),
                 )
               }
+              handleClose()
             } catch (e) {
               if (!isAbortException(e) && isAlive(model)) {
                 console.error(e)
@@ -97,9 +109,8 @@ const ClusterDialogAuto = observer(function ({
               }
             } finally {
               setProgress('')
+              setStopToken('')
             }
-
-            handleClose()
           }}
         >
           Run clustering
@@ -109,6 +120,9 @@ const ClusterDialogAuto = observer(function ({
           color="secondary"
           onClick={() => {
             handleClose()
+            if (stopToken) {
+              stopStopToken(stopToken)
+            }
           }}
         >
           Cancel
