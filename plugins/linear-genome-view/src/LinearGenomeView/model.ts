@@ -67,6 +67,7 @@ import type {
   BpOffset,
   ExportSvgOptions,
   HighlightType,
+  InitState,
   NavLocation,
 } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -233,14 +234,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * this is a non-serialized property that can be used for loading the
          * linear genome view as an alternative
          */
-        navigateTo: types.frozen<
-          | {
-              loc: string
-              assembly: string
-              tracks?: string[]
-            }
-          | undefined
-        >(),
+        init: types.frozen<InitState | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -1085,15 +1079,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.scrollTo(0)
         self.zoomTo(10)
       },
+
       /**
        * #action
        */
-      setNavigateTo(arg?: {
-        loc: string
-        assembly: string
-        trackIds: string[]
-      }) {
-        self.navigateTo = arg
+      setInit(arg?: InitState) {
+        self.init = arg
       },
 
       /**
@@ -1765,18 +1756,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { navigateTo } = self
-            if (navigateTo) {
+            const { init } = self
+            if (init) {
               self
-                .navToLocString(navigateTo.loc, navigateTo.assembly)
+                .navToLocString(init.loc, init.assembly)
                 .catch((e: unknown) => {
                   getSession(self).notifyError(`${e}`, e)
                 })
 
-              navigateTo.tracks?.map(t => self.showTrack(t))
+              init.tracks?.map(t => self.showTrack(t))
 
-              // clear navigateTo state
-              self.setNavigateTo(undefined)
+              // clear init state
+              self.setInit(undefined)
             }
           }),
         )
@@ -1823,7 +1814,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       } else {
-        const { navigateTo, ...rest } = snap as Omit<typeof snap, symbol>
+        const { init, ...rest } = snap as Omit<typeof snap, symbol>
         return rest
       }
     })
