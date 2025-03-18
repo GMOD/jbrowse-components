@@ -80,20 +80,14 @@ const ClusterDialogAuto = observer(function ({
                   },
                 )) as { order: number[] }
 
-                const paste = ret.order.map(r => r + 1).join('\n')
                 model.setLayout(
-                  paste
-                    .split('\n')
-                    .map(t => t.trim())
-                    .filter(f => !!f)
-                    .map(r => +r)
-                    .map(idx => {
-                      const ret = sourcesWithoutLayout[idx - 1]
-                      if (!ret) {
-                        throw new Error(`out of bounds at ${idx}`)
-                      }
-                      return ret
-                    }),
+                  ret.order.map(idx => {
+                    const ret = sourcesWithoutLayout[idx]
+                    if (!ret) {
+                      throw new Error(`out of bounds at ${idx}`)
+                    }
+                    return ret
+                  }),
                 )
               }
             } catch (e) {

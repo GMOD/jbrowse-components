@@ -1,4 +1,5 @@
-// copied from https://raw.githubusercontent.com/greenelab/hclust/refs/heads/master/src/hclust.js
+// copied from
+// https://raw.githubusercontent.com/greenelab/hclust/refs/heads/master/src/hclust.js
 // license: MIT
 
 // get euclidean distance between two equal-dimension vectors
@@ -61,7 +62,7 @@ export const clusterData = ({
   })
 
   // initialize clusters to match data
-  const clusters = data.map((datum, index) => ({
+  const clusters = data.map((_datum, index) => ({
     height: 0,
     indexes: [Number(index)],
   }))
