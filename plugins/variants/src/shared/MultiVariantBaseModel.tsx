@@ -11,6 +11,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 import { types } from 'mobx-state-tree'
 
+import { getSources } from './getSources'
+
 import type { SampleInfo, Source } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -203,64 +205,29 @@ export default function MultiVariantBaseModelF(
         return self.layout.length ? self.layout : self.sourcesVolatile
       },
 
-      get nonLayoutSources() {
-        if (self.sourcesVolatile) {
-          const rows = []
-          const sources = Object.fromEntries(
-            self.sourcesVolatile.map(s => [s.name, s]),
-          )
-          for (const row of self.sourcesVolatile) {
-            rows.push({
-              ...sources[row.name],
-              ...row,
-              label: row.name,
-              id: row.name,
+      get sourcesWithoutLayout() {
+        return self.sourcesVolatile
+          ? getSources({
+              sources: self.sourcesVolatile,
+              renderingMode: self.renderingMode,
+              sampleInfo: self.sampleInfo,
             })
-          }
-          return rows
-        }
-        return undefined
+          : undefined
       },
       /**
        * #getter
        */
       get sources() {
-        if (this.preSources) {
-          const rows = []
-          const sources = Object.fromEntries(
-            self.sourcesVolatile?.map(s => [s.name, s]) || [],
-          )
-          for (const row of this.preSources) {
-            // make separate rows for each haplotype in phased mode
-            if (self.renderingMode === 'phased') {
-              const info = self.sampleInfo?.[row.name]
-              if (info?.isPhased) {
-                const ploidy = info.maxPloidy
-                for (let i = 0; i < ploidy; i++) {
-                  const id = `${row.name} HP${i}`
-                  rows.push({
-                    ...sources[row.name],
-                    ...row,
-                    label: id,
-                    HP: i,
-                    id: id,
-                  })
-                }
-              }
-            }
-            // non-phased mode does not make separate rows
-            else {
-              rows.push({
-                ...sources[row.name],
-                ...row,
-                label: row.name,
-                id: row.name,
-              })
-            }
-          }
-          return rows
-        }
-        return undefined
+        const sourcesWithLayout = self.layout.length
+          ? self.layout
+          : self.sourcesVolatile
+        return sourcesWithLayout
+          ? getSources({
+              sources: sourcesWithLayout,
+              renderingMode: self.renderingMode,
+              sampleInfo: self.sampleInfo,
+            })
+          : undefined
       },
     }))
     .views(self => {
