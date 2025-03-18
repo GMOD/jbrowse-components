@@ -4,6 +4,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import CategoryIcon from '@mui/icons-material/Category'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
@@ -346,6 +347,7 @@ export default function MultiVariantBaseModelF(
             },
             {
               label: 'Cluster by genotype',
+              icon: CategoryIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   ClusterDialog,

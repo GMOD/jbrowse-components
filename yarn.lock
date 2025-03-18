@@ -2114,9 +2114,9 @@
     quick-lru "^4.0.0"
 
 "@gmod/bbi@^6.0.0":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-6.0.1.tgz#85c9c48de53caaac719e018829b1a35d9cc2a996"
-  integrity sha512-XYk8+6AVnvbaMSwxk5PFepPjCq1aVyIC33HnxCvaNlCAQiRfIYROut/U43Cr/TptUrGiZAEICdUW7LupCYMDdA==
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-6.0.2.tgz#4695c1b6901f8e8c63e4600b0f40760591abf271"
+  integrity sha512-14n3ytOYn0nqgu+coX1Nd3/yNbRMVRr6/PBluhXT+zvbPcxUniiQHGx4WHFDQ9vCI8Lr9Xi/YwLb7AeOILcJ5w==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     generic-filehandle2 "^1.0.0"
@@ -2182,9 +2182,9 @@
     quick-lru "^4.0.0"
 
 "@gmod/tabix@^2.0.0":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-2.0.4.tgz#02ebf78ed1dc7b891aa315358ea746c967155951"
-  integrity sha512-7ibuWMDmbtljiWAA1NfjhtZyv6ctONct2qvuNoIOOW/fZS6qg4+eREF4sOWwS0ZnH+/vBCSaojXMPyZepLHXlQ==
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-2.0.5.tgz#79efbe9b57dafb0acd606372d969bf7965791279"
+  integrity sha512-E9skkvg5bLYnX3XbQwLejqTufQiWm7aMbJLrttouPIAb430++uWZyMR3Qta9GmKCiSQ0LOTjokVWJDe0b9qdOw==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@gmod/bgzf-filehandle" "^2.0.1"
@@ -6386,9 +6386,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001688:
-  version "1.0.30001705"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001705.tgz#dc3510bcdef261444ca944b7be9c8d0bb7fafeef"
-  integrity sha512-S0uyMMiYvA7CxNgomYBwwwPUnWzFD83f3B1ce5jHUfHTH//QL6hHsreI8RVC5606R4ssqravelYO5TU6t8sEyg==
+  version "1.0.30001706"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001706.tgz#902c3f896f4b2968031c3a546ab2ef8b465a2c8f"
+  integrity sha512-3ZczoTApMAZwPKYWmwVbQMFpXBDds3/0VciVoUwPUbldlYyVLmRVuRs/PcUZtHpbLRpzzDvrvnFuREsGt6lUug==
 
 canvas-sequencer@^3.1.0:
   version "3.1.0"
@@ -12611,9 +12611,9 @@ nth-check@^2.0.1:
     boolbase "^1.0.0"
 
 nwsapi@^2.2.16, nwsapi@^2.2.2:
-  version "2.2.18"
-  resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.18.tgz#3c4d7927e1ef4d042d319438ecfda6cd81b7ee41"
-  integrity sha512-p1TRH/edngVEHVbwqWnxUViEmq5znDvyB+Sik5cmuLpGOIfDf/39zLiq3swPF8Vakqn+gvNiOQAZu8djYlQILA==
+  version "2.2.19"
+  resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.19.tgz#586660f7c24c34691907002309a8dc28064c9c0b"
+  integrity sha512-94bcyI3RsqiZufXjkr3ltkI86iEl+I7uiHVDtcq9wJUTwYQJ5odHDeSzkkrRzi80jJ8MaeZgqKjH1bAWAFw9bA==
 
 "nx@>=17.1.2 < 21":
   version "20.6.1"
