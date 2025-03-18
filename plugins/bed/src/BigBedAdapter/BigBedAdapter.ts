@@ -101,7 +101,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { stopToken, statusCallback = () => {} } = opts
+    const { statusCallback = () => {} } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const { parser, bigbed } = await updateStatus(
@@ -114,7 +114,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       statusCallback,
       () =>
         bigbed.getFeatures(query.refName, query.start, query.end, {
-          stopToken,
           basesPerSpan: query.end - query.start,
         }),
     )

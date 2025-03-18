@@ -3,23 +3,23 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { type Region, groupBy } from '@jbrowse/core/util'
 import { firstValueFrom, toArray } from 'rxjs'
 
+import type { Source } from '../util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
+interface Args {
+  adapterConfig: AnyConfigurationModel
+  stopToken?: string
+  sessionId: string
+  headers?: Record<string, string>
+  regions: Region[]
+  bpPerPx: number
+  sources: Source[]
+}
 export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiWiggleGetScoreMatrix'
 
-  async execute(
-    args: {
-      adapterConfig: AnyConfigurationModel
-      stopToken?: string
-      sessionId: string
-      headers?: Record<string, string>
-      regions: Region[]
-      bpPerPx: number
-    },
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: Args, rpcDriverClassName: string) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
@@ -30,7 +30,7 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
     const adapter = await getAdapter(pm, sessionId, adapterConfig)
     const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-    const r0 = regions[0]
+    const r0 = regions[0]!
     const r0len = r0.end - r0.start
     const w = Math.floor(r0len / bpPerPx)
     const feats = await firstValueFrom(
