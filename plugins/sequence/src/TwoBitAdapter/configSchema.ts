@@ -42,6 +42,14 @@ const TwoBitAdapter = ConfigurationSchema(
               uri: snap.uri,
               baseUri: snap.baseUri,
             },
+            ...(snap.chromSizes
+              ? {
+                  chromSizesLocation: {
+                    uri: snap.chromSizes,
+                    baseUri: snap.baseUri,
+                  },
+                }
+              : {}),
           }
         : snap
     },
