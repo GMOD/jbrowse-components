@@ -58,11 +58,11 @@ function Tooltip({
       anchorEl={anchorEl}
       anchorOrigin={{
         vertical: 'top',
-        horizontal: side === 'left' ? 'right' : 'left',
+        horizontal: side === 'left' ? 'left' : 'right',
       }}
       transformOrigin={{
         vertical: 'bottom',
-        horizontal: side === 'left' ? 'left' : 'right',
+        horizontal: side === 'left' ? 'right' : 'left',
       }}
       keepMounted
       disableRestoreFocus
