@@ -56,6 +56,16 @@ export async function doConnect(self: {
               },
             },
           },
+          ...(genome.data.chromAliasBb
+            ? {
+                refNameAliases: {
+                  adapter: {
+                    type: 'BigBedAdapter',
+                    uri: resolve(genome.data.chromAliasBb, hubUri),
+                  },
+                },
+              }
+            : {}),
         })
       }
       const asm2 = assemblyManager.get(genomeName)
