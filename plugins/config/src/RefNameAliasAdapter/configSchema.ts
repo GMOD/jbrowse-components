@@ -30,7 +30,21 @@ const RefNameAliasAdapter = ConfigurationSchema(
       defaultValue: 0,
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            location: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default RefNameAliasAdapter

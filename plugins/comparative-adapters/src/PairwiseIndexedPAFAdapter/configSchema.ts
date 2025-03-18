@@ -69,7 +69,27 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
       },
     }),
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            pifGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default PairwiseIndexedPAFAdapter
