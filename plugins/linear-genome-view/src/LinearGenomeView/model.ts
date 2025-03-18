@@ -337,10 +337,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : false
       },
 
-      get pinnedTracksTop() {
+      get rubberbandTop() {
         let pinnedTracksTop = 0
         if (this.stickyViewHeaders) {
-          pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
+          pinnedTracksTop = VIEW_HEADER_HEIGHT
           if (!self.hideHeader) {
             pinnedTracksTop += HEADER_BAR_HEIGHT
             if (!self.hideHeaderOverview) {
@@ -349,6 +349,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         }
         return pinnedTracksTop
+      },
+
+      get pinnedTracksTop() {
+        return this.rubberbandTop + SCALE_BAR_HEIGHT
       },
     }))
     .views(self => ({

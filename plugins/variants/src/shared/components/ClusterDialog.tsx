@@ -100,8 +100,7 @@ const ClusterDialog = observer(function ({
   }, [model])
 
   const results = ret
-    ? `try(library(fastcluster), silent=TRUE)
-inputMatrix<-matrix(c(${Object.values(ret)
+    ? `inputMatrix<-matrix(c(${Object.values(ret)
         .map(val => val.genotypes.join(','))
         .join(',\n')}
 ),nrow=${Object.values(ret).length},byrow=TRUE)
@@ -110,6 +109,12 @@ rownames(inputMatrix)<-c(${Object.keys(ret)
         .join(',')})
 resultClusters<-hclust(dist(inputMatrix), method='${clusterMethod}')
 cat(resultClusters$order,sep='\\n')`
+    : undefined
+
+  const resultsTsv = ret
+    ? Object.entries(ret)
+        .map(([key, val]) => [key, ...val.genotypes].join('\t'))
+        .join('\n')
     : undefined
 
   return (
@@ -177,6 +182,20 @@ cat(resultClusters$order,sep='\\n')`
                   }}
                 >
                   Copy Rscript to clipboard
+                </Button>{' '}
+                or{' '}
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    saveAs(
+                      new Blob([resultsTsv || ''], {
+                        type: 'text/plain;charset=utf-8',
+                      }),
+                      'genotypes.csv',
+                    )
+                  }}
+                >
+                  Download TSV
                 </Button>
                 <div>
                   <TextField

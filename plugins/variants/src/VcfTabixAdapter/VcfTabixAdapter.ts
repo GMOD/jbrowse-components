@@ -113,19 +113,27 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       const header = lines[0]!.split('\t')
       const { parser } = await this.configure()
       const s = new Set(parser.samples)
-      return lines
+      const ret = lines
         .slice(1)
+        .filter(f => !!f)
         .map(line => {
-          const cols = line.split('\t')
+          const [name, ...rest] = line.split('\t')
           return {
-            name: cols[0]!,
             ...Object.fromEntries(
               // force col 0 to be called name
-              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
+              rest.map((c, idx) => [header[idx + 1]!, c] as const),
             ),
+            name: name!,
           }
         })
-        .filter(f => s.has(f.name))
+      const missing = ret.filter(f => !s.has(f.name))
+      if (missing.length) {
+        console.warn(
+          'Samples in metadata file not in VCF:',
+          ret.filter(f => !s.has(f.name)),
+        )
+      }
+      return ret.filter(f => s.has(f.name))
     }
   }
 

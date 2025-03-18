@@ -119,8 +119,7 @@ const ClusterDialog = observer(function ({
   ])
 
   const results = ret
-    ? `try(library(fastcluster), silent=TRUE)
-inputMatrix<-matrix(c(${Object.values(ret)
+    ? `inputMatrix<-matrix(c(${Object.values(ret)
         .map(val => val.scores.join(','))
         .join(',\n')}
 ),nrow=${Object.values(ret).length},byrow=TRUE)
