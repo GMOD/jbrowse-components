@@ -44,10 +44,11 @@ const ClusterDialog = observer(function ({
   handleClose,
 }: {
   model: {
-    sources?: Source[]
+    sourcesWithoutLayout?: Source[]
     minorAlleleFrequencyFilter?: number
     adapterConfig: AnyConfigurationModel
     setLayout: (arg: Source[]) => void
+    clearLayout: () => void
   }
   handleClose: () => void
 }) {
@@ -73,14 +74,18 @@ const ClusterDialog = observer(function ({
           return
         }
         const { rpcManager } = getSession(model)
-        const { sources, minorAlleleFrequencyFilter, adapterConfig } = model
+        const {
+          sourcesWithoutLayout,
+          minorAlleleFrequencyFilter,
+          adapterConfig,
+        } = model
         const sessionId = getRpcSessionId(model)
         const ret = (await rpcManager.call(
           sessionId,
           'MultiVariantGetGenotypeMatrix',
           {
             regions: view.dynamicBlocks.contentBlocks,
-            sources,
+            sources: sourcesWithoutLayout,
             minorAlleleFrequencyFilter,
             sessionId,
             adapterConfig,
@@ -231,8 +236,8 @@ cat(resultClusters$order,sep='\\n')`
           disabled={!results}
           variant="contained"
           onClick={() => {
-            const { sources } = model
-            if (sources) {
+            const { sourcesWithoutLayout } = model
+            if (sourcesWithoutLayout) {
               try {
                 model.setLayout(
                   paste
@@ -241,7 +246,7 @@ cat(resultClusters$order,sep='\\n')`
                     .filter(f => !!f)
                     .map(r => +r)
                     .map(idx => {
-                      const ret = sources[idx - 1]
+                      const ret = sourcesWithoutLayout[idx - 1]
                       if (!ret) {
                         throw new Error(`out of bounds at ${idx}`)
                       }
