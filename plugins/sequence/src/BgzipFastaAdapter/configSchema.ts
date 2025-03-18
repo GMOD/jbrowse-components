@@ -46,6 +46,28 @@ const BgzipFastaAdapter = ConfigurationSchema(
       },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            fastaLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            faiLocation: {
+              uri: `${snap.uri}.fai`,
+              baseUri: snap.baseUri,
+            },
+            gziLocation: {
+              uri: `${snap.uri}.gzi`,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 export default BgzipFastaAdapter
