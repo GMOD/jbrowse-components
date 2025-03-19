@@ -14,13 +14,21 @@ export default class RefNameAliasAdapter
     }
     const results = await openLocation(loc, this.pluginManager).readFile('utf8')
     const refColumn = this.getConf('refNameColumn')
-    return results
+    const refColumnHeaderName = this.getConf('refNameColumnHeaderName')
+    const lines = results
       .trim()
       .split(/\n|\r\n|\r/)
-      .filter(f => !!f && !f.startsWith('#'))
+      .filter(f => !!f)
+    const header = lines.filter(f => f.startsWith('#'))
+    const headerCol =
+      refColumnHeaderName && header.length
+        ? header.at(-1)!.split('\t').indexOf(refColumnHeaderName)
+        : refColumn
+    return lines
+      .filter(f => !f.startsWith('#'))
       .map(row => {
         const aliases = row.split('\t')
-        const refName = aliases[refColumn]
+        const refName = aliases[headerCol]
         return {
           refName: refName!,
           aliases: aliases.filter(f => !!f.trim()),

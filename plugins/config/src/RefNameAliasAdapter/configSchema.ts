@@ -29,6 +29,17 @@ const RefNameAliasAdapter = ConfigurationSchema(
       type: 'number',
       defaultValue: 0,
     },
+
+    /**
+     * #slot
+     * refNameColumnHeaderName
+     */
+    refNameColumnHeaderName: {
+      type: 'string',
+      description:
+        'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
+      defaultValue: '',
+    },
   },
   {
     explicitlyTyped: true,
