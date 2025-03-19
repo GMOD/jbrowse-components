@@ -20,7 +20,7 @@ export default class RefNameAliasAdapter
       .filter(f => !!f && !f.startsWith('#'))
       .map(row => {
         const aliases = row.split('\t')
-        const [refName] = aliases.splice(refColumn, 1)
+        const refName = aliases[refColumn]
         return {
           refName: refName!,
           aliases: aliases.filter(f => !!f.trim()),
