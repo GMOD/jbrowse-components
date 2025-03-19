@@ -166,11 +166,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         hasAnyAggregationField &&
         (maxEnd > query.end || minStart < query.start)
       ) {
+        // re-query with 500kb added onto start and end
         await this.getFeaturesHelper({
           query: {
             ...query,
-            start: minStart,
-            end: maxEnd,
+            start: minStart - 500_000,
+            end: maxEnd + 500_000,
           },
           opts,
           observer,
@@ -249,14 +250,16 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const s = min(subfeatures.map(f => f.start))
       const e = max(subfeatures.map(f => f.end))
       if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
-        const { uniqueId, strand } = subfeatures[0]!
+        const subs = subfeatures.sort((a, b) =>
+          a.uniqueId.localeCompare(b.uniqueId),
+        )
         observer.next(
           new SimpleFeature({
-            id: `${this.id}-${uniqueId}-parent`,
+            id: `${this.id}-${subs[0]?.uniqueId}-parent`,
             data: {
               type: 'gene',
-              subfeatures,
-              strand,
+              subfeatures: subs,
+              strand: subs[0]?.strand || 1,
               name,
               start: s,
               end: e,
@@ -272,7 +275,11 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         await this.getFeaturesHelper({
-          query,
+          query: {
+            ...query,
+            start: query.start,
+            end: query.end,
+          },
           opts,
           observer,
           allowRedispatch: true,
