@@ -166,10 +166,11 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         hasAnyAggregationField &&
         (maxEnd > query.end || minStart < query.start)
       ) {
-        // re-query with 500kb added onto start and end
         await this.getFeaturesHelper({
           query: {
             ...query,
+            // re-query with 500kb added onto start and end, in order to catch
+            // gene subfeatures that may not overlap your view
             start: minStart - 500_000,
             end: maxEnd + 500_000,
           },

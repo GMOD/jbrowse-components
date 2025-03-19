@@ -175,8 +175,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           await this.getFeaturesHelper({
             query: {
               ...query,
-              start: minStart,
-              end: maxEnd,
+              // re-query with 500kb added onto start and end, in order to catch
+              // gene subfeatures that may not overlap your view
+              start: minStart - 500_000,
+              end: maxEnd + 500_000,
             },
             opts,
             observer,
