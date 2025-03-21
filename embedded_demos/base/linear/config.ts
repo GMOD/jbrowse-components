@@ -1,24 +1,22 @@
-const config = {
-  assemblies: [
-    {
-      name: 'GRCh38',
-      aliases: ['hg38'],
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'GRCh38-ReferenceSequenceTrack',
-        adapter: {
-          type: 'BgzipFastaAdapter',
-          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-        },
-      },
-      refNameAliases: {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-        },
+export const config = {
+  assembly: {
+    name: 'GRCh38',
+    aliases: ['hg38'],
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'GRCh38-ReferenceSequenceTrack',
+      adapter: {
+        type: 'BgzipFastaAdapter',
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
       },
     },
-  ],
+    refNameAliases: {
+      adapter: {
+        type: 'RefNameAliasAdapter',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+      },
+    },
+  },
   tracks: [
     {
       type: 'FeatureTrack',
@@ -62,15 +60,7 @@ const config = {
 
         sequenceAdapter: {
           type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-          faiLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-          },
-          gziLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         },
       },
     },
@@ -111,23 +101,17 @@ const config = {
   defaultSession: {
     name: 'this session',
     margin: 0,
-    views: [
-      {
-        id: 'linearGenomeView',
-        minimized: false,
-        type: 'LinearGenomeView',
-        init: {
-          loc: '10:29,838,565..29,838,850',
-          tracks: [
-            'GRCh38-ReferenceSequenceTrack',
-            'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-            'hg38.100way.phyloP100way',
-            'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
-          ],
-        },
+    view: {
+      id: 'linearGenomeView',
+      init: {
+        loc: '10:29,838,565..29,838,850',
+        tracks: [
+          'GRCh38-ReferenceSequenceTrack',
+          'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+          'hg38.100way.phyloP100way',
+          'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
+        ],
       },
-    ],
+    },
   },
 }
-
-export default config

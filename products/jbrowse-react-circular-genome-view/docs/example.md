@@ -7,7 +7,7 @@ import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseCircularGenomeView,
-} from '@jbrowse/react-circular-genome-view'
+} from '@jbrowse/react-circular-genome-view2'
 
 const assembly = {
   name: 'hg19',

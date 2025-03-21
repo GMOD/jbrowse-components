@@ -1,4 +1,4 @@
-# Demo of `@jbrowse/react-linear-genome-view`
+# Demo of `@jbrowse/react-linear-genome-view2`
 
 This module uses "packed" builds of the repo, and runs an e2e test using
 cypress.

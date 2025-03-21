@@ -1,5 +1,5 @@
 import React from 'react'
-import { createViewState, JBrowseApp } from '@jbrowse/react-app'
+import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 
 import assembly from './assembly'
 import tracks from './tracks'
