@@ -25,8 +25,7 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-import type { Source } from '../types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -45,13 +44,7 @@ const ClusterDialogManuals = observer(function ({
   handleClose,
   children,
 }: {
-  model: {
-    sourcesWithoutLayout?: Source[]
-    minorAlleleFrequencyFilter?: number
-    adapterConfig: AnyConfigurationModel
-    setLayout: (arg: Source[]) => void
-    clearLayout: () => void
-  }
+  model: ReducedModel
   handleClose: () => void
   children: React.ReactNode
 }) {

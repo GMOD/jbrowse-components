@@ -5,15 +5,21 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { Button, DialogActions, DialogContent } from '@mui/material'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 
-import type { Source } from '../types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ClusterDialogAuto = observer(function ({
@@ -21,24 +27,50 @@ const ClusterDialogAuto = observer(function ({
   children,
   handleClose,
 }: {
-  model: {
-    sourcesWithoutLayout?: Source[]
-    minorAlleleFrequencyFilter?: number
-    adapterConfig: AnyConfigurationModel
-    setLayout: (arg: Source[]) => void
-    clearLayout: () => void
-  }
+  model: ReducedModel
   children: React.ReactNode
   handleClose: () => void
 }) {
   const [progress, setProgress] = useState('')
   const [error, setError] = useState<unknown>()
   const [stopToken, setStopToken] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
+    'cluster-samplesPerPixel',
+    '1',
+  )
 
   return (
     <>
       <DialogContent>
         {children}
+        <div style={{ marginTop: 50 }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setShowAdvanced(!showAdvanced)
+            }}
+          >
+            {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
+          </Button>
+          {showAdvanced ? (
+            <div style={{ marginTop: 20 }}>
+              <Typography>
+                This procedure samples the data at each 'pixel' across the
+                visible by default
+              </Typography>
+              <TextField
+                label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
+                variant="outlined"
+                size="small"
+                value={samplesPerPixel}
+                onChange={event => {
+                  setSamplesPerPixel(event.target.value)
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
         <div>
           {progress ? (
             <div style={{ padding: 50 }}>
@@ -61,30 +93,27 @@ const ClusterDialogAuto = observer(function ({
           onClick={async () => {
             try {
               setError(undefined)
+              setProgress('')
               const view = getContainingView(model) as LinearGenomeViewModel
               if (!view.initialized) {
                 return
               }
               const { rpcManager } = getSession(model)
-              const {
-                sourcesWithoutLayout,
-                minorAlleleFrequencyFilter,
-                adapterConfig,
-              } = model
+              const { sourcesWithoutLayout, adapterConfig } = model
               if (sourcesWithoutLayout) {
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
                 const ret = (await rpcManager.call(
                   sessionId,
-                  'MultiVariantClusterGenotypeMatrix',
+                  'MultiWiggleClusterScoreMatrix',
                   {
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesWithoutLayout,
-                    minorAlleleFrequencyFilter,
                     sessionId,
                     adapterConfig,
                     stopToken,
+                    bpPerPx: view.bpPerPx / +samplesPerPixel,
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },
