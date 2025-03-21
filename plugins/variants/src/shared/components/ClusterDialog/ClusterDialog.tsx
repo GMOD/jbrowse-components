@@ -7,8 +7,7 @@ import { observer } from 'mobx-react'
 import ClusterDialogAuto from './ClusterDialogAuto'
 import ClusterDialogManual from './ClusterDialogManual'
 
-import type { Source } from '../../types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ReducedModel } from './types'
 
 function Header({
   activeMode,
@@ -61,13 +60,7 @@ const ClusterDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: {
-    sourcesWithoutLayout?: Source[]
-    minorAlleleFrequencyFilter?: number
-    adapterConfig: AnyConfigurationModel
-    setLayout: (arg: Source[]) => void
-    clearLayout: () => void
-  }
+  model: ReducedModel
   handleClose: () => void
 }) {
   const [activeMode, setActiveMode] = useState('auto')

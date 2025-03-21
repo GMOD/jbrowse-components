@@ -215,6 +215,28 @@ export function stateModelFactory(
       get prefersOffset() {
         return this.isMultiRow
       },
+
+      /**
+       * #getter
+       */
+      get sourcesWithoutLayout() {
+        const sources = Object.fromEntries(
+          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+        )
+        const iter = self.sourcesVolatile
+        return iter
+          ?.map(s => ({
+            ...sources[s.name],
+            ...s,
+          }))
+          .map((s, i) => ({
+            ...s,
+            color:
+              s.color ||
+              (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
+          }))
+      },
+
       /**
        * #getter
        */

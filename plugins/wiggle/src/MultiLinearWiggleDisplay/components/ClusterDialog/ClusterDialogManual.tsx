@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  CascadingMenuButton,
+  ErrorMessage,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -8,12 +12,12 @@ import {
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import MenuIcon from '@mui/icons-material/Menu'
 import {
   Button,
   DialogActions,
   DialogContent,
   FormControlLabel,
-  Paper,
   Radio,
   RadioGroup,
   TextField,
@@ -43,19 +47,13 @@ const ClusterDialogManuals = observer(function ({
   model,
   handleClose,
   children,
-  samplesPerPixel,
 }: {
   model: ReducedModel
   handleClose: () => void
   children: React.ReactNode
-  samplesPerPixel: number
 }) {
   const { classes } = useStyles()
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { dynamicBlocks, bpPerPx } = view
-  const { rpcManager } = getSession(model)
-  const { sources, adapterConfig } = model
-  const sessionId = getRpcSessionId(model)
+
   const [paste, setPaste] = useState('')
   const [ret, setRet] = useState<Record<string, number[]>>()
   const [error, setError] = useState<unknown>()
@@ -65,6 +63,10 @@ const ClusterDialogManuals = observer(function ({
     'cluster-clusterMethod',
     'single',
   )
+  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
+    'cluster-samplesPerPixel',
+    '1',
+  )
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -73,16 +75,20 @@ const ClusterDialogManuals = observer(function ({
         setError(undefined)
         setRet(undefined)
         setLoading(true)
-
+        const view = getContainingView(model) as LinearGenomeViewModel
+        const { dynamicBlocks, bpPerPx } = view
+        const { rpcManager } = getSession(model)
+        const { sourcesWithoutLayout, adapterConfig } = model
+        const sessionId = getRpcSessionId(model)
         const ret = (await rpcManager.call(
           sessionId,
           'MultiWiggleGetScoreMatrix',
           {
             regions: dynamicBlocks.contentBlocks,
-            sources,
+            sources: sourcesWithoutLayout,
             sessionId,
             adapterConfig,
-            bpPerPx: bpPerPx / samplesPerPixel,
+            bpPerPx: bpPerPx / +samplesPerPixel,
           },
         )) as Record<string, number[]>
 
@@ -96,16 +102,7 @@ const ClusterDialogManuals = observer(function ({
         setLoading(false)
       }
     })()
-  }, [
-    model,
-    rpcManager,
-    adapterConfig,
-    bpPerPx,
-    dynamicBlocks.contentBlocks,
-    sessionId,
-    samplesPerPixel,
-    sources,
-  ])
+  }, [model, samplesPerPixel])
 
   const results = ret
     ? `inputMatrix<-matrix(c(${Object.values(ret)
@@ -129,7 +126,7 @@ cat(resultClusters$order,sep='\\n')`
     <>
       <DialogContent>
         {children}
-        <Paper style={{ padding: 16 }}>
+        <div style={{ marginTop: 50 }}>
           <div
             style={{
               display: 'flex',
@@ -160,31 +157,34 @@ cat(resultClusters$order,sep='\\n')`
             >
               Copy Rscript to clipboard
             </Button>{' '}
-            or{' '}
-            <Button
-              variant="contained"
-              onClick={() => {
-                saveAs(
-                  new Blob([resultsTsv || ''], {
-                    type: 'text/plain;charset=utf-8',
-                  }),
-                  'scores.tsv',
-                )
-              }}
-            >
-              Download TSV
-            </Button>
-            <div>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setShowAdvanced(!showAdvanced)
-                }}
+            <div style={{ float: 'right' }}>
+              <CascadingMenuButton
+                menuItems={[
+                  {
+                    label: 'Download TSV',
+                    onClick: () => {
+                      saveAs(
+                        new Blob([resultsTsv || ''], {
+                          type: 'text/plain;charset=utf-8',
+                        }),
+                        'scores.tsv',
+                      )
+                    },
+                  },
+                  {
+                    label: showAdvanced
+                      ? 'Hide advanced options'
+                      : 'Show advanced options',
+                    onClick: () => {
+                      setShowAdvanced(!showAdvanced)
+                    },
+                  },
+                ]}
               >
-                {showAdvanced
-                  ? 'Hide advanced options'
-                  : 'Show advanced options'}
-              </Button>
+                <MenuIcon />
+              </CascadingMenuButton>
+            </div>
+            <div>
               {showAdvanced ? (
                 <div>
                   <Typography variant="h6">Advanced options</Typography>
@@ -207,6 +207,21 @@ cat(resultClusters$order,sep='\\n')`
                       />
                     ))}
                   </RadioGroup>
+                  <div style={{ marginTop: 20 }}>
+                    <Typography>
+                      This procedure samples the data at each 'pixel' across the
+                      visible by default
+                    </Typography>
+                    <TextField
+                      label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
+                      variant="outlined"
+                      size="small"
+                      value={samplesPerPixel}
+                      onChange={event => {
+                        setSamplesPerPixel(event.target.value)
+                      }}
+                    />
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -246,14 +261,14 @@ cat(resultClusters$order,sep='\\n')`
               }}
             />
           </div>
-        </Paper>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button
           variant="contained"
           onClick={() => {
-            const { sources } = model
-            if (sources) {
+            const { sourcesWithoutLayout } = model
+            if (sourcesWithoutLayout) {
               try {
                 model.setLayout(
                   paste
@@ -262,7 +277,7 @@ cat(resultClusters$order,sep='\\n')`
                     .filter(f => !!f)
                     .map(r => +r)
                     .map(idx => {
-                      const ret = sources[idx - 1]
+                      const ret = sourcesWithoutLayout[idx - 1]
                       if (!ret) {
                         throw new Error(`out of bounds at ${idx}`)
                       }

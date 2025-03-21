@@ -1,14 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { useLocalStorage } from '@jbrowse/core/util'
-import {
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ClusterDialogAuto from './ClusterDialogAuto'
@@ -18,23 +11,13 @@ import type { ReducedModel } from './types'
 
 function Header({
   activeMode,
-  samplesPerPixel,
   setActiveMode,
-  setSamplesPerPixel,
 }: {
   activeMode: string
-  samplesPerPixel: string
   setActiveMode: (arg: string) => void
-  setSamplesPerPixel: (arg: string) => void
 }) {
-  const error = !samplesPerPixel || Number.isNaN(+samplesPerPixel)
   return (
     <div>
-      <Typography style={{ marginBottom: 30 }}>
-        This procedure will cluster the visible genotype data using hierarchical
-        clustering
-      </Typography>
-
       <RadioGroup>
         {Object.entries({
           auto: (
@@ -64,23 +47,6 @@ function Header({
           />
         ))}
       </RadioGroup>
-      <div style={{ marginTop: 20 }}>
-        <Typography>
-          This procedure samples the data at each 'pixel' across the visible by
-          default
-        </Typography>
-        <TextField
-          label="Samples per pixel"
-          variant="outlined"
-          size="small"
-          value={samplesPerPixel}
-          error={error}
-          onChange={event => {
-            setSamplesPerPixel(event.target.value)
-          }}
-          helperText={error ? 'Invalid number' : undefined}
-        />
-      </div>
     </div>
   )
 }
@@ -93,14 +59,12 @@ const ClusterDialog = observer(function ({
   handleClose: () => void
 }) {
   const [activeMode, setActiveMode] = useState('auto')
-  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
-    'cluster-samplesPerPixel',
-    '1',
-  )
+
   return (
     <Dialog
       open
-      title="Cluster by genotype"
+      title="Cluster by score"
+      maxWidth="xl"
       onClose={(_, reason) => {
         // don't close on backdrop click
         if (reason !== 'backdropClick') {
@@ -109,30 +73,12 @@ const ClusterDialog = observer(function ({
       }}
     >
       {activeMode === 'auto' ? (
-        <ClusterDialogAuto
-          samplesPerPixel={+samplesPerPixel}
-          model={model}
-          handleClose={handleClose}
-        >
-          <Header
-            samplesPerPixel={samplesPerPixel}
-            setSamplesPerPixel={setSamplesPerPixel}
-            activeMode={activeMode}
-            setActiveMode={setActiveMode}
-          />
+        <ClusterDialogAuto model={model} handleClose={handleClose}>
+          <Header activeMode={activeMode} setActiveMode={setActiveMode} />
         </ClusterDialogAuto>
       ) : (
-        <ClusterDialogManual
-          samplesPerPixel={+samplesPerPixel}
-          model={model}
-          handleClose={handleClose}
-        >
-          <Header
-            samplesPerPixel={samplesPerPixel}
-            setSamplesPerPixel={setSamplesPerPixel}
-            activeMode={activeMode}
-            setActiveMode={setActiveMode}
-          />
+        <ClusterDialogManual model={model} handleClose={handleClose}>
+          <Header activeMode={activeMode} setActiveMode={setActiveMode} />
         </ClusterDialogManual>
       )}
     </Dialog>
