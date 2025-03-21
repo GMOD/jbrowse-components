@@ -288,7 +288,8 @@ export function stateModelFactory(
        */
       get useMinimalTicks() {
         return (
-          getConf(self, 'minimalTicks') || this.rowHeightTooSmallForScalebar
+          (getConf(self, 'minimalTicks') as boolean) ||
+          this.rowHeightTooSmallForScalebar
         )
       },
     }))
@@ -463,18 +464,6 @@ export function stateModelFactory(
                 ]
               : []),
 
-            ...(self.graphType
-              ? [
-                  {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
             ...(hasRenderings
               ? [
                   {
@@ -496,6 +485,18 @@ export function stateModelFactory(
                   },
                 ]
               : []),
+            ...(self.graphType
+              ? [
+                  {
+                    type: 'checkbox',
+                    label: 'Draw cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
+                  },
+                ]
+              : []),
             {
               label: 'Cluster by score',
               onClick: () => {
@@ -508,7 +509,6 @@ export function stateModelFactory(
                 ])
               },
             },
-
             {
               label: 'Edit colors/arrangement...',
               onClick: () => {
