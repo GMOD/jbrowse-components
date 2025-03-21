@@ -4,18 +4,15 @@ const webpack = require('webpack')
 const buildDir = path.resolve('.')
 const distDir = path.resolve(buildDir, 'dist')
 
-const mode = process.env.NODE_ENV || 'production'
+const mode = process.env.NODE_ENV || 'development'
 
 module.exports = {
   mode,
-  entry: path.join(buildDir, 'src', 'index.ts'),
-  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+  entry: path.join(buildDir, 'src', 'webpack.ts'),
+  devtool: 'source-map',
   output: {
     path: distDir,
-    filename:
-      mode === 'production'
-        ? 'react-linear-genome-view.umd.production.min.js'
-        : 'react-linear-genome-view.umd.development.js',
+    filename: 'react-linear-genome-view.umd.development.js',
     library: 'JBrowseReactLinearGenomeView',
     libraryTarget: 'umd',
   },
@@ -31,6 +28,9 @@ module.exports = {
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
+    new webpack.ProvidePlugin({
+      React: 'react',
+    }),
   ],
   resolve: {
     extensions: [
@@ -44,10 +44,7 @@ module.exports = {
       '.jsx',
     ],
   },
-  externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
-  },
+
   module: {
     rules: [
       {

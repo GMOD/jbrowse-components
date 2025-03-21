@@ -1,5 +1,5 @@
 {
-  "name": "@jbrowse/react-app",
+  "name": "@jbrowse/react-app2",
   "version": "3.1.0",
   "description": "JBrowse 2 app React component",
   "keywords": [
@@ -31,7 +31,7 @@
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "build:webpack": "zcat react-app.umd.production.min.js.gz > dist/react-app.umd.production.min.js && zcat react-app.umd.development.js.gz > dist/react-app.umd.development.js",
+    "build:webpack": "webpack",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",

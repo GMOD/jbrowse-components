@@ -9,13 +9,10 @@ const mode = process.env.NODE_ENV || 'production'
 module.exports = {
   mode,
   entry: path.join(buildDir, 'src', 'index.ts'),
-  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+  devtool: 'source-map',
   output: {
     path: distDir,
-    filename:
-      mode === 'production'
-        ? 'react-app.umd.production.min.js'
-        : 'react-app.umd.development.js',
+    filename: 'react-app.umd.production.min.js',
     library: 'JBrowseReactApp',
     libraryTarget: 'umd',
   },
@@ -43,10 +40,6 @@ module.exports = {
       '.web.jsx',
       '.jsx',
     ],
-  },
-  externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
   },
   module: {
     rules: [
