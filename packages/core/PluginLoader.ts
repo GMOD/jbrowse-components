@@ -139,10 +139,10 @@ export function pluginDescriptionString(d: PluginDefinition) {
 export function pluginUrl(d: PluginDefinition) {
   if (isUMDPluginDefinition(d)) {
     // @ts-expect-error
-    return d.url ?? d.esmLoc.uri ?? d.umdUrl
+    return d.url ?? d.umdLoc?.uri ?? d.umdUrl
   } else if (isESMPluginDefinition(d)) {
     // @ts-expect-error
-    return d.esmUrl ?? d.esmUri
+    return d.esmUrl ?? d.esmUri ?? d.esmLoc?.uri
   } else if (isCJSPluginDefinition(d)) {
     // @ts-expect-error
     return d.cjsUrl || d.cjsLoc.uri
