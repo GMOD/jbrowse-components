@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import ClusterDialogAuto from './ClusterDialogAuto'
 import ClusterDialogManual from './ClusterDialogManual'
 
-import type { Source } from '../types'
+import type { Source } from '../../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 function Header({

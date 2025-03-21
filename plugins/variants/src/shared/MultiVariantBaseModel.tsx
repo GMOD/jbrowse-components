@@ -22,7 +22,9 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
-const ClusterDialog = lazy(() => import('./components/ClusterDialog'))
+const ClusterDialog = lazy(
+  () => import('./components/ClusterDialog/ClusterDialog'),
+)
 const SetRowHeightDialog = lazy(() => import('./components/SetRowHeightDialog'))
 
 /**

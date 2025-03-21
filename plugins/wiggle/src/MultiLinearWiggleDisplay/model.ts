@@ -32,7 +32,9 @@ const randomColor = () =>
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
-const ClusterDialog = lazy(() => import('./components/ClusterDialog'))
+const ClusterDialog = lazy(
+  () => import('./components/ClusterDialog/ClusterDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([

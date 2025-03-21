@@ -12,24 +12,19 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 
-import type { Source } from '../types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ClusterDialogAuto = observer(function ({
   model,
   children,
   handleClose,
+  samplesPerPixel,
 }: {
-  model: {
-    sourcesWithoutLayout?: Source[]
-    minorAlleleFrequencyFilter?: number
-    adapterConfig: AnyConfigurationModel
-    setLayout: (arg: Source[]) => void
-    clearLayout: () => void
-  }
+  model: ReducedModel
   children: React.ReactNode
   handleClose: () => void
+  samplesPerPixel: number
 }) {
   const [progress, setProgress] = useState('')
   const [error, setError] = useState<unknown>()
@@ -61,30 +56,27 @@ const ClusterDialogAuto = observer(function ({
           onClick={async () => {
             try {
               setError(undefined)
+              setProgress('')
               const view = getContainingView(model) as LinearGenomeViewModel
               if (!view.initialized) {
                 return
               }
               const { rpcManager } = getSession(model)
-              const {
-                sourcesWithoutLayout,
-                minorAlleleFrequencyFilter,
-                adapterConfig,
-              } = model
-              if (sourcesWithoutLayout) {
+              const { sources, adapterConfig } = model
+              if (sources) {
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
                 const ret = (await rpcManager.call(
                   sessionId,
-                  'MultiVariantClusterGenotypeMatrix',
+                  'MultiWiggleClusterScoreMatrix',
                   {
                     regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesWithoutLayout,
-                    minorAlleleFrequencyFilter,
+                    sources,
                     sessionId,
                     adapterConfig,
                     stopToken,
+                    bpPerPx: view.bpPerPx / samplesPerPixel,
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },
@@ -93,7 +85,7 @@ const ClusterDialogAuto = observer(function ({
 
                 model.setLayout(
                   ret.order.map(idx => {
-                    const ret = sourcesWithoutLayout[idx]
+                    const ret = sources[idx]
                     if (!ret) {
                       throw new Error(`out of bounds at ${idx}`)
                     }

@@ -25,8 +25,7 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
-import type { Source } from '../types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -44,24 +43,24 @@ const ClusterDialogManuals = observer(function ({
   model,
   handleClose,
   children,
+  samplesPerPixel,
 }: {
-  model: {
-    sourcesWithoutLayout?: Source[]
-    minorAlleleFrequencyFilter?: number
-    adapterConfig: AnyConfigurationModel
-    setLayout: (arg: Source[]) => void
-    clearLayout: () => void
-  }
+  model: ReducedModel
   handleClose: () => void
   children: React.ReactNode
+  samplesPerPixel: number
 }) {
   const { classes } = useStyles()
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { dynamicBlocks, bpPerPx } = view
+  const { rpcManager } = getSession(model)
+  const { sources, adapterConfig } = model
+  const sessionId = getRpcSessionId(model)
   const [paste, setPaste] = useState('')
-  const [ret, setRet] = useState<Record<string, any>>()
+  const [ret, setRet] = useState<Record<string, number[]>>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
-
   const [clusterMethod, setClusterMethod] = useLocalStorage(
     'cluster-clusterMethod',
     'single',
@@ -74,26 +73,16 @@ const ClusterDialogManuals = observer(function ({
         setError(undefined)
         setRet(undefined)
         setLoading(true)
-        const view = getContainingView(model) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return
-        }
-        const { rpcManager } = getSession(model)
-        const {
-          sourcesWithoutLayout,
-          minorAlleleFrequencyFilter,
-          adapterConfig,
-        } = model
-        const sessionId = getRpcSessionId(model)
+
         const ret = (await rpcManager.call(
           sessionId,
-          'MultiVariantGetGenotypeMatrix',
+          'MultiWiggleGetScoreMatrix',
           {
-            regions: view.dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout,
-            minorAlleleFrequencyFilter,
+            regions: dynamicBlocks.contentBlocks,
+            sources,
             sessionId,
             adapterConfig,
+            bpPerPx: bpPerPx / samplesPerPixel,
           },
         )) as Record<string, number[]>
 
@@ -107,7 +96,16 @@ const ClusterDialogManuals = observer(function ({
         setLoading(false)
       }
     })()
-  }, [model])
+  }, [
+    model,
+    rpcManager,
+    adapterConfig,
+    bpPerPx,
+    dynamicBlocks.contentBlocks,
+    sessionId,
+    samplesPerPixel,
+    sources,
+  ])
 
   const results = ret
     ? `inputMatrix<-matrix(c(${Object.values(ret)
@@ -170,7 +168,7 @@ cat(resultClusters$order,sep='\\n')`
                   new Blob([resultsTsv || ''], {
                     type: 'text/plain;charset=utf-8',
                   }),
-                  'genotypes.tsv',
+                  'scores.tsv',
                 )
               }}
             >
@@ -215,10 +213,7 @@ cat(resultClusters$order,sep='\\n')`
             {results ? (
               <div />
             ) : loading ? (
-              <LoadingEllipses
-                variant="h6"
-                title="Generating genotype matrix"
-              />
+              <LoadingEllipses variant="h6" title="Generating score matrix" />
             ) : error ? (
               <ErrorMessage error={error} />
             ) : null}
@@ -257,8 +252,8 @@ cat(resultClusters$order,sep='\\n')`
         <Button
           variant="contained"
           onClick={() => {
-            const { sourcesWithoutLayout } = model
-            if (sourcesWithoutLayout) {
+            const { sources } = model
+            if (sources) {
               try {
                 model.setLayout(
                   paste
@@ -267,7 +262,7 @@ cat(resultClusters$order,sep='\\n')`
                     .filter(f => !!f)
                     .map(r => +r)
                     .map(idx => {
-                      const ret = sourcesWithoutLayout[idx - 1]
+                      const ret = sources[idx - 1]
                       if (!ret) {
                         throw new Error(`out of bounds at ${idx}`)
                       }
