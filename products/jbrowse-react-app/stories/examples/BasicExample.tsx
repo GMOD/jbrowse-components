@@ -1,5 +1,5 @@
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app'
+// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import { JBrowseApp, createViewState } from '../../src'
 
 const config = {

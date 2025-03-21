@@ -1,6 +1,5 @@
 import * as React from 'react'
 
-export { ThemeProvider, createJBrowseTheme } from './deprecations'
 export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView'
 export { default as createModel } from './createModel'
 export { default as createViewState } from './createViewState'
