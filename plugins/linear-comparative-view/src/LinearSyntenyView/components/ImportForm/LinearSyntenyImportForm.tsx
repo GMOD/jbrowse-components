@@ -1,13 +1,12 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
-import { getSession, notEmpty } from '@jbrowse/core/util'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-import CloseIcon from '@mui/icons-material/Close'
-import { Button, Container, IconButton } from '@mui/material'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import { Button, Container } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import AssemblyRows from './AssemblyRows'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
 import { doSubmit } from './doSubmit'
 
@@ -20,13 +19,6 @@ const useStyles = makeStyles()(theme => ({
   button: {
     margin: theme.spacing(2),
   },
-  rel: {
-    position: 'relative',
-  },
-  synbutton: {
-    position: 'absolute',
-    top: 30,
-  },
 
   flex: {
     display: 'flex',
@@ -34,9 +26,6 @@ const useStyles = makeStyles()(theme => ({
   },
   mb: {
     marginBottom: 10,
-  },
-  bg: {
-    background: theme.palette.divider,
   },
   rightPanel: {
     flexGrow: 11,
@@ -55,7 +44,7 @@ const LinearSyntenyViewImportForm = observer(function ({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
   const defaultAssemblyName = assemblyNames[0] || ''
@@ -74,54 +63,14 @@ const LinearSyntenyViewImportForm = observer(function ({
           <div className={classes.mb}>
             Select assemblies for linear synteny view
           </div>
-          {selectedAssemblyNames.map((assemblyName, idx) => (
-            <div key={`${assemblyName}-${idx}`} className={classes.rel}>
-              <span>Row {idx + 1}: </span>
+          <AssemblyRows
+            model={model}
+            selectedAssemblyNames={selectedAssemblyNames}
+            setSelectedAssemblyNames={setSelectedAssemblyNames}
+            selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+          />
 
-              <IconButton
-                disabled={selectedAssemblyNames.length <= 2}
-                onClick={() => {
-                  model.importFormRemoveRow(idx)
-                  setSelectedAssemblyNames(
-                    selectedAssemblyNames
-                      .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                      .filter(notEmpty),
-                  )
-                  if (selectedRow >= selectedAssemblyNames.length - 2) {
-                    setSelectedRow(0)
-                  }
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-              <AssemblySelector
-                helperText=""
-                selected={assemblyName}
-                onChange={newAssembly => {
-                  setSelectedAssemblyNames(
-                    selectedAssemblyNames.map((asm, idx2) =>
-                      idx2 === idx ? newAssembly : asm,
-                    ),
-                  )
-                }}
-                session={session}
-              />
-              {idx !== selectedAssemblyNames.length - 1 ? (
-                <IconButton
-                  data-testid="synbutton"
-                  className={cx(
-                    classes.synbutton,
-                    idx === selectedRow ? classes.bg : undefined,
-                  )}
-                  onClick={() => {
-                    setSelectedRow(idx)
-                  }}
-                >
-                  <ArrowForwardIosIcon />
-                </IconButton>
-              ) : null}
-            </div>
-          ))}
           <div>
             <Button
               className={classes.button}
