@@ -44,7 +44,7 @@
     "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
-    "@jbrowse/react-linear-genome-view2": "file:./packed/jbrowse-react-linear-genome-view2.tgz"
+    "@jbrowse/react-linear-genome-view2": "file:./packed/jbrowse-react-linear-genome-view.tgz"
   },
   "scripts": {
     "start": "craco start",
