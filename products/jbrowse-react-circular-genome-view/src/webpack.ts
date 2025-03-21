@@ -1,11 +1,9 @@
 import * as React from 'react'
 
-export { ThemeProvider, createJBrowseTheme } from './deprecations'
-export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView'
+export { default as JBrowseCircularGenomeView } from './JBrowseCircularGenomeView'
 export { default as createModel } from './createModel'
 export { default as createViewState } from './createViewState'
 export { default as loadPlugins } from './loadPlugins'
-export type { ViewModel } from './createModel/createModel'
 
 export * from 'react-dom/client'
 

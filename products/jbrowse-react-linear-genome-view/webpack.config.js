@@ -4,7 +4,7 @@ const webpack = require('webpack')
 const buildDir = path.resolve('.')
 const distDir = path.resolve(buildDir, 'dist')
 
-const mode = process.env.NODE_ENV || 'development'
+const mode = process.env.NODE_ENV || 'production'
 
 module.exports = {
   mode,
@@ -12,7 +12,7 @@ module.exports = {
   devtool: 'source-map',
   output: {
     path: distDir,
-    filename: 'react-linear-genome-view.umd.development.js',
+    filename: 'react-linear-genome-view.umd.production.min.js',
     library: 'JBrowseReactLinearGenomeView',
     libraryTarget: 'umd',
   },

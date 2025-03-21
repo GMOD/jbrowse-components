@@ -8,7 +8,7 @@ const mode = process.env.NODE_ENV || 'production'
 
 module.exports = {
   mode,
-  entry: path.join(buildDir, 'src', 'index.ts'),
+  entry: path.join(buildDir, 'src', 'webpack.ts'),
   devtool: 'source-map',
   output: {
     path: distDir,
@@ -27,6 +27,9 @@ module.exports = {
   plugins: [
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
+    }),
+    new webpack.ProvidePlugin({
+      React: 'react',
     }),
   ],
   resolve: {
