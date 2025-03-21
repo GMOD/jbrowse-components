@@ -38,7 +38,7 @@ export function drawDensity(
   const scale = getScale({
     ...scaleOpts,
     pivotValue: crossing ? pivotValue : undefined,
-    range: crossing ? [negColor, 'white', posColor] : ['white', posColor],
+    range: crossing ? [negColor, '#eee', posColor] : ['#eee', posColor],
   })
 
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
