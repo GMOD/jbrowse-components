@@ -478,7 +478,7 @@ DESCRIPTION
 ```
 
 _See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.26/src/commands/help.ts)_
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.27/src/commands/help.ts)_
 
 ## `jbrowse make-pif FILE`
 
@@ -701,7 +701,7 @@ EXAMPLES
 
 
 
-  # create index for some files for use in @jbrowse/react-linear-genome-view or similar
+  # create index for some files for use in @jbrowse/react-linear-genome-view2 or similar
 
   $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```

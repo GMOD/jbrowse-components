@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {
   createViewState,
   JBrowseCircularGenomeView,
-} from '@jbrowse/react-circular-genome-view'
+} from '@jbrowse/react-circular-genome-view2'
 
 import assembly from './assembly'
 import tracks from './tracks'

@@ -25,7 +25,7 @@
   },
   "resolutions": {
     "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
-    "@jbrowse/react-app2": "file:./packed/jbrowse-react-app.tgz",
+    "@jbrowse/react-app2": "file:./packed/jbrowse-react-app2.tgz",
     "@jbrowse/plugin-alignments": "file:./packed/jbrowse-plugin-alignments.tgz",
     "@jbrowse/plugin-authentication": "file:./packed/jbrowse-plugin-authentication.tgz",
     "@jbrowse/plugin-bed": "file:./packed/jbrowse-plugin-bed.tgz",

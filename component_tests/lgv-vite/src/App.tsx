@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {
   createViewState,
   JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view'
+} from '@jbrowse/react-linear-genome-view2'
 
 import assembly from './assembly'
 import tracks from './tracks'
