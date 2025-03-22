@@ -171,6 +171,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
+        const levels = []
+        for (let i = 0; i < views.length - 1; i++) {
+          levels.push({ level: i })
+        }
+        self.levels = cast(levels)
       },
 
       /**
@@ -221,6 +226,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       toggleTrack(trackId: string, level = 0) {
         self.levels[level]?.toggleTrack(trackId)
       },
+
       /**
        * #action
        */
