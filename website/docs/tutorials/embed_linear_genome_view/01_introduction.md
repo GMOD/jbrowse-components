@@ -20,12 +20,12 @@ biological data. At its core, it is a
 been built as an extensible platform to enable visualization of all kinds of
 biological data.
 
-For those of you who have used the original JBrowse, you'll recognize many of
-the ideas and use cases JBrowse 2 was built around. JBrowse 2 is a complete
-rewrite of the original JBrowse, however, and so there are some differences. We
-hope that you will see that these differences, along with the modern web
-technologies that power JBrowse 2, enable JBrowse 2 to be an even more flexible
-and useful tool.
+For people who have used the original JBrowse, you'll recognize many of the
+ideas and use cases JBrowse 2 was built around. JBrowse 2 is a complete rewrite
+of the original JBrowse, however, and so there are some differences. We hope
+that you will see that these differences, along with the modern web technologies
+that power JBrowse 2, enable JBrowse 2 to be an even more flexible and useful
+tool.
 
 ## What does it mean to embed JBrowse 2?
 
