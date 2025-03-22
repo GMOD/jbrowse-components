@@ -388,11 +388,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridRowCount,
     })),
   ),
-  GridSaveAltIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSaveAltIcon,
-    })),
-  ),
   GridSearchIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridSearchIcon,

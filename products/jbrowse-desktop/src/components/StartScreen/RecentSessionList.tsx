@@ -92,7 +92,7 @@ export default function RecentSessionsList({
         checkboxSelection
         disableRowSelectionOnClick
         onRowSelectionModelChange={args => {
-          setSelectedSessions(sessions.filter(s => args.includes(s.path)))
+          setSelectedSessions(sessions.filter(s => args.ids.has(s.path)))
         }}
         rows={rows}
         rowHeight={25}

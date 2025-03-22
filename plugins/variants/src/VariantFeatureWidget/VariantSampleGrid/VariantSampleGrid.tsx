@@ -113,7 +113,7 @@ export default function VariantSamples(props: {
           rowHeight={25}
           columnHeaderHeight={35}
           disableColumnMenu
-          slots={{ toolbar: checked ? GridToolbar : null }}
+          slots={{ toolbar: checked ? GridToolbar : undefined }}
           slotProps={{
             toolbar: {
               printOptions: {

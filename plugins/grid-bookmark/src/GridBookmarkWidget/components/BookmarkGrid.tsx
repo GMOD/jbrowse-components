@@ -132,13 +132,16 @@ const BookmarkGrid = observer(function ({
         onRowSelectionModelChange={newRowSelectionModel => {
           if (bookmarksWithValidAssemblies.length > 0) {
             model.setSelectedBookmarks(
-              newRowSelectionModel.map(value => ({
+              [...newRowSelectionModel.ids].map(value => ({
                 ...rows[value as number]!,
               })),
             )
           }
         }}
-        rowSelectionModel={selectedBookmarks.map(r => r.id)}
+        rowSelectionModel={{
+          type: 'include',
+          ids: new Set(selectedBookmarks.map(r => r.id)),
+        }}
         disableRowSelectionOnClick
       />
     </div>

@@ -4,6 +4,7 @@ import SourcesDataGrid from './SourcesDataGrid'
 import SourcesGridHeader from './SourcesGridHeader'
 
 import type { Source } from '../types'
+import type { GridRowId } from '@mui/x-data-grid'
 
 function SourcesGrid({
   rows,
@@ -14,7 +15,7 @@ function SourcesGrid({
   onChange: (arg: Source[]) => void
   showTips: boolean
 }) {
-  const [selected, setSelected] = useState([] as string[])
+  const [selected, setSelected] = useState([] as GridRowId[])
 
   return (
     <div>

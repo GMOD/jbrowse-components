@@ -21,7 +21,9 @@ const SpreadsheetDataGrid = observer(function ({
         // might be an x-data-grid undocumented api, if it stops working, can
         // consider using controlled filtering
         setTimeout(() => {
-          model.setVisibleRows(apiRef.current.state.visibleRowsLookup)
+          if (apiRef.current) {
+            model.setVisibleRows(apiRef.current.state.visibleRowsLookup)
+          }
         })
       }}
       onColumnVisibilityModelChange={n => {

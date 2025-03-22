@@ -10,6 +10,7 @@ import { Button } from '@mui/material'
 import { moveDown, moveUp } from '../sourcesGridUtils'
 
 import type { Source } from '../types'
+import type { GridRowId } from '@mui/x-data-grid'
 
 export default function SourcesGridHeader({
   selected,
@@ -19,7 +20,7 @@ export default function SourcesGridHeader({
 }: {
   onChange: (arg: Source[]) => void
   rows: Source[]
-  selected: string[]
+  selected: GridRowId[]
   showTips: boolean
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
