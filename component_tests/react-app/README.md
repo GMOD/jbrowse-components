@@ -16,6 +16,5 @@ rm -rf node_modules
 yarn cache clean
 yarn
 yarn start
-yarn build
-yarn test:e2e
+yarn e2e
 ```
