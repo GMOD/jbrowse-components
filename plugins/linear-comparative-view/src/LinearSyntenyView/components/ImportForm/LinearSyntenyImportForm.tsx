@@ -2,12 +2,12 @@ import { useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { Button, Container } from '@mui/material'
+import { Container } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import AssemblyRows from './AssemblyRows'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
+import LeftPanel from './LeftPanel'
 import { doSubmit } from './doSubmit'
 
 import type { LinearSyntenyViewModel } from '../../model'
@@ -16,16 +16,9 @@ const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },
-  button: {
-    margin: theme.spacing(2),
-  },
-
   flex: {
     display: 'flex',
     gap: 90,
-  },
-  mb: {
-    marginBottom: 10,
   },
   rightPanel: {
     flexGrow: 11,
@@ -55,59 +48,36 @@ const LinearSyntenyViewImportForm = observer(function ({
   ])
   const [error, setError] = useState<unknown>()
 
+  const handleLaunch = async () => {
+    try {
+      setError(undefined)
+      await doSubmit({
+        selectedAssemblyNames,
+        model,
+      })
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
+  }
+
   return (
     <Container className={classes.importFormContainer}>
       {error ? <ErrorMessage error={error} /> : null}
       <div className={classes.flex}>
         <div className={classes.leftPanel}>
-          <div className={classes.mb}>
-            Select assemblies for linear synteny view
-          </div>
-          <AssemblyRows
+          <LeftPanel
             model={model}
             selectedAssemblyNames={selectedAssemblyNames}
             setSelectedAssemblyNames={setSelectedAssemblyNames}
             selectedRow={selectedRow}
             setSelectedRow={setSelectedRow}
+            defaultAssemblyName={defaultAssemblyName}
+            onLaunch={() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              handleLaunch()
+            }}
           />
-
-          <div>
-            <Button
-              className={classes.button}
-              variant="contained"
-              color="secondary"
-              onClick={() => {
-                setSelectedAssemblyNames([
-                  ...selectedAssemblyNames,
-                  defaultAssemblyName,
-                ])
-              }}
-            >
-              Add row
-            </Button>
-            <Button
-              className={classes.button}
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    setError(undefined)
-                    await doSubmit({
-                      selectedAssemblyNames,
-                      model,
-                    })
-                  } catch (e) {
-                    console.error(e)
-                    setError(e)
-                  }
-                })()
-              }}
-              variant="contained"
-              color="primary"
-            >
-              Launch
-            </Button>
-          </div>
         </div>
 
         <div className={classes.rightPanel}>

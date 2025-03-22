@@ -2,13 +2,19 @@ import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
-import { IconButton } from '@mui/material'
+import { Button, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearSyntenyViewModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
+  mb: {
+    marginBottom: 10,
+  },
+  button: {
+    margin: theme.spacing(2),
+  },
   rel: {
     position: 'relative',
   },
@@ -21,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AssemblyRow = observer(function ({
+const AssemblyRows = observer(function ({
   selectedRow,
   selectedAssemblyNames,
   setSelectedRow,
@@ -86,4 +92,63 @@ const AssemblyRow = observer(function ({
   ))
 })
 
-export default AssemblyRow
+const LeftPanel = observer(function ({
+  model,
+  selectedAssemblyNames,
+  setSelectedAssemblyNames,
+  selectedRow,
+  setSelectedRow,
+  defaultAssemblyName,
+  onLaunch,
+}: {
+  model: LinearSyntenyViewModel
+  selectedAssemblyNames: string[]
+  setSelectedAssemblyNames: (names: string[]) => void
+  selectedRow: number
+  setSelectedRow: (row: number) => void
+  defaultAssemblyName: string
+  onLaunch: () => void
+}) {
+  const { classes } = useStyles()
+
+  return (
+    <>
+      <div className={classes.mb}>
+        Select assemblies for linear synteny view
+      </div>
+      <AssemblyRows
+        model={model}
+        selectedAssemblyNames={selectedAssemblyNames}
+        setSelectedAssemblyNames={setSelectedAssemblyNames}
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+      />
+
+      <div>
+        <Button
+          className={classes.button}
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            setSelectedAssemblyNames([
+              ...selectedAssemblyNames,
+              defaultAssemblyName,
+            ])
+          }}
+        >
+          Add row
+        </Button>
+        <Button
+          className={classes.button}
+          onClick={onLaunch}
+          variant="contained"
+          color="primary"
+        >
+          Launch
+        </Button>
+      </div>
+    </>
+  )
+})
+
+export default LeftPanel
