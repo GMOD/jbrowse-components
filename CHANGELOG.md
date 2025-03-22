@@ -1,3 +1,52 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.2.0
+
+## 3.2.0 (2025-03-22)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4919](https://github.com/GMOD/jbrowse-components/pull/4919) Add in-app
+    clustering method for multi-wiggle tracks
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4909](https://github.com/GMOD/jbrowse-components/pull/4909) Add ability to
+    load refNameAliases from chromAliases.bb file
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4906](https://github.com/GMOD/jbrowse-components/pull/4906) Add in-app
+    clustering method for genotype matrix
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4914](https://github.com/GMOD/jbrowse-components/pull/4914) Allow looking
+    up header column by name for RefNameAliases
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4910](https://github.com/GMOD/jbrowse-components/pull/4910) Allow
+    refNameColumn in RefNameAliasAdapter to override the default displayed
+    refnames ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4907](https://github.com/GMOD/jbrowse-components/pull/4907) Simplified
+    snapshot API for initial navigation of LGV
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `product-core`, `web-core`
+  - [#4899](https://github.com/GMOD/jbrowse-components/pull/4899) Add aborting
+    to multi-variant rendering, multi-wiggle rendering
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4920](https://github.com/GMOD/jbrowse-components/pull/4920) Fix issue where
+  multi-level linear synteny view would show a blank tracklist
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4913](https://github.com/GMOD/jbrowse-components/pull/4913) Fix parent
+  aggregation in BigBed files using larger request window
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4905](https://github.com/GMOD/jbrowse-components/pull/4905) Fix bug where
+  applying genotype clustering twice produces randomness
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4897](https://github.com/GMOD/jbrowse-components/pull/4897) Fix clustering
+  for certain sets of bigwig files ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.00s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.1.0
 
 ## 3.1.0 (2025-03-14)
