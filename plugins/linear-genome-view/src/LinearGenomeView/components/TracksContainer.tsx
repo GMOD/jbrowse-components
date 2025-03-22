@@ -38,7 +38,7 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
-  const { stickyViewHeaders, pinnedTracksTop, showGridlines, showCenterLine } =
+  const { stickyViewHeaders, rubberbandTop, showGridlines, showCenterLine } =
     model
   const ref = useRef<HTMLDivElement>(null)
   const {
@@ -90,7 +90,7 @@ const TracksContainer = observer(function TracksContainer({
             numOfBpSelected={numOfBpSelected}
             width={width}
             left={left}
-            top={pinnedTracksTop}
+            top={rubberbandTop}
             sticky={stickyViewHeaders}
           />
         </Suspense>
