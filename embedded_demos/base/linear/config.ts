@@ -1,7 +1,6 @@
 export const config = {
   assembly: {
-    name: 'GRCh38',
-    aliases: ['hg38'],
+    name: 'hg38',
     sequence: {
       type: 'ReferenceSequenceTrack',
       trackId: 'GRCh38-ReferenceSequenceTrack',
@@ -22,7 +21,7 @@ export const config = {
       type: 'FeatureTrack',
       trackId: 'genes',
       name: 'NCBI RefSeq Genes',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       category: ['Genes'],
       adapter: {
         type: 'Gff3TabixAdapter',
@@ -52,7 +51,7 @@ export const config = {
       type: 'AlignmentsTrack',
       trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
       name: 'NA12878 Exome',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       category: ['1000 Genomes', 'Alignments'],
       adapter: {
         type: 'CramAdapter',
@@ -69,7 +68,7 @@ export const config = {
       trackId:
         'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
       name: '1000 Genomes Variant Calls',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       category: ['1000 Genomes', 'Variants'],
       adapter: {
         type: 'VcfTabixAdapter',
@@ -103,7 +102,9 @@ export const config = {
     margin: 0,
     view: {
       id: 'linearGenomeView',
+      type: 'LinearGenomeView',
       init: {
+        assembly: 'hg38',
         loc: '10:29,838,565..29,838,850',
         tracks: [
           'GRCh38-ReferenceSequenceTrack',

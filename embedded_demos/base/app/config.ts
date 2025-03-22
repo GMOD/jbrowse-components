@@ -1,8 +1,7 @@
 const config = {
   assemblies: [
     {
-      name: 'GRCh38',
-      aliases: ['hg38'],
+      name: 'hg38',
       sequence: {
         type: 'ReferenceSequenceTrack',
         trackId: 'GRCh38-ReferenceSequenceTrack',
@@ -24,7 +23,7 @@ const config = {
       type: 'FeatureTrack',
       trackId: 'genes',
       name: 'NCBI RefSeq Genes',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       category: ['Genes'],
       adapter: {
         type: 'Gff3TabixAdapter',
@@ -54,7 +53,7 @@ const config = {
       type: 'AlignmentsTrack',
       trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
       name: 'NA12878 Exome',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       category: ['1000 Genomes', 'Alignments'],
       adapter: {
         type: 'CramAdapter',
@@ -62,15 +61,7 @@ const config = {
 
         sequenceAdapter: {
           type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-          faiLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-          },
-          gziLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         },
       },
     },
@@ -79,7 +70,7 @@ const config = {
       trackId:
         'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
       name: '1000 Genomes Variant Calls',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       category: ['1000 Genomes', 'Variants'],
       adapter: {
         type: 'VcfTabixAdapter',
@@ -118,6 +109,7 @@ const config = {
         type: 'LinearGenomeView',
         init: {
           loc: '10:29,838,565..29,838,850',
+          assembly: 'hg38',
           tracks: [
             'GRCh38-ReferenceSequenceTrack',
             'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
