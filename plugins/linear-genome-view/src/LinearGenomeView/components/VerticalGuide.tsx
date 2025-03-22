@@ -18,7 +18,7 @@ const useStyles = makeStyles()({
     width: 1,
     position: 'absolute',
     background: 'red',
-    zIndex: 4,
+    zIndex: 1001,
   },
   tooltipTarget: {
     position: 'sticky',

@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background: alpha(theme.palette.tertiary.main, 0.7),
       position: 'absolute',
-      zIndex: 10,
+      zIndex: 900,
       textAlign: 'center',
       overflow: 'hidden',
     },
