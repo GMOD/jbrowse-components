@@ -1,11 +1,7 @@
-import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession, stringify } from '@jbrowse/core/util'
-import { isSessionWithMultipleViews } from '@jbrowse/product-core'
+import { stringify } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-
-import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -34,23 +30,8 @@ const VerticalGuide = observer(function VerticalGuide({
   coordX: number
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
+  const { stickyViewHeaders, rubberbandTop } = model
 
-  let stickyViewHeaders = false
-  if (isSessionWithMultipleViews(session)) {
-    ;({ stickyViewHeaders } = session)
-  }
-
-  let tooltipTop = 0
-  if (stickyViewHeaders) {
-    tooltipTop = VIEW_HEADER_HEIGHT
-    if (!model.hideHeader) {
-      tooltipTop += HEADER_BAR_HEIGHT
-      if (!model.hideHeaderOverview) {
-        tooltipTop += HEADER_OVERVIEW_HEIGHT
-      }
-    }
-  }
   return (
     <>
       <Tooltip
@@ -63,7 +44,7 @@ const VerticalGuide = observer(function VerticalGuide({
           className={classes.tooltipTarget}
           style={{
             left: coordX + 6,
-            top: tooltipTop,
+            top: rubberbandTop,
             position: stickyViewHeaders ? 'sticky' : undefined,
           }}
         />
