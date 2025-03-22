@@ -42,7 +42,7 @@
     "@jbrowse/plugin-linear-genome-view": "^3.2.0",
     "@jbrowse/plugin-variants": "^3.2.0",
     "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
+    "@mui/material": "^7.0.0",
     "@mui/x-data-grid": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

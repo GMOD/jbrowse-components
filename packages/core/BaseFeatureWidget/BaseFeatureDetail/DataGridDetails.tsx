@@ -89,7 +89,7 @@ export default function DataGridDetails({
             columnHeaderHeight={35}
             hideFooter={rows.length < 25}
             slots={{
-              toolbar: checked ? GridToolbar : null,
+              toolbar: checked ? GridToolbar : undefined,
             }}
             slotProps={{
               toolbar: {

@@ -1,4 +1,6 @@
-export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
+import type { GridRowId } from '@mui/x-data-grid'
+
+export function moveUp(arr: { name: string }[], sel: GridRowId[], by = 1) {
   const idxs = sel
     .map(l => arr.findIndex(v => v.name === l))
     .sort((a, b) => a - b)
@@ -14,7 +16,7 @@ export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
   return arr
 }
 
-export function moveDown(arr: { name: string }[], sel: string[], by = 1) {
+export function moveDown(arr: { name: string }[], sel: GridRowId[], by = 1) {
   const idxs = sel
     .map(l => arr.findIndex(v => v.name === l))
     .sort((a, b) => b - a)
