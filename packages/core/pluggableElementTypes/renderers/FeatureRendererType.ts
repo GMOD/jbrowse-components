@@ -145,9 +145,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
     const pm = this.pluginManager
     const { stopToken, regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
+    checkStopToken(stopToken)
 
     // make sure the requested region's start and end are integers, if there is
     // a region specification.

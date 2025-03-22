@@ -15,7 +15,10 @@ const Gff3TabixAdapter = ConfigurationSchema(
      */
     gffGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.gff.gz',
+        locationType: 'UriLocation',
+      },
     },
 
     index: ConfigurationSchema('Gff3TabixIndex', {
@@ -50,7 +53,28 @@ const Gff3TabixAdapter = ConfigurationSchema(
       defaultValue: ['chromosome', 'region', 'contig'],
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            gffGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: snap.uri,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default Gff3TabixAdapter

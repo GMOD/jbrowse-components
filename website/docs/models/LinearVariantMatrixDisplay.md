@@ -44,6 +44,15 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 rowHeightSetting: types.optional(types.number, 1)
 ```
 
+#### property: lineZoneHeight
+
+```js
+// type signature
+number
+// code
+lineZoneHeight: 20
+```
+
 ### LinearVariantMatrixDisplay - Getters
 
 #### getter: blockType
@@ -67,6 +76,13 @@ number
 number
 ```
 
+#### getter: featuresReady
+
+```js
+// type
+boolean
+```
+
 #### getter: canDisplayLabels
 
 ```js
@@ -84,6 +100,20 @@ renderProps: () => any
 ```
 
 ### LinearVariantMatrixDisplay - Actions
+
+#### action: setLineZoneHeight
+
+```js
+// type signature
+setLineZoneHeight: (n: number) => number
+```
+
+#### action: setLineZoneHeight
+
+```js
+// type signature
+setLineZoneHeight: (n: number) => number
+```
 
 #### action: renderSvg
 

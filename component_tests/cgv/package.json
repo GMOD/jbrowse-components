@@ -4,8 +4,7 @@
   "private": true,
   "dependencies": {
     "@fontsource/roboto": "^4.5.5",
-    "@jbrowse/plugin-linear-genome-view": "^2.3.3",
-    "@jbrowse/react-circular-genome-view": "^2.0.0",
+    "@jbrowse/react-circular-genome-view2": "^3.0.0",
     "@testing-library/cypress": "^9.0.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
@@ -44,8 +43,8 @@
     "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
-    "@jbrowse/react-linear-genome-view": "file:./packed/jbrowse-react-linear-genome-view.tgz",
-    "@jbrowse/react-circular-genome-view": "file:./packed/jbrowse-react-circular-genome-view.tgz"
+    "@jbrowse/react-linear-genome-view2": "file:./packed/jbrowse-react-linear-genome-view2.tgz",
+    "@jbrowse/react-circular-genome-view2": "file:./packed/jbrowse-react-circular-genome-view2.tgz"
   },
   "scripts": {
     "start": "react-scripts start",

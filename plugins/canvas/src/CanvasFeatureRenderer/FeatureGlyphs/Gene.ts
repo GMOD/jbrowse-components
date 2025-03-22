@@ -2,8 +2,8 @@ import BoxGlyph from './Box'
 import ProcessedTranscriptGlyph from './ProcessedTranscript'
 
 import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
-import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import type { Feature } from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 interface FeatureRectWithGlyph extends LaidOutFeatureRect {
   label: any
@@ -99,14 +99,15 @@ export default class Gene extends BoxGlyph {
     layout: BaseLayout<Feature>,
     feature: Feature,
   ) {
-    console.log({ viewInfo })
     const fRect = super.layoutFeature(viewInfo, layout, feature)
 
     // @ts-expect-error
-    fRect?.subRects?.forEach(subRect => {
-      subRect.t += fRect.t
-      subRect.rect.t += fRect.t
-    })
+    if (fRect?.subRects) {
+      for (const subRect of fRect.subRects) {
+        subRect.t += fRect.t
+        subRect.rect.t += fRect.t
+      }
+    }
     return fRect
   }
 
@@ -124,8 +125,10 @@ export default class Gene extends BoxGlyph {
     viewInfo: ViewInfo,
     fRect: LaidOutFeatureRectWithSubRects,
   ) {
-    fRect.subRects?.forEach(sub => {
-      this.getSubGlyph(sub.f).renderFeature(context, viewInfo, sub)
-    })
+    if (fRect.subRects) {
+      for (const sub of fRect.subRects) {
+        this.getSubGlyph(sub.f).renderFeature(context, viewInfo, sub)
+      }
+    }
   }
 }

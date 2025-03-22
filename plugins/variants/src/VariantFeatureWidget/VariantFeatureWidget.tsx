@@ -5,14 +5,16 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import VariantSampleGrid from './VariantSampleGrid'
+import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid'
 import { variantFieldDescriptions } from './variantFieldDescriptions'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
 import type { Descriptions, ReducedFeature } from './types'
 
 // lazies
-const LaunchBreakendPanel = lazy(() => import('./LaunchBreakendPanel'))
+const LaunchBreakendPanel = lazy(
+  () => import('./LaunchBreakendPanel/LaunchBreakendPanel'),
+)
 const VariantConsequenceDataGrid = lazy(
   () => import('./VariantConsequenceDataGrid'),
 )

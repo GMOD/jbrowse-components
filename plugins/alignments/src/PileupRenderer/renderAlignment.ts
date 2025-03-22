@@ -13,8 +13,8 @@ export function renderAlignment({
   ctx,
   feat,
   renderArgs,
-  colorForBase,
-  contrastForBase,
+  colorMap,
+  colorContrastMap,
   charWidth,
   charHeight,
   defaultColor,
@@ -23,8 +23,8 @@ export function renderAlignment({
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: ProcessedRenderArgs
-  colorForBase: Record<string, string>
-  contrastForBase: Record<string, string>
+  colorMap: Record<string, string>
+  colorContrastMap: Record<string, string>
   charWidth: number
   charHeight: number
   defaultColor: boolean
@@ -69,8 +69,8 @@ export function renderAlignment({
         feat,
         region,
         bpPerPx,
-        colorForBase,
-        contrastForBase,
+        colorMap,
+        colorContrastMap,
         charWidth,
         charHeight,
         canvasWidth,

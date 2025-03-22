@@ -213,13 +213,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
             // @ts-ignore
             view[actionName](args?.[0])
           }
-        })
+        }
       },
 
       /**
@@ -227,9 +227,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => {
+        for (const v of self.views) {
           v.setWidth(newWidth)
-        })
+        }
       },
 
       /**

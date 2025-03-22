@@ -35,6 +35,15 @@ ISimpleType<"LinearWiggleDisplay">
 type: types.literal('LinearWiggleDisplay')
 ```
 
+#### property: invertedSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+invertedSetting: types.maybe(types.boolean)
+```
+
 ### LinearWiggleDisplay - Getters
 
 #### getter: TooltipComponent
@@ -60,18 +69,25 @@ unused currently
 boolean
 ```
 
+#### getter: graphType
+
+```js
+// type
+boolean
+```
+
+#### getter: inverted
+
+```js
+// type
+boolean
+```
+
 #### getter: ticks
 
 ```js
 // type
 { range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
-```
-
-#### getter: needsScalebar
-
-```js
-// type
-boolean
 ```
 
 #### getter: fillSetting
@@ -112,6 +128,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```
 
 ### LinearWiggleDisplay - Actions
+
+#### action: setInverted
+
+```js
+// type signature
+setInverted: (arg: boolean) => void
+```
 
 #### action: renderSvg
 

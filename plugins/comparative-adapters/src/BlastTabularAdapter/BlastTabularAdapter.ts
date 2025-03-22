@@ -216,7 +216,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
       opts,
     )
     const columns: string = readConfObject(this.config, 'columns')
-    return parseLineByLine(buf, createBlastLineParser(columns))
+    return parseLineByLine(buf, createBlastLineParser(columns), opts)
   }
 
   async hasDataForRefName() {
@@ -275,6 +275,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
         return
       }
 
+      // eslint-disable-next-line unicorn/no-for-loop
       for (let i = 0; i < blastRecords.length; i++) {
         const r = blastRecords[i]!
         let start: number

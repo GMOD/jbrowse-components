@@ -202,14 +202,9 @@ export default class ServerSideRenderer extends RendererType {
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
+    const { sessionId } = args
 
-    const freed = this.freeResources()
-    const freedRpc = (await rpcManager.call(
-      args.sessionId,
-      'CoreFreeResources',
-      serializedArgs,
-    )) as number
-    return freed + freedRpc
+    await rpcManager.call(sessionId, 'CoreFreeResources', serializedArgs)
   }
 }
 

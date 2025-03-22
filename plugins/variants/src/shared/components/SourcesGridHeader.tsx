@@ -75,12 +75,12 @@ export default function SourcesGridHeader({
         color={widgetColor}
         onChange={c => {
           setWidgetColor(c)
-          selected.forEach(id => {
+          for (const id of selected) {
             const elt = rows.find(f => f.name === id)
             if (elt) {
               elt.color = c
             }
-          })
+          }
 
           onChange([...rows])
         }}

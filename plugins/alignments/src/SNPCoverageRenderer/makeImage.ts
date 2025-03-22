@@ -82,15 +82,15 @@ export async function makeImage(
   const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
   const toHeight2 = (n: number) => toY2(originLinear) - toY2(n)
 
-  const { bases } = theme.palette
-  const colorForBase: Record<string, string> = {
+  const { bases, softclip, hardclip, insertion } = theme.palette
+  const colorMap: Record<string, string> = {
     A: bases.A.main,
     C: bases.C.main,
     G: bases.G.main,
     T: bases.T.main,
-    insertion: 'purple',
-    softclip: 'blue',
-    hardclip: 'red',
+    insertion,
+    softclip,
+    hardclip,
     total: readConfObject(cfg, 'color'),
     mod_NONE: 'blue',
     cpg_meth: 'red',
@@ -101,7 +101,7 @@ export async function makeImage(
 
   // Use two pass rendering, which helps in visualizing the SNPs at higher
   // bpPerPx First pass: draw the gray background
-  ctx.fillStyle = colorForBase.total!
+  ctx.fillStyle = colorMap.total!
   let start = performance.now()
   for (const feature of feats) {
     if (feature.get('type') === 'skip') {
@@ -254,7 +254,7 @@ export async function makeImage(
         const { entryDepth } = mods[base]!
         const height = toHeight(score0)
         const bottom = toY(score0) + height
-        ctx.fillStyle = colorForBase[base] || 'black'
+        ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
           bottom - ((entryDepth + curr) / depth) * height,
@@ -267,7 +267,7 @@ export async function makeImage(
         const { entryDepth } = nonmods[base]!
         const height = toHeight(score0)
         const bottom = toY(score0) + height
-        ctx.fillStyle = colorForBase[base] || 'black'
+        ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
           bottom - ((entryDepth + curr) / depth) * height,
@@ -283,7 +283,7 @@ export async function makeImage(
         const { entryDepth } = snps[base]!
         const height = toHeight(score0)
         const bottom = toY(score0) + height
-        ctx.fillStyle = colorForBase[base] || 'black'
+        ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
           bottom - ((entryDepth + curr) / depth) * height,
@@ -300,7 +300,7 @@ export async function makeImage(
       for (const base of interbaseEvents) {
         const { entryDepth } = snpinfo.noncov[base]!
         const r = 0.6
-        ctx.fillStyle = colorForBase[base]!
+        ctx.fillStyle = colorMap[base]!
         ctx.fillRect(
           leftPx - r + extraHorizontallyFlippedOffset,
           INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
@@ -331,7 +331,7 @@ export async function makeImage(
         accum > indicatorComparatorScore * indicatorThreshold &&
         indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
       ) {
-        ctx.fillStyle = colorForBase[maxBase]!
+        ctx.fillStyle = colorMap[maxBase]!
         ctx.beginPath()
         const l = leftPx + extraHorizontallyFlippedOffset
         ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)

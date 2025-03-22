@@ -1,40 +1,11 @@
 import { observer } from 'mobx-react'
 
-// utils
 import { isEmpty } from './util'
 import { replaceUndefinedWithNull } from '../util'
-import Attributes from './Attributes'
-import BaseCard from './BaseCard'
-import CoreDetails from './CoreDetails'
 import FeatureDetails from './FeatureDetails'
 import { ErrorMessage } from '../../ui'
 
-import type { BaseCardProps, BaseProps } from '../types'
-
-export const BaseCoreDetails = (props: BaseProps) => {
-  const { title = 'Primary data' } = props
-  return (
-    <BaseCard {...props} title={title}>
-      <CoreDetails {...props} />
-    </BaseCard>
-  )
-}
-
-export const BaseAttributes = (props: BaseProps) => {
-  const { feature } = props
-  return (
-    <BaseCard {...props} title="Attributes">
-      <Attributes {...props} attributes={feature} />
-    </BaseCard>
-  )
-}
-
-export interface BaseInputProps extends BaseCardProps {
-  omit?: string[]
-  model: any
-  descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown, key: string) => React.ReactNode
-}
+import type { BaseInputProps } from './types'
 
 const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
   const { error, featureData } = model
@@ -58,4 +29,6 @@ const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
 export default BaseFeatureDetail
 
 export { default as BaseCard } from './BaseCard'
+export { default as BaseAttributes } from './BaseAttributes'
+export { default as BaseCoreDetails } from './BaseCoreDetails'
 export { default as FeatureDetails } from './FeatureDetails'

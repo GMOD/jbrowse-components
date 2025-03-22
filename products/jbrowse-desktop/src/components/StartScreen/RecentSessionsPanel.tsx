@@ -70,7 +70,7 @@ export default function RecentSessionPanel({
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
-    'false',
+    true,
   )
 
   const sortedSessions = useMemo(
@@ -83,10 +83,7 @@ export default function RecentSessionPanel({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        const sessions = await ipcRenderer.invoke(
-          'listSessions',
-          showAutosaves === 'true',
-        )
+        const sessions = await ipcRenderer.invoke('listSessions', showAutosaves)
         setSessions(sessions)
       } catch (e) {
         console.error(e)
@@ -174,9 +171,9 @@ export default function RecentSessionPanel({
         <FormControlLabel
           control={
             <Checkbox
-              checked={showAutosaves === 'true'}
+              checked={showAutosaves}
               onChange={() => {
-                setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
+                setShowAutosaves(!showAutosaves)
               }}
             />
           }

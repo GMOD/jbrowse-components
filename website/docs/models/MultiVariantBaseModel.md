@@ -132,6 +132,13 @@ number
 number
 ```
 
+#### getter: featuresReady
+
+```js
+// type
+boolean
+```
+
 ### MultiVariantBaseModel - Methods
 
 #### method: adapterProps
@@ -145,7 +152,7 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
 ```
 
 ### MultiVariantBaseModel - Actions

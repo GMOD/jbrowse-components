@@ -13,7 +13,10 @@ const BigBedAdapter = ConfigurationSchema(
      */
     bigBedLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bb',
+        locationType: 'UriLocation',
+      },
     },
 
     /**
@@ -34,7 +37,21 @@ const BigBedAdapter = ConfigurationSchema(
       defaultValue: 'geneName2',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bigBedLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default BigBedAdapter

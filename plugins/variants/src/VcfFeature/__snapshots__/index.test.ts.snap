@@ -20,7 +20,6 @@ exports[`null ALT 1`] = `
   "aliases": undefined,
   "description": "no alternative alleles",
   "end": 100,
-  "format": undefined,
   "name": "rs123",
   "refName": "chr1",
   "samples": {},

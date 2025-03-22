@@ -36,6 +36,17 @@ IArrayType<IAnyType>
 views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
+#### property: stickyViewHeaders
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+stickyViewHeaders: types.optional(types.boolean, () =>
+        localStorageGetBoolean('stickyViewHeaders', true),
+      )
+```
+
 ### MultipleViewsSessionMixin - Actions
 
 #### action: moveViewDown
@@ -99,4 +110,11 @@ addViewOfAssembly: (viewType: string, assemblyName: string, initialState?: Recor
 ```js
 // type signature
 addViewFromAnotherView: (viewType: string, otherView: { id: string; displayName: string; minimized: boolean; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>;...
+```
+
+#### action: setStickyViewHeaders
+
+```js
+// type signature
+setStickyViewHeaders: (sticky: boolean) => void
 ```

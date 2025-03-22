@@ -1,5 +1,5 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
 import type { ScaleOpts, Source } from './util'
 import type {
@@ -22,6 +22,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   ticks: { values: number[] }
   inverted: boolean
   themeOptions: ThemeOptions
+  statusCallback?: (arg: string) => void
 }
 
 export interface RenderArgsDeserializedWithFeatures
@@ -40,21 +41,29 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { inverted, height, regions, bpPerPx } = renderProps
+    const {
+      inverted,
+      height,
+      regions,
+      bpPerPx,
+      statusCallback = () => {},
+    } = renderProps
+
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
     // @ts-expect-error
-    const { reducedFeatures, ...rest } = await renderToAbstractCanvas(
-      width,
-      height,
-      renderProps,
-      ctx =>
-        this.draw(ctx, {
-          ...renderProps,
-          features,
-          inverted,
-        }),
+    const { reducedFeatures, ...rest } = await updateStatus(
+      'Rendering plot',
+      statusCallback,
+      () =>
+        renderToAbstractCanvas(width, height, renderProps, ctx =>
+          this.draw(ctx, {
+            ...renderProps,
+            features,
+            inverted,
+          }),
+        ),
     )
 
     const results = await super.render({

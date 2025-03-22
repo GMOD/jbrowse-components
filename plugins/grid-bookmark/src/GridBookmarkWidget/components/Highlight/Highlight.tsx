@@ -17,7 +17,7 @@ const useStyles = makeStyles()({
   bookmarkButton: {
     overflow: 'hidden',
     position: 'absolute',
-    zIndex: 1000,
+    zIndex: 800,
   },
   highlight: {
     overflow: 'hidden',

@@ -229,7 +229,33 @@ showTrackOutlines: types.optional(types.boolean, () =>
         )
 ```
 
+#### property: init
+
+this is a non-serialized property that can be used for loading the linear genome
+view as an alternative
+
+```js
+// type signature
+IType<InitState, InitState, InitState>
+// code
+init: types.frozen<InitState | undefined>()
+```
+
 ### LinearGenomeView - Getters
+
+#### getter: pinnedTracks
+
+```js
+// type
+any[]
+```
+
+#### getter: unpinnedTracks
+
+```js
+// type
+any[]
+```
 
 #### getter: trackLabelsSetting
 
@@ -870,6 +896,13 @@ this "clears the view" and makes the view return to the import form
 ```js
 // type signature
 clearView: () => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (arg?: InitState) => void
 ```
 
 #### action: slide

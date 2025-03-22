@@ -96,21 +96,21 @@ removeJob: (jobName: string) => { name: string; statusMessage: string; progressP
 
 ```js
 // type signature
-addFinishedJob: (job: NewJob) => IMSTArray<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: ISimpleType<number>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>
+addFinishedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: addQueuedJob
 
 ```js
 // type signature
-addQueuedJob: (job: NewJob) => IMSTArray<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: ISimpleType<number>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>
+addQueuedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: addAbortedJob
 
 ```js
 // type signature
-addAbortedJob: (job: NewJob) => IMSTArray<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: ISimpleType<number>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>
+addAbortedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeQueuedJob

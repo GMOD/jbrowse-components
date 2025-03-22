@@ -448,11 +448,13 @@ export default function stateModelFactory(pm: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
       /**
        * #action
@@ -646,11 +648,11 @@ export default function stateModelFactory(pm: PluginManager) {
 
               const views = [self.hview, self.vview]
               transaction(() => {
-                self.assemblyNames.forEach((name, index) => {
+                for (const [index, name] of self.assemblyNames.entries()) {
                   const assembly = session.assemblyManager.get(name)
                   const view = views[index]!
                   view.setDisplayedRegions(assembly?.regions || [])
-                })
+                }
                 self.showAllRegions()
               })
             },

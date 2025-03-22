@@ -14,7 +14,7 @@ export function hasPairedReads(features: ChainData) {
 export function alphaColor(baseColor: string, p: number) {
   return p !== 1
     ? colord(baseColor)
-        .alpha(p * p)
+        .alpha(Math.min(1, p * p + 0.1))
         .toHslString()
     : baseColor
 }

@@ -69,7 +69,7 @@ export function moveTo(
 
   let bpToStart = -extraBp
 
-  for (let i = 0; i < self.displayedRegions.length; i += 1) {
+  for (let i = 0; i < self.displayedRegions.length; i++) {
     const region = self.displayedRegions[i]!
     if (start.index === i) {
       bpToStart += start.offset
@@ -126,6 +126,7 @@ export function pxToBp(
 
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
   let currBlock = 0
+  // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < displayedRegions.length; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start

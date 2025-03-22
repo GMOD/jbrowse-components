@@ -23,16 +23,21 @@ function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
   if (ref === total) {
     return `#ccc`
   } else {
-    let a1 = colord(`hsl(200,50%,${80 - (alt / total) * 50}%)`)
+    let a1
+    if (alt) {
+      a1 = colord(`hsl(200,50%,${80 - (alt / total) * 50}%)`)
+    }
     if (alt2) {
+      const l = `hsla(0,100%,20%,${alt2 / total})`
       // @ts-ignore
-      a1 = a1.mix(`hsla(0,100%,20%,${alt2 / total})`)
+      a1 = a1 ? a1.mix(l) : colord(l)
     }
     if (uncalled) {
+      const l = `hsl(50,50%,50%,${uncalled / total})`
       // @ts-ignore
-      a1 = a1.mix(`hsla(50,50%,50%,${uncalled / total / 2})`)
+      a1 = a1 ? a1.mix(l) : colord(l)
     }
-    return a1.toHex()
+    return a1?.toHex() || 'black'
   }
 }
 

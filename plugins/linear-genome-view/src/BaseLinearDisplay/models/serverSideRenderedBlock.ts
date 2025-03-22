@@ -4,7 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
-  getContainingView,
+  getContainingTrack,
   getSession,
   getViewParams,
   makeAbortableReaction,
@@ -239,6 +239,7 @@ const blockState = types
           if (renderArgs) {
             await rendererType.freeResourcesInClient(
               rpcManager,
+              // error if use structuredClone: can't clone Function, presumably a statusCallback
               JSON.parse(JSON.stringify(renderArgs)),
             )
           }
@@ -282,7 +283,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = getContainingView(display).id
+    const layoutId = getContainingTrack(display).id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -305,7 +306,7 @@ export function renderBlockData(
         layoutId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
-        timeout: 1000000, // 10000,
+        timeout: 1_000_000,
       },
     }
   } catch (e) {

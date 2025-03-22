@@ -149,12 +149,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Draw CIGAR',
-              onClick: () => {
-                self.setDrawCIGAR(!self.drawCIGAR)
-              },
               checked: self.drawCIGAR,
               type: 'checkbox',
               description: 'Draws per-base CIGAR level alignments',
+              onClick: () => {
+                self.setDrawCIGAR(!self.drawCIGAR)
+              },
             },
             {
               label: 'Link views',

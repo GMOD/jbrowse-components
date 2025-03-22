@@ -57,7 +57,7 @@ export function downloadBookmarkFile(
   if (fileFormat === 'BED') {
     const fileHeader = ''
     const fileContents: Record<string, string[]> = {}
-    bookmarksToDownload.forEach(bookmark => {
+    for (const bookmark of bookmarksToDownload) {
       const { label } = bookmark
       const labelVal = label === '' ? '.' : label
       const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
@@ -67,7 +67,7 @@ export function downloadBookmarkFile(
       } else {
         fileContents[bookmark.assemblyName] = [line]
       }
-    })
+    }
 
     for (const assembly in fileContents) {
       const fileContent = fileContents[assembly]!.reduce(

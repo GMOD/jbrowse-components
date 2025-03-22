@@ -50,7 +50,7 @@ export default class TextIndex extends JBrowseCommand {
     '# indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous index already existed)',
     '$ jbrowse text-index -a hg19 --force',
     '',
-    '# create index for some files for use in @jbrowse/react-linear-genome-view or similar',
+    '# create index for some files for use in @jbrowse/react-linear-genome-view2 or similar',
     '$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes',
   ]
 
@@ -355,8 +355,8 @@ export default class TextIndex extends JBrowseCommand {
       .filter(fileConfig => supported(fileConfig.adapter?.type))
 
     if (fileId?.length) {
-      for (let i = 0; i < fileId.length; i++) {
-        trackConfigs[i]!.trackId = fileId[i]!
+      for (const [i, element] of fileId.entries()) {
+        trackConfigs[i]!.trackId = element!
       }
     }
 
@@ -446,16 +446,16 @@ export default class TextIndex extends JBrowseCommand {
       let loc: UriLocation | LocalPathLocation
       if (type === 'Gff3TabixAdapter') {
         // @ts-expect-error
-        loc = adapter.gffGzLocation
+        loc = adapter.gffGzLocation || adapter
       } else if (type === 'Gff3Adapter') {
         // @ts-expect-error
-        loc = adapter.gffLocation
+        loc = adapter.gffLocation || adapter
       } else if (type === 'VcfAdapter') {
         // @ts-expect-error
-        loc = adapter.vcfLocation
+        loc = adapter.vcfLocation || adapter
       } else if (type === 'VcfTabixAdapter') {
         // @ts-expect-error
-        loc = adapter.vcfGzLocation
+        loc = adapter.vcfGzLocation || adapter
       } else {
         return
       }

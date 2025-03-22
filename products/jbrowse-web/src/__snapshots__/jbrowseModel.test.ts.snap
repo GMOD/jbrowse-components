@@ -904,12 +904,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
-        "index": {
-          "location": {
-            "locationType": "UriLocation",
-            "uri": "volvox-sorted.bam.bai",
-          },
-        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -4203,6 +4197,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+      ],
       "displays": [
         {
           "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
@@ -4229,6 +4227,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
       ],
       "displays": [
         {

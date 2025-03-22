@@ -282,7 +282,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get elidedRegions() {
         const visible: SliceRegion[] = []
-        self.displayedRegions.forEach(region => {
+        for (const region of self.displayedRegions) {
           const widthBp = region.end - region.start
           const widthPx = widthBp / self.bpPerPx
           if (widthPx < self.minVisibleWidth) {
@@ -302,7 +302,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             // big enough to see, display it
             visible.push({ ...region, widthBp, elided: false })
           }
-        })
+        }
 
         // remove any single-region elisions
         for (let i = 0; i < visible.length; i += 1) {
@@ -318,11 +318,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyNames() {
         const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
+        for (const displayedRegion of self.displayedRegions) {
           if (!assemblyNames.includes(displayedRegion.assemblyName)) {
             assemblyNames.push(displayedRegion.assemblyName)
           }
-        })
+        }
         return assemblyNames
       },
       /**
@@ -556,11 +556,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
 
       /**

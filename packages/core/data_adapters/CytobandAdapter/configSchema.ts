@@ -13,10 +13,26 @@ const configSchema = ConfigurationSchema(
      */
     cytobandLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/cytoband.txt.gz' },
+      defaultValue: {
+        uri: '/path/to/cytoband.txt.gz',
+      },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            cytobandLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default configSchema

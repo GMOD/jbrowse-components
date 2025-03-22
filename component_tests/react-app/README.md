@@ -1,4 +1,4 @@
-# Demo of `@jbrowse/react-app`
+# Demo of `@jbrowse/react-app2`
 
 This module uses "packed" builds of the repo, and runs an e2e test using
 cypress.
@@ -16,6 +16,5 @@ rm -rf node_modules
 yarn cache clean
 yarn
 yarn start
-yarn build
-yarn test:e2e
+yarn e2e
 ```

@@ -4,6 +4,7 @@ import {
   SimpleFeature,
   doesIntersect2,
   fetchAndMaybeUnzip,
+  getProgressDisplayStr,
   max,
   min,
 } from '@jbrowse/core/util'
@@ -61,7 +62,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       }
       if (i++ % 10_000 === 0) {
         statusCallback(
-          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
         )
       }
 
@@ -75,15 +76,12 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GTF data')
             const intervalTree = new IntervalTree()
-            ;(parseStringSync(lines) as FeatureLoc[][])
+            for (const obj of (parseStringSync(lines) as FeatureLoc[][])
               .flat()
-              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))
-              .forEach(obj =>
-                intervalTree.insert(
-                  [obj.start as number, obj.end as number],
-                  obj,
-                ),
-              )
+              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))) {
+              intervalTree.insert([obj.start as number, obj.end as number], obj)
+            }
+
             this.calculatedIntervalTreeMap[refName] = intervalTree
           }
           return this.calculatedIntervalTreeMap[refName]
@@ -157,6 +155,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       if (allowRedispatch && feats.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
+        let hasAnyAggregateField = false
         for (const feat of feats) {
           if (feat.start < minStart) {
             minStart = feat.start
@@ -164,13 +163,22 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           if (feat.end > maxEnd) {
             maxEnd = feat.end
           }
+          if (feat[aggregateField]) {
+            hasAnyAggregateField = true
+          }
         }
-        if (maxEnd > query.end || minStart < query.start) {
+
+        if (
+          hasAnyAggregateField &&
+          (maxEnd > query.end || minStart < query.start)
+        ) {
           await this.getFeaturesHelper({
             query: {
               ...query,
-              start: minStart,
-              end: maxEnd,
+              // re-query with 500kb added onto start and end, in order to catch
+              // gene subfeatures that may not overlap your view
+              start: minStart - 500_000,
+              end: maxEnd + 500_000,
             },
             opts,
             observer,
@@ -204,7 +212,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      Object.entries(parentAggregation).map(([name, subfeatures]) => {
+      for (const [name, subfeatures] of Object.entries(parentAggregation)) {
         const s = min(subfeatures.map(f => f.start))
         const e = max(subfeatures.map(f => f.end))
         if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
@@ -224,7 +232,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
             }),
           )
         }
-      })
+      }
     }
     observer.complete()
   }

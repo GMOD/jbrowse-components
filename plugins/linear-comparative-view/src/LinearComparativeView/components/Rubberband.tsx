@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background: alpha(theme.palette.tertiary.main, 0.7),
       position: 'absolute',
-      zIndex: 10,
+      zIndex: 900,
       textAlign: 'center',
       overflow: 'hidden',
     },
@@ -105,13 +105,13 @@ const LinearComparativeRubberband = observer(function Rubberband({
           clientY,
         })
         transaction(() => {
-          model.views.forEach(view => {
+          for (const view of model.views) {
             const args = computeOffsets(offsetX, view)
             if (args) {
               const { leftOffset, rightOffset } = args
               view.setOffsets(leftOffset, rightOffset)
             }
-          })
+          }
         })
         setGuideX(undefined)
       }
@@ -156,9 +156,9 @@ const LinearComparativeRubberband = observer(function Rubberband({
   function mouseOut() {
     setGuideX(undefined)
     transaction(() => {
-      model.views.forEach(view => {
+      for (const view of model.views) {
         view.setOffsets(undefined, undefined)
-      })
+      }
     })
   }
 

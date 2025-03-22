@@ -46,3 +46,16 @@ refNameColumn: {
       defaultValue: 0,
     }
 ```
+
+#### slot: refNameColumnHeaderName
+
+refNameColumnHeaderName
+
+```js
+refNameColumnHeaderName: {
+      type: 'string',
+      description:
+        'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
+      defaultValue: '',
+    }
+```

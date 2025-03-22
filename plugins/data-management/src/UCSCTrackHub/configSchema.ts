@@ -35,6 +35,17 @@ const UCSCTrackHubConnection = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            hubTxtLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
   },
 )
 

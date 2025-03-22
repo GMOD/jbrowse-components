@@ -100,18 +100,20 @@ export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
   for (const f of feats.values()) {
     if (!alreadySeen.has(f.id()) && f.get('type') === 'breakend') {
       const alts = f.get('ALT') as string[] | undefined
-      alts?.forEach(a => {
-        const cur = `${f.get('refName')}:${f.get('start') + 1}`
-        const bnd = parseBreakend(a)
-        if (bnd) {
-          const val = candidates.get(cur)
-          if (!val) {
-            candidates.set(bnd.MatePosition || 'none', [f])
-          } else {
-            val.push(f)
+      if (alts) {
+        for (const a of alts) {
+          const cur = `${f.get('refName')}:${f.get('start') + 1}`
+          const bnd = parseBreakend(a)
+          if (bnd) {
+            const val = candidates.get(cur)
+            if (!val) {
+              candidates.set(bnd.MatePosition || 'none', [f])
+            } else {
+              val.push(f)
+            }
           }
         }
-      })
+      }
     }
     alreadySeen.add(f.id())
   }

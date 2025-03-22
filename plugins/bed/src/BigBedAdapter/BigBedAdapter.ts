@@ -57,6 +57,33 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return Object.keys(header.refsByName)
   }
 
+  // allow using BigBedAdapter for aliases with chromAlias.bb file from UCSC
+  public async getRefNameAliases(opts?: BaseOptions) {
+    const { header } = await this.configure(opts)
+    const ret = await Promise.all(
+      Object.keys(header.refsByName).map(
+        async r =>
+          (
+            await firstValueFrom(
+              this.getFeatures({
+                assemblyName: '',
+                refName: r,
+                start: 0,
+                end: 1,
+              }).pipe(toArray()),
+            )
+          )[0]!,
+      ),
+    )
+    return ret
+      .map(r => r.toJSON())
+      .map(r => ({
+        refName: r.ucsc,
+        aliases: [r.ncbi, r.refseq, r.genbank],
+        override: true,
+      }))
+  }
+
   public async getData() {
     const refNames = await this.getRefNames()
     const features = []
@@ -101,7 +128,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { stopToken, statusCallback = () => {} } = opts
+    const { statusCallback = () => {} } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const { parser, bigbed } = await updateStatus(
@@ -114,13 +141,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       statusCallback,
       () =>
         bigbed.getFeatures(query.refName, query.start, query.end, {
-          stopToken,
           basesPerSpan: query.end - query.start,
         }),
     )
+
     if (allowRedispatch && feats.length) {
       let minStart = Number.POSITIVE_INFINITY
       let maxEnd = Number.NEGATIVE_INFINITY
+      let hasAnyAggregationField = false
       for (const feat of feats) {
         if (feat.start < minStart) {
           minStart = feat.start
@@ -128,13 +156,23 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         if (feat.end > maxEnd) {
           maxEnd = feat.end
         }
+        // @ts-expect-error
+        if (feat[aggregateField]) {
+          hasAnyAggregationField = true
+        }
       }
-      if (maxEnd > query.end || minStart < query.start) {
+
+      if (
+        hasAnyAggregationField &&
+        (maxEnd > query.end || minStart < query.start)
+      ) {
         await this.getFeaturesHelper({
           query: {
             ...query,
-            start: minStart,
-            end: maxEnd,
+            // re-query with 500kb added onto start and end, in order to catch
+            // gene subfeatures that may not overlap your view
+            start: minStart - 500_000,
+            end: maxEnd + 500_000,
           },
           opts,
           observer,
@@ -157,7 +195,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         `${feat.end}`,
         ...(feat.rest?.split('\t') || []),
       ]
-      const data = parser.parseLine(splitLine, { uniqueId: feat.uniqueId! })
+      const data = parser.parseLine(splitLine, {
+        uniqueId: feat.uniqueId!,
+      })
 
       const aggr = data[aggregateField]
       if (!parentAggregation[aggr]) {
@@ -211,14 +251,16 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const s = min(subfeatures.map(f => f.start))
       const e = max(subfeatures.map(f => f.end))
       if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
-        const { uniqueId, strand } = subfeatures[0]!
+        const subs = subfeatures.sort((a, b) =>
+          a.uniqueId.localeCompare(b.uniqueId),
+        )
         observer.next(
           new SimpleFeature({
-            id: `${this.id}-${uniqueId}-parent`,
+            id: `${this.id}-${subs[0]?.uniqueId}-parent`,
             data: {
               type: 'gene',
-              subfeatures,
-              strand,
+              subfeatures: subs,
+              strand: subs[0]?.strand || 1,
               name,
               start: s,
               end: e,
@@ -234,7 +276,11 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         await this.getFeaturesHelper({
-          query,
+          query: {
+            ...query,
+            start: query.start,
+            end: query.end,
+          },
           opts,
           observer,
           allowRedispatch: true,

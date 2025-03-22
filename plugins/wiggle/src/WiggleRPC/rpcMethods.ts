@@ -1,3 +1,5 @@
 export * from './MultiWiggleGetSources'
 export * from './WiggleGetMultiRegionQuantitativeStats'
 export * from './WiggleGetGlobalQuantitativeStats'
+export * from './MultiWiggleGetScoreMatrix'
+export * from './MultiWiggleClusterScoreMatrix'

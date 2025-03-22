@@ -263,11 +263,11 @@ function stateModelFactory(
             }
             const view = getContainingView(self) as LGV
             const { staticBlocks } = view
-            const { colorBy, adapterConfig } = self
+            const { colorBy } = self
             if (colorBy?.type === 'modifications') {
               const vals = await getUniqueModifications({
                 model: self,
-                adapterConfig,
+                adapterConfig: getConf(self.parentTrack, 'adapter'),
                 blocks: staticBlocks,
               })
               if (isAlive(self)) {

@@ -122,6 +122,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
+    // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
       const uniqueId = `${this.id}-${refName}-${i}`

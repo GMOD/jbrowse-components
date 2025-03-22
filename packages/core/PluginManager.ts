@@ -55,9 +55,11 @@ class PhasedScheduler<PhaseName extends string> {
   }
 
   run() {
-    this.phaseOrder.forEach(phaseName => {
-      this.phaseCallbacks.get(phaseName)?.forEach(callback => callback())
-    })
+    for (const phaseName of this.phaseOrder) {
+      for (const callback of this.phaseCallbacks.get(phaseName) || []) {
+        callback()
+      }
+    }
   }
 }
 
@@ -196,18 +198,18 @@ export default class PluginManager {
     })
 
     // add all the initial plugins
-    initialPlugins.forEach(plugin => {
+    for (const plugin of initialPlugins) {
       this.addPlugin(plugin)
-    })
+    }
   }
 
   pluginConfigurationSchemas() {
     const configurationSchemas: Record<string, unknown> = {}
-    this.plugins.forEach(plugin => {
+    for (const plugin of this.plugins) {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema
       }
-    })
+    }
     return configurationSchemas
   }
 
@@ -264,9 +266,9 @@ export default class PluginManager {
       throw new Error('already configured')
     }
 
-    this.plugins.forEach(plugin => {
+    for (const plugin of this.plugins) {
       plugin.configure(this)
-    })
+    }
 
     this.configured = true
 
@@ -528,7 +530,7 @@ export default class PluginManager {
     const callback = () => {
       const track = cb(this)
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
-      displays.forEach(display => {
+      for (const display of displays) {
         // track may have already added the displayType in its cb
         if (
           display.trackType === track.name &&
@@ -536,7 +538,7 @@ export default class PluginManager {
         ) {
           track.addDisplayType(display)
         }
-      })
+      }
       return track
     }
     return this.addElementType('track', callback)
@@ -550,7 +552,7 @@ export default class PluginManager {
     const callback = () => {
       const newView = cb(this)
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
-      displays.forEach(display => {
+      for (const display of displays) {
         // view may have already added the displayType in its callback
         // see ViewType for description of extendedName
         if (
@@ -560,7 +562,7 @@ export default class PluginManager {
         ) {
           newView.addDisplayType(display)
         }
-      })
+      }
       return newView
     }
     return this.addElementType('view', callback)

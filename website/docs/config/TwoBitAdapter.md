@@ -25,7 +25,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 twoBitLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.2bit',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

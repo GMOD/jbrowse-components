@@ -36,7 +36,10 @@ trackIds: {
 currently unused
 
 ```js
-middle: { type: 'boolean', defaultValue: true }
+middle: {
+        type: 'boolean',
+        defaultValue: true,
+      }
 ```
 
 ### LinearSyntenyDisplay - Derives from

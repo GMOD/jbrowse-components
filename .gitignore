@@ -19,3 +19,5 @@ lerna-debug.log
 .yarn
 .yarnrc
 *.tsbuildinfo
+.aider*
+

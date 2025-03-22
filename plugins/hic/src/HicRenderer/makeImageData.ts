@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
@@ -26,7 +27,10 @@ export interface RenderArgs extends ServerSideRenderArgs {
 
 export async function makeImageData(
   ctx: CanvasRenderingContext2D,
-  props: RenderArgsDeserializedWithFeatures & { pluginManager: PluginManager },
+  props: RenderArgsDeserializedWithFeatures & {
+    yScalar: number
+    pluginManager: PluginManager
+  },
 ) {
   const {
     features,
@@ -40,6 +44,7 @@ export async function makeImageData(
     colorScheme,
     regions,
     pluginManager,
+    yScalar,
   } = props
 
   const { statusCallback = () => {} } = props
@@ -93,6 +98,9 @@ export async function makeImageData(
     const scale = useLogScale
       ? scaleSequentialLog(x1).domain([1, m])
       : scaleSequential(x1).domain([0, m])
+    if (yScalar) {
+      ctx.scale(1, yScalar)
+    }
     ctx.save()
 
     if (region.reversed === true) {
@@ -100,8 +108,7 @@ export async function makeImageData(
       ctx.translate(-width, 0)
     }
     ctx.rotate(-Math.PI / 4)
-    let start = performance.now()
-    for (const { bin1, bin2, counts } of features) {
+    forEachWithStopTokenCheck(features, stopToken, ({ bin1, bin2, counts }) => {
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
         maxScore,
@@ -110,11 +117,7 @@ export async function makeImageData(
         useLogScale,
       })
       ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-    }
+    })
     ctx.restore()
   }
   return undefined

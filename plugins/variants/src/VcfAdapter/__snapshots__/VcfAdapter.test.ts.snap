@@ -48,7 +48,6 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     "aliases": undefined,
     "description": "SNV T -> C",
     "end": 277,
-    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -116,7 +115,6 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     "aliases": undefined,
     "description": "SNV T -> C",
     "end": 1694,
-    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -184,7 +182,6 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     "aliases": undefined,
     "description": "SNV T -> G",
     "end": 2644,
-    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -246,7 +243,6 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     "aliases": undefined,
     "description": "SNV T -> A",
     "end": 3213,
-    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {
@@ -309,7 +305,6 @@ exports[`adapter can fetch variants from volvox.vcf 2`] = `
     "aliases": undefined,
     "description": "deletion ctt -> ct",
     "end": 3860,
-    "format": "GT:PL:GQ",
     "name": undefined,
     "refName": "ctgA",
     "samples": {

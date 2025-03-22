@@ -15,7 +15,10 @@ const sequenceConfigSchema = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
+  {
+    explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
+  },
 )
 
 export default sequenceConfigSchema

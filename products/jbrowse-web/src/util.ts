@@ -105,6 +105,7 @@ export function filterSessionInPlace(
         }
       }
     }
+    // eslint-disable-next-line unicorn/no-array-for-each
     array.forEach(el => {
       filterSessionInPlace(el, childType)
     })
@@ -119,6 +120,7 @@ export function filterSessionInPlace(
         }
       }
     }
+    // eslint-disable-next-line unicorn/no-array-for-each
     map.forEach(child => {
       filterSessionInPlace(child, childType)
     })
@@ -126,6 +128,7 @@ export function filterSessionInPlace(
     // iterate over children
     const { properties } = getPropertyMembers(node)
 
+    // eslint-disable-next-line unicorn/no-array-for-each
     Object.entries(properties).forEach(([pname, ptype]) => {
       // @ts-ignore
       filterSessionInPlace(node[pname], ptype)

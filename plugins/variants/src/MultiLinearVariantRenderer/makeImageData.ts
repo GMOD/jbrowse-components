@@ -1,4 +1,5 @@
 import { featureSpanPx } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import RBush from 'rbush'
 
 import { f2 } from '../shared/constants'
@@ -21,14 +22,23 @@ export async function makeImageData(
     regions,
     bpPerPx,
     renderingMode,
+    stopToken,
   } = props
   const region = regions[0]!
+
+  checkStopToken(stopToken)
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
     features.values(),
     minorAlleleFrequencyFilter,
   )
+  checkStopToken(stopToken)
   const rbush = new RBush()
+  let start = performance.now()
   for (const { mostFrequentAlt, feature } of mafs) {
+    if (performance.now() - start > 400) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>

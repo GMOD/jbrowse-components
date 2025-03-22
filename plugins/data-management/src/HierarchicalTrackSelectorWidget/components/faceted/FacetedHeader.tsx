@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import ClearIcon from '@mui/icons-material/Clear'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
+import { Grid2, IconButton, InputAdornment, TextField } from '@mui/material'
 
 import ShoppingCart from '../ShoppingCart'
 
@@ -20,45 +20,38 @@ export default function FacetedHeader({
 
   return (
     <>
-      <Grid container spacing={4} alignItems="center">
-        <Grid item>
-          <TextField
-            label="Search..."
-            value={faceted.filterText}
-            onChange={event => {
-              faceted.setFilterText(event.target.value)
-            }}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => {
-                        faceted.setFilterText('')
-                      }}
-                    >
-                      <ClearIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item>
-          <IconButton
-            onClick={event => {
-              setAnchorEl(event.currentTarget)
-            }}
-          >
-            <MoreVert />
-          </IconButton>
-        </Grid>
-        <Grid item>
-          <ShoppingCart model={model} />
-        </Grid>
-      </Grid>
+      <Grid2 container spacing={4} alignItems="center">
+        <TextField
+          label="Search..."
+          value={faceted.filterText}
+          onChange={event => {
+            faceted.setFilterText(event.target.value)
+          }}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => {
+                      faceted.setFilterText('')
+                    }}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <IconButton
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+        >
+          <MoreVert />
+        </IconButton>
+        <ShoppingCart model={model} />
+      </Grid2>
       <Menu
         anchorEl={anchorEl}
         open={!!anchorEl}

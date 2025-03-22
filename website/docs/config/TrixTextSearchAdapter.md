@@ -29,8 +29,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 ixFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'out.ix', locationType: 'UriLocation' },
-      description: 'the location of the trix ix file',
+      defaultValue: {
+        uri: 'out.ix',
+        locationType: 'UriLocation',
+      },
     }
 ```
 
@@ -39,8 +41,10 @@ ixFilePath: {
 ```js
 ixxFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'out.ixx', locationType: 'UriLocation' },
-      description: 'the location of the trix ixx file',
+      defaultValue: {
+        uri: 'out.ixx',
+        locationType: 'UriLocation',
+      },
     }
 ```
 
@@ -49,8 +53,10 @@ ixxFilePath: {
 ```js
 metaFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'meta.json', locationType: 'UriLocation' },
-      description: 'the location of the metadata json file for the trix index',
+      defaultValue: {
+        uri: 'meta.json',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

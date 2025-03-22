@@ -58,6 +58,10 @@ export function createBaseTrackModel(
       /**
        * #property
        */
+      pinned: false,
+      /**
+       * #property
+       */
       displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
@@ -130,6 +134,12 @@ export function createBaseTrackModel(
       /**
        * #action
        */
+      setPinned(flag: boolean) {
+        self.pinned = flag
+      },
+      /**
+       * #action
+       */
       setMinimized(flag: boolean) {
         self.minimized = flag
       },
@@ -160,7 +170,9 @@ export function createBaseTrackModel(
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
         const t = self.displays.filter(d => d.configuration === conf)
         transaction(() => {
-          t.forEach(d => self.displays.remove(d))
+          for (const d of t) {
+            self.displays.remove(d)
+          }
         })
         return t.length
       },

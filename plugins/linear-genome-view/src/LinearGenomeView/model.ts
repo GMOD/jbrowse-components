@@ -3,6 +3,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   assembleLocString,
@@ -24,6 +25,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -65,6 +67,7 @@ import type {
   BpOffset,
   ExportSvgOptions,
   HighlightType,
+  InitState,
   NavLocation,
 } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -226,6 +229,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
+        /**
+         * #property
+         * this is a non-serialized property that can be used for loading the
+         * linear genome view as an alternative
+         */
+        init: types.frozen<InitState | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -280,6 +289,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       */
+      get pinnedTracks() {
+        return self.tracks.filter(t => t.pinned)
+      },
+      /**
+       * #getter
+       */
+      get unpinnedTracks() {
+        return self.tracks.filter(t => !t.pinned)
+      },
+      /**
+       * #getter
        * this is the effective value of the track labels setting, incorporating
        * both the config and view state. use this instead of view.trackLabels
        */
@@ -315,6 +336,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
+      },
+      get stickyViewHeaders() {
+        const session = getSession(self)
+        return isSessionWithMultipleViews(session)
+          ? session.stickyViewHeaders
+          : false
+      },
+
+      get rubberbandTop() {
+        let pinnedTracksTop = 0
+        if (this.stickyViewHeaders) {
+          pinnedTracksTop = VIEW_HEADER_HEIGHT
+          if (!self.hideHeader) {
+            pinnedTracksTop += HEADER_BAR_HEIGHT
+            if (!self.hideHeaderOverview) {
+              pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+            }
+          }
+        }
+        return pinnedTracksTop
+      },
+
+      get pinnedTracksTop() {
+        return this.rubberbandTop + SCALE_BAR_HEIGHT
       },
     }))
     .views(self => ({
@@ -539,7 +584,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * modifies view menu action onClick to apply to all tracks of same type
        */
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
-        viewMenuActions.forEach(action => {
+        for (const action of viewMenuActions) {
           // go to lowest level menu
           if ('subMenu' in action) {
             this.rewriteOnClicks(trackType, action.subMenu)
@@ -547,28 +592,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if ('onClick' in action) {
             const holdOnClick = action.onClick
             action.onClick = (...args: unknown[]) => {
-              self.tracks.forEach(track => {
+              for (const track of self.tracks) {
                 if (track.type === trackType) {
                   holdOnClick.apply(track, [track, ...args])
                 }
-              })
+              }
             }
           }
-        })
+        }
       },
       /**
        * #getter
        */
       get trackTypeActions() {
         const allActions = new Map<string, MenuItem[]>()
-        self.tracks.forEach(track => {
+        for (const track of self.tracks) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = structuredClone(track.viewMenuActions)
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }
-        })
+        }
 
         return allActions
       },
@@ -788,11 +833,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
     }))
     .actions(self => ({
@@ -1031,6 +1078,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // mobx-state-tree snapshot
         self.scrollTo(0)
         self.zoomTo(10)
+      },
+
+      /**
+       * #action
+       */
+      setInit(arg?: InitState) {
+        self.init = arg
       },
 
       /**
@@ -1312,7 +1366,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               { type: 'divider' },
               { type: 'subHeader', label: key },
             )
-            value.forEach(action => menuItems.push(action))
+            for (const action of value) {
+              menuItems.push(action)
+            }
           }
         }
 
@@ -1391,31 +1447,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
-      },
-
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              if (self.initialized) {
-                this.setCoarseDynamicBlocks(self.dynamicBlocks)
-              }
-            },
-            { delay: 150 },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
-            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
-            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-          }),
-        )
       },
     }))
     .actions(self => ({
@@ -1720,6 +1751,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
           document.removeEventListener('keydown', handler)
         })
       },
+
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const { init } = self
+            if (init) {
+              self
+                .navToLocString(init.loc, init.assembly)
+                .catch((e: unknown) => {
+                  getSession(self).notifyError(`${e}`, e)
+                })
+
+              init.tracks?.map(t => self.showTrack(t))
+
+              // clear init state
+              self.setInit(undefined)
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.initialized) {
+                self.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
+            },
+            { delay: 150 },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+          }),
+        )
+      },
     }))
     .preProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -1733,6 +1807,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? highlight
             : [highlight],
         ...rest,
+      }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      } else {
+        const { init, ...rest } = snap as Omit<typeof snap, symbol>
+        return rest
       }
     })
 }
