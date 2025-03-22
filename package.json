@@ -151,5 +151,11 @@
     "webpack-dev-server": "^5.0.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "resolutions": {
+    "@mui/material": "7.0.0-rc.0",
+    "@mui/utils": "7.0.0-rc.0",
+    "@mui/system": "7.0.0-rc.0",
+    "@mui/x-data-grid": "8.0.0-beta.0"
+  }
 }
