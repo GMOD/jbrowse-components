@@ -125,6 +125,13 @@ everything else
 any
 ```
 
+#### getter: sourcesWithoutLayout
+
+```js
+// type
+{ color: string; baseUri?: string; name: string; group?: string; }[]
+```
+
 #### getter: sources
 
 ```js

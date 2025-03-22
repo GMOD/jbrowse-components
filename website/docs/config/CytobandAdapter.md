@@ -25,6 +25,8 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 cytobandLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/cytoband.txt.gz' },
+      defaultValue: {
+        uri: '/path/to/cytoband.txt.gz',
+      },
     }
 ```
