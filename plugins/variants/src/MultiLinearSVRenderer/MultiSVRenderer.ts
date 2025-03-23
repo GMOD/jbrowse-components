@@ -15,11 +15,18 @@ export default class MultiSVBaseRenderer extends FeatureRendererType {
 
     const { makeImageData } = await import('./makeImageData')
 
-    const rest = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      makeImageData(ctx, {
-        ...renderProps,
-        features,
-      }),
+    const rest = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx => {
+        ctx.fillStyle = '#ccc'
+        ctx.fillRect(0, 0, width, height)
+        return makeImageData(ctx, {
+          ...renderProps,
+          features,
+        })
+      },
     )
 
     const results = await super.render({

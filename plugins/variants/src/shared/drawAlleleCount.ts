@@ -2,7 +2,11 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { f2 } from './constants'
 
-function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
+function getColorAlleleCount(
+  alleles: string[],
+  mostFrequentAlt: string,
+  drawReference = true,
+) {
   const total = alleles.length
   let alt = 0
   let uncalled = 0
@@ -21,7 +25,7 @@ function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
   }
 
   if (ref === total) {
-    return '#ccc'
+    return drawReference ? '#ccc' : undefined
   } else {
     let a1
     if (alt) {
@@ -49,8 +53,9 @@ export function drawColorAlleleCount(
   w: number,
   h: number,
   mostFrequentAlt: string,
+  drawReference = true,
 ) {
-  const c = getColorAlleleCount(alleles, mostFrequentAlt)
+  const c = getColorAlleleCount(alleles, mostFrequentAlt, drawReference)
   if (c) {
     ctx.fillStyle = c
     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)

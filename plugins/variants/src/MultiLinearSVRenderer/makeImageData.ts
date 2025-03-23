@@ -56,14 +56,36 @@ export async function makeImageData(
         if (renderingMode === 'phased') {
           if (isPhased) {
             const alleles = genotype.split('|')
-            drawPhased(alleles, ctx, x, y, w, h, HP!)
+            if (drawPhased(alleles, ctx, x, y, w, h, HP!, undefined, false)) {
+              rbush.insert({
+                minX: x,
+                maxX: x + w,
+                minY: y,
+                maxY: y + h,
+                genotype,
+                name,
+                feature: feature.get('name'),
+                type: feature.get('description'),
+              })
+            }
           } else {
             ctx.fillStyle = 'black'
             ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
           }
         } else {
           const alleles = genotype.split(/[/|]/)
-          if (drawColorAlleleCount(alleles, ctx, x, y, w, h, mostFrequentAlt)) {
+          if (
+            drawColorAlleleCount(
+              alleles,
+              ctx,
+              x,
+              y,
+              w,
+              h,
+              mostFrequentAlt,
+              false,
+            )
+          ) {
             rbush.insert({
               minX: x,
               maxX: x + w,
