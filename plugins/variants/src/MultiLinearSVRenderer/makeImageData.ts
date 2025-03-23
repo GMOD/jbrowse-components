@@ -72,6 +72,7 @@ export async function makeImageData(
               genotype,
               name,
               featureName: feature.get('name'),
+              featureDescription: feature.get('description'),
             })
           }
         }
