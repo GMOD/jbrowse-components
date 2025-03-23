@@ -21,7 +21,7 @@ function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
   }
 
   if (ref === total) {
-    return undefined
+    return '#ccc'
   } else {
     let a1
     if (alt) {

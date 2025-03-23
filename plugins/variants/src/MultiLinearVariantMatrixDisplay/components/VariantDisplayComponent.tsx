@@ -3,8 +3,8 @@ import { useRef, useState } from 'react'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import Crosshair from './Crosshair'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
+import Crosshair from '../../shared/components/MultiVariantCrosshairs'
 import LegendBar from '../../shared/components/MultiVariantLegendBar'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
