@@ -38,7 +38,7 @@ const Crosshair = observer(function ({
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = hoveredGenotype ? sourceMap?.[hoveredGenotype.name] : undefined
   const y = mouseY - scrollTop
-  return source ? (
+  return (
     <div className={classes.rel}>
       <svg
         className={classes.cursor}
@@ -64,9 +64,11 @@ const Crosshair = observer(function ({
         />
       </svg>
 
-      <MultiVariantTooltip source={{ ...source, ...hoveredGenotype }} />
+      {source ? (
+        <MultiVariantTooltip source={{ ...source, ...hoveredGenotype }} />
+      ) : null}
     </div>
-  ) : null
+  )
 })
 
 export default Crosshair
