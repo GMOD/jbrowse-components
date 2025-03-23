@@ -23,7 +23,7 @@ import type { Instance } from 'mobx-state-tree'
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
 const ClusterDialog = lazy(
-  () => import('./components/ClusterDialog/ClusterDialog'),
+  () => import('./components/MultiVariantClusterDialog/ClusterDialog'),
 )
 const SetRowHeightDialog = lazy(() => import('./components/SetRowHeightDialog'))
 
@@ -110,7 +110,9 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredGenotype: undefined as string | undefined,
+      hoveredGenotype: undefined as
+        | { genotype: string; name: string }
+        | undefined,
     }))
     .actions(self => ({
       /**
@@ -122,7 +124,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredGenotype(arg: string) {
+      setHoveredGenotype(arg: { genotype: string; name: string }) {
         self.hoveredGenotype = arg
       },
       /**
@@ -240,6 +242,16 @@ export default function MultiVariantBaseModelF(
       } = self
 
       return {
+        /**
+         * #getter
+         */
+        get sourceMap() {
+          return self.sources
+            ? Object.fromEntries(
+                self.sources.map(source => [source.name, source]),
+              )
+            : undefined
+        },
         /**
          * #getter
          */

@@ -21,7 +21,7 @@ function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
   }
 
   if (ref === total) {
-    return `#ccc`
+    return undefined
   } else {
     let a1
     if (alt) {
@@ -50,6 +50,10 @@ export function drawColorAlleleCount(
   h: number,
   mostFrequentAlt: string,
 ) {
-  ctx.fillStyle = getColorAlleleCount(alleles, mostFrequentAlt)
-  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  const c = getColorAlleleCount(alleles, mostFrequentAlt)
+  if (c) {
+    ctx.fillStyle = c
+    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  }
+  return c
 }

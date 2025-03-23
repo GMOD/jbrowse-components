@@ -3,13 +3,13 @@ import { useRef, useState } from 'react'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import Crosshair from '../../shared/components/MultiVariantCrosshairs'
-import LegendBar from '../../shared/components/MultiVariantLegendBar'
+import Crosshair from './MultiVariantCrosshairs'
+import LegendBar from './MultiVariantLegendBar'
 
-import type { MultiLinearVariantDisplayModel } from '../model'
+import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
 
-const MultiLinearVariantDisplayComponent = observer(function (props: {
-  model: MultiLinearVariantDisplayModel
+const MultiVariantBaseDisplayComponent = observer(function (props: {
+  model: MultiVariantBaseModel
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
@@ -41,4 +41,4 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   )
 })
 
-export default MultiLinearVariantDisplayComponent
+export default MultiVariantBaseDisplayComponent

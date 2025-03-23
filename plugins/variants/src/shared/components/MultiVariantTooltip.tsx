@@ -4,7 +4,11 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 export default function MultiVariantTooltip({
   source,
 }: {
-  source: { color?: string; [key: string]: unknown }
+  source: {
+    color?: string
+    hoveredGenotype?: { genotype: string; name: string }
+    [key: string]: unknown
+  }
 }) {
   return (
     <BaseTooltip>
@@ -22,7 +26,6 @@ export default function MultiVariantTooltip({
           .filter(
             ([key, val]) =>
               key !== 'color' &&
-              key !== 'name' &&
               key !== 'HP' &&
               key !== 'id' &&
               val !== undefined,
