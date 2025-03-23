@@ -40,10 +40,3 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
     }
   }
 }
-
-export type {
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsDeserialized,
-  ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'

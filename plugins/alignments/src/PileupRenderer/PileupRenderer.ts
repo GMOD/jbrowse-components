@@ -67,36 +67,31 @@ export default class PileupRenderer extends BoxRendererType {
         }),
     )
 
-    const res = await updateStatus(
-      'Rendering alignments',
-      statusCallback,
-      async () => {
-        const regionSequence =
-          colorBy?.type === 'methylation' && features.size
-            ? await this.fetchSequence(renderProps, region)
-            : undefined
-        const { makeImageData } = await import('./makeImageData')
+    await updateStatus('Rendering alignments', statusCallback, async () => {
+      const regionSequence =
+        colorBy?.type === 'methylation' && features.size
+          ? await this.fetchSequence(renderProps, region)
+          : undefined
+      const { makeImageData } = await import('./makeImageData')
 
-        return renderToAbstractCanvas(width, height, renderProps, ctx => {
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...renderProps,
-              layout,
-              features,
-              regionSequence,
-            },
-          })
-          return undefined
+      return renderToAbstractCanvas(width, height, renderProps, ctx => {
+        makeImageData({
+          ctx,
+          layoutRecords,
+          canvasWidth: width,
+          renderArgs: {
+            ...renderProps,
+            layout,
+            features,
+            regionSequence,
+          },
         })
-      },
-    )
+        return undefined
+      })
+    })
 
     const results = await super.render({
       ...renderProps,
-      ...res,
       features,
       layout,
       height,
@@ -105,7 +100,6 @@ export default class PileupRenderer extends BoxRendererType {
 
     return {
       ...results,
-      ...res,
       features: new Map(),
       layout,
       height,
