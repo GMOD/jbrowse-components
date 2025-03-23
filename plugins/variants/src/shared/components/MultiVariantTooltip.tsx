@@ -1,5 +1,6 @@
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import escapeHTML from 'escape-html'
 
 export default function MultiVariantTooltip({
   source,
@@ -30,7 +31,7 @@ export default function MultiVariantTooltip({
               key !== 'id' &&
               val !== undefined,
           )
-          .map(([key, value]) => `${key}:${value}`)
+          .map(([key, value]) => `${key}:${escapeHTML(`${value}`)}`)
           .join('<br/>')}
       />
     </BaseTooltip>
