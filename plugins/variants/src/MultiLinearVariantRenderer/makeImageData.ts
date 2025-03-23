@@ -14,7 +14,6 @@ export async function makeImageData(
   props: MultiRenderArgsDeserialized,
 ) {
   const {
-    scrollTop,
     minorAlleleFrequencyFilter,
     sources,
     rowHeight,
@@ -42,7 +41,7 @@ export async function makeImageData(
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>
-    let y = -scrollTop
+    let y = 0 // -scrollTop
 
     const s = sources.length
     for (let j = 0; j < s; j++) {

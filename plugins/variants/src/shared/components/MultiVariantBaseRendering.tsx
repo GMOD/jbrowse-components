@@ -45,7 +45,7 @@ const MultiVariantRendering = observer(function (props: {
     if (ref.current) {
       const r = ref.current.getBoundingClientRect()
       offsetX = eventClientX - r.left
-      offsetY = eventClientY - r.top
+      offsetY = eventClientY - r.top - (displayModel?.scrollTop || 0)
     }
     const ret = rbush2.search({
       minX: offsetX,

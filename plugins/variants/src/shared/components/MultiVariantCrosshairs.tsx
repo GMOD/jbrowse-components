@@ -65,7 +65,12 @@ const Crosshair = observer(function ({
       </svg>
 
       {source ? (
-        <MultiVariantTooltip source={{ ...source, ...hoveredGenotype }} />
+        <MultiVariantTooltip
+          source={{
+            ...source,
+            ...hoveredGenotype,
+          }}
+        />
       ) : null}
     </div>
   )
