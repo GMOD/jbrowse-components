@@ -71,6 +71,7 @@ export async function makeImageData(
               maxY: y + h,
               genotype,
               name,
+              featureName: feature.get('name'),
             })
           }
         }
