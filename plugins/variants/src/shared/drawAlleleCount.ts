@@ -54,11 +54,33 @@ export function drawColorAlleleCount(
   h: number,
   mostFrequentAlt: string,
   drawReference = true,
+  featureType = '',
+  featureStrand?: number,
 ) {
   const c = getColorAlleleCount(alleles, mostFrequentAlt, drawReference)
   if (c) {
     ctx.fillStyle = c
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+    if (featureType === 'inversion') {
+      // draw triangle pointing to the right
+      if (featureStrand === 1) {
+        ctx.beginPath()
+        ctx.moveTo(x - f2, y - f2) // left top
+        ctx.lineTo(x - f2, y + h + f2) // left bottom
+        ctx.lineTo(x + w + f2, y + h / 2) // right middle
+        ctx.closePath()
+        ctx.fill()
+      } else {
+        // draw triangle pointing to the left
+        ctx.beginPath()
+        ctx.moveTo(x + w + f2, y - f2) // right top
+        ctx.lineTo(x + w + f2, y + h + f2) // right bottom
+        ctx.lineTo(x - f2, y + h / 2) // left middle
+        ctx.closePath()
+        ctx.fill()
+      }
+    } else {
+      ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+    }
   }
   return c
 }

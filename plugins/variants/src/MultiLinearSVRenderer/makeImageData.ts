@@ -84,6 +84,8 @@ export async function makeImageData(
               h,
               mostFrequentAlt,
               false,
+              feature.get('type'),
+              feature.get('strand'),
             )
           ) {
             rbush.insert({
