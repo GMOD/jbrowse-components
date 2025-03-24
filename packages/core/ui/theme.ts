@@ -63,8 +63,8 @@ declare module '@mui/material/styles/createPalette' {
 }
 
 const refTheme = createTheme()
-const midnight = '#0D233F'
-const grape = '#721E63'
+const midnight = refTheme.palette.augmentColor({ color: { main: '#0D233F' } })
+const grape = refTheme.palette.augmentColor({ color: { main: '#721E63' } })
 const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
 const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
 const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
@@ -101,6 +101,8 @@ const softclip = '#00f'
 const skip = '#97b8c9'
 
 const defaults = {
+  primary: midnight,
+  secondary: grape,
   quaternary: mandarin,
   highlight: mandarin,
   stopCodon,
@@ -120,8 +122,6 @@ function stockTheme() {
     palette: {
       ...defaults,
       mode: undefined,
-      primary: { main: midnight },
-      secondary: { main: grape },
       tertiary: forest,
     },
     components: {
