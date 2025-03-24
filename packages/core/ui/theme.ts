@@ -103,6 +103,7 @@ const skip = '#97b8c9'
 const defaults = {
   primary: midnight,
   secondary: grape,
+  tertiary: forest,
   quaternary: mandarin,
   highlight: mandarin,
   stopCodon,
@@ -122,7 +123,6 @@ function stockTheme() {
     palette: {
       ...defaults,
       mode: undefined,
-      tertiary: forest,
     },
     components: {
       MuiLink: {
