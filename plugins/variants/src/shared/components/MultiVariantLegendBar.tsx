@@ -1,28 +1,16 @@
 import { clamp, getContainingView, max, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import ColorLegend from './ColorLegend'
+import ColorLegend from './MultiVariantColorLegend'
 
-import type { Source } from '../types'
-
-interface ReducedModel {
-  scrollTop: number
-  totalHeight: number
-  rowHeight: number
-  lineZoneHeight?: number
-  sources?: Source[]
-  canDisplayLabels: boolean
-  height: number
-  samplePloidy?: Record<string, number>
-  id: string
-}
+import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
 
 const Wrapper = observer(function ({
   children,
   model,
   exportSVG,
 }: {
-  model: ReducedModel
+  model: MultiVariantBaseModel
   children: React.ReactNode
   exportSVG?: boolean
 }) {
@@ -57,7 +45,7 @@ const Wrapper = observer(function ({
 })
 
 export const LegendBar = observer(function (props: {
-  model: ReducedModel
+  model: MultiVariantBaseModel
   orientation?: string
   exportSVG?: boolean
 }) {

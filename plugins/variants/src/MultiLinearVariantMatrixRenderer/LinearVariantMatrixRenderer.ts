@@ -14,7 +14,6 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
 
     const width = (end - start) / bpPerPx
     const { makeImageData } = await import('./makeImageData')
-    // @ts-expect-error
     const { mafs, ...res } = await renderToAbstractCanvas(
       width,
       height,

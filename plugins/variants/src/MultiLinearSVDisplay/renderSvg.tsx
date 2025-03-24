@@ -4,14 +4,14 @@ import { when } from 'mobx'
 // locals
 import LegendBar from '../shared/components/MultiVariantLegendBar'
 
-import type { MultiLinearVariantDisplayModel } from './model'
+import type { MultiLinearSVDisplayModel } from './model'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
-  self: MultiLinearVariantDisplayModel,
+  self: MultiLinearSVDisplayModel,
   opts: ExportSvgDisplayOptions,
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {

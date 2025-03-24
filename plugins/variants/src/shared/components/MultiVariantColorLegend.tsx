@@ -1,13 +1,14 @@
 import { Fragment } from 'react'
 
-import { clamp } from '@jbrowse/core/util'
+import { clamp, getFillProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import RectBg from './RectBg'
 
 import type { Source } from '../types'
 
-const ColorLegend = observer(function ({
+const MultiVariantColorLegend = observer(function ({
   model,
   labelWidth,
 }: {
@@ -23,6 +24,7 @@ const ColorLegend = observer(function ({
   const colorBoxWidth = 15
   const hasColors = sources?.some(s => s.color)
   const legendWidth = labelWidth + (hasColors ? colorBoxWidth + 5 : 0)
+  const theme = useTheme()
 
   return sources ? (
     <>
@@ -52,6 +54,7 @@ const ColorLegend = observer(function ({
                 y={idx * rowHeight + svgFontSize}
                 x={color ? colorBoxWidth + 2 : 0}
                 fontSize={svgFontSize}
+                {...getFillProps(theme.palette.text.primary)}
               >
                 {label || name}
               </text>
@@ -63,4 +66,4 @@ const ColorLegend = observer(function ({
   ) : null
 })
 
-export default ColorLegend
+export default MultiVariantColorLegend
