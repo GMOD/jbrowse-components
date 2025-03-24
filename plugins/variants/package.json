@@ -47,6 +47,7 @@
     "@mui/icons-material": "^6.0.0",
     "@mui/material": "^6.0.0",
     "@mui/x-data-grid": "^7.0.0",
+    "escape-html": "^1.0.3",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

@@ -2,7 +2,11 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { f2 } from './constants'
 
-function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
+function getColorAlleleCount(
+  alleles: string[],
+  mostFrequentAlt: string,
+  drawReference = true,
+) {
   const total = alleles.length
   let alt = 0
   let uncalled = 0
@@ -21,7 +25,7 @@ function getColorAlleleCount(alleles: string[], mostFrequentAlt: string) {
   }
 
   if (ref === total) {
-    return `#ccc`
+    return drawReference ? '#ccc' : undefined
   } else {
     let a1
     if (alt) {
@@ -49,7 +53,34 @@ export function drawColorAlleleCount(
   w: number,
   h: number,
   mostFrequentAlt: string,
+  drawReference = true,
+  featureType = '',
+  featureStrand?: number,
 ) {
-  ctx.fillStyle = getColorAlleleCount(alleles, mostFrequentAlt)
-  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+  const c = getColorAlleleCount(alleles, mostFrequentAlt, drawReference)
+  if (c) {
+    ctx.fillStyle = c
+    if (featureType === 'inversion') {
+      // draw triangle pointing to the right
+      if (featureStrand === 1) {
+        ctx.beginPath()
+        ctx.moveTo(x - f2, y - f2) // left top
+        ctx.lineTo(x - f2, y + h + f2) // left bottom
+        ctx.lineTo(x + w + f2, y + h / 2) // right middle
+        ctx.closePath()
+        ctx.fill()
+      } else {
+        // draw triangle pointing to the left
+        ctx.beginPath()
+        ctx.moveTo(x + w + f2, y - f2) // right top
+        ctx.lineTo(x + w + f2, y + h + f2) // right bottom
+        ctx.lineTo(x - f2, y + h / 2) // left middle
+        ctx.closePath()
+        ctx.fill()
+      }
+    } else {
+      ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+    }
+  }
+  return c
 }

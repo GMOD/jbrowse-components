@@ -5176,6 +5176,20 @@
         "type": "Gff3Adapter",
         "uri": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz"
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hgsvc3_inversions",
+      "name": "HGSVC3 Inversions",
+      "metadata": {
+        "source": "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/GRCh38/",
+        "note": "Manually added END= field to INFO"
+      },
+      "adapter": {
+        "type": "VcfAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/variants_GRCh38_sv_inv_sym_HGSVC2024v1.0_add_END_to_INFO.vcf"
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],

@@ -86,6 +86,7 @@ export async function renderToSvg(
             } else if ('canvasRecordedData' in r) {
               return {
                 html: await getSerializedSvg({
+                  // @ts-expect-error
                   ...r,
                   width,
                   height: level.height,

@@ -7,18 +7,21 @@ import { CanvasSequence } from 'canvas-sequencer'
 import { blobToDataURL } from './blobToDataURL'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 
-export type RenderReturn = Record<string, unknown> | undefined
+interface ExportSVGOptions {
+  rasterizeLayers?: boolean
+  scale?: number
+}
 
-type RendererRet = Promise<RenderReturn> | RenderReturn
+interface RenderToAbstractCanvasOptions {
+  exportSVG?: ExportSVGOptions
+  highResolutionScaling?: number
+}
 
-export async function renderToAbstractCanvas(
+export async function renderToAbstractCanvas<T>(
   width: number,
   height: number,
-  opts: {
-    exportSVG?: { rasterizeLayers?: boolean; scale?: number }
-    highResolutionScaling?: number
-  },
-  cb: (ctx: CanvasRenderingContext2D) => RendererRet,
+  opts: RenderToAbstractCanvasOptions,
+  cb: (ctx: CanvasRenderingContext2D) => T,
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
 
@@ -70,7 +73,10 @@ export async function renderToAbstractCanvas(
     }
     ctx.scale(s, s)
     const result = await cb(ctx)
-    return { ...result, imageData: await createImageBitmap(canvas) }
+    return {
+      ...result,
+      imageData: await createImageBitmap(canvas),
+    }
   }
 }
 

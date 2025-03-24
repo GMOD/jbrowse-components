@@ -52,7 +52,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    // @ts-expect-error
     const { reducedFeatures, ...rest } = await updateStatus(
       'Rendering plot',
       statusCallback,
@@ -79,7 +78,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       ...rest,
       features: reducedFeatures
         ? new Map<string, Feature>(
-            reducedFeatures.map((r: Feature) => [r.id(), r]),
+            (reducedFeatures as Feature[]).map(r => [r.id(), r]),
           )
         : results.features,
       height,
@@ -94,7 +93,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
    */
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
-
     props: T,
   ): Promise<Record<string, unknown> | undefined>
 }
