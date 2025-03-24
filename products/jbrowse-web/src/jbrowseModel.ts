@@ -20,12 +20,18 @@ window.resolveIdentifier = resolveIdentifier
 export default function JBrowseWeb({
   pluginManager,
   assemblyConfigSchema,
+  adminMode,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
+  adminMode: boolean
 }) {
   return types.snapshotProcessor(
-    JBrowseModelF({ pluginManager, assemblyConfigSchema }),
+    JBrowseModelF({
+      pluginManager,
+      assemblyConfigSchema,
+      adminMode,
+    }),
     {
       postProcessor(snapshot: Record<string, any>) {
         return removeAttr(structuredClone(snapshot), 'baseUri')
