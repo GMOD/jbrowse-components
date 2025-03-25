@@ -20,6 +20,22 @@ reference the markdown files in our repo of the checked out git tag
 
 used to configure CRAM adapter
 
+### CramAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes yourfile.cram.crai, note that
+sequenceAdapter required:
+
+```json
+{
+  "type": "CramAdapter",
+  "uri": "yourfile.cram",
+  "sequenceAdapter": {
+    "type": "TwoBitAdapter",
+    "uri": "genome.2bit"
+  }
+}
+```
+
 ### CramAdapter - Slots
 
 #### slot: fetchSizeLimit

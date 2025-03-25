@@ -71,6 +71,21 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes file.pif.gz.tbi:
+     * ```json
+     * {
+     *   "type": "PairwiseIndexedPAFAdapter",
+     *   "uri": "file.pif.gz",
+     *   "queryAssembly": "hg19",
+     *   "targetAssembly": "hg38"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

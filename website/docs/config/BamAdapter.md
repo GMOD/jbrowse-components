@@ -20,6 +20,17 @@ reference the markdown files in our repo of the checked out git tag
 
 used to configure BAM adapter
 
+### BamAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes yourfile.bam.bai:
+
+```json
+{
+  "type": "BamAdapter",
+  "uri": "yourfile.bam"
+}
+```
+
 ### BamAdapter - Slots
 
 #### slot: bamLocation

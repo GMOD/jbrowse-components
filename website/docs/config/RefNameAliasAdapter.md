@@ -21,6 +21,17 @@ reference the markdown files in our repo of the checked out git tag
 can read "chromAliases" type files from UCSC or any tab separated file of
 refName aliases
 
+### RefNameAliasAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "RefNameAliasAdapter",
+  "uri": "yourfile.chromAlias.txt"
+}
+```
+
 ### RefNameAliasAdapter - Slots
 
 #### slot: location
