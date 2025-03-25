@@ -21,6 +21,18 @@ const ChromSizesAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "ChromSizesAdapter",
+     *   "uri": "yourfile.chrom.sizes"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

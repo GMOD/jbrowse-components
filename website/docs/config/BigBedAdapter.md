@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### BigBedAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "BigBedAdapter",
+  "uri": "yourfile.bigBed"
+}
+```
+
 ### BigBedAdapter - Slots
 
 #### slot: bigBedLocation

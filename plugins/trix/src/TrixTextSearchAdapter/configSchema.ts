@@ -61,6 +61,21 @@ const TrixTextSearchAdapter = ConfigurationSchema(
      * #identifier
      */
     explicitIdentifier: 'textSearchAdapterId',
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes file.ixx also exists:
+     * ```json
+     * {
+     *   "type": "TrixTextSearchAdapter",
+     *   "uri": "file.ix",
+     *   "assemblyNames": ["hg19"],
+     *   "textSearchAdapterId": "hg19SearchIndex"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

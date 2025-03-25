@@ -48,6 +48,20 @@ const BgzipFastaAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.fa.fai and yourfile.fa.gzi:
+     * ```json
+     * {
+     *   "type": "BgzipFastaAdapter",
+     *   "uri": "yourfile.fa"
+     * }
+     * ```
+     */
+
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

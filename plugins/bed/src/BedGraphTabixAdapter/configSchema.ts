@@ -51,6 +51,18 @@ const BedGraphTabixAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
+     * ```json
+     * {
+     *   "type": "BedGraphTabixAdapter",
+     *   "uri": "yourfile.bg.gz"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

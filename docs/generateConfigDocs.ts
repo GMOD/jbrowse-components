@@ -110,7 +110,7 @@ function generateConfigDocs(files: string[]) {
     ({ config, slots, id, derives, filename, preProcessSnapshot }) => {
       if (config) {
         const preprocessStr = preProcessSnapshot
-          ? `### ${config.name} - Snapshot pre-processor (simplified config)
+          ? `### ${config.name} - Pre-processor / simplified config
 
 ${preProcessSnapshot.docs}
 `
@@ -176,13 +176,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ${config.docs}
 
+${preprocessStr}
+
 ${idstr}
 
 ${slotstr}
 
 ${derivesstr}
 
-${preprocessStr}
 `,
         )
       }

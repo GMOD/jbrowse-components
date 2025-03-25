@@ -18,6 +18,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### PAFAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "PAFAdapter",
+  "uri": "file.paf.gz",
+  "queryAssembly": "hg19",
+  "targetAssembly": "hg38"
+}
+```
+
 ### PAFAdapter - Slots
 
 #### slot: assemblyNames

@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### VcfAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "VcfAdapter",
+  "uri": "yourfile.vcf"
+}
+```
+
 ### VcfAdapter - Slots
 
 #### slot: vcfLocation
@@ -44,15 +55,4 @@ samplesTsvLocation: {
         locationType: 'UriLocation',
       },
     }
-```
-
-### VcfAdapter - Snapshot pre-processor (simplified config)
-
-preprocessor to allow minimal config:
-
-```json
-{
-  "type": "VcfAdapter",
-  "uri": "yourfile.vcf"
-}
 ```

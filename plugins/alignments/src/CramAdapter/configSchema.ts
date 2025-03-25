@@ -59,8 +59,9 @@ const configSchema = ConfigurationSchema(
      * #preProcessSnapshot
      *
      *
-     * preprocessor to allow minimal config, assumes yourfile.cram.crai, and
-     * adds sequenceAdapter:
+     * preprocessor to allow minimal config, assumes yourfile.cram.crai, note
+     * that sequenceAdapter required:
+     *
      * ```json
      * {
      *   "type": "CramAdapter",

@@ -48,6 +48,22 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "MCScanAnchorsAdapter",
+     *   "uri": "file.anchors",
+     *   "bed1": "bed1.bed",
+     *   "bed2": "bed2.bed",
+     *   "assemblyNames": ["hg19", "hg38"],
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri && snap.bed1 && snap.bed2
         ? {

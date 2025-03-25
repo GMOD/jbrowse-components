@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### Gff3Adapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "Gff3Adapter",
+  "uri": "yourfile.gff3"
+}
+```
+
 ### Gff3Adapter - Slots
 
 #### slot: gffLocation
@@ -30,15 +41,4 @@ gffLocation: {
         locationType: 'UriLocation',
       },
     }
-```
-
-### Gff3Adapter - Snapshot pre-processor (simplified config)
-
-preprocessor to allow minimal config:
-
-```json
-{
-  "type": "Gff3Adapter",
-  "uri": "yourfile.gff3"
-}
 ```

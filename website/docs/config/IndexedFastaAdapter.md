@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### IndexedFastaAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes yourfile.fa.fai:
+
+```json
+{
+  "type": "IndexedFastaAdapter",
+  "uri": "yourfile.fa"
+}
+```
+
 ### IndexedFastaAdapter - Slots
 
 #### slot: fastaLocation

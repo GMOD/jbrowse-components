@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: vcfGzLocationMap
 
-object like {chr1:{uri:'url to file'}}
+object like `{chr1:{uri:'url to file'}}`
 
 ```js
 vcfGzLocationMap: {
@@ -33,7 +33,7 @@ vcfGzLocationMap: {
 
 #### slot: indexLocationMap
 
-object like {chr1:{uri:'url to index'}}
+object like `{chr1:{uri:'url to index'}}`
 
 ```js
 indexLocationMap: {
@@ -59,7 +59,7 @@ samplesTsvLocation: {
       defaultValue: {
         uri: '/path/to/samples.tsv',
         description:
-          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
+          'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
         locationType: 'UriLocation',
       },
     }
