@@ -4,7 +4,7 @@ title: Developing with JBrowse web and desktop
 toplevel: true
 ---
 
-import Figure from '../figure'
+import Figure from '../../figure'
 
 The following guide will walk you through setting up a developer environment for
 development with JBrowse web and JBrowse desktop.

@@ -3,7 +3,7 @@ id: desktop_spec_plugin_tutorial
 title: Writing a desktop specific plugin
 ---
 
-import Figure from '../figure'
+import Figure from '../../figure'
 
 The following tutorial will demonstrate making a desktop-specific JBrowse plugin
 to run external tools such as bcftools and tabix on a VCF file.

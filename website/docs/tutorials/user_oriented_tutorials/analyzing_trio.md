@@ -17,6 +17,15 @@ https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG0
 
 ## Enabling the matrix view
 
+We can enable the "matrix" visualization for a variant track by navigating to
+the track menu, and selecting 'Multi-variant display (matrix)'. This will
+produce a new visualization modality that shows all the samples. The default
+display mode for this shows
+
+- grey (reference allele)
+- lightblue (heterozygous alt allele)
+- blue (homozygous alt allele)
+
 <Figure caption="Navigating to the track menu, and selecting 'Multi-variant display (matrix) enables all the samples to be given their own row in the view. Each variant is a 'column' in this matrix, and each sample is a 'row'. Black lines connect the variants to their genome position" src="/img/trio-basic.png"/>
 
 ## Analyzing phase-blocks and crossing over

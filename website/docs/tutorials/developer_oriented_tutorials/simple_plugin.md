@@ -4,7 +4,7 @@ title: Developing a simple JBrowse plugin
 toplevel: true
 ---
 
-import Figure from '../figure'
+import Figure from '../../figure'
 
 JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
 adapters, etc), and to modify behavior of the application by adding code that

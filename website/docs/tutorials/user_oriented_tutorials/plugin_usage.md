@@ -4,7 +4,7 @@ title: Installing and using plugins
 toplevel: true
 ---
 
-import Figure from '../figure'
+import Figure from '../../figure'
 
 The following will provide a short tutorial on how to use some of the
 [many plugins available](/plugin_store) for JBrowse 2.
