@@ -1,6 +1,6 @@
 ---
-id: vcfadapter
-title: VcfAdapter
+id: splitvcftabixadapter
+title: SplitVcfTabixAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our
@@ -12,23 +12,42 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfAdapter/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/VcfAdapter.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/SplitVcfTabixAdapter.md)
 
 ## Docs
 
-### VcfAdapter - Slots
+### SplitVcfTabixAdapter - Slots
 
-#### slot: vcfLocation
+#### slot: vcfGzLocationMap
+
+object like {chr1:{uri:'url to file'}}
 
 ```js
-vcfLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.vcf',
-        locationType: 'UriLocation',
-      },
+vcfGzLocationMap: {
+      type: 'frozen',
+      defaultValue: {},
+    }
+```
+
+#### slot: indexLocationMap
+
+object like {chr1:{uri:'url to index'}}
+
+```js
+indexLocationMap: {
+      type: 'frozen',
+      defaultValue: {},
+    }
+```
+
+#### slot: indexType
+
+```js
+indexType: {
+      type: 'string',
+      defaultValue: 'TBI',
     }
 ```
 
@@ -44,15 +63,4 @@ samplesTsvLocation: {
         locationType: 'UriLocation',
       },
     }
-```
-
-### VcfAdapter - Snapshot pre-processor (simplified config)
-
-preprocessor to allow minimal config:
-
-```json
-{
-  "type": "VcfAdapter",
-  "uri": "yourfile.vcf"
-}
 ```

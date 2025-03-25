@@ -80,3 +80,14 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
+
+### BamAdapter - Snapshot pre-processor (simplified config)
+
+preprocessor to allow minimal config, assumes yourfile.bam.bai:
+
+```json
+{
+  "type": "BamAdapter",
+  "uri": "yourfile.bam"
+}
+```

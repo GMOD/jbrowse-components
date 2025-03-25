@@ -67,3 +67,14 @@ samplesTsvLocation: {
       },
     }
 ```
+
+### VcfTabixAdapter - Snapshot pre-processor (simplified config)
+
+preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
+
+```json
+{
+  "type": "VcfTabixAdapter",
+  "uri": "yourfile.vcf.gz"
+}
+```

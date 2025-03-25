@@ -66,3 +66,14 @@ dontRedispatch: {
       defaultValue: ['chromosome', 'region', 'contig'],
     }
 ```
+
+### Gff3TabixAdapter - Snapshot pre-processor (simplified config)
+
+preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi:
+
+```json
+{
+  "type": "Gff3TabixAdapter",
+  "uri": "yourfile.gff3.gz"
+}
+```

@@ -69,3 +69,19 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
+
+### CramAdapter - Snapshot pre-processor (simplified config)
+
+preprocessor to allow minimal config, assumes yourfile.cram.crai, and adds
+sequenceAdapter:
+
+```json
+{
+  "type": "CramAdapter",
+  "uri": "yourfile.cram",
+  "sequenceAdapter": {
+    "type": "TwoBitAdapter",
+    "uri": "genome.2bit"
+  }
+}
+```

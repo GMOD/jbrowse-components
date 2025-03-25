@@ -23,6 +23,19 @@ const Gff3Adapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     *
+     * ```json
+     * {
+     *   "type": "Gff3Adapter",
+     *   "uri": "yourfile.gff3",
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

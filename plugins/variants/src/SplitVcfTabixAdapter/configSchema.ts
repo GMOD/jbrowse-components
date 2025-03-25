@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * #config VcfTabixAdapter
+ * #config SplitVcfTabixAdapter
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

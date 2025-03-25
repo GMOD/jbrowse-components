@@ -31,3 +31,14 @@ gffLocation: {
       },
     }
 ```
+
+### Gff3Adapter - Snapshot pre-processor (simplified config)
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "Gff3Adapter",
+  "uri": "yourfile.gff3"
+}
+```

@@ -67,8 +67,15 @@ const configSchema = ConfigurationSchema(
 
     /**
      * #preProcessSnapshot
-     * if only uri is passed to snapshot, adds bamLocation and index.location
-     * with tbi index
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.bam.bai:
+     * ```json
+     * {
+     *   "type": "BamAdapter",
+     *   "uri": "yourfile.bam"
+     * }
+     * ```
      */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
