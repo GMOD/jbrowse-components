@@ -1,6 +1,6 @@
 ---
 id: creating_view
-title: Creating a custom view type
+title: Creating custom view types
 ---
 
 View types include things like our DotplotView, CircularView, SpreadsheetView,
