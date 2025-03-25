@@ -1,6 +1,6 @@
 ---
 id: analyzing_trio
-title: Analyzing a phased trio
+title: Tutorial: Analyzing a phased trio
 date: 2025-03-25
 ---
 
