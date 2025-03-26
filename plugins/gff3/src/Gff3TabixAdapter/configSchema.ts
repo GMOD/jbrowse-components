@@ -81,7 +81,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
             },
             index: {
               location: {
-                uri: snap.uri,
+                uri: `${snap.uri}.tbi`,
                 baseUri: snap.baseUri,
               },
             },
