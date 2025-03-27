@@ -530,3 +530,25 @@ links without the central server.
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
+
+### I get a GLIBC error like this from the linux AppImage of jbrowse desktop
+
+If you see
+
+```
+jbrowse-desktop.bin: /lib64/libm.so.6: version `GLIBC_2.29' not found
+```
+
+Then you are running on an older system that electron might no longer support.
+The last known working version of electron with the working GLIBC for older
+systems is electron@33.2.0. You may be able to manually downgrade electron and
+build a new release of jbrowse using steps like this
+
+```
+git clone git@github.com:GMOD/jbrowse-components
+cd jbrowse-components
+yarn
+cd products/jbrowse-desktop
+// change electronVersion in package.json to 34.0.1->33.2.0
+yarn build-electron:linux
+```
