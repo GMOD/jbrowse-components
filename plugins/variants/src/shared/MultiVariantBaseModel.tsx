@@ -124,7 +124,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredGenotype(arg: { genotype: string; name: string }) {
+      setHoveredGenotype(arg?: { genotype: string; name: string }) {
         self.hoveredGenotype = arg
       },
       /**

@@ -28,6 +28,7 @@ export default function MultiVariantTooltip({
             ([key, val]) =>
               key !== 'color' &&
               key !== 'HP' &&
+              key !== 'name' &&
               key !== 'id' &&
               val !== undefined,
           )
