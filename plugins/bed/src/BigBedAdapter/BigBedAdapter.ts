@@ -145,45 +145,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }),
     )
 
-    if (allowRedispatch && feats.length) {
-      let minStart = Number.POSITIVE_INFINITY
-      let maxEnd = Number.NEGATIVE_INFINITY
-      let hasAnyAggregationField = false
-      for (const feat of feats) {
-        if (feat.start < minStart) {
-          minStart = feat.start
-        }
-        if (feat.end > maxEnd) {
-          maxEnd = feat.end
-        }
-        // @ts-expect-error
-        if (feat[aggregateField]) {
-          hasAnyAggregationField = true
-        }
-      }
-
-      if (
-        hasAnyAggregationField &&
-        (maxEnd > query.end || minStart < query.start)
-      ) {
-        await this.getFeaturesHelper({
-          query: {
-            ...query,
-            // re-query with 500kb added onto start and end, in order to catch
-            // gene subfeatures that may not overlap your view
-            start: minStart - 500_000,
-            end: maxEnd + 500_000,
-          },
-          opts,
-          observer,
-          allowRedispatch: false,
-          originalQuery: query,
-        })
-        return
-      }
-    }
-
     const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
+    const parentAggregationFlat = []
 
     if (feats.some(f => f.uniqueId === undefined)) {
       throw new Error('found uniqueId undefined')
@@ -233,6 +196,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       })
       if (aggr) {
         parentAggregation[aggr].push(f)
+        parentAggregationFlat.push(f)
       } else {
         if (
           doesIntersect2(f.start, f.end, originalQuery.start, originalQuery.end)
@@ -244,6 +208,36 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             }),
           )
         }
+      }
+    }
+
+    if (allowRedispatch && parentAggregationFlat.length) {
+      let minStart = Number.POSITIVE_INFINITY
+      let maxEnd = Number.NEGATIVE_INFINITY
+      for (const feat of parentAggregationFlat) {
+        if (feat.start < minStart) {
+          minStart = feat.start
+        }
+        if (feat.end > maxEnd) {
+          maxEnd = feat.end
+        }
+      }
+
+      if (maxEnd > query.end || minStart < query.start) {
+        await this.getFeaturesHelper({
+          query: {
+            ...query,
+            // re-query with 500kb added onto start and end, in order to catch
+            // gene subfeatures that may not overlap your view
+            start: minStart - 500_000,
+            end: maxEnd + 500_000,
+          },
+          opts,
+          observer,
+          allowRedispatch: false,
+          originalQuery: query,
+        })
+        return
       }
     }
 
