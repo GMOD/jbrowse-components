@@ -150,3 +150,34 @@ jobs:
         run: |
           yarn build-electron:linux --publish always
         working-directory: products/jbrowse-desktop
+
+  buildjbrowseweb:
+    name: Deploy jbrowse-web and storybooks to latest folder on tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Build project
+        run: |
+          echo $RELEASE_VERSION
+          cd products/jbrowse-web/
+          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          cd ../../
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Copy branch build to S3
+        run: |
+          cd products/jbrowse-web/build && zip -r jbrowse-web-latest.zip . && cd -
+          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
+          aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/latest/*"
