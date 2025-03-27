@@ -8,13 +8,12 @@ import Figure from '../figure'
 
 ## Introduction
 
-If someone is trying to analyze how a childs genome relates to their parents,
-that can be analyzed as a trio. Genome sequencing data can be gathered from both
-the parents and offspring (e.g. mom, dad, and child) and the results stored in a
-VCF file.
+In some scenarios, it can be useful to gather genome sequencing data from both
+the parents and offspring...this can form a "trio" (e.g. mom, dad, and child)
 
-The trio data can additionally be "phased" which tells us information about each
-"haplotype" of a VCF dataset
+After doing variant calling and producing a VCF file, the VCF data can
+additionally be "phased" which tells us information about each "haplotype" of a
+VCF dataset
 
 For this tutorial, we will not go through the process of creating such a file,
 but will look at trio from the 1000 genomes dataset for a Kinh-Vietnamese trio
@@ -61,7 +60,7 @@ requires specialized programs like SHAPEIT
 
 ## Finding matching haplotypes with "visual phasing"
 
-The term "visual phasing" comes from the genetic geneology subfield. I am
+The term "visual phasing" comes from the genetic genealogy subfield. I am
 borrowing it here, but the idea is simple: you can look at the genotype matrix
 here, and see areas where different rows are matching. You would expect that the
 child would match the mom in some places, and the dad in the other. And indeed,
@@ -129,7 +128,7 @@ the matrix position),
 We can see this in the trio dataset where the child has a mixture of the dad's
 haplotypes, and a mixture of mom's haplotypes
 
-<Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked up using Google Slides. As a result of this visualization, we can see a crossing-over point that occured (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
+<Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked up using Google Slides. As a result of this visualization, we can see a crossing-over point that occurred (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
 
 In the above screenshot, you can look at the 'barcode-like' patterns to see the
 matches between MOM A1 (allele 1) in mom and the child, MOM A2 (allele 2) in mom
