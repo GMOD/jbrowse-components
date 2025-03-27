@@ -23,7 +23,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const Crosshair = observer(function ({
+const MultiVariantCrosshairs = observer(function ({
   mouseX,
   mouseY,
   model,
@@ -76,4 +76,4 @@ const Crosshair = observer(function ({
   )
 })
 
-export default Crosshair
+export default MultiVariantCrosshairs

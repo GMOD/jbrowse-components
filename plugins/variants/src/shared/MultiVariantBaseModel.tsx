@@ -14,7 +14,7 @@ import { types } from 'mobx-state-tree'
 
 import { getSources } from './getSources'
 
-import type { SampleInfo, Source } from '../shared/types'
+import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
@@ -124,7 +124,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredGenotype(arg: { genotype: string; name: string }) {
+      setHoveredGenotype(arg?: { genotype: string; name: string }) {
         self.hoveredGenotype = arg
       },
       /**

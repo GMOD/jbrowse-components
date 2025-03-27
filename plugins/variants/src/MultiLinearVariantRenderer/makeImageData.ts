@@ -57,6 +57,7 @@ export async function makeImageData(
           minY: y - f2,
           maxY: y + h + f2,
           genotype,
+          name,
         })
         const isPhased = genotype.includes('|')
         if (renderingMode === 'phased') {
