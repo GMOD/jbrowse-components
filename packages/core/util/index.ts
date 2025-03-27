@@ -763,6 +763,10 @@ export function shorten(name: string, max = 70, short = 30) {
     : name
 }
 
+export function shorten2(name: string, max = 70) {
+  return name.length > max ? `${name.slice(0, max)}...` : name
+}
+
 export function stringify(
   {
     refName,
