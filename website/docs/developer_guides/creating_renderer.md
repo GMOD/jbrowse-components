@@ -1,6 +1,6 @@
 ---
 id: creating_renderer
-title: Creating a custom renderer
+title: Creating custom renderers
 ---
 
 import Figure from '../figure'

@@ -8,9 +8,7 @@ import Figure from '../../figure'
 ## Welcome!
 
 This tutorial will show you how to get a JBrowse 2 linear genome view embedded
-in a website. It is similar to a
-[tutorial given a BCC2020](/docs/archive/bcc2020_embedding/bcc2020_embedding_jbrowse_01_getting_started/),
-but has been updated to reflect the final, released version of the interface.
+in a website.
 
 ## What is JBrowse 2
 

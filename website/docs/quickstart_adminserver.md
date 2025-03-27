@@ -1,10 +1,10 @@
 ---
-id: config_gui
-title: JBrowse web setup using the GUI
+id: quickstart_adminserver
+title: JBrowse web setup using the Admin server GUI
 toplevel: true
 ---
 
-import Figure from '../figure'
+import Figure from './figure'
 
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that

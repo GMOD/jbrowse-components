@@ -1,6 +1,6 @@
 ---
 id: creating_adapter
-title: Creating a custom adapter
+title: Creating custom adapters
 ---
 
 ### What is an adapter

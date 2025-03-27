@@ -1,6 +1,6 @@
 ---
 id: develop_web_and_desktop_tutorial
-title: Developing with JBrowse web and desktop
+title: Development environment
 toplevel: true
 ---
 
@@ -8,11 +8,6 @@ import Figure from '../figure'
 
 The following guide will walk you through setting up a developer environment for
 development with JBrowse web and JBrowse desktop.
-
-This guide will provide some steps from the perspective of a plugin developer,
-but if you are interested in contributing to
-[jbrowse-components](https://github.com/GMOD/jbrowse-components/), the setup
-steps are equally relevant.
 
 ## Prerequisites
 
@@ -30,7 +25,7 @@ First we're going to clone the repo and install the dependencies.
 ```bash
 git clone https://github.com/GMOD/jbrowse-components
 cd jbrowse-components
-yarn # or npm i
+yarn
 ```
 
 ### To run JBrowse web
@@ -127,15 +122,21 @@ session.
 For easy access to this session, navigate `File` -> `Save as..` to save the
 `.jbrowse` file somewhere you can easily open it.
 
-:::warning Note When developing your plugin using JBrowse desktop, the app will
-not automatically reload when you make changes to your plugin code. To see these
+:::warning
+
+Note When developing your plugin using JBrowse desktop, the app will not
+automatically reload when you make changes to your plugin code. To see these
 changes applied, **press `F5` to refresh the desktop react application**.
 
 You can also abort the running process under the "yarn electron" tab we set up
-earlier, and start it again. :::
+earlier, and start it again.
 
-:::info If you would like to see your `console.log` output under the "yarn
-electron" tab of your desktop development environment, follow these steps:
+:::
+
+:::info
+
+If you would like to see your `console.log` output under the "yarn electron" tab
+of your desktop development environment, follow these steps:
 
 1. Create or edit the `.bash_profile` file typically found in the root directory
    of your profile
@@ -144,15 +145,14 @@ electron" tab of your desktop development environment, follow these steps:
 
 You should now be able to see console log statements in your terminal when
 developing on JBrowse desktop (denoted by a message prefixed with something like
-INFO:CONSOLE). :::
+INFO:CONSOLE).
+
+:::
 
 ## Next Steps
 
 Now that you have your environments and your plugin running, you can start
 developing for JBrowse 2.
-
-If you took a detour from the plugin tutorial,
-[head back to where you left off](/docs/tutorials/simple_plugin).
 
 If you'd like some general development information, checkout the series of
 [developer guides](/docs/developer_guide) available.
