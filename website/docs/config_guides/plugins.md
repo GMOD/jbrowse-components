@@ -116,9 +116,7 @@ compatibility.
 `cjsUrl` is used for desktop plugins specifically, since Electron (as of
 writing) does not support ESM, and since the jbrowse-plugin-template will not
 output some code that is helpful for desktop like true require() calls for
-desktop modules. See the
-[desktop plugin tutorial](/docs/tutorials/desktop_spec_plugin_tutorial/) for
-more info.
+desktop modules.
 
 ### Plugin store
 

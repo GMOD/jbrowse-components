@@ -1,6 +1,6 @@
 ---
 id: simple_plugin
-title: Developing a simple JBrowse plugin
+title: Writing a plugin using the plugin-template
 toplevel: true
 ---
 
@@ -123,24 +123,6 @@ We can verify our plugin has been added to our JBrowse session by clicking the
 first square on the splash screen "Empty," and then navigating `Add` ->
 `Hello View` in the menu bar. This is the example pluggable element that is
 added in the template plugin project.
-
-Next, we're going to add our own pluggable element to the plugin.
-
-If you're building a small plugin, or only want to develop against the latest
-release version.
-
-However, if you:
-
-- want to run your plugin on JBrowse desktop
-- would like more descriptive stack traces and debugging
-- want to test your plugin against the most recent developer build
-
-You can develop against the latest JBrowse core build by taking a quick detour
-to our
-[developing with JBrowse web and desktop tutorial](/docs/tutorials/develop_web_and_desktop_tutorial).
-
-Now that our environment is set up and running, we're going to add our own
-pluggable element to the project and observe it running in JBrowse.
 
 For this tutorial, we're going to be creating a custom
 [widget](/docs/developer_guides/creating_widget), and using a

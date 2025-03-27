@@ -1,5 +1,5 @@
 ---
-id: no_build_plugin_tutorial
+id: no_build_plugin
 title: Writing a no-build plugin
 toplevel: true
 ---
@@ -16,7 +16,7 @@ no-build plugin for JBrowse 2.
 - a stable and recent version of [node](https://nodejs.org/en/)
 - basic familiarity with the command line and navigating the file system
 
-## What is the difference between a no-build plugin and a regular plugin?
+## What is the difference between a no-build plugin and a "regular" plugin?
 
 A "regular" JBrowse plugin often uses our plugin template
 https://github.com/GMOD/jbrowse-plugin-template which uses `rollup` to compile

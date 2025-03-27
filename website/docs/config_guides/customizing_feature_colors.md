@@ -79,8 +79,8 @@ The feature in the callback is a "SimpleFeature" type object, and you can call
 `feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
 `feature.get('other_attribute')` for e.g. maybe a field in a GFF3 column 9
 
-See our [no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/)
-for more info on setting up a simple plugin for doing these customizations.
+See our [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
+more info on setting up a simple plugin for doing these customizations.
 
 #### Footnote 1
 
