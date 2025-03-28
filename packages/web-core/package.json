@@ -44,7 +44,7 @@
     "@babel/runtime": "^7.16.3",
     "@jbrowse/app-core": "^3.2.0",
     "@jbrowse/product-core": "^3.2.0",
-    "@mui/icons-material": "^6.0.0",
+    "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "copy-to-clipboard": "^3.3.1",
     "mobx": "^6.0.0",
