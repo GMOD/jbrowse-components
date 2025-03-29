@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@jbrowse/react-linear-genome-view2": "^3.0.0",
+    "@mui/x-data-grid": "^8.0.0-beta.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
