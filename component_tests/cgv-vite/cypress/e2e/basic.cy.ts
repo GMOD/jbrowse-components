@@ -2,6 +2,6 @@ describe('JBrowse embedded circular view', () => {
   it('track loads', () => {
     cy.visit('/')
 
-    cy.findByTestId('chord-adp--351172516-vcf-62999', { timeout: 30000 })
+    cy.findByTestId('chord-adp-1843523680-A-0', { timeout: 30000 })
   })
 })

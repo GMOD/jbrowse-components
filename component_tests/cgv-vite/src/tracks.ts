@@ -6,16 +6,10 @@ const tracks = [
     category: ['VCF'],
     assemblyNames: ['volvox'],
     adapter: {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: {
-        uri: 'volvox.dup.renamed.vcf.gz',
+      type: 'VcfAdapter',
+      vcfLocation: {
+        uri: 'volvox.dup.renamed.vcf',
         locationType: 'UriLocation',
-      },
-      index: {
-        location: {
-          uri: 'volvox.dup.renamed.vcf.gz.tbi',
-          locationType: 'UriLocation',
-        },
       },
     },
   },
