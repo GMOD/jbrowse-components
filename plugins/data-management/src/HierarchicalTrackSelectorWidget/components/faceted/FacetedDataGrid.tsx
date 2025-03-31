@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const FacetedDataGrid = observer(function ({
   model,
@@ -17,7 +17,7 @@ const FacetedDataGrid = observer(function ({
 }: {
   model: HierarchicalTrackSelectorModel
   columns: GridColDef[]
-  shownTrackIds: Set<string>
+  shownTrackIds: Set<GridRowId>
   selection: any[]
 }) {
   const { pluginManager } = getEnv(model)
@@ -84,7 +84,7 @@ const FacetedDataGrid = observer(function ({
       onRowSelectionModelChange={userSelectedIds => {
         if (!useShoppingCart) {
           const a1 = shownTrackIds
-          const a2 = new Set(userSelectedIds as string[])
+          const a2 = userSelectedIds.ids
           // synchronize the user selection with the view
           // see share https://stackoverflow.com/a/33034768/2129219
           transaction(() => {
@@ -100,15 +100,20 @@ const FacetedDataGrid = observer(function ({
           const root = getRoot(model)
           const schema = pluginManager.pluggableConfigSchemaType('track')
           model.setSelection(
-            userSelectedIds.map(id => resolveIdentifier(schema, root, id)),
+            [...userSelectedIds.ids].map(id =>
+              resolveIdentifier(schema, root, id),
+            ),
           )
         }
       }}
-      rowSelectionModel={
-        useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds]
-      }
+      rowSelectionModel={{
+        type: 'include',
+        ids: new Set(
+          useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds],
+        ),
+      }}
       slots={{
-        toolbar: showOptions ? GridToolbar : null,
+        toolbar: showOptions ? GridToolbar : undefined,
       }}
       slotProps={{
         toolbar: {

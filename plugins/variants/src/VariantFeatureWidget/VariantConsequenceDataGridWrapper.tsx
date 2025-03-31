@@ -38,7 +38,7 @@ export default function VariantConsequenceDataGridWrapper({
           width: widths[i],
         }))}
         slots={{
-          toolbar: checked ? GridToolbar : null,
+          toolbar: checked ? GridToolbar : undefined,
         }}
       />
     </div>

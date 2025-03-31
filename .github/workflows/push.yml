@@ -48,17 +48,17 @@ jobs:
         run: |
           yarn
           yarn e2e
-        working-directory: component_tests/lgv
+        working-directory: component_tests/lgv-vite
       - name: Test embedded cgv
         run: |
           yarn
           yarn e2e
-        working-directory: component_tests/cgv
+        working-directory: component_tests/cgv-vite
       - name: Test embedded react-app
         run: |
           yarn
           yarn e2e
-        working-directory: component_tests/react-app
+        working-directory: component_tests/app-vite
 
   buildjbrowseweb:
     name: Deploy jbrowse-web and storybooks to S3

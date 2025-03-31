@@ -84,7 +84,7 @@ const HeaderZoomControls = observer(function ({
           valueLabel: ValueLabelComponent,
         }}
         onChange={(_, val) => {
-          setValue(val as number)
+          setValue(val)
         }}
       />
       <Tooltip title="Zoom in 2x">

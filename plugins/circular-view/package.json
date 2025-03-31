@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.2.0",
-    "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
     "@types/file-saver": "^2.0.0",
     "file-saver": "^2.0.0",
     "mobx": "^6.0.0",

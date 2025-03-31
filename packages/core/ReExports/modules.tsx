@@ -92,7 +92,7 @@ const Entries = {
   FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
   FormGroup: lazy(() => import('@mui/material/FormGroup')),
   Grid: lazy(() => import('@mui/material/Grid')),
-  Grid2: lazy(() => import('@mui/material/Grid2')),
+  Grid2: lazy(() => import('@mui/material/Grid')),
   Grow: lazy(() => import('@mui/material/Grow')),
   Icon: lazy(() => import('@mui/material/Icon')),
   IconButton: lazy(() => import('@mui/material/IconButton')),
@@ -386,11 +386,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   GridRowCount: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridRowCount,
-    })),
-  ),
-  GridSaveAltIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSaveAltIcon,
     })),
   ),
   GridSearchIcon: lazy(() =>

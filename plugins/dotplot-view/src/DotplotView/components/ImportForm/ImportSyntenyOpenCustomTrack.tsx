@@ -5,7 +5,7 @@ import HelpIcon from '@mui/icons-material/Help'
 import {
   Button,
   FormControlLabel,
-  Grid2,
+  Grid,
   Paper,
   Radio,
   RadioGroup,
@@ -103,7 +103,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
           setValue(event.target.value)
         }}
       >
-        <Grid2 container justifyContent="center">
+        <Grid container justifyContent="center">
           {[
             '.paf',
             '.delta',
@@ -120,9 +120,9 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
               label={extension}
             />
           ))}
-        </Grid2>
+        </Grid>
       </RadioGroup>
-      <Grid2 container justifyContent="center">
+      <Grid container justifyContent="center">
         {radioOption === '.paf' ||
         radioOption === '.out' ||
         radioOption === '.delta' ||
@@ -290,7 +290,7 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
             }}
           />
         )}
-      </Grid2>
+      </Grid>
     </Paper>
   )
 })
