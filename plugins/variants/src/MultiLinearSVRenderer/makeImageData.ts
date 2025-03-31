@@ -35,6 +35,7 @@ export async function makeImageData(
   checkStopToken(stopToken)
   const rbush = new RBush()
   let start = performance.now()
+
   for (const { mostFrequentAlt, feature } of mafs) {
     if (performance.now() - start > 400) {
       checkStopToken(stopToken)
@@ -86,6 +87,7 @@ export async function makeImageData(
               false,
               feature.get('type'),
               feature.get('strand'),
+              0.5,
             )
           ) {
             rbush.insert({

@@ -19,6 +19,20 @@ interface RBushData {
 
 type SerializedRBush = any
 
+function minElt<T>(arr: Iterable<T>, cb: (arg: T) => number) {
+  let min = Infinity
+  let minElement: T | undefined
+  for (const entry of arr) {
+    const val = cb(entry)
+
+    if (val < min) {
+      min = val
+      minElement = entry
+    }
+  }
+  return minElement
+}
+
 const MultiVariantRendering = observer(function (props: {
   regions: Region[]
   features: Map<string, Feature>
@@ -47,14 +61,18 @@ const MultiVariantRendering = observer(function (props: {
       offsetX = eventClientX - r.left
       offsetY = eventClientY - r.top - (displayModel?.scrollTop || 0)
     }
-    const ret = rbush2.search({
+
+    const x = rbush2.search({
       minX: offsetX,
-      maxX: offsetX + 3,
+      maxX: offsetX + 1,
       minY: offsetY,
-      maxY: offsetY + 3,
-    })[0]
-    if (ret) {
-      const { minX, minY, maxX, maxY, ...rest } = ret
+      maxY: offsetY + 1,
+    })
+    if (x.length) {
+      const { minX, minY, maxX, maxY, ...rest } = minElt(
+        x,
+        elt => elt.maxX - elt.minX,
+      )!
       return rest
     } else {
       return undefined

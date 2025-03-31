@@ -390,7 +390,7 @@ export default function MultiVariantBaseModelF(
     })
     .views(self => ({
       get canDisplayLabels() {
-        return self.rowHeight > 8 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 8 && self.showSidebarLabelsSetting
       },
       /**
        * #getter
