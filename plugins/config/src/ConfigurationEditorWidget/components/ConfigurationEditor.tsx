@@ -70,7 +70,7 @@ const Member = observer(function (props: {
     // that can be used to change its type
     const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
     return (
-      <Accordion defaultExpanded className={classes.accordion}>
+      <Accordion className={classes.accordion}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.icon} />}
         >
