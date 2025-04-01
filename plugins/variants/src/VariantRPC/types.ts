@@ -11,4 +11,29 @@ export interface GetGenotypeMatrixArgs {
   headers?: Record<string, string>
   regions: Region[]
   bpPerPx: number
+  lengthCutoffFilter: number
+}
+
+export interface GetSimplifiedFeaturesArgs {
+  adapterConfig: AnyConfigurationModel
+  stopToken?: string
+  sessionId: string
+  headers?: Record<string, string>
+  regions: Region[]
+  bpPerPx: number
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+}
+
+export interface ClusterGenotypeMatrixArgs {
+  adapterConfig: AnyConfigurationModel
+  stopToken?: string
+  statusCallback: (arg: string) => void
+  sessionId: string
+  headers?: Record<string, string>
+  regions: Region[]
+  bpPerPx: number
+  sources: Source[]
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
 }

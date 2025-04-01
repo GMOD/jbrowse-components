@@ -62,6 +62,7 @@ const ClusterDialogAuto = observer(function ({
               const {
                 sourcesWithoutLayout,
                 minorAlleleFrequencyFilter,
+                lengthCutoffFilter,
                 adapterConfig,
               } = model
               if (sourcesWithoutLayout) {
@@ -75,6 +76,7 @@ const ClusterDialogAuto = observer(function ({
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesWithoutLayout,
                     minorAlleleFrequencyFilter,
+                    lengthCutoffFilter,
                     sessionId,
                     adapterConfig,
                     stopToken,

@@ -54,17 +54,21 @@ function getMostFrequentAlt(alleleCounts: Map<string, number>) {
   return mostFrequentAlt
 }
 
-export function getFeaturesThatPassMinorAlleleFrequencyFilter(
-  feats: Iterable<Feature>,
-  minorAlleleFrequencyFilter: number,
-  lengthCutoffFilter = 10,
-) {
+export function getFeaturesThatPassMinorAlleleFrequencyFilter({
+  features,
+  minorAlleleFrequencyFilter,
+  lengthCutoffFilter,
+}: {
+  features: Iterable<Feature>
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+}) {
   const results = [] as {
     feature: Feature
     mostFrequentAlt: string
     alleleCounts: Map<string, number>
   }[]
-  for (const feature of feats) {
+  for (const feature of features) {
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
       const alleleCounts = calculateAlleleCounts(feature)
       if (

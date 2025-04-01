@@ -4,45 +4,40 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
+import type { GetSimplifiedFeaturesArgs } from './types'
 import type { SampleInfo } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
 
-interface Args {
-  adapterConfig: AnyConfigurationModel
-  stopToken?: string
-  sessionId: string
-  headers?: Record<string, string>
-  regions: Region[]
-  bpPerPx: number
-  minorAlleleFrequencyFilter: number
-}
 export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantGetSimplifiedFeatures'
 
-  async execute(args: Args, rpcDriverClassName: string) {
+  async execute(args: GetSimplifiedFeaturesArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
-    const { minorAlleleFrequencyFilter, regions, adapterConfig, sessionId } =
-      deserializedArgs
+    const {
+      lengthCutoffFilter,
+      minorAlleleFrequencyFilter,
+      regions,
+      adapterConfig,
+      sessionId,
+    } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    const feats = await firstValueFrom(
-      (dataAdapter as BaseFeatureDataAdapter)
-        .getFeaturesInMultipleRegions(regions, deserializedArgs)
-        .pipe(toArray()),
-    )
 
-    const features = getFeaturesThatPassMinorAlleleFrequencyFilter(
-      feats,
+    const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
       minorAlleleFrequencyFilter,
-    )
+      lengthCutoffFilter,
+      features: await firstValueFrom(
+        (dataAdapter as BaseFeatureDataAdapter)
+          .getFeaturesInMultipleRegions(regions, deserializedArgs)
+          .pipe(toArray()),
+      ),
+    })
 
     const sampleInfo = {} as Record<string, SampleInfo>
     let hasPhased = false
@@ -70,6 +65,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
           start: feature.get('start'),
           end: feature.get('end'),
           refName: feature.get('refName'),
+          name: feature.get('name'),
         },
       })),
     }

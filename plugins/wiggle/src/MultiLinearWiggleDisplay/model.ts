@@ -32,8 +32,8 @@ const randomColor = () =>
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
-const ClusterDialog = lazy(
-  () => import('./components/ClusterDialog/ClusterDialog'),
+const WiggleClusterDialog = lazy(
+  () => import('./components/WiggleClusterDialog/WiggleClusterDialog'),
 )
 
 // using a map because it preserves order
@@ -501,7 +501,7 @@ export function stateModelFactory(
               label: 'Cluster by score',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  ClusterDialog,
+                  WiggleClusterDialog,
                   {
                     model: self,
                     handleClose,

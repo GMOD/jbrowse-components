@@ -6,7 +6,7 @@ import { drawColorAlleleCount } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
-import type { RenderArgsDeserializedWithFeaturesAndLayout } from './types'
+import type { RenderArgsDeserialized } from './types'
 
 type SampleGenotype = Record<string, string[]>
 
@@ -19,23 +19,25 @@ export async function makeImageData({
   ctx: CanvasRenderingContext2D
   canvasWidth: number
   canvasHeight: number
-  renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+  renderArgs: RenderArgsDeserialized
 }) {
   const {
-    renderingMode: renderingMode,
+    renderingMode,
     minorAlleleFrequencyFilter,
     sources,
     features,
     stopToken,
+    lengthCutoffFilter,
   } = renderArgs
 
   const { statusCallback = () => {} } = renderArgs
   const h = canvasHeight / sources.length
   checkStopToken(stopToken)
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
-    features.values(),
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    features: features.values(),
     minorAlleleFrequencyFilter,
-  )
+    lengthCutoffFilter,
+  })
   checkStopToken(stopToken)
   const arr = [] as string[][]
   const m = mafs.length
