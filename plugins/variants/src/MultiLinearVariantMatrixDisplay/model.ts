@@ -82,6 +82,7 @@ export default function stateModelFactory(
           notReady: superProps.notReady || !self.sources || !self.featuresReady,
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
           height: self.totalHeight,
           sources: self.sources,
         }

@@ -4,8 +4,8 @@ import { Dialog } from '@jbrowse/core/ui'
 import { FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClusterDialogAuto from './ClusterDialogAuto'
-import ClusterDialogManual from './ClusterDialogManual'
+import WiggleClusterDialogAuto from './WiggleClusterDialogAuto'
+import WiggleClusterDialogManual from './WiggleClusterDialogManual'
 
 import type { ReducedModel } from './types'
 
@@ -51,7 +51,7 @@ function Header({
   )
 }
 
-const ClusterDialog = observer(function ({
+const WiggleClusterDialog = observer(function ({
   model,
   handleClose,
 }: {
@@ -73,16 +73,16 @@ const ClusterDialog = observer(function ({
       }}
     >
       {activeMode === 'auto' ? (
-        <ClusterDialogAuto model={model} handleClose={handleClose}>
+        <WiggleClusterDialogAuto model={model} handleClose={handleClose}>
           <Header activeMode={activeMode} setActiveMode={setActiveMode} />
-        </ClusterDialogAuto>
+        </WiggleClusterDialogAuto>
       ) : (
-        <ClusterDialogManual model={model} handleClose={handleClose}>
+        <WiggleClusterDialogManual model={model} handleClose={handleClose}>
           <Header activeMode={activeMode} setActiveMode={setActiveMode} />
-        </ClusterDialogManual>
+        </WiggleClusterDialogManual>
       )}
     </Dialog>
   )
 })
 
-export default ClusterDialog
+export default WiggleClusterDialog

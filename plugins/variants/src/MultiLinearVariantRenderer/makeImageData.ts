@@ -23,14 +23,16 @@ export async function makeImageData(
     bpPerPx,
     renderingMode,
     stopToken,
+    lengthCutoffFilter,
   } = props
   const region = regions[0]!
 
   checkStopToken(stopToken)
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
-    features.values(),
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    features: features.values(),
     minorAlleleFrequencyFilter,
-  )
+    lengthCutoffFilter,
+  })
   checkStopToken(stopToken)
   const rbush = new RBush()
   let start = performance.now()

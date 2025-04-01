@@ -23,18 +23,20 @@ export async function makeImageData(
     bpPerPx,
     renderingMode,
     stopToken,
+    lengthCutoffFilter,
   } = props
   const region = regions[0]!
 
   checkStopToken(stopToken)
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
-    features.values(),
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    features: features.values(),
     minorAlleleFrequencyFilter,
-    Infinity,
-  )
+    lengthCutoffFilter,
+  })
   checkStopToken(stopToken)
   const rbush = new RBush()
   let start = performance.now()
+
   for (const { mostFrequentAlt, feature } of mafs) {
     if (performance.now() - start > 400) {
       checkStopToken(stopToken)
@@ -86,6 +88,7 @@ export async function makeImageData(
               false,
               feature.get('type'),
               feature.get('strand'),
+              0.75,
             )
           ) {
             rbush.insert({

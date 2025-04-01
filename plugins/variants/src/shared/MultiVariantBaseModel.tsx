@@ -80,6 +80,10 @@ export default function MultiVariantBaseModelF(
          * used only if autoHeight is false
          */
         autoHeight: true,
+        /**
+         * #property
+         */
+        lengthCutoffFilter: 10,
       }),
     )
     .volatile(() => ({
@@ -390,7 +394,7 @@ export default function MultiVariantBaseModelF(
     })
     .views(self => ({
       get canDisplayLabels() {
-        return self.rowHeight > 8 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 8 && self.showSidebarLabelsSetting
       },
       /**
        * #getter
@@ -415,6 +419,7 @@ export default function MultiVariantBaseModelF(
           totalHeight: self.totalHeight,
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
           rowHeight: self.rowHeight,
           sources: self.sources,
           scrollTop: self.scrollTop,

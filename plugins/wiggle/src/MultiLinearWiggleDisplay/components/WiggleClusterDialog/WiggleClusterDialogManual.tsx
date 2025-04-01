@@ -43,7 +43,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ClusterDialogManuals = observer(function ({
+const WiggleClusterDialogManuals = observer(function ({
   model,
   handleClose,
   children,
@@ -308,4 +308,4 @@ cat(resultClusters$order,sep='\\n')`
   )
 })
 
-export default ClusterDialogManuals
+export default WiggleClusterDialogManuals

@@ -1,4 +1,5 @@
 import { parseBreakend } from '@gmod/vcf'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import type VCF from '@gmod/vcf'
 
@@ -103,54 +104,43 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   const bnd = parseBreakend(alt)
   if (bnd) {
     return ['breakend', alt]
-  }
-  if (ref.length === 1 && alt.length === 1) {
+  } else if (ref.length === 1 && alt.length === 1) {
     return ['SNV', makeDescriptionString('SNV', ref, alt)]
-  }
-  if (alt === '<INS>') {
+  } else if (alt === '<INS>') {
     return ['insertion', alt]
-  }
-  if (alt === '<DEL>') {
+  } else if (alt === '<DEL>') {
     return ['deletion', alt]
-  }
-  if (alt === '<DUP>') {
+  } else if (alt === '<DUP>') {
     return ['duplication', alt]
-  }
-  if (alt === '<CNV>') {
+  } else if (alt === '<CNV>') {
     return ['cnv', alt]
-  }
-  if (alt === '<INV>') {
+  } else if (alt === '<INV>') {
     return ['inversion', alt]
-  }
-  if (alt === '<TRA>') {
+  } else if (alt === '<TRA>') {
     return ['translocation', alt]
-  }
-  if (alt.includes('<')) {
+  } else if (alt.includes('<')) {
     return ['sv', alt]
-  }
-  if (ref.length === alt.length) {
+  } else if (ref.length === alt.length) {
     return ref.split('').reverse().join('') === alt
       ? ['inversion', makeDescriptionString('inversion', ref, alt)]
       : ['substitution', makeDescriptionString('substitution', ref, alt)]
-  }
-  if (ref.length <= alt.length) {
+  } else if (ref.length <= alt.length) {
     const len = alt.length - ref.length
-    const lena = len.toLocaleString('en-US')
+    const lena = getBpDisplayStr(len)
     return [
       'insertion',
-      len > 5 ? `${lena}bp INS` : makeDescriptionString('insertion', ref, alt),
+      len > 5 ? `${lena} INS` : makeDescriptionString('insertion', ref, alt),
     ]
-  }
-  if (ref.length > alt.length) {
+  } else if (ref.length > alt.length) {
     const len = ref.length - alt.length
-    const lena = len.toLocaleString('en-US')
+    const lena = getBpDisplayStr(len)
     return [
       'deletion',
-      len > 5 ? `${lena}bp DEL` : makeDescriptionString('deletion', ref, alt),
+      len > 5 ? `${lena} DEL` : makeDescriptionString('deletion', ref, alt),
     ]
+  } else {
+    return ['indel', makeDescriptionString('indel', ref, alt)]
   }
-
-  return ['indel', makeDescriptionString('indel', ref, alt)]
 }
 
 function makeDescriptionString(soTerm: string, ref: string, alt: string) {

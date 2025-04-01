@@ -35,6 +35,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         autoHeight: true,
+
+        /**
+         * #property
+         */
+        lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
       }),
     )
     .views(() => ({

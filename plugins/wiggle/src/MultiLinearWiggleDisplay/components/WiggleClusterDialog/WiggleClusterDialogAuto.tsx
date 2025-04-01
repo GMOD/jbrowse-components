@@ -22,7 +22,7 @@ import { isAlive } from 'mobx-state-tree'
 import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const ClusterDialogAuto = observer(function ({
+const WiggleClusterDialogAuto = observer(function ({
   model,
   children,
   handleClose,
@@ -161,4 +161,4 @@ const ClusterDialogAuto = observer(function ({
   )
 })
 
-export default ClusterDialogAuto
+export default WiggleClusterDialogAuto

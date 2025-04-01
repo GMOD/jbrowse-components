@@ -3,26 +3,12 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { clusterData } from './cluster'
 import { getGenotypeMatrix } from './getGenotypeMatrix'
 
-import type { Source } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
-
-interface Args {
-  adapterConfig: AnyConfigurationModel
-  stopToken?: string
-  statusCallback: (arg: string) => void
-  sessionId: string
-  headers?: Record<string, string>
-  regions: Region[]
-  bpPerPx: number
-  sources: Source[]
-  minorAlleleFrequencyFilter: number
-}
+import type { ClusterGenotypeMatrixArgs } from './types'
 
 export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantClusterGenotypeMatrix'
 
-  async execute(args: Args, rpcDriverClassName: string) {
+  async execute(args: ClusterGenotypeMatrixArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
@@ -33,10 +19,10 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
     })
     return clusterData({
       data: Object.values(matrix),
-      onProgress: a => {
-        deserializedArgs.statusCallback(`${toP(a * 100)}%`)
-      },
       stopToken: deserializedArgs.stopToken,
+      onProgress: progress => {
+        deserializedArgs.statusCallback(`${toP(progress * 100)}%`)
+      },
     })
   }
 }

@@ -20,19 +20,19 @@ export async function getGenotypeMatrix({
     regions,
     adapterConfig,
     sessionId,
+    lengthCutoffFilter,
   } = args
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const feats = await firstValueFrom(
-    dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-  )
-
   const genotypeFactor = new Set<string>()
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
-    feats,
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
-  )
+    lengthCutoffFilter,
+    features: await firstValueFrom(
+      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+    ),
+  })
 
   for (const { alleleCounts } of mafs) {
     for (const alt of alleleCounts.keys()) {
