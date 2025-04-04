@@ -1,0 +1,15 @@
+node_modules
+*.log
+lib
+dist
+coverage
+.nyc_output
+.idea
+package-lock.json
+.prettierignore
+.vscode
+.editorconfig
+/test-results/**/*.xml
+/website/build
+.DS_Store
+junit.xml
