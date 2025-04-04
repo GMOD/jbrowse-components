@@ -2,8 +2,6 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import ChordVariantDisplayF from './ChordVariantDisplay'
 import LinearVariantDisplayF from './LinearVariantDisplay'
-import MultiLinearSVDisplayF from './MultiLinearSVDisplay'
-import MultiSVRendererF from './MultiLinearSVRenderer'
 import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay'
 import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay'
 import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer'
@@ -35,9 +33,7 @@ export default class VariantsPlugin extends Plugin {
     LinearVariantDisplayF(pluginManager)
     LinearVariantMatrixDisplayF(pluginManager)
     MultiLinearVariantDisplayF(pluginManager)
-    MultiLinearSVDisplayF(pluginManager)
     MultiVariantRendererF(pluginManager)
-    MultiSVRendererF(pluginManager)
     LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
