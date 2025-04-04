@@ -1,0 +1,33 @@
+{
+  "name": "@jbrowse/mobx-state-tree",
+  "version": "5.6.0",
+  "description": "Opinionated, transactional, MobX powered state container",
+  "main": "dist/index.mjs",
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rimraf dist lib",
+    "build": "tsup  --format esm src/index.ts --dts",
+    "build:esm": "tsc --target es2020 --outDir esm",
+    "build:es5": "tsc --target es2020 --module commonjs --outDir dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree.git"
+  },
+  "author": "Michel Weststrate",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues"
+  },
+  "files": [
+    "dist/"
+  ],
+  "dependencies": {
+    "ts-essentials": "^10.0.4",
+    "tsup": "^8.4.0"
+  },
+  "peerDependencies": {
+    "mobx": "^6.3.0"
+  }
+}

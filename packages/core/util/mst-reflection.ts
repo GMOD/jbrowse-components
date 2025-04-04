@@ -4,7 +4,7 @@ import {
   isMapType,
   isOptionalType,
   isUnionType,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import type {
   IAnyComplexType,
@@ -12,7 +12,7 @@ import type {
   IModelReflectionPropertiesData,
   ISimpleType,
   UnionStringArray,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 export interface ILiteralType<T> extends ISimpleType<T> {
   value: T

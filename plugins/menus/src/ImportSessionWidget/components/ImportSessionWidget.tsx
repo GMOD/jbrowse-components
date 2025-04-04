@@ -9,7 +9,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import ImportError from './ImportError'
 
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 

@@ -46,7 +46,7 @@
     "ixixx": "^2.0.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "node-fetch": "^2.6.0",
     "rxjs": "^7.0.0",
     "sanitize-filename": "^1.6.3"

@@ -31,7 +31,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import { addDisposer, cast, getSnapshot, getType, types } from '@jbrowse/mobx-state-tree'
 
 // other
 import packageJSON from '../../package.json'
@@ -50,7 +50,7 @@ import type {
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))

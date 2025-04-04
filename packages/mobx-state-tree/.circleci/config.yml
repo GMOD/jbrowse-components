@@ -1,0 +1,115 @@
+version: 2.1
+
+executors:
+  my-executor:
+    docker:
+      - image: cimg/node:14.18.1
+        environment:
+          CI: true
+
+orbs:
+  node: circleci/node@4.7.0
+
+jobs:
+  # mobx-state-tree build
+  build:
+    executor: my-executor
+    steps:
+      - checkout
+
+      - run:
+          name: Install the latest version of bun
+          command: curl -fsSL https://bun.sh/install | bash
+      - run:
+          name: Link bun
+          command: sudo ln -s ~/.bun/bin/bun /usr/local/bin/
+      - run:
+          name: Install dependencies
+          command: bun install
+      - run:
+          name: Build MST
+          command: bun run build
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./*
+
+  # Add new prettier check job
+  check-prettier:
+    executor: my-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install the latest version of bun
+          command: curl -fsSL https://bun.sh/install | bash
+      - run:
+          name: Link bun
+          command: sudo ln -s ~/.bun/bin/bun /usr/local/bin/
+      - run:
+          name: Check code formatting
+          command: bun run prettier:check
+
+  # mobx-state-tree tests
+  test-mst-dev:
+    executor: my-executor
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Install the latest version of bun
+          command: curl -fsSL https://bun.sh/install | bash
+      - run:
+          name: Link bun
+          command: sudo ln -s ~/.bun/bin/bun /usr/local/bin/
+      - run: bun test:all
+
+  test-mst-prod:
+    executor: my-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install the latest version of bun
+          command: curl -fsSL https://bun.sh/install | bash
+      - run:
+          name: Link bun
+          command: sudo ln -s ~/.bun/bin/bun /usr/local/bin/
+      - run: bun test:prod
+
+  test-size:
+    executor: my-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install the latest version of bun
+          command: curl -fsSL https://bun.sh/install | bash
+      - run:
+          name: Link bun
+          command: sudo ln -s ~/.bun/bin/bun /usr/local/bin/
+      - run: bun run size
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - build
+
+      # Add prettier check to workflow
+      - check-prettier:
+          requires:
+            - build
+
+      - test-mst-dev:
+          requires:
+            - build
+      - test-mst-prod:
+          requires:
+            - build
+      # Temporarily disabled while we work to implement Bun testing
+      # - test-size:
+      #     requires:
+      #       - build

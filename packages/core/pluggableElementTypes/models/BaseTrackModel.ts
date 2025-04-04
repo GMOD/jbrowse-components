@@ -1,5 +1,5 @@
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
+import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../configuration'
 import { adapterConfigCacheKey } from '../../data_adapters/util'
@@ -13,7 +13,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '../../configuration'
 import type { MenuItem } from '../../ui'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)

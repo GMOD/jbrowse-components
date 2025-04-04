@@ -1,5 +1,5 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../configuration'
 import { adapterConfigCacheKey } from '../data_adapters/util'
@@ -15,7 +15,7 @@ import type {
 } from '../data_adapters/BaseAdapter'
 import type RpcManager from '../rpc/RpcManager'
 import type { Feature, Region } from '../util'
-import type { IAnyType, Instance } from 'mobx-state-tree'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 

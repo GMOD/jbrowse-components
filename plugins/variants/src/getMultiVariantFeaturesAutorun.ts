@@ -6,7 +6,7 @@ import {
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { SampleInfo, Source } from './shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getMembers } from 'mobx-state-tree'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import { singular } from 'pluralize'
 import { makeStyles } from 'tss-react/mui'
 
@@ -23,7 +23,7 @@ import TypeSelector from './TypeSelector'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { IAnyType } from 'mobx-state-tree'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   icon: {

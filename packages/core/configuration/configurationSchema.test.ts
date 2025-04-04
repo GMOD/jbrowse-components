@@ -1,4 +1,4 @@
-import { getSnapshot, types } from 'mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf, readConfObject } from '.'
 import { ConfigurationSchema } from './configurationSchema'

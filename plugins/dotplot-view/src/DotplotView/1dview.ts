@@ -1,13 +1,13 @@
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { observable } from 'mobx'
-import { getParent } from 'mobx-state-tree'
+import { getParent } from '@jbrowse/mobx-state-tree'
 
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel Dotplot1DView
- * ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
+ * ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state used here
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

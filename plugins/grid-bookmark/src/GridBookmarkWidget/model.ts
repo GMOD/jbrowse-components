@@ -5,12 +5,12 @@ import {
 } from '@jbrowse/core/util'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { autorun } from 'mobx'
-import { addDisposer, cast, types } from 'mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IMSTArray, Instance, SnapshotIn } from 'mobx-state-tree'
+import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 const LabeledRegionModel = types
   .compose(

@@ -13,7 +13,7 @@ import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import { addDisposer, cast, getSnapshot, getType, types } from '@jbrowse/mobx-state-tree'
 
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
@@ -28,7 +28,7 @@ import type {
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 export interface Menu {
   label: string
