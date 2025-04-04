@@ -600,5 +600,5 @@ export function isType(value: any): value is IAnyType {
  * @hidden
  */
 export function assertIsType(type: IAnyType, argNumber: number | number[]) {
-  assertArg(type, isType, '@jbrowse/mobx-state-tree type', argNumber)
+  assertArg(type, isType, '@jbrowse/@jbrowse/mobx-state-tree type', argNumber)
 }

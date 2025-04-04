@@ -112,7 +112,7 @@ class StoredReference<IT extends IAnyType> {
 
       if (!target) {
         throw new InvalidReferenceError(
-          `[@jbrowse/mobx-state-tree] Failed to resolve reference '${this.identifier}' to type '${this.targetType.name}' (from node: ${node.path})`,
+          `[@jbrowse/@jbrowse/mobx-state-tree] Failed to resolve reference '${this.identifier}' to type '${this.targetType.name}' (from node: ${node.path})`,
         )
       }
 
@@ -529,7 +529,7 @@ export interface IReferenceType<IT extends IAnyComplexType>
 
 /**
  * `types.reference` - Creates a reference to another type, which should have defined an identifier.
- * See also the [reference and identifiers](https://github.com/mobxjs/@jbrowse/mobx-state-tree#references-and-identifiers) section.
+ * See also the [reference and identifiers](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#references-and-identifiers) section.
  */
 export function reference<IT extends IAnyComplexType>(
   subType: IT,

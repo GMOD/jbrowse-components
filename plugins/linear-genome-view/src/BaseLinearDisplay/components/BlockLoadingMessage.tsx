@@ -1,6 +1,6 @@
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
+import { getParent } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => {

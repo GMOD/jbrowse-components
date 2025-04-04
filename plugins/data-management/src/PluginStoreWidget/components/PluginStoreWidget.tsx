@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import InstalledPluginsList from './InstalledPluginsList'

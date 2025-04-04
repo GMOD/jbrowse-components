@@ -1,11 +1,11 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getParent, isStateTreeNode, types } from 'mobx-state-tree'
+import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import type { BaseRootModelType } from '../RootModel/BaseRootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseSessionModel

@@ -1,4 +1,4 @@
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode

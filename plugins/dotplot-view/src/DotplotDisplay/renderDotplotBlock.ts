@@ -1,10 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { DotplotViewModel } from '../DotplotView/model'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export function renderBlockData(self: IAnyStateTreeNode) {
   const { rpcManager } = getSession(self)

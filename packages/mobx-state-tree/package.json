@@ -6,19 +6,19 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rimraf dist lib",
-    "build": "tsup  --format esm src/index.ts",
+    "build": "tsup  --format esm src/index.ts --dts",
     "build:esm": "tsc --target es2020 --outDir esm",
     "build:es5": "tsc --target es2020 --module commonjs --outDir dist",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mobxjs/@jbrowse/mobx-state-tree.git"
+    "url": "https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree.git"
   },
   "author": "Michel Weststrate",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues"
+    "url": "https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues"
   },
   "files": [
     "dist/"

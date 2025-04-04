@@ -77,7 +77,7 @@ export function getChildType(
 
 /**
  * Registers a function that will be invoked for each mutation that is applied to the provided model instance, or to any of its children.
- * See [patches](https://github.com/mobxjs/@jbrowse/mobx-state-tree#patches) for more details. onPatch events are emitted immediately and will not await the end of a transaction.
+ * See [patches](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#patches) for more details. onPatch events are emitted immediately and will not await the end of a transaction.
  * Patches can be used to deeply observe a model tree.
  *
  * @param target the model instance from which to receive patches
@@ -98,7 +98,7 @@ export function onPatch(
 /**
  * Registers a function that is invoked whenever a new snapshot for the given model instance is available.
  * The listener will only be fire at the end of the current MobX (trans)action.
- * See [snapshots](https://github.com/mobxjs/@jbrowse/mobx-state-tree#snapshots) for more details.
+ * See [snapshots](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#snapshots) for more details.
  *
  * @param target
  * @param callback
@@ -117,7 +117,7 @@ export function onSnapshot<S>(
 
 /**
  * Applies a JSON-patch to the given model instance or bails out if the patch couldn't be applied
- * See [patches](https://github.com/mobxjs/@jbrowse/mobx-state-tree#patches) for more details.
+ * See [patches](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#patches) for more details.
  *
  * Can apply a single past, or an array of patches.
  *
@@ -794,7 +794,7 @@ export function addDisposer(
 
 /**
  * Returns the environment of the current state tree, or throws. For more info on environments,
- * see [Dependency injection](https://github.com/mobxjs/@jbrowse/mobx-state-tree#dependency-injection)
+ * see [Dependency injection](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#dependency-injection)
  *
  * Please note that in child nodes access to the root is only possible
  * once the `afterAttach` hook has fired
@@ -827,7 +827,7 @@ export function hasEnv(target: IAnyStateTreeNode): boolean {
   if (process.env.NODE_ENV !== 'production') {
     if (!isStateTreeNode(target))
       throw new MstError(
-        'expected first argument to be a @jbrowse/mobx-state-tree node, got ' +
+        'expected first argument to be a @jbrowse/@jbrowse/mobx-state-tree node, got ' +
           target +
           ' instead',
       )

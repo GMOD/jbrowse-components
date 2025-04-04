@@ -202,7 +202,7 @@ export function recordActions(
 
 /**
  * Registers a function that will be invoked for each action that is called on the provided model instance, or to any of its children.
- * See [actions](https://github.com/mobxjs/@jbrowse/mobx-state-tree#actions) for more details. onAction events are emitted only for the outermost called action in the stack.
+ * See [actions](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#actions) for more details. onAction events are emitted only for the outermost called action in the stack.
  * Action can also be intercepted by middleware using addMiddleware to change the function call before it will be run.
  *
  * Not all action arguments might be serializable. For unserializable arguments, a struct like `{ $MST_UNSERIALIZABLE: true, type: "someType" }` will be generated.

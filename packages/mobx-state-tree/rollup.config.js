@@ -40,9 +40,9 @@ const config = (outFile, format, mode) => ({
 })
 
 export default [
-  config('@jbrowse/mobx-state-tree.js', 'cjs', 'development'),
-  config('@jbrowse/mobx-state-tree.min.js', 'cjs', 'production'),
-  config('@jbrowse/mobx-state-tree.umd.js', 'umd', 'development'),
-  config('@jbrowse/mobx-state-tree.umd.min.js', 'umd', 'production'),
-  config('@jbrowse/mobx-state-tree.module.js', 'es', 'development'),
+  config('@jbrowse/@jbrowse/mobx-state-tree.js', 'cjs', 'development'),
+  config('@jbrowse/@jbrowse/mobx-state-tree.min.js', 'cjs', 'production'),
+  config('@jbrowse/@jbrowse/mobx-state-tree.umd.js', 'umd', 'development'),
+  config('@jbrowse/@jbrowse/mobx-state-tree.umd.min.js', 'umd', 'production'),
+  config('@jbrowse/@jbrowse/mobx-state-tree.module.js', 'es', 'development'),
 ]

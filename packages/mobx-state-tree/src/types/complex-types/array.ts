@@ -402,7 +402,7 @@ function reconcileArrayChildren<TT>(
     const newPath = '' + newPaths[i]
 
     // for some reason, instead of newValue we got a node, fallback to the storedValue
-    // TODO: https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/340#issuecomment-325581681
+    // TODO: https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues/340#issuecomment-325581681
     if (isNode(newValue)) newValue = newValue.storedValue
 
     if (!oldNode && !hasNewNode) {

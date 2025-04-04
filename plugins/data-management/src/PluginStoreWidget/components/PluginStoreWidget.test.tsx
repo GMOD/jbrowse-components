@@ -4,7 +4,7 @@ import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { getParent, getSnapshot } from 'mobx-state-tree'
+import { getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import PluginStoreWidget from './PluginStoreWidget'
 

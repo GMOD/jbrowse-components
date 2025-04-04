@@ -22,7 +22,7 @@ import {
 import copy from 'copy-to-clipboard'
 import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import type { ReducedModel } from './types'

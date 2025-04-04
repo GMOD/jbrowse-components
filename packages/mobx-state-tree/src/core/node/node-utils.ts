@@ -78,7 +78,7 @@ export function assertIsStateTreeNode(
   value: IAnyStateTreeNode,
   argNumber: number | number[],
 ): void {
-  assertArg(value, isStateTreeNode, '@jbrowse/mobx-state-tree node', argNumber)
+  assertArg(value, isStateTreeNode, '@jbrowse/@jbrowse/mobx-state-tree node', argNumber)
 }
 
 /**

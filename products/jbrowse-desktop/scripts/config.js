@@ -9,7 +9,7 @@ module.exports = function webpackConfigF(config) {
       Buffer: ['buffer', 'Buffer'],
     }),
     new webpack.DefinePlugin({
-      // Global mobx-state-tree configuration.
+      // Global @jbrowse/mobx-state-tree configuration.
       // Force type checking in production for easier debugging:
       // xref https://github.com/GMOD/jbrowse-components/pull/1575
       'process.env.ENABLE_TYPE_CHECK': '"true"',

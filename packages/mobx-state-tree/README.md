@@ -1,14 +1,14 @@
-<img src="website/static/img/@jbrowse/mobx-state-tree-logo-gradient.png" alt="logo" height="120" align="right" />
+<img src="website/static/img/@jbrowse/@jbrowse/mobx-state-tree-logo-gradient.png" alt="logo" height="120" align="right" />
 
-# @jbrowse/mobx-state-tree
+# @jbrowse/@jbrowse/mobx-state-tree
 
-[![npm version](https://badge.fury.io/js/@jbrowse/mobx-state-tree.svg)](https://badge.fury.io/js/@jbrowse/mobx-state-tree)
-[![CircleCI](https://circleci.com/gh/mobxjs/@jbrowse/mobx-state-tree.svg?style=svg)](https://circleci.com/gh/mobxjs/@jbrowse/mobx-state-tree)
-[![Have a question? Ask on GitHub Discussions!](https://img.shields.io/badge/Have%20a%20question%3F-Ask%20on%20GitHub%20Discussions!-blue)](https://github.com/mobxjs/@jbrowse/mobx-state-tree/discussions)
+[![npm version](https://badge.fury.io/js/@jbrowse/@jbrowse/mobx-state-tree.svg)](https://badge.fury.io/js/@jbrowse/@jbrowse/mobx-state-tree)
+[![CircleCI](https://circleci.com/gh/mobxjs/@jbrowse/@jbrowse/mobx-state-tree.svg?style=svg)](https://circleci.com/gh/mobxjs/@jbrowse/@jbrowse/mobx-state-tree)
+[![Have a question? Ask on GitHub Discussions!](https://img.shields.io/badge/Have%20a%20question%3F-Ask%20on%20GitHub%20Discussions!-blue)](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/discussions)
 
-## What is @jbrowse/mobx-state-tree?
+## What is @jbrowse/@jbrowse/mobx-state-tree?
 
-Technically speaking, @jbrowse/mobx-state-tree (also known as MST) is a state
+Technically speaking, @jbrowse/@jbrowse/mobx-state-tree (also known as MST) is a state
 container system built on [MobX](https://github.com/mobxjs/mobx), a functional
 reactive state library.
 
@@ -33,12 +33,12 @@ _Note: you don't need to know how to use MobX in order to use MST._
 # Getting started
 
 See the
-[Getting started](https://@jbrowse/mobx-state-tree.js.org/intro/getting-started)
+[Getting started](https://@jbrowse/@jbrowse/mobx-state-tree.js.org/intro/getting-started)
 tutorial or follow the free
-[egghead.io course](https://egghead.io/courses/manage-application-state-with-@jbrowse/mobx-state-tree).
+[egghead.io course](https://egghead.io/courses/manage-application-state-with-@jbrowse/@jbrowse/mobx-state-tree).
 
 👉 Official docs can be found at
-[http://@jbrowse/mobx-state-tree.js.org/](http://@jbrowse/mobx-state-tree.js.org/)
+[http://@jbrowse/@jbrowse/mobx-state-tree.js.org/](http://@jbrowse/@jbrowse/mobx-state-tree.js.org/)
 
 ## Quick Code Example
 
@@ -46,7 +46,7 @@ There's nothing quite like looking at some code to get a feel for a library.
 Check out this small example of an author and list of tweets by that author.
 
 ```js
-import { types } from '@jbrowse/mobx-state-tree' // alternatively: import { t } from "@jbrowse/mobx-state-tree"
+import { types } from '@jbrowse/@jbrowse/mobx-state-tree' // alternatively: import { t } from "@jbrowse/@jbrowse/mobx-state-tree"
 
 // Define a couple models
 const Author = types.model({
@@ -95,7 +95,7 @@ const MyComponent = observer(props => {
 
 // Note: since this component is "observed", any changes to rootStore.authors[0].firstName
 // will result in a re-render! If you're not using React, you can also "listen" to changes
-// using `onSnapshot`: https://@jbrowse/mobx-state-tree.js.org/concepts/snapshots
+// using `onSnapshot`: https://@jbrowse/@jbrowse/mobx-state-tree.js.org/concepts/snapshots
 ```
 
 ## Thanks!

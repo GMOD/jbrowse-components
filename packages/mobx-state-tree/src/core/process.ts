@@ -11,7 +11,7 @@ import { deprecated, flow, createFlowSpawner } from '../internal'
 */
 
 const DEPRECATION_MESSAGE =
-  'See https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/399 for more information. ' +
+  'See https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues/399 for more information. ' +
   'Note that the middleware event types starting with `process` now start with `flow`.'
 
 /**
@@ -114,7 +114,7 @@ export function process<A1, A2, A3, A4, A5, A6, A7, A8>(
  * @hidden
  *
  * @deprecated has been renamed to `flow()`.
- * See https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/399 for more information.
+ * See https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues/399 for more information.
  * Note that the middleware event types starting with `process` now start with `flow`.
  *
  * @returns {Promise}

@@ -1,10 +1,10 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { getEnv } from '../util'
 import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
 
-import type { IAnyComplexType, IAnyModelType } from 'mobx-state-tree'
+import type { IAnyComplexType, IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string

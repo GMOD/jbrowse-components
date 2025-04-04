@@ -5,7 +5,7 @@ import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 // Optimize by using system default fonts:

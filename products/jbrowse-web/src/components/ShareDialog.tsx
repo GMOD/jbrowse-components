@@ -18,7 +18,7 @@ import {
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
 
 import { shareSessionToDynamo } from '../sessionSharing'

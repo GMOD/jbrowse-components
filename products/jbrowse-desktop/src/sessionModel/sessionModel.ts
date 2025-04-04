@@ -14,7 +14,7 @@ import {
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { DesktopSessionFactory } from './DesktopSession'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
@@ -24,7 +24,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseDesktopSessionModel

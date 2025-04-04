@@ -1,5 +1,5 @@
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 
 import {
   localStorageGetBoolean,
@@ -9,7 +9,7 @@ import {
 } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function localStorageSetNumber(key: string, value: number) {
   localStorageSetItem(key, JSON.stringify(value))

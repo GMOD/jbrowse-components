@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getMatchedTranslocationFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'

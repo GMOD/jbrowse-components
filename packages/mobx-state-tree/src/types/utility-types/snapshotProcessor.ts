@@ -175,7 +175,7 @@ class SnapshotProcessor<IT extends IAnyType, CustomC, CustomS> extends BaseType<
    * This is no longer the case, and is more in line with our overall "is" philosophy, which you can
    * see in `src/core/type/type.ts:104` (assuming lines don't change too much).
    *
-   * For additonal commentary, see discussion in https://github.com/mobxjs/@jbrowse/mobx-state-tree/pull/2182
+   * For additonal commentary, see discussion in https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/pull/2182
    *
    * The `is` function specifically checks for `SnapshotIn` or `Instance` of a given type.
    *
@@ -256,7 +256,7 @@ export interface ISnapshotProcessors<IT extends IAnyType, CustomC, CustomS> {
 /**
  * `types.snapshotProcessor` - Runs a pre/post snapshot processor before/after serializing a given type.
  *
- * [See known issue with `applySnapshot` and `preProcessSnapshot`](https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1317)
+ * [See known issue with `applySnapshot` and `preProcessSnapshot`](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues/1317)
  *
  * Example:
  * ```ts

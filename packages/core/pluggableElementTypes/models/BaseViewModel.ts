@@ -1,9 +1,9 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { ElementId, Region } from '../../util/types/mst'
 
 import type { MenuItem } from '../../ui'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseViewModel

@@ -14,7 +14,7 @@ A simple addition to the add track workflow:
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 
 import MultiWiggleWidget from './AddTrackWorkflow'
