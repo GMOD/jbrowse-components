@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import OAuthConfigSchema from '../OAuthModel/configSchema'
 
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config DropboxOAuthInternetAccount

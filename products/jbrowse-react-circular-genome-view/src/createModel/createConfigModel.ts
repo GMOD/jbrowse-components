@@ -8,7 +8,7 @@ import {
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

@@ -1,5 +1,5 @@
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../configuration'
 import { getSession } from '../util'
@@ -8,7 +8,7 @@ import { replaceUndefinedWithNull } from './util'
 import { ElementId } from '../util/types/mst'
 
 import type PluginManager from '../PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface Feat {
   subfeatures?: Record<string, unknown>[]
@@ -189,7 +189,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
       const { unformattedFeatureData, featureData, ...rest } = snap as Omit<
         typeof snap,
         symbol

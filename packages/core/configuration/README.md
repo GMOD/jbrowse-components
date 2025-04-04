@@ -1,6 +1,6 @@
 # The JBrowse 2 Configuration System
 
-JBrowse 2 configuration is kept in a specialized mobx-state-tree tree. Each node
+JBrowse 2 configuration is kept in a specialized @jbrowse/mobx-state-tree tree. Each node
 in the tree is a ConfigurationSchema. ConfigurationSchemas contain
 ConfigurationSlot members and/or additional sub-schemas.
 

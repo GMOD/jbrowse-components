@@ -1,14 +1,14 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { cast, types } from 'mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import ImportWizard from './ImportWizard'
 import Spreadsheet from './SpreadsheetModel'
 
 import type { SpreadsheetModel } from './SpreadsheetModel'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const minHeight = 40
 const defaultHeight = 440
@@ -146,7 +146,7 @@ export default function stateModelFactory() {
       const { importWizard, spreadsheet } = snap
       if (importWizard.cachedFileLocation && spreadsheet) {
         // don't serialize spreadsheet rows if we have the importForm
-        // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+        // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
         const { rowSet, ...rest } = spreadsheet as Omit<
           typeof spreadsheet,
           symbol

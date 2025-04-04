@@ -5,7 +5,7 @@ import {
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'

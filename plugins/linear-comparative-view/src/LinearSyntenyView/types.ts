@@ -1,5 +1,5 @@
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export type Conf = SnapshotIn<AnyConfigurationModel>
 

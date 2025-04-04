@@ -2,14 +2,14 @@ import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
 import type { SessionTriagedInfo } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SessionLoader = types
   .model({

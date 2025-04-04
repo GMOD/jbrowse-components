@@ -16,14 +16,14 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getUniqueTags } from '../../shared/getUniqueTags'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const GroupByTagDialog = observer(function (props: {
   model: {

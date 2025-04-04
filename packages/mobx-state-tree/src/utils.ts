@@ -40,7 +40,7 @@ export type IDisposer = () => void
  */
 export class MstError extends Error {
   constructor(message = 'Illegal state') {
-    super(`[@jbrowse/mobx-state-tree] ${message}`)
+    super(`[@jbrowse/@jbrowse/mobx-state-tree] ${message}`)
   }
 }
 
@@ -430,7 +430,7 @@ deprecated.ids = {}
  * @hidden
  */
 export function warnError(msg: string) {
-  console.warn(new Error(`[@jbrowse/mobx-state-tree] ${msg}`))
+  console.warn(new Error(`[@jbrowse/@jbrowse/mobx-state-tree] ${msg}`))
 }
 /**
  * @internal

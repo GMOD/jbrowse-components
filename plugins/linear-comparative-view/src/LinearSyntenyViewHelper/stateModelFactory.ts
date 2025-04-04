@@ -1,11 +1,11 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
-import { getParent, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
+import { getParent, getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function linearSyntenyViewHelperModelFactory(
   pluginManager: PluginManager,

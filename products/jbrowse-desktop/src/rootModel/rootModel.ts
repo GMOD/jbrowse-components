@@ -21,7 +21,7 @@ import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
 import packageJSON from '../../package.json'
@@ -36,7 +36,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
-import type { IAnyType, Instance } from 'mobx-state-tree'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))

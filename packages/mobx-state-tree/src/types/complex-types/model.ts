@@ -852,7 +852,7 @@ export function model(...args: any[]): any {
 /** @hidden */
 export type _CustomJoin<A, B> = A extends _NotCustomized ? B : A & B
 
-// generated with C:\VSProjects\github\@jbrowse/mobx-state-tree-upstream\packages\@jbrowse/mobx-state-tree\scripts\generate-compose-type.js
+// generated with C:\VSProjects\github\@jbrowse/@jbrowse/mobx-state-tree-upstream\packages\@jbrowse/@jbrowse/mobx-state-tree\scripts\generate-compose-type.js
 // prettier-ignore
 export function compose<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB>(name: string, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>): IModelType<PA & PB, OA & OB, _CustomJoin<FCA, FCB>, _CustomJoin<FSA, FSB>>
 // prettier-ignore
@@ -917,7 +917,7 @@ export function compose(...args: any[]): any {
       assertArg(
         type,
         isModelType,
-        '@jbrowse/mobx-state-tree model type',
+        '@jbrowse/@jbrowse/mobx-state-tree model type',
         hasTypename ? i + 2 : i + 1,
       )
     })

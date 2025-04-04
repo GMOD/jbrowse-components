@@ -31,7 +31,7 @@ function parseError(str: string) {
   if (idx !== -1) {
     const trim = str.slice(0, idx + findStr.length)
     // best effort to make a better error message than the default
-    // mobx-state-tree
+    // @jbrowse/mobx-state-tree
 
     // case 1. element has a path
     const match = /.*at path "(.*)" snapshot `(.*)` is not assignable/m.exec(

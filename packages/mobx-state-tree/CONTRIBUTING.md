@@ -33,7 +33,7 @@ Most of the documentation and community assumes some amount of familiarity with:
 If you don't feel comfortable with these concepts, we'd be happy to help you get
 started, but you may want to consider brushing up on them before digging into
 the codebase. Reach out in the
-[discussions section of our GitHub repository](https://github.com/mobxjs/@jbrowse/mobx-state-tree/discussions)
+[discussions section of our GitHub repository](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/discussions)
 if you'd like pointers about where to start.
 
 ## Contributing Guidelines
@@ -41,7 +41,7 @@ if you'd like pointers about where to start.
 ### Prioritizing Stability Over New Features
 
 The existing API for MobX-State-Tree is
-[already quite extensive](https://@jbrowse/mobx-state-tree.js.org/intro/welcome).
+[already quite extensive](https://@jbrowse/@jbrowse/mobx-state-tree.js.org/intro/welcome).
 As such, issues and PRs about new features may take lower priority than bug
 fixes, improving existing features, and performance/TypeScript improvements. If
 you're looking to augment MST with new functionality, we encourage you to
@@ -104,7 +104,7 @@ If you encounter a bug while using MobX-State-Tree, please help us by reporting
 it. To report a bug:
 
 1. Check if the bug has already been reported by searching our
-   [issue tracker](https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues).
+   [issue tracker](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues).
 2. If not, create a new issue, including as much detail as possible about the
    bug and steps to reproduce it. We have issue templates that will ask specific
    questions for you to help us understand the problem.
@@ -115,7 +115,7 @@ If you want to contribute a large or significant change to MST, we'd love to
 connect with you ahead of time to make sure it fits in with our overall road
 map, meets our stability requirements, and make sure you are set up for success.
 Please consider
-[asking around in the discussion forum](https://github.com/mobxjs/@jbrowse/mobx-state-tree/discussions)
+[asking around in the discussion forum](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/discussions)
 if you have a big idea you want to implement, or if you want to work on some
 existing big ideas out therein the communit.
 

@@ -115,7 +115,7 @@ export function pxToBp(
     const r = displayedRegions[0]!
     const snap = r
     return {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
       oob: true,
       coord: coord(r, bp),
@@ -134,7 +134,7 @@ export function pxToBp(
     if (len + bpSoFar > bp && bpSoFar <= bp) {
       const snap = r
       return {
-        // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+        // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
         ...(snap as Omit<typeof snap, symbol>),
         oob: false,
         offset,
@@ -160,7 +160,7 @@ export function pxToBp(
 
     const snap = r
     return {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
       oob: true,
       offset,

@@ -4,7 +4,7 @@ import { createAutorun } from '../util'
 import { fetchChains } from './fetchChains'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 

@@ -5,6 +5,7 @@
  */
 export default [
   'mobx',
+  '@jbrowse/mobx-state-tree',
   'mobx-state-tree',
   'react',
   'react/jsx-runtime',
