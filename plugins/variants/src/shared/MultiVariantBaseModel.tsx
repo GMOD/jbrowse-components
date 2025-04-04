@@ -83,7 +83,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        lengthCutoffFilter: 10,
+        lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
       }),
     )
     .volatile(() => ({
