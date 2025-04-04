@@ -32,6 +32,7 @@ export default function VariantConsequenceDataGridWrapper({
 
       <DataGrid
         rowHeight={25}
+        hideFooter={rows.length < 100}
         rows={rows}
         columns={columns.map((c, i) => ({
           ...c,
