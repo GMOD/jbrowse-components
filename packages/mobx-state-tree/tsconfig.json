@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "outDir": "dist/",
+    "target": "esnext",
+    "sourceMap": false,
+    "declaration": true,
+    "module": "esnext",
+    "removeComments": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "importHelpers": true,
+    "stripInternal": true,
+    "downlevelIteration": true,
+    "lib": [
+      "es6"
+    ],
+    "useDefineForClassFields": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "**/*.js",
+    "**/*.ts"
+  ]
+}
