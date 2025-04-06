@@ -25,11 +25,15 @@ function SourcesGrid({
         showTips={showTips}
         onChange={onChange}
       />
-      <SourcesDataGrid
-        rows={rows}
-        onChange={onChange}
-        setSelected={setSelected}
-      />
+      {rows.length ? (
+        <SourcesDataGrid
+          rows={rows}
+          onChange={onChange}
+          setSelected={setSelected}
+        />
+      ) : (
+        <div>No rows</div>
+      )}
     </div>
   )
 }
