@@ -191,7 +191,12 @@ module.exports = function webpackBuilder(webpackEnv) {
                       runtime: 'automatic',
                     },
                   ],
-                  '@babel/preset-typescript',
+                  [
+                    '@babel/preset-typescript',
+                    {
+                      allowDeclareFields: true,
+                    },
+                  ],
                 ],
               },
             },

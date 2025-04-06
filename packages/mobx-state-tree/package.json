@@ -2,13 +2,19 @@
   "name": "@jbrowse/mobx-state-tree",
   "version": "5.6.0",
   "description": "Opinionated, transactional, MobX powered state container",
-  "main": "dist/index.mjs",
+  "distMain": "dist/index.js",
+  "distModule": "esm/index.mjs",
+  "srcMain": "src/index.ts",
+  "srcModule": "src/index.ts",
+  "main": "src/index.ts",
+  "module": "",
   "sideEffects": false,
   "scripts": {
     "clean": "rimraf dist lib",
-    "build": "tsup  --format esm src/index.ts --dts",
-    "build:esm": "tsc --target es2020 --outDir esm",
-    "build:es5": "tsc --target es2020 --module commonjs --outDir dist",
+    "prebuild": "yarn clean",
+    "build:esm": "tsup  --format esm src/index.ts --dts -d esm",
+    "build:es5": "tsup  src/index.ts --dts",
+    "build": "yarn build:es5 && yarn build:esm",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
