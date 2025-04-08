@@ -16,9 +16,6 @@ const altTypeToSO: Record<string, string> = {
   '*': 'sequence_variant',
 }
 
-/**
- * Get a sequence ontology (SO) term that describes the variant type
- */
 export function getSOTermAndDescription(
   ref: string,
   alt: string[] | undefined,
@@ -68,7 +65,7 @@ export function getSOTermAndDescription(
     )
   }
   return soTerms.size
-    ? [[...soTerms].join(','), [...descriptions].join(',')]
+    ? [[...soTerms].join(', '), [...descriptions].join(', ')]
     : []
 }
 
@@ -79,6 +76,7 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 
   // look for a definition with an SO type for this
   let soTerm = altTypeToSO[alt]
+
   // if no SO term but ALT is in metadata, assume sequence_variant
   if (!soTerm && parser.getMetadata('ALT', alt)) {
     soTerm = 'sequence_variant'
@@ -89,22 +87,18 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 
   // try to look for a definition for a parent term if we can
   const modAlt = alt.split(':')
-  if (modAlt.length > 1) {
-    return getSOAndDescFromAltDefs(`<${modAlt.slice(0, -1).join(':')}>`, parser)
-  }
-
-  // no parent
-  return []
+  return modAlt.length > 1
+    ? getSOAndDescFromAltDefs(`<${modAlt.slice(0, -1).join(':')}>`, parser)
+    : []
 }
 
-// note: term SNV is used instead of SNP because SO definition of SNP says
-// abundance must be at least 1% in population, and can't be sure we meet
-// that
 export function getSOAndDescByExamination(ref: string, alt: string) {
   const bnd = parseBreakend(alt)
   if (bnd) {
     return ['breakend', alt]
   } else if (ref.length === 1 && alt.length === 1) {
+    // note: SNV is used instead of SNP because SO definition of SNP says
+    // abundance must be at least 1% in population
     return ['SNV', makeDescriptionString('SNV', ref, alt)]
   } else if (alt === '<INS>') {
     return ['insertion', alt]
@@ -121,22 +115,39 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   } else if (alt.includes('<')) {
     return ['sv', alt]
   } else if (ref.length === alt.length) {
-    return ref.split('').reverse().join('') === alt
-      ? ['inversion', makeDescriptionString('inversion', ref, alt)]
-      : ['substitution', makeDescriptionString('substitution', ref, alt)]
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    if (lenRef > 5 || lenAlt > 5) {
+      const lena = getBpDisplayStr(lenRef)
+      const lenb = getBpDisplayStr(lenAlt)
+      return ref.split('').reverse().join('') === alt
+        ? ['inverson', makeDescriptionString('inv', lena, lenb)]
+        : ['substitution', makeDescriptionString('substitution', lena, lenb)]
+    } else {
+      return ref.split('').reverse().join('') === alt
+        ? ['inversion', makeDescriptionString('inv', ref, alt)]
+        : ['substitution', makeDescriptionString('substitution', ref, alt)]
+    }
   } else if (ref.length <= alt.length) {
     const len = alt.length - ref.length
+    const lenAlt = alt.length
+    const lenRef = ref.length
     const lena = getBpDisplayStr(len)
     return [
       'insertion',
-      len > 5 ? `${lena} INS` : makeDescriptionString('insertion', ref, alt),
+      lenRef > 5 || lenAlt > 5
+        ? `${lena} INS`
+        : makeDescriptionString('insertion', len > 5 ? lena : ref, alt),
     ]
   } else if (ref.length > alt.length) {
-    const len = ref.length - alt.length
-    const lena = getBpDisplayStr(len)
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    const lena = getBpDisplayStr(lenRef - lenAlt)
     return [
       'deletion',
-      len > 5 ? `${lena} DEL` : makeDescriptionString('deletion', ref, alt),
+      lenRef > 5 || lenAlt > 5
+        ? `${lena} DEL`
+        : makeDescriptionString('deletion', ref, alt),
     ]
   } else {
     return ['indel', makeDescriptionString('indel', ref, alt)]
@@ -144,5 +155,5 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
 }
 
 function makeDescriptionString(soTerm: string, ref: string, alt: string) {
-  return `${soTerm} ${ref} -> ${alt}`
+  return `${soTerm} ${[ref, alt].join(' -> ')}`
 }
