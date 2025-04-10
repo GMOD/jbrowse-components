@@ -9,6 +9,7 @@ exports.default = async function notarizing(context) {
 
   const appName = context.packager.appInfo.productFilename
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return notarize({
     tool: 'notarytool',
     teamId: '9KR53J86Q2',

@@ -154,6 +154,62 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   }
 }
 
+export function getMinimalDesc(ref: string, alt: string) {
+  const bnd = parseBreakend(alt)
+  if (bnd) {
+    return alt
+  } else if (ref.length === 1 && alt.length === 1) {
+    // note: SNV is used instead of SNP because SO definition of SNP says
+    // abundance must be at least 1% in population
+    return alt
+  } else if (alt === '<INS>') {
+    return alt
+  } else if (alt === '<DEL>') {
+    return alt
+  } else if (alt === '<DUP>') {
+    return alt
+  } else if (alt === '<CNV>') {
+    return alt
+  } else if (alt === '<INV>') {
+    return alt
+  } else if (alt === '<TRA>') {
+    return alt
+  } else if (alt.includes('<')) {
+    return alt
+  } else if (ref.length === alt.length) {
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    if (lenRef > 5 || lenAlt > 5) {
+      const lena = getBpDisplayStr(lenRef)
+      const lenb = getBpDisplayStr(lenAlt)
+      return ref.split('').reverse().join('') === alt
+        ? makeDescriptionString('inv', lena, lenb)
+        : makeDescriptionString('substitution', lena, lenb)
+    } else {
+      return ref.split('').reverse().join('') === alt
+        ? makeDescriptionString('inv', ref, alt)
+        : makeDescriptionString('substitution', ref, alt)
+    }
+  } else if (ref.length <= alt.length) {
+    const len = alt.length - ref.length
+    const lenAlt = alt.length
+    const lenRef = ref.length
+    const lena = getBpDisplayStr(len)
+    return lenRef > 5 || lenAlt > 5
+      ? `${lena} INS`
+      : makeDescriptionString('insertion', len > 5 ? lena : ref, alt)
+  } else if (ref.length > alt.length) {
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    const lena = getBpDisplayStr(lenRef - lenAlt)
+    return lenRef > 5 || lenAlt > 5
+      ? `${lena} DEL`
+      : makeDescriptionString('deletion', ref, alt)
+  } else {
+    return ['indel', makeDescriptionString('indel', ref, alt)]
+  }
+}
+
 function makeDescriptionString(soTerm: string, ref: string, alt: string) {
   return `${soTerm} ${[ref, alt].join(' -> ')}`
 }
