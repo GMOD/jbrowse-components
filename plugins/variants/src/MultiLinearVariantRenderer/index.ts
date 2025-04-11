@@ -1,6 +1,6 @@
 import MultiVariantRenderer from './MultiVariantRenderer'
+import ReactComponent from './components/MultiLinearVariantRendering'
 import configSchema from './configSchema'
-import ReactComponent from '../shared/components/MultiVariantBaseRendering'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

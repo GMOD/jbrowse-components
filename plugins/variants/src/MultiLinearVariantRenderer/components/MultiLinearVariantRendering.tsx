@@ -4,7 +4,9 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import RBush from 'rbush'
 
-import type { Source } from '../types'
+import { getMinimalDesc } from '../../VcfFeature/util'
+
+import type { Source } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -15,6 +17,7 @@ interface RBushData {
   maxY: number
   name: string
   genotype: string
+  featureId: string
 }
 
 type SerializedRBush = any
@@ -41,6 +44,7 @@ const MultiVariantRendering = observer(function (props: {
   height: number
   sources: Source[]
   scrollTop: number
+  featureGenotypeMap: Record<string, { alt: string[]; ref: string }>
   totalHeight: number
   rbush: SerializedRBush
   displayModel: any
@@ -48,7 +52,7 @@ const MultiVariantRendering = observer(function (props: {
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
-  const { totalHeight, scrollTop } = props
+  const { featureGenotypeMap, totalHeight, scrollTop } = props
   const { rbush, displayModel } = props
   const ref = useRef<HTMLDivElement>(null)
   const rbush2 = useMemo(() => new RBush<RBushData>().fromJSON(rbush), [rbush])
@@ -69,14 +73,29 @@ const MultiVariantRendering = observer(function (props: {
       maxY: offsetY + 1,
     })
     if (x.length) {
-      const { minX, minY, maxX, maxY, ...rest } = minElt(
+      const { minX, minY, maxX, maxY, genotype, featureId, ...rest } = minElt(
         x,
         elt => elt.maxX - elt.minX,
       )!
-      return rest
-    } else {
-      return undefined
+      const ret = featureGenotypeMap[featureId]
+      if (ret) {
+        const { ref, alt } = ret
+        return {
+          ...rest,
+          alleles: genotype
+            .split(/[/|]/)
+            .map(r =>
+              r === '.'
+                ? '.'
+                : +r === 0
+                  ? `ref(${ref})`
+                  : getMinimalDesc(ref, alt[+r - 1] || ''),
+            )
+            .join(genotype.includes('|') ? '|' : '/'),
+        }
+      }
     }
+    return undefined
   }
 
   return (

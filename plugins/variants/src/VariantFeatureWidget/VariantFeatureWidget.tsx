@@ -117,7 +117,7 @@ const VariantFeatureWidget = observer(function (props: {
   const { model } = props
   const { featureData, descriptions } = model
   const feat = JSON.parse(JSON.stringify(featureData))
-  const { samples, ALT, ...rest } = feat
+  const { samples, ...rest } = feat
 
   return (
     <Paper data-testid="variant-side-drawer">
