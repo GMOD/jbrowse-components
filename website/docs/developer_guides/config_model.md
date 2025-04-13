@@ -175,8 +175,8 @@ a default value in your various pluggable elements.
 
 ### Configuration internals
 
-A configuration is a type of @jbrowse/mobx-state-tree model, in which leaf nodes are
-ConfigSlot types, and other nodes are ConfigurationSchema types.
+A configuration is a type of @jbrowse/mobx-state-tree model, in which leaf nodes
+are ConfigSlot types, and other nodes are ConfigurationSchema types.
 
 ```
        Schema

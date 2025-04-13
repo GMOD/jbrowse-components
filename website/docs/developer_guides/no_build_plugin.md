@@ -116,7 +116,8 @@ might look like this:
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 ```
 
-which would provide the functionality of @jbrowse/mobx-state-tree through that value.
+which would provide the functionality of @jbrowse/mobx-state-tree through that
+value.
 
 ## Complete example
 
