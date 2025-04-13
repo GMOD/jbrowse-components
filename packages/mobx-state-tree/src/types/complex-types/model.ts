@@ -11,8 +11,8 @@ import {
   observe,
   set,
   IObjectDidChange,
-  makeObservable
-} from "mobx"
+  makeObservable,
+} from 'mobx'
 import {
   addHiddenFinalProp,
   addHiddenWritableProp,
@@ -55,11 +55,11 @@ import {
   assertIsString,
   assertArg,
   FunctionWithFlag,
-  IStateTreeNode
-} from "../../internal"
+  IStateTreeNode,
+} from '../../internal'
 
-const PRE_PROCESS_SNAPSHOT = "preProcessSnapshot"
-const POST_PROCESS_SNAPSHOT = "postProcessSnapshot"
+const PRE_PROCESS_SNAPSHOT = 'preProcessSnapshot'
+const POST_PROCESS_SNAPSHOT = 'postProcessSnapshot'
 
 /** @hidden */
 export interface ModelProperties {
@@ -79,22 +79,23 @@ export interface ModelPropertiesDeclaration {
  *
  * @hidden
  */
-export type ModelPropertiesDeclarationToProperties<T extends ModelPropertiesDeclaration> =
-  T extends { [k: string]: IAnyType } // optimization to reduce nesting
-    ? T
-    : {
-        [K in keyof T]: T[K] extends IAnyType // keep IAnyType check on the top to reduce nesting
-          ? T[K]
-          : T[K] extends string
+export type ModelPropertiesDeclarationToProperties<
+  T extends ModelPropertiesDeclaration,
+> = T extends { [k: string]: IAnyType } // optimization to reduce nesting
+  ? T
+  : {
+      [K in keyof T]: T[K] extends IAnyType // keep IAnyType check on the top to reduce nesting
+        ? T[K]
+        : T[K] extends string
           ? IType<string | undefined, string, string>
           : T[K] extends number
-          ? IType<number | undefined, number, number>
-          : T[K] extends boolean
-          ? IType<boolean | undefined, boolean, boolean>
-          : T[K] extends Date
-          ? IType<number | Date | undefined, number, Date>
-          : never
-      }
+            ? IType<number | undefined, number, number>
+            : T[K] extends boolean
+              ? IType<boolean | undefined, boolean, boolean>
+              : T[K] extends Date
+                ? IType<number | Date | undefined, number, Date>
+                : never
+    }
 
 /**
  * Checks if a value is optional (undefined, any or unknown).
@@ -121,7 +122,9 @@ type IsOptionalValue<C, TV, FV> = undefined extends C ? TV : FV
  * Name of the properties of an object that can't be set to undefined, any or unknown
  * @hidden
  */
-type DefinablePropsNames<T> = { [K in keyof T]: IsOptionalValue<T[K], never, K> }[keyof T]
+type DefinablePropsNames<T> = {
+  [K in keyof T]: IsOptionalValue<T[K], never, K>
+}[keyof T]
 
 /** @hidden */
 export declare const $nonEmptyObject: unique symbol
@@ -132,14 +135,21 @@ export interface NonEmptyObject {
 }
 
 /** @hidden */
-export type ExtractCFromProps<P extends ModelProperties> = { [k in keyof P]: P[k]["CreationType"] }
+export type ExtractCFromProps<P extends ModelProperties> = {
+  [k in keyof P]: P[k]['CreationType']
+}
 
 /** @hidden */
-export type ModelCreationType<PC> = { [P in DefinablePropsNames<PC>]: PC[P] } & Partial<PC> &
+export type ModelCreationType<PC> = {
+  [P in DefinablePropsNames<PC>]: PC[P]
+} & Partial<PC> &
   NonEmptyObject
 
 /** @hidden */
-export type ModelCreationType2<P extends ModelProperties, CustomC> = keyof P extends never
+export type ModelCreationType2<
+  P extends ModelProperties,
+  CustomC,
+> = keyof P extends never
   ? // When there are no props, we want to prevent passing in any object. We have two objects we want to allow:
     //  1. The empty object
     //  2. An instance of this model
@@ -152,28 +162,31 @@ export type ModelCreationType2<P extends ModelProperties, CustomC> = keyof P ext
 
 /** @hidden */
 export type ModelSnapshotType<P extends ModelProperties> = {
-  [K in keyof P]: P[K]["SnapshotType"]
+  [K in keyof P]: P[K]['SnapshotType']
 } & NonEmptyObject
 
 /** @hidden */
-export type ModelSnapshotType2<P extends ModelProperties, CustomS> = _CustomOrOther<
+export type ModelSnapshotType2<
+  P extends ModelProperties,
   CustomS,
-  ModelSnapshotType<P>
->
+> = _CustomOrOther<CustomS, ModelSnapshotType<P>>
 
 /**
  * @hidden
  * we keep this separate from ModelInstanceType to shorten model instance types generated declarations
  */
 export type ModelInstanceTypeProps<P extends ModelProperties> = {
-  [K in keyof P]: P[K]["Type"]
+  [K in keyof P]: P[K]['Type']
 } & NonEmptyObject
 
 /**
  * @hidden
  * do not transform this to an interface or model instance type generated declarations will be longer
  */
-export type ModelInstanceType<P extends ModelProperties, O> = ModelInstanceTypeProps<P> & O
+export type ModelInstanceType<
+  P extends ModelProperties,
+  O,
+> = ModelInstanceTypeProps<P> & O
 
 /** @hidden */
 export interface ModelActions {
@@ -184,7 +197,7 @@ export interface IModelType<
   PROPS extends ModelProperties,
   OTHERS,
   CustomC = _NotCustomized,
-  CustomS = _NotCustomized
+  CustomS = _NotCustomized,
 > extends IType<
     ModelCreationType2<PROPS, CustomC>,
     ModelSnapshotType2<PROPS, CustomS>,
@@ -197,31 +210,40 @@ export interface IModelType<
   // warning: redefining props after a process snapshot is used ends up on the fixed (custom) C, S typings being overridden
   // so it is recommended to use pre/post process snapshot after all props have been defined
   props<PROPS2 extends ModelPropertiesDeclaration>(
-    props: PROPS2
-  ): IModelType<PROPS & ModelPropertiesDeclarationToProperties<PROPS2>, OTHERS, CustomC, CustomS>
+    props: PROPS2,
+  ): IModelType<
+    PROPS & ModelPropertiesDeclarationToProperties<PROPS2>,
+    OTHERS,
+    CustomC,
+    CustomS
+  >
 
   views<V extends Object>(
-    fn: (self: Instance<this>) => V
+    fn: (self: Instance<this>) => V,
   ): IModelType<PROPS, OTHERS & V, CustomC, CustomS>
 
   actions<A extends ModelActions>(
-    fn: (self: Instance<this>) => A
+    fn: (self: Instance<this>) => A,
   ): IModelType<PROPS, OTHERS & A, CustomC, CustomS>
 
   volatile<TP extends object>(
-    fn: (self: Instance<this>) => TP
+    fn: (self: Instance<this>) => TP,
   ): IModelType<PROPS, OTHERS & TP, CustomC, CustomS>
 
-  extend<A extends ModelActions = {}, V extends Object = {}, VS extends Object = {}>(
-    fn: (self: Instance<this>) => { actions?: A; views?: V; state?: VS }
+  extend<
+    A extends ModelActions = {},
+    V extends Object = {},
+    VS extends Object = {},
+  >(
+    fn: (self: Instance<this>) => { actions?: A; views?: V; state?: VS },
   ): IModelType<PROPS, OTHERS & A & V & VS, CustomC, CustomS>
 
   preProcessSnapshot<NewC = ModelCreationType2<PROPS, CustomC>>(
-    fn: (snapshot: NewC) => ModelCreationType2<PROPS, CustomC>
+    fn: (snapshot: NewC) => ModelCreationType2<PROPS, CustomC>,
   ): IModelType<PROPS, OTHERS, NewC, CustomS>
 
   postProcessSnapshot<NewS = ModelSnapshotType2<PROPS, CustomS>>(
-    fn: (snapshot: ModelSnapshotType2<PROPS, CustomS>) => NewS
+    fn: (snapshot: ModelSnapshotType2<PROPS, CustomS>) => NewS,
   ): IModelType<PROPS, OTHERS, CustomC, NewS>
 }
 
@@ -231,13 +253,11 @@ export interface IModelType<
 export interface IAnyModelType extends IModelType<any, any, any, any> {}
 
 /** @hidden */
-export type ExtractProps<T extends IAnyModelType> = T extends IModelType<infer P, any, any, any>
-  ? P
-  : never
+export type ExtractProps<T extends IAnyModelType> =
+  T extends IModelType<infer P, any, any, any> ? P : never
 /** @hidden */
-export type ExtractOthers<T extends IAnyModelType> = T extends IModelType<any, infer O, any, any>
-  ? O
-  : never
+export type ExtractOthers<T extends IAnyModelType> =
+  T extends IModelType<any, infer O, any, any> ? O : never
 
 function objectTypeToString(this: any) {
   return getStateTreeNode(this).toString()
@@ -256,18 +276,22 @@ export interface ModelTypeConfig {
 }
 
 const defaultObjectOptions = {
-  name: "AnonymousModel",
+  name: 'AnonymousModel',
   properties: {},
-  initializers: EMPTY_ARRAY
+  initializers: EMPTY_ARRAY,
 }
 
-function toPropertiesObject(declaredProps: ModelPropertiesDeclaration): ModelProperties {
+function toPropertiesObject(
+  declaredProps: ModelPropertiesDeclaration,
+): ModelProperties {
   const keysList = Object.keys(declaredProps)
   const alreadySeenKeys = new Set<string>()
 
-  keysList.forEach((key) => {
+  keysList.forEach(key => {
     if (alreadySeenKeys.has(key)) {
-      throw fail(`${key} is declared twice in the model. Model should not contain the same keys`)
+      throw fail(
+        `${key} is declared twice in the model. Model should not contain the same keys`,
+      )
     }
     alreadySeenKeys.add(key)
   })
@@ -278,20 +302,22 @@ function toPropertiesObject(declaredProps: ModelPropertiesDeclaration): ModelPro
       // warn if user intended a HOOK
       if (key in Hook) {
         throw fail(
-          `Hook '${key}' was defined as property. Hooks should be defined as part of the actions`
+          `Hook '${key}' was defined as property. Hooks should be defined as part of the actions`,
         )
       }
 
       // the user intended to use a view
       const descriptor = Object.getOwnPropertyDescriptor(declaredProps, key)!
-      if ("get" in descriptor) {
-        throw fail("Getters are not supported as properties. Please use views instead")
+      if ('get' in descriptor) {
+        throw fail(
+          'Getters are not supported as properties. Please use views instead',
+        )
       }
       // undefined and null are not valid
       const value = descriptor.value
       if (value === null || value === undefined) {
         throw fail(
-          "The default value of an attribute cannot be null or undefined as the type cannot be inferred. Did you mean `types.maybe(someType)`?"
+          'The default value of an attribute cannot be null or undefined as the type cannot be inferred. Did you mean `types.maybe(someType)`?',
         )
       }
       // its a primitive, convert to its type
@@ -309,25 +335,25 @@ function toPropertiesObject(declaredProps: ModelPropertiesDeclaration): ModelPro
         // do nothing, it's already a type
       }
       // its a function, maybe the user wanted a view?
-      else if (devMode() && typeof value === "function") {
+      else if (devMode() && typeof value === 'function') {
         throw fail(
-          `Invalid type definition for property '${key}', it looks like you passed a function. Did you forget to invoke it, or did you intend to declare a view / action?`
+          `Invalid type definition for property '${key}', it looks like you passed a function. Did you forget to invoke it, or did you intend to declare a view / action?`,
         )
       }
       // no other complex values
-      else if (devMode() && typeof value === "object") {
+      else if (devMode() && typeof value === 'object') {
         throw fail(
-          `Invalid type definition for property '${key}', it looks like you passed an object. Try passing another model type or a types.frozen.`
+          `Invalid type definition for property '${key}', it looks like you passed an object. Try passing another model type or a types.frozen.`,
         )
       } else {
         throw fail(
-          `Invalid type definition for property '${key}', cannot infer a type from a value like '${value}' (${typeof value})`
+          `Invalid type definition for property '${key}', cannot infer a type from a value like '${value}' (${typeof value})`,
         )
       }
 
       return props
     },
-    { ...declaredProps } as any
+    { ...declaredProps } as any,
   )
 }
 
@@ -340,7 +366,7 @@ export class ModelType<
     OTHERS,
     CustomC,
     CustomS,
-    MT extends IModelType<PROPS, OTHERS, CustomC, CustomS>
+    MT extends IModelType<PROPS, OTHERS, CustomC, CustomS>,
   >
   extends ComplexType<
     ModelCreationType2<PROPS, CustomC>,
@@ -377,7 +403,7 @@ export class ModelType<
       if (propType.flags & TypeFlags.Identifier) {
         if (identifierAttribute)
           throw fail(
-            `Cannot define property '${propName}' as object identifier, property '${identifierAttribute}' is already defined as identifier property`
+            `Cannot define property '${propName}' as object identifier, property '${identifierAttribute}' is already defined as identifier property`,
           )
         identifierAttribute = propName
       }
@@ -391,7 +417,7 @@ export class ModelType<
       properties: Object.assign({}, this.properties, opts.properties),
       initializers: this.initializers.concat(opts.initializers || []),
       preProcessor: opts.preProcessor || this.preProcessor,
-      postProcessor: opts.postProcessor || this.postProcessor
+      postProcessor: opts.postProcessor || this.postProcessor,
     })
   }
 
@@ -403,22 +429,24 @@ export class ModelType<
     return this.cloneAndEnhance({ initializers: [actionInitializer] })
   }
 
-  private instantiateActions(self: this["T"], actions: ModelActions): void {
+  private instantiateActions(self: this['T'], actions: ModelActions): void {
     // check if return is correct
     if (!isPlainObject(actions))
-      throw fail(`actions initializer should return a plain object containing actions`)
+      throw fail(
+        `actions initializer should return a plain object containing actions`,
+      )
 
     // bind actions to the object created
-    Object.keys(actions).forEach((name) => {
+    Object.keys(actions).forEach(name => {
       // warn if preprocessor was given
       if (name === PRE_PROCESS_SNAPSHOT)
         throw fail(
-          `Cannot define action '${PRE_PROCESS_SNAPSHOT}', it should be defined using 'type.preProcessSnapshot(fn)' instead`
+          `Cannot define action '${PRE_PROCESS_SNAPSHOT}', it should be defined using 'type.preProcessSnapshot(fn)' instead`,
         )
       // warn if postprocessor was given
       if (name === POST_PROCESS_SNAPSHOT)
         throw fail(
-          `Cannot define action '${POST_PROCESS_SNAPSHOT}', it should be defined using 'type.postProcessSnapshot(fn)' instead`
+          `Cannot define action '${POST_PROCESS_SNAPSHOT}', it should be defined using 'type.postProcessSnapshot(fn)' instead`,
         )
 
       let action2 = actions[name]
@@ -429,36 +457,41 @@ export class ModelType<
         let specializedAction = action2
         action2 = function () {
           baseAction.apply(null, arguments)
-          specializedAction.apply(null, arguments)
+          specializedAction!.apply(null, arguments)
         }
       }
 
       // the goal of this is to make sure actions using "this" can call themselves,
       // while still allowing the middlewares to register them
       const middlewares = (action2 as any).$mst_middleware // make sure middlewares are not lost
-      let boundAction = action2.bind(actions)
-      boundAction._isFlowAction = (action2 as FunctionWithFlag)._isFlowAction || false
+      let boundAction = action2!.bind(actions)
+      boundAction._isFlowAction =
+        (action2 as FunctionWithFlag)._isFlowAction || false
       boundAction.$mst_middleware = middlewares
       const actionInvoker = createActionInvoker(self as any, name, boundAction)
       actions[name] = actionInvoker
 
       // See #646, allow models to be mocked
-      ;(!devMode() ? addHiddenFinalProp : addHiddenWritableProp)(self, name, actionInvoker)
+      ;(!devMode() ? addHiddenFinalProp : addHiddenWritableProp)(
+        self,
+        name,
+        actionInvoker,
+      )
     })
   }
 
-  named: MT["named"] = (name) => {
+  named: MT['named'] = name => {
     return this.cloneAndEnhance({ name })
   }
 
-  props: MT["props"] = (properties) => {
+  props: MT['props'] = properties => {
     return this.cloneAndEnhance({ properties })
   }
 
   volatile<TP extends object>(fn: (self: Instance<this>) => TP) {
-    if (typeof fn !== "function") {
+    if (typeof fn !== 'function') {
       throw fail(
-        `You passed an ${typeof fn} to volatile state as an argument, when function is expected`
+        `You passed an ${typeof fn} to volatile state as an argument, when function is expected`,
       )
     }
     const stateInitializer = (self: Instance<this>) => {
@@ -469,25 +502,29 @@ export class ModelType<
   }
 
   private instantiateVolatileState(
-    self: this["T"],
+    self: this['T'],
     state: {
       [key: string]: any
-    }
+    },
   ): void {
     // check views return
     if (!isPlainObject(state))
-      throw fail(`volatile state initializer should return a plain object containing state`)
+      throw fail(
+        `volatile state initializer should return a plain object containing state`,
+      )
     set(self, state)
   }
 
-  extend<A extends ModelActions = {}, V extends Object = {}, VS extends Object = {}>(
-    fn: (self: Instance<this>) => { actions?: A; views?: V; state?: VS }
-  ) {
+  extend<
+    A extends ModelActions = {},
+    V extends Object = {},
+    VS extends Object = {},
+  >(fn: (self: Instance<this>) => { actions?: A; views?: V; state?: VS }) {
     const initializer = (self: Instance<this>) => {
       const { actions, views, state, ...rest } = fn(self)
       for (let key in rest)
         throw fail(
-          `The \`extend\` function should return an object with a subset of the fields 'actions', 'views' and 'state'. Found invalid key '${key}'`
+          `The \`extend\` function should return an object with a subset of the fields 'actions', 'views' and 'state'. Found invalid key '${key}'`,
         )
       if (state) this.instantiateVolatileState(self, state)
       if (views) this.instantiateViews(self, views)
@@ -505,41 +542,50 @@ export class ModelType<
     return this.cloneAndEnhance({ initializers: [viewInitializer] })
   }
 
-  private instantiateViews(self: this["T"], views: Object): void {
+  private instantiateViews(self: this['T'], views: Object): void {
     // check views return
     if (!isPlainObject(views))
-      throw fail(`views initializer should return a plain object containing views`)
-    Object.getOwnPropertyNames(views).forEach((key) => {
+      throw fail(
+        `views initializer should return a plain object containing views`,
+      )
+    Object.getOwnPropertyNames(views).forEach(key => {
       // is this a computed property?
       const descriptor = Object.getOwnPropertyDescriptor(views, key)!
-      if ("get" in descriptor) {
+      if ('get' in descriptor) {
         defineProperty(self, key, descriptor)
         makeObservable(self, { [key]: computed } as any)
-      } else if (typeof descriptor.value === "function") {
+      } else if (typeof descriptor.value === 'function') {
         // this is a view function, merge as is!
         // See #646, allow models to be mocked
-        ;(!devMode() ? addHiddenFinalProp : addHiddenWritableProp)(self, key, descriptor.value)
+        ;(!devMode() ? addHiddenFinalProp : addHiddenWritableProp)(
+          self,
+          key,
+          descriptor.value,
+        )
       } else {
-        throw fail(`A view member should either be a function or getter based property`)
+        throw fail(
+          `A view member should either be a function or getter based property`,
+        )
       }
     })
   }
 
-  preProcessSnapshot: MT["preProcessSnapshot"] = (preProcessor) => {
+  preProcessSnapshot: MT['preProcessSnapshot'] = preProcessor => {
     const currentPreprocessor = this.preProcessor
     if (!currentPreprocessor) return this.cloneAndEnhance({ preProcessor })
     else
       return this.cloneAndEnhance({
-        preProcessor: (snapshot) => currentPreprocessor(preProcessor(snapshot))
+        preProcessor: snapshot => currentPreprocessor(preProcessor(snapshot)),
       })
   }
 
-  postProcessSnapshot: MT["postProcessSnapshot"] = (postProcessor) => {
+  postProcessSnapshot: MT['postProcessSnapshot'] = postProcessor => {
     const currentPostprocessor = this.postProcessor
     if (!currentPostprocessor) return this.cloneAndEnhance({ postProcessor })
     else
       return this.cloneAndEnhance({
-        postProcessor: (snapshot) => postProcessor(currentPostprocessor(snapshot))
+        postProcessor: snapshot =>
+          postProcessor(currentPostprocessor(snapshot)),
       })
   }
 
@@ -547,8 +593,8 @@ export class ModelType<
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: this["C"] | this["T"]
-  ): this["N"] {
+    initialValue: this['C'] | this['T'],
+  ): this['N'] {
     const value = isStateTreeNode(initialValue)
       ? initialValue
       : this.applySnapshotPreProcessor(initialValue)
@@ -557,24 +603,32 @@ export class ModelType<
     // that pre-reserves all these fields for fast object-member lookups
   }
 
-  initializeChildNodes(objNode: this["N"], initialSnapshot: any = {}): IChildNodesMap {
+  initializeChildNodes(
+    objNode: this['N'],
+    initialSnapshot: any = {},
+  ): IChildNodesMap {
     const type = objNode.type as this
     const result: IChildNodesMap = {}
     type.forAllProps((name, childType) => {
-      result[name] = childType.instantiate(objNode, name, undefined, (initialSnapshot as any)[name])
+      result[name] = childType.instantiate(
+        objNode,
+        name,
+        undefined,
+        (initialSnapshot as any)[name],
+      )
     })
     return result
   }
 
-  createNewInstance(childNodes: IChildNodesMap): this["T"] {
+  createNewInstance(childNodes: IChildNodesMap): this['T'] {
     const options = { ...mobxShallow, name: this.name }
     return observable.object(childNodes, EMPTY_OBJECT, options) as any
   }
 
-  finalizeNewInstance(node: this["N"], instance: this["T"]): void {
-    addHiddenFinalProp(instance, "toString", objectTypeToString)
+  finalizeNewInstance(node: this['N'], instance: this['T']): void {
+    addHiddenFinalProp(instance, 'toString', objectTypeToString)
 
-    this.forAllProps((name) => {
+    this.forAllProps(name => {
       _interceptReads(instance, name, node.unbox)
     })
 
@@ -598,7 +652,7 @@ export class ModelType<
         node.getChildNode(subpath),
         change.newValue,
         node,
-        subpath
+        subpath,
       )
     }
     return change
@@ -617,32 +671,32 @@ export class ModelType<
     const oldChildValue = change.oldValue ? change.oldValue.snapshot : undefined
     childNode.emitPatch(
       {
-        op: "replace",
+        op: 'replace',
         path: escapeJsonPath(change.name as string),
         value: change.newValue.snapshot,
-        oldValue: oldChildValue
+        oldValue: oldChildValue,
       },
-      childNode
+      childNode,
     )
   }
 
-  getChildren(node: this["N"]): ReadonlyArray<AnyNode> {
+  getChildren(node: this['N']): ReadonlyArray<AnyNode> {
     const res: AnyNode[] = []
-    this.forAllProps((name) => {
+    this.forAllProps(name => {
       res.push(this.getChildNode(node, name))
     })
     return res
   }
 
-  getChildNode(node: this["N"], key: string): AnyNode {
-    if (!(key in this.properties)) throw fail("Not a value property: " + key)
+  getChildNode(node: this['N'], key: string): AnyNode {
+    if (!(key in this.properties)) throw fail('Not a value property: ' + key)
     const adm = _getAdministration(node.storedValue, key)
     const childNode = adm.raw?.()
-    if (!childNode) throw fail("Node not available for property " + key)
+    if (!childNode) throw fail('Node not available for property ' + key)
     return childNode
   }
 
-  getSnapshot(node: this["N"], applyPostProcess = true): this["S"] {
+  getSnapshot(node: this['N'], applyPostProcess = true): this['S'] {
     const res = {} as any
     this.forAllProps((name, type) => {
       try {
@@ -660,25 +714,25 @@ export class ModelType<
     return res
   }
 
-  processInitialSnapshot(childNodes: IChildNodesMap): this["S"] {
+  processInitialSnapshot(childNodes: IChildNodesMap): this['S'] {
     const processed = {} as any
-    Object.keys(childNodes).forEach((key) => {
-      processed[key] = childNodes[key].getSnapshot()
+    Object.keys(childNodes).forEach(key => {
+      processed[key] = childNodes[key]!.getSnapshot()
     })
     return this.applySnapshotPostProcessor(processed)
   }
 
-  applyPatchLocally(node: this["N"], subpath: string, patch: IJsonPatch): void {
-    if (!(patch.op === "replace" || patch.op === "add")) {
+  applyPatchLocally(node: this['N'], subpath: string, patch: IJsonPatch): void {
+    if (!(patch.op === 'replace' || patch.op === 'add')) {
       throw fail(`object does not support operation ${patch.op}`)
     }
     ;(node.storedValue as any)[subpath] = patch.value
   }
 
-  applySnapshot(node: this["N"], snapshot: this["C"]): void {
+  applySnapshot(node: this['N'], snapshot: this['C']): void {
     typecheckInternal(this, snapshot)
     const preProcessedSnapshot = this.applySnapshotPreProcessor(snapshot)
-    this.forAllProps((name) => {
+    this.forAllProps(name => {
       ;(node.storedValue as any)[name] = preProcessedSnapshot[name]
     })
   }
@@ -697,44 +751,49 @@ export class ModelType<
   getChildType(propertyName: string): IAnyType {
     assertIsString(propertyName, 1)
 
-    return this.properties[propertyName]
+    return this.properties[propertyName]!
   }
 
-  isValidSnapshot(value: this["C"], context: IValidationContext): IValidationResult {
+  isValidSnapshot(
+    value: this['C'],
+    context: IValidationContext,
+  ): IValidationResult {
     let snapshot = this.applySnapshotPreProcessor(value)
 
     if (!isPlainObject(snapshot)) {
-      return typeCheckFailure(context, snapshot, "Value is not a plain object")
+      return typeCheckFailure(context, snapshot, 'Value is not a plain object')
     }
 
     return flattenTypeErrors(
-      this.propertyNames.map((key) =>
-        this.properties[key].validate(
+      this.propertyNames.map(key =>
+        this.properties[key]!.validate(
           snapshot[key],
-          getContextForPath(context, key, this.properties[key])
-        )
-      )
+          getContextForPath(context, key, this.properties[key]!),
+        ),
+      ),
     )
   }
 
   private forAllProps(fn: (name: string, type: IAnyType) => void) {
-    this.propertyNames.forEach((key) => fn(key, this.properties[key]))
+    this.propertyNames.forEach(key => fn(key, this.properties[key]!))
   }
 
   describe() {
     // optimization: cache
     return (
-      "{ " +
-      this.propertyNames.map((key) => key + ": " + this.properties[key].describe()).join("; ") +
-      " }"
+      '{ ' +
+      this.propertyNames
+        .map(key => key + ': ' + this.properties[key]!.describe())
+        .join('; ') +
+      ' }'
     )
   }
 
-  getDefaultSnapshot(): this["C"] {
-    return EMPTY_OBJECT as this["C"]
+  getDefaultSnapshot(): this['C'] {
+    return EMPTY_OBJECT as this['C']
   }
 
-  removeChild(node: this["N"], subpath: string) {
+  removeChild(node: this['N'], subpath: string) {
     ;(node.storedValue as any)[subpath] = undefined
   }
 }
@@ -742,10 +801,10 @@ ModelType.prototype.applySnapshot = action(ModelType.prototype.applySnapshot)
 
 export function model<P extends ModelPropertiesDeclaration = {}>(
   name: string,
-  properties?: P
+  properties?: P,
 ): IModelType<ModelPropertiesDeclarationToProperties<P>, {}>
 export function model<P extends ModelPropertiesDeclaration = {}>(
-  properties?: P
+  properties?: P,
 ): IModelType<ModelPropertiesDeclarationToProperties<P>, {}>
 /**
  * `types.model` - Creates a new model type by providing a name, properties, volatile state and actions.
@@ -753,13 +812,13 @@ export function model<P extends ModelPropertiesDeclaration = {}>(
  * See the [model type](/concepts/trees#creating-models) description or the [getting started](intro/getting-started.md#getting-started-1) tutorial.
  */
 export function model(...args: any[]): any {
-  if (devMode() && typeof args[0] !== "string" && args[1]) {
+  if (devMode() && typeof args[0] !== 'string' && args[1]) {
     throw fail(
-      "Model creation failed. First argument must be a string when two arguments are provided"
+      'Model creation failed. First argument must be a string when two arguments are provided',
     )
   }
 
-  const name = typeof args[0] === "string" ? args.shift() : "AnonymousModel"
+  const name = typeof args[0] === 'string' ? args.shift() : 'AnonymousModel'
   const properties = args.shift() || {}
   return new ModelType({ name, properties })
 }
@@ -822,8 +881,8 @@ export function compose<PA extends ModelProperties, OA, FCA, FSA, PB extends Mod
  */
 export function compose(...args: any[]): any {
   // TODO: just join the base type names if no name is provided
-  const hasTypename = typeof args[0] === "string"
-  const typeName: string = hasTypename ? args[0] : "AnonymousModel"
+  const hasTypename = typeof args[0] === 'string'
+  const typeName: string = hasTypename ? args[0] : 'AnonymousModel'
   if (hasTypename) {
     args.shift()
   }
@@ -831,21 +890,30 @@ export function compose(...args: any[]): any {
   // check all parameters
   if (devMode()) {
     args.forEach((type, i) => {
-      assertArg(type, isModelType, "mobx-state-tree model type", hasTypename ? i + 2 : i + 1)
+      assertArg(
+        type,
+        isModelType,
+        'mobx-state-tree model type',
+        hasTypename ? i + 2 : i + 1,
+      )
     })
   }
 
   return args
     .reduce((prev, cur) =>
       prev.cloneAndEnhance({
-        name: prev.name + "_" + cur.name,
+        name: prev.name + '_' + cur.name,
         properties: cur.properties,
         initializers: cur.initializers,
         preProcessor: (snapshot: any) =>
-          cur.applySnapshotPreProcessor(prev.applySnapshotPreProcessor(snapshot)),
+          cur.applySnapshotPreProcessor(
+            prev.applySnapshotPreProcessor(snapshot),
+          ),
         postProcessor: (snapshot: any) =>
-          cur.applySnapshotPostProcessor(prev.applySnapshotPostProcessor(snapshot))
-      })
+          cur.applySnapshotPostProcessor(
+            prev.applySnapshotPostProcessor(snapshot),
+          ),
+      }),
     )
     .named(typeName)
 }
@@ -856,6 +924,8 @@ export function compose(...args: any[]): any {
  * @param type
  * @returns
  */
-export function isModelType<IT extends IAnyModelType = IAnyModelType>(type: IAnyType): type is IT {
+export function isModelType<IT extends IAnyModelType = IAnyModelType>(
+  type: IAnyType,
+): type is IT {
   return isType(type) && (type.flags & TypeFlags.Object) > 0
 }

@@ -1167,36 +1167,36 @@ interface ISnapshotProcessors<IT extends IAnyType, CustomC, CustomS> {
 declare function snapshotProcessor<IT extends IAnyType, CustomC = _NotCustomized, CustomS = _NotCustomized>(type: IT, processors: ISnapshotProcessors<IT, CustomC, CustomS>, name?: string): ISnapshotProcessor<IT, CustomC, CustomS>;
 
 /** @hidden */
-interface IMapType<IT extends IAnyType> extends IType<IKeyValueMap<IT["CreationType"]> | undefined, IKeyValueMap<IT["SnapshotType"]>, IMSTMap<IT>> {
+interface IMapType<IT extends IAnyType> extends IType<IKeyValueMap<IT['CreationType']> | undefined, IKeyValueMap<IT['SnapshotType']>, IMSTMap<IT>> {
     hooks(hooks: IHooksGetter<IMSTMap<IT>>): IMapType<IT>;
 }
 /** @hidden */
 interface IMSTMap<IT extends IAnyType> {
     clear(): void;
     delete(key: string): boolean;
-    forEach(callbackfn: (value: IT["Type"], key: string | number, map: this) => void, thisArg?: any): void;
-    get(key: string | number): IT["Type"] | undefined;
+    forEach(callbackfn: (value: IT['Type'], key: string | number, map: this) => void, thisArg?: any): void;
+    get(key: string | number): IT['Type'] | undefined;
     has(key: string | number): boolean;
     set(key: string | number, value: ExtractCSTWithSTN<IT>): this;
     readonly size: number;
-    put(value: ExtractCSTWithSTN<IT>): IT["Type"];
+    put(value: ExtractCSTWithSTN<IT>): IT['Type'];
     keys(): IterableIterator<string>;
-    values(): IterableIterator<IT["Type"]>;
-    entries(): IterableIterator<[string, IT["Type"]]>;
-    [Symbol.iterator](): IterableIterator<[string, IT["Type"]]>;
+    values(): IterableIterator<IT['Type']>;
+    entries(): IterableIterator<[string, IT['Type']]>;
+    [Symbol.iterator](): IterableIterator<[string, IT['Type']]>;
     /** Merge another object into this map, returns self. */
-    merge(other: IMSTMap<IType<any, any, IT["TypeWithoutSTN"]>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
-    replace(values: IMSTMap<IType<any, any, IT["TypeWithoutSTN"]>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
-    toJSON(): IKeyValueMap<IT["SnapshotType"]>;
+    merge(other: IMSTMap<IType<any, any, IT['TypeWithoutSTN']>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
+    replace(values: IMSTMap<IType<any, any, IT['TypeWithoutSTN']>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
+    toJSON(): IKeyValueMap<IT['SnapshotType']>;
     toString(): string;
-    [Symbol.toStringTag]: "Map";
+    [Symbol.toStringTag]: 'Map';
     /**
      * Observes this object. Triggers for the events 'add', 'update' and 'delete'.
      * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe
      * for callback details
      */
-    observe(listener: (changes: IMapDidChange<string, IT["Type"]>) => void, fireImmediately?: boolean): Lambda;
-    intercept(handler: IInterceptor<IMapWillChange<string, IT["Type"]>>): Lambda;
+    observe(listener: (changes: IMapDidChange<string, IT['Type']>) => void, fireImmediately?: boolean): Lambda;
+    intercept(handler: IInterceptor<IMapWillChange<string, IT['Type']>>): Lambda;
 }
 /**
  * `types.map` - Creates a key based collection type who's children are all of a uniform declared type.
@@ -1235,21 +1235,21 @@ declare function map<IT extends IAnyType>(subtype: IT): IMapType<IT>;
 declare function isMapType<Items extends IAnyType = IAnyType>(type: IAnyType): type is IMapType<Items>;
 
 /** @hidden */
-interface IMSTArray<IT extends IAnyType> extends IObservableArray<IT["Type"]> {
-    push(...items: IT["Type"][]): number;
+interface IMSTArray<IT extends IAnyType> extends IObservableArray<IT['Type']> {
+    push(...items: IT['Type'][]): number;
     push(...items: ExtractCSTWithSTN<IT>[]): number;
-    concat(...items: ConcatArray<IT["Type"]>[]): IT["Type"][];
-    concat(...items: ConcatArray<ExtractCSTWithSTN<IT>>[]): IT["Type"][];
-    concat(...items: (IT["Type"] | ConcatArray<IT["Type"]>)[]): IT["Type"][];
-    concat(...items: (ExtractCSTWithSTN<IT> | ConcatArray<ExtractCSTWithSTN<IT>>)[]): IT["Type"][];
-    splice(start: number, deleteCount?: number): IT["Type"][];
-    splice(start: number, deleteCount: number, ...items: IT["Type"][]): IT["Type"][];
-    splice(start: number, deleteCount: number, ...items: ExtractCSTWithSTN<IT>[]): IT["Type"][];
-    unshift(...items: IT["Type"][]): number;
+    concat(...items: ConcatArray<IT['Type']>[]): IT['Type'][];
+    concat(...items: ConcatArray<ExtractCSTWithSTN<IT>>[]): IT['Type'][];
+    concat(...items: (IT['Type'] | ConcatArray<IT['Type']>)[]): IT['Type'][];
+    concat(...items: (ExtractCSTWithSTN<IT> | ConcatArray<ExtractCSTWithSTN<IT>>)[]): IT['Type'][];
+    splice(start: number, deleteCount?: number): IT['Type'][];
+    splice(start: number, deleteCount: number, ...items: IT['Type'][]): IT['Type'][];
+    splice(start: number, deleteCount: number, ...items: ExtractCSTWithSTN<IT>[]): IT['Type'][];
+    unshift(...items: IT['Type'][]): number;
     unshift(...items: ExtractCSTWithSTN<IT>[]): number;
 }
 /** @hidden */
-interface IArrayType<IT extends IAnyType> extends IType<readonly IT["CreationType"][] | undefined, IT["SnapshotType"][], IMSTArray<IT>> {
+interface IArrayType<IT extends IAnyType> extends IType<readonly IT['CreationType'][] | undefined, IT['SnapshotType'][], IMSTArray<IT>> {
     hooks(hooks: IHooksGetter<IMSTArray<IAnyType>>): IArrayType<IT>;
 }
 /**
@@ -1333,7 +1333,7 @@ interface NonEmptyObject {
 }
 /** @hidden */
 type ExtractCFromProps<P extends ModelProperties> = {
-    [k in keyof P]: P[k]["CreationType"];
+    [k in keyof P]: P[k]['CreationType'];
 };
 /** @hidden */
 type ModelCreationType<PC> = {
@@ -1343,7 +1343,7 @@ type ModelCreationType<PC> = {
 type ModelCreationType2<P extends ModelProperties, CustomC> = keyof P extends never ? IStateTreeNode : _CustomOrOther<CustomC, ModelCreationType<ExtractCFromProps<P>>>;
 /** @hidden */
 type ModelSnapshotType<P extends ModelProperties> = {
-    [K in keyof P]: P[K]["SnapshotType"];
+    [K in keyof P]: P[K]['SnapshotType'];
 } & NonEmptyObject;
 /** @hidden */
 type ModelSnapshotType2<P extends ModelProperties, CustomS> = _CustomOrOther<CustomS, ModelSnapshotType<P>>;
@@ -1352,7 +1352,7 @@ type ModelSnapshotType2<P extends ModelProperties, CustomS> = _CustomOrOther<Cus
  * we keep this separate from ModelInstanceType to shorten model instance types generated declarations
  */
 type ModelInstanceTypeProps<P extends ModelProperties> = {
-    [K in keyof P]: P[K]["Type"];
+    [K in keyof P]: P[K]['Type'];
 } & NonEmptyObject;
 /**
  * @hidden

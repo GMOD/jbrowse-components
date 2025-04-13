@@ -12,7 +12,7 @@ export default tseslint.config(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
-      'packages/@jbrowse/mobx-state-tree',
+      'packages/mobx-state-tree',
       'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',

@@ -8,8 +8,8 @@ import {
   IAnyType,
   ExtractCSTWithSTN,
   isTypeCheckingEnabled,
-  devMode
-} from "../../internal"
+  devMode,
+} from '../../internal'
 
 /** Validation context entry, this is, where the validation should run against which type */
 export interface IValidationContextEntry {
@@ -49,11 +49,11 @@ function safeStringify(value: any) {
  * @hidden
  */
 export function prettyPrintValue(value: any) {
-  return typeof value === "function"
-    ? `<function${value.name ? " " + value.name : ""}>`
+  return typeof value === 'function'
+    ? `<function${value.name ? ' ' + value.name : ''}>`
     : isStateTreeNode(value)
-    ? `<${value}>`
-    : `\`${safeStringify(value)}\``
+      ? `<${value}>`
+      : `\`${safeStringify(value)}\``
 }
 
 function shortenPrintValue(valueInString: string) {
@@ -64,19 +64,19 @@ function shortenPrintValue(valueInString: string) {
 
 function toErrorString(error: IValidationError): string {
   const { value } = error
-  const type = error.context[error.context.length - 1].type!
+  const type = error.context[error.context.length - 1]!.type!
   const fullPath = error.context
     .map(({ path }) => path)
-    .filter((path) => path.length > 0)
-    .join("/")
+    .filter(path => path.length > 0)
+    .join('/')
 
   const pathPrefix = fullPath.length > 0 ? `at path "/${fullPath}" ` : ``
 
   const currentTypename = isStateTreeNode(value)
     ? `value of type ${getStateTreeNode(value).type.name}:`
     : isPrimitive(value)
-    ? "value"
-    : "snapshot"
+      ? 'value'
+      : 'snapshot'
   const isSnapshotCompatible =
     type && isStateTreeNode(value) && type.is(getStateTreeNode(value).snapshot)
 
@@ -84,7 +84,7 @@ function toErrorString(error: IValidationError): string {
     `${pathPrefix}${currentTypename} ${prettyPrintValue(value)} is not assignable ${
       type ? `to type: \`${type.name}\`` : ``
     }` +
-    (error.message ? ` (${error.message})` : "") +
+    (error.message ? ` (${error.message})` : '') +
     (type
       ? isPrimitiveType(type) || isPrimitive(value)
         ? `.`
@@ -92,8 +92,8 @@ function toErrorString(error: IValidationError): string {
             type as IAnyType
           ).describe()}\` instead.` +
           (isSnapshotCompatible
-            ? " (Note that a snapshot of the provided value is compatible with the targeted type)"
-            : "")
+            ? ' (Note that a snapshot of the provided value is compatible with the targeted type)'
+            : '')
       : `.`)
   )
 }
@@ -105,7 +105,7 @@ function toErrorString(error: IValidationError): string {
 export function getContextForPath(
   context: IValidationContext,
   path: string,
-  type: IAnyType
+  type: IAnyType,
 ): IValidationContext {
   return context.concat([{ path, type }])
 }
@@ -125,7 +125,7 @@ export function typeCheckSuccess(): IValidationResult {
 export function typeCheckFailure(
   context: IValidationContext,
   value: any,
-  message?: string
+  message?: string,
 ): IValidationResult {
   return [{ context, value, message }]
 }
@@ -134,7 +134,9 @@ export function typeCheckFailure(
  * @internal
  * @hidden
  */
-export function flattenTypeErrors(errors: IValidationResult[]): IValidationResult {
+export function flattenTypeErrors(
+  errors: IValidationResult[],
+): IValidationResult {
   return errors.reduce((a, i) => a.concat(i), [])
 }
 
@@ -145,7 +147,7 @@ export function flattenTypeErrors(errors: IValidationResult[]): IValidationResul
  */
 export function typecheckInternal<IT extends IAnyType>(
   type: IAnyType,
-  value: ExtractCSTWithSTN<IT>
+  value: ExtractCSTWithSTN<IT>,
 ): void {
   // runs typeChecking if it is in dev-mode or through a process.env.ENABLE_TYPE_CHECK flag
   if (isTypeCheckingEnabled()) {
@@ -161,8 +163,11 @@ export function typecheckInternal<IT extends IAnyType>(
  * @param type Type to check against.
  * @param value Value to be checked, either a snapshot or an instance.
  */
-export function typecheck<IT extends IAnyType>(type: IT, value: ExtractCSTWithSTN<IT>): void {
-  const errors = type.validate(value, [{ path: "", type }])
+export function typecheck<IT extends IAnyType>(
+  type: IT,
+  value: ExtractCSTWithSTN<IT>,
+): void {
+  const errors = type.validate(value, [{ path: '', type }])
 
   if (errors.length > 0) {
     throw fail(validationErrorsToString(type, value, errors))
@@ -172,7 +177,7 @@ export function typecheck<IT extends IAnyType>(type: IT, value: ExtractCSTWithST
 function validationErrorsToString<IT extends IAnyType>(
   type: IT,
   value: ExtractCSTWithSTN<IT>,
-  errors: IValidationError[]
+  errors: IValidationError[],
 ): string | undefined {
   if (errors.length === 0) {
     return undefined
@@ -181,6 +186,6 @@ function validationErrorsToString<IT extends IAnyType>(
   return (
     `Error while converting ${shortenPrintValue(prettyPrintValue(value))} to \`${
       type.name
-    }\`:\n\n    ` + errors.map(toErrorString).join("\n    ")
+    }\`:\n\n    ` + errors.map(toErrorString).join('\n    ')
   )
 }

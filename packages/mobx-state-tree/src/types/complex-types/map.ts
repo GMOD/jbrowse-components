@@ -11,8 +11,8 @@ import {
   ObservableMap,
   observe,
   values,
-  IObservableMapInitialValues
-} from "mobx"
+  IObservableMapInitialValues,
+} from 'mobx'
 import {
   ComplexType,
   createObjectNode,
@@ -51,14 +51,14 @@ import {
   createActionInvoker,
   addHiddenFinalProp,
   addHiddenWritableProp,
-  IHooksGetter
-} from "../../internal"
+  IHooksGetter,
+} from '../../internal'
 
 /** @hidden */
 export interface IMapType<IT extends IAnyType>
   extends IType<
-    IKeyValueMap<IT["CreationType"]> | undefined,
-    IKeyValueMap<IT["SnapshotType"]>,
+    IKeyValueMap<IT['CreationType']> | undefined,
+    IKeyValueMap<IT['SnapshotType']>,
     IMSTMap<IT>
   > {
   hooks(hooks: IHooksGetter<IMSTMap<IT>>): IMapType<IT>
@@ -71,36 +71,36 @@ export interface IMSTMap<IT extends IAnyType> {
   clear(): void
   delete(key: string): boolean
   forEach(
-    callbackfn: (value: IT["Type"], key: string | number, map: this) => void,
-    thisArg?: any
+    callbackfn: (value: IT['Type'], key: string | number, map: this) => void,
+    thisArg?: any,
   ): void
-  get(key: string | number): IT["Type"] | undefined
+  get(key: string | number): IT['Type'] | undefined
   has(key: string | number): boolean
   set(key: string | number, value: ExtractCSTWithSTN<IT>): this
   readonly size: number
-  put(value: ExtractCSTWithSTN<IT>): IT["Type"]
+  put(value: ExtractCSTWithSTN<IT>): IT['Type']
   keys(): IterableIterator<string>
-  values(): IterableIterator<IT["Type"]>
-  entries(): IterableIterator<[string, IT["Type"]]>
-  [Symbol.iterator](): IterableIterator<[string, IT["Type"]]>
+  values(): IterableIterator<IT['Type']>
+  entries(): IterableIterator<[string, IT['Type']]>
+  [Symbol.iterator](): IterableIterator<[string, IT['Type']]>
   /** Merge another object into this map, returns self. */
   merge(
     other:
-      | IMSTMap<IType<any, any, IT["TypeWithoutSTN"]>>
+      | IMSTMap<IType<any, any, IT['TypeWithoutSTN']>>
       | IKeyValueMap<ExtractCSTWithSTN<IT>>
-      | any
+      | any,
   ): this
   replace(
     values:
-      | IMSTMap<IType<any, any, IT["TypeWithoutSTN"]>>
+      | IMSTMap<IType<any, any, IT['TypeWithoutSTN']>>
       | IKeyValueMap<ExtractCSTWithSTN<IT>>
-      | any
+      | any,
   ): this
 
-  toJSON(): IKeyValueMap<IT["SnapshotType"]>
+  toJSON(): IKeyValueMap<IT['SnapshotType']>
 
   toString(): string
-  [Symbol.toStringTag]: "Map"
+  [Symbol.toStringTag]: 'Map'
 
   /**
    * Observes this object. Triggers for the events 'add', 'update' and 'delete'.
@@ -108,15 +108,18 @@ export interface IMSTMap<IT extends IAnyType> {
    * for callback details
    */
   observe(
-    listener: (changes: IMapDidChange<string, IT["Type"]>) => void,
-    fireImmediately?: boolean
+    listener: (changes: IMapDidChange<string, IT['Type']>) => void,
+    fireImmediately?: boolean,
   ): Lambda
-  intercept(handler: IInterceptor<IMapWillChange<string, IT["Type"]>>): Lambda
+  intercept(handler: IInterceptor<IMapWillChange<string, IT['Type']>>): Lambda
 }
 
 const needsIdentifierError = `Map.put can only be used to store complex values that have an identifier type attribute`
 
-function tryCollectModelTypes(type: IAnyType, modelTypes: Array<IAnyModelType>): boolean {
+function tryCollectModelTypes(
+  type: IAnyType,
+  modelTypes: Array<IAnyModelType>,
+): boolean {
   const subtypes = type.getSubTypes()
   if (subtypes === cannotDetermineSubtype) {
     return false
@@ -140,32 +143,35 @@ function tryCollectModelTypes(type: IAnyType, modelTypes: Array<IAnyModelType>):
 export enum MapIdentifierMode {
   UNKNOWN,
   YES,
-  NO
+  NO,
 }
 
 class MSTMap<IT extends IAnyType> extends ObservableMap<string, any> {
-  constructor(initialData?: IObservableMapInitialValues<string, any> | undefined, name?: string) {
+  constructor(
+    initialData?: IObservableMapInitialValues<string, any> | undefined,
+    name?: string,
+  ) {
     super(initialData, (observable.ref as any).enhancer, name)
   }
 
-  get(key: string): IT["Type"] | undefined {
+  get(key: string): IT['Type'] | undefined {
     // maybe this is over-enthousiastic? normalize numeric keys to strings
-    return super.get("" + key)
+    return super.get('' + key)
   }
 
   has(key: string) {
-    return super.has("" + key)
+    return super.has('' + key)
   }
 
   delete(key: string) {
-    return super.delete("" + key)
+    return super.delete('' + key)
   }
 
   set(key: string, value: ExtractCSTWithSTN<IT>): this {
-    return super.set("" + key, value)
+    return super.set('' + key, value)
   }
 
-  put(value: ExtractCSTWithSTN<IT>): IT["Type"] {
+  put(value: ExtractCSTWithSTN<IT>): IT['Type'] {
     if (!value) throw fail(`Map.put cannot be used to set empty values`)
     if (isStateTreeNode(value)) {
       const node = getStateTreeNode(value)
@@ -194,7 +200,9 @@ class MSTMap<IT extends IAnyType> extends ObservableMap<string, any> {
       if (!isValidIdentifier(id)) {
         // try again but this time after creating a node for the value
         // since it might be an optional identifier
-        const newNode = this.put(mapType.getChildType().create(value, mapNode.environment))
+        const newNode = this.put(
+          mapType.getChildType().create(value, mapNode.environment),
+        )
         return this.put(getSnapshot(newNode))
       }
       const key = normalizeIdentifier(id)
@@ -209,8 +217,8 @@ class MSTMap<IT extends IAnyType> extends ObservableMap<string, any> {
  * @hidden
  */
 export class MapType<IT extends IAnyType> extends ComplexType<
-  IKeyValueMap<IT["CreationType"]> | undefined,
-  IKeyValueMap<IT["SnapshotType"]>,
+  IKeyValueMap<IT['CreationType']> | undefined,
+  IKeyValueMap<IT['SnapshotType']>,
   IMSTMap<IT>
 > {
   identifierMode: MapIdentifierMode = MapIdentifierMode.UNKNOWN
@@ -222,7 +230,7 @@ export class MapType<IT extends IAnyType> extends ComplexType<
   constructor(
     name: string,
     private readonly _subType: IAnyType,
-    hookInitializers: Array<IHooksGetter<IMSTMap<IT>>> = []
+    hookInitializers: Array<IHooksGetter<IMSTMap<IT>>> = [],
   ) {
     super(name)
     this._determineIdentifierMode()
@@ -231,7 +239,9 @@ export class MapType<IT extends IAnyType> extends ComplexType<
 
   hooks(hooks: IHooksGetter<IMSTMap<IT>>) {
     const hookInitializers =
-      this.hookInitializers.length > 0 ? this.hookInitializers.concat(hooks) : [hooks]
+      this.hookInitializers.length > 0
+        ? this.hookInitializers.concat(hooks)
+        : [hooks]
     return new MapType(this.name, this._subType, hookInitializers)
   }
 
@@ -239,8 +249,8 @@ export class MapType<IT extends IAnyType> extends ComplexType<
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: this["C"] | this["T"]
-  ): this["N"] {
+    initialValue: this['C'] | this['T'],
+  ): this['N'] {
     this._determineIdentifierMode()
     return createObjectNode(this, parent, subpath, environment, initialValue)
   }
@@ -253,16 +263,16 @@ export class MapType<IT extends IAnyType> extends ComplexType<
     const modelTypes: IAnyModelType[] = []
     if (tryCollectModelTypes(this._subType, modelTypes)) {
       const identifierAttribute: string | undefined = modelTypes.reduce(
-        (current: IAnyModelType["identifierAttribute"], type) => {
+        (current: IAnyModelType['identifierAttribute'], type) => {
           if (!type.identifierAttribute) return current
           if (current && current !== type.identifierAttribute) {
             throw fail(
-              `The objects in a map should all have the same identifier attribute, expected '${current}', but child of type '${type.name}' declared attribute '${type.identifierAttribute}' as identifier`
+              `The objects in a map should all have the same identifier attribute, expected '${current}', but child of type '${type.name}' declared attribute '${type.identifierAttribute}' as identifier`,
             )
           }
           return type.identifierAttribute
         },
-        undefined as IAnyModelType["identifierAttribute"]
+        undefined as IAnyModelType['identifierAttribute'],
       )
 
       if (identifierAttribute) {
@@ -274,30 +284,49 @@ export class MapType<IT extends IAnyType> extends ComplexType<
     }
   }
 
-  initializeChildNodes(objNode: this["N"], initialSnapshot: this["C"] = {}): IChildNodesMap {
+  initializeChildNodes(
+    objNode: this['N'],
+    initialSnapshot: this['C'] = {},
+  ): IChildNodesMap {
     const subType = (objNode.type as this)._subType
     const result: IChildNodesMap = {}
-    Object.keys(initialSnapshot!).forEach((name) => {
-      result[name] = subType.instantiate(objNode, name, undefined, initialSnapshot[name])
+    Object.keys(initialSnapshot!).forEach(name => {
+      result[name] = subType.instantiate(
+        objNode,
+        name,
+        undefined,
+        initialSnapshot[name],
+      )
     })
 
     return result
   }
 
-  createNewInstance(childNodes: IChildNodesMap): this["T"] {
+  createNewInstance(childNodes: IChildNodesMap): this['T'] {
     return new MSTMap(childNodes, this.name) as any
   }
 
-  finalizeNewInstance(node: this["N"], instance: ObservableMap<string, any>): void {
+  finalizeNewInstance(
+    node: this['N'],
+    instance: ObservableMap<string, any>,
+  ): void {
     _interceptReads(instance, node.unbox)
 
     const type = node.type as this
-    type.hookInitializers.forEach((initializer) => {
+    type.hookInitializers.forEach(initializer => {
       const hooks = initializer(instance as unknown as IMSTMap<IT>)
-      Object.keys(hooks).forEach((name) => {
+      Object.keys(hooks).forEach(name => {
         const hook = hooks[name as keyof typeof hooks]!
-        const actionInvoker = createActionInvoker(instance as IAnyStateTreeNode, name, hook)
-        ;(!devMode() ? addHiddenFinalProp : addHiddenWritableProp)(instance, name, actionInvoker)
+        const actionInvoker = createActionInvoker(
+          instance as IAnyStateTreeNode,
+          name,
+          hook,
+        )
+        ;(!devMode() ? addHiddenFinalProp : addHiddenWritableProp)(
+          instance,
+          name,
+          actionInvoker,
+        )
       })
     })
 
@@ -309,18 +338,20 @@ export class MapType<IT extends IAnyType> extends ComplexType<
     return this.name
   }
 
-  getChildren(node: this["N"]): ReadonlyArray<AnyNode> {
+  getChildren(node: this['N']): ReadonlyArray<AnyNode> {
     // return (node.storedValue as ObservableMap<any>).values()
     return values(node.storedValue)
   }
 
-  getChildNode(node: this["N"], key: string): AnyNode {
-    const childNode = node.storedValue.get("" + key)
-    if (!childNode) throw fail("Not a child " + key)
+  getChildNode(node: this['N'], key: string): AnyNode {
+    const childNode = node.storedValue.get('' + key)
+    if (!childNode) throw fail('Not a child ' + key)
     return childNode
   }
 
-  willChange(change: IMapWillChange<string, AnyNode>): IMapWillChange<string, AnyNode> | null {
+  willChange(
+    change: IMapWillChange<string, AnyNode>,
+  ): IMapWillChange<string, AnyNode> | null {
     const node = getStateTreeNode(change.object as IAnyStateTreeNode)
     const key = change.name
     node.assertWritable({ subpath: key })
@@ -328,20 +359,30 @@ export class MapType<IT extends IAnyType> extends ComplexType<
     const subType = mapType._subType
 
     switch (change.type) {
-      case "update":
+      case 'update':
         {
           const { newValue } = change
           const oldValue = change.object.get(key)
           if (newValue === oldValue) return null
           typecheckInternal(subType, newValue)
-          change.newValue = subType.reconcile(node.getChildNode(key), change.newValue, node, key)
+          change.newValue = subType.reconcile(
+            node.getChildNode(key),
+            change.newValue,
+            node,
+            key,
+          )
           mapType.processIdentifier(key, change.newValue)
         }
         break
-      case "add":
+      case 'add':
         {
           typecheckInternal(subType, change.newValue)
-          change.newValue = subType.instantiate(node, key, undefined, change.newValue)
+          change.newValue = subType.instantiate(
+            node,
+            key,
+            undefined,
+            change.newValue,
+          )
           mapType.processIdentifier(key, change.newValue)
         }
         break
@@ -350,27 +391,30 @@ export class MapType<IT extends IAnyType> extends ComplexType<
   }
 
   private processIdentifier(expected: string, node: AnyNode): void {
-    if (this.identifierMode === MapIdentifierMode.YES && node instanceof ObjectNode) {
+    if (
+      this.identifierMode === MapIdentifierMode.YES &&
+      node instanceof ObjectNode
+    ) {
       const identifier = node.identifier!
       if (identifier !== expected)
         throw fail(
-          `A map of objects containing an identifier should always store the object under their own identifier. Trying to store key '${identifier}', but expected: '${expected}'`
+          `A map of objects containing an identifier should always store the object under their own identifier. Trying to store key '${identifier}', but expected: '${expected}'`,
         )
     }
   }
 
-  getSnapshot(node: this["N"]): this["S"] {
+  getSnapshot(node: this['N']): this['S'] {
     const res: any = {}
-    node.getChildren().forEach((childNode) => {
+    node.getChildren().forEach(childNode => {
       res[childNode.subpath] = childNode.snapshot
     })
     return res
   }
 
-  processInitialSnapshot(childNodes: IChildNodesMap): this["S"] {
+  processInitialSnapshot(childNodes: IChildNodesMap): this['S'] {
     const processed: any = {}
-    Object.keys(childNodes).forEach((key) => {
-      processed[key] = childNodes[key].getSnapshot()
+    Object.keys(childNodes).forEach(key => {
+      processed[key] = childNodes[key]!.getSnapshot()
     })
     return processed
   }
@@ -378,70 +422,70 @@ export class MapType<IT extends IAnyType> extends ComplexType<
   didChange(change: IMapDidChange<string, AnyNode>): void {
     const node = getStateTreeNode(change.object as IAnyStateTreeNode)
     switch (change.type) {
-      case "update":
+      case 'update':
         return void node.emitPatch(
           {
-            op: "replace",
+            op: 'replace',
             path: escapeJsonPath(change.name),
             value: change.newValue.snapshot,
-            oldValue: change.oldValue ? change.oldValue.snapshot : undefined
+            oldValue: change.oldValue ? change.oldValue.snapshot : undefined,
           },
-          node
+          node,
         )
-      case "add":
+      case 'add':
         return void node.emitPatch(
           {
-            op: "add",
+            op: 'add',
             path: escapeJsonPath(change.name),
             value: change.newValue.snapshot,
-            oldValue: undefined
+            oldValue: undefined,
           },
-          node
+          node,
         )
-      case "delete":
+      case 'delete':
         // a node got deleted, get the old snapshot and make the node die
         const oldSnapshot = change.oldValue.snapshot
         change.oldValue.die()
         // emit the patch
         return void node.emitPatch(
           {
-            op: "remove",
+            op: 'remove',
             path: escapeJsonPath(change.name),
-            oldValue: oldSnapshot
+            oldValue: oldSnapshot,
           },
-          node
+          node,
         )
     }
   }
 
-  applyPatchLocally(node: this["N"], subpath: string, patch: IJsonPatch): void {
+  applyPatchLocally(node: this['N'], subpath: string, patch: IJsonPatch): void {
     const target = node.storedValue
     switch (patch.op) {
-      case "add":
-      case "replace":
+      case 'add':
+      case 'replace':
         target.set(subpath, patch.value)
         break
-      case "remove":
+      case 'remove':
         target.delete(subpath)
         break
     }
   }
 
-  applySnapshot(node: this["N"], snapshot: this["C"]): void {
+  applySnapshot(node: this['N'], snapshot: this['C']): void {
     typecheckInternal(this, snapshot)
     const target = node.storedValue
     const currentKeys: { [key: string]: boolean } = {}
-    Array.from(target.keys()).forEach((key) => {
+    Array.from(target.keys()).forEach(key => {
       currentKeys[key] = false
     })
     if (snapshot) {
       // Don't use target.replace, as it will throw away all existing items first
       for (let key in snapshot) {
         target.set(key, snapshot[key])
-        currentKeys["" + key] = true
+        currentKeys['' + key] = true
       }
     }
-    Object.keys(currentKeys).forEach((key) => {
+    Object.keys(currentKeys).forEach(key => {
       if (currentKeys[key] === false) target.delete(key)
     })
   }
@@ -450,23 +494,29 @@ export class MapType<IT extends IAnyType> extends ComplexType<
     return this._subType
   }
 
-  isValidSnapshot(value: this["C"], context: IValidationContext): IValidationResult {
+  isValidSnapshot(
+    value: this['C'],
+    context: IValidationContext,
+  ): IValidationResult {
     if (!isPlainObject(value)) {
-      return typeCheckFailure(context, value, "Value is not a plain object")
+      return typeCheckFailure(context, value, 'Value is not a plain object')
     }
 
     return flattenTypeErrors(
-      Object.keys(value).map((path) =>
-        this._subType.validate(value[path], getContextForPath(context, path, this._subType))
-      )
+      Object.keys(value).map(path =>
+        this._subType.validate(
+          value[path],
+          getContextForPath(context, path, this._subType),
+        ),
+      ),
     )
   }
 
-  getDefaultSnapshot(): this["C"] {
-    return EMPTY_OBJECT as this["C"]
+  getDefaultSnapshot(): this['C'] {
+    return EMPTY_OBJECT as this['C']
   }
 
-  removeChild(node: this["N"], subpath: string) {
+  removeChild(node: this['N'], subpath: string) {
     node.storedValue.delete(subpath)
   }
 }
@@ -510,7 +560,7 @@ export function map<IT extends IAnyType>(subtype: IT): IMapType<IT> {
  * @returns `true` if it is a map type.
  */
 export function isMapType<Items extends IAnyType = IAnyType>(
-  type: IAnyType
+  type: IAnyType,
 ): type is IMapType<Items> {
   return isType(type) && (type.flags & TypeFlags.Map) > 0
 }

@@ -462,7 +462,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
       return this._observableInstanceState ===
         ObservableInstanceLifecycle.CREATED
         ? this.type.getChildNode(this, subpath)
-        : this._childNodes![subpath]
+        : this._childNodes![subpath]!
     } finally {
       this._autoUnbox = true
     }
@@ -550,7 +550,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
             self,
             parts.slice(0, -1),
           ) as AnyObjectNode
-          node.applyPatchLocally(parts[parts.length - 1], patch)
+          node.applyPatchLocally(parts[parts.length - 1]!, patch)
         })
       },
     )

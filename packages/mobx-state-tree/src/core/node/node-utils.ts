@@ -13,8 +13,8 @@ import {
   assertArg,
   STNValue,
   Instance,
-  IAnyComplexType
-} from "../../internal"
+  IAnyComplexType,
+} from '../../internal'
 
 /**
  * @internal
@@ -25,7 +25,7 @@ export enum NodeLifeCycle {
   CREATED, // afterCreate has run
   FINALIZED, // afterAttach has run
   DETACHING, // being detached from the tree
-  DEAD // no coming back from this one
+  DEAD, // no coming back from this one
 }
 
 /** @hidden */
@@ -47,9 +47,8 @@ export interface IStateTreeNode<IT extends IAnyType = IAnyType> {
 }
 
 /** @hidden */
-export type TypeOfValue<T extends IAnyStateTreeNode> = T extends IStateTreeNode<infer IT>
-  ? IT
-  : never
+export type TypeOfValue<T extends IAnyStateTreeNode> =
+  T extends IStateTreeNode<infer IT> ? IT : never
 
 /**
  * Represents any state tree node instance.
@@ -66,7 +65,7 @@ export interface IAnyStateTreeNode extends STNValue<any, IAnyType> {}
  * @returns true if the value is a state tree node.
  */
 export function isStateTreeNode<IT extends IAnyComplexType = IAnyComplexType>(
-  value: any
+  value: any,
 ): value is STNValue<Instance<IT>, IT> {
   return !!(value && value.$treenode)
 }
@@ -77,9 +76,9 @@ export function isStateTreeNode<IT extends IAnyComplexType = IAnyComplexType>(
  */
 export function assertIsStateTreeNode(
   value: IAnyStateTreeNode,
-  argNumber: number | number[]
+  argNumber: number | number[],
 ): void {
-  assertArg(value, isStateTreeNode, "mobx-state-tree node", argNumber)
+  assertArg(value, isStateTreeNode, 'mobx-state-tree node', argNumber)
 }
 
 /**
@@ -98,7 +97,9 @@ export function getStateTreeNode(value: IAnyStateTreeNode): AnyObjectNode {
  * @internal
  * @hidden
  */
-export function getStateTreeNodeSafe(value: IAnyStateTreeNode): AnyObjectNode | null {
+export function getStateTreeNodeSafe(
+  value: IAnyStateTreeNode,
+): AnyObjectNode | null {
   return (value && value.$treenode) || null
 }
 
@@ -110,17 +111,20 @@ export function toJSON<S>(this: IStateTreeNode<IType<any, S, any>>): S {
   return getStateTreeNode(this).snapshot
 }
 
-const doubleDot = (_: any) => ".."
+const doubleDot = (_: any) => '..'
 
 /**
  * @internal
  * @hidden
  */
-export function getRelativePathBetweenNodes(base: AnyObjectNode, target: AnyObjectNode): string {
+export function getRelativePathBetweenNodes(
+  base: AnyObjectNode,
+  target: AnyObjectNode,
+): string {
   // PRE condition target is (a child of) base!
   if (base.root !== target.root) {
     throw fail(
-      `Cannot calculate relative path: objects '${base}' and '${target}' are not part of the same object tree`
+      `Cannot calculate relative path: objects '${base}' and '${target}' are not part of the same object tree`,
     )
   }
 
@@ -131,7 +135,10 @@ export function getRelativePathBetweenNodes(base: AnyObjectNode, target: AnyObje
     if (baseParts[common] !== targetParts[common]) break
   }
   // TODO: assert that no targetParts paths are "..", "." or ""!
-  return baseParts.slice(common).map(doubleDot).join("/") + joinJsonPath(targetParts.slice(common))
+  return (
+    baseParts.slice(common).map(doubleDot).join('/') +
+    joinJsonPath(targetParts.slice(common))
+  )
 }
 
 /**
@@ -141,7 +148,7 @@ export function getRelativePathBetweenNodes(base: AnyObjectNode, target: AnyObje
 export function resolveNodeByPath(
   base: AnyObjectNode,
   path: string,
-  failIfResolveFails: boolean = true
+  failIfResolveFails: boolean = true,
 ): AnyNode | undefined {
   return resolveNodeByPathParts(base, splitJsonPath(path), failIfResolveFails)
 }
@@ -153,16 +160,16 @@ export function resolveNodeByPath(
 export function resolveNodeByPathParts(
   base: AnyObjectNode,
   pathParts: string[],
-  failIfResolveFails: boolean = true
+  failIfResolveFails: boolean = true,
 ): AnyNode | undefined {
   let current: AnyNode | null = base
   try {
     for (let i = 0; i < pathParts.length; i++) {
       const part = pathParts[i]
-      if (part === "..") {
+      if (part === '..') {
         current = current!.parent
         if (current) continue // not everything has a parent
-      } else if (part === ".") {
+      } else if (part === '.') {
         continue
       } else if (current) {
         if (current instanceof ScalarNode) {
@@ -177,15 +184,15 @@ export function resolveNodeByPathParts(
         if (current instanceof ObjectNode) {
           const subType = current.getChildType(part)
           if (subType) {
-            current = current.getChildNode(part)
+            current = current.getChildNode(part!)
             if (current) continue
           }
         }
       }
       throw fail(
         `Could not resolve '${part}' in path '${
-          joinJsonPath(pathParts.slice(0, i)) || "/"
-        }' while resolving '${joinJsonPath(pathParts)}'`
+          joinJsonPath(pathParts.slice(0, i)) || '/'
+        }' while resolving '${joinJsonPath(pathParts)}'`,
       )
     }
   } catch (e) {
@@ -201,7 +208,9 @@ export function resolveNodeByPathParts(
  * @internal
  * @hidden
  */
-export function convertChildNodesToArray(childNodes: IChildNodesMap | null): AnyNode[] {
+export function convertChildNodesToArray(
+  childNodes: IChildNodesMap | null,
+): AnyNode[] {
   if (!childNodes) return EMPTY_ARRAY as AnyNode[]
 
   const keys = Object.keys(childNodes)
@@ -209,7 +218,7 @@ export function convertChildNodesToArray(childNodes: IChildNodesMap | null): Any
 
   const result = new Array(keys.length) as AnyNode[]
   keys.forEach((key, index) => {
-    result[index] = childNodes![key]
+    result[index]! = childNodes![key]!
   })
   return result
 }
