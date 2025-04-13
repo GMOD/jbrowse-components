@@ -65,7 +65,7 @@ export function getSOTermAndDescription(
     )
   }
   return soTerms.size
-    ? [[...soTerms].join(', '), [...descriptions].join(', ')]
+    ? [[...soTerms].join(','), [...descriptions].join(',')]
     : []
 }
 

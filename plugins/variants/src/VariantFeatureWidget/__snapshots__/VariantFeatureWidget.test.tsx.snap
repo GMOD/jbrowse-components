@@ -144,6 +144,24 @@ exports[`renders with just the required model elements 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
+                    aria-label="alternate base(s): Comma-separated list of alternate non-reference alleles"
+                    class="css-167enf1-fieldDescription-fieldName"
+                    data-mui-internal-clone-element="true"
+                  >
+                    ALT
+                  </div>
+                  <div
+                    class="css-xb19vs-fieldValue"
+                  >
+                    <span>
+                      &lt;TRA&gt;
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
                     aria-label="quality: Phred-scaled quality score for the assertion made in ALT"
                     class="css-167enf1-fieldDescription-fieldName"
                     data-mui-internal-clone-element="true"

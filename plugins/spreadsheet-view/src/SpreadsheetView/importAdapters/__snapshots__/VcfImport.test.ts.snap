@@ -756,7 +756,7 @@ exports[`vcf file import 1`] = `
           "QUAL": 1196.95,
           "REF": "TAAAAA",
           "aliases": undefined,
-          "description": "deletion TAAAAA -> T,TAA",
+          "description": "5bp DEL,3bp DEL",
           "end": 47641564,
           "name": "rs768805063",
           "refName": "2",
