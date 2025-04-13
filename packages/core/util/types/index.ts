@@ -17,7 +17,6 @@ import type { BaseInternetAccountModel } from '../../pluggableElementTypes/model
 import type RpcManager from '../../rpc/RpcManager'
 import type { MenuItem } from '../../ui'
 import type { Feature } from '../simpleFeature'
-import type { ThemeOptions } from '@mui/material'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
@@ -25,6 +24,7 @@ import type {
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 export * from './util'
 

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   getBadlyPairedAlignments,

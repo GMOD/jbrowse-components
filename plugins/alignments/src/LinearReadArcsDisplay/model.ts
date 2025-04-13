@@ -4,13 +4,13 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'

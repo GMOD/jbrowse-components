@@ -1,6 +1,6 @@
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
-import { autorun } from 'mobx'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import type { BaseRootModel } from '@jbrowse/product-core'
 

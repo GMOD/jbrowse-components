@@ -1,8 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

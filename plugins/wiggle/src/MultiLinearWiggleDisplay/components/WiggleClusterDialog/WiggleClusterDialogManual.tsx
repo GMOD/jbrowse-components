@@ -12,6 +12,7 @@ import {
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import MenuIcon from '@mui/icons-material/Menu'
 import {
   Button,
@@ -26,7 +27,6 @@ import {
 import copy from 'copy-to-clipboard'
 import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import type { ReducedModel } from './types'

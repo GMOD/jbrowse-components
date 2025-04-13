@@ -3,21 +3,21 @@ import path from 'path'
 
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
-  createTextSearchConf,
-  findTrackConfigsToIndex,
-} from '@jbrowse/text-indexing'
-import { autorun, observable, toJS } from 'mobx'
-import {
   addDisposer,
   getParent,
   getSnapshot,
   types,
 } from '@jbrowse/mobx-state-tree'
+import {
+  createTextSearchConf,
+  findTrackConfigsToIndex,
+} from '@jbrowse/text-indexing'
+import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
 

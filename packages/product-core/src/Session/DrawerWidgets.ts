@@ -1,7 +1,7 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { isBaseSession } from './BaseSession'
 

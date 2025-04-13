@@ -3,8 +3,8 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { cast, getEnv, types } from '@jbrowse/mobx-state-tree'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 

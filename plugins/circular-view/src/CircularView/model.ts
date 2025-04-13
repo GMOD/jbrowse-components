@@ -9,16 +9,16 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
-import { transaction } from 'mobx'
 import {
   cast,
   getRoot,
   resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { saveAs } from 'file-saver'
+import { transaction } from 'mobx'
 
 import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'

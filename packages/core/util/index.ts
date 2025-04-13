@@ -30,12 +30,12 @@ import type { Feature } from './simpleFeature'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
-import type { GenericFilehandle } from 'generic-filehandle2'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   Instance,
 } from '@jbrowse/mobx-state-tree'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types'
 export * from './when'

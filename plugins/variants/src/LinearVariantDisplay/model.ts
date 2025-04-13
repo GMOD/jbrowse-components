@@ -6,8 +6,8 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types } from '@jbrowse/mobx-state-tree'
+import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'

@@ -1,6 +1,6 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from '@jbrowse/mobx-state-tree'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 

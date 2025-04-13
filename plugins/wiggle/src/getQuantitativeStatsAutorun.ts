@@ -1,7 +1,7 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
-import { autorun } from 'mobx'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { getQuantitativeStats } from './getQuantitativeStats'
 

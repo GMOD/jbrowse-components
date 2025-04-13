@@ -16,10 +16,6 @@ import {
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
-import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -29,6 +25,10 @@ import {
   resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { saveAs } from 'file-saver'
+import { autorun, observable, transaction } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'

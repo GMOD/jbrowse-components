@@ -1,9 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import VariantFeatureDetails from './VariantFeatureWidget'
 import { stateModelFactory } from './stateModelFactory'

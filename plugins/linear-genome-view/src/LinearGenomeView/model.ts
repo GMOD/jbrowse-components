@@ -25,6 +25,15 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getRoot,
+  getSnapshot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
@@ -37,15 +46,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import { saveAs } from 'file-saver'
 import { autorun, transaction, when } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getRoot,
-  getSnapshot,
-  resolveIdentifier,
-  types,
-} from '@jbrowse/mobx-state-tree'
 
 import Header from './components/Header'
 import {

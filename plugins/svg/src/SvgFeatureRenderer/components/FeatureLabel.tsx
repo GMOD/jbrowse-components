@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
 import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type { DisplayModel } from './util'
 import type { Feature, Region } from '@jbrowse/core/util'

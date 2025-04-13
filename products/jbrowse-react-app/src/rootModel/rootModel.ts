@@ -4,6 +4,13 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
 import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
@@ -13,13 +20,6 @@ import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types,
-} from '@jbrowse/mobx-state-tree'
 
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
@@ -28,13 +28,13 @@ import { version } from '../version'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { BaseSessionType } from '@jbrowse/product-core'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
+import type { BaseSessionType } from '@jbrowse/product-core'
 
 export interface Menu {
   label: string

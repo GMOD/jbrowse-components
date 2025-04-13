@@ -9,8 +9,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import LocationCell from './components/LocationCell'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { GridColDef } from '@mui/x-data-grid'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
   // optional feature per-row

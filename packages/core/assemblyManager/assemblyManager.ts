@@ -1,5 +1,5 @@
-import { reaction } from 'mobx'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 
 import { readConfObject } from '../configuration'
 import { when } from '../util'

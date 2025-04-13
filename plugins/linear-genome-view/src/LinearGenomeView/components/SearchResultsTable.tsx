@@ -1,4 +1,5 @@
 import { getEnv, getSession } from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
@@ -9,7 +10,6 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../..'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'

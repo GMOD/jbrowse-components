@@ -7,8 +7,8 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
 import { types } from '@jbrowse/mobx-state-tree'
+import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'

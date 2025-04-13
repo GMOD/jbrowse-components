@@ -1,5 +1,5 @@
-import { observer } from 'mobx-react'
 import { getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 const HeadingComponent = observer(function ({
   model,

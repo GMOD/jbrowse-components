@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import { findMatchingAlt, getMatchedBreakendFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
