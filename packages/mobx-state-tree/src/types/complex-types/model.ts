@@ -126,10 +126,8 @@ type DefinablePropsNames<T> = {
   [K in keyof T]: IsOptionalValue<T[K], never, K>
 }[keyof T]
 
-/** @hidden */
 export declare const $nonEmptyObject: unique symbol
 
-/** @hidden */
 export interface NonEmptyObject {
   [$nonEmptyObject]?: any
 }

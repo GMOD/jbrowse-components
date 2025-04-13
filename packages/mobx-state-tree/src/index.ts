@@ -155,4 +155,6 @@ export type {
   _NotCustomized,
   LivelinessMode,
   IPatchRecorder,
+  NonEmptyObject,
+  $nonEmptyObject,
 } from './internal'
