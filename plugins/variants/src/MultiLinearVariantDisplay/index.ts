@@ -14,7 +14,7 @@ export default function MultiLinearVariantDisplayF(
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'MultiLinearVariantDisplay',
-      displayName: 'Multi-variant display (regular)',
+      displayName: 'Multi-sample variant display (regular)',
       configSchema,
       stateModel: modelFactory(configSchema),
       trackType: 'VariantTrack',
