@@ -7,7 +7,12 @@ import {
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
-import { addDisposer, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

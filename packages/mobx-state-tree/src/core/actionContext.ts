@@ -1,5 +1,5 @@
-import { IAnyStateTreeNode, IMiddlewareEvent } from "../internal"
-import { getCurrentActionContext } from "./action"
+import { IAnyStateTreeNode, IMiddlewareEvent } from '../internal'
+import { getCurrentActionContext } from './action'
 
 export interface IActionContext {
   /** Event name (action name for actions) */
@@ -25,7 +25,7 @@ export interface IActionContext {
  */
 export function getRunningActionContext(): IActionContext | undefined {
   let current = getCurrentActionContext()
-  while (current && current.type !== "action") {
+  while (current && current.type !== 'action') {
     current = current.parentActionEvent
   }
   return current
@@ -34,9 +34,10 @@ export function getRunningActionContext(): IActionContext | undefined {
 function _isActionContextThisOrChildOf(
   actionContext: IActionContext,
   sameOrParent: number | IActionContext | IMiddlewareEvent,
-  includeSame: boolean
+  includeSame: boolean,
 ) {
-  const parentId = typeof sameOrParent === "number" ? sameOrParent : sameOrParent.id
+  const parentId =
+    typeof sameOrParent === 'number' ? sameOrParent : sameOrParent.id
 
   let current: IActionContext | IMiddlewareEvent | undefined = includeSame
     ? actionContext
@@ -55,7 +56,7 @@ function _isActionContextThisOrChildOf(
  */
 export function isActionContextChildOf(
   actionContext: IActionContext,
-  parent: number | IActionContext | IMiddlewareEvent
+  parent: number | IActionContext | IMiddlewareEvent,
 ) {
   return _isActionContextThisOrChildOf(actionContext, parent, false)
 }
@@ -65,7 +66,7 @@ export function isActionContextChildOf(
  */
 export function isActionContextThisOrChildOf(
   actionContext: IActionContext,
-  parentOrThis: number | IActionContext | IMiddlewareEvent
+  parentOrThis: number | IActionContext | IMiddlewareEvent,
 ) {
   return _isActionContextThisOrChildOf(actionContext, parentOrThis, true)
 }

@@ -1,8 +1,13 @@
-import { IMiddlewareEvent, IMiddlewareHandler, IActionContext } from "../internal"
+import {
+  IMiddlewareEvent,
+  IMiddlewareHandler,
+  IActionContext,
+} from '../internal'
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
-export interface IActionTrackingMiddleware2Call<TEnv> extends Readonly<IActionContext> {
+export interface IActionTrackingMiddleware2Call<TEnv>
+  extends Readonly<IActionContext> {
   env: TEnv | undefined
   readonly parentCall?: IActionTrackingMiddleware2Call<TEnv>
 }
@@ -19,7 +24,7 @@ class RunningAction {
 
   constructor(
     public readonly hooks: IActionTrackingMiddleware2Hooks<any> | undefined,
-    readonly call: IActionTrackingMiddleware2Call<any>
+    readonly call: IActionTrackingMiddleware2Call<any>,
   ) {
     if (hooks) {
       hooks.onStart(call)
@@ -72,28 +77,29 @@ class RunningAction {
  * @returns
  */
 export function createActionTrackingMiddleware2<TEnv = any>(
-  middlewareHooks: IActionTrackingMiddleware2Hooks<TEnv>
+  middlewareHooks: IActionTrackingMiddleware2Hooks<TEnv>,
 ): IMiddlewareHandler {
   const runningActions = new Map<number, RunningAction>()
 
   return function actionTrackingMiddleware(
     call: IMiddlewareEvent,
-    next: (actionCall: IMiddlewareEvent) => any
+    next: (actionCall: IMiddlewareEvent) => any,
   ) {
     // find parentRunningAction
     const parentRunningAction = call.parentActionEvent
       ? runningActions.get(call.parentActionEvent.id)
       : undefined
 
-    if (call.type === "action") {
+    if (call.type === 'action') {
       const newCall: IActionTrackingMiddleware2Call<TEnv> = {
         ...call,
         // make a shallow copy of the parent action env
         env: parentRunningAction && parentRunningAction.call.env,
-        parentCall: parentRunningAction && parentRunningAction.call
+        parentCall: parentRunningAction && parentRunningAction.call,
       }
 
-      const passesFilter = !middlewareHooks.filter || middlewareHooks.filter(newCall)
+      const passesFilter =
+        !middlewareHooks.filter || middlewareHooks.filter(newCall)
       const hooks = passesFilter ? middlewareHooks : undefined
 
       const runningAction = new RunningAction(hooks, newCall)
@@ -119,15 +125,15 @@ export function createActionTrackingMiddleware2<TEnv = any>(
       }
 
       switch (call.type) {
-        case "flow_spawn": {
+        case 'flow_spawn': {
           parentRunningAction.incFlowsPending()
           return next(call)
         }
-        case "flow_resume":
-        case "flow_resume_error": {
+        case 'flow_resume':
+        case 'flow_resume_error': {
           return next(call)
         }
-        case "flow_throw": {
+        case 'flow_throw': {
           const error = call.args[0]
           try {
             return next(call)
@@ -139,7 +145,7 @@ export function createActionTrackingMiddleware2<TEnv = any>(
             }
           }
         }
-        case "flow_return": {
+        case 'flow_return': {
           try {
             return next(call)
           } finally {

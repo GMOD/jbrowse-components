@@ -4,9 +4,9 @@
  * - `"error"`: Throw an exception.
  * - "`ignore`": Do nothing.
  */
-export type LivelinessMode = "warn" | "error" | "ignore"
+export type LivelinessMode = 'warn' | 'error' | 'ignore'
 
-let livelinessChecking: LivelinessMode = "warn"
+let livelinessChecking: LivelinessMode = 'warn'
 
 /**
  * Defines what MST should do when running into reads / writes to objects that have died.

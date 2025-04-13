@@ -1,12 +1,12 @@
-import { argsToArray, fail, setImmediateWithFallback } from "../utils"
+import { argsToArray, fail, setImmediateWithFallback } from '../utils'
 import {
   FunctionWithFlag,
   getCurrentActionContext,
   getNextActionId,
   getParentActionContext,
   IMiddlewareEventType,
-  runWithActionContext
-} from "./action"
+  runWithActionContext,
+} from './action'
 
 /**
  * @hidden
@@ -19,7 +19,7 @@ export type FlowReturn<R> = R extends Promise<infer T> ? T : R
  * @returns The flow as a promise.
  */
 export function flow<R, Args extends any[]>(
-  generator: (...args: Args) => Generator<PromiseLike<any>, R, any>
+  generator: (...args: Args) => Generator<PromiseLike<any>, R, any>,
 ): (...args: Args) => Promise<FlowReturn<R>> {
   return createFlowSpawner(generator.name, generator) as any
 }
@@ -57,7 +57,9 @@ export function castFlowReturn<T>(val: T): T {
  * }))
  * ```
  */
-export function toGeneratorFunction<R, Args extends any[]>(p: (...args: Args) => Promise<R>) {
+export function toGeneratorFunction<R, Args extends any[]>(
+  p: (...args: Args) => Promise<R>,
+) {
   return function* (...args: Args) {
     return (yield p(...args)) as R
   }
@@ -98,11 +100,11 @@ export function createFlowSpawner(name: string, generator: FunctionWithFlag) {
     const runId = getNextActionId()
     const parentContext = getCurrentActionContext()!
     if (!parentContext) {
-      throw fail("a mst flow must always have a parent context")
+      throw fail('a mst flow must always have a parent context')
     }
     const parentActionContext = getParentActionContext(parentContext)
     if (!parentActionContext) {
-      throw fail("a mst flow must always have a parent action context")
+      throw fail('a mst flow must always have a parent action context')
     }
 
     const contextBase = {
@@ -114,7 +116,7 @@ export function createFlowSpawner(name: string, generator: FunctionWithFlag) {
       allParentIds: [...parentContext.allParentIds, parentContext.id],
       rootId: parentContext.rootId,
       parentEvent: parentContext,
-      parentActionEvent: parentActionContext
+      parentActionEvent: parentActionContext,
     }
 
     const args = arguments
@@ -125,9 +127,9 @@ export function createFlowSpawner(name: string, generator: FunctionWithFlag) {
         {
           ...contextBase,
           type,
-          args: [arg]
+          args: [arg],
         },
-        fn
+        fn,
       )
     }
 
@@ -142,10 +144,10 @@ export function createFlowSpawner(name: string, generator: FunctionWithFlag) {
       runWithActionContext(
         {
           ...contextBase,
-          type: "flow_spawn",
-          args: argsToArray(args)
+          type: 'flow_spawn',
+          args: argsToArray(args),
         },
-        init
+        init,
       )
 
       function onFulfilled(res: any) {
@@ -191,9 +193,9 @@ export function createFlowSpawner(name: string, generator: FunctionWithFlag) {
           return
         }
         // TODO: support more type of values? See https://github.com/tj/co/blob/249bbdc72da24ae44076afd716349d2089b31c4c/index.js#L100
-        if (!ret.value || typeof ret.value.then !== "function") {
+        if (!ret.value || typeof ret.value.then !== 'function') {
           // istanbul ignore next
-          throw fail("Only promises can be yielded to `async`, got: " + ret)
+          throw fail('Only promises can be yielded to `async`, got: ' + ret)
         }
         return ret.value.then(onFulfilled, onRejected)
       }

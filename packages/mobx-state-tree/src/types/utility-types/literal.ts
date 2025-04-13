@@ -12,9 +12,9 @@ import {
   Primitives,
   AnyObjectNode,
   SimpleType,
-  devMode
-} from "../../internal"
-import { assertArg } from "../../utils"
+  devMode,
+} from '../../internal'
+import { assertArg } from '../../utils'
 
 /**
  * @internal
@@ -33,8 +33,8 @@ export class Literal<T> extends SimpleType<T, T, T> {
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: this["C"]
-  ): this["N"] {
+    initialValue: this['C'],
+  ): this['N'] {
     return createScalarNode(this, parent, subpath, environment, initialValue)
   }
 
@@ -42,11 +42,18 @@ export class Literal<T> extends SimpleType<T, T, T> {
     return JSON.stringify(this.value)
   }
 
-  isValidSnapshot(value: this["C"], context: IValidationContext): IValidationResult {
+  isValidSnapshot(
+    value: this['C'],
+    context: IValidationContext,
+  ): IValidationResult {
     if (isPrimitive(value) && value === this.value) {
       return typeCheckSuccess()
     }
-    return typeCheckFailure(context, value, `Value is not a literal ${JSON.stringify(this.value)}`)
+    return typeCheckFailure(
+      context,
+      value,
+      `Value is not a literal ${JSON.stringify(this.value)}`,
+    )
   }
 }
 
@@ -68,7 +75,7 @@ export class Literal<T> extends SimpleType<T, T, T> {
  */
 export function literal<S extends Primitives>(value: S): ISimpleType<S> {
   // check that the given value is a primitive
-  assertArg(value, isPrimitive, "primitive", 1)
+  assertArg(value, isPrimitive, 'primitive', 1)
 
   return new Literal<S>(value)
 }
@@ -79,6 +86,8 @@ export function literal<S extends Primitives>(value: S): ISimpleType<S> {
  * @param type
  * @returns
  */
-export function isLiteralType<IT extends ISimpleType<any>>(type: IT): type is IT {
+export function isLiteralType<IT extends ISimpleType<any>>(
+  type: IT,
+): type is IT {
   return isType(type) && (type.flags & TypeFlags.Literal) > 0
 }

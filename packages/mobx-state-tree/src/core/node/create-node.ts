@@ -6,8 +6,8 @@ import {
   getStateTreeNodeSafe,
   AnyObjectNode,
   ComplexType,
-  SimpleType
-} from "../../internal"
+  SimpleType,
+} from '../../internal'
 
 /**
  * @internal
@@ -18,7 +18,7 @@ export function createObjectNode<C, S, T>(
   parent: AnyObjectNode | null,
   subpath: string,
   environment: any,
-  initialValue: C | T
+  initialValue: C | T,
 ): ObjectNode<C, S, T> {
   const existingNode = getStateTreeNodeSafe(initialValue)
   if (existingNode) {
@@ -26,8 +26,8 @@ export function createObjectNode<C, S, T>(
       // istanbul ignore next
       throw fail(
         `Cannot add an object to a state tree if it is already part of the same or another state tree. Tried to assign an object to '${
-          parent ? parent.path : ""
-        }/${subpath}', but it lives already at '${existingNode.path}'`
+          parent ? parent.path : ''
+        }/${subpath}', but it lives already at '${existingNode.path}'`,
       )
     }
 
@@ -52,7 +52,7 @@ export function createScalarNode<C, S, T>(
   parent: AnyObjectNode | null,
   subpath: string,
   environment: any,
-  initialValue: C
+  initialValue: C,
 ): ScalarNode<C, S, T> {
   return new ScalarNode(type, parent, subpath, environment, initialValue)
 }

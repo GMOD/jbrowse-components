@@ -39,8 +39,8 @@ pluginManager.addConnectionType(
 - `configSchema`: A [configuration schema](../configuration/README.md) for the
   connection. It defines the options a user can configure when adding the
   connection. It must at least have a "name" slot.
-- `stateModel`: The @jbrowse/mobx-state-tree model for the connection. This contains the
-  code that actually does queries and creates tracks. See below.
+- `stateModel`: The @jbrowse/mobx-state-tree model for the connection. This
+  contains the code that actually does queries and creates tracks. See below.
 
 ### Optional items
 

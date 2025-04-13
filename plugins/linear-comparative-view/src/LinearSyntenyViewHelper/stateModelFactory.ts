@@ -1,6 +1,11 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
-import { getParent, getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
+import {
+  getParent,
+  getRoot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

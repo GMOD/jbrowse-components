@@ -2,9 +2,9 @@ import {
   isObservableArray,
   isObservableObject,
   _getGlobalState,
-  defineProperty as mobxDefineProperty
-} from "mobx"
-import { Primitives } from "./core/type/type"
+  defineProperty as mobxDefineProperty,
+} from 'mobx'
+import { Primitives } from './core/type/type'
 
 const plainObjectString = Object.toString()
 
@@ -44,8 +44,8 @@ export type IDisposer = () => void
  * @internal
  * @hidden
  */
-export function fail(message = "Illegal state"): Error {
-  return new Error("[mobx-state-tree] " + message)
+export function fail(message = 'Illegal state'): Error {
+  return new Error('[mobx-state-tree] ' + message)
 }
 
 /**
@@ -96,7 +96,9 @@ export function isArray(val: any): val is any[] {
  * @internal
  * @hidden
  */
-export function asArray<T>(val: undefined | null | T | T[] | ReadonlyArray<T>): T[] {
+export function asArray<T>(
+  val: undefined | null | T | T[] | ReadonlyArray<T>,
+): T[] {
   if (!val) return EMPTY_ARRAY as any as T[]
   if (isArray(val)) return val as T[]
   return [val] as T[]
@@ -139,7 +141,7 @@ export function extend(a: any, ...b: any[]) {
  * @hidden
  */
 export function isPlainObject(value: any): value is { [k: string]: any } {
-  if (value === null || typeof value !== "object") return false
+  if (value === null || typeof value !== 'object') return false
   const proto = Object.getPrototypeOf(value)
   if (proto == null) return true
   return proto.constructor?.toString() === plainObjectString
@@ -152,7 +154,7 @@ export function isPlainObject(value: any): value is { [k: string]: any } {
 export function isMutable(value: any) {
   return (
     value !== null &&
-    typeof value === "object" &&
+    typeof value === 'object' &&
     !(value instanceof Date) &&
     !(value instanceof RegExp)
   )
@@ -162,13 +164,16 @@ export function isMutable(value: any) {
  * @internal
  * @hidden
  */
-export function isPrimitive(value: any, includeDate = true): value is Primitives {
+export function isPrimitive(
+  value: any,
+  includeDate = true,
+): value is Primitives {
   return (
     value === null ||
     value === undefined ||
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean" ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
     (includeDate && value instanceof Date)
   )
 }
@@ -180,7 +185,9 @@ export function isPrimitive(value: any, includeDate = true): value is Primitives
  */
 export function freeze<T>(value: T): T {
   if (!devMode()) return value
-  return isPrimitive(value) || isObservableArray(value) ? value : Object.freeze(value)
+  return isPrimitive(value) || isObservableArray(value)
+    ? value
+    : Object.freeze(value)
 }
 
 /**
@@ -193,8 +200,11 @@ export function deepFreeze<T>(value: T): T {
   freeze(value)
 
   if (isPlainObject(value)) {
-    Object.keys(value).forEach((propKey) => {
-      if (!isPrimitive((value as any)[propKey]) && !Object.isFrozen((value as any)[propKey])) {
+    Object.keys(value).forEach(propKey => {
+      if (
+        !isPrimitive((value as any)[propKey]) &&
+        !Object.isFrozen((value as any)[propKey])
+      ) {
         deepFreeze((value as any)[propKey])
       }
     })
@@ -208,14 +218,18 @@ export function deepFreeze<T>(value: T): T {
  * @hidden
  */
 export function isSerializable(value: any) {
-  return typeof value !== "function"
+  return typeof value !== 'function'
 }
 
 /**
  * @internal
  * @hidden
  */
-export function defineProperty(object: any, key: PropertyKey, descriptor: PropertyDescriptor) {
+export function defineProperty(
+  object: any,
+  key: PropertyKey,
+  descriptor: PropertyDescriptor,
+) {
   isObservableObject(object)
     ? mobxDefineProperty(object, key, descriptor)
     : Object.defineProperty(object, key, descriptor)
@@ -230,7 +244,7 @@ export function addHiddenFinalProp(object: any, propName: string, value: any) {
     enumerable: false,
     writable: false,
     configurable: true,
-    value
+    value,
   })
 }
 
@@ -238,12 +252,16 @@ export function addHiddenFinalProp(object: any, propName: string, value: any) {
  * @internal
  * @hidden
  */
-export function addHiddenWritableProp(object: any, propName: string, value: any) {
+export function addHiddenWritableProp(
+  object: any,
+  propName: string,
+  value: any,
+) {
   defineProperty(object, propName, {
     enumerable: false,
     writable: true,
     configurable: true,
-    value
+    value,
   })
 }
 
@@ -251,7 +269,11 @@ export function addHiddenWritableProp(object: any, propName: string, value: any)
  * @internal
  * @hidden
  */
-export type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any ? A : never
+export type ArgumentTypes<F extends Function> = F extends (
+  ...args: infer A
+) => any
+  ? A
+  : never
 
 /**
  * @internal
@@ -293,7 +315,7 @@ class EventHandler<F extends Function> {
   emit(...args: ArgumentTypes<F>) {
     // make a copy just in case it changes
     const handlers = this.handlers.slice()
-    handlers.forEach((f) => f(...args))
+    handlers.forEach(f => f(...args))
   }
 }
 
@@ -309,7 +331,11 @@ export class EventHandlers<E extends { [k: string]: Function }> {
     return !!handler && handler!.hasSubscribers
   }
 
-  register<N extends keyof E>(event: N, fn: E[N], atTheBeginning = false): IDisposer {
+  register<N extends keyof E>(
+    event: N,
+    fn: E[N],
+    atTheBeginning = false,
+  ): IDisposer {
     if (!this.eventHandlers) {
       this.eventHandlers = {}
     }
@@ -388,12 +414,15 @@ export type DeprecatedFunction = Function & { ids?: { [id: string]: true } }
  * @internal
  * @hidden
  */
-export const deprecated: DeprecatedFunction = function (id: string, message: string): void {
+export const deprecated: DeprecatedFunction = function (
+  id: string,
+  message: string,
+): void {
   // skip if running production
   if (!devMode()) return
   // warn if hasn't been warned before
   if (deprecated.ids && !deprecated.ids.hasOwnProperty(id)) {
-    warnError("Deprecation warning: " + message)
+    warnError('Deprecation warning: ' + message)
   }
   // mark as warned to avoid duplicate warn message
   if (deprecated.ids) deprecated.ids[id] = true
@@ -414,7 +443,9 @@ export function warnError(msg: string) {
 export function isTypeCheckingEnabled() {
   return (
     devMode() ||
-    (typeof process !== "undefined" && process.env && process.env.ENABLE_TYPE_CHECK === "true")
+    (typeof process !== 'undefined' &&
+      process.env &&
+      process.env.ENABLE_TYPE_CHECK === 'true')
   )
 }
 
@@ -423,7 +454,7 @@ export function isTypeCheckingEnabled() {
  * @hidden
  */
 export function devMode() {
-  return process.env.NODE_ENV !== "production"
+  return process.env.NODE_ENV !== 'production'
 }
 
 /**
@@ -434,13 +465,13 @@ export function assertArg<T>(
   value: T,
   fn: (value: T) => boolean,
   typeName: string,
-  argNumber: number | number[]
+  argNumber: number | number[],
 ) {
   if (devMode()) {
     if (!fn(value)) {
       // istanbul ignore next
       throw fail(
-        `expected ${typeName} as argument ${asArray(argNumber).join(" or ")}, got ${value} instead`
+        `expected ${typeName} as argument ${asArray(argNumber).join(' or ')}, got ${value} instead`,
       )
     }
   }
@@ -450,8 +481,11 @@ export function assertArg<T>(
  * @internal
  * @hidden
  */
-export function assertIsFunction(value: Function, argNumber: number | number[]) {
-  assertArg(value, (fn) => typeof fn === "function", "function", argNumber)
+export function assertIsFunction(
+  value: Function,
+  argNumber: number | number[],
+) {
+  assertArg(value, fn => typeof fn === 'function', 'function', argNumber)
 }
 
 /**
@@ -462,14 +496,14 @@ export function assertIsNumber(
   value: number,
   argNumber: number | number[],
   min?: number,
-  max?: number
+  max?: number,
 ) {
-  assertArg(value, (n) => typeof n === "number", "number", argNumber)
+  assertArg(value, n => typeof n === 'number', 'number', argNumber)
   if (min !== undefined) {
-    assertArg(value, (n) => n >= min, `number greater than ${min}`, argNumber)
+    assertArg(value, n => n >= min, `number greater than ${min}`, argNumber)
   }
   if (max !== undefined) {
-    assertArg(value, (n) => n <= max, `number lesser than ${max}`, argNumber)
+    assertArg(value, n => n <= max, `number lesser than ${max}`, argNumber)
   }
 }
 
@@ -477,10 +511,14 @@ export function assertIsNumber(
  * @internal
  * @hidden
  */
-export function assertIsString(value: string, argNumber: number | number[], canBeEmpty = true) {
-  assertArg(value, (s) => typeof s === "string", "string", argNumber)
+export function assertIsString(
+  value: string,
+  argNumber: number | number[],
+  canBeEmpty = true,
+) {
+  assertArg(value, s => typeof s === 'string', 'string', argNumber)
   if (!canBeEmpty) {
-    assertArg(value, (s) => s !== "", "not empty string", argNumber)
+    assertArg(value, s => s !== '', 'not empty string', argNumber)
   }
 }
 
@@ -489,9 +527,9 @@ export function assertIsString(value: string, argNumber: number | number[], canB
  * @hidden
  */
 export function setImmediateWithFallback(fn: (...args: any[]) => void) {
-  if (typeof queueMicrotask === "function") {
+  if (typeof queueMicrotask === 'function') {
     queueMicrotask(fn)
-  } else if (typeof setImmediate === "function") {
+  } else if (typeof setImmediate === 'function') {
     setImmediate(fn)
   } else {
     setTimeout(fn, 1)

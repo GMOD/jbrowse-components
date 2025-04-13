@@ -6,9 +6,9 @@ import {
   BaseNode,
   AnyObjectNode,
   SimpleType,
-  devMode
-} from "../../internal"
-import { action } from "mobx"
+  devMode,
+} from '../../internal'
+import { action } from 'mobx'
 
 /**
  * @internal
@@ -28,7 +28,7 @@ export class ScalarNode<C, S, T> extends BaseNode<C, S, T> {
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialSnapshot: C
+    initialSnapshot: C,
   ) {
     super(simpleType, parent, subpath, environment)
     try {
@@ -64,15 +64,15 @@ export class ScalarNode<C, S, T> extends BaseNode<C, S, T> {
     if (devMode()) {
       if (!subpath) {
         // istanbul ignore next
-        throw fail("assertion failed: subpath expected")
+        throw fail('assertion failed: subpath expected')
       }
       if (!newParent) {
         // istanbul ignore next
-        throw fail("assertion failed: parent expected")
+        throw fail('assertion failed: parent expected')
       }
       if (parentChanged) {
         // istanbul ignore next
-        throw fail("assertion failed: scalar nodes cannot change their parent")
+        throw fail('assertion failed: scalar nodes cannot change their parent')
       }
     }
 
@@ -89,8 +89,8 @@ export class ScalarNode<C, S, T> extends BaseNode<C, S, T> {
   }
 
   toString(): string {
-    const path = (this.isAlive ? this.path : this.pathUponDeath) || "<root>"
-    return `${this.type.name}@${path}${this.isAlive ? "" : " [dead]"}`
+    const path = (this.isAlive ? this.path : this.pathUponDeath) || '<root>'
+    return `${this.type.name}@${path}${this.isAlive ? '' : ' [dead]'}`
   }
 
   die(): void {

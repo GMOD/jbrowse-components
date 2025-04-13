@@ -10,13 +10,13 @@ import {
   AnyObjectNode,
   ExtractNodeType,
   cannotDetermineSubtype,
-  devMode
-} from "../../internal"
+  devMode,
+} from '../../internal'
 
 class Late<IT extends IAnyType> extends BaseType<
-  IT["CreationType"],
-  IT["SnapshotType"],
-  IT["TypeWithoutSTN"],
+  IT['CreationType'],
+  IT['SnapshotType'],
+  IT['TypeWithoutSTN'],
   ExtractNodeType<IT>
 > {
   private _subType?: IT
@@ -39,17 +39,24 @@ class Late<IT extends IAnyType> extends BaseType<
         else throw e
       }
       if (mustSucceed && t === undefined)
-        throw fail("Late type seems to be used too early, the definition (still) returns undefined")
+        throw fail(
+          'Late type seems to be used too early, the definition (still) returns undefined',
+        )
       if (t) {
         if (devMode() && !isType(t))
-          throw fail("Failed to determine subtype, make sure types.late returns a type definition.")
+          throw fail(
+            'Failed to determine subtype, make sure types.late returns a type definition.',
+          )
         this._subType = t
       }
     }
     return this._subType
   }
 
-  constructor(name: string, private readonly _definition: () => IT) {
+  constructor(
+    name: string,
+    private readonly _definition: () => IT,
+  ) {
     super(name)
   }
 
@@ -57,26 +64,39 @@ class Late<IT extends IAnyType> extends BaseType<
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: this["C"] | this["T"]
-  ): this["N"] {
-    return this.getSubType(true).instantiate(parent, subpath, environment, initialValue) as any
+    initialValue: this['C'] | this['T'],
+  ): this['N'] {
+    return this.getSubType(true).instantiate(
+      parent,
+      subpath,
+      environment,
+      initialValue,
+    ) as any
   }
 
   reconcile(
-    current: this["N"],
-    newValue: this["C"] | this["T"],
+    current: this['N'],
+    newValue: this['C'] | this['T'],
     parent: AnyObjectNode,
-    subpath: string
-  ): this["N"] {
-    return this.getSubType(true).reconcile(current, newValue, parent, subpath) as any
+    subpath: string,
+  ): this['N'] {
+    return this.getSubType(true).reconcile(
+      current,
+      newValue,
+      parent,
+      subpath,
+    ) as any
   }
 
   describe() {
     const t = this.getSubType(false)
-    return t ? t.name : "<uknown late type>"
+    return t ? t.name : '<uknown late type>'
   }
 
-  isValidSnapshot(value: this["C"], context: IValidationContext): IValidationResult {
+  isValidSnapshot(
+    value: this['C'],
+    context: IValidationContext,
+  ): IValidationResult {
     const t = this.getSubType(false)
     if (!t) {
       // See #916; the variable the definition closure is pointing to wasn't defined yet, so can't be evaluted yet here
@@ -115,14 +135,17 @@ export function late<T extends IAnyType>(name: string, type: () => T): T
  * @returns
  */
 export function late(nameOrType: any, maybeType?: () => IAnyType): IAnyType {
-  const name = typeof nameOrType === "string" ? nameOrType : `late(${nameOrType.toString()})`
-  const type = typeof nameOrType === "string" ? maybeType : nameOrType
+  const name =
+    typeof nameOrType === 'string'
+      ? nameOrType
+      : `late(${nameOrType.toString()})`
+  const type = typeof nameOrType === 'string' ? maybeType : nameOrType
   // checks that the type is actually a late type
   if (devMode()) {
-    if (!(typeof type === "function" && type.length === 0))
+    if (!(typeof type === 'function' && type.length === 0))
       throw fail(
-        "Invalid late type, expected a function with zero arguments that returns a type, got: " +
-          type
+        'Invalid late type, expected a function with zero arguments that returns a type, got: ' +
+          type,
       )
   }
   return new Late(name, type)
