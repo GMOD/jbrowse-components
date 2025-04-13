@@ -1,6 +1,6 @@
 /*
  * All imports / exports should be proxied through this file.
- * Why? It gives us full control over the module load order, preventing circular dependency isses
+ * Why? It gives us full control over the module load order, preventing circular dependency issues
  */
 
 export * from './core/node/livelinessChecking'

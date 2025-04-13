@@ -74,7 +74,7 @@ export function frozen<T = any>(): IType<T, T, T> // do not assume undefined by 
  *
  * This is useful to store complex, but immutable values like vectors etc. It can form a powerful bridge to parts of your application that should be immutable, or that assume data to be immutable.
  *
- * Note: if you want to store free-form state that is mutable, or not serializeable, consider using volatile state instead.
+ * Note: if you want to store free-form state that is mutable, or not serializable, consider using volatile state instead.
  *
  * Frozen properties can be defined in three different ways
  * 1. `types.frozen(SubType)` - provide a valid MST type and frozen will check if the provided data conforms the snapshot for that type

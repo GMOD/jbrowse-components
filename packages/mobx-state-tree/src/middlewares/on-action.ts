@@ -50,7 +50,7 @@ function serializeArgument(
   if (arg instanceof Date) return { $MST_DATE: arg.getTime() }
   if (isPrimitive(arg)) return arg
   // We should not serialize MST nodes, even if we can, because we don't know if the receiving party can handle a raw snapshot instead of an
-  // MST type instance. So if one wants to serialize a MST node that was pass in, either explitly pass: 1: an id, 2: a (relative) path, 3: a snapshot
+  // MST type instance. So if one wants to serialize a MST node that was pass in, either explicitly pass: 1: an id, 2: a (relative) path, 3: a snapshot
   if (isStateTreeNode(arg))
     return serializeTheUnserializable(`[MSTNode: ${getType(arg).name}]`)
   if (typeof arg === 'function') return serializeTheUnserializable(`[function]`)

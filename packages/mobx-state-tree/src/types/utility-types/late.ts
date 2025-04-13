@@ -34,7 +34,7 @@ class Late<IT extends IAnyType> extends BaseType<
         t = this._definition()
       } catch (e) {
         if (e instanceof ReferenceError)
-          // can happen in strict ES5 code when a definition is self refering
+          // can happen in strict ES5 code when a definition is self referring
           t = undefined
         else throw e
       }
@@ -90,7 +90,7 @@ class Late<IT extends IAnyType> extends BaseType<
 
   describe() {
     const t = this.getSubType(false)
-    return t ? t.name : '<uknown late type>'
+    return t ? t.name : '<unknown late type>'
   }
 
   isValidSnapshot(
@@ -99,7 +99,7 @@ class Late<IT extends IAnyType> extends BaseType<
   ): IValidationResult {
     const t = this.getSubType(false)
     if (!t) {
-      // See #916; the variable the definition closure is pointing to wasn't defined yet, so can't be evaluted yet here
+      // See #916; the variable the definition closure is pointing to wasn't defined yet, so can't be evaluated yet here
       return typeCheckSuccess()
     }
     return t.validate(value, context)

@@ -105,7 +105,7 @@ export class Union extends BaseType<any, any, any> {
       return this._dispatcher(value)
     }
 
-    // find the most accomodating type
+    // find the most accommodating type
     // if we are using reconciliation try the current node type first (fix for #1045)
     if (reconcileCurrentType) {
       if (reconcileCurrentType.is(value)) {

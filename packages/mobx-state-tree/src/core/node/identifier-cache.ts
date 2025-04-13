@@ -135,7 +135,7 @@ export class IdentifierCache {
         throw fail(
           `Cannot resolve a reference to type '${
             type.name
-          }' with id: '${identifier}' unambigously, there are multiple candidates: ${matches
+          }' with id: '${identifier}' unambiguously, there are multiple candidates: ${matches
             .map(n => n.path)
             .join(', ')}`,
         )

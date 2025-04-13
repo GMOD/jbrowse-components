@@ -48,7 +48,7 @@ improving existing features, and performance/TypeScript improvements. If you're
 looking to augment MST with new functionality, we encourage you to consider
 building your own third-party library around our project, or perhaps
 [contributing to the mst-middlewares package](https://github.com/coolsoftwaretyler/mst-middlewares).
-We'd be happy to help faciliate that work, especially if it keeps our API from
+We'd be happy to help facilitate that work, especially if it keeps our API from
 expanding much further.
 
 ### Tests
@@ -118,7 +118,7 @@ map, meets our stability requirements, and make sure you are set up for success.
 Please consider
 [asking around in the discussion forum](https://github.com/mobxjs/mobx-state-tree/discussions)
 if you have a big idea you want to implement, or if you want to work on some
-existing big ideas out therein the communit.
+existing big ideas out therein the communist.
 
 ## Code of Conduct
 

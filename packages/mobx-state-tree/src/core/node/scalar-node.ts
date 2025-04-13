@@ -16,7 +16,7 @@ import { action } from 'mobx'
  */
 export class ScalarNode<C, S, T> extends BaseNode<C, S, T> {
   // note about hooks:
-  // - afterCreate is not emmited in scalar nodes, since it would be emitted in the
+  // - afterCreate is not emitted in scalar nodes, since it would be emitted in the
   //   constructor, before it can be subscribed by anybody
   // - afterCreationFinalization could be emitted, but there's no need for it right now
   // - beforeDetach is never emitted for scalar nodes, since they cannot be detached

@@ -304,7 +304,7 @@ export abstract class BaseType<
 {
   [$type]!: undefined
 
-  // these are just to make inner types avaialable to inherited classes
+  // these are just to make inner types available to inherited classes
   readonly C!: C
   readonly S!: S
   readonly T!: T
