@@ -1,11 +1,11 @@
-import { MstError, stringStartsWith } from '../internal'
+import { fail, stringStartsWith } from "../internal"
 
 /**
  * https://tools.ietf.org/html/rfc6902
  * http://jsonpatch.com/
  */
 export interface IJsonPatch {
-  readonly op: 'replace' | 'add' | 'remove'
+  readonly op: "replace" | "add" | "remove"
   readonly path: string
   readonly value?: any
 }
@@ -18,11 +18,8 @@ export interface IReversibleJsonPatch extends IJsonPatch {
  * @internal
  * @hidden
  */
-export function splitPatch(
-  patch: IReversibleJsonPatch,
-): [IJsonPatch, IJsonPatch] {
-  if (!('oldValue' in patch))
-    throw new MstError(`Patches without \`oldValue\` field cannot be inversed`)
+export function splitPatch(patch: IReversibleJsonPatch): [IJsonPatch, IJsonPatch] {
+  if (!("oldValue" in patch)) throw fail(`Patches without \`oldValue\` field cannot be inversed`)
   return [stripPatch(patch), invertPatch(patch)]
 }
 
@@ -34,33 +31,33 @@ export function stripPatch(patch: IReversibleJsonPatch): IJsonPatch {
   // strips `oldvalue` information from the patch, so that it becomes a patch conform the json-patch spec
   // this removes the ability to undo the patch
   switch (patch.op) {
-    case 'add':
-      return { op: 'add', path: patch.path, value: patch.value }
-    case 'remove':
-      return { op: 'remove', path: patch.path }
-    case 'replace':
-      return { op: 'replace', path: patch.path, value: patch.value }
+    case "add":
+      return { op: "add", path: patch.path, value: patch.value }
+    case "remove":
+      return { op: "remove", path: patch.path }
+    case "replace":
+      return { op: "replace", path: patch.path, value: patch.value }
   }
 }
 
 function invertPatch(patch: IReversibleJsonPatch): IJsonPatch {
   switch (patch.op) {
-    case 'add':
+    case "add":
       return {
-        op: 'remove',
-        path: patch.path,
+        op: "remove",
+        path: patch.path
       }
-    case 'remove':
+    case "remove":
       return {
-        op: 'add',
+        op: "add",
         path: patch.path,
-        value: patch.oldValue,
+        value: patch.oldValue
       }
-    case 'replace':
+    case "replace":
       return {
-        op: 'replace',
+        op: "replace",
         path: patch.path,
-        value: patch.oldValue,
+        value: patch.oldValue
       }
   }
 }
@@ -69,7 +66,7 @@ function invertPatch(patch: IReversibleJsonPatch): IJsonPatch {
  * Simple simple check to check it is a number.
  */
 function isNumber(x: string): boolean {
-  return typeof x === 'number'
+  return typeof x === "number"
 }
 
 /**
@@ -79,17 +76,17 @@ function isNumber(x: string): boolean {
  */
 export function escapeJsonPath(path: string): string {
   if (isNumber(path) === true) {
-    return '' + path
+    return "" + path
   }
-  if (path.indexOf('/') === -1 && path.indexOf('~') === -1) return path
-  return path.replace(/~/g, '~0').replace(/\//g, '~1')
+  if (path.indexOf("/") === -1 && path.indexOf("~") === -1) return path
+  return path.replace(/~/g, "~0").replace(/\//g, "~1")
 }
 
 /**
  * Unescape slashes and backslashes.
  */
 export function unescapeJsonPath(path: string): string {
-  return path.replace(/~1/g, '/').replace(/~0/g, '~')
+  return path.replace(/~1/g, "/").replace(/~0/g, "~")
 }
 
 /**
@@ -100,15 +97,15 @@ export function unescapeJsonPath(path: string): string {
  */
 export function joinJsonPath(path: string[]): string {
   // `/` refers to property with an empty name, while `` refers to root itself!
-  if (path.length === 0) return ''
+  if (path.length === 0) return ""
 
-  const getPathStr = (p: string[]) => p.map(escapeJsonPath).join('/')
-  if (path[0] === '.' || path[0] === '..') {
+  const getPathStr = (p: string[]) => p.map(escapeJsonPath).join("/")
+  if (path[0] === "." || path[0] === "..") {
     // relative
     return getPathStr(path)
   } else {
     // absolute
-    return '/' + getPathStr(path)
+    return "/" + getPathStr(path)
   }
 }
 
@@ -120,19 +117,17 @@ export function joinJsonPath(path: string[]): string {
  */
 export function splitJsonPath(path: string): string[] {
   // `/` refers to property with an empty name, while `` refers to root itself!
-  const parts = path.split('/').map(unescapeJsonPath)
+  const parts = path.split("/").map(unescapeJsonPath)
 
   const valid =
-    path === '' ||
-    path === '.' ||
-    path === '..' ||
-    stringStartsWith(path, '/') ||
-    stringStartsWith(path, './') ||
-    stringStartsWith(path, '../')
+    path === "" ||
+    path === "." ||
+    path === ".." ||
+    stringStartsWith(path, "/") ||
+    stringStartsWith(path, "./") ||
+    stringStartsWith(path, "../")
   if (!valid) {
-    throw new MstError(
-      `a json path must be either rooted, empty or relative, but got '${path}'`,
-    )
+    throw fail(`a json path must be either rooted, empty or relative, but got '${path}'`)
   }
 
   // '/a/b/c' -> ["a", "b", "c"]
@@ -142,7 +137,7 @@ export function splitJsonPath(path: string): string[] {
   // './a' -> [".", "a"]
   // /./a' -> [".", "a"] equivalent to './a'
 
-  if (parts[0] === '') {
+  if (parts[0] === "") {
     parts.shift()
   }
   return parts

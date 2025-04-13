@@ -1,7 +1,7 @@
-import { action as mobxAction } from 'mobx'
+import { action as mobxAction } from "mobx"
 import {
   getStateTreeNode,
-  MstError,
+  fail,
   argsToArray,
   IDisposer,
   getRoot,
@@ -10,16 +10,16 @@ import {
   warnError,
   AnyObjectNode,
   devMode,
-  IActionContext,
-} from '../internal'
+  IActionContext
+} from "../internal"
 
 export type IMiddlewareEventType =
-  | 'action'
-  | 'flow_spawn'
-  | 'flow_resume'
-  | 'flow_resume_error'
-  | 'flow_return'
-  | 'flow_throw'
+  | "action"
+  | "flow_spawn"
+  | "flow_resume"
+  | "flow_resume_error"
+  | "flow_return"
+  | "flow_throw"
 // | "task_spawn TODO, see #273"
 
 export interface IMiddlewareEvent extends IActionContext {
@@ -54,7 +54,7 @@ export type IMiddleware = {
 export type IMiddlewareHandler = (
   actionCall: IMiddlewareEvent,
   next: (actionCall: IMiddlewareEvent, callback?: (value: any) => any) => void,
-  abort: (value: any) => void,
+  abort: (value: any) => void
 ) => any
 
 let nextActionId = 1
@@ -76,17 +76,6 @@ export function getNextActionId() {
   return nextActionId++
 }
 
-/**
- * @internal
- * @hidden should only ever be used for testing within MST itself
- */
-export function resetNextActionId() {
-  if (!devMode() && !process.env.MST_TESTING) {
-    throw new Error('resetNextActionId should only be used when testing MST')
-  }
-  nextActionId = 1
-}
-
 // TODO: optimize away entire action context if there is no middleware in tree?
 /**
  * @internal
@@ -95,9 +84,9 @@ export function resetNextActionId() {
 export function runWithActionContext(context: IMiddlewareEvent, fn: Function) {
   const node = getStateTreeNode(context.context)
 
-  if (context.type === 'action') {
+  if (context.type === "action") {
     node.assertAlive({
-      actionContext: context,
+      actionContext: context
     })
   }
 
@@ -117,11 +106,9 @@ export function runWithActionContext(context: IMiddlewareEvent, fn: Function) {
  * @internal
  * @hidden
  */
-export function getParentActionContext(
-  parentContext: IMiddlewareEvent | undefined,
-) {
+export function getParentActionContext(parentContext: IMiddlewareEvent | undefined) {
   if (!parentContext) return undefined
-  if (parentContext.type === 'action') return parentContext
+  if (parentContext.type === "action") return parentContext
   return parentContext.parentActionEvent
 }
 
@@ -132,7 +119,7 @@ export function getParentActionContext(
 export function createActionInvoker<T extends FunctionWithFlag>(
   target: IAnyStateTreeNode,
   name: string,
-  fn: T,
+  fn: T
 ) {
   const res = function () {
     const id = getNextActionId()
@@ -141,7 +128,7 @@ export function createActionInvoker<T extends FunctionWithFlag>(
 
     return runWithActionContext(
       {
-        type: 'action',
+        type: "action",
         name,
         id,
         args: argsToArray(arguments),
@@ -149,13 +136,11 @@ export function createActionInvoker<T extends FunctionWithFlag>(
         tree: getRoot(target),
         rootId: parentContext ? parentContext.rootId : id,
         parentId: parentContext ? parentContext.id : 0,
-        allParentIds: parentContext
-          ? [...parentContext.allParentIds, parentContext.id]
-          : [],
+        allParentIds: parentContext ? [...parentContext.allParentIds, parentContext.id] : [],
         parentEvent: parentContext,
-        parentActionEvent: parentActionContext,
+        parentActionEvent: parentActionContext
       },
-      fn,
+      fn
     )
   }
   ;(res as FunctionWithFlag)._isMSTAction = true
@@ -176,13 +161,13 @@ export function createActionInvoker<T extends FunctionWithFlag>(
 export function addMiddleware(
   target: IAnyStateTreeNode,
   handler: IMiddlewareHandler,
-  includeHooks: boolean = true,
+  includeHooks: boolean = true
 ): IDisposer {
   const node = getStateTreeNode(target)
   if (devMode()) {
     if (!node.isProtectionEnabled) {
       warnError(
-        'It is recommended to protect the state tree before attaching action middleware, as otherwise it cannot be guaranteed that all changes are passed through middleware. See `protect`',
+        "It is recommended to protect the state tree before attaching action middleware, as otherwise it cannot be guaranteed that all changes are passed through middleware. See `protect`"
       )
     }
   }
@@ -215,7 +200,7 @@ export function addMiddleware(
 export function decorate<T extends Function>(
   handler: IMiddlewareHandler,
   fn: T,
-  includeHooks = true,
+  includeHooks = true
 ): T {
   const middleware: IMiddleware = { handler, includeHooks }
   ;(fn as any).$mst_middleware = (fn as any).$mst_middleware || []
@@ -261,12 +246,11 @@ class CollectedMiddlewares {
 function runMiddleWares(
   node: AnyObjectNode,
   baseCall: IMiddlewareEvent,
-  originalFn: Function,
+  originalFn: Function
 ): any {
   const middlewares = new CollectedMiddlewares(node, originalFn)
   // Short circuit
-  if (middlewares.isEmpty)
-    return mobxAction(originalFn).apply(null, baseCall.args)
+  if (middlewares.isEmpty) return mobxAction(originalFn).apply(null, baseCall.args)
 
   let result: any = null
 
@@ -284,10 +268,7 @@ function runMiddleWares(
     }
 
     let nextInvoked = false
-    function next(
-      call2: IMiddlewareEvent,
-      callback?: (value: any) => any,
-    ): void {
+    function next(call2: IMiddlewareEvent, callback?: (value: any) => any): void {
       nextInvoked = true
       // the result can contain
       // - the non manipulated return value from an action
@@ -311,13 +292,13 @@ function runMiddleWares(
     if (devMode()) {
       if (!nextInvoked && !abortInvoked) {
         const node2 = getStateTreeNode(call.tree)
-        throw new MstError(
-          `Neither the next() nor the abort() callback within the middleware ${handler.name} for the action: "${call.name}" on the node: ${node2.type.name} was invoked.`,
+        throw fail(
+          `Neither the next() nor the abort() callback within the middleware ${handler.name} for the action: "${call.name}" on the node: ${node2.type.name} was invoked.`
         )
       } else if (nextInvoked && abortInvoked) {
         const node2 = getStateTreeNode(call.tree)
-        throw new MstError(
-          `The next() and abort() callback within the middleware ${handler.name} for the action: "${call.name}" on the node: ${node2.type.name} were invoked.`,
+        throw fail(
+          `The next() and abort() callback within the middleware ${handler.name} for the action: "${call.name}" on the node: ${node2.type.name} were invoked.`
         )
       }
     }

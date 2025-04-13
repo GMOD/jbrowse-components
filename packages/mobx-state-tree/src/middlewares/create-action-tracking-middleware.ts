@@ -1,9 +1,6 @@
-import { IMiddlewareEvent, IMiddlewareHandler } from '../internal'
+import { IMiddlewareEvent, IMiddlewareHandler } from "../internal"
 
-const runningActions = new Map<
-  number,
-  { async: boolean; call: IMiddlewareEvent; context: any }
->()
+const runningActions = new Map<number, { async: boolean; call: IMiddlewareEvent; context: any }>()
 
 export interface IActionTrackingMiddlewareHooks<T> {
   filter?: (call: IMiddlewareEvent) => boolean
@@ -29,22 +26,22 @@ export interface IActionTrackingMiddlewareHooks<T> {
  * @returns
  */
 export function createActionTrackingMiddleware<T = any>(
-  hooks: IActionTrackingMiddlewareHooks<T>,
+  hooks: IActionTrackingMiddlewareHooks<T>
 ): IMiddlewareHandler {
   return function actionTrackingMiddleware(
     call: IMiddlewareEvent,
     next: (actionCall: IMiddlewareEvent) => any,
-    abort: (value: any) => any,
+    abort: (value: any) => any
   ) {
     switch (call.type) {
-      case 'action': {
+      case "action": {
         if (!hooks.filter || hooks.filter(call) === true) {
           const context = hooks.onStart(call)
           hooks.onResume(call, context)
           runningActions.set(call.id, {
             call,
             context,
-            async: false,
+            async: false
           })
           try {
             const res = next(call)
@@ -63,13 +60,13 @@ export function createActionTrackingMiddleware<T = any>(
           return next(call)
         }
       }
-      case 'flow_spawn': {
+      case "flow_spawn": {
         const root = runningActions.get(call.rootId)!
         root.async = true
         return next(call)
       }
-      case 'flow_resume':
-      case 'flow_resume_error': {
+      case "flow_resume":
+      case "flow_resume_error": {
         const root = runningActions.get(call.rootId)!
         hooks.onResume(call, root.context)
         try {
@@ -78,13 +75,13 @@ export function createActionTrackingMiddleware<T = any>(
           hooks.onSuspend(call, root.context)
         }
       }
-      case 'flow_throw': {
+      case "flow_throw": {
         const root = runningActions.get(call.rootId)!
         runningActions.delete(call.rootId)
         hooks.onFail(call, root.context, call.args[0])
         return next(call)
       }
-      case 'flow_return': {
+      case "flow_return": {
         const root = runningActions.get(call.rootId)!
         runningActions.delete(call.rootId)
         hooks.onSuccess(call, root.context, call.args[0])

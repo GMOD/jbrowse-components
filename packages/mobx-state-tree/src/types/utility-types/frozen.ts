@@ -12,9 +12,8 @@ import {
   IType,
   IAnyType,
   AnyObjectNode,
-  SimpleType,
-  type ISimpleType,
-} from '../../internal'
+  SimpleType
+} from "../../internal"
 
 /**
  * @internal
@@ -24,39 +23,26 @@ export class Frozen<T> extends SimpleType<T, T, T> {
   flags = TypeFlags.Frozen
 
   constructor(private subType?: IAnyType) {
-    super(subType ? `frozen(${subType.name})` : 'frozen')
+    super(subType ? `frozen(${subType.name})` : "frozen")
   }
 
   describe() {
-    return '<any immutable value>'
+    return "<any immutable value>"
   }
 
   instantiate(
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    value: this['C'],
-  ): this['N'] {
+    value: this["C"]
+  ): this["N"] {
     // create the node
-    return createScalarNode(
-      this,
-      parent,
-      subpath,
-      environment,
-      deepFreeze(value),
-    )
+    return createScalarNode(this, parent, subpath, environment, deepFreeze(value))
   }
 
-  isValidSnapshot(
-    value: this['C'],
-    context: IValidationContext,
-  ): IValidationResult {
+  isValidSnapshot(value: this["C"], context: IValidationContext): IValidationResult {
     if (!isSerializable(value)) {
-      return typeCheckFailure(
-        context,
-        value,
-        'Value is not serializable and cannot be frozen',
-      )
+      return typeCheckFailure(context, value, "Value is not serializable and cannot be frozen")
     }
     if (this.subType) return this.subType.validate(value, context)
     return typeCheckSuccess()
@@ -120,6 +106,6 @@ export function frozen(arg?: any): any {
  * @param type
  * @returns
  */
-export function isFrozenType(type: unknown): type is ISimpleType<any> {
+export function isFrozenType<IT extends IType<T | any, T, T>, T = any>(type: IT): type is IT {
   return isType(type) && (type.flags & TypeFlags.Frozen) > 0
 }

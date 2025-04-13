@@ -1,4 +1,3 @@
-import { WritableKeys } from 'ts-essentials';
 import { IKeyValueMap, IMapDidChange, Lambda, IInterceptor, IMapWillChange, IObservableArray } from 'mobx';
 
 /**
@@ -7,7 +6,7 @@ import { IKeyValueMap, IMapDidChange, Lambda, IInterceptor, IMapWillChange, IObs
  * - `"error"`: Throw an exception.
  * - "`ignore`": Do nothing.
  */
-type LivelinessMode = 'warn' | 'error' | 'ignore';
+type LivelinessMode = "warn" | "error" | "ignore";
 /**
  * Defines what MST should do when running into reads / writes to objects that have died.
  * By default it will print a warning.
@@ -85,7 +84,7 @@ declare function getType(object: IAnyStateTreeNode): IAnyComplexType;
 declare function getChildType(object: IAnyStateTreeNode, propertyName?: string): IAnyType;
 /**
  * Registers a function that will be invoked for each mutation that is applied to the provided model instance, or to any of its children.
- * See [patches](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#patches) for more details. onPatch events are emitted immediately and will not await the end of a transaction.
+ * See [patches](https://github.com/mobxjs/mobx-state-tree#patches) for more details. onPatch events are emitted immediately and will not await the end of a transaction.
  * Patches can be used to deeply observe a model tree.
  *
  * @param target the model instance from which to receive patches
@@ -96,7 +95,7 @@ declare function onPatch(target: IAnyStateTreeNode, callback: (patch: IJsonPatch
 /**
  * Registers a function that is invoked whenever a new snapshot for the given model instance is available.
  * The listener will only be fire at the end of the current MobX (trans)action.
- * See [snapshots](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#snapshots) for more details.
+ * See [snapshots](https://github.com/mobxjs/mobx-state-tree#snapshots) for more details.
  *
  * @param target
  * @param callback
@@ -105,7 +104,7 @@ declare function onPatch(target: IAnyStateTreeNode, callback: (patch: IJsonPatch
 declare function onSnapshot<S>(target: IStateTreeNode<IType<any, S, any>>, callback: (snapshot: S) => void): IDisposer;
 /**
  * Applies a JSON-patch to the given model instance or bails out if the patch couldn't be applied
- * See [patches](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#patches) for more details.
+ * See [patches](https://github.com/mobxjs/mobx-state-tree#patches) for more details.
  *
  * Can apply a single past, or an array of patches.
  *
@@ -245,7 +244,7 @@ declare function hasParentOfType(target: IAnyStateTreeNode, type: IAnyComplexTyp
  * @param type
  * @returns
  */
-declare function getParentOfType<IT extends IAnyComplexType>(target: IAnyStateTreeNode, type: IT): IT['Type'];
+declare function getParentOfType<IT extends IAnyComplexType>(target: IAnyStateTreeNode, type: IT): IT["Type"];
 /**
  * Given an object in a model tree, returns the root object of that tree.
  *
@@ -295,7 +294,7 @@ declare function resolvePath(target: IAnyStateTreeNode, path: string): any;
  * @param identifier
  * @returns
  */
-declare function resolveIdentifier<IT extends IAnyModelType>(type: IT, target: IAnyStateTreeNode, identifier: ReferenceIdentifier): IT['Type'] | undefined;
+declare function resolveIdentifier<IT extends IAnyModelType>(type: IT, target: IAnyStateTreeNode, identifier: ReferenceIdentifier): IT["Type"] | undefined;
 /**
  * Returns the identifier of the target node.
  * This is the *string normalized* identifier, which might not match the type of the identifier attribute
@@ -397,8 +396,8 @@ declare function isAlive(target: IAnyStateTreeNode): boolean;
  */
 declare function addDisposer(target: IAnyStateTreeNode, disposer: IDisposer): IDisposer;
 /**
- * Returns the environment of the current state tree, or throws. For more info on environments,
- * see [Dependency injection](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#dependency-injection)
+ * Returns the environment of the current state tree. For more info on environments,
+ * see [Dependency injection](https://github.com/mobxjs/mobx-state-tree#dependency-injection)
  *
  * Please note that in child nodes access to the root is only possible
  * once the `afterAttach` hook has fired
@@ -409,14 +408,6 @@ declare function addDisposer(target: IAnyStateTreeNode, disposer: IDisposer): ID
  * @returns
  */
 declare function getEnv<T = any>(target: IAnyStateTreeNode): T;
-/**
- * Returns whether the current state tree has environment or not.
- *
- * @export
- * @param {IStateTreeNode} target
- * @return {boolean}
- */
-declare function hasEnv(target: IAnyStateTreeNode): boolean;
 /**
  * Performs a depth first walk through a tree.
  */
@@ -455,7 +446,7 @@ interface IModelReflectionData extends IModelReflectionPropertiesData {
  */
 declare function getMembers(target: IAnyStateTreeNode): IModelReflectionData;
 declare function cast<O extends string | number | boolean | null | undefined = never>(snapshotOrInstance: O): O;
-declare function cast<O = never>(snapshotOrInstance: TypeOfValue<O>['CreationType'] | TypeOfValue<O>['SnapshotType'] | TypeOfValue<O>['Type']): O;
+declare function cast<O = never>(snapshotOrInstance: TypeOfValue<O>["CreationType"] | TypeOfValue<O>["SnapshotType"] | TypeOfValue<O>["Type"]): O;
 /**
  * Casts a node instance type to a snapshot type so it can be assigned to a type snapshot (e.g. to be used inside a create call).
  * Note that this is just a cast for the type system, this is, it won't actually convert an instance to a snapshot,
@@ -483,7 +474,7 @@ declare function cast<O = never>(snapshotOrInstance: TypeOfValue<O>['CreationTyp
  * @param snapshotOrInstance Snapshot or instance
  * @returns The same object cast as an input (creation) snapshot
  */
-declare function castToSnapshot<I>(snapshotOrInstance: I): Extract<I, IAnyStateTreeNode> extends never ? I : TypeOfValue<I>['CreationType'];
+declare function castToSnapshot<I>(snapshotOrInstance: I): Extract<I, IAnyStateTreeNode> extends never ? I : TypeOfValue<I>["CreationType"];
 /**
  * Casts a node instance type to a reference snapshot type so it can be assigned to a reference snapshot (e.g. to be used inside a create call).
  * Note that this is just a cast for the type system, this is, it won't actually convert an instance to a reference snapshot,
@@ -531,7 +522,6 @@ declare function getNodeId(target: IAnyStateTreeNode): number;
 type STNValue<T, IT extends IAnyType> = T extends object ? T & IStateTreeNode<IT> : T;
 /** @hidden */
 declare const $type: unique symbol;
-type ExcludeReadonly<T> = T extends {} ? T[WritableKeys<T>] : T;
 /**
  * A type, either complex or simple.
  */
@@ -551,14 +541,14 @@ interface IType<C, S, T> {
      *
      * @returns An instance of that type.
      */
-    create(snapshot?: C | ExcludeReadonly<T>, env?: any): this['Type'];
+    create(snapshot?: C, env?: any): this["Type"];
     /**
      * Checks if a given snapshot / instance is of the given type.
      *
      * @param thing Snapshot or instance to be checked.
      * @returns true if the value is of the current type, false otherwise.
      */
-    is(thing: any): thing is C | this['Type'];
+    is(thing: any): thing is C | this["Type"];
     /**
      * Run's the type's typechecker on the given value with the given validation context.
      *
@@ -566,7 +556,7 @@ interface IType<C, S, T> {
      * @param context Validation context, an array of { subpaths, subtypes } that should be validated
      * @returns The validation result, an array with the list of validation errors.
      */
-    validate(thing: C | T, context: IValidationContext): IValidationResult;
+    validate(thing: C, context: IValidationContext): IValidationResult;
     /**
      * Gets the textual representation of the type as a string.
      */
@@ -622,28 +612,28 @@ type ExtractCSTWithSTN<IT extends {
     CreationType: any;
     SnapshotType: any;
     Type: any;
-}> = IT['CreationType'] | IT['SnapshotType'] | IT['Type'];
+}> = IT["CreationType"] | IT["SnapshotType"] | IT["Type"];
 /**
  * The instance representation of a given type.
  */
 type Instance<T> = T extends {
     [$type]: undefined;
     Type: any;
-} ? T['Type'] : T;
+} ? T["Type"] : T;
 /**
  * The input (creation) snapshot representation of a given type.
  */
 type SnapshotIn<T> = T extends {
     [$type]: undefined;
     CreationType: any;
-} ? T['CreationType'] : T extends IStateTreeNode<infer IT> ? IT['CreationType'] : T;
+} ? T["CreationType"] : T extends IStateTreeNode<infer IT> ? IT["CreationType"] : T;
 /**
  * The output snapshot representation of a given type.
  */
 type SnapshotOut<T> = T extends {
     [$type]: undefined;
     SnapshotType: any;
-} ? T['SnapshotType'] : T extends IStateTreeNode<infer IT> ? IT['SnapshotType'] : T;
+} ? T["SnapshotType"] : T extends IStateTreeNode<infer IT> ? IT["SnapshotType"] : T;
 /**
  * A type which is equivalent to the union of SnapshotIn and Instance types of a given typeof TYPE or typeof VARIABLE.
  * For primitives it defaults to the primitive itself.
@@ -786,7 +776,7 @@ declare function applyAction(target: IAnyStateTreeNode, actions: ISerializedActi
 declare function recordActions(subject: IAnyStateTreeNode, filter?: (action: ISerializedActionCall, actionContext: IActionContext | undefined) => boolean): IActionRecorder;
 /**
  * Registers a function that will be invoked for each action that is called on the provided model instance, or to any of its children.
- * See [actions](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#actions) for more details. onAction events are emitted only for the outermost called action in the stack.
+ * See [actions](https://github.com/mobxjs/mobx-state-tree#actions) for more details. onAction events are emitted only for the outermost called action in the stack.
  * Action can also be intercepted by middleware using addMiddleware to change the function call before it will be run.
  *
  * Not all action arguments might be serializable. For unserializable arguments, a struct like `{ $MST_UNSERIALIZABLE: true, type: "someType" }` will be generated.
@@ -824,7 +814,7 @@ declare function recordActions(subject: IAnyStateTreeNode, filter?: (action: ISe
  */
 declare function onAction(target: IAnyStateTreeNode, listener: (call: ISerializedActionCall) => void, attachAfter?: boolean): IDisposer;
 
-type IMiddlewareEventType = 'action' | 'flow_spawn' | 'flow_resume' | 'flow_resume_error' | 'flow_return' | 'flow_throw';
+type IMiddlewareEventType = "action" | "flow_spawn" | "flow_resume" | "flow_resume_error" | "flow_return" | "flow_throw";
 interface IMiddlewareEvent extends IActionContext {
     /** Event type */
     readonly type: IMiddlewareEventType;
@@ -1077,7 +1067,7 @@ declare function toGenerator<R>(p: Promise<R>): Generator<Promise<R>, R, R>;
  * http://jsonpatch.com/
  */
 interface IJsonPatch {
-    readonly op: 'replace' | 'add' | 'remove';
+    readonly op: "replace" | "add" | "remove";
     readonly path: string;
     readonly value?: any;
 }
@@ -1125,7 +1115,7 @@ type _CustomOrOther<Custom, Other> = Custom extends _NotCustomized ? Other : Cus
 /**
  * A type that has its snapshots processed.
  */
-interface ISnapshotProcessor<IT extends IAnyType, CustomC, CustomS> extends IType<_CustomOrOther<CustomC, IT['CreationType']>, _CustomOrOther<CustomS, IT['SnapshotType']>, IT['TypeWithoutSTN']> {
+interface ISnapshotProcessor<IT extends IAnyType, CustomC, CustomS> extends IType<_CustomOrOther<CustomC, IT["CreationType"]>, _CustomOrOther<CustomS, IT["SnapshotType"]>, IT["TypeWithoutSTN"]> {
 }
 /**
  * Snapshot processors.
@@ -1134,17 +1124,15 @@ interface ISnapshotProcessors<IT extends IAnyType, CustomC, CustomS> {
     /**
      * Function that transforms an input snapshot.
      */
-    preProcessor?(snapshot: _CustomOrOther<CustomC, IT['CreationType']>): IT['CreationType'];
+    preProcessor?(snapshot: CustomC): IT["CreationType"];
     /**
      * Function that transforms an output snapshot.
      * @param snapshot
      */
-    postProcessor?(snapshot: IT['SnapshotType'], node: Instance<IT>): _CustomOrOther<CustomS, IT['SnapshotType']>;
+    postProcessor?(snapshot: IT["SnapshotType"], node: Instance<IT>): CustomS;
 }
 /**
  * `types.snapshotProcessor` - Runs a pre/post snapshot processor before/after serializing a given type.
- *
- * [See known issue with `applySnapshot` and `preProcessSnapshot`](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree/issues/1317)
  *
  * Example:
  * ```ts
@@ -1179,36 +1167,36 @@ interface ISnapshotProcessors<IT extends IAnyType, CustomC, CustomS> {
 declare function snapshotProcessor<IT extends IAnyType, CustomC = _NotCustomized, CustomS = _NotCustomized>(type: IT, processors: ISnapshotProcessors<IT, CustomC, CustomS>, name?: string): ISnapshotProcessor<IT, CustomC, CustomS>;
 
 /** @hidden */
-interface IMapType<IT extends IAnyType> extends IType<IKeyValueMap<IT['CreationType']> | undefined, IKeyValueMap<IT['SnapshotType']>, IMSTMap<IT>> {
+interface IMapType<IT extends IAnyType> extends IType<IKeyValueMap<IT["CreationType"]> | undefined, IKeyValueMap<IT["SnapshotType"]>, IMSTMap<IT>> {
     hooks(hooks: IHooksGetter<IMSTMap<IT>>): IMapType<IT>;
 }
 /** @hidden */
 interface IMSTMap<IT extends IAnyType> {
     clear(): void;
     delete(key: string): boolean;
-    forEach(callbackfn: (value: IT['Type'], key: string | number, map: this) => void, thisArg?: any): void;
-    get(key: string | number): IT['Type'] | undefined;
+    forEach(callbackfn: (value: IT["Type"], key: string | number, map: this) => void, thisArg?: any): void;
+    get(key: string | number): IT["Type"] | undefined;
     has(key: string | number): boolean;
     set(key: string | number, value: ExtractCSTWithSTN<IT>): this;
     readonly size: number;
-    put(value: ExtractCSTWithSTN<IT>): IT['Type'];
+    put(value: ExtractCSTWithSTN<IT>): IT["Type"];
     keys(): IterableIterator<string>;
-    values(): IterableIterator<IT['Type']>;
-    entries(): IterableIterator<[string, IT['Type']]>;
-    [Symbol.iterator](): IterableIterator<[string, IT['Type']]>;
+    values(): IterableIterator<IT["Type"]>;
+    entries(): IterableIterator<[string, IT["Type"]]>;
+    [Symbol.iterator](): IterableIterator<[string, IT["Type"]]>;
     /** Merge another object into this map, returns self. */
-    merge(other: IMSTMap<IType<any, any, IT['TypeWithoutSTN']>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
-    replace(values: IMSTMap<IType<any, any, IT['TypeWithoutSTN']>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
-    toJSON(): IKeyValueMap<IT['SnapshotType']>;
+    merge(other: IMSTMap<IType<any, any, IT["TypeWithoutSTN"]>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
+    replace(values: IMSTMap<IType<any, any, IT["TypeWithoutSTN"]>> | IKeyValueMap<ExtractCSTWithSTN<IT>> | any): this;
+    toJSON(): IKeyValueMap<IT["SnapshotType"]>;
     toString(): string;
-    [Symbol.toStringTag]: 'Map';
+    [Symbol.toStringTag]: "Map";
     /**
      * Observes this object. Triggers for the events 'add', 'update' and 'delete'.
      * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe
      * for callback details
      */
-    observe(listener: (changes: IMapDidChange<string, IT['Type']>) => void, fireImmediately?: boolean): Lambda;
-    intercept(handler: IInterceptor<IMapWillChange<string, IT['Type']>>): Lambda;
+    observe(listener: (changes: IMapDidChange<string, IT["Type"]>) => void, fireImmediately?: boolean): Lambda;
+    intercept(handler: IInterceptor<IMapWillChange<string, IT["Type"]>>): Lambda;
 }
 /**
  * `types.map` - Creates a key based collection type who's children are all of a uniform declared type.
@@ -1244,24 +1232,24 @@ declare function map<IT extends IAnyType>(subtype: IT): IMapType<IT>;
  * @param type
  * @returns `true` if it is a map type.
  */
-declare function isMapType(type: unknown): type is IMapType<IAnyType>;
+declare function isMapType<Items extends IAnyType = IAnyType>(type: IAnyType): type is IMapType<Items>;
 
 /** @hidden */
-interface IMSTArray<IT extends IAnyType> extends IObservableArray<IT['Type']> {
-    push(...items: IT['Type'][]): number;
+interface IMSTArray<IT extends IAnyType> extends IObservableArray<IT["Type"]> {
+    push(...items: IT["Type"][]): number;
     push(...items: ExtractCSTWithSTN<IT>[]): number;
-    concat(...items: ConcatArray<IT['Type']>[]): IT['Type'][];
-    concat(...items: ConcatArray<ExtractCSTWithSTN<IT>>[]): IT['Type'][];
-    concat(...items: (IT['Type'] | ConcatArray<IT['Type']>)[]): IT['Type'][];
-    concat(...items: (ExtractCSTWithSTN<IT> | ConcatArray<ExtractCSTWithSTN<IT>>)[]): IT['Type'][];
-    splice(start: number, deleteCount?: number): IT['Type'][];
-    splice(start: number, deleteCount: number, ...items: IT['Type'][]): IT['Type'][];
-    splice(start: number, deleteCount: number, ...items: ExtractCSTWithSTN<IT>[]): IT['Type'][];
-    unshift(...items: IT['Type'][]): number;
+    concat(...items: ConcatArray<IT["Type"]>[]): IT["Type"][];
+    concat(...items: ConcatArray<ExtractCSTWithSTN<IT>>[]): IT["Type"][];
+    concat(...items: (IT["Type"] | ConcatArray<IT["Type"]>)[]): IT["Type"][];
+    concat(...items: (ExtractCSTWithSTN<IT> | ConcatArray<ExtractCSTWithSTN<IT>>)[]): IT["Type"][];
+    splice(start: number, deleteCount?: number): IT["Type"][];
+    splice(start: number, deleteCount: number, ...items: IT["Type"][]): IT["Type"][];
+    splice(start: number, deleteCount: number, ...items: ExtractCSTWithSTN<IT>[]): IT["Type"][];
+    unshift(...items: IT["Type"][]): number;
     unshift(...items: ExtractCSTWithSTN<IT>[]): number;
 }
 /** @hidden */
-interface IArrayType<IT extends IAnyType> extends IType<readonly IT['CreationType'][] | undefined, IT['SnapshotType'][], IMSTArray<IT>> {
+interface IArrayType<IT extends IAnyType> extends IType<readonly IT["CreationType"][] | undefined, IT["SnapshotType"][], IMSTArray<IT>> {
     hooks(hooks: IHooksGetter<IMSTArray<IAnyType>>): IArrayType<IT>;
 }
 /**
@@ -1295,7 +1283,7 @@ declare function array<IT extends IAnyType>(subtype: IT): IArrayType<IT>;
  * @param type
  * @returns `true` if the type is an array type.
  */
-declare function isArrayType(type: unknown): type is IArrayType<IAnyType>;
+declare function isArrayType<Items extends IAnyType = IAnyType>(type: IAnyType): type is IArrayType<Items>;
 
 /** @hidden */
 interface ModelProperties {
@@ -1338,26 +1326,25 @@ type DefinablePropsNames<T> = {
     [K in keyof T]: IsOptionalValue<T[K], never, K>;
 }[keyof T];
 /** @hidden */
-type ExtractCFromProps<P extends ModelProperties> = MaybeEmpty<{
-    [k in keyof P]: P[k]['CreationType'] | P[k]['TypeWithoutSTN'];
-}>;
-/** @hidden */
-type MaybeEmpty<T> = keyof T extends never ? EmptyObject : T;
-/** @hidden */
-type ModelCreationType<PC> = MaybeEmpty<{
-    [P in DefinablePropsNames<PC>]: PC[P];
-}> & Partial<PC>;
-type WithAdditionalProperties<T> = T extends Record<string, never> ? EmptyObject : T;
 declare const $nonEmptyObject: unique symbol;
-type EmptyObject = {
-    [$nonEmptyObject]?: never;
+/** @hidden */
+interface NonEmptyObject {
+    [$nonEmptyObject]?: any;
+}
+/** @hidden */
+type ExtractCFromProps<P extends ModelProperties> = {
+    [k in keyof P]: P[k]["CreationType"];
 };
 /** @hidden */
-type ModelCreationType2<P extends ModelProperties, CustomC> = MaybeEmpty<keyof P extends never ? _CustomOrOther<CustomC, ModelCreationType<EmptyObject>> : _CustomOrOther<CustomC, ModelCreationType<ExtractCFromProps<P>>>>;
+type ModelCreationType<PC> = {
+    [P in DefinablePropsNames<PC>]: PC[P];
+} & Partial<PC> & NonEmptyObject;
+/** @hidden */
+type ModelCreationType2<P extends ModelProperties, CustomC> = keyof P extends never ? IStateTreeNode : _CustomOrOther<CustomC, ModelCreationType<ExtractCFromProps<P>>>;
 /** @hidden */
 type ModelSnapshotType<P extends ModelProperties> = {
-    [K in keyof P]: P[K]['SnapshotType'];
-};
+    [K in keyof P]: P[K]["SnapshotType"];
+} & NonEmptyObject;
 /** @hidden */
 type ModelSnapshotType2<P extends ModelProperties, CustomS> = _CustomOrOther<CustomS, ModelSnapshotType<P>>;
 /**
@@ -1365,8 +1352,8 @@ type ModelSnapshotType2<P extends ModelProperties, CustomS> = _CustomOrOther<Cus
  * we keep this separate from ModelInstanceType to shorten model instance types generated declarations
  */
 type ModelInstanceTypeProps<P extends ModelProperties> = {
-    [K in keyof P]: P[K]['Type'];
-};
+    [K in keyof P]: P[K]["Type"];
+} & NonEmptyObject;
 /**
  * @hidden
  * do not transform this to an interface or model instance type generated declarations will be longer
@@ -1388,7 +1375,7 @@ interface IModelType<PROPS extends ModelProperties, OTHERS, CustomC = _NotCustom
         views?: V;
         state?: VS;
     }): IModelType<PROPS, OTHERS & A & V & VS, CustomC, CustomS>;
-    preProcessSnapshot<NewC = ModelCreationType2<PROPS, CustomC>>(fn: (snapshot: NewC) => WithAdditionalProperties<ModelCreationType2<PROPS, CustomC>>): IModelType<PROPS, OTHERS, NewC, CustomS>;
+    preProcessSnapshot<NewC = ModelCreationType2<PROPS, CustomC>>(fn: (snapshot: NewC) => ModelCreationType2<PROPS, CustomC>): IModelType<PROPS, OTHERS, NewC, CustomS>;
     postProcessSnapshot<NewS = ModelSnapshotType2<PROPS, CustomS>>(fn: (snapshot: ModelSnapshotType2<PROPS, CustomS>) => NewS): IModelType<PROPS, OTHERS, CustomC, NewS>;
 }
 /**
@@ -1422,7 +1409,7 @@ declare function compose<PA extends ModelProperties, OA, FCA, FSA, PB extends Mo
  * @param type
  * @returns
  */
-declare function isModelType(type: unknown): type is IAnyModelType;
+declare function isModelType<IT extends IAnyModelType = IAnyModelType>(type: IAnyType): type is IT;
 
 /**
  * `types.Date` - Creates a type that can only contain a javascript Date value.
@@ -1443,7 +1430,7 @@ declare const DatePrimitive: IType<number | Date, number, Date>;
  * @param type
  * @returns
  */
-declare function isPrimitiveType(type: unknown): type is ISimpleType<string> | ISimpleType<number> | ISimpleType<boolean> | typeof DatePrimitive;
+declare function isPrimitiveType<IT extends ISimpleType<string> | ISimpleType<number> | ISimpleType<boolean> | typeof DatePrimitive>(type: IT): type is IT;
 
 /**
  * `types.literal` - The literal type will return a type that will match only the exact given type.
@@ -1468,36 +1455,27 @@ declare function literal<S extends Primitives>(value: S): ISimpleType<S>;
  * @param type
  * @returns
  */
-declare function isLiteralType(type: unknown): type is ISimpleType<any>;
+declare function isLiteralType<IT extends ISimpleType<any>>(type: IT): type is IT;
 
-declare function refinement<IT extends IAnyType>(name: string, type: IT, predicate: (snapshot: IT['CreationType']) => boolean, message?: string | ((v: IT['CreationType']) => string)): IT;
-declare function refinement<IT extends IAnyType>(type: IT, predicate: (snapshot: IT['CreationType']) => boolean, message?: string | ((v: IT['CreationType']) => string)): IT;
+declare function refinement<IT extends IAnyType>(name: string, type: IT, predicate: (snapshot: IT["CreationType"]) => boolean, message?: string | ((v: IT["CreationType"]) => string)): IT;
+declare function refinement<IT extends IAnyType>(type: IT, predicate: (snapshot: IT["CreationType"]) => boolean, message?: string | ((v: IT["CreationType"]) => string)): IT;
 /**
  * Returns if a given value is a refinement type.
  *
  * @param type
  * @returns
  */
-declare function isRefinementType(type: unknown): type is IAnyType;
+declare function isRefinementType<IT extends IAnyType>(type: IT): type is IT;
 
 /** @hidden */
 type UnionStringArray<T extends readonly string[]> = T[number];
-declare function enumeration<T extends string>(options: readonly T[]): ISimpleType<UnionStringArray<T[]>>;
-declare function enumeration<T extends string>(name: string, options: readonly T[]): ISimpleType<UnionStringArray<T[]>>;
+declare function enumeration<T extends readonly string[]>(options: T): ISimpleType<UnionStringArray<T>>;
+declare function enumeration<T extends string>(name: string, options: T[]): ISimpleType<UnionStringArray<T[]>>;
 
-type ITypeDispatcher<Types extends IAnyType[]> = (snapshot: Types[number]['SnapshotType']) => Types[number];
-interface UnionOptions<Types extends IAnyType[]> {
-    /**
-     * Whether or not to use eager validation.
-     *
-     * When `true`, the first matching type will be used. Otherwise, all types will be checked and the
-     * validation will pass if and only if a single type matches.
-     */
+type ITypeDispatcher = (snapshot: any) => IAnyType;
+interface UnionOptions {
     eager?: boolean;
-    /**
-     * A function that returns the type to be used given an input snapshot.
-     */
-    dispatcher?: ITypeDispatcher<Types>;
+    dispatcher?: ITypeDispatcher;
 }
 /**
  * Transform _NotCustomized | _NotCustomized... to _NotCustomized, _NotCustomized | A | B to A | B
@@ -1507,25 +1485,56 @@ type _CustomCSProcessor<T> = Exclude<T, _NotCustomized> extends never ? _NotCust
 /** @hidden */
 interface ITypeUnion<C, S, T> extends IType<_CustomCSProcessor<C>, _CustomCSProcessor<S>, T> {
 }
-type IUnionType<Types extends IAnyType[]> = ITypeUnion<Types[number]['CreationType'], Types[number]['SnapshotType'], Types[number]['TypeWithoutSTN']>;
-declare function union<Types extends IAnyType[]>(...types: Types): IUnionType<Types>;
-declare function union<Types extends IAnyType[]>(options: UnionOptions<Types>, ...types: Types): IUnionType<Types>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF, PG extends ModelProperties, OG, FCG, FSG>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>, G: IModelType<PG, OG, FCG, FSG>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF> | ModelCreationType2<PG, FCG>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF> | ModelSnapshotType2<PG, FSG>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF> | ModelInstanceType<PG, OG>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF, PG extends ModelProperties, OG, FCG, FSG>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>, G: IModelType<PG, OG, FCG, FSG>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF> | ModelCreationType2<PG, FCG>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF> | ModelSnapshotType2<PG, FSG>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF> | ModelInstanceType<PG, OG>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF, PG extends ModelProperties, OG, FCG, FSG, PH extends ModelProperties, OH, FCH, FSH>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>, G: IModelType<PG, OG, FCG, FSG>, H: IModelType<PH, OH, FCH, FSH>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF> | ModelCreationType2<PG, FCG> | ModelCreationType2<PH, FCH>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF> | ModelSnapshotType2<PG, FSG> | ModelSnapshotType2<PH, FSH>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF> | ModelInstanceType<PG, OG> | ModelInstanceType<PH, OH>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF, PG extends ModelProperties, OG, FCG, FSG, PH extends ModelProperties, OH, FCH, FSH>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>, G: IModelType<PG, OG, FCG, FSG>, H: IModelType<PH, OH, FCH, FSH>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF> | ModelCreationType2<PG, FCG> | ModelCreationType2<PH, FCH>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF> | ModelSnapshotType2<PG, FSG> | ModelSnapshotType2<PH, FSH>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF> | ModelInstanceType<PG, OG> | ModelInstanceType<PH, OH>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF, PG extends ModelProperties, OG, FCG, FSG, PH extends ModelProperties, OH, FCH, FSH, PI extends ModelProperties, OI, FCI, FSI>(A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>, G: IModelType<PG, OG, FCG, FSG>, H: IModelType<PH, OH, FCH, FSH>, I: IModelType<PI, OI, FCI, FSI>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF> | ModelCreationType2<PG, FCG> | ModelCreationType2<PH, FCH> | ModelCreationType2<PI, FCI>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF> | ModelSnapshotType2<PG, FSG> | ModelSnapshotType2<PH, FSH> | ModelSnapshotType2<PI, FSI>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF> | ModelInstanceType<PG, OG> | ModelInstanceType<PH, OH> | ModelInstanceType<PI, OI>>;
+declare function union<PA extends ModelProperties, OA, FCA, FSA, PB extends ModelProperties, OB, FCB, FSB, PC extends ModelProperties, OC, FCC, FSC, PD extends ModelProperties, OD, FCD, FSD, PE extends ModelProperties, OE, FCE, FSE, PF extends ModelProperties, OF, FCF, FSF, PG extends ModelProperties, OG, FCG, FSG, PH extends ModelProperties, OH, FCH, FSH, PI extends ModelProperties, OI, FCI, FSI>(options: UnionOptions, A: IModelType<PA, OA, FCA, FSA>, B: IModelType<PB, OB, FCB, FSB>, C: IModelType<PC, OC, FCC, FSC>, D: IModelType<PD, OD, FCD, FSD>, E: IModelType<PE, OE, FCE, FSE>, F: IModelType<PF, OF, FCF, FSF>, G: IModelType<PG, OG, FCG, FSG>, H: IModelType<PH, OH, FCH, FSH>, I: IModelType<PI, OI, FCI, FSI>): ITypeUnion<ModelCreationType2<PA, FCA> | ModelCreationType2<PB, FCB> | ModelCreationType2<PC, FCC> | ModelCreationType2<PD, FCD> | ModelCreationType2<PE, FCE> | ModelCreationType2<PF, FCF> | ModelCreationType2<PG, FCG> | ModelCreationType2<PH, FCH> | ModelCreationType2<PI, FCI>, ModelSnapshotType2<PA, FSA> | ModelSnapshotType2<PB, FSB> | ModelSnapshotType2<PC, FSC> | ModelSnapshotType2<PD, FSD> | ModelSnapshotType2<PE, FSE> | ModelSnapshotType2<PF, FSF> | ModelSnapshotType2<PG, FSG> | ModelSnapshotType2<PH, FSH> | ModelSnapshotType2<PI, FSI>, ModelInstanceType<PA, OA> | ModelInstanceType<PB, OB> | ModelInstanceType<PC, OC> | ModelInstanceType<PD, OD> | ModelInstanceType<PE, OE> | ModelInstanceType<PF, OF> | ModelInstanceType<PG, OG> | ModelInstanceType<PH, OH> | ModelInstanceType<PI, OI>>;
+declare function union<CA, SA, TA, CB, SB, TB>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>): ITypeUnion<CA | CB, SA | SB, TA | TB>;
+declare function union<CA, SA, TA, CB, SB, TB>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>): ITypeUnion<CA | CB, SA | SB, TA | TB>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>): ITypeUnion<CA | CB | CC, SA | SB | SC, TA | TB | TC>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>): ITypeUnion<CA | CB | CC, SA | SB | SC, TA | TB | TC>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>): ITypeUnion<CA | CB | CC | CD, SA | SB | SC | SD, TA | TB | TC | TD>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>): ITypeUnion<CA | CB | CC | CD, SA | SB | SC | SD, TA | TB | TC | TD>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>): ITypeUnion<CA | CB | CC | CD | CE, SA | SB | SC | SD | SE, TA | TB | TC | TD | TE>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>): ITypeUnion<CA | CB | CC | CD | CE, SA | SB | SC | SD | SE, TA | TB | TC | TD | TE>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>): ITypeUnion<CA | CB | CC | CD | CE | CF, SA | SB | SC | SD | SE | SF, TA | TB | TC | TD | TE | TF>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>): ITypeUnion<CA | CB | CC | CD | CE | CF, SA | SB | SC | SD | SE | SF, TA | TB | TC | TD | TE | TF>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF, CG, SG, TG>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>, G: IType<CG, SG, TG>): ITypeUnion<CA | CB | CC | CD | CE | CF | CG, SA | SB | SC | SD | SE | SF | SG, TA | TB | TC | TD | TE | TF | TG>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF, CG, SG, TG>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>, G: IType<CG, SG, TG>): ITypeUnion<CA | CB | CC | CD | CE | CF | CG, SA | SB | SC | SD | SE | SF | SG, TA | TB | TC | TD | TE | TF | TG>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF, CG, SG, TG, CH, SH, TH>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>, G: IType<CG, SG, TG>, H: IType<CH, SH, TH>): ITypeUnion<CA | CB | CC | CD | CE | CF | CG | CH, SA | SB | SC | SD | SE | SF | SG | SH, TA | TB | TC | TD | TE | TF | TG | TH>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF, CG, SG, TG, CH, SH, TH>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>, G: IType<CG, SG, TG>, H: IType<CH, SH, TH>): ITypeUnion<CA | CB | CC | CD | CE | CF | CG | CH, SA | SB | SC | SD | SE | SF | SG | SH, TA | TB | TC | TD | TE | TF | TG | TH>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF, CG, SG, TG, CH, SH, TH, CI, SI, TI>(A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>, G: IType<CG, SG, TG>, H: IType<CH, SH, TH>, I: IType<CI, SI, TI>): ITypeUnion<CA | CB | CC | CD | CE | CF | CG | CH | CI, SA | SB | SC | SD | SE | SF | SG | SH | SI, TA | TB | TC | TD | TE | TF | TG | TH | TI>;
+declare function union<CA, SA, TA, CB, SB, TB, CC, SC, TC, CD, SD, TD, CE, SE, TE, CF, SF, TF, CG, SG, TG, CH, SH, TH, CI, SI, TI>(options: UnionOptions, A: IType<CA, SA, TA>, B: IType<CB, SB, TB>, C: IType<CC, SC, TC>, D: IType<CD, SD, TD>, E: IType<CE, SE, TE>, F: IType<CF, SF, TF>, G: IType<CG, SG, TG>, H: IType<CH, SH, TH>, I: IType<CI, SI, TI>): ITypeUnion<CA | CB | CC | CD | CE | CF | CG | CH | CI, SA | SB | SC | SD | SE | SF | SG | SH | SI, TA | TB | TC | TD | TE | TF | TG | TH | TI>;
+declare function union(...types: IAnyType[]): IAnyType;
+declare function union(dispatchOrType: UnionOptions | IAnyType, ...otherTypes: IAnyType[]): IAnyType;
 /**
  * Returns if a given value represents a union type.
  *
  * @param type
  * @returns
  */
-declare function isUnionType(type: unknown): type is IUnionType<IAnyType[]>;
+declare function isUnionType<IT extends IAnyType>(type: IT): type is IT;
 
 /** @hidden */
 type ValidOptionalValue = string | boolean | number | null | undefined;
 /** @hidden */
 type ValidOptionalValues = [ValidOptionalValue, ...ValidOptionalValue[]];
 /** @hidden */
-type OptionalDefaultValueOrFunction<IT extends IAnyType> = IT['CreationType'] | IT['SnapshotType'] | (() => ExtractCSTWithSTN<IT>);
+type OptionalDefaultValueOrFunction<IT extends IAnyType> = IT["CreationType"] | IT["SnapshotType"] | (() => ExtractCSTWithSTN<IT>);
 /** @hidden */
-interface IOptionalIType<IT extends IAnyType, OptionalVals extends ValidOptionalValues> extends IType<IT['CreationType'] | OptionalVals[number], IT['SnapshotType'], IT['TypeWithoutSTN']> {
+interface IOptionalIType<IT extends IAnyType, OptionalVals extends ValidOptionalValues> extends IType<IT["CreationType"] | OptionalVals[number], IT["SnapshotType"], IT["TypeWithoutSTN"]> {
 }
 declare function optional<IT extends IAnyType>(type: IT, defaultValueOrFunction: OptionalDefaultValueOrFunction<IT>): IOptionalIType<IT, [undefined]>;
 declare function optional<IT extends IAnyType, OptionalVals extends ValidOptionalValues>(type: IT, defaultValueOrFunction: OptionalDefaultValueOrFunction<IT>, optionalValues: OptionalVals): IOptionalIType<IT, OptionalVals>;
@@ -1536,10 +1545,10 @@ declare function optional<IT extends IAnyType, OptionalVals extends ValidOptiona
  * @param type
  * @returns
  */
-declare function isOptionalType(type: unknown): type is IOptionalIType<IAnyType, [any, ...any[]]>;
+declare function isOptionalType<IT extends IAnyType>(type: IT): type is IT;
 
 /** @hidden */
-interface IMaybeIType<IT extends IAnyType, C, O> extends IType<IT['CreationType'] | C, IT['SnapshotType'] | O, IT['TypeWithoutSTN'] | O> {
+interface IMaybeIType<IT extends IAnyType, C, O> extends IType<IT["CreationType"] | C, IT["SnapshotType"] | O, IT["TypeWithoutSTN"] | O> {
 }
 /** @hidden */
 interface IMaybe<IT extends IAnyType> extends IMaybeIType<IT, undefined, undefined> {
@@ -1572,7 +1581,7 @@ declare function late<T extends IAnyType>(name: string, type: () => T): T;
  * @param type
  * @returns
  */
-declare function isLateType(type: unknown): type is IAnyType;
+declare function isLateType<IT extends IAnyType>(type: IT): type is IT;
 
 interface LazyOptions<T extends IType<any, any, any>, U> {
     loadType: () => Promise<T>;
@@ -1589,7 +1598,7 @@ declare function frozen<T = any>(): IType<T, T, T>;
  * @param type
  * @returns
  */
-declare function isFrozenType(type: unknown): type is ISimpleType<any>;
+declare function isFrozenType<IT extends IType<T | any, T, T>, T = any>(type: IT): type is IT;
 
 type OnReferenceInvalidatedEvent<STN extends IAnyStateTreeNode> = {
     parent: IAnyStateTreeNode;
@@ -1597,11 +1606,11 @@ type OnReferenceInvalidatedEvent<STN extends IAnyStateTreeNode> = {
     invalidId: ReferenceIdentifier;
     replaceRef: (newRef: STN | null | undefined) => void;
     removeRef: () => void;
-    cause: 'detach' | 'destroy' | 'invalidSnapshotReference';
+    cause: "detach" | "destroy" | "invalidSnapshotReference";
 };
 type OnReferenceInvalidated<STN extends IAnyStateTreeNode> = (event: OnReferenceInvalidatedEvent<STN>) => void;
 /** @hidden */
-type ReferenceT<IT extends IAnyType> = IT['TypeWithoutSTN'] & IStateTreeNode<IReferenceType<IT>>;
+type ReferenceT<IT extends IAnyType> = IT["TypeWithoutSTN"] & IStateTreeNode<IReferenceType<IT>>;
 interface ReferenceOptionsGetSet<IT extends IAnyComplexType> {
     get(identifier: ReferenceIdentifier, parent: IAnyStateTreeNode | null): ReferenceT<IT>;
     set(value: ReferenceT<IT>, parent: IAnyStateTreeNode | null): ReferenceIdentifier;
@@ -1611,11 +1620,11 @@ interface ReferenceOptionsOnInvalidated<IT extends IAnyComplexType> {
 }
 type ReferenceOptions<IT extends IAnyComplexType> = ReferenceOptionsGetSet<IT> | ReferenceOptionsOnInvalidated<IT> | (ReferenceOptionsGetSet<IT> & ReferenceOptionsOnInvalidated<IT>);
 /** @hidden */
-interface IReferenceType<IT extends IAnyComplexType> extends IType<ReferenceIdentifier, ReferenceIdentifier, IT['TypeWithoutSTN']> {
+interface IReferenceType<IT extends IAnyComplexType> extends IType<ReferenceIdentifier, ReferenceIdentifier, IT["TypeWithoutSTN"]> {
 }
 /**
  * `types.reference` - Creates a reference to another type, which should have defined an identifier.
- * See also the [reference and identifiers](https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree#references-and-identifiers) section.
+ * See also the [reference and identifiers](https://github.com/mobxjs/mobx-state-tree#references-and-identifiers) section.
  */
 declare function reference<IT extends IAnyComplexType>(subType: IT, options?: ReferenceOptions<IT>): IReferenceType<IT>;
 /**
@@ -1624,7 +1633,7 @@ declare function reference<IT extends IAnyComplexType>(subType: IT, options?: Re
  * @param type
  * @returns
  */
-declare function isReferenceType(type: unknown): type is IReferenceType<IAnyComplexType>;
+declare function isReferenceType<IT extends IReferenceType<any>>(type: IT): type is IT;
 declare function safeReference<IT extends IAnyComplexType>(subType: IT, options: (ReferenceOptionsGetSet<IT> | {}) & {
     acceptsUndefined: false;
     onInvalidated?: OnReferenceInvalidated<ReferenceT<IT>>;
@@ -1672,7 +1681,7 @@ declare const identifierNumber: ISimpleType<number>;
  * @param type
  * @returns
  */
-declare function isIdentifierType(type: unknown): type is typeof identifier | typeof identifierNumber;
+declare function isIdentifierType<IT extends typeof identifier | typeof identifierNumber>(type: IT): type is IT;
 /**
  * Valid types for identifiers.
  */
@@ -1770,4 +1779,4 @@ declare const types: {
     snapshotProcessor: typeof snapshotProcessor;
 };
 
-export { type CustomTypeOptions, type IActionContext, type IActionRecorder, type IActionTrackingMiddleware2Call, type IActionTrackingMiddleware2Hooks, type IActionTrackingMiddlewareHooks, type IAnyComplexType, type IAnyModelType, type IAnyStateTreeNode, type IAnyType, type IArrayType, type IComplexType, type IDisposer, type IJsonPatch, type IMSTArray, type IMSTMap, type IMapType, type IMaybe, type IMaybeIType, type IMaybeNull, type IMiddlewareEvent, type IMiddlewareEventType, type IMiddlewareHandler, type IModelReflectionData, type IModelReflectionPropertiesData, type IModelType, type IOptionalIType, type IPatchRecorder, type IReferenceType, type IReversibleJsonPatch, type ISerializedActionCall, type ISimpleType, type ISnapshotProcessor, type ISnapshotProcessors, type IStateTreeNode, type IType, type ITypeUnion, type Instance, type LivelinessMode, type LivelynessMode, type ModelActions, type ModelCreationType, type ModelCreationType2, type ModelInstanceType, type ModelInstanceTypeProps, type ModelPrimitive, type ModelProperties, type ModelPropertiesDeclaration, type ModelPropertiesDeclarationToProperties, type ModelSnapshotType, type ModelSnapshotType2, type OnReferenceInvalidated, type OnReferenceInvalidatedEvent, type OptionalDefaultValueOrFunction, type ReferenceIdentifier, type ReferenceOptions, type ReferenceOptionsGetSet, type ReferenceOptionsOnInvalidated, type SnapshotIn, type SnapshotOrInstance, type SnapshotOut, type TypeOfValue, type TypeOrStateTreeNodeToStateTreeNode, type UnionOptions, type UnionStringArray, type ValidOptionalValue, type ValidOptionalValues, type _CustomCSProcessor, type _CustomJoin, type _CustomOrOther, type _NotCustomized, addDisposer, addMiddleware, applyAction, applyPatch, applySnapshot, cast, castFlowReturn, castToReferenceSnapshot, castToSnapshot, clone, createActionTrackingMiddleware, createActionTrackingMiddleware2, decorate, destroy, detach, escapeJsonPath, flow, getChildType, getEnv, getIdentifier, getLivelinessChecking, getMembers, getNodeId, getParent, getParentOfType, getPath, getPathParts, getPropertyMembers, getRelativePath, getRoot, getRunningActionContext, getSnapshot, getType, hasEnv, hasParent, hasParentOfType, isActionContextChildOf, isActionContextThisOrChildOf, isAlive, isArrayType, isFrozenType, isIdentifierType, isLateType, isLiteralType, isMapType, isModelType, isOptionalType, isPrimitiveType, isProtected, isReferenceType, isRefinementType, isRoot, isStateTreeNode, isType, isUnionType, isValidReference, joinJsonPath, onAction, onPatch, onSnapshot, process, protect, recordActions, recordPatches, resolveIdentifier, resolvePath, setLivelinessChecking, setLivelynessChecking, splitJsonPath, types as t, toGenerator, toGeneratorFunction, tryReference, tryResolve, typecheck, types, unescapeJsonPath, unprotect, walk };
+export { type CustomTypeOptions, type IActionContext, type IActionRecorder, type IActionTrackingMiddleware2Call, type IActionTrackingMiddleware2Hooks, type IActionTrackingMiddlewareHooks, type IAnyComplexType, type IAnyModelType, type IAnyStateTreeNode, type IAnyType, type IArrayType, type IComplexType, type IDisposer, type IJsonPatch, type IMSTArray, type IMSTMap, type IMapType, type IMaybe, type IMaybeIType, type IMaybeNull, type IMiddlewareEvent, type IMiddlewareEventType, type IMiddlewareHandler, type IModelReflectionData, type IModelReflectionPropertiesData, type IModelType, type IOptionalIType, type IPatchRecorder, type IReferenceType, type IReversibleJsonPatch, type ISerializedActionCall, type ISimpleType, type ISnapshotProcessor, type ISnapshotProcessors, type IStateTreeNode, type IType, type ITypeUnion, type Instance, type LivelinessMode, type LivelynessMode, type ModelActions, type ModelCreationType, type ModelCreationType2, type ModelInstanceType, type ModelInstanceTypeProps, type ModelPrimitive, type ModelProperties, type ModelPropertiesDeclaration, type ModelPropertiesDeclarationToProperties, type ModelSnapshotType, type ModelSnapshotType2, type OnReferenceInvalidated, type OnReferenceInvalidatedEvent, type OptionalDefaultValueOrFunction, type ReferenceIdentifier, type ReferenceOptions, type ReferenceOptionsGetSet, type ReferenceOptionsOnInvalidated, type SnapshotIn, type SnapshotOrInstance, type SnapshotOut, type TypeOfValue, type TypeOrStateTreeNodeToStateTreeNode, type UnionOptions, type UnionStringArray, type ValidOptionalValue, type ValidOptionalValues, type _CustomCSProcessor, type _CustomJoin, type _CustomOrOther, type _NotCustomized, addDisposer, addMiddleware, applyAction, applyPatch, applySnapshot, cast, castFlowReturn, castToReferenceSnapshot, castToSnapshot, clone, createActionTrackingMiddleware, createActionTrackingMiddleware2, decorate, destroy, detach, escapeJsonPath, flow, getChildType, getEnv, getIdentifier, getLivelinessChecking, getMembers, getNodeId, getParent, getParentOfType, getPath, getPathParts, getPropertyMembers, getRelativePath, getRoot, getRunningActionContext, getSnapshot, getType, hasParent, hasParentOfType, isActionContextChildOf, isActionContextThisOrChildOf, isAlive, isArrayType, isFrozenType, isIdentifierType, isLateType, isLiteralType, isMapType, isModelType, isOptionalType, isPrimitiveType, isProtected, isReferenceType, isRefinementType, isRoot, isStateTreeNode, isType, isUnionType, isValidReference, joinJsonPath, onAction, onPatch, onSnapshot, process, protect, recordActions, recordPatches, resolveIdentifier, resolvePath, setLivelinessChecking, setLivelynessChecking, splitJsonPath, types as t, toGenerator, toGeneratorFunction, tryReference, tryResolve, typecheck, types, unescapeJsonPath, unprotect, walk };

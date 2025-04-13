@@ -1,5 +1,5 @@
 import {
-  MstError,
+  fail,
   createScalarNode,
   SimpleType,
   TypeFlags,
@@ -12,16 +12,13 @@ import {
   ISimpleType,
   AnyObjectNode,
   ScalarNode,
-  assertArg,
-} from '../../internal'
+  assertArg
+} from "../../internal"
 
 abstract class BaseIdentifierType<T> extends SimpleType<T, T, T> {
   readonly flags = TypeFlags.Identifier
 
-  constructor(
-    name: string,
-    private readonly validType: 'string' | 'number',
-  ) {
+  constructor(name: string, private readonly validType: "string" | "number") {
     super(name)
   }
 
@@ -29,40 +26,30 @@ abstract class BaseIdentifierType<T> extends SimpleType<T, T, T> {
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: this['C'],
-  ): this['N'] {
+    initialValue: this["C"]
+  ): this["N"] {
     if (!parent || !(parent.type instanceof ModelType))
-      throw new MstError(
-        `Identifier types can only be instantiated as direct child of a model type`,
-      )
+      throw fail(`Identifier types can only be instantiated as direct child of a model type`)
 
     return createScalarNode(this, parent, subpath, environment, initialValue)
   }
 
-  reconcile(
-    current: this['N'],
-    newValue: this['C'],
-    parent: AnyObjectNode,
-    subpath: string,
-  ) {
+  reconcile(current: this["N"], newValue: this["C"], parent: AnyObjectNode, subpath: string) {
     // we don't consider detaching here since identifier are scalar nodes, and scalar nodes cannot be detached
     if (current.storedValue !== newValue)
-      throw new MstError(
-        `Tried to change identifier from '${current.storedValue}' to '${newValue}'. Changing identifiers is not allowed.`,
+      throw fail(
+        `Tried to change identifier from '${current.storedValue}' to '${newValue}'. Changing identifiers is not allowed.`
       )
     current.setParent(parent, subpath)
     return current
   }
 
-  isValidSnapshot(
-    value: this['C'],
-    context: IValidationContext,
-  ): IValidationResult {
+  isValidSnapshot(value: this["C"], context: IValidationContext): IValidationResult {
     if (typeof value !== this.validType) {
       return typeCheckFailure(
         context,
         value,
-        `Value is not a valid ${this.describe()}, expected a ${this.validType}`,
+        `Value is not a valid ${this.describe()}, expected a ${this.validType}`
       )
     }
     return typeCheckSuccess()
@@ -77,7 +64,7 @@ export class IdentifierType extends BaseIdentifierType<string> {
   readonly flags = TypeFlags.Identifier
 
   constructor() {
-    super(`identifier`, 'string')
+    super(`identifier`, "string")
   }
 
   describe() {
@@ -91,7 +78,7 @@ export class IdentifierType extends BaseIdentifierType<string> {
  */
 export class IdentifierNumberType extends BaseIdentifierType<number> {
   constructor() {
-    super('identifierNumber', 'number')
+    super("identifierNumber", "number")
   }
 
   getSnapshot(node: ScalarNode<number, number, number>): number {
@@ -143,9 +130,9 @@ export const identifierNumber: ISimpleType<number> = new IdentifierNumberType()
  * @param type
  * @returns
  */
-export function isIdentifierType(
-  type: unknown,
-): type is typeof identifier | typeof identifierNumber {
+export function isIdentifierType<IT extends typeof identifier | typeof identifierNumber>(
+  type: IT
+): type is IT {
   return isType(type) && (type.flags & TypeFlags.Identifier) > 0
 }
 
@@ -159,7 +146,7 @@ export type ReferenceIdentifier = string | number
  * @hidden
  */
 export function normalizeIdentifier(id: ReferenceIdentifier): string {
-  return '' + id
+  return "" + id
 }
 
 /**
@@ -167,16 +154,13 @@ export function normalizeIdentifier(id: ReferenceIdentifier): string {
  * @hidden
  */
 export function isValidIdentifier(id: any): id is ReferenceIdentifier {
-  return typeof id === 'string' || typeof id === 'number'
+  return typeof id === "string" || typeof id === "number"
 }
 
 /**
  * @internal
  * @hidden
  */
-export function assertIsValidIdentifier(
-  id: ReferenceIdentifier,
-  argNumber: number | number[],
-) {
-  assertArg(id, isValidIdentifier, 'string or number (identifier)', argNumber)
+export function assertIsValidIdentifier(id: ReferenceIdentifier, argNumber: number | number[]) {
+  assertArg(id, isValidIdentifier, "string or number (identifier)", argNumber)
 }

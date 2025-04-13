@@ -13,7 +13,7 @@ import {
   createActionInvoker,
   EMPTY_OBJECT,
   extend,
-  MstError,
+  fail,
   freeze,
   IAnyType,
   IdentifierCache,
@@ -164,7 +164,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
       }
 
       if (typeof id !== 'string' && typeof id !== 'number') {
-        throw new MstError(
+        throw fail(
           `Instance identifier '${this.identifierAttribute}' for type '${this.type.name}' must be a string or a number`,
         )
       }
@@ -194,7 +194,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
     if (devMode()) {
       if (this.state !== NodeLifeCycle.INITIALIZING) {
         // istanbul ignore next
-        throw new MstError(
+        throw fail(
           'assertion failed: the creation of the observable instance must be done on the initializing phase',
         )
       }
@@ -229,9 +229,8 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
     const type = this.type
 
     try {
-      this.storedValue = type.createNewInstance(
-        this._childNodes,
-      ) as typeof this.storedValue
+      // @ts-expect-error
+      this.storedValue = type.createNewInstance(this._childNodes)
       this.preboot()
 
       this._isRunningAction = true
@@ -309,20 +308,20 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
     if (devMode()) {
       if (!subpath) {
         // istanbul ignore next
-        throw new MstError('assertion failed: subpath expected')
+        throw fail('assertion failed: subpath expected')
       }
       if (!newParent) {
         // istanbul ignore next
-        throw new MstError('assertion failed: new parent expected')
+        throw fail('assertion failed: new parent expected')
       }
 
       if (this.parent && parentChanged) {
-        throw new MstError(
+        throw fail(
           `A node cannot exists twice in the state tree. Failed to add ${this} to path '${newParent.path}/${subpath}'.`,
         )
       }
       if (!this.parent && newParent.root === this) {
-        throw new MstError(
+        throw fail(
           `A state tree is not allowed to contain itself. Cannot assign ${this} to path '${newParent.path}/${subpath}'`,
         )
       }
@@ -331,7 +330,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
         !!this.environment &&
         this.environment !== newParent.root.environment
       ) {
-        throw new MstError(
+        throw fail(
           `A state tree cannot be made part of another state tree as long as their environments are different.`,
         )
       }
@@ -418,7 +417,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
       const error = this._getAssertAliveError(context)
       switch (livelinessChecking) {
         case 'error':
-          throw new MstError(error)
+          throw fail(error)
         case 'warn':
           warnError(error)
       }
@@ -493,7 +492,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
   assertWritable(context: AssertAliveContext): void {
     this.assertAlive(context)
     if (!this.isRunningAction() && this.isProtected) {
-      throw new MstError(
+      throw fail(
         `Cannot modify '${this}', the object is protected and can only be modified by using an action.`,
       )
     }
@@ -530,8 +529,7 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
   }
 
   detach(): void {
-    if (!this.isAlive)
-      throw new MstError(`Error while detaching, node is not alive.`)
+    if (!this.isAlive) throw fail(`Error while detaching, node is not alive.`)
 
     this.clearParent()
   }
@@ -630,12 +628,8 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
 
   emitPatch(basePatch: IReversibleJsonPatch, source: AnyNode): void {
     if (this._internalEventsHasSubscribers(InternalEvents.Patch)) {
-      // calculate the relative path of the patch
-      const path =
-        source.path.substr(this.path.length) +
-        (basePatch.path ? '/' + basePatch.path : '')
       const localizedPatch: IReversibleJsonPatch = extend({}, basePatch, {
-        path,
+        path: source.path.substr(this.path.length) + '/' + basePatch.path, // calculate the relative path of the patch
       })
       const [patch, reversePatch] = splitPatch(localizedPatch)
       this._internalEventsEmit(InternalEvents.Patch, patch, reversePatch)
@@ -652,14 +646,14 @@ export class ObjectNode<C, S, T> extends BaseNode<C, S, T> {
       this._internalEventsRegister(InternalEvents.Dispose, disposer, true)
       return
     }
-    throw new MstError(
+    throw fail(
       'cannot add a disposer when it is already registered for execution',
     )
   }
 
   removeDisposer(disposer: () => void): void {
     if (!this._internalEventsHas(InternalEvents.Dispose, disposer)) {
-      throw new MstError(
+      throw fail(
         'cannot remove a disposer which was never registered for execution',
       )
     }

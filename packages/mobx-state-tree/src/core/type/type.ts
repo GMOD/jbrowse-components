@@ -1,7 +1,7 @@
-import { action } from 'mobx'
+import { action } from "mobx"
 
 import {
-  MstError,
+  fail,
   isMutable,
   isStateTreeNode,
   getStateTreeNode,
@@ -22,9 +22,8 @@ import {
   BaseNode,
   ScalarNode,
   getStateTreeNodeSafe,
-  assertArg,
-} from '../../internal'
-import type { Writable, WritableKeys } from 'ts-essentials'
+  assertArg
+} from "../../internal"
 
 /**
  * @internal
@@ -53,27 +52,23 @@ export enum TypeFlags {
   SnapshotProcessor = 1 << 19,
   Lazy = 1 << 20,
   Finite = 1 << 21,
-  Float = 1 << 22,
+  Float = 1 << 22
 }
 
 /**
  * @internal
  * @hidden
  */
-export const cannotDetermineSubtype = 'cannotDetermine'
+export const cannotDetermineSubtype = "cannotDetermine"
 
 /**
  * A state tree node value.
  * @hidden
  */
-export type STNValue<T, IT extends IAnyType> = T extends object
-  ? T & IStateTreeNode<IT>
-  : T
+export type STNValue<T, IT extends IAnyType> = T extends object ? T & IStateTreeNode<IT> : T
 
 /** @hidden */
-const $type: unique symbol = Symbol('$type')
-
-type ExcludeReadonly<T> = T extends {} ? T[WritableKeys<T>] : T
+const $type: unique symbol = Symbol("$type")
 
 /**
  * A type, either complex or simple.
@@ -98,7 +93,7 @@ export interface IType<C, S, T> {
    *
    * @returns An instance of that type.
    */
-  create(snapshot?: C | ExcludeReadonly<T>, env?: any): this['Type']
+  create(snapshot?: C, env?: any): this["Type"]
 
   /**
    * Checks if a given snapshot / instance is of the given type.
@@ -106,7 +101,7 @@ export interface IType<C, S, T> {
    * @param thing Snapshot or instance to be checked.
    * @returns true if the value is of the current type, false otherwise.
    */
-  is(thing: any): thing is C | this['Type']
+  is(thing: any): thing is C | this["Type"]
 
   /**
    * Run's the type's typechecker on the given value with the given validation context.
@@ -115,7 +110,7 @@ export interface IType<C, S, T> {
    * @param context Validation context, an array of { subpaths, subtypes } that should be validated
    * @returns The validation result, an array with the list of validation errors.
    */
-  validate(thing: C | T, context: IValidationContext): IValidationResult
+  validate(thing: C, context: IValidationContext): IValidationResult
 
   /**
    * Gets the textual representation of the type as a string.
@@ -166,7 +161,7 @@ export interface IType<C, S, T> {
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: C | T,
+    initialValue: C | T
   ): BaseNode<C, S, T>
   /**
    * @internal
@@ -176,7 +171,7 @@ export interface IType<C, S, T> {
     current: BaseNode<C, S, T>,
     newValue: C | T,
     parent: AnyObjectNode,
-    subpath: string,
+    subpath: string
   ): BaseNode<C, S, T>
   /**
    * @internal
@@ -222,47 +217,35 @@ export interface IAnyComplexType extends IType<any, any, object> {}
 
 /** @hidden */
 export type ExtractCSTWithoutSTN<
-  IT extends {
-    [$type]: undefined
-    CreationType: any
-    SnapshotType: any
-    TypeWithoutSTN: any
-  },
-> = IT['CreationType'] | IT['SnapshotType'] | IT['TypeWithoutSTN']
+  IT extends { [$type]: undefined; CreationType: any; SnapshotType: any; TypeWithoutSTN: any }
+> = IT["CreationType"] | IT["SnapshotType"] | IT["TypeWithoutSTN"]
 /** @hidden */
 export type ExtractCSTWithSTN<
-  IT extends {
-    [$type]: undefined
-    CreationType: any
-    SnapshotType: any
-    Type: any
-  },
-> = IT['CreationType'] | IT['SnapshotType'] | IT['Type']
+  IT extends { [$type]: undefined; CreationType: any; SnapshotType: any; Type: any }
+> = IT["CreationType"] | IT["SnapshotType"] | IT["Type"]
 
 /**
  * The instance representation of a given type.
  */
-export type Instance<T> = T extends { [$type]: undefined; Type: any }
-  ? T['Type']
-  : T
+export type Instance<T> = T extends { [$type]: undefined; Type: any } ? T["Type"] : T
 
 /**
  * The input (creation) snapshot representation of a given type.
  */
 export type SnapshotIn<T> = T extends { [$type]: undefined; CreationType: any }
-  ? T['CreationType']
+  ? T["CreationType"]
   : T extends IStateTreeNode<infer IT>
-    ? IT['CreationType']
-    : T
+  ? IT["CreationType"]
+  : T
 
 /**
  * The output snapshot representation of a given type.
  */
 export type SnapshotOut<T> = T extends { [$type]: undefined; SnapshotType: any }
-  ? T['SnapshotType']
+  ? T["SnapshotType"]
   : T extends IStateTreeNode<infer IT>
-    ? IT['SnapshotType']
-    : T
+  ? IT["SnapshotType"]
+  : T
 
 /**
  * A type which is equivalent to the union of SnapshotIn and Instance types of a given typeof TYPE or typeof VARIABLE.
@@ -298,12 +281,8 @@ export type SnapshotOrInstance<T> = SnapshotIn<T> | Instance<T>
  * @internal
  * @hidden
  */
-export abstract class BaseType<
-  C,
-  S,
-  T,
-  N extends BaseNode<any, any, any> = BaseNode<C, S, T>,
-> implements IType<C, S, T>
+export abstract class BaseType<C, S, T, N extends BaseNode<any, any, any> = BaseNode<C, S, T>>
+  implements IType<C, S, T>
 {
   [$type]!: undefined
 
@@ -322,35 +301,27 @@ export abstract class BaseType<
 
   create(snapshot?: C, environment?: any) {
     typecheckInternal(this, snapshot)
-    return this.instantiate(null, '', environment, snapshot!).value
+    return this.instantiate(null, "", environment, snapshot!).value
   }
 
   getSnapshot(node: N, applyPostProcess?: boolean): S {
     // istanbul ignore next
-    throw new MstError('unimplemented method')
+    throw fail("unimplemented method")
   }
 
-  abstract reconcile(
-    current: N,
-    newValue: C | T,
-    parent: AnyObjectNode,
-    subpath: string,
-  ): N
+  abstract reconcile(current: N, newValue: C | T, parent: AnyObjectNode, subpath: string): N
 
   abstract instantiate(
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: C | T,
+    initialValue: C | T
   ): N
 
   declare abstract flags: TypeFlags
   abstract describe(): string
 
-  abstract isValidSnapshot(
-    value: C,
-    context: IValidationContext,
-  ): IValidationResult
+  abstract isValidSnapshot(value: C, context: IValidationContext): IValidationResult
 
   isAssignableFrom(type: IAnyType): boolean {
     return type === this
@@ -369,39 +340,35 @@ export abstract class BaseType<
   }
 
   is(thing: any): thing is any {
-    return this.validate(thing, [{ path: '', type: this }]).length === 0
+    return this.validate(thing, [{ path: "", type: this }]).length === 0
   }
 
   get Type(): any {
     // istanbul ignore next
-    throw new MstError(
-      'Factory.Type should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.Type`',
+    throw fail(
+      "Factory.Type should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.Type`"
     )
   }
   get TypeWithoutSTN(): any {
     // istanbul ignore next
-    throw new MstError(
-      'Factory.TypeWithoutSTN should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.TypeWithoutSTN`',
+    throw fail(
+      "Factory.TypeWithoutSTN should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.TypeWithoutSTN`"
     )
   }
   get SnapshotType(): any {
     // istanbul ignore next
-    throw new MstError(
-      'Factory.SnapshotType should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.SnapshotType`',
+    throw fail(
+      "Factory.SnapshotType should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.SnapshotType`"
     )
   }
   get CreationType(): any {
     // istanbul ignore next
-    throw new MstError(
-      'Factory.CreationType should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.CreationType`',
+    throw fail(
+      "Factory.CreationType should not be actually called. It is just a Type signature that can be used at compile time with Typescript, by using `typeof type.CreationType`"
     )
   }
 
-  abstract getSubTypes():
-    | IAnyType[]
-    | IAnyType
-    | null
-    | typeof cannotDetermineSubtype
+  abstract getSubTypes(): IAnyType[] | IAnyType | null | typeof cannotDetermineSubtype
 }
 BaseType.prototype.create = action(BaseType.prototype.create)
 
@@ -415,8 +382,9 @@ export type AnyBaseType = BaseType<any, any, any, any>
  * @internal
  * @hidden
  */
-export type ExtractNodeType<IT extends IAnyType> =
-  IT extends BaseType<any, any, any, infer N> ? N : never
+export type ExtractNodeType<IT extends IAnyType> = IT extends BaseType<any, any, any, infer N>
+  ? N
+  : never
 
 /**
  * A complex type produces a MST node (Node in the state tree)
@@ -424,12 +392,7 @@ export type ExtractNodeType<IT extends IAnyType> =
  * @internal
  * @hidden
  */
-export abstract class ComplexType<C, S, T> extends BaseType<
-  C,
-  S,
-  T,
-  ObjectNode<C, S, T>
-> {
+export abstract class ComplexType<C, S, T> extends BaseType<C, S, T, ObjectNode<C, S, T>> {
   identifierAttribute?: string
 
   constructor(name: string) {
@@ -440,7 +403,7 @@ export abstract class ComplexType<C, S, T> extends BaseType<
     return super.create(snapshot, environment)
   }
 
-  getValue(node: this['N']): T {
+  getValue(node: this["N"]): T {
     node.createObservableInstanceIfNeeded()
     return node.storedValue
   }
@@ -448,31 +411,26 @@ export abstract class ComplexType<C, S, T> extends BaseType<
   abstract getDefaultSnapshot(): C
 
   abstract createNewInstance(childNodes: IChildNodesMap): T
-  abstract finalizeNewInstance(node: this['N'], instance: any): void
+  abstract finalizeNewInstance(node: this["N"], instance: any): void
 
-  abstract applySnapshot(node: this['N'], snapshot: C): void
-  abstract applyPatchLocally(
-    node: this['N'],
-    subpath: string,
-    patch: IJsonPatch,
-  ): void
+  abstract applySnapshot(node: this["N"], snapshot: C): void
+  abstract applyPatchLocally(node: this["N"], subpath: string, patch: IJsonPatch): void
   abstract processInitialSnapshot(childNodes: IChildNodesMap, snapshot: C): S
 
-  abstract getChildren(node: this['N']): ReadonlyArray<AnyNode>
-  abstract getChildNode(node: this['N'], key: string): AnyNode
+  abstract getChildren(node: this["N"]): ReadonlyArray<AnyNode>
+  abstract getChildNode(node: this["N"], key: string): AnyNode
   abstract getChildType(propertyName?: string): IAnyType
-  abstract initializeChildNodes(node: this['N'], snapshot: any): IChildNodesMap
-  abstract removeChild(node: this['N'], subpath: string): void
+  abstract initializeChildNodes(node: this["N"], snapshot: any): IChildNodesMap
+  abstract removeChild(node: this["N"], subpath: string): void
 
-  isMatchingSnapshotId(current: this['N'], snapshot: C): boolean {
+  isMatchingSnapshotId(current: this["N"], snapshot: C): boolean {
     return (
       !current.identifierAttribute ||
-      current.identifier ===
-        normalizeIdentifier((snapshot as any)[current.identifierAttribute])
+      current.identifier === normalizeIdentifier((snapshot as any)[current.identifierAttribute])
     )
   }
 
-  private tryToReconcileNode(current: this['N'], newValue: C | T) {
+  private tryToReconcileNode(current: this["N"], newValue: C | T) {
     if (current.isDetaching) return false
     if ((current.snapshot as any) === newValue) {
       // newValue is the current snapshot of the node, noop
@@ -497,11 +455,11 @@ export abstract class ComplexType<C, S, T> extends BaseType<
   }
 
   reconcile(
-    current: this['N'],
+    current: this["N"],
     newValue: C | T,
     parent: AnyObjectNode,
-    subpath: string,
-  ): this['N'] {
+    subpath: string
+  ): this["N"] {
     const nodeReconciled = this.tryToReconcileNode(current, newValue)
     if (nodeReconciled) {
       current.setParent(parent, subpath)
@@ -531,24 +489,19 @@ ComplexType.prototype.create = action(ComplexType.prototype.create)
  * @internal
  * @hidden
  */
-export abstract class SimpleType<C, S, T> extends BaseType<
-  C,
-  S,
-  T,
-  ScalarNode<C, S, T>
-> {
+export abstract class SimpleType<C, S, T> extends BaseType<C, S, T, ScalarNode<C, S, T>> {
   abstract instantiate(
     parent: AnyObjectNode | null,
     subpath: string,
     environment: any,
-    initialValue: C,
-  ): this['N']
+    initialValue: C
+  ): this["N"]
 
   createNewInstance(snapshot: C): T {
     return snapshot as any
   }
 
-  getValue(node: this['N']): T {
+  getValue(node: this["N"]): T {
     // if we ever find a case where scalar nodes can be accessed without iterating through its parent
     // uncomment this to make sure the parent chain is created when this is accessed
     // if (node.parent) {
@@ -557,22 +510,13 @@ export abstract class SimpleType<C, S, T> extends BaseType<
     return node.storedValue
   }
 
-  getSnapshot(node: this['N']): S {
+  getSnapshot(node: this["N"]): S {
     return node.storedValue
   }
 
-  reconcile(
-    current: this['N'],
-    newValue: C,
-    parent: AnyObjectNode,
-    subpath: string,
-  ): this['N'] {
+  reconcile(current: this["N"], newValue: C, parent: AnyObjectNode, subpath: string): this["N"] {
     // reconcile only if type and value are still the same, and only if the node is not detaching
-    if (
-      !current.isDetaching &&
-      current.type === this &&
-      current.storedValue === newValue
-    ) {
+    if (!current.isDetaching && current.type === this && current.storedValue === newValue) {
       return current
     }
     const res = this.instantiate(parent, subpath, undefined, newValue)
@@ -592,7 +536,7 @@ export abstract class SimpleType<C, S, T> extends BaseType<
  * @returns `true` if the value is a type.
  */
 export function isType(value: any): value is IAnyType {
-  return typeof value === 'object' && value && value.isType === true
+  return typeof value === "object" && value && value.isType === true
 }
 
 /**
@@ -600,5 +544,5 @@ export function isType(value: any): value is IAnyType {
  * @hidden
  */
 export function assertIsType(type: IAnyType, argNumber: number | number[]) {
-  assertArg(type, isType, '@jbrowse/@jbrowse/mobx-state-tree type', argNumber)
+  assertArg(type, isType, "mobx-state-tree type", argNumber)
 }
