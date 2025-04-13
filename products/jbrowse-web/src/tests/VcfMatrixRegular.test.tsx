@@ -19,7 +19,9 @@ test('regular', async () => {
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Multi-variant display (regular)', ...opts))
+  fireEvent.click(
+    await findByText('Multi-sample variant display (regular)', ...opts),
+  )
   await new Promise(res => setTimeout(res, 1000))
   fireEvent.click(await findByText('Force load', ...opts))
 
@@ -34,7 +36,9 @@ test('rphased', async () => {
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Multi-variant display (regular)', ...opts))
+  fireEvent.click(
+    await findByText('Multi-sample variant display (regular)', ...opts),
+  )
 
   // Using the track menu twice not working currently, manually poke this setting
   view.tracks[0].displays[0].setPhasedMode('phased')

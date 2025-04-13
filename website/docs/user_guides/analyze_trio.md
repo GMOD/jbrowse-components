@@ -34,13 +34,13 @@ After adding the VCF it will look like this
 ## Enabling the matrix view
 
 JBrowse can show variant datasets using a specialized "display mode" called the
-"Multi-variant display (matrix)"
+"Multi-sample variant display (matrix)"
 
 This mode produces a new visualization modality that shows all the samples at
 once, along with all the variants, in a dense "heatmap" or "matrix" style
 display
 
-<Figure caption="Navigating to the track menu, and selecting 'Multi-variant display (matrix) enables all the samples to be given their own row in the view. Each variant is a 'column' in this matrix, and each sample is a 'row'. Black lines connect the variants to their genome position" src="/img/trio-matrix.png"/>
+<Figure caption="Navigating to the track menu, and selecting 'Multi-sample variant display (matrix) enables all the samples to be given their own row in the view. Each variant is a 'column' in this matrix, and each sample is a 'row'. Black lines connect the variants to their genome position" src="/img/trio-matrix.png"/>
 
 In the above figure, the default coloring for this matrix view is enabled.
 
