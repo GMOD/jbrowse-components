@@ -1509,9 +1509,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Similar to `navToLocString`, but accepts parsed location objects
-       * instead of strings. Will try to perform `setDisplayedRegions` if
+       * Similar to `navToLocString`, but accepts a parsed location object
+       * instead of a locstring. Will try to perform `setDisplayedRegions` if
        * changing regions
+       */
+      async navToLocation(
+        parsedLocString: ParsedLocString,
+        assemblyName?: string,
+      ) {
+        return this.navToLocations([parsedLocString], assemblyName)
+      },
+
+      /**
+       * #action
+       * Similar to `navToLocString`, but accepts a list of parsed location
+       * objects instead of a locstring. Will try to perform
+       * `setDisplayedRegions` if changing regions
        */
       async navToLocations(
         parsedLocStrings: ParsedLocString[],

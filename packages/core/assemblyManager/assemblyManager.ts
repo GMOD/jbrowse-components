@@ -152,7 +152,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           return assembly.isValidRefName(refName)
         }
         throw new Error(
-          `Failed to look up refName ${refName} on ${assemblyName} because assembly does not exist`,
+          `Failed to look up refName:${refName} on assemblyName:${assemblyName} (assembly does not exist)`,
         )
       },
     }))
