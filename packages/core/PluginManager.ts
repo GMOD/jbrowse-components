@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { isModelType, isType, types } from 'mobx-state-tree'
+import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 // Pluggable elements
 import CorePlugin from './CorePlugin'
@@ -29,7 +29,7 @@ import type {
 } from './pluggableElementTypes'
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
-import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
+import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
 // helper class that keeps groups of callbacks that are then run in a specified
 // order by group

@@ -2,20 +2,20 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { saveAs } from 'file-saver'
 import { observable, transaction } from 'mobx'
-import { types } from 'mobx-state-tree'
 
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
 import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

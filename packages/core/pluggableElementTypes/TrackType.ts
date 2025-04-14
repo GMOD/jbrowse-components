@@ -2,7 +2,7 @@ import PluggableElementBase from './PluggableElementBase'
 
 import type { AnyConfigurationSchemaType } from '../configuration'
 import type DisplayType from './DisplayType'
-import type { IAnyModelType } from 'mobx-state-tree'
+import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class TrackType extends PluggableElementBase {
   stateModel: IAnyModelType

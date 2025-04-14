@@ -1,5 +1,5 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
-import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
+import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
 import { removeAttr } from './util'
 

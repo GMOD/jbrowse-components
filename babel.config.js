@@ -9,7 +9,12 @@ module.exports = function babelConfig(api) {
         },
       ],
       '@babel/preset-env',
-      '@babel/preset-typescript',
+      [
+        '@babel/preset-typescript',
+        {
+          allowDeclareFields: true,
+        },
+      ],
     ],
     ignore: [
       './node_modules',

@@ -16,10 +16,6 @@ import {
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
-import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -28,7 +24,11 @@ import {
   getSnapshot,
   resolveIdentifier,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { saveAs } from 'file-saver'
+import { autorun, observable, transaction } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
@@ -39,7 +39,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

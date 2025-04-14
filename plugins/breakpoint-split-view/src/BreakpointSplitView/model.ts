@@ -2,19 +2,19 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
+import { addDisposer, getPath, onAction, types } from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
-import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
 import { calc, getBlockFeatures, getClip, intersect } from './util'
 
 import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

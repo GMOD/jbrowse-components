@@ -13,10 +13,10 @@ import {
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
 import FeatureDensityMixin from './FeatureDensityMixin'
 import TrackHeightMixin from './TrackHeightMixin'
@@ -28,8 +28,8 @@ import type { ExportSvgOptions } from '../../LinearGenomeView/types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('../components/Tooltip'))
@@ -435,7 +435,7 @@ function stateModelFactory() {
       return { heightPreConfig: height, ...rest }
     })
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
       const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest

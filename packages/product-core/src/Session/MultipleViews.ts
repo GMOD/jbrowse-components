@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { localStorageGetBoolean, localStorageSetItem } from '@jbrowse/core/util'
+import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, types } from 'mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets'
@@ -10,7 +10,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import type { Region } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))

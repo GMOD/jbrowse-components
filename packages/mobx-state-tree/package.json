@@ -1,0 +1,47 @@
+{
+  "name": "@jbrowse/mobx-state-tree",
+  "version": "5.4.2",
+  "description": "Opinionated, transactional, MobX powered state container",
+  "main": "dist/index.js",
+  "module": "esm/index.js",
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rimraf dist esm",
+    "prebuild": "yarn clean",
+    "build:esm": "tsup  --format esm src/index.ts --dts -d esm",
+    "build:es5": "tsup  src/index.ts --dts",
+    "build": "yarn build:es5 && yarn build:esm",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mobxjs/@jbrowse/@jbrowse/mobx-state-tree.git"
+  },
+  "author": "Michel Weststrate",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mobxjs/mobx-state-tree/issues"
+  },
+  "files": [
+    "dist/"
+  ],
+  "peerDependencies": {
+    "mobx": "^6.3.0"
+  },
+  "keywords": [
+    "mobx",
+    "mobx-state-tree",
+    "promise",
+    "reactive",
+    "frp",
+    "functional-reactive-programming",
+    "state management"
+  ],
+  "dependencies": {
+    "ts-essentials": "^10.0.4"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.11.20",
+    "tsup": "^8.4.0"
+  }
+}

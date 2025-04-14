@@ -1,11 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
-import { types } from 'mobx-state-tree'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'

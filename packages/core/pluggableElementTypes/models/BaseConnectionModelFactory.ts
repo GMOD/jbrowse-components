@@ -1,4 +1,4 @@
-import { cast, types } from 'mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './baseConnectionConfig'
 import { ConfigurationReference } from '../../configuration'
