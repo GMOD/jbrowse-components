@@ -1,4 +1,5 @@
 export * from './DefaultSession'
+export * from './ExternalNavigate'
 export * from './DisableAddTrack'
 export * from './HumanExomeExample'
 export * from './NextstrainExample'
