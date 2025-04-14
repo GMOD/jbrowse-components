@@ -1,6 +1,8 @@
 export {
   DefaultSession,
   DisableAddTrack,
+  ExternalNavigateLocstring,
+  ExternalNavigateObject,
   HumanExomeExample,
   NextstrainExample,
   OneLinearGenomeView,
