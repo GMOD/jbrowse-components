@@ -124,7 +124,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
           return {
             ...Object.fromEntries(
               // force col 0 to be called name
-              rest.map((c, idx) => [header[idx + 1]!, c] as const),
+              header.slice(1).map((c, idx) => [c, rest[idx] || ''] as const),
             ),
             name: name!,
           }
