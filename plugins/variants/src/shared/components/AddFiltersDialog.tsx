@@ -75,6 +75,12 @@ const AddFiltersDialog = observer(function ({
               <code>jexl:get(feature,'score') &gt; 400</code> - show only
               features that have a score greater than 400
             </li>
+            <li>
+              <code>
+                jexl:get(feature,'end') - get(feature,'start') &lt; 1000000
+              </code>{' '}
+              - show only features with length less than 1Mbp
+            </li>
           </ul>
         </div>
 

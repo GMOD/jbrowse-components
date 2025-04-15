@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
@@ -458,6 +459,9 @@ export default function MultiVariantBaseModelF(
           rowHeight: self.rowHeight,
           sources: self.sources,
           scrollTop: self.scrollTop,
+          filters: new SerializableFilterChain({
+            filters: self.activeFilters,
+          }),
         }
       },
     }))
