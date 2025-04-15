@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
@@ -10,7 +11,7 @@ import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
-import { types } from 'mobx-state-tree'
+import { cast, types } from 'mobx-state-tree'
 
 import { getSources } from './getSources'
 
@@ -22,6 +23,7 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
 const ClusterDialog = lazy(
   () => import('./components/MultiVariantClusterDialog/ClusterDialog'),
 )
@@ -84,6 +86,11 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
+
+        /**
+         * #property
+         */
+        jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -119,6 +126,12 @@ export default function MultiVariantBaseModelF(
         | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setJexlFilters(f?: string[]) {
+        self.jexlFilters = cast(f)
+      },
       /**
        * #action
        */
@@ -207,6 +220,17 @@ export default function MultiVariantBaseModelF(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get activeFilters() {
+        // config jexlFilters are deferred evaluated so they are prepended with
+        // jexl at runtime rather than being stored with jexl in the config
+        return (
+          self.jexlFilters ??
+          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+        )
+      },
       /**
        * #getter
        */
@@ -361,6 +385,18 @@ export default function MultiVariantBaseModelF(
                     ])
                   },
                 },
+                {
+                  label: 'Edit filters',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      AddFiltersDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
               ],
             },
             {
@@ -423,6 +459,9 @@ export default function MultiVariantBaseModelF(
           rowHeight: self.rowHeight,
           sources: self.sources,
           scrollTop: self.scrollTop,
+          filters: new SerializableFilterChain({
+            filters: self.activeFilters,
+          }),
         }
       },
     }))

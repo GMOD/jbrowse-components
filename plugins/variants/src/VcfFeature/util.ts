@@ -206,7 +206,7 @@ export function getMinimalDesc(ref: string, alt: string) {
       ? `${lena} DEL`
       : makeDescriptionString('deletion', ref, alt)
   } else {
-    return ['indel', makeDescriptionString('indel', ref, alt)]
+    return makeDescriptionString('indel', ref, alt)
   }
 }
 
