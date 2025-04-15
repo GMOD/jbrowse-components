@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import RBush from 'rbush'
 
@@ -88,7 +89,7 @@ const MultiVariantRendering = observer(function (props: {
               r === '.'
                 ? '.'
                 : +r === 0
-                  ? `ref(${ref})`
+                  ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
                   : getMinimalDesc(ref, alt[+r - 1] || ''),
             )
             .join(genotype.includes('|') ? '|' : '/'),
