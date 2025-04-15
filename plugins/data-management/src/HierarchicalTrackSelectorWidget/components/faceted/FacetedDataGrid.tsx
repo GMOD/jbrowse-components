@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { getEnv, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
@@ -36,7 +36,10 @@ const FacetedDataGrid = observer(function ({
     name:
       measureGridWidth(
         rows.map(r => r.name),
-        { maxWidth: 500, stripHTML: true },
+        {
+          maxWidth: 500,
+          stripHTML: true,
+        },
       ) + 15,
     ...Object.fromEntries(
       filteredNonMetadataKeys
@@ -45,7 +48,10 @@ const FacetedDataGrid = observer(function ({
           e,
           measureGridWidth(
             rows.map(r => r[e as keyof typeof r] as string),
-            { maxWidth: 400, stripHTML: true },
+            {
+              maxWidth: 400,
+              stripHTML: true,
+            },
           ),
         ]),
     ),
@@ -57,7 +63,10 @@ const FacetedDataGrid = observer(function ({
             `metadata.${e}`,
             measureGridWidth(
               rows.map(r => r.metadata[e]),
-              { maxWidth: 400, stripHTML: true },
+              {
+                maxWidth: 400,
+                stripHTML: true,
+              },
             ),
           ]
         }),
@@ -66,21 +75,23 @@ const FacetedDataGrid = observer(function ({
 
   return (
     <DataGrid
+      rowHeight={25}
+      columnHeaderHeight={35}
+      checkboxSelection
+      disableRowSelectionOnClick
+      keepNonExistentRowsSelected
       rows={filteredRows}
+      columnVisibilityModel={visible}
+      showToolbar={showOptions}
       onColumnWidthChange={arg => {
         setWidths({
           ...widths,
           [arg.colDef.field]: arg.width,
         })
       }}
-      columnVisibilityModel={visible}
       onColumnVisibilityModelChange={n => {
         model.faceted.setVisible(n)
       }}
-      columnHeaderHeight={35}
-      checkboxSelection
-      disableRowSelectionOnClick
-      keepNonExistentRowsSelected
       onRowSelectionModelChange={userSelectedIds => {
         if (!useShoppingCart) {
           const a1 = shownTrackIds
@@ -112,21 +123,13 @@ const FacetedDataGrid = observer(function ({
           useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds],
         ),
       }}
-      slots={{
-        toolbar: showOptions ? GridToolbar : undefined,
-      }}
-      slotProps={{
-        toolbar: {
-          printOptions: {
-            disableToolbarButton: true,
-          },
-        },
-      }}
-      columns={columns.map(r => ({
-        ...r,
-        width: widths[r.field],
-      }))}
-      rowHeight={25}
+      columns={columns.map(
+        r =>
+          ({
+            ...r,
+            width: widths[r.field],
+          }) satisfies GridColDef<(typeof rows)[0]>,
+      )}
     />
   )
 })

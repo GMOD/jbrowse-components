@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 
 import type { GridColDef, GridValidRowModel } from '@mui/x-data-grid'
 
@@ -19,6 +19,7 @@ export default function VariantConsequenceDataGridWrapper({
   return rows.length ? (
     <div>
       <FormControlLabel
+        label={<Typography variant="body2">Show options</Typography>}
         control={
           <Checkbox
             checked={checked}
@@ -27,20 +28,20 @@ export default function VariantConsequenceDataGridWrapper({
             }}
           />
         }
-        label={<Typography variant="body2">Show options</Typography>}
       />
 
       <DataGrid
         rowHeight={25}
         hideFooter={rows.length < 100}
         rows={rows}
-        columns={columns.map((c, i) => ({
-          ...c,
-          width: widths[i],
-        }))}
-        slots={{
-          toolbar: checked ? GridToolbar : undefined,
-        }}
+        showToolbar={checked}
+        columns={columns.map(
+          (c, i) =>
+            ({
+              ...c,
+              width: widths[i],
+            }) satisfies GridColDef<(typeof rows)[0]>,
+        )}
       />
     </div>
   ) : null

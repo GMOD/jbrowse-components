@@ -1,11 +1,10 @@
 import { useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { getBpDisplayStr } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import RBush from 'rbush'
 
-import { getMinimalDesc } from '../../VcfFeature/util'
+import { makeSimpleAltString } from '../../VcfFeature/util'
 
 import type { Source } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -81,18 +80,11 @@ const MultiVariantRendering = observer(function (props: {
       const ret = featureGenotypeMap[featureId]
       if (ret) {
         const { ref, alt } = ret
+        const alleles = makeSimpleAltString(genotype, ref, alt)
         return {
           ...rest,
-          alleles: genotype
-            .split(/[/|]/)
-            .map(r =>
-              r === '.'
-                ? '.'
-                : +r === 0
-                  ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
-                  : getMinimalDesc(ref, alt[+r - 1] || ''),
-            )
-            .join(genotype.includes('|') ? '|' : '/'),
+          GT: genotype,
+          ...(genotype === alleles ? {} : { alleles }),
         }
       }
     }
