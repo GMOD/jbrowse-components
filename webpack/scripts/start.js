@@ -17,7 +17,6 @@ const {
   prepareUrls,
 } = require('react-dev-utils/WebpackDevServerUtils')
 const { checkBrowsers } = require('react-dev-utils/browsersHelper')
-const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
@@ -92,10 +91,6 @@ module.exports = function startWebpack(config) {
       const devServer = new WebpackDevServer(serverConfig, compiler)
       // Launch WebpackDevServer.
       devServer.startCallback(() => {
-        if (isInteractive) {
-          clearConsole()
-        }
-
         openBrowser(urls.localUrlForBrowser)
       })
     })
