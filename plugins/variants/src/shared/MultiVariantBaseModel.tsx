@@ -91,6 +91,10 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         jexlFilters: types.maybe(types.array(types.string)),
+        /**
+         * #property
+         */
+        forceReferenceMouseover: false,
       }),
     )
     .volatile(() => ({
@@ -217,6 +221,12 @@ export default function MultiVariantBaseModelF(
         if (!deepEqual(arg, self.sampleInfo)) {
           self.sampleInfo = arg
         }
+      },
+      /**
+       * #action
+       */
+      setForceReferenceMouseover(arg: boolean) {
+        self.forceReferenceMouseover = arg
       },
     }))
     .views(self => ({
@@ -370,6 +380,14 @@ export default function MultiVariantBaseModelF(
               ],
             },
             {
+              label: 'Force reference mouseover',
+              type: 'checkbox',
+              checked: self.forceReferenceMouseover,
+              onClick: () => {
+                self.setForceReferenceMouseover(!self.forceReferenceMouseover)
+              },
+            },
+            {
               label: 'Filter by',
               icon: FilterListIcon,
               subMenu: [
@@ -429,6 +447,9 @@ export default function MultiVariantBaseModelF(
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get canDisplayLabels() {
         return self.rowHeight >= 8 && self.showSidebarLabelsSetting
       },
@@ -446,6 +467,9 @@ export default function MultiVariantBaseModelF(
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       renderProps() {
         const superProps = self.adapterProps()
         return {
@@ -459,6 +483,7 @@ export default function MultiVariantBaseModelF(
           rowHeight: self.rowHeight,
           sources: self.sources,
           scrollTop: self.scrollTop,
+          forceReferenceMouseover: self.forceReferenceMouseover,
           filters: new SerializableFilterChain({
             filters: self.activeFilters,
           }),

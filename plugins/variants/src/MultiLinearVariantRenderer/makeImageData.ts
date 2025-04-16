@@ -24,6 +24,7 @@ export async function makeImageData(
     renderingMode,
     stopToken,
     lengthCutoffFilter,
+    forceReferenceMouseover,
   } = props
   const region = regions[0]!
 
@@ -58,7 +59,10 @@ export async function makeImageData(
           const isPhased = genotype.includes('|')
           if (isPhased) {
             const alleles = genotype.split('|')
-            if (drawPhased(alleles, ctx, x, y, w, h, HP!, undefined, false)) {
+            if (
+              drawPhased(alleles, ctx, x, y, w, h, HP!, undefined, false) ||
+              forceReferenceMouseover
+            ) {
               rbush.insert({
                 minX: x,
                 maxX: x + w,
@@ -97,7 +101,8 @@ export async function makeImageData(
               feature.get('type'),
               feature.get('strand'),
               0.75,
-            )
+            ) ||
+            forceReferenceMouseover
           ) {
             rbush.insert({
               minX: x,
@@ -123,6 +128,8 @@ export async function makeImageData(
         {
           alt: feature.get('ALT'),
           ref: feature.get('REF'),
+          name: feature.get('name'),
+          description: feature.get('description'),
         },
       ]),
     ),

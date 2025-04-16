@@ -4,6 +4,7 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
 
 import SampleFilters from './VariantSampleFilters'
 import { makeSimpleAltString } from '../../VcfFeature/util'
@@ -17,7 +18,7 @@ interface Entry {
   [key: string]: string
 }
 
-type InfoFields = Record<string, unknown>
+type InfoFields = Record<string, unknown[]>
 type Filters = Record<string, string>
 
 interface FormatRecord {
@@ -27,18 +28,17 @@ interface Descriptions {
   FORMAT?: Record<string, FormatRecord>
 }
 
+const useStyles = makeStyles()({
+  flexContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+})
+
 // https://mui.com/x/react-data-grid/layout/#flex-parent-container
 function FlexContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {children}
-    </div>
-  )
+  const { classes } = useStyles()
+  return <div className={classes.flexContainer}>{children}</div>
 }
 
 export default function VariantSamples(props: {
@@ -55,7 +55,7 @@ export default function VariantSamples(props: {
       key,
       {
         ...val,
-        genotype: makeSimpleAltString(val.GT?.[0] || '', REF, ALT),
+        genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
       },
     ] as const
   })

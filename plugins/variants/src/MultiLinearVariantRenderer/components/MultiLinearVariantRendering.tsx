@@ -4,6 +4,7 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import RBush from 'rbush'
 
+import { minElt } from './util'
 import { makeSimpleAltString } from '../../VcfFeature/util'
 
 import type { Source } from '../../shared/types'
@@ -15,25 +16,17 @@ interface RBushData {
   maxX: number
   minY: number
   maxY: number
-  name: string
   genotype: string
   featureId: string
 }
 
 type SerializedRBush = any
 
-function minElt<T>(arr: Iterable<T>, cb: (arg: T) => number) {
-  let min = Infinity
-  let minElement: T | undefined
-  for (const entry of arr) {
-    const val = cb(entry)
-
-    if (val < min) {
-      min = val
-      minElement = entry
-    }
-  }
-  return minElement
+interface MinimizedVariantRecord {
+  alt: string[]
+  ref: string
+  name: string
+  description: string
 }
 
 const MultiVariantRendering = observer(function (props: {
@@ -44,7 +37,7 @@ const MultiVariantRendering = observer(function (props: {
   height: number
   sources: Source[]
   scrollTop: number
-  featureGenotypeMap: Record<string, { alt: string[]; ref: string }>
+  featureGenotypeMap: Record<string, MinimizedVariantRecord>
   totalHeight: number
   rbush: SerializedRBush
   displayModel: any
@@ -79,12 +72,22 @@ const MultiVariantRendering = observer(function (props: {
       )!
       const ret = featureGenotypeMap[featureId]
       if (ret) {
-        const { ref, alt } = ret
+        const { ref, alt, name, description } = ret
         const alleles = makeSimpleAltString(genotype, ref, alt)
         return {
           ...rest,
-          GT: genotype,
-          ...(genotype === alleles ? {} : { alleles }),
+          genotype,
+
+          // alleles is a expanded description, e.g. if genotype is 1/0,
+          // alleles is T/C
+          alleles,
+          featureName: name,
+
+          // avoid rendering multiple alt alleles as description, particularly
+          // with Cactus VCF where a large SV has many different ALT alleles.
+          // since descriptions are a join of ALT allele descriptions, just
+          // skip this in this case
+          description: alt.length >= 3 ? 'multiple ALT alleles' : description,
         }
       }
     }
