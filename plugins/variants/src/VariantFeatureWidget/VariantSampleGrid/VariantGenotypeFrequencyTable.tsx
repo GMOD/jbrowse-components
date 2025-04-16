@@ -56,7 +56,7 @@ export default function VariantGenotypeFrequencyTable({
     id: key,
     ...val,
     count: `${val.count} / ${rows.length}`,
-    frequency: `${toP(val.count / rows.length) * 100}%`,
+    frequency: `${toP((val.count / rows.length) * 100)}%`,
   }))
 
   const keys = gridRows[0] ? Object.keys(gridRows[0]) : []
