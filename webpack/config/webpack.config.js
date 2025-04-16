@@ -79,6 +79,7 @@ module.exports = function webpackBuilder(webpackEnv) {
   }
 
   return {
+    ...(process.env.NO_CACHE ? { cache: false } : {}),
     target: ['browserslist'],
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',

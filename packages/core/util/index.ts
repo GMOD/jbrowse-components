@@ -1478,6 +1478,7 @@ export function testAdapter(
 ) {
   return (regex.test(fileName) && !adapterHint) || adapterHint === expected
 }
+
 export {
   type Feature,
   type SimpleFeatureSerialized,

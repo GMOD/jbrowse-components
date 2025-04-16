@@ -7,7 +7,9 @@ import { DataGrid } from '@mui/x-data-grid'
 
 import type { FrequencyTable, VariantSampleGridRow } from './types'
 
-const toP = (s = 0) => +(+s).toFixed(2)
+function toP(n: number) {
+  return n.toPrecision(3)
+}
 
 export default function VariantGenotypeFrequencyTable({
   rows,
