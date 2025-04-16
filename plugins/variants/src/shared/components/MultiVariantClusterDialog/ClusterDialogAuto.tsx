@@ -36,7 +36,7 @@ const ClusterDialogAuto = observer(function ({
         <div>
           {loading ? (
             <div style={{ padding: 50 }}>
-              <span>Progress: {progress || 'Loading...'}</span>
+              <span>{progress || 'Loading...'}</span>
               <Button
                 onClick={() => {
                   stopStopToken(stopToken)
