@@ -25,9 +25,11 @@ export function averageDistance(
   distances: number[][],
 ) {
   let distance = 0
-  for (const a of setA) {
-    for (const b of setB) {
-      distance += distances[a]![b]!
+  const lenA = setA.length
+  const lenB = setB.length
+  for (let i = 0; i < lenA; i++) {
+    for (let j = 0; j < lenB; j++) {
+      distance += distances[setA[i]!]![setB[j]!]!
     }
   }
 
