@@ -4,6 +4,10 @@
 
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
+function toP(n: number) {
+  return Number.parseFloat(n.toFixed(2))
+}
+
 // get euclidean distance between two equal-dimension vectors
 export function euclideanDistance(a: number[], b: number[]) {
   const size = Math.min(a.length, b.length)
@@ -32,12 +36,11 @@ export function averageDistance(
 
 // update progress by calling user onProgress and postMessage for web workers
 function updateProgress(
-  stepNumber: number,
+  step: string,
   stepProgress: number,
-  onProgress: (arg: number) => void,
+  onProgress: (a: string) => void,
 ) {
-  // currently only two distinct steps: computing distance matrix and clustering
-  onProgress(stepNumber / 2 + stepProgress / 2)
+  onProgress(`${step}: ${toP(stepProgress * 100)}%`)
 }
 
 // the main clustering function
@@ -51,14 +54,14 @@ export function clusterData({
   data: number[][]
   distance?: (a: number[], b: number[]) => number
   linkage?: (a: number[], b: number[], distances: number[][]) => number
-  onProgress?: (a: number) => void
+  onProgress?: (a: string) => void
   stopToken?: string
 }) {
   // compute distance between each data point and every other data point
   // N x N matrix where N = data.length
   const distances = data.map((datum, index) => {
     if (onProgress) {
-      updateProgress(0, index / (data.length - 1), onProgress)
+      updateProgress('Dist matrix', index / (data.length - 1), onProgress)
     }
 
     // get distance between datum and other datum
@@ -82,7 +85,7 @@ export function clusterData({
       start = performance.now()
     }
     if (onProgress) {
-      updateProgress(1, (iteration + 1) / data.length, onProgress)
+      updateProgress('Clustering', (iteration + 1) / data.length, onProgress)
     }
 
     // add current tree slice

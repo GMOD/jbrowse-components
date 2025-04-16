@@ -1,6 +1,6 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { clusterData } from '@jbrowse/core/util/cluster'
 
-import { clusterData } from './cluster'
 import { getGenotypeMatrix } from './getGenotypeMatrix'
 
 import type { ClusterGenotypeMatrixArgs } from './types'
@@ -21,12 +21,8 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
       data: Object.values(matrix),
       stopToken: deserializedArgs.stopToken,
       onProgress: progress => {
-        deserializedArgs.statusCallback(`${toP(progress * 100)}%`)
+        deserializedArgs.statusCallback(progress)
       },
     })
   }
-}
-
-function toP(n: number) {
-  return Number.parseFloat(n.toPrecision(3))
 }

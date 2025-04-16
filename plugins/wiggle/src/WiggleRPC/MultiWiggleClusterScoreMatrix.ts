@@ -1,6 +1,6 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { clusterData } from '@jbrowse/core/util/cluster'
 
-import { clusterData } from './cluster'
 import { getScoreMatrix } from './getScoreMatrix'
 
 import type { GetScoreMatrixArgs } from './types'
@@ -21,12 +21,8 @@ export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRe
       data: Object.values(matrix),
       stopToken: deserializedArgs.stopToken,
       onProgress: a => {
-        deserializedArgs.statusCallback?.(`${toP(a * 100)}%`)
+        deserializedArgs.statusCallback?.(a)
       },
     })
   }
-}
-
-function toP(n: number) {
-  return Number.parseFloat(n.toPrecision(3))
 }
