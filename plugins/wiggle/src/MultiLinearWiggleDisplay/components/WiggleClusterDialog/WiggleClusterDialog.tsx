@@ -22,14 +22,14 @@ function Header({
         {Object.entries({
           auto: (
             <div>
-              Run in-app clustering (slow for large data, built in JS
-              clustering)
+              Run in-app clustering (slower, particularly for large numbers of
+              samples, uses JS implementation of hclust)
             </div>
           ),
           manual: (
             <div>
-              Download R script to run clustering (faster for large data, uses
-              hclust, may be more accurate)
+              Download R script to run clustering (faster, uses R implementation
+              of hclust)
             </div>
           ),
         }).map(([key, val]) => (
