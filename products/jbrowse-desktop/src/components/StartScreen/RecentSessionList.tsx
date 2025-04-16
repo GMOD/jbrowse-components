@@ -9,6 +9,7 @@ import { loadPluginManager } from './util'
 
 import type { RecentSessionData } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -90,7 +91,6 @@ export default function RecentSessionsList({
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
-        disableRowSelectionOnClick
         onRowSelectionModelChange={args => {
           setSelectedSessions(sessions.filter(s => args.ids.has(s.path)))
         }}
@@ -105,68 +105,60 @@ export default function RecentSessionsList({
             sortable: false,
             filterable: false,
             headerName: ' ',
-            renderCell: params => {
-              return (
-                <IconButton
-                  onClick={() => {
-                    const { lastModified, ...rest } = params.row
-                    setSessionToRename({
-                      ...rest,
-                    })
-                  }}
-                >
-                  <Tooltip title="Rename session">
-                    <EditIcon />
-                  </Tooltip>
-                </IconButton>
-              )
-            },
-          },
+            renderCell: params => (
+              <IconButton
+                onClick={() => {
+                  const { lastModified, ...rest } = params.row
+                  setSessionToRename({
+                    ...rest,
+                  })
+                }}
+              >
+                <Tooltip title="Rename session">
+                  <EditIcon />
+                </Tooltip>
+              </IconButton>
+            ),
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'name',
             headerName: 'Session name',
             width: widths.name,
-            renderCell: params => {
-              const { value } = params
-              return (
-                <Link
-                  href="#"
-                  className={classes.cell}
-                  onClick={async event => {
-                    event.preventDefault()
-                    try {
-                      setPluginManager(await loadPluginManager(params.row.path))
-                    } catch (e) {
-                      console.error(e)
-                      setError(e)
-                    }
-                  }}
-                >
-                  {value as string}
-                </Link>
-              )
-            },
-          },
+            renderCell: ({ value, row }) => (
+              <Link
+                href="#"
+                className={classes.cell}
+                onClick={async event => {
+                  event.preventDefault()
+                  try {
+                    setPluginManager(await loadPluginManager(row.path))
+                  } catch (e) {
+                    console.error(e)
+                    setError(e)
+                  }
+                }}
+              >
+                {value as string}
+              </Link>
+            ),
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'path',
             headerName: 'Session path',
             width: widths.path,
-            renderCell: params => {
-              const { value } = params
-              return (
-                <Tooltip title={String(value)}>
-                  <div className={classes.cell}>{value as string}</div>
-                </Tooltip>
-              )
-            },
-          },
+            renderCell: ({ value }) => (
+              <Tooltip title={String(value)}>
+                <div className={classes.cell}>{value as string}</div>
+              </Tooltip>
+            ),
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'lastModified',
             headerName: 'Last modified',
-            renderCell: row =>
-              !row.value ? null : <DateSinceLastUsed row={row.row} />,
             width: widths.lastModified,
-          },
+            renderCell: ({ value, row }) =>
+              !value ? null : <DateSinceLastUsed row={row} />,
+          } satisfies GridColDef<(typeof rows)[0]>,
         ]}
       />
     </div>

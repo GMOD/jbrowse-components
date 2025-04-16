@@ -116,7 +116,6 @@ function SourcesGrid({
         <DataGrid
           getRowId={row => row.name}
           checkboxSelection
-          disableRowSelectionOnClick
           onRowSelectionModelChange={arg => {
             setSelected([...arg.ids])
           }}

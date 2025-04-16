@@ -78,7 +78,6 @@ const FacetedDataGrid = observer(function ({
       rowHeight={25}
       columnHeaderHeight={35}
       checkboxSelection
-      disableRowSelectionOnClick
       keepNonExistentRowsSelected
       rows={filteredRows}
       columnVisibilityModel={visible}

@@ -82,6 +82,7 @@ export default function MultiVariantBaseModelF(
          * used only if autoHeight is false
          */
         autoHeight: true,
+
         /**
          * #property
          */
@@ -91,10 +92,11 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         jexlFilters: types.maybe(types.array(types.string)),
+
         /**
          * #property
          */
-        forceReferenceMouseover: false,
+        referenceDrawingMode: 'skip',
       }),
     )
     .volatile(() => ({
@@ -225,8 +227,8 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setForceReferenceMouseover(arg: boolean) {
-        self.forceReferenceMouseover = arg
+      setReferenceDrawingMode(arg: string) {
+        self.referenceDrawingMode = arg
       },
     }))
     .views(self => ({
@@ -380,12 +382,28 @@ export default function MultiVariantBaseModelF(
               ],
             },
             {
-              label: 'Force reference mouseover',
-              type: 'checkbox',
-              checked: self.forceReferenceMouseover,
-              onClick: () => {
-                self.setForceReferenceMouseover(!self.forceReferenceMouseover)
-              },
+              label: 'Reference mode',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label:
+                    'Fill background grey, skip reference allele mouseovers (helps with large overlapping SVs)',
+                  type: 'radio',
+                  checked: self.referenceDrawingMode === 'skip',
+                  onClick: () => {
+                    self.setReferenceDrawingMode('skip')
+                  },
+                },
+                {
+                  label:
+                    "Don't fill background grey, only draw actual reference alleles as grey",
+                  type: 'radio',
+                  checked: self.referenceDrawingMode === 'draw',
+                  onClick: () => {
+                    self.setReferenceDrawingMode('draw')
+                  },
+                },
+              ],
             },
             {
               label: 'Filter by',
@@ -483,7 +501,7 @@ export default function MultiVariantBaseModelF(
           rowHeight: self.rowHeight,
           sources: self.sources,
           scrollTop: self.scrollTop,
-          forceReferenceMouseover: self.forceReferenceMouseover,
+          referenceDrawingMode: self.referenceDrawingMode,
           filters: new SerializableFilterChain({
             filters: self.activeFilters,
           }),

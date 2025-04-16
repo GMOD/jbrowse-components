@@ -1,67 +1,49 @@
 import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
 
+import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
 import { makeSimpleAltString } from '../../VcfFeature/util'
 
+import type {
+  Filters,
+  InfoFields,
+  VariantFieldDescriptions,
+  VariantSampleGridRow,
+} from './types'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
-interface Entry {
-  sample: string
-  id: string
-  [key: string]: string
-}
-
-type InfoFields = Record<string, unknown[]>
-type Filters = Record<string, string>
-
-interface FormatRecord {
-  Description?: string
-}
-interface Descriptions {
-  FORMAT?: Record<string, FormatRecord>
-}
-
-const useStyles = makeStyles()({
-  flexContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
-
-// https://mui.com/x/react-data-grid/layout/#flex-parent-container
-function FlexContainer({ children }: { children: React.ReactNode }) {
-  const { classes } = useStyles()
-  return <div className={classes.flexContainer}>{children}</div>
-}
-
-export default function VariantSamples(props: {
+export default function VariantSampleGrid(props: {
   feature: SimpleFeatureSerialized
-  descriptions?: Descriptions | null
+  descriptions?: VariantFieldDescriptions | null
 }) {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
-  const preFilteredRows = Object.entries(samples).map(([key, val]) => {
-    return [
-      key,
-      {
-        ...val,
-        genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
-      },
-    ] as const
-  })
+  const preFilteredRows = Object.entries(samples).map(
+    ([key, val]) =>
+      [
+        key,
+        {
+          ...val,
+          GT: `${val.GT?.[0]}`,
+          genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
+        },
+      ] as const,
+  )
 
   let error: unknown
-  let rows = [] as Entry[]
+  let rows = [] as VariantSampleGridRow[]
   const filters = Object.keys(filter)
 
   // catch some error thrown from regex
@@ -79,7 +61,7 @@ export default function VariantSamples(props: {
           ),
           sample: key,
           id: key,
-        } as Entry
+        } as VariantSampleGridRow
       })
       .filter(row =>
         filters.length
@@ -108,41 +90,48 @@ export default function VariantSamples(props: {
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
-  // disableRowSelectionOnClick helps avoid
+  //  helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   return !preFilteredRows.length ? null : (
-    <BaseCard {...props} title="Samples">
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={checked}
-            onChange={event => {
-              setChecked(event.target.checked)
-            }}
-          />
-        }
-        label={<Typography variant="body2">Show options</Typography>}
-      />
-      {checked ? (
-        <SampleFilters
-          setFilter={setFilter}
-          columns={columns}
-          filter={filter}
+    <>
+      <BaseCard {...props} title="Genotype frequencies">
+        <ErrorBoundary FallbackComponent={ErrorMessage}>
+          <VariantGenotypeFrequencyTable rows={rows} />
+        </ErrorBoundary>
+      </BaseCard>
+      <BaseCard {...props} title="Samples">
+        {error ? <Typography color="error">{`${error}`}</Typography> : null}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={checked}
+              onChange={event => {
+                setChecked(event.target.checked)
+              }}
+            />
+          }
+          label={<Typography variant="body2">Show options</Typography>}
         />
-      ) : null}
 
-      <FlexContainer>
-        <DataGrid
-          rows={rows}
-          hideFooter={rows.length < 100}
-          columns={columns}
-          disableRowSelectionOnClick
-          rowHeight={25}
-          columnHeaderHeight={35}
-          showToolbar={checked}
-        />
-      </FlexContainer>
-    </BaseCard>
+        {checked ? (
+          <SampleFilters
+            setFilter={setFilter}
+            columns={columns}
+            filter={filter}
+          />
+        ) : null}
+
+        <DataGridFlexContainer>
+          <DataGrid
+            rows={rows}
+            hideFooter={rows.length < 100}
+            columns={columns}
+            rowHeight={25}
+            columnHeaderHeight={35}
+            showToolbar
+          />
+        </DataGridFlexContainer>
+      </BaseCard>
+    </>
   )
 }

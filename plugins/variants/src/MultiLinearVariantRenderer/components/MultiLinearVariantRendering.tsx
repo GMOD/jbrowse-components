@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import RBush from 'rbush'
 
@@ -27,6 +28,7 @@ interface MinimizedVariantRecord {
   ref: string
   name: string
   description: string
+  length: number
 }
 
 const MultiVariantRendering = observer(function (props: {
@@ -72,7 +74,7 @@ const MultiVariantRendering = observer(function (props: {
       )!
       const ret = featureGenotypeMap[featureId]
       if (ret) {
-        const { ref, alt, name, description } = ret
+        const { ref, alt, name, description, length } = ret
         const alleles = makeSimpleAltString(genotype, ref, alt)
         return {
           ...rest,
@@ -88,6 +90,7 @@ const MultiVariantRendering = observer(function (props: {
           // since descriptions are a join of ALT allele descriptions, just
           // skip this in this case
           description: alt.length >= 3 ? 'multiple ALT alleles' : description,
+          length: getBpDisplayStr(length),
         }
       }
     }
