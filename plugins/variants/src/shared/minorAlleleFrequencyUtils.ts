@@ -20,17 +20,41 @@ export function findSecondLargestNumber(arr: Iterable<number>) {
 
 export function calculateAlleleCounts(feat: Feature) {
   const samp = feat.get('genotypes') as Record<string, string>
-  const alleleCounts = new Map()
+  const alleleCounts = new Map<string, number>()
+  alleleCounts.set('0', 0)
+  alleleCounts.set('1', 0)
+  alleleCounts.set('.', 0)
+  const cacheSplit = {} as Record<string, string[]>
   for (const val of Object.values(samp)) {
-    const alleles = val.split(/[/|]/)
-    const lenA = alleles.length
-    for (let i = 0; i < lenA; i++) {
-      const a = alleles[i]
-      const val = alleleCounts.get(a)
-      if (val === undefined) {
-        alleleCounts.set(a, 1)
+    if (val === '0/0' || val === '0|0') {
+      alleleCounts.set('0', alleleCounts.get('0')! + 2)
+    } else if (
+      val === '1/0' ||
+      val === '0/1' ||
+      val === '1|0' ||
+      val === '0|1'
+    ) {
+      alleleCounts.set('0', alleleCounts.get('0')! + 1)
+      alleleCounts.set('1', alleleCounts.get('1')! + 1)
+    } else if (val === '1/1' || val === '1|1') {
+      alleleCounts.set('1', alleleCounts.get('1')! + 2)
+    } else {
+      let alleles: string[]
+      if (cacheSplit[val]) {
+        alleles = cacheSplit[val]
       } else {
-        alleleCounts.set(a, val + 1)
+        alleles = val.split(/[/|]/)
+        cacheSplit[val] = alleles
+      }
+      const lenA = alleles.length
+      for (let i = 0; i < lenA; i++) {
+        const a = alleles[i]!
+        const val = alleleCounts.get(a)
+        if (val === undefined) {
+          alleleCounts.set(a, 1)
+        } else {
+          alleleCounts.set(a, val + 1)
+        }
       }
     }
   }
