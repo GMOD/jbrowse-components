@@ -33,6 +33,7 @@ const WiggleClusterDialogAuto = observer(function ({
 }) {
   const [progress, setProgress] = useState('')
   const [error, setError] = useState<unknown>()
+  const [loading, setLoading] = useState(false)
   const [stopToken, setStopToken] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
@@ -72,9 +73,9 @@ const WiggleClusterDialogAuto = observer(function ({
           ) : null}
         </div>
         <div>
-          {progress ? (
+          {loading ? (
             <div style={{ padding: 50 }}>
-              <span style={{ width: 400 }}>Progress: {progress}</span>
+              <span>Progress: {progress || 'Loading...'}</span>
               <Button
                 onClick={() => {
                   stopStopToken(stopToken)
@@ -93,7 +94,8 @@ const WiggleClusterDialogAuto = observer(function ({
           onClick={async () => {
             try {
               setError(undefined)
-              setProgress('')
+              setProgress('Initializing')
+              setLoading(true)
               const view = getContainingView(model) as LinearGenomeViewModel
               if (!view.initialized) {
                 return
@@ -137,6 +139,7 @@ const WiggleClusterDialogAuto = observer(function ({
                 setError(e)
               }
             } finally {
+              setLoading(false)
               setProgress('')
               setStopToken('')
             }

@@ -5,7 +5,7 @@
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 function toP(n: number) {
-  return Number.parseFloat(n.toFixed(2))
+  return Number.parseFloat((n * 100).toFixed(1))
 }
 
 // get euclidean distance between two equal-dimension vectors
@@ -34,15 +34,6 @@ export function averageDistance(
   return distance / setA.length / setB.length
 }
 
-// update progress by calling user onProgress and postMessage for web workers
-function updateProgress(
-  step: string,
-  stepProgress: number,
-  onProgress: (a: string) => void,
-) {
-  onProgress(`${step}: ${toP(stepProgress * 100)}%`)
-}
-
 // the main clustering function
 export function clusterData({
   data,
@@ -59,14 +50,29 @@ export function clusterData({
 }) {
   // compute distance between each data point and every other data point
   // N x N matrix where N = data.length
-  const distances = data.map((datum, index) => {
+  let start = performance.now()
+  const distances: number[][] = []
+
+  for (let i = 0; i < data.length; i++) {
+    if (performance.now() - start > 400) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
     if (onProgress) {
-      updateProgress('Dist matrix', index / (data.length - 1), onProgress)
+      onProgress(`Making distance matrix: ${toP(i / (data.length - 1))}%`)
     }
 
-    // get distance between datum and other datum
-    return data.map(otherDatum => distance(datum, otherDatum))
-  })
+    // create a row for this data point
+    const row: number[] = []
+
+    // calculate distance between this datum and every other datum
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let j = 0; j < data.length; j++) {
+      row.push(distance(data[i]!, data[j]!))
+    }
+
+    distances.push(row)
+  }
 
   // initialize clusters to match data
   const clusters = data.map((_datum, index) => ({
@@ -77,15 +83,14 @@ export function clusterData({
   // keep track of all tree slices
   let clustersGivenK = []
 
-  let start = performance.now()
-  // iterate through data
+  start = performance.now()
   for (let iteration = 0; iteration < data.length; iteration++) {
-    if (performance.now() - start > 2000) {
+    if (performance.now() - start > 400) {
       checkStopToken(stopToken)
       start = performance.now()
     }
     if (onProgress) {
-      updateProgress('Clustering', (iteration + 1) / data.length, onProgress)
+      onProgress(`Clustering: ${toP((iteration + 1) / data.length)}%`)
     }
 
     // add current tree slice
