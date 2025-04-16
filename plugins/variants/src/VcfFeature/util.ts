@@ -213,3 +213,20 @@ export function getMinimalDesc(ref: string, alt: string) {
 function makeDescriptionString(soTerm: string, ref: string, alt: string) {
   return `${soTerm} ${[ref, alt].join(' -> ')}`
 }
+
+export function makeSimpleAltString(
+  genotype: string,
+  ref: string,
+  alt: string[],
+) {
+  return genotype
+    .split(/[/|]/)
+    .map(r =>
+      r === '.'
+        ? '.'
+        : +r === 0
+          ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
+          : getMinimalDesc(ref, alt[+r - 1] || ''),
+    )
+    .join(genotype.includes('|') ? '|' : '/')
+}

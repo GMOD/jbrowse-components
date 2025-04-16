@@ -1,4 +1,4 @@
-import { DataGrid, GridToolbar, useGridApiRef } from '@mui/x-data-grid'
+import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { SpreadsheetModel } from '../SpreadsheetModel'
@@ -31,14 +31,12 @@ const SpreadsheetDataGrid = observer(function ({
       }}
       rowHeight={25}
       hideFooter={rows.length < 100}
-      slots={{
-        toolbar: GridToolbar,
-      }}
       slotProps={{
         toolbar: {
           showQuickFilter: true,
         },
       }}
+      showToolbar
       rows={rows}
       columns={dataGridColumns}
     />

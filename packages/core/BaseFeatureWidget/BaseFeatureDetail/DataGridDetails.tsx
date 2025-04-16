@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
 import FieldName from './FieldName'
@@ -88,16 +88,7 @@ export default function DataGridDetails({
             rowHeight={20}
             columnHeaderHeight={35}
             hideFooter={rows.length < 25}
-            slots={{
-              toolbar: checked ? GridToolbar : undefined,
-            }}
-            slotProps={{
-              toolbar: {
-                printOptions: {
-                  disableToolbarButton: true,
-                },
-              },
-            }}
+            showToolbar={checked}
             columns={colNames.map(
               (val, index) =>
                 ({

@@ -3,11 +3,14 @@ import { useState } from 'react'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
 
 import SampleFilters from './VariantSampleFilters'
+import { makeSimpleAltString } from '../../VcfFeature/util'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { GridColDef } from '@mui/x-data-grid'
 
 interface Entry {
   sample: string
@@ -15,7 +18,7 @@ interface Entry {
   [key: string]: string
 }
 
-type InfoFields = Record<string, unknown>
+type InfoFields = Record<string, unknown[]>
 type Filters = Record<string, string>
 
 interface FormatRecord {
@@ -25,6 +28,19 @@ interface Descriptions {
   FORMAT?: Record<string, FormatRecord>
 }
 
+const useStyles = makeStyles()({
+  flexContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+})
+
+// https://mui.com/x/react-data-grid/layout/#flex-parent-container
+function FlexContainer({ children }: { children: React.ReactNode }) {
+  const { classes } = useStyles()
+  return <div className={classes.flexContainer}>{children}</div>
+}
+
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
   descriptions?: Descriptions | null
@@ -32,7 +48,17 @@ export default function VariantSamples(props: {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
   const samples = (feature.samples || {}) as Record<string, InfoFields>
-  const preFilteredRows = Object.entries(samples)
+  const ALT = feature.ALT as string[]
+  const REF = feature.REF as string
+  const preFilteredRows = Object.entries(samples).map(([key, val]) => {
+    return [
+      key,
+      {
+        ...val,
+        genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
+      },
+    ] as const
+  })
 
   let error: unknown
   let rows = [] as Entry[]
@@ -43,13 +69,16 @@ export default function VariantSamples(props: {
   // sortable by the data-grid
   try {
     rows = preFilteredRows
-      .map(row => {
+      .map(([key, val]) => {
         return {
           ...Object.fromEntries(
-            Object.entries(row[1]).map(e => [e[0], `${e[1]}`]),
+            Object.entries(val).map(([formatField, formatValue]) => [
+              formatField,
+              formatValue,
+            ]),
           ),
-          sample: row[0],
-          id: row[0],
+          sample: key,
+          id: key,
         } as Entry
       })
       .filter(row =>
@@ -63,17 +92,21 @@ export default function VariantSamples(props: {
           : true,
       )
   } catch (e) {
+    console.error(e)
     error = e
   }
 
   const [checked, setChecked] = useState(false)
   const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
-  const columns = keys.map((field, index) => ({
-    field,
-    description: descriptions?.FORMAT?.[field]?.Description,
-    width: widths[index],
-  }))
+  const columns = keys.map(
+    (field, index) =>
+      ({
+        field,
+        description: descriptions?.FORMAT?.[field]?.Description,
+        width: widths[index],
+      }) satisfies GridColDef<(typeof rows)[0]>,
+  )
 
   // disableRowSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
@@ -99,12 +132,7 @@ export default function VariantSamples(props: {
         />
       ) : null}
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <FlexContainer>
         <DataGrid
           rows={rows}
           hideFooter={rows.length < 100}
@@ -112,17 +140,9 @@ export default function VariantSamples(props: {
           disableRowSelectionOnClick
           rowHeight={25}
           columnHeaderHeight={35}
-          disableColumnMenu
-          slots={{ toolbar: checked ? GridToolbar : undefined }}
-          slotProps={{
-            toolbar: {
-              printOptions: {
-                disableToolbarButton: true,
-              },
-            },
-          }}
+          showToolbar={checked}
         />
-      </div>
+      </FlexContainer>
     </BaseCard>
   )
 }
