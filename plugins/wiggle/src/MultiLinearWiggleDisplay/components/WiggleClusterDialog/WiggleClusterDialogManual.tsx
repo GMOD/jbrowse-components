@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import {
-  CascadingMenuButton,
-  ErrorMessage,
-  LoadingEllipses,
-} from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -12,7 +8,6 @@ import {
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import MenuIcon from '@mui/icons-material/Menu'
 import {
   Button,
   DialogActions,
@@ -58,15 +53,12 @@ const WiggleClusterDialogManuals = observer(function ({
   const [ret, setRet] = useState<Record<string, number[]>>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [clusterMethod, setClusterMethod] = useLocalStorage(
-    'cluster-clusterMethod',
-    'single',
+  const [showAdvanced, setShowAdvanced] = useLocalStorage(
+    'cluster-showAdvanced',
+    false,
   )
-  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
-    'cluster-samplesPerPixel',
-    '1',
-  )
+  const [clusterMethod, setClusterMethod] = useState('single')
+  const [samplesPerPixel, setSamplesPerPixel] = useState('1')
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -127,104 +119,103 @@ cat(resultClusters$order,sep='\\n')`
       <DialogContent>
         {children}
         <div style={{ marginTop: 50 }}>
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-              flexWrap: 'wrap',
-              marginBottom: '16px',
-            }}
-          >
-            <Button
-              variant="contained"
-              onClick={() => {
-                saveAs(
-                  new Blob([results || ''], {
-                    type: 'text/plain;charset=utf-8',
-                  }),
-                  'cluster.R',
-                )
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginBottom: '16px',
               }}
             >
-              Download Rscript
-            </Button>{' '}
-            or{' '}
-            <Button
-              variant="contained"
-              onClick={() => {
-                copy(results || '')
-              }}
-            >
-              Copy Rscript to clipboard
-            </Button>{' '}
-            <div style={{ float: 'right' }}>
-              <CascadingMenuButton
-                menuItems={[
-                  {
-                    label: 'Download TSV',
-                    onClick: () => {
-                      saveAs(
-                        new Blob([resultsTsv || ''], {
-                          type: 'text/plain;charset=utf-8',
-                        }),
-                        'scores.tsv',
-                      )
-                    },
-                  },
-                  {
-                    label: showAdvanced
-                      ? 'Hide advanced options'
-                      : 'Show advanced options',
-                    onClick: () => {
-                      setShowAdvanced(!showAdvanced)
-                    },
-                  },
-                ]}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  saveAs(
+                    new Blob([results || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'cluster.R',
+                  )
+                }}
               >
-                <MenuIcon />
-              </CascadingMenuButton>
+                Download Rscript
+              </Button>{' '}
+              or{' '}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  copy(results || '')
+                }}
+              >
+                Copy Rscript to clipboard
+              </Button>{' '}
+              or{' '}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  saveAs(
+                    new Blob([resultsTsv || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'scores.tsv',
+                  )
+                }}
+              >
+                Download TSV
+              </Button>
             </div>
             <div>
-              {showAdvanced ? (
-                <div>
-                  <Typography variant="h6">Advanced options</Typography>
-                  <RadioGroup>
-                    {Object.entries({
-                      single: 'Single',
-                      complete: 'Complete',
-                    }).map(([key, val]) => (
-                      <FormControlLabel
-                        key={key}
-                        control={
-                          <Radio
-                            checked={clusterMethod === key}
-                            onChange={() => {
-                              setClusterMethod(key)
-                            }}
-                          />
-                        }
-                        label={val}
-                      />
-                    ))}
-                  </RadioGroup>
-                  <div style={{ marginTop: 20 }}>
-                    <Typography>
-                      This procedure samples the data at each 'pixel' across the
-                      visible by default
-                    </Typography>
-                    <TextField
-                      label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
-                      variant="outlined"
-                      size="small"
-                      value={samplesPerPixel}
-                      onChange={event => {
-                        setSamplesPerPixel(event.target.value)
-                      }}
-                    />
-                  </div>
-                </div>
-              ) : null}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setShowAdvanced(!showAdvanced)
+                }}
+              >
+                {showAdvanced
+                  ? 'Hide advanced options'
+                  : 'Show advanced options'}
+              </Button>
             </div>
+            {showAdvanced ? (
+              <div>
+                <Typography variant="h6">Advanced options</Typography>
+                <RadioGroup>
+                  {Object.entries({
+                    single: 'Single',
+                    complete: 'Complete',
+                  }).map(([key, val]) => (
+                    <FormControlLabel
+                      key={key}
+                      control={
+                        <Radio
+                          checked={clusterMethod === key}
+                          onChange={() => {
+                            setClusterMethod(key)
+                          }}
+                        />
+                      }
+                      label={val}
+                    />
+                  ))}
+                </RadioGroup>
+                <div style={{ marginTop: 20 }}>
+                  <Typography>
+                    This procedure samples the data at each 'pixel' across the
+                    visible by default
+                  </Typography>
+                  <TextField
+                    label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
+                    variant="outlined"
+                    size="small"
+                    value={samplesPerPixel}
+                    onChange={event => {
+                      setSamplesPerPixel(event.target.value)
+                    }}
+                  />
+                </div>
+              </div>
+            ) : null}
             {results ? (
               <div />
             ) : loading ? (
