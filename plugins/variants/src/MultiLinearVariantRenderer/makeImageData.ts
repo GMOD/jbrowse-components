@@ -86,13 +86,20 @@ export async function makeImageData(
         y += rowHeight
       }
     } else {
+      const cacheSplit = {} as Record<string, string[]>
       for (let j = 0; j < s; j++) {
         const { name } = sources[j]!
         const genotype = samp[name]
         const x = Math.floor(leftPx)
         const h = Math.max(rowHeight, 1)
         if (genotype) {
-          const alleles = genotype.split(/[/|]/)
+          let alleles: string[]
+          if (cacheSplit[genotype]) {
+            alleles = cacheSplit[genotype]
+          } else {
+            alleles = genotype.split(/[/|]/)
+            cacheSplit[genotype] = alleles
+          }
           if (
             drawColorAlleleCount(
               alleles,
