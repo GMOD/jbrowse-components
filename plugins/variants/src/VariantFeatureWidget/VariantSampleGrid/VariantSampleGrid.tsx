@@ -4,17 +4,20 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
 
+import FlexContainer from './FlexContainer'
+import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
 import { makeSimpleAltString } from '../../VcfFeature/util'
 
+import type { FrequencyTable } from './types'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
 interface Entry {
   sample: string
   id: string
+  GT: string
   [key: string]: string
 }
 
@@ -28,20 +31,7 @@ interface Descriptions {
   FORMAT?: Record<string, FormatRecord>
 }
 
-const useStyles = makeStyles()({
-  flexContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
-
-// https://mui.com/x/react-data-grid/layout/#flex-parent-container
-function FlexContainer({ children }: { children: React.ReactNode }) {
-  const { classes } = useStyles()
-  return <div className={classes.flexContainer}>{children}</div>
-}
-
-export default function VariantSamples(props: {
+export default function VariantSampleGrid(props: {
   feature: SimpleFeatureSerialized
   descriptions?: Descriptions | null
 }) {
@@ -108,41 +98,64 @@ export default function VariantSamples(props: {
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
+  // Calculate the frequency of each GT value in the list of rows
+  const summary = {} as FrequencyTable
+  for (const row of rows) {
+    const gt = row.GT
+    if (!summary[gt]) {
+      summary[gt] = {
+        count: 0,
+        GT: row.GT,
+        genotype: row.genotype,
+      }
+    }
+    summary[gt].count++
+  }
+
   // disableRowSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   return !preFilteredRows.length ? null : (
-    <BaseCard {...props} title="Samples">
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={checked}
-            onChange={event => {
-              setChecked(event.target.checked)
-            }}
-          />
-        }
-        label={<Typography variant="body2">Show options</Typography>}
-      />
-      {checked ? (
-        <SampleFilters
-          setFilter={setFilter}
-          columns={columns}
-          filter={filter}
+    <>
+      <BaseCard {...props} title="Samples">
+        {error ? <Typography color="error">{`${error}`}</Typography> : null}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={checked}
+              onChange={event => {
+                setChecked(event.target.checked)
+              }}
+            />
+          }
+          label={<Typography variant="body2">Show options</Typography>}
         />
-      ) : null}
 
-      <FlexContainer>
-        <DataGrid
-          rows={rows}
-          hideFooter={rows.length < 100}
-          columns={columns}
-          disableRowSelectionOnClick
-          rowHeight={25}
-          columnHeaderHeight={35}
-          showToolbar={checked}
+        {checked ? (
+          <SampleFilters
+            setFilter={setFilter}
+            columns={columns}
+            filter={filter}
+          />
+        ) : null}
+
+        <FlexContainer>
+          <DataGrid
+            rows={rows}
+            hideFooter={rows.length < 100}
+            columns={columns}
+            disableRowSelectionOnClick
+            rowHeight={25}
+            columnHeaderHeight={35}
+            showToolbar={checked}
+          />
+        </FlexContainer>
+      </BaseCard>
+      <BaseCard {...props} title="Genotype frequencies">
+        <VariantGenotypeFrequencyTable
+          summary={summary}
+          totalRows={rows.length}
         />
-      </FlexContainer>
-    </BaseCard>
+      </BaseCard>
+    </>
   )
 }
