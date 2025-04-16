@@ -23,8 +23,15 @@ export function calculateAlleleCounts(feat: Feature) {
   const alleleCounts = new Map()
   for (const val of Object.values(samp)) {
     const alleles = val.split(/[/|]/)
-    for (const allele of alleles) {
-      alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
+    const lenA = alleles.length
+    for (let i = 0; i < lenA; i++) {
+      const a = alleles[i]
+      const val = alleleCounts.get(a)
+      if (val === undefined) {
+        alleleCounts.set(a, 1)
+      } else {
+        alleleCounts.set(a, val + 1)
+      }
     }
   }
 
