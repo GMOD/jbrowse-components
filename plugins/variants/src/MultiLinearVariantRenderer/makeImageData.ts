@@ -138,6 +138,7 @@ export async function makeImageData(
           ref: feature.get('REF'),
           name: feature.get('name'),
           description: feature.get('description'),
+          length: feature.get('end') - feature.get('start'),
         },
       ]),
     ),
