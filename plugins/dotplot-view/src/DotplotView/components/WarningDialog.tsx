@@ -80,7 +80,6 @@ const WarningDialog = observer(function WarningDialog({
           <DataGrid
             rows={rows}
             columns={columns}
-            disableRowSelectionOnClick
             rowHeight={25}
             disableColumnMenu
           />

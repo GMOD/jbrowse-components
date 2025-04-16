@@ -1,57 +1,49 @@
 import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import FlexContainer from './FlexContainer'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
 import { makeSimpleAltString } from '../../VcfFeature/util'
 
-import type { FrequencyTable } from './types'
+import type {
+  Filters,
+  InfoFields,
+  VariantFieldDescriptions,
+  VariantSampleGridRow,
+} from './types'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
-interface Entry {
-  sample: string
-  id: string
-  GT: string
-  [key: string]: string
-}
-
-type InfoFields = Record<string, unknown[]>
-type Filters = Record<string, string>
-
-interface FormatRecord {
-  Description?: string
-}
-interface Descriptions {
-  FORMAT?: Record<string, FormatRecord>
-}
-
 export default function VariantSampleGrid(props: {
   feature: SimpleFeatureSerialized
-  descriptions?: Descriptions | null
+  descriptions?: VariantFieldDescriptions | null
 }) {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
-  const preFilteredRows = Object.entries(samples).map(([key, val]) => {
-    return [
-      key,
-      {
-        ...val,
-        genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
-      },
-    ] as const
-  })
+  const preFilteredRows = Object.entries(samples).map(
+    ([key, val]) =>
+      [
+        key,
+        {
+          ...val,
+          GT: `${val.GT?.[0]}`,
+          genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
+        },
+      ] as const,
+  )
 
   let error: unknown
-  let rows = [] as Entry[]
+  let rows = [] as VariantSampleGridRow[]
   const filters = Object.keys(filter)
 
   // catch some error thrown from regex
@@ -69,7 +61,7 @@ export default function VariantSampleGrid(props: {
           ),
           sample: key,
           id: key,
-        } as Entry
+        } as VariantSampleGridRow
       })
       .filter(row =>
         filters.length
@@ -98,24 +90,15 @@ export default function VariantSampleGrid(props: {
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
-  // Calculate the frequency of each GT value in the list of rows
-  const summary = {} as FrequencyTable
-  for (const row of rows) {
-    const gt = row.GT
-    if (!summary[gt]) {
-      summary[gt] = {
-        count: 0,
-        GT: row.GT,
-        genotype: row.genotype,
-      }
-    }
-    summary[gt].count++
-  }
-
-  // disableRowSelectionOnClick helps avoid
+  //  helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   return !preFilteredRows.length ? null : (
     <>
+      <BaseCard {...props} title="Genotype frequencies">
+        <ErrorBoundary FallbackComponent={ErrorMessage}>
+          <VariantGenotypeFrequencyTable rows={rows} />
+        </ErrorBoundary>
+      </BaseCard>
       <BaseCard {...props} title="Samples">
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         <FormControlLabel
@@ -138,23 +121,16 @@ export default function VariantSampleGrid(props: {
           />
         ) : null}
 
-        <FlexContainer>
+        <DataGridFlexContainer>
           <DataGrid
             rows={rows}
             hideFooter={rows.length < 100}
             columns={columns}
-            disableRowSelectionOnClick
             rowHeight={25}
             columnHeaderHeight={35}
-            showToolbar={checked}
+            showToolbar
           />
-        </FlexContainer>
-      </BaseCard>
-      <BaseCard {...props} title="Genotype frequencies">
-        <VariantGenotypeFrequencyTable
-          summary={summary}
-          totalRows={rows.length}
-        />
+        </DataGridFlexContainer>
       </BaseCard>
     </>
   )

@@ -1,41 +1,91 @@
-import { ErrorMessage } from '@jbrowse/core/ui'
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { useState } from 'react'
+
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth } from '@jbrowse/core/util'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import FlexContainer from './FlexContainer'
-
-import type { FrequencyTable } from './types'
+import type { FrequencyTable, VariantSampleGridRow } from './types'
 
 const toP = (s = 0) => +(+s).toFixed(2)
 
 export default function VariantGenotypeFrequencyTable({
-  summary,
-  totalRows,
+  rows,
 }: {
-  summary: FrequencyTable
-  totalRows: number
+  rows: VariantSampleGridRow[]
 }) {
-  const rows = Object.entries(summary).map(([key, val]) => ({
+  const [useCounts, setUseCounts] = useState(false)
+
+  const summary = {} as FrequencyTable
+  if (!useCounts) {
+    for (const row of rows) {
+      const gt = row.GT
+      if (!summary[gt]) {
+        summary[gt] = {
+          count: 0,
+          GT: row.GT,
+          genotype: row.genotype,
+        }
+      }
+      summary[gt].count++
+    }
+  } else {
+    for (const row of rows) {
+      const alleleCounts = {} as Record<string, number>
+      const alleles = row.GT.split(/[/|]/)
+      for (const allele of alleles) {
+        alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
+      }
+      const key = Object.entries(alleleCounts)
+        .map(([key, val]) => `${key}:${val}`)
+        .join(';')
+
+      if (!summary[key]) {
+        summary[key] = {
+          count: 0,
+          GT: key,
+          genotype: row.genotype,
+        }
+      }
+      summary[key].count++
+    }
+  }
+  const gridRows = Object.entries(summary).map(([key, val]) => ({
     id: key,
-    GT: val.GT,
-    genotype: val.genotype,
-    count: `${val.count} / ${totalRows}`,
-    frequency: `${toP(val.count / totalRows)}%`,
+    ...val,
+    count: `${val.count} / ${rows.length}`,
+    frequency: `${toP(val.count / rows.length) * 100}%`,
   }))
-  const keys = ['GT', 'count', 'frequency', 'genotype']
+
+  const keys = gridRows[0] ? Object.keys(gridRows[0]) : []
   const widths = keys.map(e =>
-    measureGridWidth(rows.map(r => `${r[e as keyof typeof r]}`)),
+    measureGridWidth(gridRows.map(r => `${r[e as keyof typeof r]}`)),
   )
 
   return (
-    <ErrorBoundary FallbackComponent={ErrorMessage}>
-      <FlexContainer>
+    <div>
+      <FormControlLabel
+        control={<Checkbox checked={useCounts} />}
+        label={
+          <Typography variant="body2">
+            Use allele counts instead of exact GT
+          </Typography>
+        }
+        onChange={(_, checked) => {
+          setUseCounts(checked)
+        }}
+      />
+      <DataGridFlexContainer>
         <DataGrid
-          rows={rows}
+          rows={gridRows}
           hideFooter
+          rowHeight={25}
+          columnHeaderHeight={35}
           columns={[
-            { field: 'GT', width: widths[0] },
+            {
+              field: 'GT',
+              width: widths[0],
+            },
             {
               field: 'count',
               width: widths[1],
@@ -49,11 +99,8 @@ export default function VariantGenotypeFrequencyTable({
               width: widths[3],
             },
           ]}
-          disableRowSelectionOnClick
-          rowHeight={25}
-          columnHeaderHeight={35}
         />
-      </FlexContainer>
-    </ErrorBoundary>
+      </DataGridFlexContainer>
+    </div>
   )
 }

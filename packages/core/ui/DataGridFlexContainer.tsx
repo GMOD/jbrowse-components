@@ -8,7 +8,7 @@ const useStyles = makeStyles()({
 })
 
 // https://mui.com/x/react-data-grid/layout/#flex-parent-container
-export default function FlexContainer({
+export default function DataGridFlexContainer({
   children,
 }: {
   children: React.ReactNode
