@@ -28,7 +28,7 @@ export default function VariantSampleGrid(props: {
 }) {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
-  const [showAllColumns, setShowAllColumns] = useState(true)
+  const [showOnlyGenotypeColumns, setShowOnlyGenotypeColumns] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const ALT = feature.ALT as string[]
@@ -112,10 +112,10 @@ export default function VariantSampleGrid(props: {
           }}
         />
         <Checkbox2
-          label="Show all columns"
-          checked={showAllColumns}
+          label="Show only genotype columns"
+          checked={showOnlyGenotypeColumns}
           onChange={event => {
-            setShowAllColumns(event.target.checked)
+            setShowOnlyGenotypeColumns(event.target.checked)
           }}
         />
 
@@ -132,11 +132,11 @@ export default function VariantSampleGrid(props: {
             rows={rows}
             hideFooter={rows.length < 100}
             columns={
-              showAllColumns
-                ? columns
-                : columns.filter(f =>
+              showOnlyGenotypeColumns
+                ? columns.filter(f =>
                     ['sample', 'GT', 'genotype'].includes(f.field),
                   )
+                : columns
             }
             rowHeight={25}
             columnHeaderHeight={35}

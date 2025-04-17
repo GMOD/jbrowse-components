@@ -60,14 +60,12 @@ export function getSOTermAndDescription(
             .map(pref => (pref[1] && pref[0] === prefix ? pref[1] : ''))
             .filter(f => !!f)
 
-          return suffixes.length
-            ? `${prefix} -> ${suffixes.join(', ')}`
-            : prefix
+          return suffixes.length ? `${prefix} -> ${suffixes.join(',')}` : prefix
         }),
     )
   }
   return soTerms.size
-    ? [[...soTerms].join(', '), [...descriptions].join(', ')]
+    ? [[...soTerms].join(','), [...descriptions].join(',')]
     : []
 }
 
