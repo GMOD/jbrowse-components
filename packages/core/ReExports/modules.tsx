@@ -408,41 +408,12 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridTableRowsIcon,
     })),
   ),
-  GridToolbar: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbar,
-    })),
-  ),
-  GridToolbarColumnsButton: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarColumnsButton,
-    })),
-  ),
-  GridToolbarContainer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarContainer,
-    })),
-  ),
-  GridToolbarDensitySelector: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarDensitySelector,
-    })),
-  ),
-  GridToolbarExport: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarExport,
-    })),
-  ),
   GridToolbarExportContainer: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridToolbarExportContainer,
     })),
   ),
-  GridToolbarFilterButton: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarFilterButton,
-    })),
-  ),
+
   GridTripleDotsVerticalIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridTripleDotsVerticalIcon,
