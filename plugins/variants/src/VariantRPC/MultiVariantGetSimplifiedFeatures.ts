@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
@@ -21,6 +22,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       minorAlleleFrequencyFilter,
       regions,
       adapterConfig,
+      stopToken,
       sessionId,
     } = deserializedArgs
     const { dataAdapter } = await getAdapter(
@@ -32,6 +34,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
     const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
+      stopToken,
       features: await firstValueFrom(
         (dataAdapter as BaseFeatureDataAdapter)
           .getFeaturesInMultipleRegions(regions, deserializedArgs)
@@ -42,7 +45,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
     const sampleInfo = {} as Record<string, SampleInfo>
     let hasPhased = false
 
-    for (const { feature } of features) {
+    forEachWithStopTokenCheck(features, stopToken, ({ feature }) => {
       const samp = feature.get('genotypes') as Record<string, string>
       for (const [key, val] of Object.entries(samp)) {
         const isPhased = val.includes('|')
@@ -55,7 +58,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
           isPhased: sampleInfo[key]?.isPhased || isPhased,
         }
       }
-    }
+    })
     return {
       hasPhased,
       sampleInfo,

@@ -107,6 +107,10 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
+      simplifiedFeaturesStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       featureUnderMouseVolatile: undefined as Feature | undefined,
       /**
        * #volatile
@@ -176,6 +180,15 @@ export default function MultiVariantBaseModelF(
           stopStopToken(self.sourcesLoadingStopToken)
         }
         self.sourcesLoadingStopToken = str
+      },
+      /**
+       * #action
+       */
+      setSimplifiedFeaturesLoading(str: string) {
+        if (self.simplifiedFeaturesStopToken) {
+          stopStopToken(self.simplifiedFeaturesStopToken)
+        }
+        self.simplifiedFeaturesStopToken = str
       },
 
       /**

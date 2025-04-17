@@ -1,4 +1,4 @@
-import { featureSpanPx } from '@jbrowse/core/util'
+import { featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import RBush from 'rbush'
 
@@ -30,19 +30,15 @@ export async function makeImageData(
 
   checkStopToken(stopToken)
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    stopToken,
     features: features.values(),
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
   })
   checkStopToken(stopToken)
   const rbush = new RBush()
-  let start = performance.now()
 
-  for (const { mostFrequentAlt, feature } of mafs) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
+  forEachWithStopTokenCheck(mafs, stopToken, ({ mostFrequentAlt, feature }) => {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>
@@ -126,7 +122,7 @@ export async function makeImageData(
         y += rowHeight
       }
     }
-  }
+  })
 
   return {
     rbush: rbush.toJSON(),

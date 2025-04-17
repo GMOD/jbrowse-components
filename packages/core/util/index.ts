@@ -1457,16 +1457,17 @@ export function localStorageGetBoolean(key: string, defaultVal: boolean) {
 export function forEachWithStopTokenCheck<T>(
   iter: Iterable<T>,
   stopToken: string | undefined,
-  arg: (arg: T) => void,
+  arg: (arg: T, idx: number) => void,
   durationMs = 400,
 ) {
   let start = performance.now()
+  let i = 0
   for (const t of iter) {
     if (performance.now() - start > durationMs) {
       checkStopToken(stopToken)
       start = performance.now()
     }
-    arg(t)
+    arg(t, i++)
   }
 }
 

@@ -1,4 +1,4 @@
-import { sum } from '@jbrowse/core/util'
+import { forEachWithStopTokenCheck, sum } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -58,31 +58,33 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   features,
   minorAlleleFrequencyFilter,
   lengthCutoffFilter,
+  stopToken,
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
+  stopToken?: string
 }) {
   const results = [] as {
     feature: Feature
     mostFrequentAlt: string
     alleleCounts: Map<string, number>
   }[]
-  for (const feature of features) {
+  forEachWithStopTokenCheck(features, stopToken, feature => {
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
       const alleleCounts = calculateAlleleCounts(feature)
       if (
         calculateMinorAlleleFrequency(alleleCounts) >=
         minorAlleleFrequencyFilter
       ) {
-        const mostFrequentAlt = getMostFrequentAlt(alleleCounts)!
         results.push({
           feature,
-          mostFrequentAlt,
+          mostFrequentAlt: getMostFrequentAlt(alleleCounts)!,
           alleleCounts,
         })
       }
     }
-  }
+  })
+
   return results
 }

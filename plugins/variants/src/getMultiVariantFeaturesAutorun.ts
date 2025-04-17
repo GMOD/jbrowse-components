@@ -4,6 +4,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
+import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
@@ -26,6 +27,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   setMessage: (str: string) => void
   setHasPhased: (arg: boolean) => void
   setSampleInfo: (arg: Record<string, SampleInfo>) => void
+  setSimplifiedFeaturesLoading: (arg: string) => void
 }) {
   addDisposer(
     self,
@@ -37,6 +39,8 @@ export function getMultiVariantFeaturesAutorun(self: {
             return
           }
 
+          const stopToken = createStopToken()
+          self.setSimplifiedFeaturesLoading(stopToken)
           const { rpcManager } = getSession(self)
           const {
             lengthCutoffFilter,
@@ -56,6 +60,7 @@ export function getMultiVariantFeaturesAutorun(self: {
                 lengthCutoffFilter,
                 sessionId,
                 adapterConfig,
+                stopToken,
               },
             )) as {
               sampleInfo: Record<string, SampleInfo>
@@ -75,7 +80,9 @@ export function getMultiVariantFeaturesAutorun(self: {
           }
         }
       },
-      { delay: 1000 },
+      {
+        delay: 1000,
+      },
     ),
   )
 }
