@@ -37,7 +37,7 @@ export default function Attributes(props: {
     omit = [],
     omitSingleLevel = [],
     descriptions,
-    formatter = val => val,
+    formatter,
     hideUris,
     prefix = [],
   } = props
@@ -74,6 +74,7 @@ export default function Attributes(props: {
                 key={key}
                 name={key}
                 value={value}
+                formatter={formatter}
                 description={description}
                 prefix={prefix}
               />
@@ -93,6 +94,7 @@ export default function Attributes(props: {
               <Attributes
                 key={key}
                 {...rest}
+                formatter={formatter}
                 attributes={value}
                 descriptions={descriptions}
                 prefix={[...prefix, key]}
@@ -103,7 +105,7 @@ export default function Attributes(props: {
               <SimpleField
                 key={key}
                 name={key}
-                value={formatter(value, key)}
+                value={formatter ? formatter(value, key) : value}
                 description={description}
                 prefix={prefix}
                 width={Math.min(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}

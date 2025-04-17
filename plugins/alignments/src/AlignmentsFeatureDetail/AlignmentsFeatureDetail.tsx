@@ -12,8 +12,6 @@ import { getTag } from './util'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
-// local components
-
 // lazies
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
 const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))

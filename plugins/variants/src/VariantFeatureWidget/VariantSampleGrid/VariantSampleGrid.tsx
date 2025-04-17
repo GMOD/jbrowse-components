@@ -5,9 +5,10 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
+import Checkbox2 from '../Checkbox2'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
 import { makeSimpleAltString } from '../../VcfFeature/util'
@@ -27,6 +28,8 @@ export default function VariantSampleGrid(props: {
 }) {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
+  const [showOnlyGenotypeColumns, setShowOnlyGenotypeColumns] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
@@ -78,7 +81,6 @@ export default function VariantSampleGrid(props: {
     error = e
   }
 
-  const [checked, setChecked] = useState(false)
   const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
   const columns = keys.map(
@@ -101,19 +103,23 @@ export default function VariantSampleGrid(props: {
       </BaseCard>
       <BaseCard {...props} title="Samples">
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checked}
-              onChange={event => {
-                setChecked(event.target.checked)
-              }}
-            />
-          }
-          label={<Typography variant="body2">Show options</Typography>}
+
+        <Checkbox2
+          label="Show filters"
+          checked={showFilters}
+          onChange={event => {
+            setShowFilters(event.target.checked)
+          }}
+        />
+        <Checkbox2
+          label="Show only genotype columns"
+          checked={showOnlyGenotypeColumns}
+          onChange={event => {
+            setShowOnlyGenotypeColumns(event.target.checked)
+          }}
         />
 
-        {checked ? (
+        {showFilters ? (
           <SampleFilters
             setFilter={setFilter}
             columns={columns}
@@ -125,7 +131,13 @@ export default function VariantSampleGrid(props: {
           <DataGrid
             rows={rows}
             hideFooter={rows.length < 100}
-            columns={columns}
+            columns={
+              showOnlyGenotypeColumns
+                ? columns.filter(f =>
+                    ['sample', 'GT', 'genotype'].includes(f.field),
+                  )
+                : columns
+            }
             rowHeight={25}
             columnHeaderHeight={35}
             showToolbar
