@@ -52,6 +52,7 @@ const ClusterDialogAuto = observer(function ({
       <DialogActions>
         <Button
           variant="contained"
+          disabled={loading}
           onClick={async () => {
             try {
               setError(undefined)
