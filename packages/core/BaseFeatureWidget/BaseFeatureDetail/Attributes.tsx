@@ -56,7 +56,7 @@ export default function Attributes(props: {
   return (
     <>
       {Object.entries(formattedAttributes)
-        .filter(([k, v]) => v !== undefined && !omits.has(k))
+        .filter(([k, v]) => v != null && !omits.has(k))
         .map(([key, value]) => {
           const description = accessNested([...prefix, key], descriptions)
           if (Array.isArray(value)) {
