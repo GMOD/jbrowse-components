@@ -59,7 +59,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
+        minorAlleleFrequencyFilter: types.optional(types.number, 0),
 
         /**
          * #property
