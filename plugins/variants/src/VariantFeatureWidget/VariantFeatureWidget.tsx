@@ -18,7 +18,7 @@ const LaunchBreakendPanel = lazy(
   () => import('./LaunchBreakendPanel/LaunchBreakendPanel'),
 )
 const VariantConsequenceDataGrid = lazy(
-  () => import('./VariantConsequenceDataGrid'),
+  () => import('./VariantConsequence/VariantConsequenceDataGrid'),
 )
 
 function AnnPanel({

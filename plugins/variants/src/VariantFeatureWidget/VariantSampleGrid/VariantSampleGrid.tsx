@@ -11,6 +11,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import Checkbox2 from '../Checkbox2'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
+import { areSetsEqual } from './util'
 import { makeSimpleAltString } from '../../VcfFeature/util'
 
 import type {
@@ -92,6 +93,9 @@ export default function VariantSampleGrid(props: {
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
+  const s1 = new Set(['sample', 'GT', 'genotype'])
+  const s2 = new Set(keys)
+
   //  helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   return !preFilteredRows.length ? null : (
@@ -111,13 +115,15 @@ export default function VariantSampleGrid(props: {
             setShowFilters(event.target.checked)
           }}
         />
-        <Checkbox2
-          label="Show only genotype columns"
-          checked={showOnlyGenotypeColumns}
-          onChange={event => {
-            setShowOnlyGenotypeColumns(event.target.checked)
-          }}
-        />
+        {areSetsEqual(s1, s2) ? null : (
+          <Checkbox2
+            label="Show only genotype columns"
+            checked={showOnlyGenotypeColumns}
+            onChange={event => {
+              setShowOnlyGenotypeColumns(event.target.checked)
+            }}
+          />
+        )}
 
         {showFilters ? (
           <SampleFilters
@@ -133,9 +139,7 @@ export default function VariantSampleGrid(props: {
             hideFooter={rows.length < 100}
             columns={
               showOnlyGenotypeColumns
-                ? columns.filter(f =>
-                    ['sample', 'GT', 'genotype'].includes(f.field),
-                  )
+                ? columns.filter(f => s1.has(f.field))
                 : columns
             }
             rowHeight={25}
