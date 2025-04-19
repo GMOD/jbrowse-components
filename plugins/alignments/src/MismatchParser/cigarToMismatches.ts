@@ -2,15 +2,14 @@ import type { Mismatch } from '../shared/types'
 
 export function cigarToMismatches(
   ops: string[],
-  record: { seqAt?: (idx: number) => string },
-  seq?: string,
+  record: { seqAt: (idx: number) => string },
   ref?: string,
   qual?: Uint8Array,
 ) {
   let roffset = 0 // reference offset
   let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
-  const hasRefAndSeq = ref && seq
+  const hasRefAndSeq = ref
   for (let i = 0; i < ops.length; i += 2) {
     const len = +ops[i]!
     const op = ops[i + 1]!
@@ -18,14 +17,12 @@ export function cigarToMismatches(
     if (op === 'M' || op === '=' || op === 'E') {
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
-          if (
-            (record.seqAt?.(soffset + j) ?? seq[soffset + j]!).toUpperCase() !==
-            ref[roffset + j]!.toUpperCase()
-          ) {
+          const base = record.seqAt(soffset + j)
+          if (base.toUpperCase() !== ref[roffset + j]!.toUpperCase()) {
             mismatches.push({
               start: roffset + j,
               type: 'mismatch',
-              base: seq[soffset + j]!,
+              base,
               altbase: ref[roffset + j]!,
               length: 1,
             })

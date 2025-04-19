@@ -25,7 +25,6 @@ export default class BamSlightlyLazyFeature implements Feature {
       this.record,
       this.record.CIGAR,
       this.record.tags.MD as string | undefined,
-      this.record.seq,
       this.ref,
       this.record.qual,
     )
@@ -35,12 +34,26 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.qual?.join(' ')
   }
 
+  get tags() {
+    return this.record.tags
+  }
+
+  get seq() {
+    return this.record.seq
+  }
+
   get(field: string): any {
     return field === 'mismatches'
       ? this.mismatches
       : field === 'qual'
         ? this.qual
-        : this.fields[field]
+        : field === 'tags'
+          ? this.tags
+          : field === 'start'
+            ? this.record.start
+            : field === 'end'
+              ? this.record.end
+              : this.fields[field]
   }
 
   parent() {
@@ -63,10 +76,8 @@ export default class BamSlightlyLazyFeature implements Feature {
       strand: r.strand,
       template_length: r.template_length,
       flags: r.flags,
-      tags: r.tags,
       refName: a.refIdToName(r.ref_id)!,
       CIGAR: r.CIGAR,
-      seq: r.seq,
       type: 'match',
       pair_orientation: r.pair_orientation,
       next_ref: p ? a.refIdToName(r.next_refid) : undefined,
@@ -81,7 +92,9 @@ export default class BamSlightlyLazyFeature implements Feature {
   toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
+      tags: this.tags,
       qual: this.qual,
+      seq: this.seq,
     }
   }
 }
