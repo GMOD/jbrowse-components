@@ -1509,10 +1509,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
   integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
-"@gmod/bam@^6.0.1":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-6.1.0.tgz#747f7715686275f29f3cf624dd2ddc01644ee794"
-  integrity sha512-9NoFimWDKA/F0WlNV1AoJCaL5EPyCAF5DwEN230tzJlLVtzYTMNgxrduoHjgyeETqDL7ijW8TwXu0xOhmFIAJw==
+"@gmod/bam@^6.1.1":
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-6.1.1.tgz#a7e80fbeb09d22382cd39f816f4d47419911ade0"
+  integrity sha512-2p0j6P+0n2XFc4NBPJCVEEprwYWDFgvWThONPe7a0ra2+UD+DCLwL3BKfseZ7MyzRwptlYV6ektYODXSqilFKA==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     "@gmod/bgzf-filehandle" "^4.0.0"
