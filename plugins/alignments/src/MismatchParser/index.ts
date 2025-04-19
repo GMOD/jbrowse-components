@@ -27,6 +27,7 @@ export function parseCigar(s = '') {
 }
 
 export function getMismatches(
+  record: { seqAt?: (idx: number) => string },
   cigar?: string,
   md?: string,
   seq?: string,
@@ -37,13 +38,15 @@ export function getMismatches(
   const ops = parseCigar(cigar)
   // parse the CIGAR tag if it has one
   if (cigar) {
-    mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
+    mismatches = mismatches.concat(
+      cigarToMismatches(ops, record, seq, ref, qual),
+    )
   }
 
   // now let's look for CRAM or MD mismatches
   if (md && seq) {
     mismatches = mismatches.concat(
-      mdToMismatches(md, ops, mismatches, seq, qual),
+      mdToMismatches(record, md, ops, mismatches, seq, qual),
     )
   }
 
