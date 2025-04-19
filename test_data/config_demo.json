@@ -995,32 +995,23 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome",
-      "name": "NA12878 Exome",
-      "assemblyNames": ["GRCh38"],
-      "category": ["1000 Genomes", "Alignments"],
+      "name": "NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome",
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "locationType": "UriLocation",
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "locationType": "UriLocation",
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
-          }
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
         }
-      }
+      },
+      "assemblyNames": ["hg38"]
     },
     {
       "type": "AlignmentsTrack",
