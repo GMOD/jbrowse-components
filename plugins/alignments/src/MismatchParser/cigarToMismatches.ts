@@ -2,6 +2,7 @@ import type { Mismatch } from '../shared/types'
 
 export function cigarToMismatches(
   ops: string[],
+  record: { seqAt?: (idx: number) => string },
   seq?: string,
   ref?: string,
   qual?: Uint8Array,
@@ -18,9 +19,8 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (
-            // @ts-ignore in the full yarn build of the repo, this says that
-            // object is possibly undefined for some reason, ignored
-            seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
+            (record.seqAt?.(soffset + j) ?? seq[soffset + j]!).toUpperCase() !==
+            ref[roffset + j]!.toUpperCase()
           ) {
             mismatches.push({
               start: roffset + j,
