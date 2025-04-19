@@ -3,11 +3,10 @@ import type { Mismatch } from '../shared/types'
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 
 export function mdToMismatches(
-  record: { seqAt?: (idx: number) => string },
+  record: { seqAt: (idx: number) => string },
   mdstring: string,
   ops: string[],
   cigarMismatches: Mismatch[],
-  seq: string,
   qual?: Uint8Array,
 ) {
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
@@ -82,7 +81,7 @@ export function mdToMismatches(
           }
         }
         const s = getTemplateCoordLocal(curr.start)
-        curr.base = (record.seqAt?.(s) ?? seq[s]) || 'X'
+        curr.base = record.seqAt(s) || 'X'
         curr.qual = qual?.[s]
         curr.altbase = token
         nextRecord()
