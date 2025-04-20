@@ -5021,6 +5021,7 @@
       "name": "gencodeV47lift37",
       "adapter": {
         "type": "BigBedAdapter",
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gencode/gencodeV47lift37.bb",
           "locationType": "UriLocation"
