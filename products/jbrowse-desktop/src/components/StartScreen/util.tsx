@@ -1,6 +1,7 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { dedupe } from '@jbrowse/core/util'
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
@@ -12,35 +13,9 @@ import JBrowseRootModelFactory from '../../rootModel/rootModel'
 import sessionModelFactory from '../../sessionModel/sessionModel'
 import { fetchCJS } from '../../util'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { JBrowseConfig } from './types'
 
 const { ipcRenderer } = window.require('electron')
-
-function uniqBy<T>(a: T[], key: (arg: T) => string) {
-  const seen = new Set()
-  return a.filter(item => {
-    const k = key(item)
-    return seen.has(k) ? false : seen.add(k)
-  })
-}
-
-const defaultInternetAccounts = [
-  {
-    type: 'DropboxOAuthInternetAccount',
-    internetAccountId: 'dropboxOAuth',
-    name: 'Dropbox',
-    description: 'Account to access Dropbox files',
-    clientId: 'ykjqg1kr23pl1i7',
-  },
-  {
-    type: 'GoogleDriveOAuthInternetAccount',
-    internetAccountId: 'googleOAuth',
-    name: 'Google Drive',
-    description: 'Account to access Google Drive files',
-    clientId:
-      '109518325434-m86s8a5og8ijc5m6n7n8dk7e9586bg9i.apps.googleusercontent.com',
-  },
-]
 
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
@@ -51,9 +26,7 @@ export async function loadPluginManager(configPath: string) {
 }
 
 export async function createPluginManager(
-  configSnapshot: {
-    plugins?: PluginDefinition[]
-  },
+  configSnapshot: JBrowseConfig,
   initialTimestamp = +Date.now(),
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
@@ -92,18 +65,30 @@ export async function createPluginManager(
   })
 
   const jbrowse = deepmerge(configSnapshot, {
-    internetAccounts: defaultInternetAccounts,
+    internetAccounts: [
+      {
+        type: 'DropboxOAuthInternetAccount',
+        internetAccountId: 'dropboxOAuth',
+        name: 'Dropbox',
+        description: 'Account to access Dropbox files',
+        clientId: 'ykjqg1kr23pl1i7',
+      },
+      {
+        type: 'GoogleDriveOAuthInternetAccount',
+        internetAccountId: 'googleOAuth',
+        name: 'Google Drive',
+        description: 'Account to access Google Drive files',
+        clientId:
+          '109518325434-m86s8a5og8ijc5m6n7n8dk7e9586bg9i.apps.googleusercontent.com',
+      },
+    ],
     assemblies: [],
     tracks: [],
-  }) as {
-    internetAccounts: { internetAccountId: string }[]
-    assemblies: { name: string }[]
-    tracks: { trackId: string }[]
-  }
+  }) as JBrowseConfig
 
-  jbrowse.assemblies = uniqBy(jbrowse.assemblies, asm => asm.name)
-  jbrowse.tracks = uniqBy(jbrowse.tracks, acct => acct.trackId)
-  jbrowse.internetAccounts = uniqBy(
+  jbrowse.assemblies = dedupe(jbrowse.assemblies, asm => asm.name)
+  jbrowse.tracks = dedupe(jbrowse.tracks, acct => acct.trackId)
+  jbrowse.internetAccounts = dedupe(
     jbrowse.internetAccounts,
     acct => acct.internetAccountId,
   )
@@ -129,9 +114,25 @@ export async function createPluginManager(
   return pluginManager
 }
 
-export interface RecentSessionData {
-  path: string
-  name: string
-  screenshot?: string
-  updated?: number
+export async function fetchjson(url: string) {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} fetching ${url}`)
+  }
+  return res.json() as Promise<unknown>
+}
+
+export function addRelativeUris(
+  config: Record<string, unknown> | null,
+  base: URL,
+) {
+  if (typeof config === 'object' && config !== null) {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object' && config[key] !== null) {
+        addRelativeUris(config[key] as Record<string, unknown>, base)
+      } else if (key === 'uri') {
+        config.baseUri = base.href
+      }
+    }
+  }
 }

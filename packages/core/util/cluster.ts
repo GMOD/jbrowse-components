@@ -52,16 +52,19 @@ export function clusterData({
 }) {
   // compute distance between each data point and every other data point
   // N x N matrix where N = data.length
-  let start = performance.now()
+  let stopTokenCheckerStart = performance.now()
+  let progressStart = performance.now()
   const distances: number[][] = []
 
   for (let i = 0; i < data.length; i++) {
-    if (performance.now() - start > 400) {
+    const r = performance.now()
+    if (r - stopTokenCheckerStart > 400) {
       checkStopToken(stopToken)
-      start = performance.now()
+      stopTokenCheckerStart = performance.now()
     }
-    if (onProgress) {
-      onProgress(`Making distance matrix: ${toP(i / (data.length - 1))}%`)
+    if (r - progressStart > 50) {
+      onProgress?.(`Making distance matrix: ${toP(i / (data.length - 1))}%`)
+      progressStart = performance.now()
     }
 
     // create a row for this data point
@@ -85,14 +88,17 @@ export function clusterData({
   // keep track of all tree slices
   let clustersGivenK = []
 
-  start = performance.now()
+  stopTokenCheckerStart = performance.now()
+  progressStart = performance.now()
   for (let iteration = 0; iteration < data.length; iteration++) {
-    if (performance.now() - start > 400) {
+    const r = performance.now()
+    if (r - stopTokenCheckerStart > 400) {
       checkStopToken(stopToken)
-      start = performance.now()
+      stopTokenCheckerStart = performance.now()
     }
-    if (onProgress) {
-      onProgress(`Clustering: ${toP((iteration + 1) / data.length)}%`)
+    if (r - progressStart > 50) {
+      onProgress?.(`Clustering: ${toP((iteration + 1) / data.length)}%`)
+      progressStart = performance.now()
     }
 
     // add current tree slice

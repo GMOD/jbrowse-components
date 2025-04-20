@@ -156,31 +156,8 @@ interface SessionSnap {
 
 let mainWindow: electron.BrowserWindow | null
 
-async function updatePreconfiguredSessions() {
-  try {
-    const response = await fetch('https://jbrowse.org/genomes/sessions.json')
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}`)
-    }
-    const data = await response.json()
-    for (const [key, value] of Object.entries(data)) {
-      // if there is not a 'gravestone' (.deleted file), then repopulate it on
-      // startup, this allows the user to delete even defaults if they want to
-      if (!fs.existsSync(`${getQuickstartPath(key)}.deleted`)) {
-        fs.writeFileSync(getQuickstartPath(key), JSON.stringify(value, null, 2))
-      }
-    }
-  } catch (e) {
-    // just console.error
-    console.error('Failed to fetch sessions.json', e)
-  }
-}
-
 async function createWindow() {
   // no need to await, just update in background
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  updatePreconfiguredSessions()
-
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
     defaultHeight: 800,
