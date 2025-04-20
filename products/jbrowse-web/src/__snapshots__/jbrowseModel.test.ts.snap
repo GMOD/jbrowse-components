@@ -2238,6 +2238,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.bb",
