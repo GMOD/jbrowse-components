@@ -32,7 +32,7 @@ export function useWheelScroll(
         // much smaller deltaY)
         samples.push(event.deltaY)
         const averageDeltaY = Math.abs(sum(samples)) / samples.length
-        const normalizer = averageDeltaY < 5 ? 25 : 500
+        const normalizer = averageDeltaY < 6 ? 25 : 100
         delta.current += event.deltaY / normalizer
         model.setScaleFactor(
           delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
