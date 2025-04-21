@@ -163,7 +163,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       })
 
       const aggr = data[aggregateField]
-      if (!parentAggregation[aggr]) {
+      const aggrIsNotNone = aggr && aggr !== 'none'
+      if (aggrIsNotNone && !parentAggregation[aggr]) {
         parentAggregation[aggr] = []
       }
       const {
@@ -194,8 +195,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         end: feat.end,
         refName: query.refName,
       })
-      if (aggr) {
-        parentAggregation[aggr].push(f)
+      if (aggrIsNotNone) {
+        parentAggregation[aggr]!.push(f)
         parentAggregationFlat.push(f)
       } else {
         if (
