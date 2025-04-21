@@ -1,6 +1,8 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
 
+import { sum } from '@jbrowse/core/util'
+
 type Timer = ReturnType<typeof setTimeout>
 
 export function useWheelScroll(
@@ -15,7 +17,9 @@ export function useWheelScroll(
   const delta = useRef(0)
   const timeout = useRef<Timer>(null)
   const scheduled = useRef(false)
+
   useEffect(() => {
+    let samples = [] as number[]
     const curr = ref.current
 
     // if ctrl is held down, zoom in with y-scroll, else scroll horizontally
@@ -23,7 +27,13 @@ export function useWheelScroll(
     function onWheel(event: WheelEvent) {
       if (event.ctrlKey) {
         event.preventDefault()
-        delta.current += event.deltaY / 500
+        // dynamically toggle between normalization scheme depending on true
+        // wheel scroll (which has larger deltaY) or pinch-to-zoom (which has
+        // much smaller deltaY)
+        samples.push(event.deltaY)
+        const averageDeltaY = Math.abs(sum(samples)) / samples.length
+        const normalizer = averageDeltaY < 5 ? 25 : 500
+        delta.current += event.deltaY / normalizer
         model.setScaleFactor(
           delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
         )
@@ -39,6 +49,7 @@ export function useWheelScroll(
             event.clientX - (curr?.getBoundingClientRect().left || 0),
           )
           delta.current = 0
+          samples = []
         }, 300)
       } else {
         // this is needed to stop the event from triggering "back button
