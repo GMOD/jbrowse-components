@@ -460,14 +460,22 @@ export function createJBrowseTheme(
 // augments them to have light and dark variants but not for anything else, so
 // we augment them here
 function augmentThemeColors(theme: ThemeOptions = {}) {
-  for (const entry of ['tertiary', 'quaternary', 'highlight'] as const) {
+  for (const entry of [
+    'primary',
+    'secondary',
+    'tertiary',
+    'quaternary',
+    'highlight',
+  ] as const) {
     if (theme.palette?.[entry]) {
       theme = deepmerge(theme, {
         palette: {
           [entry]: refTheme.palette.augmentColor(
             'color' in theme.palette[entry]
               ? (theme.palette[entry] as PaletteAugmentColorOptions)
-              : { color: theme.palette[entry] },
+              : {
+                  color: theme.palette[entry],
+                },
           ),
         },
       })
