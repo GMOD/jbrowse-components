@@ -27,12 +27,23 @@ export function useWheelScroll(
     function onWheel(event: WheelEvent) {
       if (event.ctrlKey) {
         event.preventDefault()
-        // dynamically toggle between normalization scheme depending on true
-        // wheel scroll (which has larger deltaY) or pinch-to-zoom (which has
-        // much smaller deltaY)
+        // there is no way to truly detect this, but it attempts to dynamically
+        // toggle between normalization scheme depending on strength of deltaY,
+        // particular due to the fact that this code path is triggered for both
+        // normal ctrl+wheel scroll and pinch to zoom. for these two cases
+        // - true wheel scroll has larger deltaY
+        // - pinch-to-zoom has much smaller deltaY
+        // though there is variation depending on platform
         samples.push(event.deltaY)
         const averageDeltaY = Math.abs(sum(samples)) / samples.length
-        const normalizer = averageDeltaY < 6 ? 25 : 100
+        const normalizer =
+          averageDeltaY < 6
+            ? 25
+            : averageDeltaY > 30
+              ? averageDeltaY > 150
+                ? 500
+                : 150
+              : 75
         delta.current += event.deltaY / normalizer
         model.setScaleFactor(
           delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
