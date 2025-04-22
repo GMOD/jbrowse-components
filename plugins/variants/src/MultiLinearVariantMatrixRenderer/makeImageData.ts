@@ -2,7 +2,10 @@ import { forEachWithStopTokenCheck, updateStatus } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
-import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import {
+  drawColorAlleleCount,
+  getColorAlleleCount,
+} from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
@@ -45,16 +48,7 @@ export async function makeImageData({
   const w = canvasWidth / m
 
   await updateStatus('Drawing variant matrix', statusCallback, () => {
-    const cacheSplit = {} as Record<
-      string,
-      {
-        alt: number
-        ref: number
-        uncalled: number
-        alt2: number
-        total: number
-      }
-    >
+    const colorCache = {} as Record<string, string | undefined>
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
@@ -86,22 +80,14 @@ export async function makeImageData({
                     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                   }
                 } else {
-                  let alleles: string[]
-                  let alt = 0
-                  let uncalled = 0
-                  let alt2 = 0
-                  let ref = 0
-                  let total = 0
-                  if (cacheSplit[genotype]) {
-                    const r = cacheSplit[genotype]
-                    alt = r.alt
-                    ref = r.ref
-                    uncalled = r.uncalled
-                    alt2 = r.alt2
-                    total = r.total
-                  } else {
-                    alleles = genotype.split(/[/|]/)
-                    total = alleles.length
+                  let c = colorCache[genotype]
+                  if (c === undefined) {
+                    let alt = 0
+                    let uncalled = 0
+                    let alt2 = 0
+                    let ref = 0
+                    const alleles = genotype.split(/[/|]/)
+                    const total = alleles.length
 
                     for (let i = 0; i < total; i++) {
                       const allele = alleles[i]!
@@ -115,20 +101,19 @@ export async function makeImageData({
                         alt2++
                       }
                     }
-                    cacheSplit[genotype] = { alt, ref, uncalled, alt2, total }
+                    c = getColorAlleleCount(
+                      ref,
+                      alt,
+                      alt2,
+                      uncalled,
+                      total,
+                      true,
+                    )
+                    colorCache[genotype] = c
                   }
-                  drawColorAlleleCount(
-                    ref,
-                    alt,
-                    alt2,
-                    uncalled,
-                    total,
-                    ctx,
-                    x,
-                    y,
-                    w,
-                    h,
-                  )
+                  if (c) {
+                    drawColorAlleleCount(c, ctx, x, y, w, h)
+                  }
                 }
               }
             }
@@ -153,22 +138,14 @@ export async function makeImageData({
                   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                 }
               } else {
-                let alleles: string[]
-                let alt = 0
-                let uncalled = 0
-                let alt2 = 0
-                let ref = 0
-                let total = 0
-                if (cacheSplit[genotype]) {
-                  const r = cacheSplit[genotype]
-                  alt = r.alt
-                  ref = r.ref
-                  uncalled = r.uncalled
-                  alt2 = r.alt2
-                  total = r.total
-                } else {
-                  alleles = genotype.split(/[/|]/)
-                  total = alleles.length
+                let c = colorCache[genotype]
+                if (c === undefined) {
+                  let alt = 0
+                  let uncalled = 0
+                  let alt2 = 0
+                  let ref = 0
+                  const alleles = genotype.split(/[/|]/)
+                  const total = alleles.length
 
                   for (let i = 0; i < total; i++) {
                     const allele = alleles[i]!
@@ -182,20 +159,12 @@ export async function makeImageData({
                       alt2++
                     }
                   }
-                  cacheSplit[genotype] = { alt, ref, uncalled, alt2, total }
+                  c = getColorAlleleCount(ref, alt, alt2, uncalled, total, true)
+                  colorCache[genotype] = c
                 }
-                drawColorAlleleCount(
-                  ref,
-                  alt,
-                  alt2,
-                  uncalled,
-                  total,
-                  ctx,
-                  x,
-                  y,
-                  w,
-                  h,
-                )
+                if (c) {
+                  drawColorAlleleCount(c, ctx, x, y, w, h)
+                }
               }
             }
           }

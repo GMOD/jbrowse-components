@@ -2,10 +2,7 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { f2 } from './constants'
 
-const memoCache = new Map<string, string | undefined>()
-const MEMO_CACHE_SIZE_LIMIT = 1000
-
-function getColorAlleleCount(
+export function getColorAlleleCount(
   ref: number,
   alt: number,
   alt2: number,
@@ -13,31 +10,9 @@ function getColorAlleleCount(
   total: number,
   drawReference = true,
 ) {
-  // Create a deterministic cache key
-  const cacheKey = JSON.stringify(
-    `${ref}:${alt}:${alt2}:${uncalled}:${total}:${drawReference}`,
-  )
-
-  // Check if we have a cached result
-  if (memoCache.has(cacheKey)) {
-    return memoCache.get(cacheKey)
-  }
-
-  // If cache is too large, clear the oldest entries
-  if (memoCache.size >= MEMO_CACHE_SIZE_LIMIT) {
-    // Remove oldest 20% of entries
-    const keysToDelete = Array.from(memoCache.keys()).slice(
-      0,
-      Math.floor(MEMO_CACHE_SIZE_LIMIT * 0.2),
-    )
-    for (const key of keysToDelete) {
-      memoCache.delete(key)
-    }
-  }
-
-  let result
   if (ref === total) {
-    result = drawReference ? '#ccc' : undefined
+    // empty string is not defined, but signals no draw
+    return drawReference ? '#ccc' : ''
   } else {
     let a1
     if (alt) {
@@ -53,52 +28,41 @@ function getColorAlleleCount(
       // @ts-ignore
       a1 = a1 ? a1.mix(l) : colord(l)
     }
-    result = a1?.toHex() || 'black'
+    return a1?.toHex() || 'black'
   }
-  memoCache.set(cacheKey, result)
-  return result
 }
 
 export function drawColorAlleleCount(
-  ref: number,
-  alt: number,
-  alt2: number,
-  uncalled: number,
-  total: number,
+  c: string,
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
   h: number,
-  drawReference = true,
   featureType = '',
   featureStrand?: number,
   alpha = 1,
 ) {
-  const c = getColorAlleleCount(ref, alt, alt2, uncalled, total, drawReference)
-  if (c) {
-    ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
-    if (featureType === 'inversion') {
-      // draw triangle pointing to the right
-      if (featureStrand === 1) {
-        ctx.beginPath()
-        ctx.moveTo(x - f2, y - f2) // left top
-        ctx.lineTo(x - f2, y + h + f2) // left bottom
-        ctx.lineTo(x + w + f2, y + h / 2) // right middle
-        ctx.closePath()
-        ctx.fill()
-      } else {
-        // draw triangle pointing to the left
-        ctx.beginPath()
-        ctx.moveTo(x + w + f2, y - f2) // right top
-        ctx.lineTo(x + w + f2, y + h + f2) // right bottom
-        ctx.lineTo(x - f2, y + h / 2) // left middle
-        ctx.closePath()
-        ctx.fill()
-      }
+  ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
+  if (featureType === 'inversion') {
+    // draw triangle pointing to the right
+    if (featureStrand === 1) {
+      ctx.beginPath()
+      ctx.moveTo(x - f2, y - f2) // left top
+      ctx.lineTo(x - f2, y + h + f2) // left bottom
+      ctx.lineTo(x + w + f2, y + h / 2) // right middle
+      ctx.closePath()
+      ctx.fill()
     } else {
-      ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+      // draw triangle pointing to the left
+      ctx.beginPath()
+      ctx.moveTo(x + w + f2, y - f2) // right top
+      ctx.lineTo(x + w + f2, y + h + f2) // right bottom
+      ctx.lineTo(x - f2, y + h / 2) // left middle
+      ctx.closePath()
+      ctx.fill()
     }
+  } else {
+    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
   }
-  return c
 }

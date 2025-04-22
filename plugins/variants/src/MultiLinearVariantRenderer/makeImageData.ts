@@ -3,7 +3,10 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import RBush from 'rbush'
 
 import { f2 } from '../shared/constants'
-import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import {
+  drawColorAlleleCount,
+  getColorAlleleCount,
+} from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
@@ -40,6 +43,7 @@ export async function makeImageData(
 
   forEachWithStopTokenCheck(mafs, stopToken, ({ mostFrequentAlt, feature }) => {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const flen = feature.get('end') - feature.get('start')
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>
     let y = -scrollTop
@@ -86,38 +90,21 @@ export async function makeImageData(
         y += rowHeight
       }
     } else {
-      const cacheSplit = {} as Record<
-        string,
-        {
-          alt: number
-          ref: number
-          uncalled: number
-          alt2: number
-          total: number
-        }
-      >
+      const colorCache = {} as Record<string, string | undefined>
       for (let j = 0; j < s; j++) {
         const { name } = sources[j]!
         const genotype = samp[name]
         const x = Math.floor(leftPx)
         const h = Math.max(rowHeight, 1)
         if (genotype) {
-          let alleles: string[]
-          let alt = 0
-          let uncalled = 0
-          let alt2 = 0
-          let ref = 0
-          let total = 0
-          if (cacheSplit[genotype]) {
-            const r = cacheSplit[genotype]
-            alt = r.alt
-            ref = r.ref
-            uncalled = r.uncalled
-            alt2 = r.alt2
-            total = r.total
-          } else {
-            alleles = genotype.split(/[/|]/)
-            total = alleles.length
+          let c = colorCache[genotype]
+          if (c === undefined) {
+            let alt = 0
+            let uncalled = 0
+            let alt2 = 0
+            let ref = 0
+            const alleles = genotype.split(/[/|]/)
+            const total = alleles.length
 
             for (let i = 0; i < total; i++) {
               const allele = alleles[i]!
@@ -131,26 +118,28 @@ export async function makeImageData(
                 alt2++
               }
             }
-            cacheSplit[genotype] = { alt, ref, uncalled, alt2, total }
-          }
-          if (
-            drawColorAlleleCount(
+            c = getColorAlleleCount(
               ref,
               alt,
               alt2,
               uncalled,
               total,
+              referenceDrawingMode === 'draw',
+            )
+            colorCache[genotype] = c
+          }
+          if (c) {
+            drawColorAlleleCount(
+              c,
               ctx,
               x,
               y,
               w,
               h,
-              referenceDrawingMode === 'draw',
               feature.get('type'),
               feature.get('strand'),
-              0.75,
+              flen > 5 ? 0.75 : 1,
             )
-          ) {
             rbush.insert({
               minX: x,
               maxX: x + w,
