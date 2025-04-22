@@ -18,40 +18,51 @@ export function findSecondLargestNumber(arr: Iterable<number>) {
   return secondMax
 }
 
+const regex = /[/|]/
 export function calculateAlleleCounts(feat: Feature) {
   const genotypes = feat.get('genotypes') as Record<string, string>
   const alleleCounts = { 0: 0, 1: 0, '.': 0 } as Record<string, number>
   const cacheSplit = {} as Record<string, string[]>
-  for (const genotype of Object.values(genotypes)) {
+  const vals = Object.values(genotypes)
+  const len = vals.length
+  for (let i = 0; i < len; i++) {
+    const genotype = vals[i]!
     // fast path
-    if (genotype === '0/0' || genotype === '0|0') {
-      alleleCounts[0]! += 2
-    } else if (
-      genotype === '1/0' ||
-      genotype === '0/1' ||
-      genotype === '1|0' ||
-      genotype === '0|1'
-    ) {
-      alleleCounts[0]! += 1
-      alleleCounts[1]! += 1
-    } else if (genotype === '1/1' || genotype === '1|1') {
-      alleleCounts[1]! += 2
-    } else {
-      let alleles: string[]
-      if (cacheSplit[genotype]) {
-        alleles = cacheSplit[genotype]
+    if (genotype.length === 3) {
+      if (genotype === '0/0' || genotype === '0|0') {
+        alleleCounts[0]! += 2
+      } else if (
+        genotype === '1/0' ||
+        genotype === '0/1' ||
+        genotype === '1|0' ||
+        genotype === '0|1'
+      ) {
+        alleleCounts[0]! += 1
+        alleleCounts[1]! += 1
+      } else if (genotype === '1/1' || genotype === '1|1') {
+        alleleCounts[1]! += 2
       } else {
-        alleles = genotype.split(/[/|]/)
-        cacheSplit[genotype] = alleles
-      }
-      const lenA = alleles.length
-      for (let i = 0; i < lenA; i++) {
-        const a = alleles[i]!
-        if (alleleCounts[a] === undefined) {
-          alleleCounts[a] = 1
-        } else {
-          alleleCounts[a] += 1
+        // Use cached alleles or split and cache
+        const alleles =
+          cacheSplit[genotype] || (cacheSplit[genotype] = genotype.split(regex))
+
+        // Process each allele
+        for (let i = 0, len = alleles.length; i < len; i++) {
+          const a = alleles[i]!
+          alleleCounts[a] = (alleleCounts[a] ?? 0) + 1
         }
+      }
+    }
+    // slow path
+    else {
+      // Use cached alleles or split and cache
+      const alleles =
+        cacheSplit[genotype] || (cacheSplit[genotype] = genotype.split(regex))
+
+      // Process each allele
+      for (let i = 0, len = alleles.length; i < len; i++) {
+        const a = alleles[i]!
+        alleleCounts[a] = (alleleCounts[a] ?? 0) + 1
       }
     }
   }

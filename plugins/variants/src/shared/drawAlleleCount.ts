@@ -12,7 +12,9 @@ function getColorAlleleCount(
   let uncalled = 0
   let alt2 = 0
   let ref = 0
-  for (const allele of alleles) {
+
+  for (let i = 0; i < total; i++) {
+    const allele = alleles[i]!
     if (allele === mostFrequentAlt) {
       alt++
     } else if (allele === '0') {
