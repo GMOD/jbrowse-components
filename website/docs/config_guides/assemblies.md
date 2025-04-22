@@ -128,17 +128,15 @@ myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
 jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
-See our
-[configure JBrowse using the cli](/docs/quickstart_web/#adding-a-genome-assembly-in-fasta-format)
-tutorial for more in-depth instructions, or more information on the
-`add-assembly` command through our
-[CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
+See our [configure JBrowse using the cli](/docs/quickstart_web/) tutorial for
+more in-depth instructions, or more information on the `add-assembly` command
+through our [CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
 
 :::note
 
 Assemblies can also be added graphically using the assembly manager when you are
 using the `admin-server`. See how to
-[configure JBrowse using the GUI](/docs/tutorials/config_gui/#adding-a-genome-assembly)
+[configure JBrowse using the admin server GUI](/docs/quickstart_adminserver/)
 for more details.
 
 :::

@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### BedGraphTabixAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
+
+```json
+{
+  "type": "BedGraphTabixAdapter",
+  "uri": "yourfile.bg.gz"
+}
+```
+
 ### BedGraphTabixAdapter - Slots
 
 #### slot: bedGraphGzLocation

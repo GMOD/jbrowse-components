@@ -29,6 +29,19 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "NcbiSequenceReportAliasAdapter",
+     *   "uri": "sequence_report.tsv"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

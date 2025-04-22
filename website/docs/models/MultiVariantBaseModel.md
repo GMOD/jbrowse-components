@@ -102,7 +102,41 @@ true
 autoHeight: true
 ```
 
+#### property: lengthCutoffFilter
+
+```js
+// type signature
+number
+// code
+lengthCutoffFilter: Number.MAX_SAFE_INTEGER
+```
+
+#### property: jexlFilters
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFilters: types.maybe(types.array(types.string))
+```
+
+#### property: referenceDrawingMode
+
+```js
+// type signature
+string
+// code
+referenceDrawingMode: 'skip'
+```
+
 ### MultiVariantBaseModel - Getters
+
+#### getter: activeFilters
+
+```js
+// type
+any
+```
 
 #### getter: preSources
 
@@ -118,11 +152,25 @@ Source[]
 any[]
 ```
 
+#### getter: sourceMap
+
+```js
+// type
+any
+```
+
 #### getter: rowHeight
 
 ```js
 // type
 number
+```
+
+#### getter: canDisplayLabels
+
+```js
+// type
+boolean
 ```
 
 #### getter: totalHeight
@@ -152,10 +200,24 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 5 more ... | { ...; })[]
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
 ```
 
 ### MultiVariantBaseModel - Actions
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (f?: string[]) => void
+```
 
 #### action: setRowHeight
 
@@ -168,7 +230,7 @@ setRowHeight: (arg: number) => void
 
 ```js
 // type signature
-setHoveredGenotype: (arg: string) => void
+setHoveredGenotype: (arg?: { genotype: string; name: string; }) => void
 ```
 
 #### action: setFeatures
@@ -246,4 +308,11 @@ setHasPhased: (arg: boolean) => void
 ```js
 // type signature
 setSampleInfo: (arg: Record<string, SampleInfo>) => void
+```
+
+#### action: setReferenceDrawingMode
+
+```js
+// type signature
+setReferenceDrawingMode: (arg: string) => void
 ```

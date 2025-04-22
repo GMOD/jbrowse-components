@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -34,9 +34,9 @@
     "@gmod/abortable-promise-cache": "^2.0.0",
     "@gmod/bgzf-filehandle": "^2.0.1",
     "@gmod/http-range-fetcher": "^4.0.0",
-    "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
-    "@mui/x-data-grid": "^7.0.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "@mui/x-data-grid": "^8.0.0",
     "canvas-sequencer": "^3.1.0",
     "canvas2svg": "^1.0.16",
     "colord": "^2.9.3",

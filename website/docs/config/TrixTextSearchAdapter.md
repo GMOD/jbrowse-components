@@ -18,6 +18,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### TrixTextSearchAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes file.ixx also exists:
+
+```json
+{
+  "type": "TrixTextSearchAdapter",
+  "uri": "file.ix",
+  "assemblyNames": ["hg19"],
+  "textSearchAdapterId": "hg19SearchIndex"
+}
+```
+
 ### TrixTextSearchAdapter - Identifier
 
 #### slot: explicitIdentifier

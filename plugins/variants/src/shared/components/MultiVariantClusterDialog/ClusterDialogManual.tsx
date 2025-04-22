@@ -53,12 +53,11 @@ const ClusterDialogManuals = observer(function ({
   const [ret, setRet] = useState<Record<string, any>>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-
-  const [clusterMethod, setClusterMethod] = useLocalStorage(
-    'cluster-clusterMethod',
-    'single',
+  const [showAdvanced, setShowAdvanced] = useLocalStorage(
+    'cluster-showAdvanced',
+    false,
   )
+  const [clusterMethod, setClusterMethod] = useState('single')
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -75,6 +74,7 @@ const ClusterDialogManuals = observer(function ({
         const {
           sourcesWithoutLayout,
           minorAlleleFrequencyFilter,
+          lengthCutoffFilter,
           adapterConfig,
         } = model
         const sessionId = getRpcSessionId(model)
@@ -85,6 +85,7 @@ const ClusterDialogManuals = observer(function ({
             regions: view.dynamicBlocks.contentBlocks,
             sources: sourcesWithoutLayout,
             minorAlleleFrequencyFilter,
+            lengthCutoffFilter,
             sessionId,
             adapterConfig,
           },
@@ -125,86 +126,88 @@ cat(resultClusters$order,sep='\\n')`
       <DialogContent>
         {children}
         <Paper style={{ padding: 16 }}>
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-              flexWrap: 'wrap',
-              marginBottom: '16px',
-            }}
-          >
-            <Button
-              variant="contained"
-              onClick={() => {
-                saveAs(
-                  new Blob([results || ''], {
-                    type: 'text/plain;charset=utf-8',
-                  }),
-                  'cluster.R',
-                )
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginBottom: '16px',
               }}
             >
-              Download Rscript
-            </Button>{' '}
-            or{' '}
-            <Button
-              variant="contained"
-              onClick={() => {
-                copy(results || '')
-              }}
-            >
-              Copy Rscript to clipboard
-            </Button>{' '}
-            or{' '}
-            <Button
-              variant="contained"
-              onClick={() => {
-                saveAs(
-                  new Blob([resultsTsv || ''], {
-                    type: 'text/plain;charset=utf-8',
-                  }),
-                  'genotypes.tsv',
-                )
-              }}
-            >
-              Download TSV
-            </Button>
-            <div>
               <Button
                 variant="contained"
                 onClick={() => {
-                  setShowAdvanced(!showAdvanced)
+                  saveAs(
+                    new Blob([results || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'cluster.R',
+                  )
                 }}
               >
-                {showAdvanced
-                  ? 'Hide advanced options'
-                  : 'Show advanced options'}
+                Download Rscript
+              </Button>{' '}
+              or{' '}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  copy(results || '')
+                }}
+              >
+                Copy Rscript to clipboard
+              </Button>{' '}
+              or{' '}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  saveAs(
+                    new Blob([resultsTsv || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'genotypes.tsv',
+                  )
+                }}
+              >
+                Download TSV
               </Button>
-              {showAdvanced ? (
-                <div>
-                  <Typography variant="h6">Advanced options</Typography>
-                  <RadioGroup>
-                    {Object.entries({
-                      single: 'Single',
-                      complete: 'Complete',
-                    }).map(([key, val]) => (
-                      <FormControlLabel
-                        key={key}
-                        control={
-                          <Radio
-                            checked={clusterMethod === key}
-                            onChange={() => {
-                              setClusterMethod(key)
-                            }}
-                          />
-                        }
-                        label={val}
-                      />
-                    ))}
-                  </RadioGroup>
-                </div>
-              ) : null}
+              <div>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setShowAdvanced(!showAdvanced)
+                  }}
+                >
+                  {showAdvanced
+                    ? 'Hide advanced options'
+                    : 'Show advanced options'}
+                </Button>
+              </div>
             </div>
+            {showAdvanced ? (
+              <div>
+                <Typography variant="h6">Advanced options</Typography>
+                <RadioGroup>
+                  {Object.entries({
+                    single: 'Single',
+                    complete: 'Complete',
+                  }).map(([key, val]) => (
+                    <FormControlLabel
+                      key={key}
+                      control={
+                        <Radio
+                          checked={clusterMethod === key}
+                          onChange={() => {
+                            setClusterMethod(key)
+                          }}
+                        />
+                      }
+                      label={val}
+                    />
+                  ))}
+                </RadioGroup>
+              </div>
+            ) : null}
             {results ? (
               <div />
             ) : loading ? (

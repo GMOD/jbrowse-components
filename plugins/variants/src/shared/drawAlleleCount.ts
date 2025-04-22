@@ -56,10 +56,11 @@ export function drawColorAlleleCount(
   drawReference = true,
   featureType = '',
   featureStrand?: number,
+  alpha = 1,
 ) {
   const c = getColorAlleleCount(alleles, mostFrequentAlt, drawReference)
   if (c) {
-    ctx.fillStyle = c
+    ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
     if (featureType === 'inversion') {
       // draw triangle pointing to the right
       if (featureStrand === 1) {

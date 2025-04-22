@@ -1,7 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { bpSpanPx, featureSpanPx } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  bpSpanPx,
+  featureSpanPx,
+  forEachWithStopTokenCheck,
+} from '@jbrowse/core/util'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
@@ -97,25 +100,18 @@ export async function makeImage(
     cpg_unmeth: 'blue',
   }
 
-  const feats = [...features.values()]
-
   // Use two pass rendering, which helps in visualizing the SNPs at higher
   // bpPerPx First pass: draw the gray background
   ctx.fillStyle = colorMap.total!
-  let start = performance.now()
-  for (const feature of feats) {
+  forEachWithStopTokenCheck(features.values(), stopToken, feature => {
     if (feature.get('type') === 'skip') {
-      continue
+      return
     }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = rightPx - leftPx + fudgeFactor
     const score = feature.get('score') as number
     ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
-  }
+  })
 
   // Keep track of previous total which we will use it to draw the interbase
   // indicator (if there is a sudden clip, there will be no read coverage but
@@ -137,14 +133,9 @@ export async function makeImage(
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of
   // the grey background over the SNPs
-  start = performance.now()
-  for (const feature of feats) {
-    const now = performance.now()
-    if (now - start > 400) {
-      checkStopToken(stopToken)
-    }
+  forEachWithStopTokenCheck(features.values(), stopToken, feature => {
     if (feature.get('type') === 'skip') {
-      continue
+      return
     }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
@@ -341,19 +332,19 @@ export async function makeImage(
       }
     }
     prevTotal = score0
-  }
+  })
 
   if (showArcs) {
-    for (const f of feats) {
-      if (f.get('type') !== 'skip') {
-        continue
+    forEachWithStopTokenCheck(features.values(), stopToken, feature => {
+      if (feature.get('type') !== 'skip') {
+        return
       }
-      const s = f.get('start')
-      const e = f.get('end')
+      const s = feature.get('start')
+      const e = feature.get('end')
       const [left, right] = bpSpanPx(s, e, region, bpPerPx)
 
       ctx.beginPath()
-      const effectiveStrand = f.get('effectiveStrand')
+      const effectiveStrand = feature.get('effectiveStrand')
       const pos = 'rgba(255,200,200,0.7)'
       const neg = 'rgba(200,200,255,0.7)'
       const neutral = 'rgba(200,200,200,0.7)'
@@ -366,11 +357,11 @@ export async function makeImage(
         ctx.strokeStyle = neutral
       }
 
-      ctx.lineWidth = Math.log(f.get('score') + 1)
+      ctx.lineWidth = Math.log(feature.get('score') + 1)
       ctx.moveTo(left, height - offset * 2)
       ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
       ctx.stroke()
-    }
+    })
   }
 
   if (displayCrossHatches) {

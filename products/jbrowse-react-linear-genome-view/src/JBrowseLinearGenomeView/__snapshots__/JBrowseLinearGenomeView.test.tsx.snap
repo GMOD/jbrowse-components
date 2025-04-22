@@ -255,7 +255,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                               autocapitalize="none"
                               autocomplete="off"
                               class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                              id=":r5:"
+                              id="«r5»"
                               placeholder="Search for location"
                               role="combobox"
                               spellcheck="false"
@@ -357,8 +357,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           style="left: 0%; width: 56.78411120929245%;"
                         />
                         <span
+                          aria-label="Window size: 39bp"
                           class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-o0wpuw-MuiSlider-thumb"
                           data-index="0"
+                          data-mui-internal-clone-element="true"
                           style="left: 56.78411120929245%;"
                         >
                           <input

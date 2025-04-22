@@ -14,7 +14,7 @@ import { makeStyles } from 'tss-react/mui'
 import { moveDown, moveUp } from './util'
 
 import type { Source } from '../../util'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -40,7 +40,7 @@ function SourcesGrid({
 }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const [selected, setSelected] = useState([] as string[])
+  const [selected, setSelected] = useState([] as GridRowId[])
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]!
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
@@ -116,9 +116,8 @@ function SourcesGrid({
         <DataGrid
           getRowId={row => row.name}
           checkboxSelection
-          disableRowSelectionOnClick
           onRowSelectionModelChange={arg => {
-            setSelected(arg as string[])
+            setSelected([...arg.ids])
           }}
           rows={rows}
           rowHeight={25}

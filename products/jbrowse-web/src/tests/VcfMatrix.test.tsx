@@ -18,7 +18,9 @@ test('matrix', async () => {
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Multi-variant display (matrix)', ...opts))
+  fireEvent.click(
+    await findByText('Multi-sample variant display (matrix)', ...opts),
+  )
   fireEvent.click(await findByText('Force load', ...opts))
   expectCanvasMatch(await findByTestId(/prerendered_canvas/, ...opts))
 }, 40000)
@@ -30,7 +32,9 @@ test('mphased', async () => {
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Multi-variant display (matrix)', ...opts))
+  fireEvent.click(
+    await findByText('Multi-sample variant display (matrix)', ...opts),
+  )
 
   // Using the track menu twice not working currently, manually poke this setting
   view.tracks[0].displays[0].setPhasedMode('phased')

@@ -112,8 +112,8 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/)
-for more info on setting up a simple plugin for doing these customizations.
+See [our no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
+more info on setting up a simple plugin for doing these customizations.
 
 ### Example: A generalized solution to dbxrefs
 

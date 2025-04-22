@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { Button, Container, Grid2 } from '@mui/material'
+import { Button, Container, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -30,16 +30,11 @@ const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
   return (
     <Container className={classes.importFormContainer}>
       {err ? (
-        <Grid2
-          container
-          spacing={1}
-          justifyContent="center"
-          alignItems="center"
-        >
+        <Grid container spacing={1} justifyContent="center" alignItems="center">
           <ErrorMessage error={err} />
-        </Grid2>
+        </Grid>
       ) : null}
-      <Grid2 container spacing={1} justifyContent="center" alignItems="center">
+      <Grid container spacing={1} justifyContent="center" alignItems="center">
         <AssemblySelector
           onChange={val => {
             model.setError(undefined)
@@ -60,7 +55,7 @@ const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
           {/* if there's an error, it's not actively loading  so just display open */}
           {regions.length || err ? 'Open' : 'Loading...'}
         </Button>
-      </Grid2>
+      </Grid>
     </Container>
   )
 })

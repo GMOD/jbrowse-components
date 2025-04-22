@@ -5,6 +5,8 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import AltFormatter from './AltFormatter'
+import Formatter from './Formatter'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid'
 import { variantFieldDescriptions } from './variantFieldDescriptions'
 
@@ -16,7 +18,7 @@ const LaunchBreakendPanel = lazy(
   () => import('./LaunchBreakendPanel/LaunchBreakendPanel'),
 )
 const VariantConsequenceDataGrid = lazy(
-  () => import('./VariantConsequenceDataGrid'),
+  () => import('./VariantConsequence/VariantConsequenceDataGrid'),
 )
 
 function AnnPanel({
@@ -117,7 +119,8 @@ const VariantFeatureWidget = observer(function (props: {
   const { model } = props
   const { featureData, descriptions } = model
   const feat = JSON.parse(JSON.stringify(featureData))
-  const { samples, ALT, ...rest } = feat
+  const { samples, ...rest } = feat
+  const { REF } = rest
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -126,6 +129,13 @@ const VariantFeatureWidget = observer(function (props: {
         descriptions={{
           ...variantFieldDescriptions,
           ...descriptions,
+        }}
+        formatter={(value, key) => {
+          return key === 'ALT' ? (
+            <AltFormatter value={`${value}`} ref={REF} />
+          ) : (
+            <Formatter value={value} />
+          )
         }}
         {...props}
       />

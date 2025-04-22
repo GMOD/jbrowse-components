@@ -960,10 +960,21 @@ is returned. Will pop up a search dialog if multiple results are returned
 navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promis...
 ```
 
+#### action: navToLocation
+
+Similar to `navToLocString`, but accepts a parsed location object instead of a
+locstring. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string) => Promise<any>
+```
+
 #### action: navToLocations
 
-Similar to `navToLocString`, but accepts parsed location objects instead of
-strings. Will try to perform `setDisplayedRegions` if changing regions
+Similar to `navToLocString`, but accepts a list of parsed location objects
+instead of a locstring. Will try to perform `setDisplayedRegions` if changing
+regions
 
 ```js
 // type signature

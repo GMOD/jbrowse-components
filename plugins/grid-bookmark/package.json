@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-grid-bookmark",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "JBrowse 2 grid bookmark widget",
   "keywords": [
     "jbrowse",
@@ -36,12 +36,12 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.2.0",
-    "@jbrowse/plugin-config": "^3.2.0",
-    "@jbrowse/plugin-linear-genome-view": "^3.2.0",
-    "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
-    "@mui/x-data-grid": "^7.0.0",
+    "@jbrowse/core": "^3.3.0",
+    "@jbrowse/plugin-config": "^3.3.0",
+    "@jbrowse/plugin-linear-genome-view": "^3.3.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "@mui/x-data-grid": "^8.0.0",
     "@types/file-saver": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0",

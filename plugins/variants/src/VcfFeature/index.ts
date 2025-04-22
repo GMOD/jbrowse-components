@@ -18,7 +18,6 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
     description,
     type,
     name: ID?.join(','),
-    aliases: ID && ID.length > 1 ? ID.slice(1) : undefined,
   }
 }
 function getEnd(variant: Variant) {

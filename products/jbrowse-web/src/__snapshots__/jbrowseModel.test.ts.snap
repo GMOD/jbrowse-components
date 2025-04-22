@@ -517,10 +517,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "MultiLinearVariantDisplay",
         },
         {
-          "displayId": "volvox_sv_test-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
-        },
-        {
           "displayId": "volvox_sv_test-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -569,10 +565,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test_renamed-MultiLinearVariantDisplay",
           "type": "MultiLinearVariantDisplay",
-        },
-        {
-          "displayId": "volvox_sv_test_renamed-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
         },
         {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
@@ -912,6 +904,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox-sorted.bam.bai",
+          },
+        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -924,7 +922,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_alignments_alignments",
-          "height": 400,
+          "height": 600,
           "pileupDisplay": {
             "colorBy": {
               "type": "mappingQuality",
@@ -1231,10 +1229,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_test_vcf-MultiLinearVariantDisplay",
           "type": "MultiLinearVariantDisplay",
-        },
-        {
-          "displayId": "volvox_test_vcf-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
         },
         {
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
@@ -2180,10 +2174,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "MultiLinearVariantDisplay",
         },
         {
-          "displayId": "volvox_filtered_vcf-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
-        },
-        {
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -2232,10 +2222,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-MultiLinearVariantDisplay",
           "type": "MultiLinearVariantDisplay",
-        },
-        {
-          "displayId": "volvox_filtered_vcf_assembly_alias-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
         },
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
@@ -2881,10 +2867,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "MultiLinearVariantDisplay",
         },
         {
-          "displayId": "variant_colors-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
-        },
-        {
           "displayId": "variant_colors-LinearPairedArcDisplay",
           "type": "LinearPairedArcDisplay",
         },
@@ -3208,10 +3190,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox.inv.vcf-MultiLinearVariantDisplay",
           "type": "MultiLinearVariantDisplay",
-        },
-        {
-          "displayId": "volvox.inv.vcf-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
         },
         {
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
@@ -3545,10 +3523,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "MultiLinearVariantDisplay",
         },
         {
-          "displayId": "variant_effect_demo_data-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
-        },
-        {
           "displayId": "variant_effect_demo_data-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -3591,10 +3565,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_jannovar-MultiLinearVariantDisplay",
           "type": "MultiLinearVariantDisplay",
-        },
-        {
-          "displayId": "variant_effect_demo_jannovar-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
         },
         {
           "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
@@ -4086,10 +4056,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bedpe-MultiLinearVariantDisplay",
           "type": "MultiLinearVariantDisplay",
-        },
-        {
-          "displayId": "volvox_bedpe-MultiLinearSVDisplay",
-          "type": "MultiLinearSVDisplay",
         },
         {
           "displayId": "volvox_bedpe-ChordVariantDisplay",

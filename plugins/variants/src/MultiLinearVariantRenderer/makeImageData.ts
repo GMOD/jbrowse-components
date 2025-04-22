@@ -1,4 +1,4 @@
-import { featureSpanPx } from '@jbrowse/core/util'
+import { featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import RBush from 'rbush'
 
@@ -23,59 +23,120 @@ export async function makeImageData(
     bpPerPx,
     renderingMode,
     stopToken,
+    lengthCutoffFilter,
+    referenceDrawingMode,
   } = props
   const region = regions[0]!
 
   checkStopToken(stopToken)
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
-    features.values(),
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    stopToken,
+    features: features.values(),
     minorAlleleFrequencyFilter,
-  )
+    lengthCutoffFilter,
+  })
   checkStopToken(stopToken)
   const rbush = new RBush()
-  let start = performance.now()
-  for (const { mostFrequentAlt, feature } of mafs) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
+
+  forEachWithStopTokenCheck(mafs, stopToken, ({ mostFrequentAlt, feature }) => {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = Math.max(Math.round(rightPx - leftPx), 2)
     const samp = feature.get('genotypes') as Record<string, string>
     let y = -scrollTop
 
     const s = sources.length
-    for (let j = 0; j < s; j++) {
-      const { name, HP } = sources[j]!
-      const genotype = samp[name]
-      const x = Math.floor(leftPx)
-      const h = Math.max(rowHeight, 1)
-      if (genotype) {
-        rbush.insert({
-          minX: x - f2,
-          maxX: x + w + f2,
-          minY: y - f2,
-          maxY: y + h + f2,
-          genotype,
-        })
-        const isPhased = genotype.includes('|')
-        if (renderingMode === 'phased') {
+    if (renderingMode === 'phased') {
+      for (let j = 0; j < s; j++) {
+        const { name, HP } = sources[j]!
+        const genotype = samp[name]
+        const x = Math.floor(leftPx)
+        const h = Math.max(rowHeight, 1)
+        if (genotype) {
+          const isPhased = genotype.includes('|')
           if (isPhased) {
             const alleles = genotype.split('|')
-            drawPhased(alleles, ctx, x, y, w, h, HP!)
+            if (
+              drawPhased(
+                alleles,
+                ctx,
+                x,
+                y,
+                w,
+                h,
+                HP!,
+                undefined,
+                referenceDrawingMode === 'draw',
+              )
+            ) {
+              rbush.insert({
+                minX: x,
+                maxX: x + w,
+                minY: y,
+                maxY: y + h,
+                genotype,
+                name,
+                featureId: feature.id(),
+              })
+            }
           } else {
             ctx.fillStyle = 'black'
             ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
           }
-        } else {
-          const alleles = genotype.split(/[/|]/)
-          drawColorAlleleCount(alleles, ctx, x, y, w, h, mostFrequentAlt)
         }
+        y += rowHeight
       }
-      y += rowHeight
+    } else {
+      for (let j = 0; j < s; j++) {
+        const { name } = sources[j]!
+        const genotype = samp[name]
+        const x = Math.floor(leftPx)
+        const h = Math.max(rowHeight, 1)
+        if (genotype) {
+          const alleles = genotype.split(/[/|]/)
+          if (
+            drawColorAlleleCount(
+              alleles,
+              ctx,
+              x,
+              y,
+              w,
+              h,
+              mostFrequentAlt,
+              referenceDrawingMode === 'draw',
+              feature.get('type'),
+              feature.get('strand'),
+              0.75,
+            )
+          ) {
+            rbush.insert({
+              minX: x,
+              maxX: x + w,
+              minY: y,
+              maxY: y + h,
+              genotype,
+              name,
+              featureId: feature.id(),
+            })
+          }
+        }
+        y += rowHeight
+      }
     }
-  }
+  })
+
   return {
     rbush: rbush.toJSON(),
+    featureGenotypeMap: Object.fromEntries(
+      mafs.map(({ feature }) => [
+        feature.id(),
+        {
+          alt: feature.get('ALT'),
+          ref: feature.get('REF'),
+          name: feature.get('name'),
+          description: feature.get('description'),
+          length: feature.get('end') - feature.get('start'),
+        },
+      ]),
+    ),
   }
 }

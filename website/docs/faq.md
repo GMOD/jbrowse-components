@@ -37,9 +37,6 @@ on desktop.
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
 use `yarn storybook` instead of `yarn start`.
 
-For a more extensive tutorial, see
-[Developing with JBrowse web and desktop](../tutorials/develop_web_and_desktop_tutorial).
-
 ## General
 
 ### What is special about JBrowse 2
@@ -144,8 +141,8 @@ For other things, like add-assembly and add-track, you can manually edit the
 `config.json`; reviewing the [config docs](../config_guide) and sample configs
 will be valuable.
 
-To configure JBrowse using the GUI, checkout our
-[tutorial](../tutorials/config_gui).
+To configure JBrowse using the admin-server GUI, checkout our
+[tutorial](../quickstart_adminserver).
 
 Understanding the [config basics](/docs/config_guides/intro) will come in handy
 also because you can manually edit in advanced configs after your tracks are

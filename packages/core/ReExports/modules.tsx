@@ -92,7 +92,7 @@ const Entries = {
   FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
   FormGroup: lazy(() => import('@mui/material/FormGroup')),
   Grid: lazy(() => import('@mui/material/Grid')),
-  Grid2: lazy(() => import('@mui/material/Grid2')),
+  Grid2: lazy(() => import('@mui/material/Grid')),
   Grow: lazy(() => import('@mui/material/Grow')),
   Icon: lazy(() => import('@mui/material/Icon')),
   IconButton: lazy(() => import('@mui/material/IconButton')),
@@ -388,11 +388,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridRowCount,
     })),
   ),
-  GridSaveAltIcon: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridSaveAltIcon,
-    })),
-  ),
   GridSearchIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridSearchIcon,
@@ -413,41 +408,12 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridTableRowsIcon,
     })),
   ),
-  GridToolbar: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbar,
-    })),
-  ),
-  GridToolbarColumnsButton: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarColumnsButton,
-    })),
-  ),
-  GridToolbarContainer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarContainer,
-    })),
-  ),
-  GridToolbarDensitySelector: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarDensitySelector,
-    })),
-  ),
-  GridToolbarExport: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarExport,
-    })),
-  ),
   GridToolbarExportContainer: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridToolbarExportContainer,
     })),
   ),
-  GridToolbarFilterButton: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridToolbarFilterButton,
-    })),
-  ),
+
   GridTripleDotsVerticalIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridTripleDotsVerticalIcon,

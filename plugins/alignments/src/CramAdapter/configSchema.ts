@@ -54,6 +54,25 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.cram.crai, note
+     * that sequenceAdapter required:
+     *
+     * ```json
+     * {
+     *   "type": "CramAdapter",
+     *   "uri": "yourfile.cram",
+     *   "sequenceAdapter":{
+     *     "type":"TwoBitAdapter",
+     *     "uri":"genome.2bit"
+     *   }
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

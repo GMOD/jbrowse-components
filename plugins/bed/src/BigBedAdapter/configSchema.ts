@@ -34,11 +34,24 @@ const BigBedAdapter = ConfigurationSchema(
     aggregateField: {
       type: 'string',
       description: 'An attribute to aggregate features with',
-      defaultValue: 'geneName2',
+      defaultValue: 'geneName',
     },
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "BigBedAdapter",
+     *   "uri": "yourfile.bigBed"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

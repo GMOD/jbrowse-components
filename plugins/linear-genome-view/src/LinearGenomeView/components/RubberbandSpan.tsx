@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { stringify, toLocale } from '@jbrowse/core/util'
+import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -82,7 +82,7 @@ export default function RubberbandSpan({
               position: sticky ? 'sticky' : undefined,
             }}
           >
-            {toLocale(numOfBpSelected)} bp
+            {getBpDisplayStr(numOfBpSelected)}
           </Typography>
         ) : null}
       </div>

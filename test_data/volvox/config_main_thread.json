@@ -130,6 +130,37 @@
           }
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_filtered",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (filtered)",
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>Subfeature: '+(!feature.name?'No name':feature.name)+'</a>'}"
+      },
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes_filtered-LinearBasicDisplay",
+          "jexlFilters": ["get(feature,'type')=='gene'"]
+        }
+      ]
     }
   ]
 }

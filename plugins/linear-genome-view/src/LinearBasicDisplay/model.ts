@@ -229,7 +229,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -238,7 +241,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   AddFiltersDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },

@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### BedAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "BedAdapter",
+  "uri": "yourfile.bed"
+}
+```
+
 ### BedAdapter - Slots
 
 #### slot: bedLocation
@@ -25,6 +36,7 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 bedLocation: {
       type: 'fileLocation',
+      description: 'path to bed file, also allows gzipped bed',
       defaultValue: {
         uri: '/path/to/my.bed.gz',
         locationType: 'UriLocation',

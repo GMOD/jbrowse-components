@@ -25,6 +25,7 @@ const ClusterDialogAuto = observer(function ({
   handleClose: () => void
 }) {
   const [progress, setProgress] = useState('')
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
   const [stopToken, setStopToken] = useState('')
 
@@ -33,9 +34,9 @@ const ClusterDialogAuto = observer(function ({
       <DialogContent>
         {children}
         <div>
-          {progress ? (
+          {loading ? (
             <div style={{ padding: 50 }}>
-              <span style={{ width: 400 }}>Progress: {progress}</span>
+              <span>{progress || 'Loading...'}</span>
               <Button
                 onClick={() => {
                   stopStopToken(stopToken)
@@ -51,9 +52,12 @@ const ClusterDialogAuto = observer(function ({
       <DialogActions>
         <Button
           variant="contained"
+          disabled={loading}
           onClick={async () => {
             try {
               setError(undefined)
+              setProgress('Initializing')
+              setLoading(true)
               const view = getContainingView(model) as LinearGenomeViewModel
               if (!view.initialized) {
                 return
@@ -62,6 +66,7 @@ const ClusterDialogAuto = observer(function ({
               const {
                 sourcesWithoutLayout,
                 minorAlleleFrequencyFilter,
+                lengthCutoffFilter,
                 adapterConfig,
               } = model
               if (sourcesWithoutLayout) {
@@ -75,6 +80,7 @@ const ClusterDialogAuto = observer(function ({
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesWithoutLayout,
                     minorAlleleFrequencyFilter,
+                    lengthCutoffFilter,
                     sessionId,
                     adapterConfig,
                     stopToken,
@@ -101,6 +107,7 @@ const ClusterDialogAuto = observer(function ({
                 setError(e)
               }
             } finally {
+              setLoading(false)
               setProgress('')
               setStopToken('')
             }

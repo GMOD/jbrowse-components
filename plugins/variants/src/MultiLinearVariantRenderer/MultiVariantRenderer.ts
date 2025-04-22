@@ -9,17 +9,26 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
 
   async render(renderProps: MultiRenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, regions, bpPerPx } = renderProps
+    const { height, referenceDrawingMode, regions, bpPerPx } = renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
     const { makeImageData } = await import('./makeImageData')
 
-    const rest = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      makeImageData(ctx, {
-        ...renderProps,
-        features,
-      }),
+    const rest = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx => {
+        if (referenceDrawingMode === 'skip') {
+          ctx.fillStyle = '#ccc'
+          ctx.fillRect(0, 0, width, height)
+        }
+        return makeImageData(ctx, {
+          ...renderProps,
+          features,
+        })
+      },
     )
 
     const results = await super.render({

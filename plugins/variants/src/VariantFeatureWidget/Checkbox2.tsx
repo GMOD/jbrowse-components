@@ -1,11 +1,4 @@
-import { Checkbox, FormControlLabel } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-const useStyles = makeStyles()({
-  block: {
-    display: 'block',
-  },
-})
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
 export default function Checkbox2({
   checked,
@@ -18,13 +11,11 @@ export default function Checkbox2({
   label: string
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 }) {
-  const { classes } = useStyles()
   return (
     <FormControlLabel
       disabled={disabled}
-      className={classes.block}
       control={<Checkbox checked={checked} onChange={onChange} />}
-      label={label}
+      label={<Typography variant="body2">{label}</Typography>}
     />
   )
 }

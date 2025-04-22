@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
@@ -10,11 +11,11 @@ import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
-import { types } from 'mobx-state-tree'
+import { cast, types } from 'mobx-state-tree'
 
 import { getSources } from './getSources'
 
-import type { SampleInfo, Source } from '../shared/types'
+import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
@@ -22,6 +23,7 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
 const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
 const ClusterDialog = lazy(
   () => import('./components/MultiVariantClusterDialog/ClusterDialog'),
 )
@@ -57,7 +59,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
+        minorAlleleFrequencyFilter: types.optional(types.number, 0),
 
         /**
          * #property
@@ -80,6 +82,21 @@ export default function MultiVariantBaseModelF(
          * used only if autoHeight is false
          */
         autoHeight: true,
+
+        /**
+         * #property
+         */
+        lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
+
+        /**
+         * #property
+         */
+        jexlFilters: types.maybe(types.array(types.string)),
+
+        /**
+         * #property
+         */
+        referenceDrawingMode: 'skip',
       }),
     )
     .volatile(() => ({
@@ -87,6 +104,10 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       sourcesLoadingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      simplifiedFeaturesStopToken: undefined as string | undefined,
       /**
        * #volatile
        */
@@ -118,13 +139,19 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
+      setJexlFilters(f?: string[]) {
+        self.jexlFilters = cast(f)
+      },
+      /**
+       * #action
+       */
       setRowHeight(arg: number) {
         self.rowHeightSetting = arg
       },
       /**
        * #action
        */
-      setHoveredGenotype(arg: { genotype: string; name: string }) {
+      setHoveredGenotype(arg?: { genotype: string; name: string }) {
         self.hoveredGenotype = arg
       },
       /**
@@ -153,6 +180,15 @@ export default function MultiVariantBaseModelF(
           stopStopToken(self.sourcesLoadingStopToken)
         }
         self.sourcesLoadingStopToken = str
+      },
+      /**
+       * #action
+       */
+      setSimplifiedFeaturesLoading(str: string) {
+        if (self.simplifiedFeaturesStopToken) {
+          stopStopToken(self.simplifiedFeaturesStopToken)
+        }
+        self.simplifiedFeaturesStopToken = str
       },
 
       /**
@@ -201,8 +237,25 @@ export default function MultiVariantBaseModelF(
           self.sampleInfo = arg
         }
       },
+      /**
+       * #action
+       */
+      setReferenceDrawingMode(arg: string) {
+        self.referenceDrawingMode = arg
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get activeFilters() {
+        // config jexlFilters are deferred evaluated so they are prepended with
+        // jexl at runtime rather than being stored with jexl in the config
+        return (
+          self.jexlFilters ??
+          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+        )
+      },
       /**
        * #getter
        */
@@ -342,6 +395,30 @@ export default function MultiVariantBaseModelF(
               ],
             },
             {
+              label: 'Reference mode',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label:
+                    'Fill background grey, skip reference allele mouseovers (helps with large overlapping SVs)',
+                  type: 'radio',
+                  checked: self.referenceDrawingMode === 'skip',
+                  onClick: () => {
+                    self.setReferenceDrawingMode('skip')
+                  },
+                },
+                {
+                  label:
+                    "Don't fill background grey, only draw actual reference alleles as grey",
+                  type: 'radio',
+                  checked: self.referenceDrawingMode === 'draw',
+                  onClick: () => {
+                    self.setReferenceDrawingMode('draw')
+                  },
+                },
+              ],
+            },
+            {
               label: 'Filter by',
               icon: FilterListIcon,
               subMenu: [
@@ -350,6 +427,18 @@ export default function MultiVariantBaseModelF(
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       MAFFilterDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+                {
+                  label: 'Edit filters',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      AddFiltersDialog,
                       {
                         model: self,
                         handleClose,
@@ -389,8 +478,11 @@ export default function MultiVariantBaseModelF(
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get canDisplayLabels() {
-        return self.rowHeight > 8 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 8 && self.showSidebarLabelsSetting
       },
       /**
        * #getter
@@ -406,6 +498,9 @@ export default function MultiVariantBaseModelF(
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       renderProps() {
         const superProps = self.adapterProps()
         return {
@@ -415,9 +510,14 @@ export default function MultiVariantBaseModelF(
           totalHeight: self.totalHeight,
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
           rowHeight: self.rowHeight,
           sources: self.sources,
           scrollTop: self.scrollTop,
+          referenceDrawingMode: self.referenceDrawingMode,
+          filters: new SerializableFilterChain({
+            filters: self.activeFilters,
+          }),
         }
       },
     }))

@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
@@ -20,19 +21,21 @@ export async function getGenotypeMatrix({
     regions,
     adapterConfig,
     sessionId,
+    lengthCutoffFilter,
+    stopToken,
   } = args
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const feats = await firstValueFrom(
-    dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-  )
-
   const genotypeFactor = new Set<string>()
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter(
-    feats,
+  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
-  )
+    lengthCutoffFilter,
+    stopToken,
+    features: await firstValueFrom(
+      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+    ),
+  })
 
   for (const { alleleCounts } of mafs) {
     for (const alt of alleleCounts.keys()) {
@@ -41,7 +44,7 @@ export async function getGenotypeMatrix({
   }
 
   const rows = {} as Record<string, number[]>
-  for (const { feature } of mafs) {
+  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
     const genotypes = feature.get('genotypes') as Record<string, string>
     for (const { name } of sources) {
       if (!rows[name]) {
@@ -76,6 +79,6 @@ export async function getGenotypeMatrix({
 
       rows[name].push(genotypeStatus)
     }
-  }
+  })
   return rows
 }

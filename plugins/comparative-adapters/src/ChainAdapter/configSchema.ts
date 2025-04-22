@@ -46,6 +46,21 @@ const ChainAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "ChainAdapter",
+     *   "uri": "yourfile.chain.gz",
+     *   "queryAssembly": "hg19",
+     *   "targetAssembly": "hg38"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

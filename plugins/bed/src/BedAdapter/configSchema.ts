@@ -13,6 +13,7 @@ const BedAdapter = ConfigurationSchema(
      */
     bedLocation: {
       type: 'fileLocation',
+      description: 'path to bed file, also allows gzipped bed',
       defaultValue: {
         uri: '/path/to/my.bed.gz',
         locationType: 'UriLocation',
@@ -70,6 +71,18 @@ const BedAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "BedAdapter",
+     *   "uri": "yourfile.bed"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

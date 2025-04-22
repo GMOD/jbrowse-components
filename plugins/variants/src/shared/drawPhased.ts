@@ -1,4 +1,5 @@
 import { set1 } from '@jbrowse/core/ui/colors'
+import { colord } from '@jbrowse/core/util/colord'
 
 import { f2 } from './constants'
 import { colorify } from './util'
@@ -28,13 +29,14 @@ export function drawPhased(
   HP: number,
   PS?: string,
   drawReference = true,
+  alpha = 1,
 ) {
   const c =
     PS !== undefined
       ? getColorPhasedWithPhaseSet(alleles, HP, PS, drawReference)
       : getColorPhased(alleles, HP, drawReference)
   if (c) {
-    ctx.fillStyle = c
+    ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
   }
   return c

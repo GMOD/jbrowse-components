@@ -1,4 +1,5 @@
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import {
   assembleLocString,
   getSession,
@@ -13,6 +14,7 @@ import { makeStyles } from 'tss-react/mui'
 import { navToBookmark } from '../utils'
 
 import type { GridBookmarkModel } from '../model'
+import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(() => ({
   cell: {
@@ -68,7 +70,7 @@ const BookmarkGrid = observer(function ({
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <DataGridFlexContainer>
       <DataGrid
         density="compact"
         rows={rows}
@@ -76,7 +78,7 @@ const BookmarkGrid = observer(function ({
           {
             ...GRID_CHECKBOX_SELECTION_COL_DEF,
             width: widths[0],
-          },
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'locString',
             headerName: 'Bookmark link',
@@ -94,18 +96,18 @@ const BookmarkGrid = observer(function ({
                 {value}
               </Link>
             ),
-          },
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'label',
             headerName: 'Label',
             width: widths[2],
             editable: true,
-          },
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'assemblyName',
             headerName: 'Assembly',
             width: widths[3],
-          },
+          } satisfies GridColDef<(typeof rows)[0]>,
           {
             field: 'highlight',
             headerName: 'Highlight',
@@ -118,7 +120,7 @@ const BookmarkGrid = observer(function ({
                 }}
               />
             ),
-          },
+          } satisfies GridColDef<(typeof rows)[0]>,
         ]}
         processRowUpdate={row => {
           const target = rows[row.id]!
@@ -132,16 +134,18 @@ const BookmarkGrid = observer(function ({
         onRowSelectionModelChange={newRowSelectionModel => {
           if (bookmarksWithValidAssemblies.length > 0) {
             model.setSelectedBookmarks(
-              newRowSelectionModel.map(value => ({
+              [...newRowSelectionModel.ids].map(value => ({
                 ...rows[value as number]!,
               })),
             )
           }
         }}
-        rowSelectionModel={selectedBookmarks.map(r => r.id)}
-        disableRowSelectionOnClick
+        rowSelectionModel={{
+          type: 'include',
+          ids: new Set(selectedBookmarks.map(r => r.id)),
+        }}
       />
-    </div>
+    </DataGridFlexContainer>
   )
 })
 

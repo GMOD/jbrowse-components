@@ -219,9 +219,8 @@ Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
 Checkout the [full extension point API](/docs/developer_guides/extension_points)
-or an
-[example for adding context menu items](/docs/developer_guides/modifying_menus)
-for more detailed information.
+or an [example for adding context menu items](/docs/developer_guides/menus) for
+more detailed information.
 
 ### Next steps
 
@@ -229,6 +228,7 @@ Now that you have an overview of the different pluggable element types that are
 available to you, review your
 [understanding of the configuration model](../config_model).
 
-Also checkout the [guided tutorial](/docs/tutorials/simple_plugin/) for writing
-a plugin, which will take you through everything from installation, creating a
-new pluggable element, and general development tips for working with JBrowse 2.
+Also checkout the [guided tutorial](/docs/developer_guides/simple_plugin/) for
+writing a plugin, which will take you through everything from installation,
+creating a new pluggable element, and general development tips for working with
+JBrowse 2.

@@ -5172,6 +5172,19 @@
         "uri": "https://jbrowse.org/genomes/GRCh38/variants_GRCh38_sv_inv_sym_HGSVC2024v1.0_add_END_to_INFO.vcf"
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencodeV47lift37",
+      "name": "gencodeV47lift37",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gencode/gencodeV47lift37.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
     }
   ],
   "connections": [],

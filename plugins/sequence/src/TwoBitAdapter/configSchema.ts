@@ -33,6 +33,22 @@ const TwoBitAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config (note that adding chromSizes improves speed, otherwise has to read a lot of the twobit file to calculate chromosome names and sizes):
+     *
+     * ```json
+     * {
+     *   "type": "TwoBitAdapter",
+     *   "uri": "yourfile.2bit"
+     *   "chromSizes":"yourfile.chrom.sizes"
+     * }
+     *
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

@@ -136,6 +136,4 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     }, stopToken)
   }
-
-  public freeResources(): void {}
 }
