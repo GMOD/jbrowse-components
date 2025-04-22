@@ -86,7 +86,16 @@ export async function makeImageData(
         y += rowHeight
       }
     } else {
-      const cacheSplit = {} as Record<string, string[]>
+      const cacheSplit = {} as Record<
+        string,
+        {
+          alt: number
+          ref: number
+          uncalled: number
+          alt2: number
+          total: number
+        }
+      >
       for (let j = 0; j < s; j++) {
         const { name } = sources[j]!
         const genotype = samp[name]
@@ -94,21 +103,48 @@ export async function makeImageData(
         const h = Math.max(rowHeight, 1)
         if (genotype) {
           let alleles: string[]
+          let alt = 0
+          let uncalled = 0
+          let alt2 = 0
+          let ref = 0
+          let total = 0
           if (cacheSplit[genotype]) {
-            alleles = cacheSplit[genotype]
+            const r = cacheSplit[genotype]
+            alt = r.alt
+            ref = r.ref
+            uncalled = r.uncalled
+            alt2 = r.alt2
+            total = r.total
           } else {
             alleles = genotype.split(/[/|]/)
-            cacheSplit[genotype] = alleles
+            total = alleles.length
+
+            for (let i = 0; i < total; i++) {
+              const allele = alleles[i]!
+              if (allele === mostFrequentAlt) {
+                alt++
+              } else if (allele === '0') {
+                ref++
+              } else if (allele === '.') {
+                uncalled++
+              } else {
+                alt2++
+              }
+            }
+            cacheSplit[genotype] = { alt, ref, uncalled, alt2, total }
           }
           if (
             drawColorAlleleCount(
-              alleles,
+              ref,
+              alt,
+              alt2,
+              uncalled,
+              total,
               ctx,
               x,
               y,
               w,
               h,
-              mostFrequentAlt,
               referenceDrawingMode === 'draw',
               feature.get('type'),
               feature.get('strand'),

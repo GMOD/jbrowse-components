@@ -2,32 +2,42 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { f2 } from './constants'
 
+const memoCache = new Map<string, string | undefined>()
+const MEMO_CACHE_SIZE_LIMIT = 1000
+
 function getColorAlleleCount(
-  alleles: string[],
-  mostFrequentAlt: string,
+  ref: number,
+  alt: number,
+  alt2: number,
+  uncalled: number,
+  total: number,
   drawReference = true,
 ) {
-  const total = alleles.length
-  let alt = 0
-  let uncalled = 0
-  let alt2 = 0
-  let ref = 0
+  // Create a deterministic cache key
+  const cacheKey = JSON.stringify(
+    `${ref}:${alt}:${alt2}:${uncalled}:${total}:${drawReference}`,
+  )
 
-  for (let i = 0; i < total; i++) {
-    const allele = alleles[i]!
-    if (allele === mostFrequentAlt) {
-      alt++
-    } else if (allele === '0') {
-      ref++
-    } else if (allele === '.') {
-      uncalled++
-    } else {
-      alt2++
+  // Check if we have a cached result
+  if (memoCache.has(cacheKey)) {
+    return memoCache.get(cacheKey)
+  }
+
+  // If cache is too large, clear the oldest entries
+  if (memoCache.size >= MEMO_CACHE_SIZE_LIMIT) {
+    // Remove oldest 20% of entries
+    const keysToDelete = Array.from(memoCache.keys()).slice(
+      0,
+      Math.floor(MEMO_CACHE_SIZE_LIMIT * 0.2),
+    )
+    for (const key of keysToDelete) {
+      memoCache.delete(key)
     }
   }
 
+  let result
   if (ref === total) {
-    return drawReference ? '#ccc' : undefined
+    result = drawReference ? '#ccc' : undefined
   } else {
     let a1
     if (alt) {
@@ -43,24 +53,29 @@ function getColorAlleleCount(
       // @ts-ignore
       a1 = a1 ? a1.mix(l) : colord(l)
     }
-    return a1?.toHex() || 'black'
+    result = a1?.toHex() || 'black'
   }
+  memoCache.set(cacheKey, result)
+  return result
 }
 
 export function drawColorAlleleCount(
-  alleles: string[],
+  ref: number,
+  alt: number,
+  alt2: number,
+  uncalled: number,
+  total: number,
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
   h: number,
-  mostFrequentAlt: string,
   drawReference = true,
   featureType = '',
   featureStrand?: number,
   alpha = 1,
 ) {
-  const c = getColorAlleleCount(alleles, mostFrequentAlt, drawReference)
+  const c = getColorAlleleCount(ref, alt, alt2, uncalled, total, drawReference)
   if (c) {
     ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
     if (featureType === 'inversion') {
