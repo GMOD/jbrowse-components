@@ -18,6 +18,7 @@ export default class CytobandAdapter extends BaseAdapter {
     return text
       .split(/\n|\r\n|\r/)
       .filter(f => !!f.trim())
+      .filter(f => !f.startsWith('#'))
       .map((line, i) => {
         const [refName, start, end, name, type] = line.split('\t')
         return new SimpleFeature({
