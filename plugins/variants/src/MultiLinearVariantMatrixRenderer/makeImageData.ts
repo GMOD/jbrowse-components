@@ -45,7 +45,7 @@ export async function makeImageData({
   const w = canvasWidth / m
 
   await updateStatus('Drawing variant matrix', statusCallback, () => {
-       const cacheSplit = {} as Record<
+    const cacheSplit = {} as Record<
       string,
       {
         alt: number
@@ -54,8 +54,8 @@ export async function makeImageData({
         alt2: number
         total: number
       }
-    > 
-   forEachWithStopTokenCheck(
+    >
+    forEachWithStopTokenCheck(
       mafs,
       stopToken,
       ({ feature, mostFrequentAlt }, idx) => {
@@ -86,15 +86,48 @@ export async function makeImageData({
                     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                   }
                 } else {
-                  const alleles = genotype.split(/[/|]/)
+                  let alleles: string[]
+                  let alt = 0
+                  let uncalled = 0
+                  let alt2 = 0
+                  let ref = 0
+                  let total = 0
+                  if (cacheSplit[genotype]) {
+                    const r = cacheSplit[genotype]
+                    alt = r.alt
+                    ref = r.ref
+                    uncalled = r.uncalled
+                    alt2 = r.alt2
+                    total = r.total
+                  } else {
+                    alleles = genotype.split(/[/|]/)
+                    total = alleles.length
+
+                    for (let i = 0; i < total; i++) {
+                      const allele = alleles[i]!
+                      if (allele === mostFrequentAlt) {
+                        alt++
+                      } else if (allele === '0') {
+                        ref++
+                      } else if (allele === '.') {
+                        uncalled++
+                      } else {
+                        alt2++
+                      }
+                    }
+                    cacheSplit[genotype] = { alt, ref, uncalled, alt2, total }
+                  }
                   drawColorAlleleCount(
-                    alleles,
+                    ref,
+                    alt,
+                    alt2,
+                    uncalled,
+                    total,
                     ctx,
                     x,
                     y,
                     w,
                     h,
-                    mostFrequentAlt,
                   )
                 }
               }
