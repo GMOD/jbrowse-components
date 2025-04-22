@@ -38,12 +38,13 @@ export async function getGenotypeMatrix({
   })
 
   for (const { alleleCounts } of mafs) {
-    for (const alt of alleleCounts.keys()) {
+    for (const alt of Object.keys(alleleCounts)) {
       genotypeFactor.add(alt)
     }
   }
 
   const rows = {} as Record<string, number[]>
+  const cacheSplit = {} as Record<string, string[]>
   forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
     const genotypes = feature.get('genotypes') as Record<string, string>
     for (const { name } of sources) {
@@ -51,7 +52,14 @@ export async function getGenotypeMatrix({
         rows[name] = []
       }
       const val = genotypes[name]!
-      const alleles = val.split(/[/|]/)
+
+      let alleles: string[]
+      if (cacheSplit[val]) {
+        alleles = cacheSplit[val]
+      } else {
+        alleles = val.split(/[/|]/)
+        cacheSplit[val] = alleles
+      }
 
       // Calculate '012' status of the allele for a VCF genotype matrix
       // Similar to vcftools --012 https://vcftools.github.io/man_latest.html

@@ -2,7 +2,10 @@ import { forEachWithStopTokenCheck, updateStatus } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
-import { drawColorAlleleCount } from '../shared/drawAlleleCount'
+import {
+  drawColorAlleleCount,
+  getColorAlleleCount,
+} from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
@@ -33,18 +36,21 @@ export async function makeImageData({
   const { statusCallback = () => {} } = renderArgs
   const h = canvasHeight / sources.length
   checkStopToken(stopToken)
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    stopToken,
-    features: features.values(),
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-  })
+  const mafs = await updateStatus('Calculating stats', statusCallback, () =>
+    getFeaturesThatPassMinorAlleleFrequencyFilter({
+      stopToken,
+      features: features.values(),
+      minorAlleleFrequencyFilter,
+      lengthCutoffFilter,
+    }),
+  )
   checkStopToken(stopToken)
   const arr = [] as string[][]
   const m = mafs.length
   const w = canvasWidth / m
 
   await updateStatus('Drawing variant matrix', statusCallback, () => {
+    const colorCache = {} as Record<string, string | undefined>
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
@@ -76,16 +82,40 @@ export async function makeImageData({
                     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                   }
                 } else {
-                  const alleles = genotype.split(/[/|]/)
-                  drawColorAlleleCount(
-                    alleles,
-                    ctx,
-                    x,
-                    y,
-                    w,
-                    h,
-                    mostFrequentAlt,
-                  )
+                  let c = colorCache[genotype]
+                  if (c === undefined) {
+                    let alt = 0
+                    let uncalled = 0
+                    let alt2 = 0
+                    let ref = 0
+                    const alleles = genotype.split(/[/|]/)
+                    const total = alleles.length
+
+                    for (let i = 0; i < total; i++) {
+                      const allele = alleles[i]!
+                      if (allele === mostFrequentAlt) {
+                        alt++
+                      } else if (allele === '0') {
+                        ref++
+                      } else if (allele === '.') {
+                        uncalled++
+                      } else {
+                        alt2++
+                      }
+                    }
+                    c = getColorAlleleCount(
+                      ref,
+                      alt,
+                      alt2,
+                      uncalled,
+                      total,
+                      true,
+                    )
+                    colorCache[genotype] = c
+                  }
+                  if (c) {
+                    drawColorAlleleCount(c, ctx, x, y, w, h)
+                  }
                 }
               }
             }
@@ -110,8 +140,33 @@ export async function makeImageData({
                   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                 }
               } else {
-                const alleles = genotype.split(/[/|]/)
-                drawColorAlleleCount(alleles, ctx, x, y, w, h, mostFrequentAlt)
+                let c = colorCache[genotype]
+                if (c === undefined) {
+                  let alt = 0
+                  let uncalled = 0
+                  let alt2 = 0
+                  let ref = 0
+                  const alleles = genotype.split(/[/|]/)
+                  const total = alleles.length
+
+                  for (let i = 0; i < total; i++) {
+                    const allele = alleles[i]!
+                    if (allele === mostFrequentAlt) {
+                      alt++
+                    } else if (allele === '0') {
+                      ref++
+                    } else if (allele === '.') {
+                      uncalled++
+                    } else {
+                      alt2++
+                    }
+                  }
+                  c = getColorAlleleCount(ref, alt, alt2, uncalled, total, true)
+                  colorCache[genotype] = c
+                }
+                if (c) {
+                  drawColorAlleleCount(c, ctx, x, y, w, h)
+                }
               }
             }
           }
