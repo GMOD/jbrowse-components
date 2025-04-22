@@ -19,12 +19,6 @@ const useStyles = makeStyles()({
     width: '100%',
     minHeight: 8,
   },
-  guide: {
-    pointerEvents: 'none',
-    height: '100%',
-    width: 1,
-    position: 'absolute',
-  },
   rel: {
     position: 'relative',
   },
