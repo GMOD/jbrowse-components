@@ -132,6 +132,4 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

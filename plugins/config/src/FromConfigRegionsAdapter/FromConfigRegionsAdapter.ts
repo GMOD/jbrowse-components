@@ -72,6 +72,4 @@ export default class FromConfigRegionsAdapter
 
     return regions
   }
-
-  freeResources(/* { region } */): void {}
 }

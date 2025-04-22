@@ -152,6 +152,4 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       return metadataLines.filter(f => vcfSampleSet.has(f.name))
     }
   }
-
-  public freeResources(/* { region } */): void {}
 }

@@ -242,6 +242,4 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     }
     return true
   }
-
-  public freeResources(/* { region } */): void {}
 }
