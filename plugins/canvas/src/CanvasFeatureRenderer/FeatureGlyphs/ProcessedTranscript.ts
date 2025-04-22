@@ -1,5 +1,4 @@
 import SegmentsGlyph from './Segments'
-
 import { getSubparts } from './util'
 
 import type { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
@@ -11,8 +10,8 @@ export default class ProcessedTranscript extends SegmentsGlyph {
     fRect: LaidOutFeatureRect,
   ) {
     const { t, f } = fRect
-    getSubparts(f).forEach(sub => {
+    for (const sub of getSubparts(f)) {
       this.renderSegment(context, viewInfo, sub, t, fRect.rect.h)
-    })
+    }
   }
 }

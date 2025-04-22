@@ -24,7 +24,11 @@ const FloatingLabels = observer(function ({
       {[...model.layoutFeatures.entries()].map(([key, val]) => {
         // @ts-expect-error
         const [left, , right, bottom, feature] = val!
-        const { refName, description, label } = feature!
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!feature) {
+          return null
+        }
+        const { refName, description, label } = feature
         const r0 = assembly.getCanonicalRefName(refName) || refName
         const r = view.bpToPx({
           refName: r0,

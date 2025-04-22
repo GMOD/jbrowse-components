@@ -113,10 +113,12 @@ function MenuPage({
         onClose()
         model.setContextMenuFeature(undefined)
       }}
-      TransitionProps={{
-        onExit: () => {
-          onClose()
-          model.setContextMenuFeature(undefined)
+      slotProps={{
+        transition: {
+          onExit: () => {
+            onClose()
+            model.setContextMenuFeature(undefined)
+          },
         },
       }}
       anchorReference="anchorPosition"

@@ -45,9 +45,12 @@ export default class Segments extends BoxGlyph {
     fRect: LaidOutFeatureRect,
   ) {
     const { t, f } = fRect
-    f.children()?.forEach(sub => {
-      this.renderSegment(context, viewInfo, sub, t, fRect.rect.h)
-    })
+    const children = f.children()
+    if (children) {
+      for (const sub of children) {
+        this.renderSegment(context, viewInfo, sub, t, fRect.rect.h)
+      }
+    }
   }
 
   renderSegment(
@@ -58,8 +61,11 @@ export default class Segments extends BoxGlyph {
     heightPx: number,
   ) {
     super.renderBox(context, viewInfo, feat, topPx, heightPx)
-    feat.children()?.forEach(sub => {
-      this.renderSegment(context, viewInfo, sub, topPx, heightPx)
-    })
+    const children = feat.children()
+    if (children) {
+      for (const sub of children) {
+        this.renderSegment(context, viewInfo, sub, topPx, heightPx)
+      }
+    }
   }
 }
