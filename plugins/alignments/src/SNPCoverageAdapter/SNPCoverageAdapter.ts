@@ -110,6 +110,4 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const { subadapter } = await this.configure()
     return subadapter.getRefNames(opts)
   }
-
-  freeResources(/* { region } */): void {}
 }

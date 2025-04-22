@@ -128,6 +128,4 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  public freeResources(): void {}
 }

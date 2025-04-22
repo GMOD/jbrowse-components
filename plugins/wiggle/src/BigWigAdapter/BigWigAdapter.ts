@@ -116,6 +116,4 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       featureDensity: 0,
     }
   }
-
-  public freeResources(): void {}
 }

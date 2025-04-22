@@ -41,6 +41,4 @@ export default class NcbiSequenceReportAliasAdapter
       }))
       .filter(f => !!f.refName)
   }
-
-  async freeResources() {}
 }

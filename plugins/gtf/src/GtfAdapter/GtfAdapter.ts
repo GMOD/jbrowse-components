@@ -236,6 +236,4 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     }
     observer.complete()
   }
-
-  public freeResources(/* { region } */) {}
 }

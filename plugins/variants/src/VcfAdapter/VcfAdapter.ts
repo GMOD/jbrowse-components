@@ -164,5 +164,4 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
         .filter(f => s.has(f.name))
     }
   }
-  public freeResources(): void {}
 }

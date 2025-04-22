@@ -252,8 +252,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
-  freeResources(/* { region } */): void {}
-
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number) {
     return this.samHeader?.idToName[refId]

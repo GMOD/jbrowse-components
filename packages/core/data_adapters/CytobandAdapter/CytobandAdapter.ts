@@ -31,6 +31,4 @@ export default class CytobandAdapter extends BaseAdapter {
         })
       })
   }
-
-  freeResources(/* { region } */): void {}
 }
