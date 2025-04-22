@@ -36,12 +36,14 @@ export async function makeImageData({
   const { statusCallback = () => {} } = renderArgs
   const h = canvasHeight / sources.length
   checkStopToken(stopToken)
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    stopToken,
-    features: features.values(),
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-  })
+  const mafs = await updateStatus('Calculating stats', statusCallback, () =>
+    getFeaturesThatPassMinorAlleleFrequencyFilter({
+      stopToken,
+      features: features.values(),
+      minorAlleleFrequencyFilter,
+      lengthCutoffFilter,
+    }),
+  )
   checkStopToken(stopToken)
   const arr = [] as string[][]
   const m = mafs.length
