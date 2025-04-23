@@ -9,19 +9,11 @@ import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()({
-  rubberbandControl: {
-    cursor: 'crosshair',
-    width: '100%',
-    minHeight: 8,
-  },
   guide: {
     pointerEvents: 'none',
     height: '100%',
     width: 1,
     position: 'absolute',
-  },
-  rel: {
-    position: 'relative',
   },
 })
 
@@ -53,7 +45,9 @@ const OverviewRubberbandHoverTooltip = observer(function ({
     <Tooltip
       open={open}
       placement="top"
-      title={[stringify(px), cytoband?.get('name')].join(' ')}
+      title={[stringify(px), cytoband?.get('name'), cytoband?.get('type')].join(
+        ' ',
+      )}
       arrow
     >
       <div className={classes.guide} style={{ left: guideX }} />

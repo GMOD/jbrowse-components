@@ -346,6 +346,4 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

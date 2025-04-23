@@ -117,5 +117,4 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  public freeResources(/* { region } */) {}
 }

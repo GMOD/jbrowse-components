@@ -35,6 +35,4 @@ export default class RefNameAliasAdapter
         }
       })
   }
-
-  async freeResources() {}
 }

@@ -190,6 +190,4 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       fields,
     }
   }
-
-  public freeResources(/* { region } */) {}
 }

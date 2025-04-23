@@ -298,8 +298,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     }, stopToken)
   }
 
-  freeResources(/* { region } */): void {}
-
   cramRecordToFeature(record: CramRecord) {
     return new CramSlightlyLazyFeature(record, this)
   }

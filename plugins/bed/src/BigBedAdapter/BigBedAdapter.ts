@@ -285,6 +285,4 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       }
     }, opts.stopToken)
   }
-
-  public freeResources(): void {}
 }

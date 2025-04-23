@@ -127,6 +127,4 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       featureDensity: 0,
     }
   }
-
-  freeResources(/* { region } */): void {}
 }

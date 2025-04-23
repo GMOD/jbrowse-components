@@ -30,7 +30,7 @@
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/cytoBand.txt"
+          "uri": "https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz"
         }
       }
     },

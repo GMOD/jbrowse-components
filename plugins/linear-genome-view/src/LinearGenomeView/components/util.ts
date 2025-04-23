@@ -73,6 +73,7 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
         start: f.get('start'),
         end: f.get('end'),
         type: f.get('gieStain') as string,
+        name: f.get('name'),
       }))
       .filter(f => f.refName === refName) || []
   )

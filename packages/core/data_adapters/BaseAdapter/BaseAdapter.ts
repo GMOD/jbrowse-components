@@ -44,5 +44,5 @@ export class BaseAdapter {
    * needed for the foreseeable future and can be purged from caches, etc
    * @param region - Region
    */
-  public freeResources(_region: Region) {}
+  freeResources(_region: Region) {}
 }
