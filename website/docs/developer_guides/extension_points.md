@@ -23,13 +23,19 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 And consumers can say:
 
 ```typescript
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
+pluginManager.addToExtensionPoint(
+  'ExtensionPointName',
+  (arg: { value: number }) => {
+    return { value: arg.value + 1 }
+  },
+)
 
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
+pluginManager.addToExtensionPoint(
+  'ExtensionPointName',
+  (arg: { value: number }) => {
+    return { value: arg.value + 1 }
+  },
+)
 ```
 
 In this case, `arg` that is passed in evaluateExtensionPoint calls all the
