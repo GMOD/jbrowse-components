@@ -20,9 +20,14 @@ export default class RefNameAliasAdapter
       .split(/\n|\r\n|\r/)
       .filter(f => !!f)
     const header = lines.filter(f => f.startsWith('#'))
+    const cols = header
+      .at(-1)!
+      .slice(1)
+      .split('\t')
+      .map(t => t.trim())
     const headerCol =
       refColumnHeaderName && header.length
-        ? header.at(-1)!.split('\t').indexOf(refColumnHeaderName)
+        ? cols.indexOf(refColumnHeaderName)
         : refColumn
     return lines
       .filter(f => !f.startsWith('#'))
