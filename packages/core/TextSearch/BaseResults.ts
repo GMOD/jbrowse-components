@@ -51,6 +51,7 @@ export default class BaseResult {
   locString?: string
 
   results?: BaseResult[]
+
   constructor(args: BaseResultArgs) {
     this.label = args.label
     this.locString = args.locString

@@ -25,24 +25,28 @@ export async function fetchResults({
     console.warn('No text search manager')
   }
 
-  const textSearchResults = await textSearchManager?.search(
-    {
-      queryString,
-      searchType,
-    },
-    searchScope,
-    rankSearchResults,
-  )
+  const textSearchResults =
+    (await textSearchManager?.search(
+      {
+        queryString,
+        searchType,
+      },
+      searchScope,
+      rankSearchResults,
+    )) || []
 
-  const refNameResults = assembly?.allRefNames
-    ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
-    .slice(0, 10)
-    .map(r => new BaseResult({ label: r }))
+  const refNameResults =
+    assembly?.allRefNames
+      ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
+      .slice(0, 10)
+      .map(
+        r =>
+          new BaseResult({
+            label: r,
+          }),
+      ) || []
 
-  return dedupe(
-    [...(refNameResults || []), ...(textSearchResults || [])],
-    elt => elt.getId(),
-  )
+  return dedupe([...refNameResults, ...textSearchResults], elt => elt.getId())
 }
 
 // splits on the last instance of a character
