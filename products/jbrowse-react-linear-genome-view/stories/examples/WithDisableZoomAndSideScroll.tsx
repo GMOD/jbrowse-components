@@ -11,16 +11,13 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 type ViewState = ReturnType<typeof createViewState>
 
 class MyPlugin extends Plugin {
-  name: 'MyPlugin'
+  name = 'MyPlugin'
   install(pluginManager: PluginManager) {
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',
-      pluggableElement => {
-        // @ts-expect-error
+      (pluggableElement: { name: string; stateModel: any }) => {
         if (pluggableElement.name === 'LinearGenomeView') {
-          // @ts-expect-error
           pluggableElement.stateModel = types.compose(
-            // @ts-expect-error
             pluggableElement.stateModel,
             types.model().actions(_self => ({
               zoomTo: () => {},
@@ -50,9 +47,11 @@ export const WithDisableZoomAndSideScroll = () => {
   return state ? (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/DefeaultSession.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithDisableZoomAndSideScroll.tsx">
         Source code
       </a>
+      (Note: This is a basic demo that was added for a user request and may not
+      be a complete solution)
     </div>
   ) : null
 }
