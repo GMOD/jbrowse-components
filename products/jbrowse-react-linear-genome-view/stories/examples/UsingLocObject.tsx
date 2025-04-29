@@ -9,7 +9,11 @@ export const UsingLocObject = () => {
     assembly,
     tracks,
     // use 0-based coordinates for "location object" here
-    location: { refName: 'ctgA', start: 10000, end: 20000 },
+    location: {
+      refName: 'ctgA',
+      start: 10000,
+      end: 20000,
+    },
   })
   return (
     <div>

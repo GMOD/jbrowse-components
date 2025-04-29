@@ -1,6 +1,6 @@
+import nextstrainConfig from '../../public/nextstrain_covid.json'
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-import nextstrainConfig from '../../public/nextstrain_covid.json'
 import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 export const NextstrainExample = () => {

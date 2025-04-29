@@ -43,27 +43,15 @@ export default function createViewState(opts: ViewStateOptions) {
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins,
+    plugins = [],
     location,
     highlight,
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
+    defaultSession,
   } = opts
-  const { model, pluginManager } = createModel(
-    plugins || [],
-    makeWorkerInstance,
-  )
-  let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-      view: {
-        id: 'linearGenomeView',
-        type: 'LinearGenomeView',
-      },
-    }
-  }
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
       config: {
@@ -74,7 +62,13 @@ export default function createViewState(opts: ViewStateOptions) {
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
-      session: defaultSession,
+      session: defaultSession ?? {
+        name: 'this session',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+        },
+      },
     },
     { pluginManager },
   )
