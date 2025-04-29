@@ -155,7 +155,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           trackId: string
           name: string
           type: string
-          displays: { type: string; displayId: string }[]
+          displays: { type: string; displayId?: string }[]
         }
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {
@@ -172,7 +172,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             }
           }
         }
-        return { ...snap, displays }
+        return {
+          ...snap,
+          displays: displays.map(d => ({
+            ...d,
+            // synthesize displayId if none provided
+            displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+          })),
+        }
       },
       /**
        * #identifier

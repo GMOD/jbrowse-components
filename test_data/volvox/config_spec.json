@@ -79,6 +79,21 @@
   },
   "tracks": [
     {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf",
+      "name": "volvox 1000genomes vcf",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.test.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearVariantMatrixDisplay"
+        }
+      ]
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments_ctga",
       "name": "volvox-sorted.cram (ctgA, default display)",
