@@ -5,6 +5,16 @@ import { ConfigurationSchema } from '../../configuration'
 import type PluginManager from '../../PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
+interface BasicTrack {
+  trackId: string
+  name: string
+  type: string
+  displays: {
+    type: string
+    displayId?: string
+  }[]
+}
+
 /**
  * #config BaseTrack
  */
@@ -151,25 +161,30 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         const snap = pluginManager.evaluateExtensionPoint(
           'Core-preProcessTrackConfig',
           structuredClone(s2),
-        ) as {
-          trackId: string
-          name: string
-          type: string
-          displays: { type: string; displayId?: string }[]
-        }
+        ) as BasicTrack
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          const configDisplayTypes = new Set(displays.map(d => d.type))
-          for (const d of pluginManager.getTrackType(snap.type)!.displayTypes) {
-            if (!configDisplayTypes.has(d.name)) {
-              displays.push({
-                displayId: `${snap.trackId}-${d.name}`,
-                type: d.name,
-              })
+          try {
+            const configDisplayTypes = new Set(displays.map(d => d.type))
+            for (const d of pluginManager.getTrackType(snap.type)!
+              .displayTypes) {
+              if (!configDisplayTypes.has(d.name)) {
+                displays.push({
+                  displayId: `${snap.trackId}-${d.name}`,
+                  type: d.name,
+                })
+              }
             }
+          } catch (e) {
+            throw new Error(
+              `Unknown track type "${snap.type}" in ${JSON.stringify(snap)}`,
+              {
+                cause: e,
+              },
+            )
           }
         }
         return {
