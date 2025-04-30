@@ -10,6 +10,7 @@ export {
   UsingLocObject,
   WithAggregateTextSearching,
   WithCustomTheme,
+  WithDisableZoomAndSideScroll,
   WithErrorHandler,
   WithExternalPlugin,
   WithInlinePlugins,

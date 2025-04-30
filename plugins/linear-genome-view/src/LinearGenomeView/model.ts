@@ -232,7 +232,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * this is a non-serialized property that can be used for loading the
-         * linear genome view as an alternative
+         * linear genome view via session snapshots
+         * example:
+         * ```json
+         * {
+         *   loc: "chr1:1,000,000-2,000,000"
+         *   assembly: "hg19"
+         *   tracks: ["genes", "variants"]
+         * }
+         * ```
          */
         init: types.frozen<InitState | undefined>(),
       }),
