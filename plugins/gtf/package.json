@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bgzf-filehandle": "^2.0.1",
+    "@gmod/bgzf-filehandle": "^3.0.2",
     "@jbrowse/core": "^3.3.0",
     "@jbrowse/plugin-linear-genome-view": "^3.3.0",
     "@mui/material": "^7.0.0",
