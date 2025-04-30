@@ -70,8 +70,13 @@ export function drawDensity(
     const score = feature.get('score')
     hasClipping = hasClipping || score > niceMax || score < niceMin
     const w = rightPx - leftPx + fudgeFactor
-    ctx.fillStyle = cb(feature, score)
-    ctx.fillRect(leftPx, 0, w, height)
+    if (score >= scaleOpts.domain[0]!) {
+      ctx.fillStyle = cb(feature, score)
+      ctx.fillRect(leftPx, 0, w, height)
+    } else {
+      ctx.fillStyle = '#eee'
+      ctx.fillRect(leftPx, 0, w, height)
+    }
   }
 
   // second pass: draw clipping
