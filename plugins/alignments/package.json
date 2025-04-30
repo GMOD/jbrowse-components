@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@gmod/bam": "^6.0.1",
-    "@gmod/cram": "^5.0.0",
+    "@gmod/cram": "^5.0.3",
     "@jbrowse/core": "^3.3.0",
     "@jbrowse/plugin-linear-genome-view": "^3.3.0",
     "@jbrowse/plugin-wiggle": "^3.3.0",
