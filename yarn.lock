@@ -2098,9 +2098,9 @@
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
 "@gmod/abortable-promise-cache@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.1.tgz#68da57ba2458f73cbce185d7a92b61b55ad1babf"
-  integrity sha512-TLFzrC+ZLLY7V+ZP+Uda8gG9E0n5tL+ph98EuZ2RQ4XPNVb0WTaNJvlWKlzHW9rXa4SsAHMjYP6oisLbx6kfDA==
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.3.tgz#9f4eb69ef21abb950e91f061e4b58fffbc4bbe29"
+  integrity sha512-HnE6hh8Smxj0iHBbgpMRhagTYxqfhTfACBp5C0HAmm8XxNloS/2tHStPNo0ywYD3IOLse5dOV7m+LQxw2HZynw==
 
 "@gmod/bam@^6.0.1":
   version "6.0.2"
@@ -8048,10 +8048,10 @@ electron-window-state@^5.0.3:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@35.1.5:
-  version "35.1.5"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-35.1.5.tgz#f4e991b9180b25c2b1ffaf8504c2531dbeabf524"
-  integrity sha512-LolvbKKQUSCGvEwbEQNt1cxD1t+YYClDNwBIjn4d28KM8FSqUn9zJuf6AbqNA7tVs9OFl/EQpmg/m4lZV1hH8g==
+electron@36.0.0:
+  version "36.0.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-36.0.0.tgz#ffbe7ca9edecaee53617f29a088be10bbed9a45f"
+  integrity sha512-MhBL5tgzqLsiw++YXxzXRvF5s90gelcEZP4Upz/aaRmmoscmCw/EtimxMSH6EPnKt+8KwBY9RVAdlcffFPYkyw==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^22.7.7"
