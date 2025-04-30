@@ -36,9 +36,9 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/abortable-promise-cache": "^2.0.0",
-    "@gmod/indexedfasta": "^3.0.0",
-    "@gmod/twobit": "^4.0.1",
+    "@gmod/abortable-promise-cache": "^3.0.1",
+    "@gmod/indexedfasta": "^4.0.0",
+    "@gmod/twobit": "^6.0.0",
     "@jbrowse/core": "^3.3.0",
     "@jbrowse/plugin-linear-genome-view": "^3.3.0",
     "@jbrowse/plugin-wiggle": "^3.3.0",
