@@ -84,31 +84,32 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter {
   getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       let pafRecords = await this.setup(opts)
-      const { config } = opts
 
       // note: this is not the adapter config, it is responding to a display
       // setting passed in via the opts parameter
-      if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
+      if (
+        opts.config &&
+        readConfObject(opts.config, 'colorBy') === 'meanQueryIdentity'
+      ) {
         pafRecords = getWeightedMeans(pafRecords)
       }
       const assemblyNames = this.getAssemblyNames()
 
       // The index of the assembly name in the query list corresponds to the
       // adapter in the subadapters list
-      const { start: qstart, end: qend, refName: qref, assemblyName } = query
-      const index = assemblyNames.indexOf(assemblyName)
+      const index = assemblyNames.indexOf(query.assemblyName)
 
       // if the getFeatures::query is on the query assembly, flip orientation
       // of data
       const flip = index === 0
       if (index === -1) {
-        console.warn(`${assemblyName} not found in this adapter`)
+        console.warn(`${query.assemblyName} not found in this adapter`)
         observer.complete()
       }
 
-      // eslint-disable-next-line unicorn/no-for-loop
-      for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]!
+      const len = pafRecords.length
+      for (let i = 0; i < len; i++) {
+        const currentPafRecord = pafRecords[i]!
         let start = 0
         let end = 0
         let refName = ''
@@ -117,22 +118,26 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter {
         let mateEnd = 0
 
         if (flip) {
-          start = r.qstart
-          end = r.qend
-          refName = r.qname
-          mateName = r.tname
-          mateStart = r.tstart
-          mateEnd = r.tend
+          start = currentPafRecord.qstart
+          end = currentPafRecord.qend
+          refName = currentPafRecord.qname
+          mateName = currentPafRecord.tname
+          mateStart = currentPafRecord.tstart
+          mateEnd = currentPafRecord.tend
         } else {
-          start = r.tstart
-          end = r.tend
-          refName = r.tname
-          mateName = r.qname
-          mateStart = r.qstart
-          mateEnd = r.qend
+          start = currentPafRecord.tstart
+          end = currentPafRecord.tend
+          refName = currentPafRecord.tname
+          mateName = currentPafRecord.qname
+          mateStart = currentPafRecord.qstart
+          mateEnd = currentPafRecord.qend
         }
-        const { extra, strand } = r
-        if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
+        const { extra, strand } = currentPafRecord
+        const refName2 = refName.replace(`${query.assemblyName}#1#`, '')
+        if (
+          refName2 === query.refName &&
+          doesIntersect2(query.start, query.end, start, end)
+        ) {
           const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
           let CIGAR = extra.cg
@@ -146,12 +151,12 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter {
 
           observer.next(
             new SyntenyFeature({
-              uniqueId: i + assemblyName,
-              assemblyName,
+              uniqueId: i + query.assemblyName,
+              assemblyName: query.assemblyName,
               start,
               end,
               type: 'match',
-              refName,
+              refName: refName2,
               strand,
               ...rest,
               CIGAR,
