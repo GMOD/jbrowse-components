@@ -1,19 +1,16 @@
-import type PluginManager from './PluginManager'
+import type PluginManagerWithoutReExports from './PluginManagerWithoutReExports'
 import type { AnyConfigurationSchemaType } from './configuration'
 
-/**
- * base class for a JBrowse plugin
- */
-export default abstract class Plugin {
-  abstract name: string
+export default class Plugin {
+  name = `${Math.random()}`
 
   url?: string
 
   version?: string
 
-  install(_pluginManager: PluginManager): void {}
+  install(_pluginManager: PluginManagerWithoutReExports): void {}
 
-  configure(_pluginManager: PluginManager): void {}
+  configure(_pluginManager: PluginManagerWithoutReExports): void {}
 
   configurationSchema?: AnyConfigurationSchemaType
 }

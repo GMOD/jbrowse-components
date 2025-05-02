@@ -23,6 +23,19 @@ export default class TrackType extends PluggableElementBase {
   }
 
   addDisplayType(display: DisplayType) {
-    this.displayTypes.push(display)
+    if (
+      this.isCompatibleWith(display) &&
+      !this.displayTypes.includes(display)
+    ) {
+      this.displayTypes.push(display)
+    } else {
+      console.warn(
+        `Display type "${display.name}" already registered to viewType "${this.name}"`,
+      )
+    }
+  }
+
+  isCompatibleWith(displayType: DisplayType) {
+    return this.name === displayType.viewType
   }
 }
