@@ -1,4 +1,3 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
@@ -6,27 +5,26 @@ import assemblyManagerFactory, {
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { cast, getSnapshot, types } from 'mobx-state-tree'
 
-import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
 
-import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewRootModel
  */
-export default function createModel(
-  runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => Worker = () => {
+export default function createModel({
+  pluginManager,
+  makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
-) {
-  const pluginManager = new PluginManager(
-    [...corePlugins, ...runtimePlugins].map(P => new P()),
-  ).createPluggableElements()
+}: {
+  pluginManager: PluginManager
+  makeWorkerInstance?: () => Worker
+}) {
   const Session = createSessionModel(pluginManager)
   const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
   const AssemblyManager = assemblyManagerFactory(assemblyConfig, pluginManager)
@@ -145,11 +143,9 @@ export default function createModel(
         return self.config
       },
     }))
-  return {
-    model: rootModel,
-    pluginManager,
-  }
+
+  return rootModel
 }
 
-export type ViewStateModel = ReturnType<typeof createModel>['model']
+export type ViewStateModel = ReturnType<typeof createModel>
 export type ViewModel = Instance<ViewStateModel>

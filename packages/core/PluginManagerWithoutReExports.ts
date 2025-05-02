@@ -2,6 +2,7 @@
 import { isModelType, isType, types } from 'mobx-state-tree'
 
 import CorePlugin from './CorePlugin'
+import PhasedScheduler from './PhasedScheduler'
 import TypeRecord from './PluginManagerTypeRecord'
 import {
   ConfigurationSchema,
@@ -182,12 +183,7 @@ export default class PluginManagerWithoutReExports {
   }
 
   createPluggableElements() {
-    // run the creation callbacks for each element type in order.
-    // see elementCreationSchedule above for the creation order
-    if (this.elementCreationSchedule) {
-      this.elementCreationSchedule.run()
-      this.elementCreationSchedule = undefined
-    }
+    this.elementCreationSchedule.run()
     return this
   }
 
@@ -251,8 +247,7 @@ export default class PluginManagerWithoutReExports {
       )
     }
     const typeRecord = this.getElementTypeRecord(groupName)
-
-    this.elementCreationSchedule?.add(groupName, () => {
+    this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
       if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)

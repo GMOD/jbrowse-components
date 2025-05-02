@@ -29,6 +29,9 @@ export type TooltipContentsComponent = React.ForwardRefExoticComponent<
   { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >
 
+// Positions tooltip to the right of cursor
+const TOOLTIP_OFFSET_X = 5
+
 const Tooltip = observer(function Tooltip({
   model,
   height,
@@ -48,17 +51,18 @@ const Tooltip = observer(function Tooltip({
 }) {
   const { featureUnderMouse } = model
   const { classes } = useStyles()
-
-  const x = clientMouseCoord[0] + 5
-  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
   return featureUnderMouse ? (
     <>
       <Suspense fallback={null}>
-        <BaseTooltip clientPoint={{ x, y }}>
+        <BaseTooltip
+          clientPoint={{
+            x: clientMouseCoord[0] + TOOLTIP_OFFSET_X,
+            y: useClientY ? clientMouseCoord[1] : clientRect?.top || 0,
+          }}
+        >
           <TooltipContents model={model} feature={featureUnderMouse} />
         </BaseTooltip>
       </Suspense>
-
       <div
         className={classes.hoverVertical}
         style={{

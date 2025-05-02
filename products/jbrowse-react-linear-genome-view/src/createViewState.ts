@@ -2,9 +2,12 @@ import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 import { onPatch } from 'mobx-state-tree'
 
 import createModel from './createModel'
+import { createPluginManager } from './createModel/createPluginManager'
 
 import type { createConfigModel, createSessionModel } from './createModel'
+import type { ViewStateModel } from './createModel/createModel'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IJsonPatch, SnapshotIn } from 'mobx-state-tree'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
@@ -21,7 +24,11 @@ interface Location {
   assemblyName?: string
 }
 
-interface ViewStateOptions {
+export default function createViewState({
+  plugins = [],
+  makeWorkerInstance,
+  ...rest
+}: {
   assembly: Assembly
   tracks: Tracks
   internetAccounts?: InternetAccounts
@@ -34,24 +41,46 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+}) {
+  const pluginManager = createPluginManager({ runtimePlugins: plugins })
+  const model = createModel({
+    pluginManager,
+    makeWorkerInstance,
+  })
+  return createViewStateFromModel({
+    model,
+    pluginManager,
+    ...rest,
+  })
 }
 
-export default function createViewState(opts: ViewStateOptions) {
-  const {
-    assembly,
-    tracks,
-    internetAccounts,
-    configuration,
-    aggregateTextSearchAdapters,
-    plugins = [],
-    location,
-    highlight,
-    onChange,
-    disableAddTracks = false,
-    makeWorkerInstance,
-    defaultSession,
-  } = opts
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+export function createViewStateFromModel({
+  model,
+  pluginManager,
+  assembly,
+  tracks,
+  internetAccounts,
+  configuration,
+  aggregateTextSearchAdapters,
+  location,
+  highlight,
+  onChange,
+  disableAddTracks = false,
+  defaultSession,
+}: {
+  pluginManager: PluginManager
+  model: ViewStateModel
+  assembly: Assembly
+  tracks: Tracks
+  internetAccounts?: InternetAccounts
+  aggregateTextSearchAdapters?: AggregateTextSearchAdapters
+  configuration?: Record<string, unknown>
+  location?: string | Location
+  highlight?: string[]
+  defaultSession?: SessionSnapshot
+  disableAddTracks?: boolean
+  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
+}) {
   const stateTree = model.create(
     {
       config: {
