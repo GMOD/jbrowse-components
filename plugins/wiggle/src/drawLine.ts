@@ -66,7 +66,7 @@ export function drawLine(
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
     }
@@ -111,5 +111,7 @@ export function drawLine(
       ctx.stroke()
     }
   }
-  return { reducedFeatures }
+  return {
+    reducedFeatures,
+  }
 }
