@@ -42,6 +42,7 @@ import * as coreUtil from '../util'
 import Base1DView from '../util/Base1DViewModel'
 import * as coreColor from '../util/color'
 import * as coreIo from '../util/io'
+import * as coreTheme from '../ui/theme'
 import * as coreLayouts from '../util/layouts'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
@@ -554,6 +555,7 @@ const libs = {
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,
+  '@jbrowse/core/ui/theme': coreTheme,
   '@jbrowse/core/util': coreUtil,
   '@jbrowse/core/util/color': coreColor,
   '@jbrowse/core/util/layouts': coreLayouts,
