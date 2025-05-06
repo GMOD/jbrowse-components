@@ -42,7 +42,10 @@ import { filterSessionInPlace } from '../util'
 import type { SessionDB, SessionMetadata } from '../types'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  SessionWithWidgets,
+} from '@jbrowse/core/util'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 import type {
@@ -242,24 +245,46 @@ export default function RootModel({
             self.session?.notifyError(`${e}`, e)
           }
 
+          let savingFailed = false
           addDisposer(
             self,
             autorun(
-              async () => {
+              () => {
                 if (self.session) {
-                  sessionStorage.setItem(
-                    'current',
-                    JSON.stringify({
-                      session: getSnapshot(self.session),
-                      createdAt: new Date(),
-                    }),
-                  )
+                  const s = self.session as AbstractSessionModel
+                  try {
+                    sessionStorage.setItem(
+                      'current',
+                      JSON.stringify({
+                        session: getSnapshot(s),
+                        createdAt: new Date(),
+                      }),
+                    )
+                    if (savingFailed) {
+                      savingFailed = false
+                      s.notify('Auto-saving restored', 'info')
+                    }
 
-                  // this check is not able to be modularized into it's own
-                  // autorun at current time because it depends on session
-                  // storage snapshot being set above
-                  if (self.pluginsUpdated) {
-                    window.location.reload()
+                    // this check is not able to be modularized into it's own
+                    // autorun at current time because it depends on session
+                    // storage snapshot being set above
+                    if (self.pluginsUpdated) {
+                      window.location.reload()
+                    }
+                  } catch (e) {
+                    console.error(e)
+                    const msg = `${e}`
+                    if (!savingFailed) {
+                      savingFailed = true
+                      if (msg.includes('quota')) {
+                        s.notifyError(
+                          'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
+                          e,
+                        )
+                      } else {
+                        s.notifyError(msg, e)
+                      }
+                    }
                   }
                 }
               },
