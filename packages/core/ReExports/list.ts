@@ -264,6 +264,7 @@ export default [
   '@jbrowse/core/configuration',
   '@jbrowse/core/util/types/mst',
   '@jbrowse/core/ui',
+  '@jbrowse/core/ui/theme',
   '@jbrowse/core/util',
   '@jbrowse/core/util/color',
   '@jbrowse/core/util/layouts',

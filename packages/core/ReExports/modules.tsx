@@ -38,6 +38,7 @@ import * as FeatureRendererType from '../pluggableElementTypes/renderers/Feature
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import * as coreUi from '../ui'
+import * as coreTheme from '../ui/theme'
 import * as coreUtil from '../util'
 import Base1DView from '../util/Base1DViewModel'
 import * as coreColor from '../util/color'
@@ -504,7 +505,7 @@ const libs = {
   // end special case
   // material-ui subcomponents, should get rid of these
   '@mui/material/styles': {
-    MUIStyles,
+    ...MUIStyles,
 
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
@@ -512,7 +513,7 @@ const libs = {
     },
   },
   '@material-ui/core/styles': {
-    MUIStyles,
+    ...MUIStyles,
 
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
@@ -554,6 +555,7 @@ const libs = {
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,
+  '@jbrowse/core/ui/theme': coreTheme,
   '@jbrowse/core/util': coreUtil,
   '@jbrowse/core/util/color': coreColor,
   '@jbrowse/core/util/layouts': coreLayouts,
