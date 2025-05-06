@@ -21,6 +21,8 @@ const Box = observer(function Box(props: {
   selected?: boolean
   topLevel?: boolean
   colorByCDS: boolean
+  color?: string
+  shorten?: boolean
 }) {
   const theme = useTheme()
   const {
@@ -31,6 +33,8 @@ const Box = observer(function Box(props: {
     featureLayout,
     bpPerPx,
     topLevel,
+    shorten,
+    color,
   } = props
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
@@ -47,7 +51,7 @@ const Box = observer(function Box(props: {
     return null
   }
 
-  if (isUTR(feature)) {
+  if (shorten || isUTR(feature)) {
     top += ((1 - utrHeightFraction) / 2) * height
     height *= utrHeightFraction
   }
@@ -55,9 +59,11 @@ const Box = observer(function Box(props: {
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
 
-  let fill: string = isUTR(feature)
-    ? readConfObject(config, 'color3', { feature })
-    : readConfObject(config, 'color1', { feature })
+  let fill: string =
+    color ??
+    (isUTR(feature)
+      ? readConfObject(config, 'color3', { feature })
+      : readConfObject(config, 'color1', { feature }))
   if (
     colorByCDS &&
     featureType === 'CDS' &&
