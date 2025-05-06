@@ -1,8 +1,8 @@
+import { createTheme } from '@mui/material'
 import { blue, green, grey, orange, red } from '@mui/material/colors'
-import { createTheme } from '@mui/material/styles'
 import deepmerge from 'deepmerge'
 
-import type { ThemeOptions } from '@mui/material/styles'
+import type { ThemeOptions } from '@mui/material'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,

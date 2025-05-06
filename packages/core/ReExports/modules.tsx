@@ -38,11 +38,11 @@ import * as FeatureRendererType from '../pluggableElementTypes/renderers/Feature
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import * as coreUi from '../ui'
+import * as coreTheme from '../ui/theme'
 import * as coreUtil from '../util'
 import Base1DView from '../util/Base1DViewModel'
 import * as coreColor from '../util/color'
 import * as coreIo from '../util/io'
-import * as coreTheme from '../ui/theme'
 import * as coreLayouts from '../util/layouts'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
@@ -505,7 +505,7 @@ const libs = {
   // end special case
   // material-ui subcomponents, should get rid of these
   '@mui/material/styles': {
-    MUIStyles,
+    ...MUIStyles,
 
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
@@ -513,7 +513,7 @@ const libs = {
     },
   },
   '@material-ui/core/styles': {
-    MUIStyles,
+    ...MUIStyles,
 
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
