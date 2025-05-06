@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { isModelType, isType, types } from 'mobx-state-tree'
 
-// Pluggable elements
 import CorePlugin from './CorePlugin'
 import ReExports from './ReExports'
 import {
@@ -448,14 +447,15 @@ export default class PluginManager {
         )
       }
       return pack
-    }
-
-    if (typeof lib === 'function') {
+    } else if (typeof lib === 'function') {
       return this.load(lib)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (lib.default) {
+    // @ts-expect-error
+    else if (lib.default) {
+      console.warn('initiated jbrequire on a {default:Function}')
+      // @ts-expect-error
       return this.jbrequire(lib.default)
     }
 

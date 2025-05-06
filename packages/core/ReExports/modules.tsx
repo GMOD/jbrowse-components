@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import * as React from 'react'
-import { lazy } from 'react'
+import { Suspense, lazy } from 'react'
 
 import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
@@ -23,6 +23,7 @@ import Plugin from '../Plugin'
 import * as Configuration from '../configuration'
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 import * as pluggableElementTypes from '../pluggableElementTypes'
+import reExportsList from './list'
 import AdapterType from '../pluggableElementTypes/AdapterType'
 import DisplayType from '../pluggableElementTypes/DisplayType'
 import TrackType from '../pluggableElementTypes/TrackType'
@@ -52,7 +53,7 @@ import { lazyMap } from './lazify'
 const r0 = lazyMap(Entries, '@mui/material/')
 const r1 = lazyMap(Entries, '@material-ui/core/')
 
-export default {
+const libs = {
   mobx,
   'mobx-state-tree': mst,
   react: React,
@@ -174,3 +175,26 @@ export default {
   ),
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
+
+const libsList = Object.keys(libs)
+
+// make sure that all the items in the ReExports/list array (used by build
+// systems and such) are included here, and vice versa
+const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
+if (inLibsOnly.length > 0) {
+  throw new Error(
+    `The following modules are in the modules libs, but not the re-exports list: ${inLibsOnly.join(
+      ', ',
+    )}`,
+  )
+}
+const inReExportsOnly = reExportsList.filter(mod => !libsList.includes(mod))
+if (inReExportsOnly.length) {
+  throw new Error(
+    `The following modules are in the re-exports list, but not the modules libs: ${inReExportsOnly.join(
+      ', ',
+    )}`,
+  )
+}
+
+export default libs
