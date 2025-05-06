@@ -3,7 +3,12 @@ import { useEffect, useState } from 'react'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
-import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getSession,
+  measureText,
+  useDebounce,
+} from '@jbrowse/core/util'
 import { Autocomplete } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -71,12 +76,13 @@ const RefNameAutocomplete = observer(function ({
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
-  const refNames = assembly?.refNames
+  const regions = assembly?.regions
   const regionOptions =
-    refNames?.map(refName => ({
+    regions?.map(region => ({
       result: new RefSequenceResult({
-        refName,
-        label: refName,
+        refName: region.refName,
+        label: region.refName,
+        displayString: `${region.refName} (${getBpDisplayStr(region.end - region.start)})`,
         matchedAttribute: 'refName',
       }),
     })) || []
