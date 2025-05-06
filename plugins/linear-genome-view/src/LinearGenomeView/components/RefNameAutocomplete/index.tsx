@@ -57,12 +57,14 @@ const RefNameAutocomplete = observer(function ({
         }
 
         setLoaded(false)
-        const results = await fetchResults(debouncedSearch)
-        setLoaded(true)
-        setSearchOptions(getDeduplicatedResult(results))
+        setSearchOptions(
+          getDeduplicatedResult(await fetchResults(debouncedSearch)),
+        )
       } catch (e) {
         console.error(e)
         session.notifyError(`${e}`, e)
+      } finally {
+        setLoaded(true)
       }
     })()
   }, [assemblyName, fetchResults, debouncedSearch, session])

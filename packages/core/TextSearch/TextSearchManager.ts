@@ -1,3 +1,5 @@
+import uFuzzy from '@leeoniya/ufuzzy'
+
 import { readConfObject } from '../configuration'
 import QuickLRU from '../util/QuickLRU'
 
@@ -8,7 +10,6 @@ import type {
   BaseTextSearchAdapter,
   BaseTextSearchArgs,
 } from '../data_adapters/BaseAdapter'
-import uFuzzy from '@leeoniya/ufuzzy'
 
 export interface SearchScope {
   includeAggregateIndexes: boolean
@@ -130,7 +131,7 @@ export default class TextSearchManager {
 
   /**
    * Returns array of revelevant and sorted results. Note: renamed to
-   * sortResults2 to accomodate new format
+   * sortResults2 to accommodate new format
    *
    * @param results - array of results from all text search adapters
    * @param rankFn - function that updates results scores
@@ -145,28 +146,35 @@ export default class TextSearchManager {
     args: BaseTextSearchArgs
     rankFn: (results: BaseResult[]) => BaseResult[]
   }) {
-    let uf = new uFuzzy({})
+    const uf = new uFuzzy({})
+
+    // does fuzzy matching on the 'display string'
     const haystackPre = Object.fromEntries(
       results.map((r, idx) => [r.getDisplayString(), idx]),
     )
+    // this code sample relatively unmodified from
+    // https://github.com/leeoniya/uFuzzy?tab=readme-ov-file#example
     const haystack = Object.keys(haystackPre)
     const needle = args.queryString
-    let idxs = uf.filter(haystack, needle)
+
+    // false positive, this is not Array.prototype.filter
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
+    const idxs = uf.filter(haystack, needle)
     const res = []
 
     // idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
     if (idxs != null && idxs.length > 0) {
-      let info = uf.info(idxs, haystack, needle)
+      const info = uf.info(idxs, haystack, needle)
 
       // order is a double-indirection array (a re-order of the passed-in idxs)
       // this allows corresponding info to be grabbed directly by idx, if needed
-      let order = uf.sort(info, haystack, needle)
+      const order = uf.sort(info, haystack, needle)
 
       // render post-filtered & ordered matches
-      for (let i = 0; i < order.length; i++) {
+      for (const element of order) {
         // using info.idx here instead of idxs because uf.info() may have
         // further reduced the initial idxs based on prefix/suffix rules
-        res.push(haystack[info.idx[order[i]!]!]!)
+        res.push(haystack[info.idx[element]!]!)
       }
     }
     return rankFn(res.map(r => results[haystackPre[r]!]!))
