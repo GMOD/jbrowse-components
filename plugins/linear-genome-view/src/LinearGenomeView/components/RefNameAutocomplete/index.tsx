@@ -69,12 +69,6 @@ const RefNameAutocomplete = observer(function ({
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
-  // heuristic, text width + 60 accommodates help icon and search icon
-  const width = Math.min(
-    Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
-    maxWidth,
-  )
-
   const refNames = assembly?.refNames
   const regionOptions =
     refNames?.map(refName => ({
@@ -96,7 +90,13 @@ const RefNameAutocomplete = observer(function ({
       freeSolo
       includeInputInList
       selectOnFocus
-      style={{ ...style, width }}
+      style={{
+        ...style,
+        width: Math.min(
+          Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
+          maxWidth,
+        ),
+      }}
       value={inputBoxVal}
       loading={!loaded}
       inputValue={inputValue}
