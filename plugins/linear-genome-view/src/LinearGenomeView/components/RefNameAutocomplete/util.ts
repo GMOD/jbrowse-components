@@ -5,7 +5,6 @@ export interface Option {
   result: BaseResult
 }
 
-// filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
   return options.filter(
     ({ result }) =>

@@ -57,23 +57,19 @@ const RefNameAutocomplete = observer(function ({
         }
 
         setLoaded(false)
-        const results = await fetchResults(debouncedSearch)
-        setLoaded(true)
-        setSearchOptions(getDeduplicatedResult(results))
+        setSearchOptions(
+          getDeduplicatedResult(await fetchResults(debouncedSearch)),
+        )
       } catch (e) {
         console.error(e)
         session.notifyError(`${e}`, e)
+      } finally {
+        setLoaded(true)
       }
     })()
   }, [assemblyName, fetchResults, debouncedSearch, session])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
-
-  // heuristic, text width + 60 accommodates help icon and search icon
-  const width = Math.min(
-    Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
-    maxWidth,
-  )
 
   const refNames = assembly?.refNames
   const regionOptions =
@@ -96,7 +92,13 @@ const RefNameAutocomplete = observer(function ({
       freeSolo
       includeInputInList
       selectOnFocus
-      style={{ ...style, width }}
+      style={{
+        ...style,
+        width: Math.min(
+          Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
+          maxWidth,
+        ),
+      }}
       value={inputBoxVal}
       loading={!loaded}
       inputValue={inputValue}

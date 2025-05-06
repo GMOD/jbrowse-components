@@ -573,17 +573,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * does nothing currently
        */
       rankSearchResults(results: BaseResult[]) {
-        // order of rank
-        const openTrackIds = new Set(
-          self.tracks.map(track => track.configuration.trackId),
-        )
-        for (const result of results) {
-          if (openTrackIds.has(result.trackId)) {
-            result.updateScore(result.getScore() + 1)
-          }
-        }
         return results
       },
 

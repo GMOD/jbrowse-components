@@ -34,6 +34,7 @@
     "@gmod/abortable-promise-cache": "^3.0.1",
     "@gmod/bgzf-filehandle": "^3.0.2",
     "@gmod/http-range-fetcher": "^5.0.0",
+    "@leeoniya/ufuzzy": "^1.0.18",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@mui/x-data-grid": "^8.0.0",
