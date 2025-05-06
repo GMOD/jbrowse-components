@@ -1,4 +1,4 @@
-import { forwardRef, Suspense } from 'react'
+import { Suspense, forwardRef } from 'react'
 
 export function lazyifyComponent(key: string, ReactComponent: any) {
   const Component = forwardRef((props: any, ref) => (

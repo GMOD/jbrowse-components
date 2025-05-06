@@ -1,4 +1,4 @@
-import { lazy, type LazyExoticComponent } from 'react'
+import { type LazyExoticComponent, lazy } from 'react'
 
 export const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
   DataGrid: lazy(() =>

@@ -1,7 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-// this is all the stuff that the pluginManager re-exports for plugins to use
 import * as React from 'react'
-import { Suspense, lazy } from 'react'
 
 import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
@@ -23,6 +20,10 @@ import Plugin from '../Plugin'
 import * as Configuration from '../configuration'
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 import * as pluggableElementTypes from '../pluggableElementTypes'
+import { BaseFeatureDetail } from './BaseFeatureDetails'
+import { DataGridEntries } from './MuiDataGridReExports'
+import { Entries } from './MuiReExports'
+import { lazyMap } from './lazify'
 import reExportsList from './list'
 import AdapterType from '../pluggableElementTypes/AdapterType'
 import DisplayType from '../pluggableElementTypes/DisplayType'
@@ -46,9 +47,6 @@ import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
 import * as trackUtils from '../util/tracks'
 import * as mstTypes from '../util/types/mst'
-import { Entries } from './MuiReExports'
-import { DataGridEntries } from './MuiDataGridReExports'
-import { lazyMap } from './lazify'
 
 const r0 = lazyMap(Entries, '@mui/material/')
 const r1 = lazyMap(Entries, '@material-ui/core/')
@@ -124,6 +122,19 @@ const libs = {
   },
 
   '@jbrowse/core/Plugin': Plugin,
+  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
+  '@jbrowse/core/configuration': Configuration,
+  '@jbrowse/core/util/types/mst': mstTypes,
+  '@jbrowse/core/ui': coreUi,
+  '@jbrowse/core/ui/theme': coreTheme,
+  '@jbrowse/core/util': coreUtil,
+  '@jbrowse/core/util/color': coreColor,
+  '@jbrowse/core/util/layouts': coreLayouts,
+  '@jbrowse/core/util/tracks': trackUtils,
+  '@jbrowse/core/util/Base1DViewModel': Base1DView,
+  '@jbrowse/core/util/io': coreIo,
+  '@jbrowse/core/util/mst-reflection': coreMstReflection,
+  '@jbrowse/core/util/rxjs': rxjs,
   '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
   '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
   '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
@@ -139,40 +150,8 @@ const libs = {
     BoxRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
     FeatureRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
-  '@jbrowse/core/configuration': Configuration,
-  '@jbrowse/core/util/types/mst': mstTypes,
-  '@jbrowse/core/ui': coreUi,
-  '@jbrowse/core/ui/theme': coreTheme,
-  '@jbrowse/core/util': coreUtil,
-  '@jbrowse/core/util/color': coreColor,
-  '@jbrowse/core/util/layouts': coreLayouts,
-  '@jbrowse/core/util/tracks': trackUtils,
-  '@jbrowse/core/util/Base1DViewModel': Base1DView,
-  '@jbrowse/core/util/io': coreIo,
-  '@jbrowse/core/util/mst-reflection': coreMstReflection,
-  '@jbrowse/core/util/rxjs': rxjs,
 
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': lazyMap(
-    {
-      Attributes: lazy(
-        () => import('../BaseFeatureWidget/BaseFeatureDetail/Attributes'),
-      ),
-      FeatureDetails: lazy(
-        () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'),
-      ),
-      BaseCard: lazy(
-        () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard'),
-      ),
-      BaseAttributes: lazy(
-        () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseAttributes'),
-      ),
-      BaseCoreDetails: lazy(
-        () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCoreDetails'),
-      ),
-    },
-    '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/',
-  ),
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
