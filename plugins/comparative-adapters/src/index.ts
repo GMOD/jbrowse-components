@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
+import AllVsAllPAFAdapterF from './AllVsAllPAFAdapter'
 import BlastTabularAdapter from './BlastTabularAdapter'
 import ChainAdapterF from './ChainAdapter'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent'
@@ -19,6 +20,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
+    AllVsAllPAFAdapterF(pluginManager)
     PairwiseIndexedPAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
