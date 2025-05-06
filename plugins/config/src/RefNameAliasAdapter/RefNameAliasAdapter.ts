@@ -22,7 +22,12 @@ export default class RefNameAliasAdapter
     const header = lines.filter(f => f.startsWith('#'))
     const headerCol =
       refColumnHeaderName && header.length
-        ? header.at(-1)!.split('\t').indexOf(refColumnHeaderName)
+        ? header
+            .at(-1)!
+            .slice(1)
+            .split('\t')
+            .map(t => t.trim())
+            .indexOf(refColumnHeaderName)
         : refColumn
     return lines
       .filter(f => !f.startsWith('#'))

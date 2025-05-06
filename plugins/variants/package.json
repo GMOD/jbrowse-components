@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bgzf-filehandle": "^2.0.1",
-    "@gmod/tabix": "^2.0.0",
+    "@gmod/bgzf-filehandle": "^3.0.2",
+    "@gmod/tabix": "^3.0.1",
     "@gmod/vcf": "^6.0.8",
     "@jbrowse/core": "^3.3.0",
     "@jbrowse/plugin-circular-view": "^3.3.0",

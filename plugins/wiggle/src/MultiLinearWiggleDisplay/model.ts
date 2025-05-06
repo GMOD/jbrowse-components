@@ -68,6 +68,10 @@ export function stateModelFactory(
          * #property
          */
         layout: types.optional(types.frozen<Source[]>(), []),
+        /**
+         * #property
+         */
+        showSidebar: true,
       }),
     )
     .volatile(() => ({
@@ -85,6 +89,15 @@ export function stateModelFactory(
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setShowSidebar(arg: boolean) {
+        self.showSidebar = arg
+      },
+      /**
+       * #action
+       */
       setSourcesLoading(str: string) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
@@ -507,6 +520,14 @@ export function stateModelFactory(
                     handleClose,
                   },
                 ])
+              },
+            },
+            {
+              label: 'Show sidebar',
+              type: 'checkbox',
+              checked: self.showSidebar,
+              onClick: () => {
+                self.setShowSidebar(!self.showSidebar)
               },
             },
             {

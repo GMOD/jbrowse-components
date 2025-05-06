@@ -144,8 +144,10 @@ export function drawXY(
                 .toString())
           : c
       const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
-      // create reduced features, avoiding multiple features per px
-      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      if (
+        Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
+        rightPx - leftPx > 1
+      ) {
         reducedFeatures.push(feature)
         prevLeftPx = leftPx
       }
@@ -187,7 +189,10 @@ export function drawXY(
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       // create reduced features, avoiding multiple features per px
-      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      if (
+        Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
+        rightPx - leftPx > 1
+      ) {
         reducedFeatures.push(feature)
         prevLeftPx = leftPx
       }
@@ -244,5 +249,7 @@ export function drawXY(
     }
   }
 
-  return { reducedFeatures }
+  return {
+    reducedFeatures,
+  }
 }
