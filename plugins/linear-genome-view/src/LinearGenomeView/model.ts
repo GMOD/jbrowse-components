@@ -1471,7 +1471,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param optAssemblyName - (optional) the assembly name to use when
        * navigating to the locstring
        */
-      async navToLocString(input: string, optAssemblyName?: string) {
+      async navToLocString(
+        input: string,
+        optAssemblyName?: string,
+        grow?: number,
+      ) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const assemblyName = optAssemblyName || assemblyNames[0]!
@@ -1484,6 +1488,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyManager.isValidRefName(ref, asm),
           ),
           assemblyName,
+          grow,
         )
       },
 
@@ -1516,8 +1521,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async navToLocation(
         parsedLocString: ParsedLocString,
         assemblyName?: string,
+        grow?: number,
       ) {
-        return this.navToLocations([parsedLocString], assemblyName)
+        return this.navToLocations([parsedLocString], assemblyName, grow)
       },
 
       /**
@@ -1527,17 +1533,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * `setDisplayedRegions` if changing regions
        */
       async navToLocations(
-        parsedLocStrings: ParsedLocString[],
+        regions: ParsedLocString[],
         assemblyName?: string,
+        grow?: number,
       ) {
         const { assemblyManager } = getSession(self)
         await when(() => self.volatileWidth !== undefined)
-
-        const locations = await generateLocations(
-          parsedLocStrings,
+        const locations = await generateLocations({
+          regions,
           assemblyManager,
           assemblyName,
-        )
+          grow,
+        })
 
         if (locations.length === 1) {
           const loc = locations[0]!

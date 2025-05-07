@@ -24,7 +24,7 @@ test('search eden.1 and hit open', async () => {
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.click(await findByText('Open'))
   await waitFor(() => {
-    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+    expect(getInputValue()).toBe('ctgA:1..10,590')
   }, delay)
 }, 30000)
 
