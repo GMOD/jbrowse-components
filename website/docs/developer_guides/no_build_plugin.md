@@ -82,7 +82,10 @@ plugin class.
 `myplugin.js`
 
 ```typescript
-// ...
+export default class MyPlugin {
+  name = 'MyPlugin'
+  version = '1.0'
+  install() {}
   configure(pluginManager) {
     // this is called in the web worker as well, which does not have a
     // rootModel, so check for existence of pluginManager.rootModel before
@@ -94,11 +97,13 @@ plugin class.
       // appending a menu item to the new menu
       pluginManager.rootModel.appendToMenu('Citations', {
         label: 'Cite this JBrowse session',
-        onClick: (session) => { /* do nothing for now, see below for example */ }
+        onClick: session => {
+          /* do nothing for now, see below for example */
+        },
       })
     }
   }
-// ...
+}
 ```
 
 ### Importing with jbrequire
@@ -116,7 +121,7 @@ might look like this:
 const { types } = pluginManager.jbrequire('mobx-state-tree')
 ```
 
-which would provide the functionality of mobx-state-tree through that value.
+This would provide the functionality of mobx-state-tree through that value.
 
 ## Complete example
 
