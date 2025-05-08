@@ -83,9 +83,8 @@ export async function renderToSvg(
 
             if ('imageData' in r) {
               throw new Error('found a canvas in svg export, probably a bug')
-            } else if ('canvasRecordedData' in r) {
+            } else if ('canvasRecordedData' in r && r.canvasRecordedData) {
               return {
-                // @ts-expect-error
                 html: await getSerializedSvg({
                   ...r,
                   width,
