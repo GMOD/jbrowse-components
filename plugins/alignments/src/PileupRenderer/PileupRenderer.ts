@@ -89,14 +89,12 @@ export default class PileupRenderer extends BoxRendererType {
               regionSequence,
             },
           })
-          return undefined
         })
       },
     )
 
     const results = await super.render({
       ...renderProps,
-      // @ts-expect-error
       ...res,
       features,
       layout,
@@ -106,7 +104,6 @@ export default class PileupRenderer extends BoxRendererType {
 
     return {
       ...results,
-      // @ts-expect-error
       ...res,
       features: new Map(),
       layout,
