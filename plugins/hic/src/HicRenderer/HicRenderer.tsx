@@ -71,7 +71,6 @@ export default class HicRenderer extends ServerSideRendererType {
     )
     const results = await super.render({
       ...renderProps,
-      // @ts-expect-error
       ...res,
       features,
       region: renderProps.regions[0],
@@ -81,7 +80,6 @@ export default class HicRenderer extends ServerSideRendererType {
 
     return {
       ...results,
-      // @ts-expect-error
       ...res,
       height,
       width,

@@ -30,7 +30,7 @@ export async function renderToAbstractCanvas<T>(
       const fakeCtx = new CanvasSequence()
       const result = await cb(fakeCtx)
       return {
-        ...result,
+        result,
         canvasRecordedData: fakeCtx.toJSON(),
       }
     } else {
@@ -46,7 +46,7 @@ export async function renderToAbstractCanvas<T>(
       // two methods needed for converting canvas to PNG, one for webworker
       // offscreen canvas, one for main thread
       return {
-        ...result,
+        result,
         reactElement: (
           <image
             width={width}
@@ -74,7 +74,7 @@ export async function renderToAbstractCanvas<T>(
     ctx.scale(s, s)
     const result = await cb(ctx)
     return {
-      ...result,
+      result,
       imageData: await createImageBitmap(canvas),
     }
   }
