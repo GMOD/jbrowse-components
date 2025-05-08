@@ -94,7 +94,7 @@ You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version.
 
 To install the @jbrowse/cli tool, you can use `npm install -g @jbrowse/cli`
 
-You can use this same command to upgrade the tool too.
+Re-running that command will get the latest version of the @jbrowse/cli.
 
 This command will give you a command named `jbrowse` which should automatically
 be in your path if you have a standard installation of nodejs. We recommend
@@ -179,7 +179,7 @@ The add-track command will do as much as possible to infer from the file
 extension how to configure this track, and automatically infer the index to be
 myfile.bam.bai.
 
-As mentioned [above](#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can
+As mentioned [above](#how-can-i-setup-jbrowse-2-without-the-cli-tools), you can
 also manually edit your config file, or use the GUI.
 
 ### How do I customize the color of the features displayed on my track
@@ -318,12 +318,12 @@ with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has its own hamburger menu. Note that each track also has its
 own track level menu.
 
-### Why do some of my reads not display soft clipping
+### Why do some of my reads not display soft-clipping
 
 Some reads, such as secondary reads, do not have a `SEQ` field on their records,
 so they will not display soft-clipping.
 
-The soft clipping indicators on these reads will appear black.
+The soft-clipping indicators on these reads will appear black.
 
 ### Do you have any tips for learning React and mobx-state-tree
 
