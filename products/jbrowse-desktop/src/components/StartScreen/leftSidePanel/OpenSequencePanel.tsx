@@ -3,37 +3,40 @@ import { useState } from 'react'
 import { Button, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-import QuickstartPanel from './QuickstartPanel'
-import OpenSequenceDialog from '../OpenSequenceDialog'
-import { loadPluginManager } from './util'
+import OpenSequenceDialog from '../../OpenSequenceDialog'
+import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog'
+import { loadPluginManager } from '../util'
 
+import type { Fav, LaunchCallback } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles()(theme => ({
-  form: {
-    marginTop: theme.spacing(4),
-  },
+const useStyles = makeStyles()({
   button: {
-    display: 'block',
-    marginBottom: theme.spacing(3),
-    width: 200,
-    padding: theme.spacing(1),
+    margin: 5,
   },
-}))
+})
 
-export default function LauncherPanel({
+export default function OpenSequencePanel({
   setPluginManager,
+  favorites,
+  setFavorites,
+  launch,
 }: {
   setPluginManager: (arg0: PluginManager) => void
+  favorites: Fav[]
+  setFavorites: (arg: Fav[]) => void
+  launch: LaunchCallback
 }) {
   const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+
   return (
-    <div className={classes.form}>
+    <div>
       <Typography variant="h6" style={{ marginBottom: 5 }}>
-        Select a sequence file e.g. FASTA file
+        Select a sequence file e.g. reference genome FASTA file
       </Typography>
       <Button
         variant="contained"
@@ -45,10 +48,15 @@ export default function LauncherPanel({
       >
         Open sequence file(s)
       </Button>
-      <Typography style={{ width: '50%', textAlign: 'center' }} variant="h6">
-        -or-
-      </Typography>
-      <QuickstartPanel setPluginManager={setPluginManager} />
+      <Button
+        variant="contained"
+        className={classes.button}
+        onClick={() => {
+          setShowAll(true)
+        }}
+      >
+        Show all available genomes
+      </Button>
 
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
@@ -68,6 +76,17 @@ export default function LauncherPanel({
               setPluginManager(await loadPluginManager(path))
             }
             setSequenceDialogOpen(false)
+          }}
+        />
+      ) : null}
+
+      {showAll ? (
+        <AllGenomesDialog
+          favorites={favorites}
+          setFavorites={setFavorites}
+          launch={launch}
+          onClose={() => {
+            setShowAll(false)
           }}
         />
       ) : null}

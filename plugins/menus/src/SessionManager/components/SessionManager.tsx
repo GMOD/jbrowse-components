@@ -59,7 +59,7 @@ const SessionManager = observer(function ({
               }}
             />
           }
-          label="Show only favorites?"
+          label="Show favorites only?"
         />
 
         <Button
