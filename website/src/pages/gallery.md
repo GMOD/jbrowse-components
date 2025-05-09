@@ -98,10 +98,11 @@ insertion/clipping counts
 
 ![](/img/read_vs_ref_insertion.png)
 
-The read vs reference visualization can show the "sequence track" on the "read"
-to see which bases are inserted. Users can also use the "Get sequence" click and
-drag to get the sequence of the contents of the insertions or unaligned portions
-of the read (e.g. softclipped parts)
+The read vs reference visualization on a ~500 base pair insert in PacBio reads
+from the SKBR3 (breat cancer) cell line. Users can right-click sequence reads,
+then click "read vs reference" to show complex read alignments in a "synteny
+style" view. Users can also interactively get the sequence of this inserted read
+portion with a click-and-drag action
 
 ---
 
