@@ -111,6 +111,6 @@ A hypo-methylated CpG island shown using the MM tag with nanopore reads
 
 ---
 
-![](/img/multisamplesv.png)
+![](/img/multisv.png)
 
-[live link](https://jbrowse.org/code/jb2/v3.3.0/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-lanMckehSq&password=jsEoX)
+[live link](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw)
