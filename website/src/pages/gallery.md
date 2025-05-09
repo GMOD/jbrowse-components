@@ -108,3 +108,9 @@ of the read (e.g. softclipped parts)
 ![](/img/alignments/modifications2.png)
 
 A hypo-methylated CpG island shown using the MM tag with nanopore reads
+
+---
+
+![](/img/multisamplesv.png)
+
+[live link](https://jbrowse.org/code/jb2/v3.3.0/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-lanMckehSq&password=jsEoX)
