@@ -16,7 +16,6 @@ import {
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -296,7 +295,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
+      setSession(sessionSnapshot: SnapshotIn<BaseSessionType>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
         if (self.session) {
@@ -584,14 +583,6 @@ export default function RootModel({
                       'addConnectionWidget',
                     ),
                   )
-                },
-              },
-              { type: 'divider' },
-              {
-                label: 'Return to splash screen',
-                icon: AppsIcon,
-                onClick: () => {
-                  self.setSession(undefined)
                 },
               },
             ],
