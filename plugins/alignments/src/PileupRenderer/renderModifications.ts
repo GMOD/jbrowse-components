@@ -38,10 +38,10 @@ export function renderModifications({
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
 
-  const probs = getMaxProbModAtEachPosition(feature, cigarOps)
-  if (probs) {
-    let pos = 0
-    for (const { allProbs, prob, type } of probs) {
+  // this is a hole-y array, does not work with normal for loop
+  // eslint-disable-next-line unicorn/no-array-for-each
+  getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
+    ({ allProbs, prob, type }, pos) => {
       const r = start + pos
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
       const mod = visibleModifications[type]
@@ -64,6 +64,6 @@ export function renderModifications({
         fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       }
       pos++
-    }
-  }
+    },
+  )
 }
