@@ -81,35 +81,41 @@ line, with feet indicating directionality)
 
 ---
 
-![](/img/color_by_tag.png)
+![](/img/smalldel.png)
 
-Image of coloring and sorting by the HP (haplotype) tag, which can be done for
-BAM and CRAM. Users can color, sort, and filter by tags
+Screenshot showing a heterozygous small deletion in the GIAB dataset. The
+nanopore reads are colored and sorted by the HP (haplotype) tag which helps show
+that the deletion is exclusive to one haplotype. Users can color, sort, group,
+and filter by tags
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE))
 
 ---
 
-![](/img/insertion_indicators.png)
+![](/img/insertion.png)
 
-The browser has a variety of ways to help show insertions including "large
-insertion indicators" (a feature also seen in IGV) and upside down histogram of
-insertion/clipping counts
+Screenshot showing a ~1.5kb insertion in the GIAB dataset, with Nanopore,
+PacBio, and Illumina reads. This screenshot shows the "Show soft clipping"
+option enabled on the Illumina reads, which helps reveal the boundaries of the
+insertion on the short reads, while the long reads fully span the insertion
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt))
 
 ---
 
 ![](/img/read_vs_ref_insertion.png)
 
-The read vs reference visualization on a ~500 base pair insert in PacBio reads
-from the SKBR3 (breat cancer) cell line. Users can right-click sequence reads,
-then click "read vs reference" to show complex read alignments in a "synteny
-style" view. Users can also interactively get the sequence of this inserted read
-portion with a click-and-drag action
+Screenshot showing a ~500bp insertion from SKBR3 (breast cancer) cell line
+PacBio reads. Users can right-click sequence reads, then click "read vs
+reference" to show complex read alignments in a "synteny style" view (lower
+panel). Users can also interactively get the sequence of read portions with a
+click-and-drag action (lower panel, in blue)
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe))
 
 ---
 
 ![](/img/modifications.png)
 
 A methylated and unmethylated CpG island shown using the MM tag with nanopore
-reads on the COLO829 (melanoma) cancer cell line
+reads on the COLO829 (melanoma) cancer cell line. This dataset
 ([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl))
 
 ---
