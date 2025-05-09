@@ -113,4 +113,7 @@ A hypo-methylated CpG island shown using the MM tag with nanopore reads
 
 ![](/img/multisv.png)
 
-[live link](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw)
+An example of the 1000 genomes structural variant call VCF, showing a large
+inversion on chromosome 19. This screenshot used the in-app clustering workflow
+on the inverted region, and then zoomed out further
+([live link](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw))
