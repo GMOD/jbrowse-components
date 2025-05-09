@@ -105,9 +105,11 @@ of the read (e.g. softclipped parts)
 
 ---
 
-![](/img/alignments/modifications2.png)
+![](/img/modifications.png)
 
-A hypo-methylated CpG island shown using the MM tag with nanopore reads
+A methylated and unmethylated CpG island shown using the MM tag with nanopore
+reads on the COLO829 (melanoma) cancer cell line
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl))
 
 ---
 
