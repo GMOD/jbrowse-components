@@ -52,19 +52,22 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    const { result, ...rest } = await updateStatus(
+    const { reducedFeatures, ...rest } = await updateStatus(
       'Rendering plot',
       statusCallback,
       () =>
-        renderToAbstractCanvas(width, height, renderProps, ctx =>
-          this.draw(ctx, {
-            ...renderProps,
-            features,
-            inverted,
-          }),
+        renderToAbstractCanvas(
+          width,
+          height,
+          renderProps,
+          ctx =>
+            this.draw(ctx, {
+              ...renderProps,
+              features,
+              inverted,
+            }) as Promise<{ reducedFeatures: Feature[] | undefined }>,
         ),
     )
-    const reducedFeatures = result?.reducedFeatures as Feature[] | undefined
 
     const results = await super.render({
       ...renderProps,

@@ -198,7 +198,13 @@ export default class FeatureRendererType extends ServerSideRendererType {
     props: RenderArgsDeserialized & { features?: Map<string, Feature> },
   ): Promise<RenderResults> {
     const features = props.features || (await this.getFeatures(props))
-    const result = await super.render({ ...props, features })
-    return { ...result, features }
+    const result = await super.render({
+      ...props,
+      features,
+    })
+    return {
+      ...result,
+      features,
+    }
   }
 }
