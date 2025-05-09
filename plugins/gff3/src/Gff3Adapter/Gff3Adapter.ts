@@ -26,6 +26,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts || {}
     const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('gffLocation'), this.pluginManager),
+      opts,
     )
 
     const headerLines = []
