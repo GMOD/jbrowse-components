@@ -30,6 +30,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
         })
       },
     )
+    console.log({ ret })
 
     const results = await super.render({
       ...renderProps,

@@ -4,7 +4,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import RBush from 'rbush'
+import Flatbush from 'flatbush'
 
 import { f2 } from '../shared/constants'
 import {
@@ -15,6 +15,16 @@ import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
 import type { MultiRenderArgsDeserialized } from './types'
+
+export interface FlatbushItem {
+  x: number
+  y: number
+  w: number
+  h: number
+  genotype: string
+  name: string
+  featureId: string
+}
 
 export async function makeImageData(
   ctx: CanvasRenderingContext2D,
@@ -45,7 +55,7 @@ export async function makeImageData(
     }),
   )
   checkStopToken(stopToken)
-  const rbush = new RBush()
+  const items = [] as FlatbushItem[]
 
   await updateStatus('Drawing variants', statusCallback, () => {
     forEachWithStopTokenCheck(
@@ -82,11 +92,11 @@ export async function makeImageData(
                     referenceDrawingMode === 'draw',
                   )
                 ) {
-                  rbush.insert({
-                    minX: x,
-                    maxX: x + w,
-                    minY: y,
-                    maxY: y + h,
+                  items.push({
+                    x,
+                    y,
+                    w,
+                    h,
                     genotype,
                     name,
                     featureId: feature.id(),
@@ -150,11 +160,11 @@ export async function makeImageData(
                   feature.get('strand'),
                   flen > 5 ? 0.75 : 1,
                 )
-                rbush.insert({
-                  minX: x,
-                  maxX: x + w,
-                  minY: y,
-                  maxY: y + h,
+                items.push({
+                  x,
+                  w,
+                  y,
+                  h,
                   genotype,
                   name,
                   featureId: feature.id(),
@@ -168,8 +178,18 @@ export async function makeImageData(
     )
   })
 
+  // Build the Flatbush index
+  const index = new Flatbush(items.length)
+  for (const item of items) {
+    index.add(item.x, item.y, item.x + item.w, item.y + item.h)
+  }
+  index.finish()
+
   return {
-    rbush: rbush.toJSON(),
+    flatbush: {
+      index: index.data,
+      items,
+    },
     featureGenotypeMap: Object.fromEntries(
       mafs.map(({ feature }) => [
         feature.id(),

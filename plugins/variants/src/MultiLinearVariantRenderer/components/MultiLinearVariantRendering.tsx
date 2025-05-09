@@ -2,8 +2,8 @@ import { useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import Flatbush from 'flatbush'
 import { observer } from 'mobx-react'
-import RBush from 'rbush'
 
 import { minElt } from './util'
 import { makeSimpleAltString } from '../../VcfFeature/util'
@@ -11,15 +11,7 @@ import { makeSimpleAltString } from '../../VcfFeature/util'
 import type { Source } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-
-interface RBushData {
-  minX: number
-  maxX: number
-  minY: number
-  maxY: number
-  genotype: string
-  featureId: string
-}
+import { FlatbushItem } from '../makeImageData'
 
 type SerializedRBush = any
 
@@ -41,16 +33,21 @@ const MultiVariantRendering = observer(function (props: {
   scrollTop: number
   featureGenotypeMap: Record<string, MinimizedVariantRecord>
   totalHeight: number
-  rbush: SerializedRBush
+  flatbush: {
+    index: any
+    items: FlatbushItem[]
+  }
   displayModel: any
   onMouseLeave?: (event: React.MouseEvent) => void
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
-  const { featureGenotypeMap, totalHeight, scrollTop } = props
-  const { rbush, displayModel } = props
+  const { flatbush, displayModel, featureGenotypeMap, totalHeight, scrollTop } =
+    props
+  const { index, items } = flatbush
   const ref = useRef<HTMLDivElement>(null)
-  const rbush2 = useMemo(() => new RBush<RBushData>().fromJSON(rbush), [rbush])
+  const rbush2 = useMemo(() => Flatbush.from(index), [index])
+  console.log({ items, index })
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     let offsetX = 0
@@ -61,36 +58,38 @@ const MultiVariantRendering = observer(function (props: {
       offsetY = eventClientY - r.top - (displayModel?.scrollTop || 0)
     }
 
-    const x = rbush2.search({
-      minX: offsetX,
-      maxX: offsetX + 1,
-      minY: offsetY,
-      maxY: offsetY + 1,
-    })
-    if (x.length) {
-      const { minX, minY, maxX, maxY, genotype, featureId, ...rest } = minElt(
-        x,
-        elt => elt.maxX - elt.minX,
-      )!
-      const ret = featureGenotypeMap[featureId]
-      if (ret) {
-        const { ref, alt, name, description, length } = ret
-        const alleles = makeSimpleAltString(genotype, ref, alt)
-        return {
-          ...rest,
-          genotype,
+    const results = rbush2.search(offsetX, offsetX + 1, offsetY, offsetY + 1)
+    console.log({ results })
+    if (results.length) {
+      const r0 = minElt(
+        results.map(resultIndex => items[resultIndex]!),
+        elt => elt.w,
+      )
+      console.log({ r0 })
 
-          // alleles is a expanded description, e.g. if genotype is 1/0,
-          // alleles is T/C
-          alleles,
-          featureName: name,
+      if (r0 !== undefined) {
+        const { featureId, genotype } = r0
+        const ret =
+          featureId !== undefined ? featureGenotypeMap[featureId] : undefined
+        console.log({ ret })
+        if (ret) {
+          const { ref, alt, name, description, length } = ret
+          const alleles = makeSimpleAltString(genotype, ref, alt)
+          return {
+            genotype,
 
-          // avoid rendering multiple alt alleles as description, particularly
-          // with Cactus VCF where a large SV has many different ALT alleles.
-          // since descriptions are a join of ALT allele descriptions, just
-          // skip this in this case
-          description: alt.length >= 3 ? 'multiple ALT alleles' : description,
-          length: getBpDisplayStr(length),
+            // alleles is a expanded description, e.g. if genotype is 1/0,
+            // alleles is T/C
+            alleles,
+            featureName: name,
+
+            // avoid rendering multiple alt alleles as description, particularly
+            // with Cactus VCF where a large SV has many different ALT alleles.
+            // since descriptions are a join of ALT allele descriptions, just
+            // skip this in this case
+            description: alt.length >= 3 ? 'multiple ALT alleles' : description,
+            length: getBpDisplayStr(length),
+          }
         }
       }
     }
