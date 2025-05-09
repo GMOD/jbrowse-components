@@ -182,7 +182,7 @@ export function appendToSubMenu({
   }
   let { menuItems: subMenu } = topMenu
   const pathSoFar = [menuPath[0]]
-  menuPath.slice(1).forEach(menuName => {
+  for (const menuName of menuPath.slice(1)) {
     pathSoFar.push(menuName)
     let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
     if (!sm) {
@@ -193,7 +193,7 @@ export function appendToSubMenu({
       throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
     }
     subMenu = sm.subMenu
-  })
+  }
   return subMenu.push(menuItem)
 }
 /**
@@ -229,7 +229,7 @@ export function insertInSubMenu({
   }
   let { menuItems: subMenu } = topMenu
   const pathSoFar = [menuPath[0]]
-  menuPath.slice(1).forEach(menuName => {
+  for (const menuName of menuPath.slice(1)) {
     pathSoFar.push(menuName)
     let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
     if (!sm) {
@@ -240,7 +240,7 @@ export function insertInSubMenu({
       throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
     }
     subMenu = sm.subMenu
-  })
+  }
   subMenu.splice(position, 0, menuItem)
   return subMenu.length
 }

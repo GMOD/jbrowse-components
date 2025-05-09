@@ -68,16 +68,16 @@ module.exports = {
           href: 'https://github.com/GMOD/jbrowse-components',
         },
         {
-          className: 'navbar-social-twitter',
-          alt: 'Twitter',
-          position: 'right',
-          href: 'https://twitter.com/usejbrowse',
-        },
-        {
           className: 'navbar-social-mastodon',
           alt: 'Mastodon',
           position: 'right',
           href: 'https://genomic.social/@usejbrowse',
+        },
+        {
+          className: 'navbar-social-bluesky',
+          alt: 'Bluesky',
+          position: 'right',
+          href: 'https://bsky.app/profile/jbrowse.org',
         },
       ],
     },
@@ -105,8 +105,8 @@ module.exports = {
               href: 'https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im',
             },
             {
-              label: 'Twitter',
-              href: 'https://twitter.com/usejbrowse',
+              label: 'Bluesky',
+              href: 'https://bsky.app/profile/jbrowse.org',
             },
             {
               label: 'Mastodon',

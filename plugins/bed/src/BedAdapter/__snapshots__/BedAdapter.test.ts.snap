@@ -274,6 +274,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 1500,
         "parentId": "test-ctgA-0",
+        "phase": 0,
         "refName": "ctgA",
         "start": 1200,
         "strand": 1,
@@ -283,6 +284,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 3902,
         "parentId": "test-ctgA-0",
+        "phase": 0,
         "refName": "ctgA",
         "start": 2999,
         "strand": 1,
@@ -292,6 +294,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 5500,
         "parentId": "test-ctgA-0",
+        "phase": 0,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -301,6 +304,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 7608,
         "parentId": "test-ctgA-0",
+        "phase": 0,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -342,6 +346,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 1500,
         "parentId": "test-ctgA-1",
+        "phase": 0,
         "refName": "ctgA",
         "start": 1200,
         "strand": 1,
@@ -351,6 +356,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 5500,
         "parentId": "test-ctgA-1",
+        "phase": 0,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -360,6 +366,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 7608,
         "parentId": "test-ctgA-1",
+        "phase": 0,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -410,6 +417,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 3902,
         "parentId": "test-ctgA-2",
+        "phase": 0,
         "refName": "ctgA",
         "start": 3300,
         "strand": 1,
@@ -419,6 +427,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 5500,
         "parentId": "test-ctgA-2",
+        "phase": 0,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -428,6 +437,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 7600,
         "parentId": "test-ctgA-2",
+        "phase": 0,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -469,6 +479,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 18800,
         "parentId": "test-ctgA-3",
+        "phase": 0,
         "refName": "ctgA",
         "start": 17999,
         "strand": 1,
@@ -478,6 +489,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 19500,
         "parentId": "test-ctgA-3",
+        "phase": 0,
         "refName": "ctgA",
         "start": 18999,
         "strand": 1,
@@ -487,6 +499,7 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
       {
         "end": 21200,
         "parentId": "test-ctgA-3",
+        "phase": 0,
         "refName": "ctgA",
         "start": 20999,
         "strand": 1,

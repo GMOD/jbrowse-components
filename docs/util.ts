@@ -70,6 +70,7 @@ export function extractWithComment(
       'stateModel',
       'config',
       'slot',
+      'preProcessSnapshot',
       'identifier',
       'baseConfiguration',
       'property',

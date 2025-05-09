@@ -1,4 +1,4 @@
-import idMaker from '../util/idMaker'
+import { adapterConfigCacheKey } from './util'
 
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationSchemaType } from '../configuration'
@@ -6,10 +6,6 @@ import type { AnyDataAdapter } from './BaseAdapter'
 import type { SnapshotIn } from 'mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
-
-export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
-  return `${idMaker(conf)}`
-}
 
 interface AdapterCacheEntry {
   dataAdapter: AnyDataAdapter
@@ -77,44 +73,39 @@ export async function getAdapter(
 }
 
 /**
- * this is a callback that is passed to adapters that
- * allows them to get any sub-adapters that they need
- * internally, staying with the same worker session ID
+ * this is a callback that is passed to adapters that allows them to get any
+ * sub-adapters that they need internally, staying with the same worker session
+ * ID
  */
 export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
-export function freeAdapterResources(specification: Record<string, any>) {
-  let deleteCount = 0
-  const specKeys = Object.keys(specification)
+export function freeAdapterResources(args: Record<string, any>) {
+  const specKeys = Object.keys(args)
 
+  // TODO: little hacky...should make it an explicit command but:
   // if we don't specify a range, delete any adapters that are only associated
   // with that session
   if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
-    const { sessionId } = specification
-    Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
+    const { sessionId } = args
+    for (const [cacheKey, cacheEntry] of Object.entries(adapterCache)) {
       cacheEntry.sessionIds.delete(sessionId)
       if (cacheEntry.sessionIds.size === 0) {
-        deleteCount += 1
         delete adapterCache[cacheKey]
       }
-    })
+    }
   } else {
     // otherwise call freeResources on all the cached data adapters
-    Object.values(adapterCache).forEach(cacheEntry => {
-      const regions =
-        specification.regions ||
-        (specification.region ? [specification.region] : [])
+    for (const cacheEntry of Object.values(adapterCache)) {
+      const regions = args.regions || (args.region ? [args.region] : [])
       for (const region of regions) {
         if (region.refName !== undefined) {
           cacheEntry.dataAdapter.freeResources(region)
         }
       }
-    })
+    }
   }
-
-  return deleteCount
 }
 
 export function clearAdapterCache() {

@@ -98,13 +98,13 @@ IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
 jexlFilters: types.optional(types.array(types.string), [])
 ```
 
-#### property: hideIndelsSetting
+#### property: hideSmallIndelsSetting
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-hideIndelsSetting: types.maybe(types.boolean)
+hideSmallIndelsSetting: types.maybe(types.boolean)
 ```
 
 ### SharedLinearPileupDisplayMixin - Getters
@@ -121,6 +121,20 @@ any
 ```js
 // type
 any
+```
+
+#### getter: autorunReady
+
+```js
+// type
+boolean
+```
+
+#### getter: hideSmallIndels
+
+```js
+// type
+boolean
 ```
 
 #### getter: rendererConfig
@@ -206,7 +220,7 @@ colorSchemeSubMenuItems: () => { label: string; onClick: () => void; }[]
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 ### SharedLinearPileupDisplayMixin - Actions
@@ -295,4 +309,11 @@ setFilterBy: (filter: FilterBy) => void
 ```js
 // type signature
 setJexlFilters: (filters: string[]) => void
+```
+
+#### action: setHideSmallIndels
+
+```js
+// type signature
+setHideSmallIndels: (arg: boolean) => void
 ```

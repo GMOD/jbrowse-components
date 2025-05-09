@@ -126,6 +126,4 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       ...rest,
     }))
   }
-
-  public freeResources(): void {}
 }

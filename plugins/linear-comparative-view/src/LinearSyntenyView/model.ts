@@ -3,15 +3,17 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import CropFreeIcon from '@mui/icons-material/CropFree'
+import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { saveAs } from 'file-saver'
-import { transaction } from 'mobx'
+import { observable, transaction } from 'mobx'
 import { types } from 'mobx-state-tree'
 
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
+import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
@@ -58,18 +60,43 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCurves: false,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      importFormSyntenyTrackSelections:
+        observable.array<ImportFormSyntenyTrack>(),
+    }))
     .actions(self => ({
       /**
        * #action
        */
-      toggleCurves() {
-        self.drawCurves = !self.drawCurves
+      importFormRemoveRow(idx: number) {
+        self.importFormSyntenyTrackSelections.splice(idx, 1)
       },
       /**
        * #action
        */
-      toggleCIGAR() {
-        self.drawCIGAR = !self.drawCIGAR
+      clearImportFormSyntenyTracks() {
+        self.importFormSyntenyTrackSelections.clear()
+      },
+      /**
+       * #action
+       */
+      setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
+        self.importFormSyntenyTrackSelections[arg] = val
+      },
+      /**
+       * #action
+       */
+      setDrawCurves(arg: boolean) {
+        self.drawCurves = arg
+      },
+      /**
+       * #action
+       */
+      setDrawCIGAR(arg: boolean) {
+        self.drawCIGAR = arg
       },
       /**
        * #action
@@ -122,17 +149,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Draw CIGAR',
-              onClick: self.toggleCIGAR,
               checked: self.drawCIGAR,
               type: 'checkbox',
               description: 'Draws per-base CIGAR level alignments',
+              onClick: () => {
+                self.setDrawCIGAR(!self.drawCIGAR)
+              },
+            },
+            {
+              label: 'Link views',
+              type: 'checkbox',
+              checked: self.linkViews,
+              icon: LinkIcon,
+              onClick: () => {
+                self.setLinkViews(!self.linkViews)
+              },
             },
             {
               label: 'Use curved lines',
               type: 'checkbox',
               checked: self.drawCurves,
-              onClick: self.toggleCurves,
               icon: Curves,
+              onClick: () => {
+                self.setDrawCurves(!self.drawCurves)
+              },
             },
             {
               label: 'Export SVG',
@@ -140,7 +180,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: (): void => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -158,7 +201,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },

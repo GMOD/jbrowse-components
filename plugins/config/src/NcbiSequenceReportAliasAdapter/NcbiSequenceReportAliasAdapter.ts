@@ -14,18 +14,31 @@ export default class NcbiSequenceReportAliasAdapter
     }
     const override = this.getConf('useUcscNameOverride')
     const results = await openLocation(loc, this.pluginManager).readFile('utf8')
-    return results
+    const lines = results
       .split(/\n|\r\n|\r/)
-      .slice(1)
       .filter(f => !!f.trim())
       .map(row => row.split('\t'))
+
+    const r = lines[0] || []
+    const idx0 = r.indexOf('GenBank seq accession')
+    const idx1 = r.indexOf('RefSeq seq accession')
+    const idx2 = r.indexOf('UCSC style name')
+    const idx3 = r.indexOf('Sequence name')
+    if (idx0 === -1 || idx1 === -1 || idx2 === -1) {
+      throw new Error(
+        'Header line must include "GenBank seq accession", "RefSeq seq accession", "UCSC style name", and "Sequence name"',
+      )
+    }
+    return lines
+      .slice(1)
+      .filter(cols => !!cols[idx2] || !!cols[idx3])
       .map(cols => ({
-        refName: cols[12]!,
-        aliases: [cols[9], cols[6]].filter((f): f is string => !!f),
+        refName: (cols[idx2] || cols[idx3])!,
+        aliases: [cols[idx0], cols[idx1], cols[idx2], cols[idx3]].filter(
+          (f): f is string => !!f,
+        ),
         override,
       }))
       .filter(f => !!f.refName)
   }
-
-  async freeResources() {}
 }

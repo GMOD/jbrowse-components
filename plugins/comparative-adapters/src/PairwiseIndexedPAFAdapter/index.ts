@@ -14,7 +14,7 @@ export default function PairwiseIndexedPAFAdapterF(
         displayName: 'Pairwise indexed PAF adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () =>
           import('./PairwiseIndexedPAFAdapter').then(r => r.default),

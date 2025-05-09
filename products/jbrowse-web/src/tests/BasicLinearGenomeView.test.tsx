@@ -27,7 +27,7 @@ test('click and drag to move sideways', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   await findAllByText('ctgA', ...opts)
   const start = view.offsetPx
-  const track = await findByTestId('trackContainer', ...opts)
+  const track = await findByTestId('tracksContainer', ...opts)
   fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
   fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
   fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
@@ -159,7 +159,7 @@ test('test choose option from dropdown refName autocomplete', async () => {
   autocomplete.focus()
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.click((await screen.findAllByText('ctgB'))[0]!)
+  fireEvent.click((await screen.findAllByText(/ctgB/))[0]!)
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
   await waitFor(() => {

@@ -18,13 +18,14 @@ import SessionLoader from '../SessionLoader'
 import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
 
-import type { SessionLoaderModel, SessionTriagedInfo } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
-const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
+const SessionTriaged = lazy(() => import('./SessionTriaged'))
 const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
+// return value if defined, else convert null to undefined for use with
+// types.maybe
 function normalize<T>(param: T | null | undefined) {
   return param === null ? undefined : param
 }
@@ -42,6 +43,7 @@ export function Loader({
   const [password, setPassword] = useQueryParam('password', Str)
   const [loc, setLoc] = useQueryParam('loc', Str)
   const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
+  const [hubURL, setHubURL] = useQueryParam('hubURL', Str)
   const [assembly, setAssembly] = useQueryParam('assembly', Str)
   const [tracks, setTracks] = useQueryParam('tracks', Str)
   const [highlight, setHighlight] = useQueryParam('highlight', Str)
@@ -60,6 +62,7 @@ export function Loader({
     tracklist: JSON.parse(normalize(tracklist) || 'false'),
     highlight: normalize(highlight),
     nav: JSON.parse(normalize(nav) || 'true'),
+    hubURL: normalize(hubURL?.split(',')),
     initialTimestamp,
   })
 
@@ -69,50 +72,24 @@ export function Loader({
     setAssembly(undefined, 'replaceIn')
     setPassword(undefined, 'replaceIn')
     setSessionTracks(undefined, 'replaceIn')
+    setHubURL(undefined, 'replaceIn')
     setTrackList(undefined, 'replaceIn')
     setNav(undefined, 'replaceIn')
     setHighlight(undefined, 'replaceIn')
   }, [
     setAssembly,
+    setHighlight,
     setLoc,
     setNav,
-    setTrackList,
-    setTracks,
     setPassword,
     setSessionTracks,
-    setHighlight,
+    setHubURL,
+    setTrackList,
+    setTracks,
   ])
 
   return <Renderer loader={loader} />
 }
-
-const SessionTriaged = observer(function ({
-  sessionTriaged,
-  loader,
-}: {
-  loader: SessionLoaderModel
-  sessionTriaged: SessionTriagedInfo
-}) {
-  return (
-    <Suspense fallback={null}>
-      {sessionTriaged.origin === 'session' ? (
-        <SessionWarningDialog
-          loader={loader}
-          handleClose={() => {
-            loader.setSessionTriaged(undefined)
-          }}
-        />
-      ) : (
-        <ConfigWarningDialog
-          loader={loader}
-          handleClose={() => {
-            loader.setSessionTriaged(undefined)
-          }}
-        />
-      )}
-    </Suspense>
-  )
-})
 
 const Renderer = observer(function ({
   loader,
@@ -124,11 +101,9 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    let pm: PluginManager | undefined
     try {
       if (ready) {
-        pm = createPluginManager(loader)
-        setPluginManager(pm)
+        setPluginManager(createPluginManager(loader))
       }
     } catch (e) {
       console.error(e)

@@ -78,20 +78,20 @@ false
 linkViews: false
 ```
 
-#### property: interactToggled
+#### property: interactiveOverlay
 
 ```js
 // type signature
-false
+true
 // code
-interactToggled: false
+interactiveOverlay: true
 ```
 
 #### property: views
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -182,32 +182,25 @@ menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onC
 setWidth: (newWidth: number) => void
 ```
 
-#### action: removeView
+#### action: setInteractiveOverlay
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
+setInteractiveOverlay: (arg: boolean) => void
 ```
 
-#### action: toggleInteract
+#### action: setShowIntraviewLinks
 
 ```js
 // type signature
-toggleInteract: () => void
+setShowIntraviewLinks: (arg: boolean) => void
 ```
 
-#### action: toggleIntraviewLinks
+#### action: setLinkViews
 
 ```js
 // type signature
-toggleIntraviewLinks: () => void
-```
-
-#### action: toggleLinkViews
-
-```js
-// type signature
-toggleLinkViews: () => void
+setLinkViews: (arg: boolean) => void
 ```
 
 #### action: setMatchedTrackFeatures

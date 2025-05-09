@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderAlignment } from './renderAlignment'
 import { renderMismatches } from './renderMismatches'
@@ -49,26 +49,21 @@ export function makeImageData({
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
   const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
-  const colorForBase = getColorBaseMap(theme)
-  const contrastForBase = getContrastBaseMap(theme)
+  const colorMap = getColorBaseMap(theme)
+  const colorContrastMap = getContrastBaseMap(theme)
   ctx.font = 'bold 10px Courier New,monospace'
 
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
-  let start = performance.now()
-  for (const feat of layoutRecords) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
+  forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
     renderAlignment({
       ctx,
       feat,
       renderArgs,
       defaultColor,
-      colorForBase,
-      contrastForBase,
+      colorMap,
+      colorContrastMap,
       charWidth,
       charHeight,
       canvasWidth,
@@ -85,8 +80,8 @@ export function makeImageData({
       minSubfeatureWidth,
       charWidth,
       charHeight,
-      colorForBase,
-      contrastForBase,
+      colorMap,
+      colorContrastMap,
       canvasWidth,
     })
     if (showSoftClip) {
@@ -94,12 +89,12 @@ export function makeImageData({
         ctx,
         feat,
         renderArgs,
-        colorForBase,
+        colorMap,
         config,
         theme,
         canvasWidth,
       })
     }
-  }
+  })
   return undefined
 }

@@ -71,6 +71,4 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { region } */): void {}
 }

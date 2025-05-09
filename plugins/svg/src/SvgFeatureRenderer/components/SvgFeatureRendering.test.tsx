@@ -1167,3 +1167,52 @@ test('svg selected', () => {
 
   expect(container).toMatchSnapshot()
 })
+
+test('gene with CDS children', () => {
+  const { container } = render(
+    <Rendering
+      blockKey="hello"
+      colorByCDS={false}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
+      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
+      features={
+        new Map([
+          [
+            'one',
+            new SimpleFeature({
+              refName: 'zonk',
+              type: 'gene',
+              start: 5975,
+              end: 9744,
+              strand: 1,
+              uniqueId: 'one',
+              subfeatures: [
+                {
+                  refName: 'zonk',
+                  type: 'CDS',
+                  start: 6110,
+                  end: 6148,
+                  strand: 1,
+                },
+                {
+                  refName: 'zonk',
+                  type: 'CDS',
+                  start: 6615,
+                  end: 6683,
+                  strand: 1,
+                },
+              ],
+            }),
+          ],
+        ])
+      }
+      config={SvgRendererConfigSchema.create({})}
+      bpPerPx={3}
+    />,
+  )
+
+  expect(container).toMatchSnapshot()
+})

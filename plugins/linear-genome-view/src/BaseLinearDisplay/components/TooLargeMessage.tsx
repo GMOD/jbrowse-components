@@ -1,10 +1,12 @@
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
+import { isAlive } from 'mobx-state-tree'
 
 import BlockMsg from '../components/BlockMsg'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-function TooLargeMessage({
+const TooLargeMessage = observer(function ({
   model,
 }: {
   model: {
@@ -21,8 +23,10 @@ function TooLargeMessage({
       action={
         <Button
           onClick={() => {
-            model.setFeatureDensityStatsLimit(model.featureDensityStats)
-            model.reload()
+            if (isAlive(model)) {
+              model.setFeatureDensityStatsLimit(model.featureDensityStats)
+              model.reload()
+            }
           }}
         >
           Force load
@@ -36,6 +40,6 @@ function TooLargeMessage({
         .join('. ')}
     />
   )
-}
+})
 
 export default TooLargeMessage

@@ -147,7 +147,7 @@ vview: types.optional(DotplotVView, {})
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: AnyConfigurationSchemaType; minimized: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: AnyConfigurationSchemaType; minimized: IType<...>; pinned: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 tracks: types.array(
           pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
@@ -258,10 +258,31 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; } | { label: string; onClick: () => void; icon?: undefined; } | { ...; })[]
+menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => Widget; icon: (props: SvgIconProps) => Element; })[]
 ```
 
 ### DotplotView - Actions
+
+#### action: importFormRemoveRow
+
+```js
+// type signature
+importFormRemoveRow: (idx: number) => void
+```
+
+#### action: clearImportFormSyntenyTracks
+
+```js
+// type signature
+clearImportFormSyntenyTracks: () => void
+```
+
+#### action: setImportFormSyntenyTrack
+
+```js
+// type signature
+setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
+```
 
 #### action: setShowPanButtons
 

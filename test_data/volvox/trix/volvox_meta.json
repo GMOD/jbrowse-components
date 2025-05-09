@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2024-10-14T14:42:44.177Z",
+  "dateCreated": "2025-03-13T01:08:37.901Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -25,16 +25,7 @@
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "volvox.dup.renamed.vcf.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.dup.renamed.vcf.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        }
+        "uri": "volvox.dup.renamed.vcf.gz"
       }
     },
     {
@@ -45,6 +36,10 @@
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "samplesTsvLocation": {
+          "uri": "1000genomes.tsv",
           "locationType": "UriLocation"
         },
         "index": {

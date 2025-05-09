@@ -17,4 +17,5 @@ git clone git@github.com:GMOD/jbrowse-react-app-vite-demo
 git clone git@github.com:GMOD/jbrowse-react-app-farm-demo
 git clone git@github.com:GMOD/jbrowse-react-app-rsbuild-demo
 git clone git@github.com:GMOD/jbrowse-react-app-cra5-demo
+git clone git@github.com:GMOD/jbrowse-react-app-vanillajs-demo
 cd -

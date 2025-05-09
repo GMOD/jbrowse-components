@@ -1,4 +1,5 @@
 import {
+  offset,
   useClientPoint,
   useFloating,
   useInteractions,
@@ -21,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.common.white,
     fontFamily: theme.typography.fontFamily,
     padding: '4px 8px',
-    fontSize: theme.typography.pxToRem(12),
+    fontSize: theme.typography.fontSize,
     lineHeight: `${round(14 / 10)}em`,
     maxWidth: 300,
     wordWrap: 'break-word',
@@ -43,6 +44,7 @@ export default function BaseTooltip({
   const { refs, floatingStyles, context } = useFloating({
     placement,
     strategy: 'fixed',
+    middleware: [offset(5)],
   })
 
   const clientPoint = useClientPoint(context, clientPointCoords)

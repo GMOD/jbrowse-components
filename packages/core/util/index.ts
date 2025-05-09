@@ -763,6 +763,10 @@ export function shorten(name: string, max = 70, short = 30) {
     : name
 }
 
+export function shorten2(name: string, max = 70) {
+  return name.length > max ? `${name.slice(0, max)}...` : name
+}
+
 export function stringify(
   {
     refName,
@@ -851,9 +855,9 @@ export function reverse(str: string) {
 
 export function complement(str: string) {
   let comp = ''
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < str.length; i++) {
-    comp += complementTable[str[i]!] ?? str[i]
+
+  for (const element of str) {
+    comp += complementTable[element] ?? element
   }
   return comp
 }
@@ -977,7 +981,7 @@ export const defaultCodonTable = {
  */
 export function generateCodonTable(table: any) {
   const tempCodonTable: Record<string, string> = {}
-  Object.keys(table).forEach(codon => {
+  for (const codon of Object.keys(table)) {
     const aa = table[codon]
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
@@ -997,7 +1001,7 @@ export function generateCodonTable(table: any) {
         }
       }
     }
-  })
+  }
   return tempCodonTable
 }
 
@@ -1103,13 +1107,26 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
-export function getBpDisplayStr(totalBp: number) {
-  if (Math.floor(totalBp / 1_000_000) > 0) {
-    return `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
-  } else if (Math.floor(totalBp / 1_000) > 0) {
-    return `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+export function getBpDisplayStr(total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${r(total / 1_000_000)}Mbp`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${r(total / 1_000)}Kbp`
   } else {
-    return `${toLocale(Math.floor(totalBp))}bp`
+    return `${Math.floor(total)}bp`
+  }
+}
+
+function r(s: number) {
+  return toLocale(Number.parseFloat(s.toPrecision(3)))
+}
+export function getProgressDisplayStr(current: number, total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${r(current / 1_000_000)}/${r(total / 1_000_000)}Mb`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${r(current / 1_000)}/${r(total / 1_000)}Kb`
+  } else {
+    return `${r(current)}/${r(total)}}bytes`
   }
 }
 
@@ -1164,6 +1181,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =
+        // eslint-disable-next-line unicorn/no-instanceof-builtins
         value instanceof Function ? value(storedValue) : value
       setStoredValue(valueToStore)
       if (typeof window !== 'undefined') {
@@ -1252,7 +1270,7 @@ export function localStorageSetItem(str: string, item: string) {
   }
 }
 
-export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
+export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
     max = Math.max(entry, max)
@@ -1260,7 +1278,7 @@ export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   return max
 }
 
-export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
+export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
     min = Math.min(entry, min)
@@ -1268,7 +1286,7 @@ export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   return min
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: Iterable<number>) {
   let sum = 0
   for (const entry of arr) {
     sum += entry
@@ -1407,11 +1425,59 @@ export async function fetchAndMaybeUnzip(
     : buf
 }
 
+export async function fetchAndMaybeUnzipText(
+  loc: GenericFilehandle,
+  opts?: BaseOptions,
+) {
+  const buffer = await fetchAndMaybeUnzip(loc, opts)
+  // 512MB  max chrome string length is 512MB
+  if (buffer.length > 536_870_888) {
+    throw new Error('Data exceeds maximum string length (512MB)')
+  }
+  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
+}
+
 // MIT https://github.com/inspect-js/is-object
 export function isObject(
   x: unknown,
 ): x is Record<string | symbol | number, unknown> {
   return typeof x === 'object' && x !== null
+}
+
+export function localStorageGetNumber(key: string, defaultVal: number) {
+  return +(localStorageGetItem(key) ?? defaultVal)
+}
+
+export function localStorageGetBoolean(key: string, defaultVal: boolean) {
+  return Boolean(
+    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
+  )
+}
+
+export function forEachWithStopTokenCheck<T>(
+  iter: Iterable<T>,
+  stopToken: string | undefined,
+  arg: (arg: T, idx: number) => void,
+  durationMs = 400,
+) {
+  let start = performance.now()
+  let i = 0
+  for (const t of iter) {
+    if (performance.now() - start > durationMs) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
+    arg(t, i++)
+  }
+}
+
+export function testAdapter(
+  fileName: string,
+  regex: RegExp,
+  adapterHint: string | undefined,
+  expected: string,
+) {
+  return (regex.test(fileName) && !adapterHint) || adapterHint === expected
 }
 
 export {

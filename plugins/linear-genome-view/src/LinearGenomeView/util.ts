@@ -1,6 +1,7 @@
-import { parseLocString } from '@jbrowse/core/util'
+import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
@@ -91,11 +92,17 @@ export function makeTicks(
  *
  * Used by navToLocations and navToLocString
  */
-export async function generateLocations(
-  regions: ParsedLocString[],
-  assemblyManager: AssemblyManager,
-  assemblyName?: string,
-) {
+export async function generateLocations({
+  regions,
+  assemblyManager,
+  assemblyName,
+  grow,
+}: {
+  regions: ParsedLocString[]
+  assemblyManager: AssemblyManager
+  assemblyName?: string
+  grow?: number
+}) {
   return Promise.all(
     regions.map(async region => {
       const asmName = region.assemblyName || assemblyName
@@ -120,10 +127,23 @@ export async function generateLocations(
         throw new Error(`Could not find refName ${refName} in ${asmName}`)
       }
 
-      return {
-        ...(region as Omit<typeof region, symbol>),
-        assemblyName: asmName,
-        parentRegion,
+      const { start, end } = region
+      if (grow && start && end) {
+        const len = end - start
+        const margin = len * grow
+        return {
+          ...(region as Omit<typeof region, symbol>),
+          start: Math.max(0, start - margin),
+          end: end + margin,
+          assemblyName: asmName,
+          parentRegion,
+        }
+      } else {
+        return {
+          ...(region as Omit<typeof region, symbol>),
+          assemblyName: asmName,
+          parentRegion,
+        }
       }
     }),
   )
@@ -172,5 +192,25 @@ export function parseLocStrings(
       ]
     }
     throw e
+  }
+}
+
+export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
+  if (!contentBlocks.length) {
+    return ''
+  } else {
+    const isSingleAssemblyName = contentBlocks.every(
+      b => b.assemblyName === contentBlocks[0]!.assemblyName,
+    )
+    const locs = contentBlocks.map(block =>
+      assembleLocString({
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
+        ...block,
+        start: Math.round(block.start),
+        end: Math.round(block.end),
+        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+      }),
+    )
+    return locs.join(' ')
   }
 }

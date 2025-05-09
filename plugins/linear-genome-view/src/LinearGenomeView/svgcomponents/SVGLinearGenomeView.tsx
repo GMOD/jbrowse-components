@@ -16,7 +16,8 @@ import SVGHeader from './SVGHeader'
 import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
 
-import type { ExportSvgOptions, LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { ExportSvgOptions } from '../types'
 
 type LGV = LinearGenomeViewModel
 
@@ -37,13 +38,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const { allThemes } = session
 
   const theme = allThemes?.()[themeName]
-  const { width, tracks, showCytobands } = model
+  const { width, pinnedTracks, unpinnedTracks, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
   const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
   const displayResults = await Promise.all(
-    tracks.map(async track => {
+    [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
       await when(() => !display.renderProps().notReady)
       return { track, result: await display.renderSvg({ ...opts, theme }) }

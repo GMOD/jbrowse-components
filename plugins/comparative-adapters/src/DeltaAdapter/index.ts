@@ -12,7 +12,7 @@ export default function DeltaAdapterF(pluginManager: PluginManager) {
         displayName: 'MUMmer delta adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () => import('./DeltaAdapter').then(r => r.default),
       }),

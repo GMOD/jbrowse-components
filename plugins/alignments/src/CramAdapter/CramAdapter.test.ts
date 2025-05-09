@@ -20,15 +20,15 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   }
 }
 
-test('adapter can fetch features from volvox-sorted.cram', async () => {
-  const adapter = new Adapter(
+function makeAdapter(arg: string) {
+  return new Adapter(
     configSchema.create({
       cramLocation: {
-        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        localPath: require.resolve(arg),
         locationType: 'LocalPathLocation',
       },
       craiLocation: {
-        localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        localPath: require.resolve(`${arg}.crai`),
         locationType: 'LocalPathLocation',
       },
       sequenceAdapter: {},
@@ -36,6 +36,10 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
     getVolvoxSequenceSubAdapter,
     pluginManager,
   )
+}
+
+test('adapter can fetch features from volvox-sorted.cram', async () => {
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
@@ -57,22 +61,7 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 })
 
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
-  const adapter = new Adapter(
-    configSchema.create({
-      cramLocation: {
-        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
-        locationType: 'LocalPathLocation',
-      },
-      craiLocation: {
-        localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
-        locationType: 'LocalPathLocation',
-      },
-      sequenceAdapter: {},
-    }),
-    getVolvoxSequenceSubAdapter,
-    pluginManager,
-  )
-
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',

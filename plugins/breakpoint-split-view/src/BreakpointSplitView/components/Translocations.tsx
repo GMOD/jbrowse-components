@@ -7,7 +7,8 @@ import { getSnapshot } from 'mobx-state-tree'
 import { getMatchedTranslocationFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
-import type { BreakpointViewModel, LayoutRecord } from '../model'
+import type { BreakpointViewModel } from '../model'
+import type { LayoutRecord } from '../types'
 
 const [LEFT] = [0, 1, 2, 3] as const
 
@@ -32,7 +33,7 @@ const Translocations = observer(function ({
   parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
-  const { views } = model
+  const { interactiveOverlay, views } = model
   const session = getSession(model)
   const { assemblyManager } = session
   const totalFeatures = model.getTrackFeatures(trackId)
@@ -130,6 +131,7 @@ const Translocations = observer(function ({
               <path
                 d={path}
                 key={JSON.stringify(path)}
+                pointerEvents={interactiveOverlay ? 'auto' : undefined}
                 strokeWidth={id === mouseoverElt ? 10 : 5}
                 onClick={() => {
                   const featureWidget = session.addWidget?.(

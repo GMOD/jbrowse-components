@@ -2,6 +2,7 @@ import { transaction } from 'mobx'
 import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../configuration'
+import { adapterConfigCacheKey } from '../../data_adapters/util'
 import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
@@ -57,6 +58,10 @@ export function createBaseTrackModel(
       /**
        * #property
        */
+      pinned: false,
+      /**
+       * #property
+       */
       displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
@@ -65,7 +70,10 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        return self.configuration.trackId
+        const adapter = getConf(self, 'adapter')
+        return adapter
+          ? adapterConfigCacheKey(adapter)
+          : self.configuration.trackId
       },
       /**
        * #getter
@@ -78,6 +86,13 @@ export function createBaseTrackModel(
        */
       get textSearchAdapter() {
         return getConf(self, 'textSearchAdapter')
+      },
+
+      /**
+       * #getter
+       */
+      get adapterConfig() {
+        return getConf(self, 'adapter')
       },
 
       /**
@@ -119,6 +134,12 @@ export function createBaseTrackModel(
       /**
        * #action
        */
+      setPinned(flag: boolean) {
+        self.pinned = flag
+      },
+      /**
+       * #action
+       */
       setMinimized(flag: boolean) {
         self.minimized = flag
       },
@@ -149,7 +170,9 @@ export function createBaseTrackModel(
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
         const t = self.displays.filter(d => d.configuration === conf)
         transaction(() => {
-          t.forEach(d => self.displays.remove(d))
+          for (const d of t) {
+            self.displays.remove(d)
+          }
         })
         return t.length
       },

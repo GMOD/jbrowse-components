@@ -3,6 +3,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   assembleLocString,
@@ -11,6 +12,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
+  localStorageGetBoolean,
   localStorageGetItem,
   localStorageSetItem,
   measureText,
@@ -23,6 +25,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -45,7 +48,11 @@ import {
 } from 'mobx-state-tree'
 
 import Header from './components/Header'
-import { generateLocations, parseLocStrings } from './util'
+import {
+  calculateVisibleLocStrings,
+  generateLocations,
+  parseLocStrings,
+} from './util'
 import { handleSelectedRegion } from '../searchUtils'
 import MiniControls from './components/MiniControls'
 import {
@@ -56,6 +63,13 @@ import {
   SCALE_BAR_HEIGHT,
 } from './consts'
 
+import type {
+  BpOffset,
+  ExportSvgOptions,
+  HighlightType,
+  InitState,
+  NavLocation,
+} from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -78,63 +92,6 @@ const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
 const SearchResultsDialog = lazy(
   () => import('./components/SearchResultsDialog'),
 )
-
-export interface BpOffset {
-  refName?: string
-  index: number
-  offset: number
-  start?: number
-  end?: number
-  coord?: number
-  reversed?: boolean
-  assemblyName?: string
-  oob?: boolean
-}
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
-  paddingHeight?: number
-  headerHeight?: number
-  cytobandHeight?: number
-  trackLabels?: string
-  themeName?: string
-}
-
-export interface HighlightType {
-  start: number
-  end: number
-  assemblyName: string
-  refName: string
-}
-
-function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
-  if (!contentBlocks.length) {
-    return ''
-  }
-  const isSingleAssemblyName = contentBlocks.every(
-    b => b.assemblyName === contentBlocks[0]!.assemblyName,
-  )
-  const locs = contentBlocks.map(block =>
-    assembleLocString({
-      ...block,
-      start: Math.round(block.start),
-      end: Math.round(block.end),
-      assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-    }),
-  )
-  return locs.join(' ')
-}
-
-export interface NavLocation {
-  refName: string
-  start?: number
-  end?: number
-  assemblyName?: string
-}
 
 /**
  * #stateModel LinearGenomeView
@@ -218,9 +175,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "center line"
          */
         showCenterLine: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
-          ),
+          localStorageGetBoolean('lgv-showCenterLine', false),
         ),
 
         /**
@@ -228,9 +183,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "cytobands" in the overview scale bar
          */
         showCytobandsSetting: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showCytobands', true),
         ),
 
         /**
@@ -266,7 +219,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * color by CDS
          */
         colorByCDS: types.optional(types.boolean, () =>
-          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+          localStorageGetBoolean('lgv-colorByCDS', false),
         ),
 
         /**
@@ -274,10 +227,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * color by CDS
          */
         showTrackOutlines: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
+        /**
+         * #property
+         * this is a non-serialized property that can be used for loading the
+         * linear genome view via session snapshots
+         * example:
+         * ```json
+         * {
+         *   loc: "chr1:1,000,000-2,000,000"
+         *   assembly: "hg19"
+         *   tracks: ["genes", "variants"]
+         * }
+         * ```
+         */
+        init: types.frozen<InitState | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -332,6 +297,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       */
+      get pinnedTracks() {
+        return self.tracks.filter(t => t.pinned)
+      },
+      /**
+       * #getter
+       */
+      get unpinnedTracks() {
+        return self.tracks.filter(t => !t.pinned)
+      },
+      /**
+       * #getter
        * this is the effective value of the track labels setting, incorporating
        * both the config and view state. use this instead of view.trackLabels
        */
@@ -367,6 +344,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
+      },
+      get stickyViewHeaders() {
+        const session = getSession(self)
+        return isSessionWithMultipleViews(session)
+          ? session.stickyViewHeaders
+          : false
+      },
+
+      get rubberbandTop() {
+        let pinnedTracksTop = 0
+        if (this.stickyViewHeaders) {
+          pinnedTracksTop = VIEW_HEADER_HEIGHT
+          if (!self.hideHeader) {
+            pinnedTracksTop += HEADER_BAR_HEIGHT
+            if (!self.hideHeaderOverview) {
+              pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+            }
+          }
+        }
+        return pinnedTracksTop
+      },
+
+      get pinnedTracksTop() {
+        return this.rubberbandTop + SCALE_BAR_HEIGHT
       },
     }))
     .views(self => ({
@@ -454,11 +455,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get headerHeight() {
         if (self.hideHeader) {
           return 0
-        }
-        if (self.hideHeaderOverview) {
+        } else if (self.hideHeaderOverview) {
           return HEADER_BAR_HEIGHT
+        } else {
+          return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
         }
-        return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
 
       /**
@@ -572,17 +573,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * does nothing currently
        */
       rankSearchResults(results: BaseResult[]) {
-        // order of rank
-        const openTrackIds = new Set(
-          self.tracks.map(track => track.configuration.trackId),
-        )
-        for (const result of results) {
-          if (openTrackIds.has(result.trackId)) {
-            result.updateScore(result.getScore() + 1)
-          }
-        }
         return results
       },
 
@@ -591,7 +584,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * modifies view menu action onClick to apply to all tracks of same type
        */
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
-        viewMenuActions.forEach(action => {
+        for (const action of viewMenuActions) {
           // go to lowest level menu
           if ('subMenu' in action) {
             this.rewriteOnClicks(trackType, action.subMenu)
@@ -599,28 +592,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if ('onClick' in action) {
             const holdOnClick = action.onClick
             action.onClick = (...args: unknown[]) => {
-              self.tracks.forEach(track => {
+              for (const track of self.tracks) {
                 if (track.type === trackType) {
                   holdOnClick.apply(track, [track, ...args])
                 }
-              })
+              }
             }
           }
-        })
+        }
       },
       /**
        * #getter
        */
       get trackTypeActions() {
         const allActions = new Map<string, MenuItem[]>()
-        self.tracks.forEach(track => {
+        for (const track of self.tracks) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = structuredClone(track.viewMenuActions)
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }
-        })
+        }
 
         return allActions
       },
@@ -840,11 +833,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
     }))
     .actions(self => ({
@@ -987,6 +982,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
           ...region,
           start: Math.floor(region.start),
           end: Math.ceil(region.end),
@@ -1082,6 +1078,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // mobx-state-tree snapshot
         self.scrollTo(0)
         self.zoomTo(10)
+      },
+
+      /**
+       * #action
+       */
+      setInit(arg?: InitState) {
+        self.init = arg
       },
 
       /**
@@ -1363,7 +1366,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               { type: 'divider' },
               { type: 'subHeader', label: key },
             )
-            value.forEach(action => menuItems.push(action))
+            for (const action of value) {
+              menuItems.push(action)
+            }
           }
         }
 
@@ -1409,6 +1414,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.dynamicBlocks.contentBlocks.map(
             block =>
               ({
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
@@ -1442,31 +1448,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
       },
-
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              if (self.initialized) {
-                this.setCoarseDynamicBlocks(self.dynamicBlocks)
-              }
-            },
-            { delay: 150 },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
-            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
-            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-          }),
-        )
-      },
     }))
     .actions(self => ({
       /**
@@ -1490,7 +1471,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param optAssemblyName - (optional) the assembly name to use when
        * navigating to the locstring
        */
-      async navToLocString(input: string, optAssemblyName?: string) {
+      async navToLocString(
+        input: string,
+        optAssemblyName?: string,
+        grow?: number,
+      ) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const assemblyName = optAssemblyName || assemblyNames[0]!
@@ -1503,6 +1488,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyManager.isValidRefName(ref, asm),
           ),
           assemblyName,
+          grow,
         )
       },
 
@@ -1528,22 +1514,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Similar to `navToLocString`, but accepts parsed location objects
-       * instead of strings. Will try to perform `setDisplayedRegions` if
+       * Similar to `navToLocString`, but accepts a parsed location object
+       * instead of a locstring. Will try to perform `setDisplayedRegions` if
        * changing regions
        */
-      async navToLocations(
-        parsedLocStrings: ParsedLocString[],
+      async navToLocation(
+        parsedLocString: ParsedLocString,
         assemblyName?: string,
+        grow?: number,
+      ) {
+        return this.navToLocations([parsedLocString], assemblyName, grow)
+      },
+
+      /**
+       * #action
+       * Similar to `navToLocString`, but accepts a list of parsed location
+       * objects instead of a locstring. Will try to perform
+       * `setDisplayedRegions` if changing regions
+       */
+      async navToLocations(
+        regions: ParsedLocString[],
+        assemblyName?: string,
+        grow?: number,
       ) {
         const { assemblyManager } = getSession(self)
         await when(() => self.volatileWidth !== undefined)
-
-        const locations = await generateLocations(
-          parsedLocStrings,
+        const locations = await generateLocations({
+          regions,
           assemblyManager,
           assemblyName,
-        )
+          grow,
+        })
 
         if (locations.length === 1) {
           const loc = locations[0]!
@@ -1770,6 +1771,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
           document.removeEventListener('keydown', handler)
         })
       },
+
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const { init } = self
+            if (init) {
+              self
+                .navToLocString(init.loc, init.assembly)
+                .catch((e: unknown) => {
+                  getSession(self).notifyError(`${e}`, e)
+                })
+
+              init.tracks?.map(t => self.showTrack(t))
+
+              // clear init state
+              self.setInit(undefined)
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.initialized) {
+                self.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
+            },
+            { delay: 150 },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+          }),
+        )
+      },
     }))
     .preProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -1785,6 +1829,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...rest,
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      } else {
+        const { init, ...rest } = snap as Omit<typeof snap, symbol>
+        return rest
+      }
+    })
 }
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
@@ -1797,6 +1850,5 @@ export {
 
 export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'
 export { default as SearchBox } from './components/SearchBox'
-export { default as ZoomControls } from './components/ZoomControls'
 
 export { renderToSvg } from './svgcomponents/SVGLinearGenomeView'

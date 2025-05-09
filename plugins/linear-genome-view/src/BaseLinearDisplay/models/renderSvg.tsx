@@ -10,10 +10,8 @@ import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { getId } from './util'
 
 import type { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
-import type {
-  ExportSvgOptions,
-  LinearGenomeViewModel,
-} from '../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { ExportSvgOptions } from '../../LinearGenomeView/types'
 import type { ThemeOptions } from '@mui/material'
 
 export async function renderBaseLinearDisplaySvg(

@@ -144,9 +144,7 @@ show the "center line"
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCenterLine: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
-          ),
+          localStorageGetBoolean('lgv-showCenterLine', false),
         )
 ```
 
@@ -159,9 +157,7 @@ show the "cytobands" in the overview scale bar
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCytobandsSetting: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showCytobands', true),
         )
 ```
 
@@ -216,7 +212,7 @@ color by CDS
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 colorByCDS: types.optional(types.boolean, () =>
-          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+          localStorageGetBoolean('lgv-colorByCDS', false),
         )
 ```
 
@@ -229,13 +225,37 @@ color by CDS
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showTrackOutlines: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showTrackOutlines', true),
         )
 ```
 
+#### property: init
+
+this is a non-serialized property that can be used for loading the linear genome
+view as an alternative
+
+```js
+// type signature
+IType<InitState, InitState, InitState>
+// code
+init: types.frozen<InitState | undefined>()
+```
+
 ### LinearGenomeView - Getters
+
+#### getter: pinnedTracks
+
+```js
+// type
+any[]
+```
+
+#### getter: unpinnedTracks
+
+```js
+// type
+any[]
+```
 
 #### getter: trackLabelsSetting
 
@@ -878,6 +898,13 @@ this "clears the view" and makes the view return to the import form
 clearView: () => void
 ```
 
+#### action: setInit
+
+```js
+// type signature
+setInit: (arg?: InitState) => void
+```
+
 #### action: slide
 
 perform animated slide
@@ -933,10 +960,21 @@ is returned. Will pop up a search dialog if multiple results are returned
 navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promis...
 ```
 
+#### action: navToLocation
+
+Similar to `navToLocString`, but accepts a parsed location object instead of a
+locstring. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string) => Promise<any>
+```
+
 #### action: navToLocations
 
-Similar to `navToLocString`, but accepts parsed location objects instead of
-strings. Will try to perform `setDisplayedRegions` if changing regions
+Similar to `navToLocString`, but accepts a list of parsed location objects
+instead of a locstring. Will try to perform `setDisplayedRegions` if changing
+regions
 
 ```js
 // type signature

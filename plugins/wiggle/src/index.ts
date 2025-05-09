@@ -1,9 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { getFileName } from '@jbrowse/core/util/tracks'
 
 import BigWigAdapterF from './BigWigAdapter'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
 import DensityRendererF from './DensityRenderer'
+import GuessAdapterF from './GuessAdapter'
 import LinePlotRendererF from './LinePlotRenderer'
 import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
@@ -21,6 +21,8 @@ import MultiXYPlotRendererF from './MultiXYPlotRenderer'
 import QuantitativeTrackF from './QuantitativeTrack'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import {
+  MultiWiggleClusterScoreMatrix,
+  MultiWiggleGetScoreMatrix,
   MultiWiggleGetSources,
   WiggleGetGlobalQuantitativeStats,
   WiggleGetMultiRegionQuantitativeStats,
@@ -33,11 +35,6 @@ import XYPlotRendererF, {
 import * as utils from './util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
@@ -59,45 +56,13 @@ export default class WigglePlugin extends Plugin {
     MultiRowLineRendererF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
-
-    pm.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (cb: AdapterGuesser) => {
-        return (file: FileLocation, index?: FileLocation, hint?: string) => {
-          const regexGuess = /\.(bw|bigwig)$/i
-          const adapterName = 'BigWigAdapter'
-          const fileName = getFileName(file)
-          const obj = {
-            type: adapterName,
-            bigWigLocation: file,
-          }
-
-          if (regexGuess.test(fileName) && !hint) {
-            return obj
-          }
-          if (hint === adapterName) {
-            return obj
-          }
-
-          return cb(file, index, hint)
-        }
-      },
-    )
-    pm.addToExtensionPoint(
-      'Core-guessTrackTypeForLocation',
-      (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          if (adapterName === 'BigWigAdapter') {
-            return 'QuantitativeTrack'
-          }
-          return trackTypeGuesser(adapterName)
-        }
-      },
-    )
+    GuessAdapterF(pm)
 
     pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))
     pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
+    pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
+    pm.addRpcMethod(() => new MultiWiggleClusterScoreMatrix(pm))
   }
 
   exports = {

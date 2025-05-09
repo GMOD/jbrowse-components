@@ -211,12 +211,12 @@ export function SharedLinearPileupDisplayMixin(
           'lightsalmon',
         ]
 
-        uniqueTag.forEach(value => {
+        for (const value of uniqueTag) {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
             self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
-        })
+        }
       },
 
       /**
@@ -428,7 +428,7 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingView(self).id,
+                      layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -462,7 +462,7 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingView(self).id,
+                      layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -553,7 +553,6 @@ export function SharedLinearPileupDisplayMixin(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-
             {
               label: 'Set feature height...',
               priority: 1,
@@ -673,14 +672,13 @@ export function SharedLinearPileupDisplayMixin(
                   self.setFeatureUnderMouse(undefined)
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const view = getContainingView(self)
                   const { feature } = (await session.rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
                       featureId,
                       sessionId,
-                      layoutId: view.id,
+                      layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }

@@ -67,7 +67,7 @@ React.ComponentType<any>
 string
 ```
 
-#### getter: needsScalebar
+#### getter: graphType
 
 ```js
 // type
@@ -123,6 +123,13 @@ everything else
 ```js
 // type
 any
+```
+
+#### getter: sourcesWithoutLayout
+
+```js
+// type
+{ color: string; baseUri?: string; name: string; group?: string; }[]
 ```
 
 #### getter: sources

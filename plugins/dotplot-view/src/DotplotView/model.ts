@@ -8,6 +8,7 @@ import {
   getSession,
   getTickDisplayStr,
   isSessionModelWithWidgets,
+  localStorageGetBoolean,
   localStorageGetItem,
   max,
   measureText,
@@ -18,7 +19,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { saveAs } from 'file-saver'
-import { autorun, transaction } from 'mobx'
+import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -32,6 +33,7 @@ import {
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 
+import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -152,18 +154,62 @@ export default function stateModelFactory(pm: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       volatileWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
-      // these are 'personal preferences', stored in volatile and
-      // loaded/written to localStorage
+      /**
+       * #volatile
+       * these are 'personal preferences', stored in volatile and
+       * loaded/written to localStorage
+       */
       cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
-      showPanButtons: Boolean(
-        JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
-      ),
+      /**
+       * #volatile
+       */
+      showPanButtons: localStorageGetBoolean('dotplot-showPanbuttons', true),
+      /**
+       * #volatile
+       */
       wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
+      /**
+       * #volatile
+       */
       borderX: 100,
+      /**
+       * #volatile
+       */
       borderY: 100,
+      /**
+       * #volatile
+       */
+      importFormSyntenyTrackSelections:
+        observable.array<ImportFormSyntenyTrack>(),
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      importFormRemoveRow(idx: number) {
+        self.importFormSyntenyTrackSelections.splice(idx, 1)
+      },
+      /**
+       * #action
+       */
+      clearImportFormSyntenyTracks() {
+        self.importFormSyntenyTrackSelections.clear()
+      },
+      /**
+       * #action
+       */
+      setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
+        self.importFormSyntenyTrackSelections[arg] = val
+      },
     }))
     .views(self => ({
       /**
@@ -402,11 +448,13 @@ export default function stateModelFactory(pm: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
       /**
        * #action
@@ -558,7 +606,7 @@ export default function stateModelFactory(pm: PluginManager) {
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
         const session = getSession(self)
-        for (const name in self.assemblyNames) {
+        for (const name of self.assemblyNames) {
           session.removeTemporaryAssembly?.(name)
         }
       },
@@ -600,11 +648,11 @@ export default function stateModelFactory(pm: PluginManager) {
 
               const views = [self.hview, self.vview]
               transaction(() => {
-                self.assemblyNames.forEach((name, index) => {
+                for (const [index, name] of self.assemblyNames.entries()) {
                   const assembly = session.assemblyManager.get(name)
                   const view = views[index]!
                   view.setDisplayedRegions(assembly?.regions || [])
-                })
+                }
                 self.showAllRegions()
               })
             },
@@ -673,39 +721,28 @@ export default function stateModelFactory(pm: PluginManager) {
         return [
           {
             label: 'Return to import form',
+            icon: FolderOpenIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
-            icon: FolderOpenIcon,
           },
-          {
-            label: 'Square view - same bp per pixel',
-            onClick: () => {
-              self.squareView()
-            },
-          },
-          {
-            label: 'Rectangular view - same total bp',
-            onClick: () => {
-              self.squareView()
-            },
-          },
-          {
-            label: 'Show all regions',
-            onClick: () => {
-              self.showAllRegions()
-            },
-          },
+
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
           },

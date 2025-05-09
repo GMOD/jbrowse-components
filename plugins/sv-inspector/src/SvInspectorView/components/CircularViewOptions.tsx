@@ -1,4 +1,4 @@
-import { Checkbox, FormControlLabel, Grid } from '@mui/material'
+import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -18,27 +18,24 @@ const CircularViewOptions = observer(function ({
   const { classes } = useStyles()
 
   return (
-    <Grid
-      container
+    <div
       className={classes.circularViewOptions}
       style={{ height: svInspector.circularViewOptionsBarHeight }}
     >
-      <Grid item>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
-              onChange={e => {
-                svInspector.setOnlyDisplayRelevantRegionsInCircularView(
-                  e.target.checked,
-                )
-              }}
-            />
-          }
-          label="show only regions with data"
-        />
-      </Grid>
-    </Grid>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
+            onChange={e => {
+              svInspector.setOnlyDisplayRelevantRegionsInCircularView(
+                e.target.checked,
+              )
+            }}
+          />
+        }
+        label="show only regions with data"
+      />
+    </div>
   )
 })
 

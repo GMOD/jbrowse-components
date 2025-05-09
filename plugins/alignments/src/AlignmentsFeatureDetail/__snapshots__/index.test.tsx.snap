@@ -14,22 +14,22 @@ exports[`open up a widget 1`] = `
       <h3
         class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
       >
-        <div
+        <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-          role="button"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
+          type="button"
         >
-          <div
-            class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+          <span
+            class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
           >
             <span
               class="MuiTypography-root MuiTypography-button css-l5w3u1-MuiTypography-root"
             >
               ctgA_3_555_0:0:0_2:0... - match
             </span>
-          </div>
-          <div
+          </span>
+          <span
             class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
           >
             <svg
@@ -43,8 +43,8 @@ exports[`open up a widget 1`] = `
                 d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
               />
             </svg>
-          </div>
-        </div>
+          </span>
+        </button>
       </h3>
       <div
         class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
@@ -291,7 +291,7 @@ exports[`open up a widget 1`] = `
                     class="MuiFormControl-root MuiFormControl-marginDense css-h2948o-MuiFormControl-root-formControl"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-12qtcjg-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -299,7 +299,7 @@ exports[`open up a widget 1`] = `
                     </button>
                   </div>
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
                   >

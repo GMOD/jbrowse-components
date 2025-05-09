@@ -134,8 +134,8 @@ specify the index file explicitly.
 :::info Note
 
 If you are an administrator, you can add tracks with the
-[command line](/docs/quickstart_web/#adding-tracks) or with the
-[admin server](/docs/tutorials/config_gui).
+[command line](/docs/quickstart_web/#adding-tracks) (CLI) or with the
+[admin server](/docs/quickstart_adminserver) (GUI).
 
 :::
 
@@ -178,7 +178,7 @@ being a JBrowse admin!
 ### Track menu
 
 Users can access track-specific functions by using the track menu, which is
-accessible from the track selecter itself ("..." icon) or on the track label
+accessible from the track selector itself ("..." icon) or on the track label
 (vertical "..."). Some functions are only available when the track is open e.g.
 from the track label, but more basic options like "About track" are available
 from the track menu on the track selector.

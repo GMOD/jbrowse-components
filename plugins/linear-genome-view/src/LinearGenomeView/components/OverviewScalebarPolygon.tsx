@@ -32,12 +32,14 @@ const OverviewScalebarPolygon = observer(function ({
   const last = contentBlocks.at(-1)!
   const topLeft =
     (overview.bpToPx({
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...first,
       coord: first.reversed ? first.end : first.start,
     }) || 0) +
     cytobandOffset * multiplier
   const topRight =
     (overview.bpToPx({
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...last,
       coord: last.reversed ? last.start : last.end,
     }) || 0) +

@@ -148,42 +148,39 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return sequence
   }
 
-  private async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
-    return updateStatus('Downloading index', statusCallback, async () => {
-      const conf = await this.configure()
-      const { cram } = conf
-      const samHeader = await cram.cram.getSamHeader()
+  private async setupPre(_opts?: BaseOptions) {
+    const conf = await this.configure()
+    const { cram } = conf
+    const samHeader = await cram.cram.getSamHeader()
 
-      // use the @SQ lines in the header to figure out the mapping between ref
-      // ID numbers and names
-      const idToName: string[] = []
-      const nameToId: Record<string, number> = {}
-      samHeader
-        .filter(l => l.tag === 'SQ')
-        .forEach((sqLine, refId) => {
-          const SN = sqLine.data.find(item => item.tag === 'SN')
-          if (SN) {
-            const refName = SN.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
-          }
-        })
-
-      const readGroups = samHeader
-        .filter(l => l.tag === 'RG')
-        .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
-
-      const data = { idToName, nameToId, readGroups }
-      this.samHeader = data
-      return {
-        samHeader: data,
-        ...conf,
+    // use the @SQ lines in the header to figure out the mapping between ref
+    // ID numbers and names
+    const idToName: string[] = []
+    const nameToId: Record<string, number> = {}
+    for (const [refId, sqLine] of samHeader
+      .filter(l => l.tag === 'SQ')
+      .entries()) {
+      const SN = sqLine.data.find(item => item.tag === 'SN')
+      if (SN) {
+        const refName = SN.value
+        nameToId[refName] = refId
+        idToName[refId] = refName
       }
-    })
+    }
+
+    const readGroups = samHeader
+      .filter(l => l.tag === 'RG')
+      .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+
+    const data = { idToName, nameToId, readGroups }
+    this.samHeader = data
+    return {
+      samHeader: data,
+      ...conf,
+    }
   }
 
-  private async setup(opts?: BaseOptions) {
+  private async setupPre2(opts?: BaseOptions) {
     if (!this.setupP) {
       this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
@@ -191,6 +188,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       })
     }
     return this.setupP
+  }
+
+  async setup(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.setupPre2(opts),
+    )
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -293,8 +297,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       })
     }, stopToken)
   }
-
-  freeResources(/* { region } */): void {}
 
   cramRecordToFeature(record: CramRecord) {
     return new CramSlightlyLazyFeature(record, this)

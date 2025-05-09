@@ -1,5 +1,5 @@
 import type { FocusEvent, MouseEvent } from 'react'
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util'
@@ -74,6 +74,10 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
     const { onClick: handler } = props
     return handler?.(event)
   }
+  const [client, setClient] = useState(false)
+  useEffect(() => {
+    setClient(true)
+  }, [])
 
   const {
     regions,
@@ -114,27 +118,31 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
       onBlur={onMouseLeave}
       onClick={onClick}
     >
-      {records.map(layoutRecord => {
-        const feature = features.get(layoutRecord.data.featureId)
-        return (
-          <Fragment key={feature.id()}>
-            <Stick
-              key={`stick-${feature.id()}`}
-              {...props}
-              config={config}
-              layoutRecord={layoutRecord}
-              feature={feature}
-            />
-            <Lollipop
-              key={`body-${feature.id()}`}
-              {...props}
-              layoutRecord={layoutRecord}
-              feature={feature}
-              selectedFeatureId={selectedFeatureId}
-            />
-          </Fragment>
-        )
-      })}
+      {client ? (
+        <>
+          {records.map(layoutRecord => {
+            const feature = features.get(layoutRecord.data.featureId)
+            return (
+              <Fragment key={feature.id()}>
+                <Stick
+                  key={`stick-${feature.id()}`}
+                  {...props}
+                  config={config}
+                  layoutRecord={layoutRecord}
+                  feature={feature}
+                />
+                <Lollipop
+                  key={`body-${feature.id()}`}
+                  {...props}
+                  layoutRecord={layoutRecord}
+                  feature={feature}
+                  selectedFeatureId={selectedFeatureId}
+                />
+              </Fragment>
+            )
+          })}
+        </>
+      ) : null}
     </svg>
   )
 })

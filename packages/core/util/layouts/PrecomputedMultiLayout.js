@@ -12,8 +12,8 @@ export default class PrecomputedMultiLayout extends MultiLayout {
     // use ThrowingLayout because there is not supposed to be any creation
     // of new layouts in a precomputed layout
     super(ThrowingLayout)
-    Object.entries(json).forEach(([layoutName, sublayoutJson]) => {
+    for (const [layoutName, sublayoutJson] of Object.entries(json)) {
       this.subLayouts.set(layoutName, new PrecomputedLayout(sublayoutJson))
-    })
+    }
   }
 }

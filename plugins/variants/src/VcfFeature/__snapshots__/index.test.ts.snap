@@ -5,6 +5,7 @@ exports[`null ALT 1`] = `
   "ALT": undefined,
   "CHROM": "chr1",
   "FILTER": "PASS",
+  "FORMAT": undefined,
   "ID": [
     "rs123",
   ],
@@ -16,7 +17,6 @@ exports[`null ALT 1`] = `
   "POS": 100,
   "QUAL": 29,
   "REF": "G",
-  "aliases": undefined,
   "description": "no alternative alleles",
   "end": 100,
   "name": "rs123",

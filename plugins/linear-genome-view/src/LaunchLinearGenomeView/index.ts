@@ -31,11 +31,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
     }) => {
       try {
         const { assemblyManager } = session
-
-        const { isValidRefName } = assemblyManager
-
         const view = session.addView('LinearGenomeView', {}) as LGV
-
         await when(() => !!view.volatileWidth)
 
         if (!assembly) {
@@ -58,9 +54,9 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
           view.setHideHeader(!nav)
         }
         if (highlight !== undefined) {
-          highlight.forEach(async h => {
+          for (const h of highlight) {
             const p = parseLocString(h, refName =>
-              isValidRefName(refName, assembly),
+              assemblyManager.isValidRefName(refName, assembly),
             )
             const { start, end } = p
             if (start !== undefined && end !== undefined) {
@@ -71,15 +67,19 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
                 assemblyName: assembly,
               })
             }
-          })
+          }
         }
 
-        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
+        await handleSelectedRegion({
+          input: loc,
+          model: view,
+          assembly: asm,
+        })
 
         const idsNotFound = [] as string[]
-        tracks.forEach(track => {
+        for (const track of tracks) {
           tryTrack(view, track, idsNotFound)
-        })
+        }
         if (idsNotFound.length) {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,

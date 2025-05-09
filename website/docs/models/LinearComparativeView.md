@@ -62,13 +62,22 @@ true
 showIntraviewLinks: true
 ```
 
-#### property: interactToggled
+#### property: linkViews
 
 ```js
 // type signature
 false
 // code
-interactToggled: false
+linkViews: false
+```
+
+#### property: interactiveOverlay
+
+```js
+// type signature
+false
+// code
+interactiveOverlay: false
 ```
 
 #### property: levels
@@ -86,7 +95,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -177,7 +186,7 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>) => void
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 18 more ... & IStateTreeNode<...>) =>...
 ```
 
 #### action: setLevelHeight
@@ -185,6 +194,13 @@ removeView: (view: { id: string; displayName: string; minimized: boolean; type: 
 ```js
 // type signature
 setLevelHeight: (newHeight: number, level?: number) => number
+```
+
+#### action: setLinkViews
+
+```js
+// type signature
+setLinkViews: (arg: boolean) => void
 ```
 
 #### action: activateTrackSelector

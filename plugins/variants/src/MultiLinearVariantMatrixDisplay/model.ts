@@ -1,30 +1,16 @@
-import { lazy } from 'react'
-
-import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { set1 } from '@jbrowse/core/ui/colors'
-import { getSession } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
-import deepEqual from 'fast-deep-equal'
+import { clamp, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from 'mobx-state-tree'
 
-import { randomColor } from '../util'
+import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
-import type { Source } from '../util'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
-
-// lazies
-const SetColorDialog = lazy(() => import('../shared/SetColorDialog'))
-const MAFFilterDialog = lazy(() => import('../shared/MAFFilterDialog'))
-const ClusterDialog = lazy(() => import('../shared/ClusterDialog'))
 
 /**
  * #stateModel LinearVariantMatrixDisplay
  * extends
- * - [LinearBasicDisplay](../linearbasicdisplay)
+ * - [MultiVariantBaseModel](../multivariantbasemodel)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -32,7 +18,7 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearVariantMatrixDisplay',
-      linearBareDisplayStateModelFactory(configSchema),
+      MultiVariantBaseModelF(configSchema),
       types.model({
         /**
          * #property
@@ -42,192 +28,17 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        layout: types.optional(types.frozen<Source[]>(), []),
+        rowHeightSetting: types.optional(types.number, 1),
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         */
-        mafFilter: types.optional(types.number, 0.1),
-
-        /**
-         * #property
-         */
-        showSidebarLabelsSetting: true,
+        lineZoneHeight: 20,
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      sourcesLoadingStopToken: undefined as string | undefined,
-      /**
-       * #volatile
-       */
-      featureUnderMouseVolatile: undefined as Feature | undefined,
-      /**
-       * #volatile
-       */
-      sourcesVolatile: undefined as Source[] | undefined,
-      /**
-       * #volatile
-       */
-      featuresVolatile: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       */
-      lineZoneHeight: 20,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setFeatures(f: Feature[]) {
-        self.featuresVolatile = f
-      },
-      /**
-       * #action
-       */
-      setLayout(layout: Source[]) {
-        self.layout = layout
-      },
-      /**
-       * #action
-       */
-      clearLayout() {
-        self.layout = []
-      },
-      /**
-       * #action
-       */
-      setSourcesLoading(str: string) {
-        if (self.sourcesLoadingStopToken) {
-          stopStopToken(self.sourcesLoadingStopToken)
-        }
-        self.sourcesLoadingStopToken = str
-      },
-
-      /**
-       * #action
-       */
-      setSources(sources: Source[]) {
-        if (!deepEqual(sources, self.sourcesVolatile)) {
-          self.sourcesVolatile = sources
-        }
-      },
-      /**
-       * #action
-       */
-      setMafFilter(arg: number) {
-        self.mafFilter = arg
-      },
-      /**
-       * #action
-       */
-      setShowSidebarLabels(arg: boolean) {
-        self.showSidebarLabelsSetting = arg
-      },
-    }))
     .views(self => ({
-      get preSources() {
-        return self.layout.length ? self.layout : self.sourcesVolatile
+      get nrow() {
+        return self.sources?.length || 1
       },
-      /**
-       * #getter
-       */
-      get sources() {
-        const sources = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
-        )
-        return this.preSources
-          ?.map(s => ({
-            ...sources[s.name],
-            ...s,
-          }))
-          .map((s, i) => ({
-            ...s,
-            color: s.color || set1[i] || randomColor(s.name),
-          }))
-      },
-    }))
-    .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        renderProps: superRenderProps,
-      } = self
-
-      return {
-        /**
-         * #method
-         */
-        adapterProps() {
-          const superProps = superRenderProps()
-          return {
-            ...superProps,
-            rpcDriverName: self.rpcDriverName,
-            displayModel: self,
-            config: self.rendererConfig,
-          }
-        },
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Show sidebar labels',
-              type: 'checkbox',
-              checked: self.showSidebarLabelsSetting,
-              onClick: () => {
-                self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
-              },
-            },
-
-            {
-              label: 'Minimum allele frequency',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  MAFFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-            {
-              label: 'Cluster by genotype',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ClusterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-            {
-              label: 'Edit colors/arrangement...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetColorDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-          ]
-        },
-      }
-    })
-    .views(self => ({
       /**
        * #getter
        */
@@ -238,16 +49,28 @@ export default function stateModelFactory(
        * #getter
        */
       get totalHeight() {
-        return self.height - self.lineZoneHeight
+        return self.autoHeight
+          ? self.height - self.lineZoneHeight
+          : this.nrow * self.rowHeightSetting
       },
 
       /**
        * #getter
        */
       get rowHeight() {
-        return this.totalHeight / (self.sources?.length || 1)
+        return self.autoHeight
+          ? self.totalHeight / this.nrow
+          : self.rowHeightSetting
+      },
+
+      /**
+       * #getter
+       */
+      get featuresReady() {
+        return !!self.featuresVolatile
       },
     }))
+
     .views(self => ({
       /**
        * #method
@@ -256,9 +79,10 @@ export default function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...superProps,
-          notReady:
-            superProps.notReady || !self.sources || !self.featuresVolatile,
-          mafFilter: self.mafFilter,
+          notReady: superProps.notReady || !self.sources || !self.featuresReady,
+          renderingMode: self.renderingMode,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
           height: self.totalHeight,
           sources: self.sources,
         }
@@ -270,9 +94,25 @@ export default function stateModelFactory(
         return self.rowHeight > 8 && self.showSidebarLabelsSetting
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setLineZoneHeight(n: number) {
+        self.lineZoneHeight = clamp(n, 10, 1000)
+        return self.lineZoneHeight
+      },
+    }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {
+        /**
+         * #action
+         */
+        setLineZoneHeight(n: number) {
+          self.lineZoneHeight = clamp(n, 10, 1000)
+          return self.lineZoneHeight
+        },
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
@@ -283,6 +123,7 @@ export default function stateModelFactory(
               const { getMultiVariantFeaturesAutorun } = await import(
                 '../getMultiVariantFeaturesAutorun'
               )
+
               getMultiVariantSourcesAutorun(self)
               getMultiVariantFeaturesAutorun(self)
             } catch (e) {

@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { fillRectCtx, getScale } from './util'
 
@@ -21,9 +22,11 @@ export function drawDensity(
     ticks: { values: number[] }
     displayCrossHatches: boolean
     config: AnyConfigurationModel
+    stopToken?: string
   },
 ) {
-  const { features, regions, bpPerPx, scaleOpts, height, config } = props
+  const { stopToken, features, regions, bpPerPx, scaleOpts, height, config } =
+    props
   const region = regions[0]!
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
@@ -35,7 +38,7 @@ export function drawDensity(
   const scale = getScale({
     ...scaleOpts,
     pivotValue: crossing ? pivotValue : undefined,
-    range: crossing ? [negColor, 'white', posColor] : ['white', posColor],
+    range: crossing ? [negColor, '#eee', posColor] : ['#eee', posColor],
   })
 
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
@@ -51,19 +54,29 @@ export function drawDensity(
   let prevLeftPx = Number.NEGATIVE_INFINITY
   let hasClipping = false
   const reducedFeatures = []
+  let start = performance.now()
   for (const feature of features.values()) {
+    if (performance.now() - start > 400) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
     }
     const score = feature.get('score')
     hasClipping = hasClipping || score > niceMax || score < niceMin
     const w = rightPx - leftPx + fudgeFactor
-    ctx.fillStyle = cb(feature, score)
-    ctx.fillRect(leftPx, 0, w, height)
+    if (score >= scaleOpts.domain[0]!) {
+      ctx.fillStyle = cb(feature, score)
+      ctx.fillRect(leftPx, 0, w, height)
+    } else {
+      ctx.fillStyle = '#eee'
+      ctx.fillRect(leftPx, 0, w, height)
+    }
   }
 
   // second pass: draw clipping
@@ -72,6 +85,10 @@ export function drawDensity(
   if (hasClipping) {
     ctx.fillStyle = clipColor
     for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
@@ -84,5 +101,7 @@ export function drawDensity(
   }
   ctx.restore()
 
-  return { reducedFeatures }
+  return {
+    reducedFeatures,
+  }
 }

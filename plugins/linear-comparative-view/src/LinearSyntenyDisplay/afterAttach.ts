@@ -30,9 +30,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(() => {
       const view = getContainingView(self) as LinearSyntenyViewModel
-      if (!view.initialized) {
+      if (
+        !view.initialized ||
+        !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+      ) {
         return
       }
+
       const ctx1 = self.mainCanvas?.getContext('2d')
       const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
       if (!ctx1 || !ctx3) {
@@ -51,7 +55,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(() => {
       const view = getContainingView(self) as LinearSyntenyViewModel
-      if (!view.initialized) {
+      if (
+        !view.initialized ||
+        !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+      ) {
         return
       }
       drawMouseoverSynteny(self)
@@ -77,7 +84,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             view.views.map(v => v.displayedRegions),
           ),
           features: self.features,
-          initialized: view.initialized,
+          initialized:
+            view.initialized &&
+            view.views.every(
+              a => a.displayedRegions.length > 0 && a.initialized,
+            ),
         }
       },
       ({ initialized }) => {

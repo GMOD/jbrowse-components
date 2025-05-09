@@ -1,33 +1,20 @@
 import { useRef, useState } from 'react'
 
-import { SanitizedHTML } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView } from '@jbrowse/core/util'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import LegendBar from '../../shared/LegendBar'
+import Crosshair from '../../shared/components/MultiVariantCrosshairs'
+import LegendBar from '../../shared/components/MultiVariantLegendBar'
 
 import type { MultiLinearVariantDisplayModel } from '../model'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-const useStyles = makeStyles()({
-  cursor: {
-    pointerEvents: 'none',
-  },
-})
 
 const MultiLinearVariantDisplayComponent = observer(function (props: {
   model: MultiLinearVariantDisplayModel
 }) {
   const { model } = props
-  const { classes } = useStyles()
-  const { height, sources, rowHeight, scrollTop } = model
   const ref = useRef<HTMLDivElement>(null)
   const [mouseY, setMouseY] = useState<number>()
   const [mouseX, setMouseX] = useState<number>()
-  const { width } = getContainingView(model) as LinearGenomeViewModel
 
   return (
     <div
@@ -46,34 +33,9 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
     >
       <BaseLinearDisplayComponent {...props} />
       <LegendBar model={model} />
-      {mouseY && sources ? (
-        <div style={{ position: 'relative' }}>
-          <svg
-            className={classes.cursor}
-            width={width}
-            height={height}
-            style={{ position: 'absolute', top: scrollTop }}
-          >
-            <line
-              x1={0}
-              x2={width}
-              y1={mouseY - scrollTop}
-              y2={mouseY - scrollTop}
-              stroke="black"
-            />
-            <line x1={mouseX} x2={mouseX} y1={0} y2={height} stroke="black" />
-          </svg>
-          <BaseTooltip>
-            <SanitizedHTML
-              html={Object.entries(
-                sources[Math.floor(mouseY / rowHeight)] || {},
-              )
-                .filter(([key]) => key !== 'color')
-                .map(([key, value]) => `${key}:${value}`)
-                .join('\n')}
-            />
-          </BaseTooltip>
-        </div>
+
+      {mouseX && mouseY ? (
+        <Crosshair mouseX={mouseX} mouseY={mouseY} model={model} />
       ) : null}
     </div>
   )

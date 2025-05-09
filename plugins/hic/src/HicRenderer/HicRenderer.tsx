@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
@@ -37,11 +36,13 @@ export interface RenderArgsDeserialized
   highResolutionScaling: number
   resolution: number
   adapterConfig: AnyConfigurationModel
+  displayHeight?: number
 }
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: HicFeature[]
+  statusCallback?: (arg: string) => void
 }
 
 export type ResultsSerialized = ServerSideResultsSerialized
@@ -52,16 +53,18 @@ export default class HicRenderer extends ServerSideRendererType {
   supportsSVG = true
 
   async render(renderProps: RenderArgsDeserialized) {
-    const { config, regions, bpPerPx } = renderProps
+    const { displayHeight, regions, bpPerPx } = renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
-    const height = readConfObject(config, 'maxHeight')
+    const hyp = width / 2
+    const height = displayHeight ?? hyp
     const features = await this.getFeatures(renderProps)
 
     const { makeImageData } = await import('./makeImageData')
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData(ctx, {
         ...renderProps,
+        yScalar: height / Math.max(height, hyp),
         features,
         pluginManager: this.pluginManager,
       }),
@@ -95,10 +98,9 @@ export default class HicRenderer extends ServerSideRendererType {
         .getFeatures(regions[0]!, args)
         .pipe(toArray()),
     )
-    // cast to any to avoid return-type conflict, because the
-    // types of features returned by our getFeatures are quite
-    // different from the base interface
 
+    // cast to any to avoid return-type conflict, because the types of features
+    // returned by our getFeatures are quite different from the base interface
     return features as any
   }
 }

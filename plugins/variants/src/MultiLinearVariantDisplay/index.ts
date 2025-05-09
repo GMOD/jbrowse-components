@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-// locals
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
 
@@ -15,9 +14,9 @@ export default function MultiLinearVariantDisplayF(
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'MultiLinearVariantDisplay',
-      displayName: 'Multi-variant display (regular)',
+      displayName: 'Multi-sample variant display (regular)',
       configSchema,
-      stateModel: modelFactory(pluginManager, configSchema),
+      stateModel: modelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(

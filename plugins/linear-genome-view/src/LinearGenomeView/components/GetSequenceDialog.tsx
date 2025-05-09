@@ -51,8 +51,11 @@ async function fetchSequence(model: LGV, regions: Region[]) {
     throw new Error('no offsets on model to use for range')
   }
 
-  if (leftOffset.assemblyName !== rightOffset.assemblyName) {
-    throw new Error('not able to fetch sequences from multiple assemblies')
+  const assemblyNames = new Set(regions.map(r => r.assemblyName))
+  if (assemblyNames.size > 1) {
+    throw new Error(
+      'not able to fetch sequences from multiple assemblies currently',
+    )
   }
   const { rpcManager, assemblyManager } = session
   const assemblyName = leftOffset.assemblyName || rightOffset.assemblyName || ''

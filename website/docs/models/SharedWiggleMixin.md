@@ -167,7 +167,7 @@ any
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: filters
@@ -183,21 +183,21 @@ any
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: maxScore
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: minScore
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: adapterCapabilities
@@ -218,7 +218,7 @@ string[]
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: domain
@@ -246,7 +246,7 @@ string
 
 ```js
 // type
-{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }; autoscaleType: any; scaleType: any; inverted: any; }
+{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }; autoscaleType: string; scaleType: string; inverted: boolean; }
 ```
 
 #### getter: canHaveFill

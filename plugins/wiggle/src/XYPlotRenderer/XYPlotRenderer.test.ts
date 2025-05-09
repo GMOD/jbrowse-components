@@ -33,7 +33,7 @@ test('several features', async () => {
       domain: [0, 100],
       scaleType: 'linear',
     },
-    config: {},
+    config: configSchema.create(),
     bpPerPx: 3,
     highResolutionScaling: 1,
     height: 100,

@@ -18,11 +18,13 @@ export default tseslint.config(
       '**/esm/**/*',
       '**/public/**/*',
       '**/storybook-static/**',
+      'docs/*',
       'website/*',
       'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',
+      'products/jbrowse-desktop/scripts/notarize.js',
       'component_tests/**/*',
       'embedded_demos/**/*',
       '**/output-version.js',
@@ -64,7 +66,7 @@ export default tseslint.config(
     },
     rules: eslintPluginReactHooks.configs.recommended.rules,
   },
-  eslintPluginUnicorn.configs['flat/recommended'],
+  eslintPluginUnicorn.configs.recommended,
   {
     // in main config for TSX/JSX source files
     plugins: {
@@ -77,7 +79,7 @@ export default tseslint.config(
       'no-restricted-globals': ['error', 'Buffer'],
       'no-empty': 'off',
       'no-console': [
-        'warn',
+        'error',
         {
           allow: ['error', 'warn'],
         },
@@ -93,8 +95,9 @@ export default tseslint.config(
         },
       ],
 
+      'prefer-template': 'error',
       'one-var': ['error', 'never'],
-      'react-refresh/only-export-components': 'warn',
+      'react-refresh/only-export-components': 'error',
       'react/no-unescaped-entities': 'off',
       'react/no-is-mounted': 'off',
       'react/react-in-jsx-scope': 'off',
@@ -127,7 +130,6 @@ export default tseslint.config(
       'unicorn/prevent-abbreviations': 'off',
       'unicorn/prefer-code-point': 'off',
       'unicorn/numeric-separators-style': 'off',
-      'unicorn/no-array-for-each': 'off',
       'unicorn/prefer-spread': 'off',
       'unicorn/explicit-length-check': 'off',
       'unicorn/prefer-regexp-test': 'off',
@@ -138,7 +140,6 @@ export default tseslint.config(
       'unicorn/switch-case-braces': 'off',
       'unicorn/prefer-switch': 'off',
       'unicorn/better-regex': 'off',
-      'unicorn/no-for-loop': 'off',
       'unicorn/escape-case': 'off',
       'unicorn/prefer-number-properties': 'off',
       'unicorn/no-process-exit': 'off',
@@ -179,7 +180,6 @@ export default tseslint.config(
         },
       ],
 
-      '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -202,7 +202,7 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           argsIgnorePattern: '^_',
           ignoreRestSiblings: true,

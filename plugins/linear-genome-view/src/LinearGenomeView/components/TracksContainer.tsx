@@ -23,7 +23,6 @@ const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
-    overflow: 'hidden',
   },
 })
 
@@ -39,7 +38,8 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
-  const { showGridlines, showCenterLine } = model
+  const { stickyViewHeaders, rubberbandTop, showGridlines, showCenterLine } =
+    model
   const ref = useRef<HTMLDivElement>(null)
   const {
     guideX,
@@ -63,10 +63,11 @@ const TracksContainer = observer(function TracksContainer({
     undefined,
     { model },
   ) as React.ReactNode
+
   return (
     <div
       ref={ref}
-      data-testid="trackContainer"
+      data-testid="tracksContainer"
       className={classes.tracksContainer}
       onMouseDown={event => {
         mouseDown1(event)
@@ -89,6 +90,8 @@ const TracksContainer = observer(function TracksContainer({
             numOfBpSelected={numOfBpSelected}
             width={width}
             left={left}
+            top={rubberbandTop}
+            sticky={stickyViewHeaders}
           />
         </Suspense>
       ) : null}

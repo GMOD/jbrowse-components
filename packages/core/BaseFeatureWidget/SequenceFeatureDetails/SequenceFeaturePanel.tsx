@@ -56,7 +56,9 @@ const SequenceFeaturePanel = observer(function ({
         onClick={() => {
           getSession(model).queueDialog(handleClose => [
             HelpDialog,
-            { handleClose },
+            {
+              handleClose,
+            },
           ])
         }}
       >

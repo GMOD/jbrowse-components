@@ -51,7 +51,7 @@ export function isViewContainer(
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export interface SnackAction {
-  name: React.ReactElement
+  name: React.ReactElement | string
   onClick: () => void
 }
 
@@ -295,6 +295,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 }
 
 export interface AbstractTrackModel {
+  id: string
   displays: AbstractDisplayModel[]
   configuration: AnyConfigurationModel
 }

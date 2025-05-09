@@ -12,7 +12,7 @@ export default function PAFAdapterF(pluginManager: PluginManager) {
         displayName: 'PAF adapter',
         configSchema,
         adapterMetadata: {
-          hiddenFromGUI: true,
+          category: 'Synteny adapters',
         },
         getAdapterClass: () => import('./PAFAdapter').then(r => r.default),
       }),

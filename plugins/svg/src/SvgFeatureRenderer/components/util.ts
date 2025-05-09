@@ -159,7 +159,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
-  subfeatures.forEach(feature => {
+  for (const feature of subfeatures) {
     ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
       layout,
       feature,
@@ -168,11 +168,11 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
       config,
       extraGlyphs,
     })
-  })
+  }
 }
 
 export function isUTR(feature: Feature) {
-  return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
+  return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
     feature.get('type') || '',
   )
 }

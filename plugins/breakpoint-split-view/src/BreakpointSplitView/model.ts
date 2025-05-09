@@ -1,7 +1,5 @@
-import type React from 'react'
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import LinkIcon from '@mui/icons-material/Link'
@@ -10,92 +8,16 @@ import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
-import { intersect } from './util'
+import { calc, getBlockFeatures, getClip, intersect } from './util'
 
+import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
-
-interface Display {
-  searchFeatureByID?: (str: string) => LayoutRecord
-}
-
-interface Track {
-  displays: Display[]
-}
-
-const startClip = new RegExp(/(\d+)[SH]$/)
-const endClip = new RegExp(/^(\d+)([SH])/)
-
-export function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(startClip.exec(cigar) || [])[1]! || 0
-    : +(endClip.exec(cigar) || [])[1]! || 0
-}
-function calc(track: Track, f: Feature) {
-  return track.displays[0]!.searchFeatureByID?.(f.id())
-}
-
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
-  paddingHeight?: number
-  headerHeight?: number
-  cytobandHeight?: number
-  trackLabels?: string
-  themeName?: string
-}
-
-type LGV = LinearGenomeViewModel
-
-export interface Breakend {
-  MateDirection: string
-  Join: string
-  Replacement: string
-  MatePosition: string
-}
-
-export type LayoutRecord = [number, number, number, number]
-
-async function getBlockFeatures(
-  model: BreakpointViewModel,
-  track: { configuration: AnyConfigurationModel },
-) {
-  const { views } = model
-  const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0]?.assemblyNames[0]
-  if (!assemblyName) {
-    return undefined
-  }
-  const assembly = await assemblyManager.waitForAssembly(assemblyName)
-  if (!assembly) {
-    return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
-  }
-  const sessionId = track.configuration.trackId
-  return Promise.all(
-    views.map(async view =>
-      (
-        (await rpcManager.call(sessionId, 'CoreGetFeatures', {
-          adapterConfig: getConf(track, ['adapter']),
-          sessionId,
-          regions: view.staticBlocks.contentBlocks,
-        })) as Feature[][]
-      ).flat(),
-    ),
-  )
-}
 
 /**
  * #stateModel BreakpointSplitView
@@ -140,7 +62,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        interactToggled: false,
+        interactiveOverlay: true,
         /**
          * #property
          */
@@ -291,13 +213,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
             // @ts-ignore
             view[actionName](args?.[0])
           }
-        })
+        }
       },
 
       /**
@@ -305,37 +227,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => {
+        for (const v of self.views) {
           v.setWidth(newWidth)
-        })
+        }
       },
 
       /**
        * #action
        */
-      removeView(view: LGV) {
-        self.views.remove(view)
+      setInteractiveOverlay(arg: boolean) {
+        self.interactiveOverlay = arg
       },
 
       /**
        * #action
        */
-      toggleInteract() {
-        self.interactToggled = !self.interactToggled
+      setShowIntraviewLinks(arg: boolean) {
+        self.showIntraviewLinks = arg
       },
 
       /**
        * #action
        */
-      toggleIntraviewLinks() {
-        self.showIntraviewLinks = !self.showIntraviewLinks
-      },
-
-      /**
-       * #action
-       */
-      toggleLinkViews() {
-        self.linkViews = !self.linkViews
+      setLinkViews(arg: boolean) {
+        self.linkViews = arg
       },
 
       /**
@@ -390,36 +305,39 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               subMenu: f[1],
             })),
 
-          {
-            label: 'Reverse view order',
-            onClick: () => {
-              self.reverseViewOrder()
-            },
-          },
+          ...(self.views.length > 1
+            ? [
+                {
+                  label: 'Reverse view order',
+                  onClick: () => {
+                    self.reverseViewOrder()
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Show intra-view links',
             type: 'checkbox',
             checked: self.showIntraviewLinks,
             onClick: () => {
-              self.toggleIntraviewLinks()
+              self.setShowIntraviewLinks(!self.showIntraviewLinks)
             },
           },
           {
             label: 'Allow clicking alignment squiggles?',
             type: 'checkbox',
-            checked: self.interactToggled,
+            checked: self.interactiveOverlay,
             onClick: () => {
-              self.toggleInteract()
+              self.setInteractiveOverlay(!self.interactiveOverlay)
             },
           },
-
           {
             label: 'Link views',
             type: 'checkbox',
             icon: LinkIcon,
             checked: self.linkViews,
             onClick: () => {
-              self.toggleLinkViews()
+              self.setLinkViews(!self.linkViews)
             },
           },
           {
@@ -428,7 +346,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             onClick: (): void => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
           },

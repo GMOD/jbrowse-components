@@ -22,7 +22,7 @@ const Breakends = observer(function ({
   parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
-  const { views } = model
+  const { interactiveOverlay, views } = model
   const session = getSession(model)
   const { assemblyManager } = session
   const totalFeatures = model.getTrackFeatures(trackId)
@@ -116,6 +116,7 @@ const Breakends = observer(function ({
               <path
                 d={path}
                 data-testid="r2"
+                pointerEvents={interactiveOverlay ? 'auto' : undefined}
                 key={JSON.stringify(path)}
                 strokeWidth={id === mouseoverElt ? 10 : 5}
                 onClick={() => {

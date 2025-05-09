@@ -1,5 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { cast, getSnapshot, types } from 'mobx-state-tree'
+import { localStorageGetBoolean, localStorageSetItem } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
+import { addDisposer, cast, getSnapshot, types } from 'mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets'
@@ -9,6 +11,10 @@ import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+
+function localStorageSetBoolean(key: string, value: boolean) {
+  localStorageSetItem(key, JSON.stringify(value))
+}
 
 /**
  * #stateModel MultipleViewsSessionMixin
@@ -27,6 +33,12 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
+      /**
+       * #property
+       */
+      stickyViewHeaders: types.optional(types.boolean, () =>
+        localStorageGetBoolean('stickyViewHeaders', true),
+      ),
     })
     .actions(self => ({
       /**
@@ -141,6 +153,23 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         const state = { ...initialState }
         state.displayedRegions = getSnapshot(otherView.displayedRegions)
         return this.addView(viewType, state)
+      },
+
+      /**
+       * #action
+       */
+      setStickyViewHeaders(sticky: boolean) {
+        self.stickyViewHeaders = sticky
+        localStorageSetBoolean('stickyViewHeaders', sticky)
+      },
+
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetBoolean('stickyViewHeaders', self.stickyViewHeaders)
+          }),
+        )
       },
     }))
 }

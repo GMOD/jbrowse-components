@@ -7,14 +7,9 @@ import { addDisposer, types } from 'mobx-state-tree'
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
+import type { SessionTriagedInfo } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { Instance } from 'mobx-state-tree'
-
-export interface SessionTriagedInfo {
-  snap: unknown
-  origin: string
-  reason: PluginDefinition[]
-}
 
 const SessionLoader = types
   .model({
@@ -66,6 +61,11 @@ const SessionLoader = types
      * #property
      */
     initialTimestamp: types.number,
+
+    /**
+     * #property
+     */
+    hubURL: types.maybe(types.array(types.string)),
   })
   .volatile(() => ({
     /**
@@ -84,6 +84,10 @@ const SessionLoader = types
      * #volatile
      */
     sessionSpec: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
+     */
+    hubSpec: undefined as Record<string, unknown> | undefined,
     /**
      * #volatile
      */
@@ -133,6 +137,12 @@ const SessionLoader = types
      */
     get isSpecSession() {
       return !!self.sessionQuery?.startsWith('spec-')
+    },
+    /**
+     * #getter
+     */
+    get isHubSession() {
+      return !!self.hubURL
     },
     /**
      * #getter
@@ -275,8 +285,7 @@ const SessionLoader = types
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
           fetchESM: url => import(/* webpackIgnore:true */ url),
-        })
-        pluginLoader.installGlobalReExports(window)
+        }).installGlobalReExports(window)
         const plugins = await pluginLoader.load(window.location.href)
         self.setSessionPlugins([...plugins])
       } catch (e) {
@@ -315,38 +324,45 @@ const SessionLoader = types
      */
     async fetchConfig() {
       // @ts-expect-error
+      const path = window.__jbrowseConfigPath
+      const { configPath = path || 'config.json' } = self
+      const shouldFetchConfig = configPath !== 'none'
 
-      let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
+      // if ?config=none then we will not load the config, which is useful for
+      // ?hubURL which may not need a config
+      //
+      // however, in the rare case that you want hubs and a config (e.g. your
+      // config has plugins to load) then you can still have this too
+      if (shouldFetchConfig) {
+        const text = await openLocation({
+          uri:
+            configPath +
+            // @ts-expect-error
+            (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
+          locationType: 'UriLocation',
+        }).readFile('utf8')
+        const config = JSON.parse(text)
+        const configUri = new URL(configPath, window.location.href)
+        addRelativeUris(config, configUri)
 
-      // @ts-expect-error
-
-      if (window.__jbrowseCacheBuster) {
-        configPath += `?rand=${Math.random()}`
-      }
-
-      const text = await openLocation({
-        uri: configPath,
-        locationType: 'UriLocation',
-      }).readFile('utf8')
-      const config = JSON.parse(text)
-      const configUri = new URL(configPath, window.location.href)
-      addRelativeUris(config, configUri)
-
-      // cross origin config check
-      if (configUri.hostname !== window.location.hostname) {
-        const configPlugins = config.plugins || []
-        const configPluginsAllowed = await checkPlugins(configPlugins)
-        if (!configPluginsAllowed) {
-          self.setSessionTriaged({
-            snap: config,
-            origin: 'config',
-            reason: configPlugins,
-          })
-          return
+        // cross origin config check
+        if (configUri.hostname !== window.location.hostname) {
+          const configPlugins = config.plugins || []
+          const configPluginsAllowed = await checkPlugins(configPlugins)
+          if (!configPluginsAllowed) {
+            self.setSessionTriaged({
+              snap: config,
+              origin: 'config',
+              reason: configPlugins,
+            })
+            return
+          }
         }
+        await this.fetchPlugins(config)
+        self.setConfigSnapshot(config)
+      } else {
+        self.setConfigSnapshot({})
       }
-      await this.fetchPlugins(config)
-      self.setConfigSnapshot(config)
     },
     /**
      * #action
@@ -355,7 +371,6 @@ const SessionLoader = types
       const sessionStr = sessionStorage.getItem('current')
       const query = self.sessionQuery!.replace('local-', '')
 
-      // check if
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
@@ -399,7 +414,10 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.setSessionSnapshot({ ...session, id: nanoid() })
+      await this.setSessionSnapshot({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #action
@@ -409,7 +427,10 @@ const SessionLoader = types
         // @ts-expect-error
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      await this.setSessionSnapshot({ ...session, id: nanoid() })
+      await this.setSessionSnapshot({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #action
@@ -451,13 +472,28 @@ const SessionLoader = types
         }
       }
     },
+
+    /**
+     * #action
+     */
+    decodeHubSpec() {
+      const { hubURL, sessionTracksParsed: sessionTracks } = self
+
+      self.hubSpec = {
+        sessionTracks,
+        hubURL,
+      }
+    },
     /**
      * #action
      */
     async decodeJsonUrlSession() {
       // @ts-expect-error
-      const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      await this.setSessionSnapshot({ ...session.session, id: nanoid() })
+      const { session } = JSON.parse(self.sessionQuery.replace(/^json-/, ''))
+      await this.setSessionSnapshot({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #aftercreate
@@ -479,6 +515,7 @@ const SessionLoader = types
                   isSharedSession,
                   isJsonSession,
                   isJb1StyleSession,
+                  isHubSession,
                   sessionQuery,
                   configSnapshot,
                 } = self
@@ -509,6 +546,12 @@ const SessionLoader = types
                   await this.decodeJsonUrlSession()
                 } else if (isLocalSession) {
                   await this.fetchSessionStorageSession()
+                } else if (isHubSession) {
+                  // this is later in the list: prioritiz local session of "hub
+                  // spec" since hub is left in URL even when there may be a
+                  // local session
+                  this.decodeHubSpec()
+                  self.setBlankSession(true)
                 } else if (sessionQuery) {
                   // if there was a sessionQuery and we don't recognize it
                   throw new Error('unrecognized session format')
@@ -525,7 +568,6 @@ const SessionLoader = types
         } catch (e) {
           console.error(e)
           self.setConfigError(e)
-          return
         }
       })()
     },

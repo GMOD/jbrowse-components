@@ -1,3 +1,7 @@
+import { getProgressDisplayStr } from '@jbrowse/core/util'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOptions'
+
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *
  * The MIT License
@@ -26,7 +30,8 @@
  * SOFTWARE.
  */
 
-export function paf_delta2paf(buffer: Uint8Array) {
+export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
+  const { statusCallback = () => {} } = opts || {}
   let rname = ''
   let qname = ''
   let qs = 0
@@ -45,8 +50,14 @@ export function paf_delta2paf(buffer: Uint8Array) {
 
   let blockStart = 0
   let i = 0
+  let j = 0
   const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
+    if (j++ % 10_000 === 0) {
+      statusCallback(
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
+      )
+    }
     const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break

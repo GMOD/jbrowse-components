@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 extends
 
-- [LinearBasicDisplay](../linearbasicdisplay)
+- [MultiVariantBaseModel](../multivariantbasemodel)
 
 ### LinearVariantMatrixDisplay - Properties
 
@@ -35,50 +35,25 @@ ISimpleType<"LinearVariantMatrixDisplay">
 type: types.literal('LinearVariantMatrixDisplay')
 ```
 
-#### property: layout
-
-```js
-// type signature
-IOptionalIType<IType<Source[], Source[], Source[]>, [undefined]>
-// code
-layout: types.optional(types.frozen<Source[]>(), [])
-```
-
-#### property: configuration
-
-```js
-// type signature
-AnyConfigurationSchemaType
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: mafFilter
+#### property: rowHeightSetting
 
 ```js
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-mafFilter: types.optional(types.number, 0.1)
+rowHeightSetting: types.optional(types.number, 1)
 ```
 
-#### property: showSidebarLabelsSetting
+#### property: lineZoneHeight
 
 ```js
 // type signature
-true
+number
 // code
-showSidebarLabelsSetting: true
+lineZoneHeight: 20
 ```
 
 ### LinearVariantMatrixDisplay - Getters
-
-#### getter: sources
-
-```js
-// type
-any
-```
 
 #### getter: blockType
 
@@ -101,6 +76,13 @@ number
 number
 ```
 
+#### getter: featuresReady
+
+```js
+// type
+boolean
+```
+
 #### getter: canDisplayLabels
 
 ```js
@@ -109,20 +91,6 @@ boolean
 ```
 
 ### LinearVariantMatrixDisplay - Methods
-
-#### method: adapterProps
-
-```js
-// type signature
-adapterProps: () => any
-```
-
-#### method: trackMenuItems
-
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
-```
 
 #### method: renderProps
 
@@ -133,53 +101,18 @@ renderProps: () => any
 
 ### LinearVariantMatrixDisplay - Actions
 
-#### action: setFeatures
+#### action: setLineZoneHeight
 
 ```js
 // type signature
-setFeatures: (f: Feature[]) => void
+setLineZoneHeight: (n: number) => number
 ```
 
-#### action: setLayout
+#### action: setLineZoneHeight
 
 ```js
 // type signature
-setLayout: (layout: Source[]) => void
-```
-
-#### action: clearLayout
-
-```js
-// type signature
-clearLayout: () => void
-```
-
-#### action: setSourcesLoading
-
-```js
-// type signature
-setSourcesLoading: (str: string) => void
-```
-
-#### action: setSources
-
-```js
-// type signature
-setSources: (sources: Source[]) => void
-```
-
-#### action: setMafFilter
-
-```js
-// type signature
-setMafFilter: (arg: number) => void
-```
-
-#### action: setShowSidebarLabels
-
-```js
-// type signature
-setShowSidebarLabels: (arg: boolean) => void
+setLineZoneHeight: (n: number) => number
 ```
 
 #### action: renderSvg

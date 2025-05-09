@@ -28,16 +28,18 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const pm = this.pluginManager
+    const pluginManager = this.pluginManager
     const bigwig = new BigWig({
-      filehandle: openLocation(this.getConf('bigWigLocation'), pm),
+      filehandle: openLocation(this.getConf('bigWigLocation'), pluginManager),
     })
-    const header = await updateStatus(
-      'Downloading bigwig header',
-      statusCallback,
-      () => bigwig.getHeader(opts),
-    )
-    return { bigwig, header }
+    return {
+      bigwig,
+      header: await updateStatus(
+        'Downloading bigwig header',
+        statusCallback,
+        () => bigwig.getHeader(opts),
+      ),
+    }
   }
 
   async setup(opts?: BaseOptions) {
@@ -69,19 +71,23 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end } = region
     const {
       bpPerPx = 0,
-      stopToken,
       resolution = 1,
+      stopToken,
       statusCallback = () => {},
     } = opts
     return ObservableCreate<Feature>(async observer => {
-      statusCallback('Downloading bigwig data')
       const source = this.getConf('source')
       const resolutionMultiplier = this.getConf('resolutionMultiplier')
       const { bigwig } = await this.setup(opts)
-      const feats = await bigwig.getFeatures(refName, start, end, {
-        ...opts,
-        basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
-      })
+      const feats = await updateStatus(
+        'Downloading bigwig data',
+        statusCallback,
+        () =>
+          bigwig.getFeatures(refName, start, end, {
+            ...opts,
+            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+          }),
+      )
 
       for (const data of feats) {
         if (source) {
@@ -106,8 +112,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   // always render bigwig instead of calculating a feature density for it
   async getMultiRegionFeatureDensityStats(_regions: Region[]) {
-    return { featureDensity: 0 }
+    return {
+      featureDensity: 0,
+    }
   }
-
-  public freeResources(): void {}
 }

@@ -80,7 +80,7 @@ export function structuredClone(src: any): any {
   }
   if (src instanceof Date) {
     // Date
-    return new Date(src.getTime()) // Date
+    return new Date(src) // Date
   }
   if (src instanceof RegExp) {
     // RegExp

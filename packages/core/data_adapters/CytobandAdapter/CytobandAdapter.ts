@@ -1,4 +1,4 @@
-import { SimpleFeature, fetchAndMaybeUnzip } from '../../util'
+import { SimpleFeature, fetchAndMaybeUnzipText } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
 
@@ -11,13 +11,14 @@ export default class CytobandAdapter extends BaseAdapter {
       return []
     }
 
-    const pm = this.pluginManager
-    const buf = await fetchAndMaybeUnzip(openLocation(conf, pm), opts)
-    const decoder = new TextDecoder('utf8', { fatal: true })
-    const text = decoder.decode(buf)
+    const text = await fetchAndMaybeUnzipText(
+      openLocation(conf, this.pluginManager),
+      opts,
+    )
     return text
       .split(/\n|\r\n|\r/)
       .filter(f => !!f.trim())
+      .filter(f => !f.startsWith('#'))
       .map((line, i) => {
         const [refName, start, end, name, type] = line.split('\t')
         return new SimpleFeature({
@@ -31,6 +32,4 @@ export default class CytobandAdapter extends BaseAdapter {
         })
       })
   }
-
-  freeResources(/* { region } */): void {}
 }

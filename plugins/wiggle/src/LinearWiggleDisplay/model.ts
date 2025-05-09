@@ -2,6 +2,9 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import EqualizerIcon from '@mui/icons-material/Equalizer'
+import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
@@ -46,8 +49,20 @@ function stateModelFactory(
          * #property
          */
         type: types.literal('LinearWiggleDisplay'),
+        /**
+         * #property
+         */
+        invertedSetting: types.maybe(types.boolean),
       }),
     )
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setInverted(arg: boolean) {
+        self.invertedSetting = arg
+      },
+    }))
 
     .views(self => ({
       /**
@@ -76,6 +91,22 @@ function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         return self.stats?.currStatsBpPerPx === view.bpPerPx
       },
+
+      /**
+       * #getter
+       */
+      get graphType() {
+        return (
+          self.rendererTypeName === 'XYPlotRenderer' ||
+          self.rendererTypeName === 'LinePlotRenderer'
+        )
+      },
+      /**
+       * #getter
+       */
+      get inverted() {
+        return self.invertedSetting ?? (getConf(self, 'inverted') as boolean)
+      },
     }))
 
     .views(self => {
@@ -103,9 +134,8 @@ function stateModelFactory(
          * #getter
          */
         get ticks() {
-          const { scaleType, domain, height } = self
+          const { inverted, scaleType, domain, height } = self
           const minimalTicks = getConf(self, 'minimalTicks')
-          const inverted = getConf(self, 'inverted')
           if (domain) {
             const ticks = axisPropsFromTickScale(
               getScale({
@@ -133,25 +163,17 @@ function stateModelFactory(
        * #method
        */
       renderProps() {
-        const { ticks, height } = self
+        const { inverted, ticks, height } = self
         const superProps = self.adapterProps()
         return {
           ...self.adapterProps(),
           notReady: superProps.notReady || !self.stats,
           height,
           ticks,
+          inverted,
         }
       },
 
-      /**
-       * #getter
-       */
-      get needsScalebar() {
-        return (
-          self.rendererTypeName === 'XYPlotRenderer' ||
-          self.rendererTypeName === 'LinePlotRenderer'
-        )
-      },
       /**
        * #getter
        */
@@ -186,8 +208,21 @@ function stateModelFactory(
             ...superTrackMenuItems(),
             {
               label: 'Score',
+              icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
+            ...(self.graphType
+              ? [
+                  {
+                    label: 'Inverted',
+                    type: 'checkbox',
+                    checked: self.inverted,
+                    onClick: () => {
+                      self.setInverted(!self.inverted)
+                    },
+                  },
+                ]
+              : []),
 
             ...(self.canHaveFill
               ? [
@@ -203,19 +238,6 @@ function stateModelFactory(
                         },
                       }),
                     ),
-                  },
-                ]
-              : []),
-
-            ...(self.needsScalebar
-              ? [
-                  {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
                   },
                 ]
               : []),
@@ -237,7 +259,8 @@ function stateModelFactory(
               : []),
 
             {
-              label: 'Set color',
+              label: 'Color',
+              icon: PaletteIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
@@ -248,6 +271,20 @@ function stateModelFactory(
                 ])
               },
             },
+
+            ...(self.graphType
+              ? [
+                  {
+                    type: 'checkbox',
+                    icon: VisibilityIcon,
+                    label: 'Show cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
+                  },
+                ]
+              : []),
           ]
         },
       }

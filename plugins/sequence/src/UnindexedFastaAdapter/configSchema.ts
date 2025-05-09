@@ -38,6 +38,32 @@ const UnindexedFastaAdapter = ConfigurationSchema(
       },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "UnindexedFastaAdapter",
+     *   "uri": "yourfile.fa"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            fastaLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 export default UnindexedFastaAdapter

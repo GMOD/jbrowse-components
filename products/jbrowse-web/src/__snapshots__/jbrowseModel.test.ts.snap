@@ -486,6 +486,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.dup.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -532,6 +536,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox.dup.renamed.vcf.gz.tbi",
           },
+        },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -914,7 +922,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_alignments_alignments",
-          "height": 400,
+          "height": 600,
           "pileupDisplay": {
             "colorBy": {
               "type": "mappingQuality",
@@ -1192,6 +1200,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox.test.vcf.gz.tbi",
           },
+        },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "1000genomes.tsv",
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -2132,6 +2144,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -2177,6 +2193,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
+        },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -2808,6 +2828,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -3138,6 +3162,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox.inv.vcf.gz.tbi",
           },
         },
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
           "locationType": "UriLocation",
@@ -3355,6 +3383,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfAdapter",
         "vcfLocation": {
           "locationType": "UriLocation",
@@ -3461,6 +3493,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfAdapter",
         "vcfLocation": {
           "locationType": "UriLocation",
@@ -3501,6 +3537,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/samples.tsv",
+        },
         "type": "VcfAdapter",
         "vcfLocation": {
           "locationType": "UriLocation",
@@ -4151,6 +4191,68 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox-sorted.cram (noref)",
       "trackId": "volvox-sorted.noref.cram",
       "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "bedLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_repeat_minus.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "color": "jexl:repeatColor(feature)",
+              "type": "XYPlotRenderer",
+            },
+          },
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "volvox_repeats (minus)",
+      "trackId": "volvox_repeats_minus",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bedLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_repeat_plus.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_repeat-plus-LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "color": "jexl:repeatColor(feature)",
+              "type": "XYPlotRenderer",
+            },
+          },
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "volvox_repeats (plus)",
+      "trackId": "volvox_repeats_plus",
+      "type": "QuantitativeTrack",
     },
   ],
 }

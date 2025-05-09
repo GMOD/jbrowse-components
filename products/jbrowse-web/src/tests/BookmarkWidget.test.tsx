@@ -58,7 +58,7 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
   const { session, findByTestId } = await createView()
 
   const user = userEvent.setup()
-  await user.click(await findByTestId('trackContainer', ...opts))
+  await user.click(await findByTestId('tracksContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
@@ -77,7 +77,7 @@ test('Create a bookmark using the menu button to bookmark the current region', a
   const { session, findByTestId, findByText } = await createView()
 
   const user = userEvent.setup()
-  await user.click(await findByTestId('trackContainer', ...opts))
+  await user.click(await findByTestId('tracksContainer', ...opts))
   await user.click(await findByTestId('view_menu_icon'))
   await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Bookmark current region'))

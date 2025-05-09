@@ -122,6 +122,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
+    // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
       const uniqueId = `${this.id}-${refName}-${i}`
@@ -159,12 +160,13 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
-        observer.next(f)
-      })
+      const features = intervalTree?.search([start, end])
+      if (features) {
+        for (const f of features) {
+          observer.next(f)
+        }
+      }
       observer.complete()
     }, opts.stopToken)
   }
-
-  public freeResources(): void {}
 }

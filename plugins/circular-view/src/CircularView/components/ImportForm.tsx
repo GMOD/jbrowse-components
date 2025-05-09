@@ -31,37 +31,30 @@ const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
     <Container className={classes.importFormContainer}>
       {err ? (
         <Grid container spacing={1} justifyContent="center" alignItems="center">
-          <Grid item>
-            <ErrorMessage error={err} />
-          </Grid>
+          <ErrorMessage error={err} />
         </Grid>
       ) : null}
       <Grid container spacing={1} justifyContent="center" alignItems="center">
-        <Grid item>
-          <AssemblySelector
-            onChange={val => {
-              model.setError(undefined)
-              setSelectedAsm(val)
-            }}
-            session={session}
-            selected={selectedAsm}
-          />
-        </Grid>
-
-        <Grid item>
-          <Button
-            disabled={!regions.length}
-            onClick={() => {
-              model.setError(undefined)
-              model.setDisplayedRegions(regions)
-            }}
-            variant="contained"
-            color="primary"
-          >
-            {/* if there's an error, it's not actively loading  so just display open */}
-            {regions.length || err ? 'Open' : 'Loading...'}
-          </Button>
-        </Grid>
+        <AssemblySelector
+          onChange={val => {
+            model.setError(undefined)
+            setSelectedAsm(val)
+          }}
+          session={session}
+          selected={selectedAsm}
+        />
+        <Button
+          disabled={!regions.length}
+          onClick={() => {
+            model.setError(undefined)
+            model.setDisplayedRegions(regions)
+          }}
+          variant="contained"
+          color="primary"
+        >
+          {/* if there's an error, it's not actively loading  so just display open */}
+          {regions.length || err ? 'Open' : 'Loading...'}
+        </Button>
       </Grid>
     </Container>
   )

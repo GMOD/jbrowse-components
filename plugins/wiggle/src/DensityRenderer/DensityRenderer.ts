@@ -1,5 +1,4 @@
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { drawDensity } from '../drawDensity'
 
 import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
 
@@ -8,6 +7,7 @@ export default class DensityRenderer extends WiggleBaseRenderer {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
+    const { drawDensity } = await import('../drawDensity')
     return drawDensity(ctx, props)
   }
 }

@@ -45,6 +45,10 @@ export default function stateModelFactory(
          * #property
          */
         activeNormalization: 'KR',
+        /**
+         * #property
+         */
+        mode: 'triangular',
       }),
     )
     .volatile(() => ({
@@ -87,6 +91,7 @@ export default function stateModelFactory(
           return {
             ...superRenderProps(),
             config,
+            displayHeight: self.mode === 'adjust' ? self.height : undefined,
             normalization: self.activeNormalization,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
@@ -128,12 +133,18 @@ export default function stateModelFactory(
       setAvailableNormalizations(f: string[]) {
         self.availableNormalizations = f
       },
+      /**
+       * #action
+       */
+      setMode(arg: string) {
+        self.mode = arg
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
-         * #getter
+         * #method
          */
         trackMenuItems() {
           return [
@@ -147,35 +158,66 @@ export default function stateModelFactory(
               },
             },
             {
+              label: 'Rendering mode',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Triangular',
+                  type: 'radio',
+                  checked: self.mode === 'triangular',
+                  onClick: () => {
+                    self.setMode('triangular')
+                  },
+                },
+                {
+                  label: 'Adjust to height of display',
+                  type: 'radio',
+                  checked: self.mode === 'adjust',
+                  onClick: () => {
+                    self.setMode('adjust')
+                  },
+                },
+              ],
+            },
+            {
               label: 'Color scheme',
               type: 'subMenu',
               subMenu: [
                 {
                   label: 'Fall',
+                  type: 'radio',
+                  checked: self.colorScheme === 'fall',
                   onClick: () => {
                     self.setColorScheme('fall')
                   },
                 },
                 {
                   label: 'Viridis',
+                  type: 'radio',
+                  checked: self.colorScheme === 'viridis',
                   onClick: () => {
                     self.setColorScheme('viridis')
                   },
                 },
                 {
                   label: 'Juicebox',
+                  type: 'radio',
+                  checked: self.colorScheme === 'juicebox',
                   onClick: () => {
                     self.setColorScheme('juicebox')
                   },
                 },
                 {
-                  label: 'Clear',
+                  label: 'Default',
+                  type: 'radio',
+                  checked: self.colorScheme === undefined,
                   onClick: () => {
                     self.setColorScheme(undefined)
                   },
                 },
               ],
             },
+
             {
               label: 'Resolution',
               subMenu: [
@@ -199,7 +241,7 @@ export default function stateModelFactory(
                     label: 'Normalization scheme',
                     subMenu: self.availableNormalizations.map(norm => ({
                       label: norm,
-                      type: 'checkbox',
+                      type: 'radio',
                       checked: norm === self.activeNormalization,
                       onClick: () => {
                         self.setActiveNormalization(norm)

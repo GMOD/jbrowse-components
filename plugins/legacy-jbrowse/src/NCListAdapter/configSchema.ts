@@ -27,6 +27,8 @@ const NCListAdapter = ConfigurationSchema(
       description: 'List of refNames used by the NCList used for aliasing',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+  },
 )
 export default NCListAdapter

@@ -1384,48 +1384,48 @@ exports[`renders with one, zoomed way out 1`] = `
   <svg
     data-testid="sequence_track"
     height="160"
-    style="display: block; width: 333.3333333333333px; height: 160px; user-select: none;"
-    width="333.3333333333333"
+    style="display: block; width: 334px; height: 160px; user-select: none;"
+    width="334"
   >
     <rect
       fill="#d8d8d8"
       height="20"
-      width="333.3333333333333"
+      width="334"
       x="0"
       y="0"
     />
     <rect
       fill="#adadad"
       height="20"
-      width="333.3333333333333"
+      width="334"
       x="0"
       y="20"
     />
     <rect
       fill="#8f8f8f"
       height="20"
-      width="333.3333333333333"
+      width="334"
       x="0"
       y="40"
     />
     <rect
       fill="#8f8f8f"
       height="20"
-      width="333.3333333333333"
+      width="334"
       x="0"
       y="60"
     />
     <rect
       fill="#adadad"
       height="20"
-      width="333.3333333333333"
+      width="334"
       x="0"
       y="80"
     />
     <rect
       fill="#d8d8d8"
       height="20"
-      width="333.3333333333333"
+      width="334"
       x="0"
       y="100"
     />

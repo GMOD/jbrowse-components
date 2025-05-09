@@ -1,78 +1,76 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
+
+import type { GetSimplifiedFeaturesArgs } from './types'
+import type { SampleInfo } from '../shared/types'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
 
 export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantGetSimplifiedFeatures'
 
-  async execute(
-    args: {
-      adapterConfig: AnyConfigurationModel
-      stopToken?: string
-      sessionId: string
-      headers?: Record<string, string>
-      regions: Region[]
-      bpPerPx: number
-    },
-    rpcDriverClassName: string,
-  ) {
-    const pm = this.pluginManager
+  async execute(args: GetSimplifiedFeaturesArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
-    const { mafFilter, sources, regions, adapterConfig, sessionId } =
-      deserializedArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const feats = await firstValueFrom(
-      (dataAdapter as BaseFeatureDataAdapter)
-        .getFeaturesInMultipleRegions(regions, deserializedArgs)
-        .pipe(toArray()),
+    const {
+      lengthCutoffFilter,
+      minorAlleleFrequencyFilter,
+      regions,
+      adapterConfig,
+      stopToken,
+      sessionId,
+    } = deserializedArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
     )
 
-    // a 'factor' in the R sense of the term (ordinal)
-    const genotypeFactor = new Set<string>()
-    const mafs = [] as Feature[]
-    for (const feat of feats) {
-      let c = 0
-      let c2 = 0
-      const samp = feat.get('genotypes')
+    const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
+      minorAlleleFrequencyFilter,
+      lengthCutoffFilter,
+      stopToken,
+      features: await firstValueFrom(
+        (dataAdapter as BaseFeatureDataAdapter)
+          .getFeaturesInMultipleRegions(regions, deserializedArgs)
+          .pipe(toArray()),
+      ),
+    })
 
-      // only draw smallish indels
-      if (feat.get('end') - feat.get('start') <= 10) {
-        for (const { name } of sources) {
-          const s = samp[name]!
-          genotypeFactor.add(s)
-          if (s === '0|0' || s === './.') {
-            c2++
-          } else if (s === '1|0' || s === '0|1') {
-            c++
-          } else if (s === '1|1') {
-            c++
-            c2++
-          } else {
-            c++
-          }
-        }
-        if (
-          c / sources.length > mafFilter &&
-          c2 / sources.length < 1 - mafFilter
-        ) {
-          mafs.push(feat)
+    const sampleInfo = {} as Record<string, SampleInfo>
+    let hasPhased = false
+
+    forEachWithStopTokenCheck(features, stopToken, ({ feature }) => {
+      const samp = feature.get('genotypes') as Record<string, string>
+      for (const [key, val] of Object.entries(samp)) {
+        const isPhased = val.includes('|')
+        hasPhased ||= isPhased
+        sampleInfo[key] = {
+          maxPloidy: Math.max(
+            sampleInfo[key]?.maxPloidy || 0,
+            val.split('|').length,
+          ),
+          isPhased: sampleInfo[key]?.isPhased || isPhased,
         }
       }
+    })
+    return {
+      hasPhased,
+      sampleInfo,
+      features: features.map(({ feature }) => ({
+        id: feature.id(),
+        data: {
+          start: feature.get('start'),
+          end: feature.get('end'),
+          refName: feature.get('refName'),
+          name: feature.get('name'),
+        },
+      })),
     }
-    return mafs.map(f => ({
-      id: f.id(),
-      data: {
-        start: f.get('start'),
-        end: f.get('end'),
-        refName: f.get('refName'),
-      },
-    }))
   }
 }

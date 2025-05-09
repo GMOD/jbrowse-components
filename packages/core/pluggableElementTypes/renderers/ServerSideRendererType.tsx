@@ -89,30 +89,23 @@ export default class ServerSideRenderer extends RendererType {
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    // if we are rendering svg, we skip hydration
-    if (args.exportSVG) {
-      // only return the res if the renderer explicitly has
-      // this.supportsSVG support to avoid garbage being rendered in SVG
-      // document
-      return {
-        ...res,
-        html: this.supportsSVG
-          ? res.html
-          : '<text y="12" fill="black">SVG export not supported for this track</text>',
-      }
-    }
-
-    // get res using ServerSideRenderedContent
-    return {
-      ...res,
-      reactElement: (
-        <ServerSideRenderedContent
-          {...args}
-          {...res}
-          RenderingComponent={this.ReactComponent}
-        />
-      ),
-    }
+    return args.exportSVG
+      ? {
+          ...res,
+          html: this.supportsSVG
+            ? res.html
+            : '<text y="12" fill="black">SVG export not supported for this track</text>',
+        }
+      : {
+          ...res,
+          reactElement: (
+            <ServerSideRenderedContent
+              {...args}
+              {...res}
+              RenderingComponent={this.ReactComponent}
+            />
+          ),
+        }
   }
 
   /**
@@ -202,14 +195,9 @@ export default class ServerSideRenderer extends RendererType {
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
+    const { sessionId } = args
 
-    const freed = this.freeResources()
-    const freedRpc = (await rpcManager.call(
-      args.sessionId,
-      'CoreFreeResources',
-      serializedArgs,
-    )) as number
-    return freed + freedRpc
+    await rpcManager.call(sessionId, 'CoreFreeResources', serializedArgs)
   }
 }
 

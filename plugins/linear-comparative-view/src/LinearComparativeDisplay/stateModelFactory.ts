@@ -87,7 +87,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setMessage(messageText: string) {
-          // TODO:ABORT(??)
           self.message = messageText
           self.error = undefined
           stopToken = undefined

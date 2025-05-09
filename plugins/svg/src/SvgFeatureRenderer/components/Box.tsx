@@ -33,7 +33,7 @@ const Box = observer(function Box(props: {
     topLevel,
   } = props
   const { start, end } = region
-  const screenWidth = (end - start) / bpPerPx
+  const screenWidth = Math.ceil((end - start) / bpPerPx)
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const featureType: string | undefined = feature.get('type')

@@ -32,3 +32,19 @@ sessionConnections: types.array(
           pluginManager.pluggableConfigSchemaType('connection'),
         )
 ```
+
+### WebSessionConnectionsMixin - Actions
+
+#### action: addConnectionConf
+
+```js
+// type signature
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+```
+
+#### action: deleteConnection
+
+```js
+// type signature
+deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+```

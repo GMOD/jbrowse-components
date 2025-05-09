@@ -77,9 +77,6 @@ helpful for storing the plugin.js in the same folder as your config
 
 `esmUrl` is resolved relative to the index.html of the file, so can be a
 relative path in your root directory or an absolute URL to somewhere on the web.
-Note that ESM modules are currently not supported in web workers in firefox, so
-you can use MainThreadRpc, or use alternative module formats like UMD for broad
-compatibility.
 
 #### esmLoc
 
@@ -96,9 +93,6 @@ compatibility.
 
 `esmLoc` is resolved relative to the config.json that is being loaded, so is
 helpful for storing the plugin.js in the same folder as your config. Note that
-ESM modules are currently not supported in web workers in firefox, so you can
-use MainThreadRpc, or use alternative module formats like UMD for broad
-compatibility.
 
 #### cjsUrl
 
@@ -116,9 +110,7 @@ compatibility.
 `cjsUrl` is used for desktop plugins specifically, since Electron (as of
 writing) does not support ESM, and since the jbrowse-plugin-template will not
 output some code that is helpful for desktop like true require() calls for
-desktop modules. See the
-[desktop plugin tutorial](/docs/tutorials/desktop_spec_plugin_tutorial/) for
-more info.
+desktop modules.
 
 ### Plugin store
 

@@ -23,6 +23,10 @@
  * SOFTWARE.
  */
 
+import { getProgressDisplayStr } from '@jbrowse/core/util'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+
 function generate_record(
   qname: string,
   qstart: number,
@@ -51,7 +55,8 @@ function generate_record(
   }
 }
 
-export function paf_chain2paf(buffer: Uint8Array) {
+export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
+  const { statusCallback = () => {} } = opts || {}
   let t_name = ''
   let t_start = 0
   let t_end = 0
@@ -64,9 +69,15 @@ export function paf_chain2paf(buffer: Uint8Array) {
   let cigar = ''
   const records = []
 
+  let i = 0
   let blockStart = 0
   const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
+    if (i++ % 10_000 === 0) {
+      statusCallback(
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
+      )
+    }
     const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break

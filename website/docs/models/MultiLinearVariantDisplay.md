@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 extends
 
-- [SharedVariantMixin](../sharedvariantmixin)
+- [MultiVariantBaseModel](../linearbaredisplay)
 
 ### MultiLinearVariantDisplay - Properties
 
@@ -33,15 +33,6 @@ extends
 ISimpleType<"MultiLinearVariantDisplay">
 // code
 type: types.literal('MultiLinearVariantDisplay')
-```
-
-#### property: layout
-
-```js
-// type signature
-IOptionalIType<IType<Source[], Source[], Source[]>, [undefined]>
-// code
-layout: types.optional(types.frozen<Source[]>(), [])
 ```
 
 #### property: rowHeightSetting
@@ -55,150 +46,25 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 rowHeightSetting: types.optional(types.number, 11)
 ```
 
-#### property: autoHeight
-
-adjust to height of track/display
+#### property: minorAlleleFrequencyFilter
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-autoHeight: false
-```
-
-#### property: showSidebarLabelsSetting
-
-```js
-// type signature
-true
-// code
-showSidebarLabelsSetting: true
+minorAlleleFrequencyFilter: types.optional(types.number, 0)
 ```
 
 ### MultiLinearVariantDisplay - Getters
 
-#### getter: featureUnderMouse
+#### getter: rendererTypeName
 
 ```js
 // type
-Feature
-```
-
-#### getter: TooltipComponent
-
-```js
-// type
-React.ComponentType<any>
-```
-
-#### getter: sources
-
-```js
-// type
-{ color: string; baseUri?: string; name: string; group?: string; }[]
-```
-
-#### getter: rowHeight
-
-```js
-// type
-number
-```
-
-#### getter: canDisplayLabels
-
-```js
-// type
-boolean
-```
-
-#### getter: totalHeight
-
-```js
-// type
-number
-```
-
-### MultiLinearVariantDisplay - Methods
-
-#### method: adapterProps
-
-```js
-// type signature
-adapterProps: () => any
-```
-
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => any
-```
-
-#### method: trackMenuItems
-
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+string
 ```
 
 ### MultiLinearVariantDisplay - Actions
-
-#### action: setSourcesLoading
-
-```js
-// type signature
-setSourcesLoading: (str: string) => void
-```
-
-#### action: setLayout
-
-```js
-// type signature
-setLayout: (layout: Source[]) => void
-```
-
-#### action: clearLayout
-
-```js
-// type signature
-clearLayout: () => void
-```
-
-#### action: setSources
-
-```js
-// type signature
-setSources: (sources: Source[]) => void
-```
-
-#### action: setFeatureUnderMouse
-
-```js
-// type signature
-setFeatureUnderMouse: (f?: Feature) => void
-```
-
-#### action: setRowHeight
-
-```js
-// type signature
-setRowHeight: (arg: number) => void
-```
-
-#### action: setAutoHeight
-
-```js
-// type signature
-setAutoHeight: (arg: boolean) => void
-```
-
-#### action: setShowSidebarLabels
-
-```js
-// type signature
-setShowSidebarLabels: (arg: boolean) => void
-```
 
 #### action: renderSvg
 

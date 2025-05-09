@@ -41,20 +41,20 @@ indicatorThreshold: {
     }
 ```
 
-#### slot: drawArcs
+#### slot: showArcs
 
 ```js
-drawArcs: {
+showArcs: {
       type: 'boolean',
       description: 'Draw sashimi-style arcs for intron features',
       defaultValue: true,
     }
 ```
 
-#### slot: drawInterbaseCounts
+#### slot: showInterbaseCounts
 
 ```js
-drawInterbaseCounts: {
+showInterbaseCounts: {
       type: 'boolean',
       description:
         'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
@@ -62,10 +62,10 @@ drawInterbaseCounts: {
     }
 ```
 
-#### slot: drawIndicators
+#### slot: showInterbaseIndicators
 
 ```js
-drawIndicators: {
+showInterbaseIndicators: {
       type: 'boolean',
       description:
         'draw a triangular indicator where an event has been detected',

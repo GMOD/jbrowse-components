@@ -5,15 +5,9 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive } from 'mobx-state-tree'
 
+import type { Source } from './shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-export interface Source {
-  name: string
-  color?: string
-  group?: string
-  [key: string]: string | undefined
-}
 
 export function getMultiVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel
@@ -35,8 +29,8 @@ export function getMultiVariantSourcesAutorun(self: {
           }
           const { rpcManager } = getSession(self)
           const { adapterConfig } = self
-          const token = createStopToken()
-          self.setSourcesLoading(token)
+          const stopToken = createStopToken()
+          self.setSourcesLoading(stopToken)
           const sessionId = getRpcSessionId(self)
           const sources = (await rpcManager.call(
             sessionId,
@@ -44,6 +38,7 @@ export function getMultiVariantSourcesAutorun(self: {
             {
               sessionId,
               adapterConfig,
+              stopToken,
             },
           )) as Source[]
           if (isAlive(self)) {

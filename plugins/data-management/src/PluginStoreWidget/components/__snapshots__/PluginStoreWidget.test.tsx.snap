@@ -9,8 +9,8 @@ exports[`renders with the available plugins 1`] = `
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1d1r0im-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for=":r0:"
-        id=":r0:-label"
+        for="«r0»"
+        id="«r0»-label"
       >
         Filter plugins
       </label>
@@ -20,7 +20,7 @@ exports[`renders with the available plugins 1`] = `
         <input
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-          id=":r0:"
+          id="«r0»"
           type="text"
           value=""
         />
@@ -28,7 +28,7 @@ exports[`renders with the available plugins 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1d2ld9h-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -54,22 +54,22 @@ exports[`renders with the available plugins 1`] = `
       <h3
         class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
       >
-        <div
+        <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-          role="button"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
+          type="button"
         >
-          <div
-            class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+          <span
+            class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
           >
             <h5
               class="MuiTypography-root MuiTypography-h5 css-w2zoog-MuiTypography-root"
             >
               Installed plugins
             </h5>
-          </div>
-          <div
+          </span>
+          <span
             class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
           >
             <svg
@@ -83,8 +83,8 @@ exports[`renders with the available plugins 1`] = `
                 d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
               />
             </svg>
-          </div>
-        </div>
+          </span>
+        </button>
       </h3>
       <div
         class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
@@ -758,22 +758,22 @@ exports[`renders with the available plugins 1`] = `
       <h3
         class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
       >
-        <div
+        <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-t1q4kr-MuiButtonBase-root-MuiAccordionSummary-root"
-          role="button"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
+          type="button"
         >
-          <div
-            class="MuiAccordionSummary-content Mui-expanded css-rof4d7-MuiAccordionSummary-content"
+          <span
+            class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
           >
             <h5
               class="MuiTypography-root MuiTypography-h5 css-w2zoog-MuiTypography-root"
             >
               Available plugins
             </h5>
-          </div>
-          <div
+          </span>
+          <span
             class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
           >
             <svg
@@ -787,8 +787,8 @@ exports[`renders with the available plugins 1`] = `
                 d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
               />
             </svg>
-          </div>
-        </div>
+          </span>
+        </button>
       </h3>
       <div
         class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
@@ -857,12 +857,12 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-12qtcjg-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-6rkz1o-MuiButton-startIcon"
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-1in3o51-MuiButton-startIcon"
                     >
                       <svg
                         aria-hidden="true"

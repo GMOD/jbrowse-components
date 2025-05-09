@@ -20,14 +20,40 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
       },
     },
 
-    useUcscNameOverride: {
+    useNameOverride: {
       type: 'boolean',
       defaultValue: true,
       description:
         'forces usage of the UCSC names over the NCBI style names from a FASTA',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "NcbiSequenceReportAliasAdapter",
+     *   "uri": "sequence_report.tsv"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            location: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default NcbiSequenceReportAliasAdapterConfigSchema

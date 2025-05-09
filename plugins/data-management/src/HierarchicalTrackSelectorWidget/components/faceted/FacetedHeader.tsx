@@ -21,43 +21,36 @@ export default function FacetedHeader({
   return (
     <>
       <Grid container spacing={4} alignItems="center">
-        <Grid item>
-          <TextField
-            label="Search..."
-            value={faceted.filterText}
-            onChange={event => {
-              faceted.setFilterText(event.target.value)
-            }}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => {
-                        faceted.setFilterText('')
-                      }}
-                    >
-                      <ClearIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item>
-          <IconButton
-            onClick={event => {
-              setAnchorEl(event.currentTarget)
-            }}
-          >
-            <MoreVert />
-          </IconButton>
-        </Grid>
-        <Grid item>
-          <ShoppingCart model={model} />
-        </Grid>
+        <TextField
+          label="Search..."
+          value={faceted.filterText}
+          onChange={event => {
+            faceted.setFilterText(event.target.value)
+          }}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => {
+                      faceted.setFilterText('')
+                    }}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <IconButton
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+        >
+          <MoreVert />
+        </IconButton>
+        <ShoppingCart model={model} />
       </Grid>
       <Menu
         anchorEl={anchorEl}

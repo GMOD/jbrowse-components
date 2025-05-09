@@ -18,7 +18,7 @@ import config from '../docusaurus.config.json'
   or `brew install samtools`, used for creating FASTA index and BAM/CRAM
   processing for creating tabix GFF
 - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
-  `sudo apt install tabix` and `brew install htslib`, used for creating tabix
+  `sudo apt install tabix` or `brew install htslib`, used for creating tabix
   indexes for BED/VCF/GFF files
 
 ## Installing the JBrowse CLI
@@ -66,8 +66,12 @@ jbrowse create jbrowse2
 ```
 
 This fetches the latest version of jbrowse-web and unzips it to a folder named
-"jbrowse2" from github (https://github.com/GMOD/jbrowse-components/releases),
-you could run this step manually if you wanted to instead.
+"jbrowse2". You can name the folder anything you want to, it is just a folder
+containing html, css, and js files. It is not a fancy installation
+
+Also note: as an alternative to the jbrowse create command, you can manually
+download the jbrowse-web zip from
+https://github.com/GMOD/jbrowse-components/releases
 
 ### Checking the download
 
@@ -335,13 +339,13 @@ To upgrade the CLI tools, you can re-run the install command
 npm install -g @jbrowse/cli
 ```
 
-### Output to a custom named config file, and output to subfolders
+### Output to a custom config file name
 
 You can use filenames other than config.json, and put configs in subfolders of
 your jbrowse 2 installation too
 
 ```bash
-jbrowse add-assembly mygenome.fa --out /path/to/my/jbrowse2/subfolder/alt_config.json --load copy
+jbrowse add-assembly mygenome.fa --out /path/to/my/jbrowse2/alt_config.json --load copy
 ```
 
 This would then be accessible at e.g.

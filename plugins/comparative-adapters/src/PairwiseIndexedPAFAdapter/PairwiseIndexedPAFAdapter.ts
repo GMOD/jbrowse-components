@@ -1,5 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -77,6 +78,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
+    const { statusCallback = () => {} } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
@@ -85,49 +87,49 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const flip = index === 0
       const letter = flip ? 'q' : 't'
 
-      await this.pif.getLines(letter + query.refName, query.start, query.end, {
-        lineCallback: (line, fileOffset) => {
-          const r = parsePAFLine(line)
-          const refName = r.qname.slice(1)
-          const start = r.qstart
-          const end = r.qend
-          const mateName = r.tname
-          const mateStart = r.tstart
-          const mateEnd = r.tend
+      await updateStatus('Downloading features', statusCallback, () =>
+        this.pif.getLines(letter + query.refName, query.start, query.end, {
+          lineCallback: (line, fileOffset) => {
+            const r = parsePAFLine(line)
+            const refName = r.qname.slice(1)
+            const start = r.qstart
+            const end = r.qend
+            const mateName = r.tname
+            const mateStart = r.tstart
+            const mateEnd = r.tend
 
-          const { extra, strand } = r
-          const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+            const { extra, strand } = r
+            const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-          observer.next(
-            new SyntenyFeature({
-              uniqueId: fileOffset + assemblyName,
-              assemblyName,
-              start,
-              end,
-              type: 'match',
-              refName,
-              strand,
-              ...rest,
-              CIGAR: extra.cg,
-              syntenyId: fileOffset,
-              identity: numMatches / blockLen,
-              numMatches,
-              blockLen,
-              mate: {
-                start: mateStart,
-                end: mateEnd,
-                refName: mateName,
-                assemblyName: assemblyNames[+flip],
-              },
-            }),
-          )
-        },
-        stopToken: opts.stopToken,
-      })
+            observer.next(
+              new SyntenyFeature({
+                uniqueId: fileOffset + assemblyName,
+                assemblyName,
+                start,
+                end,
+                type: 'match',
+                refName,
+                strand,
+                ...rest,
+                CIGAR: extra.cg,
+                syntenyId: fileOffset,
+                identity: numMatches / blockLen,
+                numMatches,
+                blockLen,
+                mate: {
+                  start: mateStart,
+                  end: mateEnd,
+                  refName: mateName,
+                  assemblyName: assemblyNames[+flip],
+                },
+              }),
+            )
+          },
+          stopToken: opts.stopToken,
+        }),
+      )
 
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

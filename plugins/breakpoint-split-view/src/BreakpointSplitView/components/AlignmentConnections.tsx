@@ -38,7 +38,7 @@ const AlignmentConnections = observer(function ({
   parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
-  const { views, showIntraviewLinks } = model
+  const { interactiveOverlay, views, showIntraviewLinks } = model
   const theme = useTheme()
   const session = getSession(model)
   const snap = getSnapshot(model)
@@ -177,6 +177,7 @@ const AlignmentConnections = observer(function ({
               d={path}
               key={id}
               data-testid="r1"
+              pointerEvents={interactiveOverlay ? 'auto' : undefined}
               strokeWidth={mouseoverElt === id ? 5 : 1}
               {...getStrokeProps(
                 orientationColor || theme.palette.text.disabled,

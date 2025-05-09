@@ -213,3 +213,23 @@ particular notes include
    subpaths like '@jbrowse/core/util'
 2. The use of tsconfig.build.json to generate types in the final release
 3. The use of referring to the src directory at development time
+
+## What to do if a release fails
+
+### Option A. It already published to NPM
+
+You should probably run another patch release
+
+Note: You must make miniscule source code change or the changelog code will
+fail, so rename a random variable somewhere, commit, and re-run the release
+
+### Option B. It hasn't published to NPM
+
+You can cancel the release script
+
+If it already pushed the tag, then revert the automated commits it made, and
+then delete the tag and push the tag delete (e.g. git tag -d v1.2.3 && git push
+origin :refs/tags/v1.2.3)
+
+If it already made a release draft, delete it, and then re-run the release
+script

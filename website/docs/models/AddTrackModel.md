@@ -130,11 +130,25 @@ boolean
 any
 ```
 
+#### getter: trackAdapterType
+
+```js
+// type
+any
+```
+
 #### getter: trackType
 
 ```js
 // type
 string
+```
+
+#### getter: getTrackConfig
+
+```js
+// type
+(timestamp: number) => any
 ```
 
 #### getter: warningMessage

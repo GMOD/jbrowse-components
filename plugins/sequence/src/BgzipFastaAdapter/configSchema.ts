@@ -46,6 +46,42 @@ const BgzipFastaAdapter = ConfigurationSchema(
       },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.fa.fai and yourfile.fa.gzi:
+     * ```json
+     * {
+     *   "type": "BgzipFastaAdapter",
+     *   "uri": "yourfile.fa"
+     * }
+     * ```
+     */
+
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            fastaLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            faiLocation: {
+              uri: `${snap.uri}.fai`,
+              baseUri: snap.baseUri,
+            },
+            gziLocation: {
+              uri: `${snap.uri}.gzi`,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 export default BgzipFastaAdapter

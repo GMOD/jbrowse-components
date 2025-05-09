@@ -62,6 +62,15 @@ false
 minimized: false
 ```
 
+#### property: pinned
+
+```js
+// type signature
+false
+// code
+pinned: false
+```
+
 #### property: displays
 
 ```js
@@ -90,6 +99,13 @@ any
 ```
 
 #### getter: textSearchAdapter
+
+```js
+// type
+any
+```
+
+#### getter: adapterConfig
 
 ```js
 // type
@@ -127,6 +143,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```
 
 ### BaseTrackModel - Actions
+
+#### action: setPinned
+
+```js
+// type signature
+setPinned: (flag: boolean) => void
+```
 
 #### action: setMinimized
 

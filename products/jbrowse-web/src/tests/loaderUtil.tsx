@@ -9,6 +9,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 export function App({ search }: { search: string }) {
   const location = {
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     ...window.location,
     search,
   }

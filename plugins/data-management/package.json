@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "2.18.0",
+  "version": "3.3.0",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -36,23 +36,24 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/ucsc-hub": "^0.3.0",
-    "@mui/icons-material": "^6.0.0",
-    "@mui/x-data-grid": "^7.0.0",
-    "react-virtualized-auto-sizer": "^1.0.2",
-    "react-vtree": "^3.0.0-beta.1",
-    "react-window": "^1.8.6"
-  },
-  "peerDependencies": {
-    "@jbrowse/core": "^2.0.0",
-    "@jbrowse/plugin-config": "^2.0.0",
-    "@jbrowse/product-core": "^2.0.0",
-    "@mui/material": "^6.0.0",
+    "@gmod/ucsc-hub": "^2.0.1",
+    "@jbrowse/core": "^3.3.0",
+    "@jbrowse/plugin-config": "^3.3.0",
+    "@jbrowse/product-core": "^3.3.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "@mui/x-data-grid": "^8.0.0",
+    "deepmerge": "^4.3.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0",
+    "react-virtualized-auto-sizer": "^1.0.26",
+    "react-vtree": "^3.0.0-beta.1",
+    "react-window": "^1.8.6",
     "tss-react": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

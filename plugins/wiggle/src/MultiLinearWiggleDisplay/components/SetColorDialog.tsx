@@ -13,6 +13,9 @@ const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
+  float: {
+    float: 'right',
+  },
 })
 
 export default function SetColorDialog({
@@ -35,12 +38,12 @@ export default function SetColorDialog({
       open
       onClose={handleClose}
       maxWidth="xl"
-      title={'Multi-wiggle color/arrangement editor'}
+      title="Multi-wiggle color/arrangement editor"
     >
       <DialogContent className={classes.content}>
         <Button
           variant="contained"
-          style={{ float: 'right' }}
+          className={classes.float}
           onClick={() => {
             setShowTips(!showTips)
           }}

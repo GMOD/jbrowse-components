@@ -3,7 +3,7 @@ import RectBg from './RectBg'
 import type { Source } from '../../util'
 import type { WiggleDisplayModel } from '../model'
 
-function LegendItem({
+const LegendItem = function ({
   source,
   idx,
   rowHeight,
@@ -21,7 +21,7 @@ function LegendItem({
   const boxHeight = Math.min(20, rowHeight)
   const {
     needsCustomLegend,
-    needsScalebar,
+    graphType,
     needsFullHeightScalebar,
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
@@ -32,7 +32,7 @@ function LegendItem({
   const legendWidth = labelWidth + colorBoxWidth + 5
   const svgOffset = exportSVG ? 10 : 0
   const extraOffset =
-    svgOffset || (needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0)
+    svgOffset || (graphType && !rowHeightTooSmallForScalebar ? 50 : 0)
   return (
     <>
       {needsFullHeightScalebar ? null : (

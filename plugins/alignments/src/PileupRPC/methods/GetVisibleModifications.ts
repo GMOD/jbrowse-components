@@ -24,24 +24,29 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
     },
     rpcDriver: string,
   ) {
-    const { adapterConfig, sessionId, regions } =
-      await this.deserializeArguments(args, rpcDriver)
+    const deserializeArguments = await this.deserializeArguments(
+      args,
+      rpcDriver,
+    )
+    const { adapterConfig, sessionId, regions } = deserializeArguments
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
     const featuresArray = await firstValueFrom(
-      dataAdapter.getFeaturesInMultipleRegions(regions).pipe(toArray()),
+      dataAdapter
+        .getFeaturesInMultipleRegions(regions, deserializeArguments)
+        .pipe(toArray()),
     )
 
     const uniqueModifications = new Map<string, ModificationType>()
-    featuresArray.forEach(f => {
-      for (const mod of getModTypes(getTagAlt(f, 'MM', 'Mm') || '')) {
+    for (const feat of featuresArray) {
+      for (const mod of getModTypes(getTagAlt(feat, 'MM', 'Mm') || '')) {
         if (!uniqueModifications.has(mod.type)) {
           uniqueModifications.set(mod.type, mod)
         }
       }
-    })
+    }
     return [...uniqueModifications.values()]
   }
 }

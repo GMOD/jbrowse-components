@@ -46,7 +46,7 @@ const TrackLabel = observer(
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
-    const minimized = track.minimized
+    const { minimized } = track
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
 

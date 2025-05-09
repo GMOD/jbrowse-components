@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### Gff3TabixAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi:
+
+```json
+{
+  "type": "Gff3TabixAdapter",
+  "uri": "yourfile.gff3.gz"
+}
+```
+
 ### Gff3TabixAdapter - Slots
 
 #### slot: gffGzLocation
@@ -25,7 +36,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 gffGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.gff.gz',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

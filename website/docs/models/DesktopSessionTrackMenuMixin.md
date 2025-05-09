@@ -26,5 +26,5 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => { ...; }[]
+getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => ({ ...; } | { ...; })[]
 ```

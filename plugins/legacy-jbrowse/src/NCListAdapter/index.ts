@@ -11,6 +11,9 @@ export default function NCListAdapterF(pluginManager: PluginManager) {
         name: 'NCListAdapter',
         displayName: 'NCList adapter',
         configSchema,
+        adapterMetadata: {
+          category: 'Uncommon',
+        },
         getAdapterClass: () => import('./NCListAdapter').then(r => r.default),
       }),
   )

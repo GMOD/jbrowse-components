@@ -32,6 +32,9 @@ const randomColor = () =>
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const WiggleClusterDialog = lazy(
+  () => import('./components/WiggleClusterDialog/WiggleClusterDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -65,6 +68,10 @@ export function stateModelFactory(
          * #property
          */
         layout: types.optional(types.frozen<Source[]>(), []),
+        /**
+         * #property
+         */
+        showSidebar: true,
       }),
     )
     .volatile(() => ({
@@ -82,6 +89,15 @@ export function stateModelFactory(
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setShowSidebar(arg: boolean) {
+        self.showSidebar = arg
+      },
+      /**
+       * #action
+       */
       setSourcesLoading(str: string) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
@@ -147,7 +163,7 @@ export function stateModelFactory(
       /**
        * #getter
        */
-      get needsScalebar() {
+      get graphType() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
@@ -212,6 +228,28 @@ export function stateModelFactory(
       get prefersOffset() {
         return this.isMultiRow
       },
+
+      /**
+       * #getter
+       */
+      get sourcesWithoutLayout() {
+        const sources = Object.fromEntries(
+          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+        )
+        const iter = self.sourcesVolatile
+        return iter
+          ?.map(s => ({
+            ...sources[s.name],
+            ...s,
+          }))
+          .map((s, i) => ({
+            ...s,
+            color:
+              s.color ||
+              (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
+          }))
+      },
+
       /**
        * #getter
        */
@@ -263,7 +301,8 @@ export function stateModelFactory(
        */
       get useMinimalTicks() {
         return (
-          getConf(self, 'minimalTicks') || this.rowHeightTooSmallForScalebar
+          (getConf(self, 'minimalTicks') as boolean) ||
+          this.rowHeightTooSmallForScalebar
         )
       },
     }))
@@ -438,18 +477,6 @@ export function stateModelFactory(
                 ]
               : []),
 
-            ...(self.needsScalebar
-              ? [
-                  {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
             ...(hasRenderings
               ? [
                   {
@@ -471,13 +498,47 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-
+            ...(self.graphType
+              ? [
+                  {
+                    type: 'checkbox',
+                    label: 'Draw cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
+                  },
+                ]
+              : []),
+            {
+              label: 'Cluster by score',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  WiggleClusterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
+              label: 'Show sidebar',
+              type: 'checkbox',
+              checked: self.showSidebar,
+              onClick: () => {
+                self.setShowSidebar(!self.showSidebar)
+              },
+            },
             {
               label: 'Edit colors/arrangement...',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },

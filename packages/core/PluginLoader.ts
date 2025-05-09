@@ -122,20 +122,33 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
-export function pluginDescriptionString(pluginDefinition: PluginDefinition) {
-  if (isUMDPluginDefinition(pluginDefinition)) {
-    return `UMD plugin ${pluginDefinition.name}`
-  }
-  if (isESMPluginDefinition(pluginDefinition)) {
+export function pluginDescriptionString(d: PluginDefinition) {
+  if (isUMDPluginDefinition(d)) {
+    return `UMD plugin ${d.name}`
+  } else if (isESMPluginDefinition(d)) {
     return `ESM plugin ${
-      (pluginDefinition as ESMUrlPluginDefinition).esmUrl ||
-      (pluginDefinition as ESMLocPluginDefinition).esmLoc.uri
+      (d as ESMUrlPluginDefinition).esmUrl ||
+      (d as ESMLocPluginDefinition).esmLoc.uri
     }`
+  } else if (isCJSPluginDefinition(d)) {
+    return `CJS plugin ${d.cjsUrl}`
+  } else {
+    return 'unknown plugin'
   }
-  if (isCJSPluginDefinition(pluginDefinition)) {
-    return `CJS plugin ${pluginDefinition.cjsUrl}`
+}
+export function pluginUrl(d: PluginDefinition) {
+  if (isUMDPluginDefinition(d)) {
+    // @ts-expect-error
+    return d.url ?? d.umdLoc?.uri ?? d.umdUrl
+  } else if (isESMPluginDefinition(d)) {
+    // @ts-expect-error
+    return d.esmUrl ?? d.esmUri ?? d.esmLoc?.uri
+  } else if (isCJSPluginDefinition(d)) {
+    // @ts-expect-error
+    return d.cjsUrl || d.cjsLoc.uri
+  } else {
+    return 'unknown url'
   }
-  return 'unknown plugin'
 }
 
 function isInWebWorker() {

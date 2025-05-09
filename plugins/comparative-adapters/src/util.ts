@@ -1,4 +1,7 @@
-import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  fetchAndMaybeUnzipText,
+  getProgressDisplayStr,
+} from '@jbrowse/core/util'
 
 import type { PAFRecord } from './PAFAdapter/util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -27,9 +30,7 @@ export function parseBed(text: string) {
 }
 
 export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  const buf = await fetchAndMaybeUnzip(file, opts)
-  const decoder = new TextDecoder('utf8')
-  return decoder.decode(buf)
+  return fetchAndMaybeUnzipText(file, opts)
 }
 
 export function zip(a: number[], b: number[]) {
@@ -39,10 +40,14 @@ export function zip(a: number[], b: number[]) {
 export function parseLineByLine<T>(
   buffer: Uint8Array,
   cb: (line: string) => T | undefined,
+  opts?: BaseOptions,
 ): T[] {
+  const { statusCallback = () => {} } = opts || {}
   let blockStart = 0
   const entries: T[] = []
   const decoder = new TextDecoder('utf8')
+
+  let i = 0
   while (blockStart < buffer.length) {
     const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
@@ -56,52 +61,42 @@ export function parseLineByLine<T>(
         entries.push(entry)
       }
     }
-
+    if (i++ % 10_000 === 0) {
+      statusCallback(
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
+      )
+    }
     blockStart = n + 1
   }
   return entries
 }
 
 export function parsePAFLine(line: string) {
-  const [
-    qname,
-    ,
-    qstart,
-    qend,
-    strand,
-    tname,
-    ,
-    tstart,
-    tend,
-    numMatches,
-    blockLen,
-    mappingQual,
-    ...fields
-  ] = line.split('\t')
+  const parts = line.split('\t')
+  const extraFields = parts.slice(12)
+  const extra: Record<string, string | number> = {
+    numMatches: +parts[9]!,
+    blockLen: +parts[10]!,
+    mappingQual: +parts[11]!,
+  }
 
-  const rest = Object.fromEntries(
-    fields.map(field => {
-      const r = field.indexOf(':')
-      const fieldName = field.slice(0, r)
-      const fieldValue = field.slice(r + 3)
-      return [fieldName, fieldValue]
-    }),
-  )
+  // Process extra fields only if they exist
+  if (extraFields.length) {
+    for (const field of extraFields) {
+      const colonIndex = field.indexOf(':')
+      extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
+    }
+  }
 
   return {
-    tname,
-    tstart: +tstart!,
-    tend: +tend!,
-    qname,
-    qstart: +qstart!,
-    qend: +qend!,
-    strand: strand === '-' ? -1 : 1,
-    extra: {
-      numMatches: +numMatches!,
-      blockLen: +blockLen!,
-      mappingQual: +mappingQual!,
-      ...rest,
-    },
+    tname: parts[5],
+    tstart: +parts[7]!,
+    tend: +parts[8]!,
+    qname: parts[0],
+    qstart: +parts[2]!,
+    qend: +parts[3]!,
+    strand: parts[4] === '-' ? -1 : 1,
+    extra,
   } as PAFRecord
 }
 

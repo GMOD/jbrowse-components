@@ -82,7 +82,7 @@ boolean
 
 ```js
 // type
-({ field: string; width: number; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<{ id: number; feature: SimpleFeatureSerialized; }, any, any, GridTreeNodeWithRender>) => Element | "N/A"; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[]
+({ field: string; width: number; type: "number"; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<{ id: number; feature: SimpleFeatureSerialized; }, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; }...
 ```
 
 ### SpreadsheetViewSpreadsheet - Actions
@@ -99,11 +99,4 @@ setVisibleRows: (arg?: Record<number, boolean>) => void
 ```js
 // type signature
 setVisibleColumns: (arg: Record<string, boolean>) => void
-```
-
-#### action: setLoaded
-
-```js
-// type signature
-setLoaded: (flag: boolean) => void
 ```
