@@ -81,30 +81,48 @@ line, with feet indicating directionality)
 
 ---
 
-![](/img/color_by_tag.png)
+![](/img/smalldel.png)
 
-Image of coloring and sorting by the HP (haplotype) tag, which can be done for
-BAM and CRAM. Users can color, sort, and filter by tags
+Screenshot showing a heterozygous small deletion in the GIAB dataset. The
+nanopore reads are colored and sorted by the HP (haplotype) tag which helps show
+that the deletion is exclusive to one haplotype. Users can color, sort, group,
+and filter by tags
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE))
 
 ---
 
-![](/img/insertion_indicators.png)
+![](/img/insertion.png)
 
-The browser has a variety of ways to help show insertions including "large
-insertion indicators" (a feature also seen in IGV) and upside down histogram of
-insertion/clipping counts
+Screenshot showing a ~1.5kb insertion in the GIAB dataset, with Nanopore,
+PacBio, and Illumina reads. This screenshot shows the "Show soft clipping"
+option enabled on the Illumina reads, which helps reveal the boundaries of the
+insertion on the short reads, while the long reads fully span the insertion
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt))
 
 ---
 
 ![](/img/read_vs_ref_insertion.png)
 
-The read vs reference visualization can show the "sequence track" on the "read"
-to see which bases are inserted. Users can also use the "Get sequence" click and
-drag to get the sequence of the contents of the insertions or unaligned portions
-of the read (e.g. softclipped parts)
+Screenshot showing a ~500bp insertion from SKBR3 (breast cancer) cell line
+PacBio reads. Users can right-click sequence reads, then click "read vs
+reference" to show complex read alignments in a "synteny style" view (lower
+panel). Users can also interactively get the sequence of read portions with a
+click-and-drag action (lower panel, in blue)
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe))
 
 ---
 
-![](/img/alignments/modifications2.png)
+![](/img/modifications.png)
 
-A hypo-methylated CpG island shown using the MM tag with nanopore reads
+A methylated and unmethylated CpG island shown using the MM tag with nanopore
+reads on the COLO829 (melanoma) cancer cell line. This dataset
+([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl))
+
+---
+
+![](/img/multisv.png)
+
+An example of the 1000 genomes structural variant call VCF, showing a large
+inversion on chromosome 19. This screenshot used the in-app clustering workflow
+on the inverted region, and then zoomed out further
+([live link](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw))
