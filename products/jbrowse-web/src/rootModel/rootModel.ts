@@ -154,6 +154,15 @@ export default function RootModel({
        * #volatile
        */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
+      reloadPluginManagerCallback: (
+        _configSnapshot?: Record<string, unknown>,
+        _sessionSnapshot?: Record<string, unknown>,
+      ) => {
+        console.error('reloadPluginManagerCallback unimplemented')
+      },
     }))
 
     .actions(self => ({
@@ -269,7 +278,9 @@ export default function RootModel({
                     // autorun at current time because it depends on session
                     // storage snapshot being set above
                     if (self.pluginsUpdated) {
-                      window.location.reload()
+                      self.reloadPluginManagerCallback(
+                        JSON.parse(JSON.stringify(getSnapshot(self.jbrowse))),
+                      )
                     }
                   } catch (e) {
                     console.error(e)
@@ -316,6 +327,17 @@ export default function RootModel({
        */
       setPluginsUpdated(flag: boolean) {
         self.pluginsUpdated = flag
+      },
+      /**
+       * #action
+       */
+      setReloadPluginManagerCallback(
+        callback: (
+          configSnapshot?: Record<string, unknown>,
+          sessionSnapshot?: Record<string, unknown>,
+        ) => void,
+      ) {
+        self.reloadPluginManagerCallback = callback
       },
       /**
        * #action
