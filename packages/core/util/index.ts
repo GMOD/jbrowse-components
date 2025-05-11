@@ -1454,6 +1454,10 @@ export function localStorageGetBoolean(key: string, defaultVal: boolean) {
   )
 }
 
+export function localStorageSetBoolean(key: string, value: boolean) {
+  localStorageSetItem(key, JSON.stringify(value))
+}
+
 export function forEachWithStopTokenCheck<T>(
   iter: Iterable<T>,
   stopToken: string | undefined,
