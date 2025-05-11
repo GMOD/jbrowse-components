@@ -232,7 +232,15 @@ showTrackOutlines: types.optional(types.boolean, () =>
 #### property: init
 
 this is a non-serialized property that can be used for loading the linear genome
-view as an alternative
+view via session snapshots example:
+
+```json
+{
+  loc: "chr1:1,000,000-2,000,000"
+  assembly: "hg19"
+  tracks: ["genes", "variants"]
+}
+```
 
 ```js
 // type signature
@@ -548,6 +556,8 @@ getTrack: (id: string) => any
 ```
 
 #### method: rankSearchResults
+
+does nothing currently
 
 ```js
 // type signature
@@ -947,7 +957,7 @@ wait for assemblies to be initialized
 
 ```js
 // type signature
-navToLocString: (input: string, optAssemblyName?: string) => Promise<any>
+navToLocString: (input: string, optAssemblyName?: string, grow?: number) => Promise<any>
 ```
 
 #### action: navToSearchString
@@ -967,7 +977,7 @@ locstring. Will try to perform `setDisplayedRegions` if changing regions
 
 ```js
 // type signature
-navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string) => Promise<any>
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string, grow?: number) => Promise<any>
 ```
 
 #### action: navToLocations
@@ -978,7 +988,7 @@ regions
 
 ```js
 // type signature
-navToLocations: (parsedLocStrings: ParsedLocString[], assemblyName?: string) => Promise<void>
+navToLocations: (regions: ParsedLocString[], assemblyName?: string, grow?: number) => Promise<void>
 ```
 
 #### action: navTo
