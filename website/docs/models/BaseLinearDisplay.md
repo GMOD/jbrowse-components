@@ -192,7 +192,7 @@ deleteBlock: (key: string) => void
 
 ```js
 // type signature
-selectFeature: (feature: Feature) => void
+selectFeature: (feature: Feature) => Promise<void>
 ```
 
 #### action: navToFeature

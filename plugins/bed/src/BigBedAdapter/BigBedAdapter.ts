@@ -109,10 +109,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       version,
       fileType,
       autoSql: { ...rest },
-      fields: Object.fromEntries(
-        fields.map(({ name, comment }) => [name, comment]),
-      ),
+      fields: await this.getMetadata(opts),
     }
+  }
+  async getMetadata(opts?: BaseOptions) {
+    const { parser } = await this.configure(opts)
+    const { fields } = parser.autoSql
+    return Object.fromEntries(
+      fields.map(({ name, comment }) => [name, comment]),
+    )
   }
 
   public async getFeaturesHelper({

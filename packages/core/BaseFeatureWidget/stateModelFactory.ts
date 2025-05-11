@@ -89,6 +89,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {}),
+
+      /**
+       * #property
+       */
+      descriptions: types.frozen(),
     })
     .volatile(() => ({
       /**
