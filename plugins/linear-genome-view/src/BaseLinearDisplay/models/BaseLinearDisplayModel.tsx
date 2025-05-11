@@ -1,7 +1,7 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -12,7 +12,10 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
@@ -231,25 +234,36 @@ function stateModelFactory() {
       /**
        * #action
        */
-      selectFeature(feature: Feature) {
+      async selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'BaseFeatureWidget',
-            'baseFeature',
+          const { rpcManager } = session
+          const sessionId = getRpcSessionId(self)
+          const track = getContainingTrack(self)
+          const view = getContainingView(self)
+          const adapterConfig = getConf(track, 'adapter')
+          const descriptions = await rpcManager.call(
+            sessionId,
+            'CoreGetMetadata',
             {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-              featureData: feature.toJSON(),
+              adapterConfig,
             },
           )
-
-          session.showWidget(featureWidget)
+          session.showWidget(
+            session.addWidget('BaseFeatureWidget', 'baseFeature', {
+              featureData: feature.toJSON(),
+              view,
+              track,
+              descriptions,
+            }),
+          )
         }
+
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
         }
       },
+
       /**
        * #action
        */
@@ -321,7 +335,11 @@ function stateModelFactory() {
                   icon: MenuOpenIcon,
                   onClick: () => {
                     if (self.contextMenuFeature) {
-                      self.selectFeature(self.contextMenuFeature)
+                      self
+                        .selectFeature(self.contextMenuFeature)
+                        .catch((e: unknown) => {
+                          getSession(e).notifyError(`${e}`, e)
+                        })
                     }
                   },
                 },
@@ -355,7 +373,9 @@ function stateModelFactory() {
             } else {
               const feature = self.features.get(f)
               if (feature) {
-                self.selectFeature(feature)
+                self.selectFeature(feature).catch((e: unknown) => {
+                  getSession(e).notifyError(`${e}`, e)
+                })
               }
             }
           },

@@ -116,7 +116,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            localStorageGetBoolean('stickyViewHeaders', self.stickyViewHeaders)
+            localStorageSetBoolean('stickyViewHeaders', self.stickyViewHeaders)
           }),
         )
       },

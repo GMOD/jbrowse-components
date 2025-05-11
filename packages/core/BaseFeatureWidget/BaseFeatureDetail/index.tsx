@@ -8,7 +8,7 @@ import { ErrorMessage } from '../../ui'
 import type { BaseInputProps } from './types'
 
 const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
-  const { error, featureData } = model
+  const { error, descriptions, featureData } = model
 
   if (error) {
     return <ErrorMessage error={error} />
@@ -21,7 +21,11 @@ const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
     // snapshotting the featureData
     const featureData2 = replaceUndefinedWithNull(featureData)
     return isEmpty(featureData2) ? null : (
-      <FeatureDetails model={model} feature={featureData2} />
+      <FeatureDetails
+        model={model}
+        feature={featureData2}
+        descriptions={descriptions}
+      />
     )
   }
 })
