@@ -77,6 +77,13 @@ moveViewToTop: (id: string) => void
 moveViewToBottom: (id: string) => void
 ```
 
+#### action: addView
+
+```js
+// type signature
+addView: (typeName: string, initialState?: {}) => any
+```
+
 #### action: removeView
 
 ```js
