@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 
 import { doBeforeEach, doSetupForImportForm, setup } from './util'
 
@@ -67,11 +67,10 @@ test('lower case refname, searching: contigb', async () => {
 }, 30_000)
 
 test('lower case refname, click ctgB', async () => {
-  const { getInputValue, autocomplete, input, findByText } = await getInput()
+  const { getInputValue, findByRole, input, findByText } = await getInput()
 
-  fireEvent.click(input)
-  fireEvent.click(autocomplete)
-  fireEvent.click(await findByText(/ctgB/))
+  fireEvent.mouseDown(input)
+  fireEvent.click(within(await findByRole('listbox')).getByText(/ctgB/))
   fireEvent.click(await findByText('Open'))
 
   await waitFor(() => {
