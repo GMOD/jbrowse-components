@@ -156,5 +156,6 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
       }
     }
   }
+  statusCallback('')
   return records
 }

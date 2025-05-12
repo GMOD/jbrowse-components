@@ -71,6 +71,7 @@ export function parseLineByLine<T>(
     }
     blockStart = n + 1
   }
+  statusCallback('')
   return entries
 }
 

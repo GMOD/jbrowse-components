@@ -179,5 +179,6 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
     )
   }
 
+  statusCallback('')
   return records
 }
