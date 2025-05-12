@@ -3,12 +3,7 @@ import { useEffect, useState } from 'react'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
-import {
-  getBpDisplayStr,
-  getSession,
-  measureText,
-  useDebounce,
-} from '@jbrowse/core/util'
+import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -82,7 +77,7 @@ const RefNameAutocomplete = observer(function ({
       result: new RefSequenceResult({
         refName: region.refName,
         label: region.refName,
-        displayString: `${region.refName} (${getBpDisplayStr(region.end - region.start)})`,
+        displayString: region.refName,
         matchedAttribute: 'refName',
       }),
     })) || []
@@ -132,7 +127,11 @@ const RefNameAutocomplete = observer(function ({
 
         if (typeof selectedOption === 'string') {
           // handles string inputs on keyPress enter
-          onSelect?.(new BaseResult({ label: selectedOption }))
+          onSelect?.(
+            new BaseResult({
+              label: selectedOption,
+            }),
+          )
         } else {
           onSelect?.(selectedOption.result)
         }
