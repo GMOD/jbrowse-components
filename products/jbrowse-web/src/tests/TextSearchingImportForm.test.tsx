@@ -66,6 +66,19 @@ test('lower case refname, searching: contigb', async () => {
   }, delay)
 }, 30_000)
 
+test('lower case refname, click ctgB', async () => {
+  const { getInputValue, autocomplete, input, findByText } = await getInput()
+
+  fireEvent.click(input)
+  fireEvent.click(autocomplete)
+  fireEvent.click(await findByText(/ctgB/))
+  fireEvent.click(await findByText('Open'))
+
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgB:1..6,079')
+  }, delay)
+}, 30_000)
+
 test('description of gene, searching: kinase', async () => {
   const { getInputValue, autocomplete, input, findByText } = await getInput()
 
