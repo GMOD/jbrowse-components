@@ -43,10 +43,14 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions) {
-    const pm = this.pluginManager
-    const pafLocation = openLocation(this.getConf('pafLocation'), pm)
-    const buf = await fetchAndMaybeUnzip(pafLocation, opts)
-    return parseLineByLine(buf, parsePAFLine, opts)
+    return parseLineByLine(
+      await fetchAndMaybeUnzip(
+        openLocation(this.getConf('pafLocation'), this.pluginManager),
+        opts,
+      ),
+      parsePAFLine,
+      opts,
+    )
   }
 
   async hasDataForRefName() {

@@ -48,6 +48,7 @@ export function parseLineByLine<T>(
   const decoder = new TextDecoder('utf8')
 
   let i = 0
+  let s = performance.now()
   while (blockStart < buffer.length) {
     const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
@@ -61,10 +62,12 @@ export function parseLineByLine<T>(
         entries.push(entry)
       }
     }
-    if (i++ % 10_000 === 0) {
+
+    if (i++ % 10_000 === 0 && performance.now() - s > 50) {
       statusCallback(
         `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
       )
+      s = performance.now()
     }
     blockStart = n + 1
   }
