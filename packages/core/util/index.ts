@@ -1413,13 +1413,14 @@ export function isGzip(buf: Uint8Array) {
 
 export async function fetchAndMaybeUnzip(
   loc: GenericFilehandle,
-  opts?: BaseOptions,
+  opts: BaseOptions = {},
 ) {
-  const { statusCallback = () => {} } = opts || {}
-  const buf = (await updateStatus('Downloading file', statusCallback, () =>
-    // @ts-expect-error
-    loc.readFile(opts),
-  )) as unknown as Uint8Array
+  const { statusCallback = () => {} } = opts
+  const buf = await updateStatus(
+    'Downloading file',
+    statusCallback,
+    () => loc.readFile(opts) as Promise<Uint8Array>,
+  )
   return isGzip(buf)
     ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
     : buf

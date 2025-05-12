@@ -210,13 +210,18 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   }
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
-    const pm = this.pluginManager
-    const buf = await fetchAndMaybeUnzip(
-      openLocation(readConfObject(this.config, 'blastTableLocation'), pm),
+    const columns: string = readConfObject(this.config, 'columns')
+    return parseLineByLine(
+      await fetchAndMaybeUnzip(
+        openLocation(
+          readConfObject(this.config, 'blastTableLocation'),
+          this.pluginManager,
+        ),
+        opts,
+      ),
+      createBlastLineParser(columns),
       opts,
     )
-    const columns: string = readConfObject(this.config, 'columns')
-    return parseLineByLine(buf, createBlastLineParser(columns), opts)
   }
 
   async hasDataForRefName() {
