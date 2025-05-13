@@ -20,3 +20,10 @@ export interface BaseCardProps {
   defaultExpanded?: boolean
   children?: React.ReactNode
 }
+
+export interface SerializedFeat {
+  [key: string]: unknown
+  subfeatures?: Record<string, unknown>[]
+}
+
+export type MaybeSerializedFeat = SimpleFeatureSerialized | undefined
