@@ -10,6 +10,7 @@ import { ErrorMessage } from '../../ui'
 import { getEnv, getSession } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'
+import type { Descriptors } from '../types'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // coreDetails are omitted in some circumstances
@@ -33,7 +34,7 @@ export default function FeatureDetails(props: {
   feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
-  descriptions?: Record<string, React.ReactNode>
+  descriptions?: Descriptors
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props

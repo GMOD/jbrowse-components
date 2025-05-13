@@ -11,24 +11,35 @@ import { tags } from './tagInfo'
 import { getTag } from './util'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
 const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
-const AlignmentsFeatureDetails = observer(function (props: {
+function SA({
+  model,
+  feat,
+}: {
+  model: AlignmentFeatureWidgetModel
+  feat: any
+}) {
+  const SA = feat ? (getTag('SA', feat) as string | undefined) : undefined
+  return SA !== undefined ? (
+    <SupplementaryAlignments model={model} tag={SA} feature={feat} />
+  ) : null
+}
+
+function FeatDefined(props: {
+  feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
-  const { model } = props
-  const { featureData } = model
-  const feat = structuredClone(featureData)
-  const SA = getTag('SA', feat) as string | undefined
-  const { flags } = feat
+  const { model, feat } = props
+  const flags = feat.flags as number | null
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
         {...props}
-        // @ts-expect-error
         descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>
@@ -39,15 +50,34 @@ const AlignmentsFeatureDetails = observer(function (props: {
           )
         }
       />
-      {SA !== undefined ? (
-        <SupplementaryAlignments model={model} tag={SA} feature={feat} />
-      ) : null}
-      {flags & 1 ? (
-        <LinkedPairedAlignments model={model} feature={feat} />
-      ) : null}
 
-      {flags !== undefined ? <Flags feature={feat} {...props} /> : null}
+      <SA model={model} feat={feat} />
+      {flags != null ? (
+        <>
+          {flags & 1 ? (
+            <LinkedPairedAlignments model={model} feature={feat} />
+          ) : null}
+
+          <Flags flags={flags} {...props} />
+        </>
+      ) : null}
     </Paper>
+  )
+}
+
+const AlignmentsFeatureDetails = observer(function (props: {
+  model: AlignmentFeatureWidgetModel
+}) {
+  const { model } = props
+  const { featureData } = model
+  const feat = structuredClone(featureData)
+  return feat ? (
+    <FeatDefined feat={feat} model={model} />
+  ) : (
+    <div>
+      No feature, may have been skipped from serialization because it was too
+      large
+    </div>
   )
 })
 
