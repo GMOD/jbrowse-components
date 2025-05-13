@@ -22,7 +22,7 @@ const SyntenyFeatureDetail = observer(function (props: {
         formatter={value => <Formatter value={value} />}
       />
       <BaseCard title="Link to view">
-        <LinkToSyntenyView model={model} />
+        <LinkToSyntenyView model={model} feat={feat} />
       </BaseCard>
     </Paper>
   ) : (
