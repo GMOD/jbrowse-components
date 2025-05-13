@@ -17,25 +17,13 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
 const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
-function SA({
-  model,
-  feat,
-}: {
-  model: AlignmentFeatureWidgetModel
-  feat: any
-}) {
-  const SA = feat ? (getTag('SA', feat) as string | undefined) : undefined
-  return SA !== undefined ? (
-    <SupplementaryAlignments model={model} tag={SA} feature={feat} />
-  ) : null
-}
-
-function FeatDefined(props: {
+const FeatDefined = observer(function (props: {
   feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
   const { model, feat } = props
   const flags = feat.flags as number | null
+  const SA = getTag('SA', feat) as string | undefined
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
@@ -51,7 +39,9 @@ function FeatDefined(props: {
         }
       />
 
-      <SA model={model} feat={feat} />
+      {SA !== undefined ? (
+        <SupplementaryAlignments model={model} tag={SA} feature={feat} />
+      ) : null}
       {flags != null ? (
         <>
           {flags & 1 ? (
@@ -63,7 +53,7 @@ function FeatDefined(props: {
       ) : null}
     </Paper>
   )
-}
+})
 
 const AlignmentsFeatureDetails = observer(function (props: {
   model: AlignmentFeatureWidgetModel
@@ -72,11 +62,11 @@ const AlignmentsFeatureDetails = observer(function (props: {
   const { featureData } = model
   const feat = structuredClone(featureData)
   return feat ? (
-    <FeatDefined feat={feat} model={model} />
+    <FeatDefined feat={feat} {...props} />
   ) : (
     <div>
-      No feature, may have been skipped from serialization because it was too
-      large
+      No feature loaded, may not be available after page refresh because it was
+      too large for localStorage
     </div>
   )
 })

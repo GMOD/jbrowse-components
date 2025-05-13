@@ -14,7 +14,7 @@ const SyntenyFeatureDetail = observer(function (props: {
   const { model } = props
   const { featureData } = model
   const feat = structuredClone(featureData)
-  return (
+  return feat ? (
     <Paper>
       <FeatureDetails
         {...props}
@@ -25,6 +25,11 @@ const SyntenyFeatureDetail = observer(function (props: {
         <LinkToSyntenyView model={model} />
       </BaseCard>
     </Paper>
+  ) : (
+    <div>
+      No feature loaded, may not be available after page refresh because it was
+      too large for localStorage
+    </div>
   )
 })
 
