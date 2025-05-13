@@ -1,3 +1,102 @@
+yarn run v1.22.18 $ lerna-changelog --silent --silent --next-version 3.4.0
+
+## 3.4.0 (2025-05-13)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#5018](https://github.com/GMOD/jbrowse-components/pull/5018) Avoid
+    serializing large features to sessions to fix quota exceeded errors in
+    localstorage ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5010](https://github.com/GMOD/jbrowse-components/pull/5010) Add mouseover
+    metadata for fields in the base feature widget
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4998](https://github.com/GMOD/jbrowse-components/pull/4998) Add padding to
+    the genomic window of search result hits
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4995](https://github.com/GMOD/jbrowse-components/pull/4995) Add uFuzzy to
+    improve gene name search ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4983](https://github.com/GMOD/jbrowse-components/pull/4983) Update some
+    data parser packages for ESM compat
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4980](https://github.com/GMOD/jbrowse-components/pull/4980) Synthesize
+    displayId if none provided in display config
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4972](https://github.com/GMOD/jbrowse-components/pull/4972) Support
+    cytoband bed files starting with "#"
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#5008](https://github.com/GMOD/jbrowse-components/pull/5008) Allow parsing
+    non-indexed BED files larger than 512MB
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4997](https://github.com/GMOD/jbrowse-components/pull/4997) Better message
+    for "quota exceeded" message from localstorage
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4974](https://github.com/GMOD/jbrowse-components/pull/4974) Minor
+    optimizations in multi-sample variant rendering
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4973](https://github.com/GMOD/jbrowse-components/pull/4973) Add basic
+    cytoband for Drosophila ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4970](https://github.com/GMOD/jbrowse-components/pull/4970) Dynamically
+    toggle wheel-scroll normalization to improve touchpad pinch-to-zoom usage
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#5013](https://github.com/GMOD/jbrowse-components/pull/5013) Fix UCSC chain
+    parsing which have header lines ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4993](https://github.com/GMOD/jbrowse-components/pull/4993) Fix re-export
+    of @mui/material/styles, and re-export theme
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4968](https://github.com/GMOD/jbrowse-components/pull/4968) Fix theme
+    augmentation for primary/secondary colors in v3.3.0
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#5004](https://github.com/GMOD/jbrowse-components/pull/5004) Fix
+    modifications rendering broken in v3.2.0
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4992](https://github.com/GMOD/jbrowse-components/pull/4992) Fix mouseover
+    for some variable width bigwig features
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4984](https://github.com/GMOD/jbrowse-components/pull/4984) Avoid
+    rendering 'yellow' for low scores in wiggle density renderings with
+    'log-scale' enabled ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4969](https://github.com/GMOD/jbrowse-components/pull/4969) Avoid
+    aggregating bigbed features with geneName === 'none'
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#5005](https://github.com/GMOD/jbrowse-components/pull/5005) Updated
+  screenshots in gallery ([@cmdcolin](https://github.com/cmdcolin))
+- [#5001](https://github.com/GMOD/jbrowse-components/pull/5001) Improve website
+  docs with grammarly suggestions ([@cmdcolin](https://github.com/cmdcolin))
+- [#4982](https://github.com/GMOD/jbrowse-components/pull/4982) Add example of
+  disabling side-scroll/zoom in embedded lgv
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4977](https://github.com/GMOD/jbrowse-components/pull/4977) Fix
+  `addToExtensionPoint` example in docs
+  ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :house: Internal
+
+- `core`, `product-core`
+  - [#5011](https://github.com/GMOD/jbrowse-components/pull/5011) Remove some
+    unused functions on the session model
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5003](https://github.com/GMOD/jbrowse-components/pull/5003) Fix typescript
+    on renderToAbstractCanvas ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4994](https://github.com/GMOD/jbrowse-components/pull/4994) Refactor some
+    ReExport code ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.76s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.3.0
 
 ## 3.3.0 (2025-04-18)
