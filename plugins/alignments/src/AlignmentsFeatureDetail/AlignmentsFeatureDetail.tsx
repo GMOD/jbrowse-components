@@ -28,7 +28,6 @@ const AlignmentsFeatureDetails = observer(function (props: {
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
         {...props}
-        // @ts-expect-error
         descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>

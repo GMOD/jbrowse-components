@@ -199,14 +199,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
         typeof snap,
         symbol
       >
-      // finalizedFeatureData avoids running formatter twice if loading from
-      // snapshot
+
+      // We check if feature has individually large attributes, because a full
+      // JSON.stringify is (1) expensive and (2) can exceed string length
+      // limits. This check catches single large attributes. Very large nested
+      // features e.g. gene with many many isoforms will not be caught by this
+      let featureHasLargeAttributes = false
+      for (const r in featureData) {
+        if (featureData[r]?.length > 1_000_000) {
+          featureHasLargeAttributes = true
+        }
+      }
+
+      // The concept of using `finalizedFeatureData` is to avoid running
+      // formatter twice if loading from snapshot
       return {
-        // replacing undefined with null helps with allowing fields to be
+        // We replace undefined with null to help with allowing fields to be
         // hidden, setting null is not allowed by jexl so we set it to
-        // undefined to hide. see config guide. this replacement happens both
-        // here and when displaying the featureData in base feature widget
-        finalizedFeatureData: replaceUndefinedWithNull(featureData),
+        // undefined to hide, but JSON only allows serializing null
+        finalizedFeatureData: featureHasLargeAttributes
+          ? undefined
+          : replaceUndefinedWithNull(featureData),
         ...rest,
       }
     })
