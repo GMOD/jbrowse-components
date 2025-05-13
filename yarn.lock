@@ -2096,14 +2096,14 @@
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
 "@gmod/abortable-promise-cache@^3.0.1":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.3.tgz#9f4eb69ef21abb950e91f061e4b58fffbc4bbe29"
-  integrity sha512-HnE6hh8Smxj0iHBbgpMRhagTYxqfhTfACBp5C0HAmm8XxNloS/2tHStPNo0ywYD3IOLse5dOV7m+LQxw2HZynw==
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
+  integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
 "@gmod/bam@^6.0.1":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-6.0.2.tgz#26bfdde8db5cc5495f90eee86b7b2d3c1cfbd6fc"
-  integrity sha512-noUr8f5F1KGhQzH3kK5irq6ztxaikkU88t1zdQyMUqUeOy3Xhd9iSnW1Z+hzd7NjmfMAgxdfanVMpjCsaU3gHA==
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-6.0.3.tgz#94f2c3797beb185c3a621e7f6ddd5afb765e4196"
+  integrity sha512-MX6PInxYWKWlivf96uBI8fQNbLstOLoTmEhOm6HXTh3CThJ22151/sS+Q0YvvagGxN7j4MXec8RrM4nmwf4QEQ==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     "@gmod/bgzf-filehandle" "^3.0.2"
@@ -2112,9 +2112,9 @@
     quick-lru "^4.0.0"
 
 "@gmod/bbi@^7.0.0":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-7.0.1.tgz#cf008540f07f951ca09c19f1891b1566e99e74ec"
-  integrity sha512-t1+P0Xwcy+pNErOycVz5e9jUZsAKI+nzq1oZ8tiACHzagO5CUSUpUV9tpQG6jl/0TP8ga3fBj0kyyxSj0OvsPA==
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-7.0.2.tgz#a676aa033a645f3e68aebd6ca6d0e85145ab71de"
+  integrity sha512-5SvK+7MuZpq0C92R17PEv/EifcWbwnft1EG5GDEAvUUSANlQE/ybdvawaglUSLdShwRruj4ARuB5vXCO1SSldw==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     generic-filehandle2 "^2.0.1"
@@ -2123,22 +2123,22 @@
     rxjs "^7.8.0"
 
 "@gmod/bed@^2.1.2":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.3.tgz#07c24944f2306e9bfbb715493829a286a3571dba"
-  integrity sha512-w/AoBr4Mn3TRoR6lIv014gCy9n6JH57nLIWPRZ3MBSjdx0ptwZ3DvGFijITkbZ2I6Ey01mq3Qx/GJmqIobdYUw==
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.7.tgz#e533ae0ac72e6fa957ea3a5a946654735f875b7c"
+  integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
 "@gmod/bgzf-filehandle@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-3.0.2.tgz#d89f8b2d169c3be10737be165b06c4ac909e3850"
-  integrity sha512-P3t9S7rVQSxePF17W/k34+AThe61nK+rNEVlt9AV80a3XvnKRW/6tDS2Wch4sURcpe5arTGZBc41hyw9W5gkHw==
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-3.0.5.tgz#f8fd14137e0e07e407d6e064331efbd38415d0bf"
+  integrity sha512-w6tzT/zhTIZGHXrrK3M/xJ0XpWygAat/E6VeiWwWBk1nhEzcPZCFVVTmECqBrwoV57spOI0sm6a2uz1WH3+0JA==
   dependencies:
     generic-filehandle2 "^2.0.1"
     pako "^1.0.11"
 
 "@gmod/cram@^5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-5.0.4.tgz#d0361a414a8ddf5a2d0c36b44bdbf32ff63f867a"
-  integrity sha512-bb7bQbhQDW2fYQLRSP75Hus2LC6/GddtYbimYJ9VBdXbb9VXBYsxoV1IizMS1EUD39fkRcvuAzIJkxfFt9gaqA==
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-5.0.5.tgz#898160fc1ba7523feb21eee9e7f3160db1d6b205"
+  integrity sha512-3x07yGDUEgcvOUwy3NAVZSiVg9xAHyft+fkvvDj1rsAhWIA21FumayjE9mn6Vtt+ahV0dxsk47mIryE8Uu1Y6A==
   dependencies:
     crc "^4.3.2"
     generic-filehandle2 "^2.0.1"
@@ -2156,9 +2156,9 @@
     split2 "^4.2.0"
 
 "@gmod/http-range-fetcher@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.0.tgz#901f1fb30721e48cb473191b77ac02c4a62e49cb"
-  integrity sha512-IlR3J2qPB63T50zsGKhO72Inkq/7IeczHdksYh17DuIkiIYjQm3GJCgUdfVhd7lUSWmM7eET1HWMm+LTcbbKbg==
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.1.tgz#9591e5fdc86159d6ea0abbbe6de4a26533d26bf9"
+  integrity sha512-O1Ly1s/sn0mb/OO4SvYkFnR9P+DfsX/qml1O7aqxSnxdrqNXaGRDSl4Ggw0ta30ctCTPvuXxsKA8Met5N4KRzg==
   dependencies:
     quick-lru "^4.0.0"
 
@@ -2171,18 +2171,18 @@
     generic-filehandle2 "^2.0.1"
 
 "@gmod/nclist@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-3.0.0.tgz#760e6a2623ddbeae504a50a8fde9b54b05ade102"
-  integrity sha512-d6jxXnooYMaqeDEWaMarFqPfW4brwrrL2FWeSRLGl8fKoVKWozVOXfD6xmNZcXHSo7BXVCW9SgMxNKf3+mCnzQ==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-3.0.1.tgz#ab10eba0054212f56a1f9510a62a058158e706d4"
+  integrity sha512-/7oNR1a91n3iIB/xTyvILi7IiLCW+89DF2uh3dbE6SQ9s3lYu4JxhoeZFLhQ75G5oZi8jvu50kz9m9iSONWjdA==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     "@jridgewell/resolve-uri" "^3.1.2"
     quick-lru "^4.0.0"
 
 "@gmod/tabix@^3.0.1":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.0.2.tgz#31cac8564f50aca751d2e1345936baaa6c12782e"
-  integrity sha512-saf0Q8rveMymA6KJ0/DdjPWOUW2JXZAQgBpdSjB/28ceSOoBLZJK8lUxRPki9ukUT2H4+Twimjryv0lU9uOO6Q==
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.0.4.tgz#78fbfd27511ed17a965594c6463e43ee48cd5a1d"
+  integrity sha512-a80Qh/AUBkUhbF1WH03sBGmUAU4c7mRx3uWXRCM0trkHh9ZiTgIFpcFMMG3dYP2hL40NM9/qy5VdkkXXzjFjlw==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     "@gmod/bgzf-filehandle" "^3.0.2"
@@ -2190,21 +2190,21 @@
     quick-lru "^4.0.0"
 
 "@gmod/trix@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-3.0.2.tgz#80d84406ede72e89a086c60eb3cb0634d5c57262"
-  integrity sha512-bVAWWT+dWhKmL+Pjl2P7cKeqeLzl3Ip504nFgK5NwDgsDziQjutl1lU4cEgPf+KN1r1HoR1PT5DbDnb5AEPH8A==
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-3.0.3.tgz#c3a2bf7c3f2c761230eee8f11012323e6a0bb4e4"
+  integrity sha512-CnR9HkozYOzaJRKrQJIN4I3oMm5fhCnNOkgywMkceAybP6sO1nzbEgYe/v1W8/9BfipZTx6FCgRB+PgOXSjZuQ==
 
 "@gmod/twobit@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-6.0.0.tgz#8fe5d24b73e69061c5adfda983626ae6bac9dea8"
-  integrity sha512-ynGrTmjYNpc1PLYQk6gGROotUjgejRHbGxHjc4GhHrk73P4XWG3rMCNDFw8YYBfVISubKC1AEaPMQbuEpH2tVw==
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-6.0.1.tgz#2ff01ebfe9f4cb94a6bf3221c7e2a5f7cc87d53a"
+  integrity sha512-0wZIntu6NHyBZcas8dcrB7f/IAbu/B/OOutImQkXkCFHvaC/nFKd4uaiw6n+N+8XaiEaLmAC4v8QesXHSQEFxQ==
   dependencies:
     generic-filehandle2 "^2.0.1"
 
 "@gmod/ucsc-hub@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-2.0.1.tgz#a70eebef047c23fe3b81a72832df10f358b1c8cc"
-  integrity sha512-ZQLXm9j6vhyTam7+1cduIocLodpaShJH27QOnPmOKzqeki7ElXUnmdruHlm0LxF5ESRKIX3117hiZBGLTGhHEw==
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-2.0.2.tgz#4bb1ba7c0bfafe6b92c246a967535dd79e1255bf"
+  integrity sha512-O3EaFIJccmm4DEL8V1MKudCMwtjjAk1AdQ/bkhc38ar06zwv7VmDHlCcl61r66tdeht58mgOlLQNLIL7ehizZQ==
 
 "@gmod/vcf@^6.0.8":
   version "6.0.9"
@@ -7534,9 +7534,9 @@ debug@2.6.9, debug@^2.6.0:
     ms "2.0.0"
 
 debug@4, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.2, debug@^4.3.3, debug@^4.3.4, debug@^4.3.5, debug@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.0.tgz#2b3f2aea2ffeb776477460267377dc8710faba8a"
-  integrity sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.1.tgz#e5a8bc6cbc4c6cd3e64308b0693a3d4fa550189b"
+  integrity sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==
   dependencies:
     ms "^2.1.3"
 
@@ -9353,9 +9353,9 @@ gauge@^4.0.3:
     wide-align "^1.1.5"
 
 generic-filehandle2@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.1.tgz#5255de8aee2e7214fd91ee332433d1c7d5895761"
-  integrity sha512-/y+IrWYv0y+DueFkRNDeIQf/1B/MPDgNNTjZY/1kRZlN1YNRCvWaTm8LcUvgirs8S+t7QUZZU1Sg61NaJy0GqA==
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.3.tgz#60019e61cf80685c51c2d140f14616aa4325a778"
+  integrity sha512-aHgkorzDtB5YOA/0g+vx7swz/sEf8coOrzSsHsbhWkXSJkHezx9XM+FBV6IWlEXGz+oeN2jb4ji8/fWlQLg/PA==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
@@ -9468,9 +9468,9 @@ get-value@^3.0.0:
     isobject "^3.0.1"
 
 gff-nostream@^1.3.3:
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-1.3.4.tgz#a919630f18cc8e2992b3dac41ed59530fbcc5757"
-  integrity sha512-+UmB/NcaXAIj+V/jjZWW9NWGAL2cDkcTIIfia/LqAYWURBIWxwVkzC744q2WXB62IVb8DaF+8CWXGLm9EnQqNg==
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-1.3.6.tgz#a195d29ba126638c72e8d952bc4f4d7fdbbfee17"
+  integrity sha512-EQreQR+RkNg279GQ1Sn9I3liqhe5M/o4F9TUpgMK5PkNZ5WFUS4lbBgigY5g8LYIRll8O9cdTnPIYEaAFjBIQw==
 
 git-hooks-list@^3.0.0:
   version "3.2.0"
@@ -15710,9 +15710,9 @@ terser-webpack-plugin@^5.2.5, terser-webpack-plugin@^5.3.1, terser-webpack-plugi
     terser "^5.31.1"
 
 terser@^5.10.0, terser@^5.31.1:
-  version "5.39.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.39.0.tgz#0e82033ed57b3ddf1f96708d123cca717d86ca3a"
-  integrity sha512-LBAhFyLho16harJoWMg/nZsQYgTrg5jXOn2nCYjRUcZZEdE3qa2zb8QEDRUGVZBW4rlazf2fxkg8tztybTaqWw==
+  version "5.39.1"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.39.1.tgz#1c80e6bde2b362c6f9f3e79e295c228a3882d983"
+  integrity sha512-Mm6+uad0ZuDtcV8/4uOZQDQ8RuiC5Pu+iZRedJtF7yA/27sPL7d++In/AJKpWZlU3SYMPPkVfwetn6sgZ66pUA==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"
