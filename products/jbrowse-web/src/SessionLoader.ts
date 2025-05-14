@@ -66,20 +66,28 @@ const SessionLoader = types
      * #property
      */
     hubURL: types.maybe(types.array(types.string)),
+    /**
+     * #property
+     */
+    configSnapshot: types.frozen<Record<string, unknown> | undefined>(
+      undefined,
+    ),
+    /**
+     * #property
+     */
+    sessionSnapshot: types.frozen<Record<string, unknown> | undefined>(
+      undefined,
+    ),
   })
   .volatile(() => ({
     /**
      * #volatile
      */
+    pluginsLoaded: false,
+    /**
+     * #volatile
+     */
     sessionTriaged: undefined as SessionTriagedInfo | undefined,
-    /**
-     * #volatile
-     */
-    configSnapshot: undefined as Record<string, unknown> | undefined,
-    /**
-     * #volatile
-     */
-    sessionSnapshot: undefined as Record<string, unknown> | undefined,
     /**
      * #volatile
      */
@@ -173,7 +181,9 @@ const SessionLoader = types
      * #getter
      */
     get ready() {
-      return Boolean(this.isSessionLoaded && !self.configError)
+      return Boolean(
+        this.isSessionLoaded && !self.configError && self.pluginsLoaded,
+      )
     },
     /**
      * #getter
@@ -206,6 +216,12 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
+    /**
+     * action
+     */
+    setPluginsLoaded(isLoaded: boolean) {
+      self.pluginsLoaded = isLoaded
+    },
     /**
      * #action
      */
@@ -273,6 +289,7 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load(window.location.href)
         self.setRuntimePlugins([...runtimePlugins])
+        self.setPluginsLoaded(true)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -363,6 +380,20 @@ const SessionLoader = types
       } else {
         self.setConfigSnapshot({})
       }
+    },
+    /**
+     * action
+     */
+    async setUpConfig() {
+      // @ts-expect-error
+      const path = window.__jbrowseConfigPath
+      const { configPath = path || 'config.json' } = self
+      const configUri = new URL(configPath, window.location.href)
+      const { configSnapshot } = self
+      const config = JSON.parse(JSON.stringify(configSnapshot))
+      addRelativeUris(config, configUri)
+      await this.fetchPlugins(config)
+      self.setConfigSnapshot(config)
     },
     /**
      * #action
@@ -502,7 +533,7 @@ const SessionLoader = types
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
-          await this.fetchConfig()
+          await (self.configSnapshot ? this.setUpConfig() : this.fetchConfig())
 
           addDisposer(
             self,
@@ -517,6 +548,7 @@ const SessionLoader = types
                   isJb1StyleSession,
                   isHubSession,
                   sessionQuery,
+                  sessionSnapshot,
                   configSnapshot,
                 } = self
                 if (!configSnapshot) {
@@ -532,6 +564,9 @@ const SessionLoader = types
                       self.bc2.postMessage(r)
                     }
                   }
+                }
+                if (sessionSnapshot) {
+                  return
                 }
 
                 if (isSharedSession) {
