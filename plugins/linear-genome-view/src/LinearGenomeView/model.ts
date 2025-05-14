@@ -347,13 +347,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * only uses sticky view headers when the lgv is a top level view
+       * checking if lgv is a 'top-level' view is used for toggling pin track
+       * capability, sticky positioning
+       */
+      get isTopLevelView() {
+        const session = getSession(self)
+        return session.views.find(r => r.id === self.id)
+      },
+      /**
+       * #getter
+       * only uses sticky view headers when it is a 'top-level' view and
+       * session allows it
        */
       get stickyViewHeaders() {
         const session = getSession(self)
         return isSessionWithMultipleViews(session)
-          ? session.views.find(r => r.id === self.id) &&
-              session.stickyViewHeaders
+          ? this.isTopLevelView && session.stickyViewHeaders
           : false
       },
 
