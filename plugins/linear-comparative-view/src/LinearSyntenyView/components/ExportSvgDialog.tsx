@@ -10,12 +10,12 @@ import {
   DialogContent,
   FormControlLabel,
   MenuItem,
-  TextField,
   Typography,
 } from '@mui/material'
 
-import type { ExportSvgOptions } from '../model'
-import type { TextFieldProps } from '@mui/material'
+import TextField2 from './TextField2'
+
+import type { ExportSvgOptions } from '../types'
 
 function LoadingMessage() {
   return (
@@ -30,13 +30,6 @@ function useSvgLocal<T>(key: string, val: T) {
   return useLocalStorage(`svg-${key}`, val)
 }
 
-function TextField2({ children, ...rest }: TextFieldProps) {
-  return (
-    <div>
-      <TextField {...rest}>{children}</TextField>
-    </div>
-  )
-}
 export default function ExportSvgDialog({
   model,
   handleClose,

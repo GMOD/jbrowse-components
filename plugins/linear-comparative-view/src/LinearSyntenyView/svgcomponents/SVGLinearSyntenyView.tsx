@@ -18,7 +18,8 @@ import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 
-import type { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
+import type { LinearSyntenyViewModel } from '../model'
+import type { ExportSvgOptions } from '../types'
 
 // render LGV to SVG
 export async function renderToSvg(
