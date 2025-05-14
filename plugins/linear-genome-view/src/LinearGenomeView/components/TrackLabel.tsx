@@ -17,6 +17,8 @@ import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
   root: {
+    // above breakpoint split view
+    zIndex: 200,
     background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
       background: theme.palette.background.paper,

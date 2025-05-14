@@ -345,13 +345,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
       },
+      /**
+       * #getter
+       * only uses sticky view headers when the lgv is a top level view
+       */
       get stickyViewHeaders() {
         const session = getSession(self)
         return isSessionWithMultipleViews(session)
-          ? session.stickyViewHeaders
+          ? session.views.find(r => r.id === self.id) &&
+              session.stickyViewHeaders
           : false
       },
 
+      /**
+       * #getter
+       */
       get rubberbandTop() {
         let pinnedTracksTop = 0
         if (this.stickyViewHeaders) {
