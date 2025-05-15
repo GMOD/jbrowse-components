@@ -60,7 +60,7 @@ const libs = {
     useGridApiContext,
     useGridApiRef,
     useGridRootProps,
-    ...lazyMap(DataGridEntries, '@mui/x-data-grid/'),
+    ...lazyMap(DataGridEntries),
   },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
