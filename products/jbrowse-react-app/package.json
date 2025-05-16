@@ -90,7 +90,6 @@
     "pako": "^1.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.4.1",
-    "use-query-params": "^2.0.0",
     "webpack": "^5.72.0"
   },
   "peerDependencies": {

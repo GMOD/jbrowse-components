@@ -19,7 +19,7 @@ import {
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
+import { useQueryState } from 'nuqs'
 
 import { shareSessionToDynamo } from '../sessionSharing'
 import { toUrlSafeB64 } from '../util'
@@ -43,8 +43,8 @@ const ShareDialog = observer(function ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
-  const [, setPassword] = useQueryParam('password', StringParam)
-  const [, setSession] = useQueryParam('session', StringParam)
+  const [, setPassword] = useQueryState('password')
+  const [, setSession] = useQueryState('session')
 
   const url = session.shareURL
   const currentSetting =

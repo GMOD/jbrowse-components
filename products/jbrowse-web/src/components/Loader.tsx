@@ -3,11 +3,8 @@ import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
-import {
-  QueryParamProvider,
-  StringParam,
-  useQueryParam,
-} from 'use-query-params'
+import { useQueryState } from 'nuqs'
+import { NuqsAdapter } from 'nuqs/adapters/react'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import '@fontsource/roboto'
@@ -35,21 +32,18 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  const Str = StringParam
-
-  const [config] = useQueryParam('config', Str)
-  const [session] = useQueryParam('session', Str)
-  const [adminKey] = useQueryParam('adminKey', Str)
-  const [password, setPassword] = useQueryParam('password', Str)
-  const [loc, setLoc] = useQueryParam('loc', Str)
-  const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
-  const [hubURL, setHubURL] = useQueryParam('hubURL', Str)
-  const [assembly, setAssembly] = useQueryParam('assembly', Str)
-  const [tracks, setTracks] = useQueryParam('tracks', Str)
-  const [highlight, setHighlight] = useQueryParam('highlight', Str)
-  const [nav, setNav] = useQueryParam('nav', Str)
-  const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
-
+  const [config] = useQueryState('config')
+  const [session] = useQueryState('session')
+  const [adminKey] = useQueryState('adminKey')
+  const [password, setPassword] = useQueryState('password')
+  const [loc, setLoc] = useQueryState('loc')
+  const [sessionTracks, setSessionTracks] = useQueryState('sessionTracks')
+  const [hubURL, setHubURL] = useQueryState('hubURL')
+  const [assembly, setAssembly] = useQueryState('assembly')
+  const [tracks, setTracks] = useQueryState('tracks')
+  const [highlight, setHighlight] = useQueryState('highlight')
+  const [nav, setNav] = useQueryState('nav')
+  const [tracklist, setTrackList] = useQueryState('tracklist')
   const loader = SessionLoader.create({
     configPath: normalize(config),
     sessionQuery: normalize(session),
@@ -67,15 +61,15 @@ export function Loader({
   })
 
   useEffect(() => {
-    setLoc(undefined, 'replaceIn')
-    setTracks(undefined, 'replaceIn')
-    setAssembly(undefined, 'replaceIn')
-    setPassword(undefined, 'replaceIn')
-    setSessionTracks(undefined, 'replaceIn')
-    setHubURL(undefined, 'replaceIn')
-    setTrackList(undefined, 'replaceIn')
-    setNav(undefined, 'replaceIn')
-    setHighlight(undefined, 'replaceIn')
+    setLoc(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setTracks(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setAssembly(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setPassword(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setSessionTracks(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setHubURL(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setTrackList(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setNav(null) // eslint-disable-line @typescript-eslint/no-floating-promises
+    setHighlight(null) // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [
     setAssembly,
     setHighlight,
@@ -166,9 +160,9 @@ function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
         />
       )}
     >
-      <QueryParamProvider adapter={WindowHistoryAdapter}>
+      <NuqsAdapter>
         <Loader initialTimestamp={initialTimestamp} />
-      </QueryParamProvider>
+      </NuqsAdapter>
     </ErrorBoundary>
   )
 }

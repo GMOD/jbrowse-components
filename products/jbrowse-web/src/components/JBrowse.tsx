@@ -4,7 +4,7 @@ import { App } from '@jbrowse/app-core'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
+import { useQueryState } from 'nuqs'
 
 import ShareButton from './ShareButton'
 
@@ -16,17 +16,17 @@ const JBrowse = observer(function ({
 }: {
   pluginManager: PluginManager
 }) {
-  const [adminKey] = useQueryParam('adminKey', StringParam)
-  const [adminServer] = useQueryParam('adminServer', StringParam)
-  const [configPath] = useQueryParam('config', StringParam)
-  const [, setSessionId] = useQueryParam('session', StringParam)
+  const [adminKey] = useQueryState('adminKey')
+  const [adminServer] = useQueryState('adminServer')
+  const [configPath] = useQueryState('config')
+  const [, setSessionId] = useQueryState('session')
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel
   const { id, theme } = session
 
   useEffect(() => {
-    setSessionId(`local-${id}`, 'replaceIn')
+    setSessionId(`local-${id}`) // eslint-disable-line @typescript-eslint/no-floating-promises
     // @ts-expect-error
     window.JBrowseRootModel = rootModel
     // @ts-expect-error
