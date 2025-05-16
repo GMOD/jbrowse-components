@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -92,24 +92,52 @@ export function Loader({
 }
 
 const Renderer = observer(function ({
-  loader,
+  loader: firstLoader,
 }: {
   loader: SessionLoaderModel
 }) {
+  const [loader, setLoader] = useState(firstLoader)
   const { configError, ready, sessionTriaged } = loader
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [error, setError] = useState<unknown>()
 
+  const reloadPluginManager = useCallback(
+    (
+      configSnapshot?: Record<string, unknown>,
+      sessionSnapshot?: Record<string, unknown>,
+    ) => {
+      const newLoader = SessionLoader.create({
+        configPath: loader.configPath,
+        sessionQuery: loader.sessionQuery,
+        password: loader.password,
+        adminKey: loader.adminKey,
+        loc: loader.loc,
+        assembly: loader.assembly,
+        tracks: loader.tracks,
+        sessionTracks: loader.sessionTracks,
+        tracklist: loader.tracklist,
+        highlight: loader.highlight,
+        nav: loader.nav,
+        hubURL: loader.hubURL,
+        initialTimestamp: Date.now(),
+        configSnapshot,
+        sessionSnapshot,
+      })
+      setLoader(newLoader)
+    },
+    [loader],
+  )
+
   useEffect(() => {
     try {
       if (ready) {
-        setPluginManager(createPluginManager(loader))
+        setPluginManager(createPluginManager(loader, reloadPluginManager))
       }
     } catch (e) {
       console.error(e)
       setError(e)
     }
-  }, [loader, ready])
+  }, [loader, ready, reloadPluginManager])
 
   const err = configError || error
   if (err) {

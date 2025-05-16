@@ -59,7 +59,7 @@ configuration: ConfigurationReference(configSchema)
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minorAlleleFrequencyFilter: types.optional(types.number, 0.1)
+minorAlleleFrequencyFilter: types.optional(types.number, 0)
 ```
 
 #### property: showSidebarLabelsSetting
@@ -259,6 +259,13 @@ clearLayout: () => void
 ```js
 // type signature
 setSourcesLoading: (str: string) => void
+```
+
+#### action: setSimplifiedFeaturesLoading
+
+```js
+// type signature
+setSimplifiedFeaturesLoading: (str: string) => void
 ```
 
 #### action: setSources

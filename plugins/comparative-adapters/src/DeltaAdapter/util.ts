@@ -52,11 +52,13 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let i = 0
   let j = 0
   const decoder = new TextDecoder('utf8')
+  let s = performance.now()
   while (blockStart < buffer.length) {
-    if (j++ % 10_000 === 0) {
+    if (j++ % 10_000 === 0 && performance.now() - s > 50) {
       statusCallback(
         `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
       )
+      s = performance.now()
     }
     const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
@@ -154,5 +156,6 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
       }
     }
   }
+  statusCallback('')
   return records
 }

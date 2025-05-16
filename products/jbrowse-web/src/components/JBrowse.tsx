@@ -21,8 +21,9 @@ const JBrowse = observer(function ({
   const [configPath] = useQueryParam('config', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
-  const { error, jbrowse, session } = rootModel!
-  const { id, theme } = session! as WebSessionModel
+  const { error, jbrowse, session: s } = rootModel!
+  const session = s as WebSessionModel
+  const { id, theme } = session
 
   useEffect(() => {
     setSessionId(`local-${id}`, 'replaceIn')
@@ -50,7 +51,7 @@ const JBrowse = observer(function ({
               throw new Error(`HTTP ${response.status} (${message})`)
             }
           } catch (e) {
-            session?.notify(`Admin server error: ${e}`)
+            session.notify(`Admin server error: ${e}`)
           }
         })
       : undefined
@@ -66,9 +67,8 @@ const JBrowse = observer(function ({
       <CssBaseline />
       <App
         // @ts-expect-error
-        session={session!}
-        // @ts-expect-error
-        HeaderButtons={<ShareButton session={session!} />}
+        session={session}
+        HeaderButtons={<ShareButton session={session} />}
       />
     </ThemeProvider>
   )

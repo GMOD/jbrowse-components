@@ -9,7 +9,13 @@ import sessionModelFactory from './sessionModel'
 
 import type { SessionLoaderModel } from './SessionLoader'
 
-export function createPluginManager(model: SessionLoaderModel) {
+export function createPluginManager(
+  model: SessionLoaderModel,
+  reloadPluginManagerCallback: (
+    configSnapshot?: Record<string, unknown>,
+    sessionSnapshot?: Record<string, unknown>,
+  ) => void,
+) {
   // it is ready when a session has loaded and when there is no config error
   //
   // Assuming that the query changes model.sessionError or
@@ -51,6 +57,8 @@ export function createPluginManager(model: SessionLoaderModel) {
       },
       { pluginManager },
     )
+
+    rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
     // @ts-expect-error
     if (!model.configSnapshot.configuration?.rpc?.defaultDriver) {

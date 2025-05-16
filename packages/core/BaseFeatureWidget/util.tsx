@@ -1,3 +1,6 @@
+import type { SimpleFeatureSerialized } from '../util'
+import type { SerializedFeat } from './types'
+
 export interface Feat {
   start: number
   end: number
@@ -103,6 +106,22 @@ export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
 }
 
-export function replaceUndefinedWithNull(obj: Record<string, unknown>) {
+export function replaceUndefinedWithNull(obj: SimpleFeatureSerialized) {
   return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
+}
+
+export function formatSubfeatures(
+  obj: SerializedFeat,
+  depth: number,
+  parse: (obj: Record<string, unknown>) => void,
+  currentDepth = 0,
+  returnObj = {} as Record<string, unknown>,
+) {
+  if (depth <= currentDepth) {
+    return
+  }
+  obj.subfeatures?.map(sub => {
+    formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
+    parse(sub)
+  })
 }

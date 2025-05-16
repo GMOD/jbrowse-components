@@ -1,4 +1,4 @@
-import { toLocale } from '@jbrowse/core/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -28,7 +28,7 @@ const HeaderSearchBoxes = observer(function ({
     <span className={classes.searchBox}>
       <SearchBox model={view} showHelp={false} />
       <Typography variant="body2" color="textSecondary" className={classes.bp}>
-        {assemblyNames.join(',')} {toLocale(Math.round(coarseTotalBp))} bp
+        {assemblyNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
       </Typography>
     </span>
   )

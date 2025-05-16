@@ -5,6 +5,8 @@ import UriAttribute from './UriField'
 import { accessNested, generateMaxWidth } from './util'
 import { isObject, isUriLocation } from '../../util'
 
+import type { Descriptors } from '../types'
+
 const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
@@ -28,7 +30,7 @@ export default function Attributes(props: {
   omit?: string[]
   omitSingleLevel?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
-  descriptions?: Record<string, React.ReactNode>
+  descriptions?: Descriptors
   prefix?: string[]
   hideUris?: boolean
 }) {

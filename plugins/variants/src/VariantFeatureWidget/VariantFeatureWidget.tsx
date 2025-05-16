@@ -12,6 +12,7 @@ import { variantFieldDescriptions } from './variantFieldDescriptions'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory'
 import type { Descriptions, ReducedFeature } from './types'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const LaunchBreakendPanel = lazy(
@@ -26,7 +27,7 @@ function AnnPanel({
   feature,
 }: {
   descriptions?: Descriptions
-  feature: ReducedFeature
+  feature: SimpleFeatureSerialized & ReducedFeature
 }) {
   const annDesc = descriptions?.INFO?.ANN?.Description
   const annFields =
@@ -46,7 +47,7 @@ function CsqPanel({
   feature,
 }: {
   descriptions?: Descriptions
-  feature: ReducedFeature
+  feature: SimpleFeatureSerialized & ReducedFeature
 }) {
   const csqDescription = descriptions?.INFO?.CSQ?.Description
   const csqFields =
@@ -113,12 +114,12 @@ function LaunchBreakendWidgetArea({
   ) : null
 }
 
-const VariantFeatureWidget = observer(function (props: {
+const FeatDefined = observer(function (props: {
+  feat: SimpleFeatureSerialized
   model: VariantFeatureWidgetModel
 }) {
-  const { model } = props
-  const { featureData, descriptions } = model
-  const feat = JSON.parse(JSON.stringify(featureData))
+  const { feat, model } = props
+  const { descriptions } = model
   const { samples, ...rest } = feat
   const { REF } = rest
 
@@ -132,7 +133,7 @@ const VariantFeatureWidget = observer(function (props: {
         }}
         formatter={(value, key) => {
           return key === 'ALT' ? (
-            <AltFormatter value={`${value}`} ref={REF} />
+            <AltFormatter value={`${value}`} ref={REF as string} />
           ) : (
             <Formatter value={value} />
           )
@@ -150,6 +151,23 @@ const VariantFeatureWidget = observer(function (props: {
         descriptions={descriptions}
       />
     </Paper>
+  )
+})
+
+const VariantFeatureWidget = observer(function (props: {
+  model: VariantFeatureWidgetModel
+}) {
+  const { model } = props
+  const { featureData } = model
+  const feat = structuredClone(featureData)
+
+  return feat ? (
+    <FeatDefined feat={feat} {...props} />
+  ) : (
+    <div>
+      No feature loaded, may not be available after page refresh because it was
+      too large for localStorage
+    </div>
   )
 })
 
