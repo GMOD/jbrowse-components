@@ -84,7 +84,7 @@ export function createPluginManager(
       } else if (sessionSpec) {
         // @ts-expect-error
         afterInitializedCb = () => loadSessionSpec(sessionSpec, pluginManager)
-      } else if (rootModel.jbrowse.defaultSession?.views?.length) {
+      } else {
         rootModel.setDefaultSession()
       }
     } catch (e) {

@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 
-import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
 import {
@@ -19,11 +19,9 @@ import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
 
 import type { SessionLoaderModel } from '../SessionLoader'
-import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const SessionTriaged = lazy(() => import('./SessionTriaged'))
-const StartScreen = lazy(() => import('./StartScreen'))
 const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
 // return value if defined, else convert null to undefined for use with
@@ -93,24 +91,6 @@ export function Loader({
   return <Renderer loader={loader} />
 }
 
-const PluginManagerLoaded = observer(function ({
-  pluginManager,
-}: {
-  pluginManager: PluginManager
-}) {
-  const { rootModel } = pluginManager
-  return !rootModel?.session ? (
-    <Suspense fallback={<LoadingEllipses />}>
-      <StartScreen
-        rootModel={rootModel as WebRootModel}
-        onFactoryReset={factoryReset}
-      />
-    </Suspense>
-  ) : (
-    <JBrowse pluginManager={pluginManager} />
-  )
-})
-
 const Renderer = observer(function ({
   loader: firstLoader,
 }: {
@@ -167,13 +147,9 @@ const Renderer = observer(function ({
       </Suspense>
     )
   } else if (sessionTriaged) {
-    return (
-      <Suspense fallback={null}>
-        <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
-      </Suspense>
-    )
+    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
   } else if (pluginManager) {
-    return <PluginManagerLoaded pluginManager={pluginManager} />
+    return <JBrowse pluginManager={pluginManager} />
   } else {
     return <Loading />
   }
