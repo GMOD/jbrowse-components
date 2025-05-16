@@ -97,6 +97,7 @@
     "rxjs": "^7.0.0",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.3.5",
+    "swr": "^2.3.3",
     "tss-react": "^4.4.1",
     "use-query-params": "^2.0.0"
   },
