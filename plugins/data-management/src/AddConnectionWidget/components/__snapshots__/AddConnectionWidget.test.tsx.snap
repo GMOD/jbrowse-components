@@ -69,10 +69,10 @@ exports[`renders 1`] = `
                     class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
                   >
                     <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
+                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":r2:"
-                      id=":r2:-label"
+                      for="«r2»"
+                      id="«r2»-label"
                     >
                       connectionType
                     </label>
@@ -80,12 +80,12 @@ exports[`renders 1`] = `
                       class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiSelect-root css-1blp12k-MuiInputBase-root-MuiOutlinedInput-root"
                     >
                       <div
-                        aria-describedby=":r2:-helper-text"
+                        aria-describedby="«r2»-helper-text"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        aria-labelledby=":r2:-label :r2:"
+                        aria-labelledby="«r2»-label «r2»"
                         class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                        id=":r2:"
+                        id="«r2»"
                         role="combobox"
                         tabindex="0"
                       >
@@ -124,7 +124,7 @@ exports[`renders 1`] = `
                     </div>
                     <p
                       class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-er619e-MuiFormHelperText-root"
-                      id=":r2:-helper-text"
+                      id="«r2»-helper-text"
                     >
                       A track or assembly hub in the Track Hub format
                       <a

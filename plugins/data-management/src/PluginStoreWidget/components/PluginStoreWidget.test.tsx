@@ -2,10 +2,10 @@ import DialogQueue from '@jbrowse/app-core/src/ui/App/DialogQueue'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
-import { render, waitFor } from '@testing-library/react'
+import { render, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { getParent, getRoot, getSnapshot } from 'mobx-state-tree'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 
 import PluginStoreWidget from './PluginStoreWidget'
 
@@ -25,16 +25,6 @@ const plugins = {
     },
   ],
 }
-
-beforeEach(() => {
-  Object.defineProperty(window, 'location', {
-    configurable: true,
-    value: {
-      reload: vi.fn(),
-    },
-  })
-})
-
 afterEach(() => {
   cleanup()
 })

@@ -1,4 +1,5 @@
 import { getModPositions, getModTypes } from '.'
+import { test, expect } from 'vitest'
 
 test('getModPositions', () => {
   const positions = getModPositions(

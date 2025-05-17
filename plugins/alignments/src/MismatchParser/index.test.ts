@@ -1,6 +1,7 @@
 import { cigarToMismatches } from './cigarToMismatches'
 import { getMismatches, parseCigar } from './index'
 import { mdToMismatches } from './mdToMismatches'
+import { describe, test, it, expect } from 'vitest'
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'

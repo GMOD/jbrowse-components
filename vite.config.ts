@@ -4,5 +4,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   test: {
     environment: 'jsdom',
+    deps: {
+      inline: ['@mui/x-data-grid'],
+    },
   },
 })

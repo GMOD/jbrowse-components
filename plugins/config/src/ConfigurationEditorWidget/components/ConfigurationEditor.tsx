@@ -65,38 +65,39 @@ const Member = observer(function (props: {
           : `${singular(slotName)} ${slotIndex + 1}`
         return <Member key={key} {...props} slot={subslot} slotName={key} />
       })
+    } else {
+      // if this is an explicitly typed schema, make a type-selecting dropdown
+      // that can be used to change its type
+      const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
+      return (
+        <Accordion defaultExpanded className={classes.accordion}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon className={classes.icon} />}
+          >
+            <Typography>{[...path, slotName].join('➔')}</Typography>
+          </AccordionSummary>
+          <AccordionDetails className={classes.expansionPanelDetails}>
+            {typeNameChoices.length ? (
+              <TypeSelector
+                typeNameChoices={typeNameChoices}
+                slotName={slotName}
+                slot={slot}
+                onChange={evt => {
+                  if (evt.target.value !== slot.type) {
+                    schema.setSubschema(slotName, {
+                      type: evt.target.value,
+                    })
+                  }
+                }}
+              />
+            ) : null}
+            <FormGroup className={classes.noOverflow}>
+              <Schema schema={slot} path={[...path, slotName]} />
+            </FormGroup>
+          </AccordionDetails>
+        </Accordion>
+      )
     }
-    // if this is an explicitly typed schema, make a type-selecting dropdown
-    // that can be used to change its type
-    const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
-    return (
-      <Accordion defaultExpanded className={classes.accordion}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.icon} />}
-        >
-          <Typography>{[...path, slotName].join('➔')}</Typography>
-        </AccordionSummary>
-        <AccordionDetails className={classes.expansionPanelDetails}>
-          {typeNameChoices.length ? (
-            <TypeSelector
-              typeNameChoices={typeNameChoices}
-              slotName={slotName}
-              slot={slot}
-              onChange={evt => {
-                if (evt.target.value !== slot.type) {
-                  schema.setSubschema(slotName, {
-                    type: evt.target.value,
-                  })
-                }
-              }}
-            />
-          ) : null}
-          <FormGroup className={classes.noOverflow}>
-            <Schema schema={slot} path={[...path, slotName]} />
-          </FormGroup>
-        </AccordionDetails>
-      </Accordion>
-    )
   } else if (isConfigurationSlotType(slotSchema)) {
     return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
   } else {
