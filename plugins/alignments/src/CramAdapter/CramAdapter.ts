@@ -157,16 +157,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     // ID numbers and names
     const idToName: string[] = []
     const nameToId: Record<string, number> = {}
-    samHeader
+    for (const [refId, sqLine] of samHeader
       .filter(l => l.tag === 'SQ')
-      .forEach((sqLine, refId) => {
-        const SN = sqLine.data.find(item => item.tag === 'SN')
-        if (SN) {
-          const refName = SN.value
-          nameToId[refName] = refId
-          idToName[refId] = refName
-        }
-      })
+      .entries()) {
+      const SN = sqLine.data.find(item => item.tag === 'SN')
+      if (SN) {
+        const refName = SN.value
+        nameToId[refName] = refId
+        idToName[refId] = refName
+      }
+    }
 
     const readGroups = samHeader
       .filter(l => l.tag === 'RG')
@@ -297,8 +297,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       })
     }, stopToken)
   }
-
-  freeResources(/* { region } */): void {}
 
   cramRecordToFeature(record: CramRecord) {
     return new CramSlightlyLazyFeature(record, this)

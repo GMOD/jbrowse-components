@@ -1,8 +1,8 @@
+import { createTheme } from '@mui/material'
 import { blue, green, grey, orange, red } from '@mui/material/colors'
-import { createTheme } from '@mui/material/styles'
 import deepmerge from 'deepmerge'
 
-import type { ThemeOptions } from '@mui/material/styles'
+import type { ThemeOptions } from '@mui/material'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,
@@ -63,8 +63,8 @@ declare module '@mui/material/styles/createPalette' {
 }
 
 const refTheme = createTheme()
-const midnight = '#0D233F'
-const grape = '#721E63'
+const midnight = refTheme.palette.augmentColor({ color: { main: '#0D233F' } })
+const grape = refTheme.palette.augmentColor({ color: { main: '#721E63' } })
 const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
 const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
 const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
@@ -101,6 +101,9 @@ const softclip = '#00f'
 const skip = '#97b8c9'
 
 const defaults = {
+  primary: midnight,
+  secondary: grape,
+  tertiary: forest,
   quaternary: mandarin,
   highlight: mandarin,
   stopCodon,
@@ -120,9 +123,6 @@ function stockTheme() {
     palette: {
       ...defaults,
       mode: undefined,
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: forest,
     },
     components: {
       MuiLink: {
@@ -460,14 +460,22 @@ export function createJBrowseTheme(
 // augments them to have light and dark variants but not for anything else, so
 // we augment them here
 function augmentThemeColors(theme: ThemeOptions = {}) {
-  for (const entry of ['tertiary', 'quaternary', 'highlight'] as const) {
+  for (const entry of [
+    'primary',
+    'secondary',
+    'tertiary',
+    'quaternary',
+    'highlight',
+  ] as const) {
     if (theme.palette?.[entry]) {
       theme = deepmerge(theme, {
         palette: {
           [entry]: refTheme.palette.augmentColor(
             'color' in theme.palette[entry]
               ? (theme.palette[entry] as PaletteAugmentColorOptions)
-              : { color: theme.palette[entry] },
+              : {
+                  color: theme.palette[entry],
+                },
           ),
         },
       })

@@ -1,10 +1,15 @@
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import escapeHTML from 'escape-html'
 
 export default function MultiVariantTooltip({
   source,
 }: {
-  source: { color?: string; [key: string]: unknown }
+  source: {
+    color?: string
+    hoveredGenotype?: { genotype: string; name: string }
+    [key: string]: unknown
+  }
 }) {
   return (
     <BaseTooltip>
@@ -22,12 +27,12 @@ export default function MultiVariantTooltip({
           .filter(
             ([key, val]) =>
               key !== 'color' &&
-              key !== 'name' &&
               key !== 'HP' &&
+              key !== 'name' &&
               key !== 'id' &&
               val !== undefined,
           )
-          .map(([key, value]) => `${key}:${value}`)
+          .map(([key, value]) => `${key}:${escapeHTML(`${value}`)}`)
           .join('<br/>')}
       />
     </BaseTooltip>

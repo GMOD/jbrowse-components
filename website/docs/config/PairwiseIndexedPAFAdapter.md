@@ -18,6 +18,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### PairwiseIndexedPAFAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes file.pif.gz.tbi:
+
+```json
+{
+  "type": "PairwiseIndexedPAFAdapter",
+  "uri": "file.pif.gz",
+  "queryAssembly": "hg19",
+  "targetAssembly": "hg38"
+}
+```
+
 ### PairwiseIndexedPAFAdapter - Slots
 
 #### slot: assemblyNames

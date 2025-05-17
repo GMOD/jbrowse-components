@@ -481,15 +481,12 @@
       "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
         "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "volvox-sorted.bam",
-          "locationType": "UriLocation"
-        }
+        "uri": "volvox-sorted.bam"
       },
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
-          "height": 400,
+          "height": 600,
           "displayId": "volvox_alignments_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",

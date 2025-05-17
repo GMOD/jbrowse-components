@@ -43,10 +43,14 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions) {
-    const pm = this.pluginManager
-    const pafLocation = openLocation(this.getConf('pafLocation'), pm)
-    const buf = await fetchAndMaybeUnzip(pafLocation, opts)
-    return parseLineByLine(buf, parsePAFLine, opts)
+    return parseLineByLine(
+      await fetchAndMaybeUnzip(
+        openLocation(this.getConf('pafLocation'), this.pluginManager),
+        opts,
+      ),
+      parsePAFLine,
+      opts,
+    )
   }
 
   async hasDataForRefName() {
@@ -108,6 +112,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         observer.complete()
       }
 
+      // eslint-disable-next-line unicorn/no-for-loop
       for (let i = 0; i < pafRecords.length; i++) {
         const r = pafRecords[i]!
         let start = 0
@@ -174,6 +179,4 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

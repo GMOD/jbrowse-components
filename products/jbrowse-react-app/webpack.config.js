@@ -8,14 +8,11 @@ const mode = process.env.NODE_ENV || 'production'
 
 module.exports = {
   mode,
-  entry: path.join(buildDir, 'src', 'index.ts'),
-  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+  entry: path.join(buildDir, 'src', 'webpack.ts'),
+  devtool: 'source-map',
   output: {
     path: distDir,
-    filename:
-      mode === 'production'
-        ? 'react-app.umd.production.min.js'
-        : 'react-app.umd.development.js',
+    filename: 'react-app.umd.production.min.js',
     library: 'JBrowseReactApp',
     libraryTarget: 'umd',
   },
@@ -31,6 +28,9 @@ module.exports = {
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
+    new webpack.ProvidePlugin({
+      React: 'react',
+    }),
   ],
   resolve: {
     extensions: [
@@ -43,10 +43,6 @@ module.exports = {
       '.web.jsx',
       '.jsx',
     ],
-  },
-  externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
   },
   module: {
     rules: [
@@ -61,6 +57,12 @@ module.exports = {
                 rootMode: 'upward',
                 presets: ['@babel/preset-react'],
               },
+            },
+          },
+          {
+            test: /\.css$/,
+            use: {
+              loader: require.resolve('css-loader'),
             },
           },
         ],

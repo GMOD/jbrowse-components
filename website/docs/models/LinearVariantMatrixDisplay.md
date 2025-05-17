@@ -76,6 +76,13 @@ number
 number
 ```
 
+#### getter: featuresReady
+
+```js
+// type
+boolean
+```
+
 #### getter: canDisplayLabels
 
 ```js

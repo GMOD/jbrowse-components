@@ -1,4 +1,3 @@
-import type React from 'react'
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
@@ -13,27 +12,12 @@ import { types } from 'mobx-state-tree'
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
-import type { ImportFormSyntenyTrack } from './types'
+import type { ExportSvgOptions, ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
-
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  scale?: number
-  filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
-  paddingHeight?: number
-  headerHeight?: number
-  cytobandHeight?: number
-  themeName?: string
-  trackLabels?: string
-}
 
 /**
  * #stateModel LinearSyntenyView
@@ -54,6 +38,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property/
          */
         drawCIGAR: true,
+        /**
+         * #property/
+         */
+        drawCIGARMatchesOnly: false,
         /**
          * #property
          */
@@ -97,6 +85,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setDrawCIGAR(arg: boolean) {
         self.drawCIGAR = arg
+      },
+      /**
+       * #action
+       */
+      setDrawCIGARMatchesOnly(arg: boolean) {
+        self.drawCIGARMatchesOnly = arg
       },
       /**
        * #action
@@ -149,12 +143,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Draw CIGAR',
+              checked: self.drawCIGAR,
+              type: 'checkbox',
+              description:
+                'If disabled, only draws the broad scale CIGAR match',
               onClick: () => {
                 self.setDrawCIGAR(!self.drawCIGAR)
               },
-              checked: self.drawCIGAR,
+            },
+            {
+              label: 'Draw only CIGAR matches',
+              checked: self.drawCIGARMatchesOnly,
               type: 'checkbox',
-              description: 'Draws per-base CIGAR level alignments',
+              description:
+                'If enabled, it hides the insertions and deletions in the CIGAR strings, helps with divergent',
+              onClick: () => {
+                self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
+              },
             },
             {
               label: 'Link views',

@@ -1,7 +1,11 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import {
+  fetchAndMaybeUnzipText,
+  shorten2,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -112,22 +116,40 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       const lines = txt.split(/\n|\r\n|\r/)
       const header = lines[0]!.split('\t')
       const { parser } = await this.configure()
-      const s = new Set(parser.samples)
-      return lines
+      const metadataLines = lines
         .slice(1)
+        .filter(f => !!f)
         .map(line => {
-          const cols = line.split('\t')
+          const [name, ...rest] = line.split('\t')
           return {
-            name: cols[0]!,
             ...Object.fromEntries(
               // force col 0 to be called name
-              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
+              header.slice(1).map((c, idx) => [c, rest[idx] || ''] as const),
             ),
+            name: name!,
           }
         })
-        .filter(f => s.has(f.name))
+      const vcfSampleSet = new Set(parser.samples)
+      const metadataSet = new Set(metadataLines.map(r => r.name))
+      const metadataNotInVcfSamples = [...metadataSet].filter(
+        f => !vcfSampleSet.has(f),
+      )
+      const vcfSamplesNotInMetadata = [...vcfSampleSet].filter(
+        f => !metadataSet.has(f),
+      )
+      if (metadataNotInVcfSamples.length) {
+        console.warn(
+          `There are ${metadataNotInVcfSamples.length} samples in metadata file (${metadataLines.length} lines) not in VCF (${parser.samples.length} samples):`,
+          shorten2(metadataNotInVcfSamples.join(',')),
+        )
+      }
+      if (vcfSamplesNotInMetadata.length) {
+        console.warn(
+          `There are ${vcfSamplesNotInMetadata.length} samples in VCF file (${parser.samples.length} samples) not in metadata file (${metadataLines.length} lines):`,
+          shorten2(vcfSamplesNotInMetadata.map(m => m).join(',')),
+        )
+      }
+      return metadataLines.filter(f => vcfSampleSet.has(f.name))
     }
   }
-
-  public freeResources(/* { region } */): void {}
 }

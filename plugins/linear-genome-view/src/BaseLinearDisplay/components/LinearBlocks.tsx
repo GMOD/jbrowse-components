@@ -30,7 +30,7 @@ const useStyles = makeStyles()({
     width: '100%',
     fontWeight: 'bold',
     textAlign: 'center',
-    zIndex: 2000,
+    zIndex: 999,
     boxSizing: 'border-box',
   },
 })

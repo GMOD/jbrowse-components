@@ -106,6 +106,4 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
         .filter(f => s.has(f.name))
     }
   }
-
-  public freeResources(/* { region } */): void {}
 }

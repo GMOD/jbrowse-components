@@ -1,3 +1,267 @@
+yarn run v1.22.18 $ lerna-changelog --silent --silent --next-version 3.4.0
+
+## 3.4.0 (2025-05-13)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#5018](https://github.com/GMOD/jbrowse-components/pull/5018) Avoid
+    serializing large features to sessions to fix quota exceeded errors in
+    localstorage ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5010](https://github.com/GMOD/jbrowse-components/pull/5010) Add mouseover
+    metadata for fields in the base feature widget
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4998](https://github.com/GMOD/jbrowse-components/pull/4998) Add padding to
+    the genomic window of search result hits
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4995](https://github.com/GMOD/jbrowse-components/pull/4995) Add uFuzzy to
+    improve gene name search ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4983](https://github.com/GMOD/jbrowse-components/pull/4983) Update some
+    data parser packages for ESM compat
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4980](https://github.com/GMOD/jbrowse-components/pull/4980) Synthesize
+    displayId if none provided in display config
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4972](https://github.com/GMOD/jbrowse-components/pull/4972) Support
+    cytoband bed files starting with "#"
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#5008](https://github.com/GMOD/jbrowse-components/pull/5008) Allow parsing
+    non-indexed BED files larger than 512MB
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4997](https://github.com/GMOD/jbrowse-components/pull/4997) Better message
+    for "quota exceeded" message from localstorage
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4974](https://github.com/GMOD/jbrowse-components/pull/4974) Minor
+    optimizations in multi-sample variant rendering
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4973](https://github.com/GMOD/jbrowse-components/pull/4973) Add basic
+    cytoband for Drosophila ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4970](https://github.com/GMOD/jbrowse-components/pull/4970) Dynamically
+    toggle wheel-scroll normalization to improve touchpad pinch-to-zoom usage
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#5013](https://github.com/GMOD/jbrowse-components/pull/5013) Fix UCSC chain
+    parsing which have header lines ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4993](https://github.com/GMOD/jbrowse-components/pull/4993) Fix re-export
+    of @mui/material/styles, and re-export theme
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4968](https://github.com/GMOD/jbrowse-components/pull/4968) Fix theme
+    augmentation for primary/secondary colors in v3.3.0
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#5004](https://github.com/GMOD/jbrowse-components/pull/5004) Fix
+    modifications rendering broken in v3.2.0
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4992](https://github.com/GMOD/jbrowse-components/pull/4992) Fix mouseover
+    for some variable width bigwig features
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4984](https://github.com/GMOD/jbrowse-components/pull/4984) Avoid
+    rendering 'yellow' for low scores in wiggle density renderings with
+    'log-scale' enabled ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4969](https://github.com/GMOD/jbrowse-components/pull/4969) Avoid
+    aggregating bigbed features with geneName === 'none'
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#5005](https://github.com/GMOD/jbrowse-components/pull/5005) Updated
+  screenshots in gallery ([@cmdcolin](https://github.com/cmdcolin))
+- [#5001](https://github.com/GMOD/jbrowse-components/pull/5001) Improve website
+  docs with grammarly suggestions ([@cmdcolin](https://github.com/cmdcolin))
+- [#4982](https://github.com/GMOD/jbrowse-components/pull/4982) Add example of
+  disabling side-scroll/zoom in embedded lgv
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4977](https://github.com/GMOD/jbrowse-components/pull/4977) Fix
+  `addToExtensionPoint` example in docs
+  ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :house: Internal
+
+- `core`, `product-core`
+  - [#5011](https://github.com/GMOD/jbrowse-components/pull/5011) Remove some
+    unused functions on the session model
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5003](https://github.com/GMOD/jbrowse-components/pull/5003) Fix typescript
+    on renderToAbstractCanvas ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4994](https://github.com/GMOD/jbrowse-components/pull/4994) Refactor some
+    ReExport code ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.68s.
+
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.3.0
+
+## 3.3.0 (2025-04-18)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4956](https://github.com/GMOD/jbrowse-components/pull/4956) Add simplified
+    display of REF/ALT to help with long strings produced by e.g. Cactus VCF
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4954](https://github.com/GMOD/jbrowse-components/pull/4954) Add genotype
+    frequency table to variant feature details
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4952](https://github.com/GMOD/jbrowse-components/pull/4952) Add 'genotype'
+    column to the Variant sample grid ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4944](https://github.com/GMOD/jbrowse-components/pull/4944) Show ALT
+    allele description on multi-variant mouseover
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4922](https://github.com/GMOD/jbrowse-components/pull/4922) Add
+    Multi-variant SV display ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4950](https://github.com/GMOD/jbrowse-components/pull/4950) Add ability to
+    use jexl filters on multi-sample variant displays
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4934](https://github.com/GMOD/jbrowse-components/pull/4934) Add
+    alpha-transparency to help show overlapping SVs in the Multi-sample variant
+    display ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4931](https://github.com/GMOD/jbrowse-components/pull/4931) Show target
+    zoom level in tooltip on slider ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4930](https://github.com/GMOD/jbrowse-components/pull/4930) Upload last
+    release build to https://jbrowse.org/code/jb2/latest
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `embedded-core`, `product-core`, `sv-core`, `web-core`
+  - [#4933](https://github.com/GMOD/jbrowse-components/pull/4933) Upgrade to MUI
+    v6 -> MUI v7 ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4929](https://github.com/GMOD/jbrowse-components/pull/4929) Fix broken
+    bigbed features when there is gene level aggregation
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4923](https://github.com/GMOD/jbrowse-components/pull/4923) Fix dark stock
+    theme showing bad colors ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- `core`
+  - [#4949](https://github.com/GMOD/jbrowse-components/pull/4949) Controlling
+    navigation of embedded component - storybook examples
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4924](https://github.com/GMOD/jbrowse-components/pull/4924) Add config
+    docs for pre-processors with simplified config snapshots
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4925](https://github.com/GMOD/jbrowse-components/pull/4925) Update docs
+    with phased VCF tutorial ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#4926](https://github.com/GMOD/jbrowse-components/pull/4926) Skip running
+    hydration for server side rendering
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.41s.
+
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.2.0
+
+## 3.2.0 (2025-03-22)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4919](https://github.com/GMOD/jbrowse-components/pull/4919) Add in-app
+    clustering method for multi-wiggle tracks
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4909](https://github.com/GMOD/jbrowse-components/pull/4909) Add ability to
+    load refNameAliases from chromAliases.bb file
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4906](https://github.com/GMOD/jbrowse-components/pull/4906) Add in-app
+    clustering method for genotype matrix
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4914](https://github.com/GMOD/jbrowse-components/pull/4914) Allow looking
+    up header column by name for RefNameAliases
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4910](https://github.com/GMOD/jbrowse-components/pull/4910) Allow
+    refNameColumn in RefNameAliasAdapter to override the default displayed
+    refnames ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4907](https://github.com/GMOD/jbrowse-components/pull/4907) Simplified
+    snapshot API for initial navigation of LGV
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `product-core`, `web-core`
+  - [#4899](https://github.com/GMOD/jbrowse-components/pull/4899) Add aborting
+    to multi-variant rendering, multi-wiggle rendering
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4920](https://github.com/GMOD/jbrowse-components/pull/4920) Fix issue where
+  multi-level linear synteny view would show a blank tracklist
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4913](https://github.com/GMOD/jbrowse-components/pull/4913) Fix parent
+  aggregation in BigBed files using larger request window
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4905](https://github.com/GMOD/jbrowse-components/pull/4905) Fix bug where
+  applying genotype clustering twice produces randomness
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4897](https://github.com/GMOD/jbrowse-components/pull/4897) Fix clustering
+  for certain sets of bigwig files ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.00s.
+
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.1.0
+
+## 3.1.0 (2025-03-14)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4876](https://github.com/GMOD/jbrowse-components/pull/4876) Allow
+    inferring default values of adapter urls to simplify config.json
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4875](https://github.com/GMOD/jbrowse-components/pull/4875) Add sample
+    data from HGSVCv3 to 1000 genomes demo and config_demo
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4880](https://github.com/GMOD/jbrowse-components/pull/4880) Allow
+    selecting track error messages with click and drag
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4882](https://github.com/GMOD/jbrowse-components/pull/4882) Allow
+    clustering multi-wiggle tracks on the fly
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4874](https://github.com/GMOD/jbrowse-components/pull/4874) Use a '012'
+    matrix to improve clustering of genotypes
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4871](https://github.com/GMOD/jbrowse-components/pull/4871) Add deletion,
+    insertion, skip, softclip, hardclip to theme
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `product-core`
+  - [#4237](https://github.com/GMOD/jbrowse-components/pull/4237) Add ability
+    for views to pin elements, such as headers and tracks
+    ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#4867](https://github.com/GMOD/jbrowse-components/pull/4867) Fix web worker
+    usage of lollipop renderer ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4883](https://github.com/GMOD/jbrowse-components/pull/4883) Bump @gmod/bam
+    for CSI index fix ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.07s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.0.5
 
 ## 3.0.5 (2025-03-04)

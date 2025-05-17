@@ -97,14 +97,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        uniqueModifications.forEach(value => {
+        for (const value of uniqueModifications) {
           if (!self.visibleModifications.has(value.type)) {
             self.visibleModifications.set(value.type, {
               ...value,
               color: getColorForModification(value.type),
             })
           }
-        })
+        }
       },
       /**
        * #action

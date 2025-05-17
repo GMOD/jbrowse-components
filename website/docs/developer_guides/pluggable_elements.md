@@ -9,7 +9,7 @@ A plugin is an independently distributed package of code that is designed to
 "plug in" to a JBrowse application.
 
 It's implemented as a class that extends `@jbrowse/core/Plugin`. It gets
-instantiated by the application that it plugs into, and it has an `install`
+instantiated by the application that it plugs into, and it has a `install`
 method and a `configure` method that the application calls.
 
 This class is distributed as a webpack bundle that exports it to a namespace on
@@ -55,11 +55,11 @@ Examples of pluggable types include:
 - Add track workflow
 
 In additional to creating plugins that create new adapters, track types, etc.
-note that you can also wrap the behavior of another track so these elements are
+note that you can also wrap the behavior of another track, so these elements are
 composable.
 
 For example, we can have adapters that perform calculations on the results of
-another adapter, views that contains other subviews, and tracks that contain
+another adapter, views that contain other sub-views, and tracks that contain
 other tracks, leading to a lot of interesting behavior.
 
 Let's dive further into these details, and look at some examples.
@@ -75,8 +75,8 @@ We have demonstrated a couple new view types in JBrowse 2 already, including:
 - `LinearGenomeView` - the classic linear view of a genome
 - `CircularView` - a Circos-like circular whole genome view
 - `DotplotView` - a comparative 2-D genome view
-- `SvInspectorView` - superview containing `CircularView` and `SpreadsheetView`
-  subviews
+- `SvInspectorView` - super-view containing `CircularView` and `SpreadsheetView`
+  sub-views
 - And more!
 
 We think the boundaries for this are just your imagination, and there can also
@@ -94,7 +94,7 @@ adapter types:
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it for
   use by the browser.
 - `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
-  CramAdapter also takes a sequenceAdapter as a subadapter configuration, and
+  CramAdapter also takes a sequenceAdapter as a sub-adapter configuration, and
   uses getSubAdapter to instantiate it
 
 ### Track types
@@ -105,7 +105,8 @@ like:
 
 - Control what widget pops up on feature click
 - Add extra menu items to the track menu
-- Create subtracks (See `AlignmentsTrack`)
+- Create sub-tracks (See `AlignmentsTrack`, a composition of the pileup and
+  coverage display)
 - Choose "static-blocks" rendering styles, which keeps contents stable while the
   user scrolls, or "dynamic-blocks" that update on each scroll
 
@@ -114,7 +115,7 @@ Example tracks: the `@jbrowse/plugin-alignments` exports multiple track types:
 - `VariantTrack` - displays variant features
 - `FeatureTrack` - displays generic features including gene glyphs
 - `AlignmentsTrack` - shows both a pileup or reads and the coverage as a
-  quantiative track
+  quantitative track
 
 ### Displays
 
@@ -142,7 +143,7 @@ which has two display methods
 
 Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
-contexts like the web worker (e.g. the webworker can draw the features to an
+contexts like the web worker (e.g. the web worker can draw the features to an
 OffscreenCanvas). For more info see
 [creating renderers](/docs/developer_guides/creating_renderer/).
 
@@ -162,7 +163,7 @@ remember the relationship between these four pluggable elements is as follows:
 
 1. A view is a container for anything, views typically _have tracks_ (the linear
    genome view especially)
-2. A track controls the _what_ (kind of data, data adapters used) and _how_
+2. A track controls _what_ (kind of data, data adapters used) and _how_
    (displays, renderers) of the data you'd like to display, typically within a
    view
 3. A display is a way you might want to display the data on a track, you might
@@ -204,7 +205,7 @@ The wiggle plugin, for example, registers two custom RPC method types:
 
 - `WiggleGetMultiRegionQuantitativeStats`
 
-These methods can run in the webworker when available.
+These methods can run in the web worker when available.
 
 ### Add track workflows
 
@@ -219,9 +220,8 @@ Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
 Checkout the [full extension point API](/docs/developer_guides/extension_points)
-or an
-[example for adding context menu items](/docs/developer_guides/modifying_menus)
-for more detailed information.
+or an [example for adding context menu items](/docs/developer_guides/menus) for
+more detailed information.
 
 ### Next steps
 
@@ -229,6 +229,7 @@ Now that you have an overview of the different pluggable element types that are
 available to you, review your
 [understanding of the configuration model](../config_model).
 
-Also checkout the [guided tutorial](/docs/tutorials/simple_plugin/) for writing
-a plugin, which will take you through everything from installation, creating a
-new pluggable element, and general development tips for working with JBrowse 2.
+Also, checkout the [guided tutorial](/docs/developer_guides/simple_plugin/) for
+writing a plugin, which will take you through everything from installation,
+creating a new pluggable element, and general development tips for working with
+JBrowse 2.

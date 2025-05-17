@@ -59,7 +59,7 @@ configuration: ConfigurationReference(configSchema)
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minorAlleleFrequencyFilter: types.optional(types.number, 0.1)
+minorAlleleFrequencyFilter: types.optional(types.number, 0)
 ```
 
 #### property: showSidebarLabelsSetting
@@ -102,7 +102,41 @@ true
 autoHeight: true
 ```
 
+#### property: lengthCutoffFilter
+
+```js
+// type signature
+number
+// code
+lengthCutoffFilter: Number.MAX_SAFE_INTEGER
+```
+
+#### property: jexlFilters
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFilters: types.maybe(types.array(types.string))
+```
+
+#### property: referenceDrawingMode
+
+```js
+// type signature
+string
+// code
+referenceDrawingMode: 'skip'
+```
+
 ### MultiVariantBaseModel - Getters
+
+#### getter: activeFilters
+
+```js
+// type
+any
+```
 
 #### getter: preSources
 
@@ -118,6 +152,13 @@ Source[]
 any[]
 ```
 
+#### getter: sourceMap
+
+```js
+// type
+any
+```
+
 #### getter: rowHeight
 
 ```js
@@ -125,11 +166,25 @@ any[]
 number
 ```
 
+#### getter: canDisplayLabels
+
+```js
+// type
+boolean
+```
+
 #### getter: totalHeight
 
 ```js
 // type
 number
+```
+
+#### getter: featuresReady
+
+```js
+// type
+boolean
 ```
 
 ### MultiVariantBaseModel - Methods
@@ -145,10 +200,24 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 5 more ... | { ...; })[]
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
 ```
 
 ### MultiVariantBaseModel - Actions
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (f?: string[]) => void
+```
 
 #### action: setRowHeight
 
@@ -161,7 +230,7 @@ setRowHeight: (arg: number) => void
 
 ```js
 // type signature
-setHoveredGenotype: (arg: string) => void
+setHoveredGenotype: (arg?: { genotype: string; name: string; }) => void
 ```
 
 #### action: setFeatures
@@ -190,6 +259,13 @@ clearLayout: () => void
 ```js
 // type signature
 setSourcesLoading: (str: string) => void
+```
+
+#### action: setSimplifiedFeaturesLoading
+
+```js
+// type signature
+setSimplifiedFeaturesLoading: (str: string) => void
 ```
 
 #### action: setSources
@@ -239,4 +315,11 @@ setHasPhased: (arg: boolean) => void
 ```js
 // type signature
 setSampleInfo: (arg: Record<string, SampleInfo>) => void
+```
+
+#### action: setReferenceDrawingMode
+
+```js
+// type signature
+setReferenceDrawingMode: (arg: string) => void
 ```

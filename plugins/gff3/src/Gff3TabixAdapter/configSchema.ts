@@ -56,6 +56,20 @@ const Gff3TabixAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes tbi index at
+     * yourfile.gff3.gz.tbi:
+     *
+     * ```json
+     * {
+     *   "type": "Gff3TabixAdapter",
+     *   "uri": "yourfile.gff3.gz",
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri
@@ -67,7 +81,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
             },
             index: {
               location: {
-                uri: snap.uri,
+                uri: `${snap.uri}.tbi`,
                 baseUri: snap.baseUri,
               },
             },

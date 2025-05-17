@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderAlignment } from './renderAlignment'
 import { renderMismatches } from './renderMismatches'
@@ -56,12 +56,7 @@ export function makeImageData({
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
-  let start = performance.now()
-  for (const feat of layoutRecords) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
+  forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
     renderAlignment({
       ctx,
       feat,
@@ -100,6 +95,6 @@ export function makeImageData({
         canvasWidth,
       })
     }
-  }
+  })
   return undefined
 }

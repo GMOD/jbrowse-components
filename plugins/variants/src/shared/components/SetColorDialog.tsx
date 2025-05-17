@@ -52,7 +52,7 @@ export default function SetColorDialog({
       open
       onClose={handleClose}
       maxWidth="xl"
-      title="Multi-variant color/arrangement editor"
+      title="Multi-sample variant display - Color/arrangement editor"
     >
       {showBulkEditor ? (
         <BulkEditPanel

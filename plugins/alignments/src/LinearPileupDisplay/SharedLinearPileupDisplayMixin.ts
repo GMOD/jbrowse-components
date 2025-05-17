@@ -211,12 +211,12 @@ export function SharedLinearPileupDisplayMixin(
           'lightsalmon',
         ]
 
-        uniqueTag.forEach(value => {
+        for (const value of uniqueTag) {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
             self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
-        })
+        }
       },
 
       /**
@@ -375,15 +375,17 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Open feature details',
                   icon: MenuOpenIcon,
-                  onClick: (): void => {
+                  onClick: () => {
                     self.clearFeatureSelection()
-                    self.selectFeature(feat)
+                    self.selectFeature(feat).catch((e: unknown) => {
+                      getSession(self).notifyError(`${e}`, e)
+                    })
                   },
                 },
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
-                  onClick: (): void => {
+                  onClick: () => {
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -434,12 +436,12 @@ export function SharedLinearPileupDisplayMixin(
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (isAlive(self) && feature) {
-                    self.selectFeature(new SimpleFeature(feature))
+                    await self.selectFeature(new SimpleFeature(feature))
                   }
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
 
@@ -473,7 +475,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
           }

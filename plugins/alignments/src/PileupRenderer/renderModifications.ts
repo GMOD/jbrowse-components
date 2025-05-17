@@ -38,6 +38,8 @@ export function renderModifications({
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
 
+  // this is a hole-y array, does not work with normal for loop
+  // eslint-disable-next-line unicorn/no-array-for-each
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
       const r = start + pos
@@ -61,6 +63,7 @@ export function renderModifications({
         const w = rightPx - leftPx + 0.5
         fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       }
+      pos++
     },
   )
 }

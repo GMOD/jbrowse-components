@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <script
+      src="https:///unpkg.com/@jbrowse/react-linear-genome-view2@${config.customFields.currentVersion}/dist/react-linear-genome-view.umd.development.js"
+      crossorigin
+    ></script>
+  </head>
+  <body>
+    <h1>Hello world! We're using JBrowse Linear Genome View!</h1>
+    <div id="jbrowse_linear_genome_view"></div>
+    <script>
+          const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
+
+      const state = new createViewState({
+      assembly: { type:'BgzipFastaAdapter',
+      uri:'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz' },
+      tracks: [
+      {type:'FeatureTrack',adapter:{type:'Gff3TabixAdapter',uri:'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz'}}
+      ], location: 'chr1:500,000-510,000', }) const root=
+      document.getElementById('jbrowse_linear_genome_view'), root.render(
+      React.createElement(JBrowseLinearGenomeView, { viewState: state }), )
+    </script>
+  </body>
+</html>

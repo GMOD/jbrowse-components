@@ -31,6 +31,18 @@ const HicAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "HicAdapter",
+     *   "uri": "file.hic",
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

@@ -11,26 +11,23 @@ import { tags } from './tagInfo'
 import { getTag } from './util'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
-
-// local components
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
 const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
-const AlignmentsFeatureDetails = observer(function (props: {
+const FeatDefined = observer(function (props: {
+  feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
-  const { model } = props
-  const { featureData } = model
-  const feat = structuredClone(featureData)
+  const { model, feat } = props
+  const flags = feat.flags as number | null
   const SA = getTag('SA', feat) as string | undefined
-  const { flags } = feat
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
         {...props}
-        // @ts-expect-error
         descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>
@@ -41,15 +38,36 @@ const AlignmentsFeatureDetails = observer(function (props: {
           )
         }
       />
+
       {SA !== undefined ? (
         <SupplementaryAlignments model={model} tag={SA} feature={feat} />
       ) : null}
-      {flags & 1 ? (
-        <LinkedPairedAlignments model={model} feature={feat} />
-      ) : null}
+      {flags != null ? (
+        <>
+          {flags & 1 ? (
+            <LinkedPairedAlignments model={model} feature={feat} />
+          ) : null}
 
-      {flags !== undefined ? <Flags feature={feat} {...props} /> : null}
+          <Flags flags={flags} {...props} />
+        </>
+      ) : null}
     </Paper>
+  )
+})
+
+const AlignmentsFeatureDetails = observer(function (props: {
+  model: AlignmentFeatureWidgetModel
+}) {
+  const { model } = props
+  const { featureData } = model
+  const feat = structuredClone(featureData)
+  return feat ? (
+    <FeatDefined feat={feat} {...props} />
+  ) : (
+    <div>
+      No feature loaded, may not be available after page refresh because it was
+      too large for localStorage
+    </div>
   )
 })
 

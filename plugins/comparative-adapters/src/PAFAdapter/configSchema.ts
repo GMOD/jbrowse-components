@@ -47,6 +47,20 @@ const PAFAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
 
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "PAFAdapter",
+     *   "uri": "file.paf.gz",
+     *   "queryAssembly":"hg19",
+     *   "targetAssembly":"hg38"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

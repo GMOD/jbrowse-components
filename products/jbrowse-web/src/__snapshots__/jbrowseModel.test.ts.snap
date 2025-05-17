@@ -904,6 +904,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox-sorted.bam.bai",
+          },
+        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -916,7 +922,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_alignments_alignments",
-          "height": 400,
+          "height": 600,
           "pileupDisplay": {
             "colorBy": {
               "type": "mappingQuality",

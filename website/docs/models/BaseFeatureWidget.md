@@ -130,6 +130,15 @@ IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```
 
+#### property: descriptions
+
+```js
+// type signature
+IType<any, any, any>
+// code
+descriptions: types.frozen()
+```
+
 ### BaseFeatureWidget - Actions
 
 #### action: setFeatureData

@@ -21,10 +21,10 @@ export async function loadSessionSpec(
       name: `New session ${new Date().toLocaleString()}`,
     })
 
-    sessionTracks.forEach(track => {
+    for (const track of sessionTracks) {
       // @ts-expect-error
       rootModel.session.addTrackConf(track)
-    })
+    }
 
     await Promise.all(
       views.map(view =>

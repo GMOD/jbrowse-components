@@ -23,6 +23,8 @@
  * SOFTWARE.
  */
 
+import { getProgressDisplayStr } from '@jbrowse/core/util'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function generate_record(
@@ -67,27 +69,30 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let cigar = ''
   const records = []
 
-  let i = 0
   let blockStart = 0
   const decoder = new TextDecoder('utf8')
+  let s = performance.now()
+  let i = 0
   while (blockStart < buffer.length) {
-    if (i++ % 10_000 === 0) {
+    if (i++ % 10_000 === 0 && performance.now() - s > 50) {
       statusCallback(
-        `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
       )
+      s = performance.now()
     }
     const n = buffer.indexOf(10, blockStart)
     if (n === -1) {
       break
     }
     const b = buffer.subarray(blockStart, n)
-    const l = decoder.decode(b).trim()
+    const line = decoder.decode(b).trim()
     blockStart = n + 1
-    const l_tab = l.replaceAll(' ', '\t') // There are CHAIN files with space-separated fields
-    const l_vec = l_tab.split('\t')
+    if (!line || line.startsWith('#')) {
+      continue
+    }
+    const l_vec = line.split(/[ \t]+/) // Split on one or more spaces or tabs
 
     if (l_vec[0] === 'chain') {
-      // Emit previous PAF row, if available
       if (cigar) {
         records.push(
           generate_record(
@@ -173,5 +178,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
       num_matches,
     )
   }
+
+  statusCallback('')
   return records
 }

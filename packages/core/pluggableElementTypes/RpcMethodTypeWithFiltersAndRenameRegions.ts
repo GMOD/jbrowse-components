@@ -5,7 +5,10 @@ import SerializableFilterChain from './renderers/util/serializableFilterChain'
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 
 export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodType {
-  async deserializeArguments(args: any, rpcDriverClassName: string) {
+  async deserializeArguments<T>(
+    args: T & { filters?: any },
+    rpcDriverClassName: string,
+  ): Promise<T> {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,

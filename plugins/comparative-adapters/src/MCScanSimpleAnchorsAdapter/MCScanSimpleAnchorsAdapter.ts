@@ -1,5 +1,5 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { doesIntersect2 } from '@jbrowse/core/util'
+import { doesIntersect2, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -46,14 +46,18 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return this.setupP
   }
   async setupPre(opts: BaseOptions) {
+    const { statusCallback = () => {} } = opts
     const assemblyNames = this.getConf('assemblyNames') as string[]
     const pm = this.pluginManager
     const bed1 = openLocation(this.getConf('bed1Location'), pm)
     const bed2 = openLocation(this.getConf('bed2Location'), pm)
     const mcscan = openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm)
-    const [bed1text, bed2text, mcscantext] = await Promise.all(
-      [bed1, bed2, mcscan].map(r => readFile(r, opts)),
+    const [bed1text, bed2text, mcscantext] = await updateStatus(
+      'Downloading data',
+      statusCallback,
+      () => Promise.all([bed1, bed2, mcscan].map(r => readFile(r, opts))),
     )
+
     const bed1Map = parseBed(bed1text!)
     const bed2Map = parseBed(bed2text!)
     const feats = mcscantext!
@@ -131,7 +135,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const flip = index === 0
-        feats.forEach(f => {
+        for (const f of feats) {
           const [f11, f12, f21, f22, score, strand, rowNum] = f
           let r1 = {
             refName: f11.refName,
@@ -165,7 +169,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
               }),
             )
           }
-        })
+        }
       }
 
       observer.complete()
@@ -177,5 +181,4 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */): void {}
 }

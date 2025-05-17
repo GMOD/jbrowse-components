@@ -38,7 +38,7 @@ We just simply supply a `hicLocation` currently for the HicAdapter:
 #### HicRenderer config
 
 - `baseColor` - the default baseColor of the Hi-C plot is red #f00, you can
-  change it to blue so then the shading will be done in blue with #00f
+  change it to blue, so then the shading will be done in blue with #00f
 - `color` - this is a color callback that adapts the current Hi-C contact
   feature with the baseColor to generate a shaded block. The default color
   callback function is

@@ -31,6 +31,7 @@ test('open up a widget', async () => {
     </ThemeProvider>,
   )
   model.widget.setFeatureData({
+    uniqueId: 'hello',
     start: 2,
     end: 102,
     strand: 1,

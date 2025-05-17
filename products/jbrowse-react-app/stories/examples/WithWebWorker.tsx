@@ -1,9 +1,9 @@
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app'
+// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import volvoxConfig from '../../public/test_data/volvox/config.json'
 import { JBrowseApp, createViewState } from '../../src'
 // replace with this in your code:
-// import makeWorkerInstance from '@jbrowse/react-app/esm/makeWorkerInstance'
+// import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
 import makeWorkerInstance from '../../src/makeWorkerInstance'
 
 const defaultSession = {

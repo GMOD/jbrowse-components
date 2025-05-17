@@ -25,21 +25,27 @@ export default function ArrayValue({
   name,
   value,
   description,
+  formatter,
   prefix = [],
 }: {
   description?: React.ReactNode
   name: string
   value: unknown[]
+  formatter?: (value: unknown, key: string) => React.ReactNode
   prefix?: string[]
 }) {
   const { classes } = useStyles()
   if (value.length === 1) {
     return isObject(value[0]) ? (
-      <Attributes attributes={value[0]} prefix={[...prefix, name]} />
+      <Attributes
+        formatter={formatter}
+        attributes={value[0]}
+        prefix={[...prefix, name]}
+      />
     ) : (
       <div className={classes.field}>
         <FieldName prefix={prefix} description={description} name={name} />
-        <BasicValue value={value[0]} />
+        <BasicValue value={formatter ? formatter(value[0], name) : value[0]} />
       </div>
     )
   } else if (value.every(val => isObject(val))) {
@@ -48,6 +54,7 @@ export default function ArrayValue({
         {value.map((val, i) => (
           <Attributes
             key={`${JSON.stringify(val)}-${i}`}
+            formatter={formatter}
             attributes={val as Record<string, unknown>}
             prefix={[...prefix, `${name}-${i}`]}
           />
@@ -63,7 +70,7 @@ export default function ArrayValue({
             key={`${JSON.stringify(val)}-${i}`}
             className={classes.fieldSubvalue}
           >
-            <BasicValue value={val} />
+            <BasicValue value={formatter ? formatter(val, name) : val} />
           </div>
         ))}
       </div>

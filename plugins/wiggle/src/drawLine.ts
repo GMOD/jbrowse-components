@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { getScale } from './util'
 
@@ -23,6 +24,7 @@ export function drawLine(
     colorCallback: (f: Feature, score: number) => string
     config: AnyConfigurationModel
     offset?: number
+    stopToken?: string
   },
 ) {
   const {
@@ -36,6 +38,7 @@ export function drawLine(
     colorCallback,
     config,
     offset = 0,
+    stopToken,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -54,11 +57,16 @@ export function drawLine(
   let lastVal: number | undefined
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
+  let start = performance.now()
   for (const feature of features.values()) {
+    if (performance.now() - start > 400) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
     }
@@ -96,12 +104,14 @@ export function drawLine(
   if (displayCrossHatches) {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    values.forEach(tick => {
+    for (const tick of values) {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))
       ctx.lineTo(width, Math.round(toY(tick)))
       ctx.stroke()
-    })
+    }
   }
-  return { reducedFeatures }
+  return {
+    reducedFeatures,
+  }
 }

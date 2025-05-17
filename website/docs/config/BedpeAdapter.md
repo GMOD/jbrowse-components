@@ -20,15 +20,26 @@ reference the markdown files in our repo of the checked out git tag
 
 intended for SVs in a single assembly
 
+### BedpeAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "BedpeAdapter",
+  "uri": "yourfile.bedpe.gz"
+}
+```
+
 ### BedpeAdapter - Slots
 
 #### slot: bedpeLocation
 
-can be plaintext or gzipped, not indexed so loaded into memory on startup
-
 ```js
 bedpeLocation: {
       type: 'fileLocation',
+      description:
+        'can be plaintext or gzipped, not indexed so loaded into memory on startup',
       defaultValue: {
         uri: '/path/to/my.bedpe.gz',
         locationType: 'UriLocation',

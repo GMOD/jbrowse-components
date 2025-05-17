@@ -1,4 +1,5 @@
 import { parseBreakend } from '@gmod/vcf'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import type VCF from '@gmod/vcf'
 
@@ -15,9 +16,6 @@ const altTypeToSO: Record<string, string> = {
   '*': 'sequence_variant',
 }
 
-/**
- * Get a sequence ontology (SO) term that describes the variant type
- */
 export function getSOTermAndDescription(
   ref: string,
   alt: string[] | undefined,
@@ -30,7 +28,7 @@ export function getSOTermAndDescription(
 
   const soTerms = new Set<string>()
   let descriptions = new Set<string>()
-  alt.forEach(a => {
+  for (const a of alt) {
     let [soTerm, description] = getSOAndDescFromAltDefs(a, parser)
     if (!soTerm) {
       ;[soTerm, description] = getSOAndDescByExamination(ref, a)
@@ -39,7 +37,7 @@ export function getSOTermAndDescription(
       soTerms.add(soTerm)
       descriptions.add(description)
     }
-  })
+  }
 
   // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
   if (descriptions.size > 1) {
@@ -78,6 +76,7 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 
   // look for a definition with an SO type for this
   let soTerm = altTypeToSO[alt]
+
   // if no SO term but ALT is in metadata, assume sequence_variant
   if (!soTerm && parser.getMetadata('ALT', alt)) {
     soTerm = 'sequence_variant'
@@ -88,71 +87,146 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 
   // try to look for a definition for a parent term if we can
   const modAlt = alt.split(':')
-  if (modAlt.length > 1) {
-    return getSOAndDescFromAltDefs(`<${modAlt.slice(0, -1).join(':')}>`, parser)
-  }
-
-  // no parent
-  return []
+  return modAlt.length > 1
+    ? getSOAndDescFromAltDefs(`<${modAlt.slice(0, -1).join(':')}>`, parser)
+    : []
 }
 
-// note: term SNV is used instead of SNP because SO definition of SNP says
-// abundance must be at least 1% in population, and can't be sure we meet
-// that
 export function getSOAndDescByExamination(ref: string, alt: string) {
   const bnd = parseBreakend(alt)
   if (bnd) {
     return ['breakend', alt]
-  }
-  if (ref.length === 1 && alt.length === 1) {
+  } else if (ref.length === 1 && alt.length === 1) {
+    // note: SNV is used instead of SNP because SO definition of SNP says
+    // abundance must be at least 1% in population
     return ['SNV', makeDescriptionString('SNV', ref, alt)]
-  }
-  if (alt === '<INS>') {
+  } else if (alt === '<INS>') {
     return ['insertion', alt]
-  }
-  if (alt === '<DEL>') {
+  } else if (alt === '<DEL>') {
     return ['deletion', alt]
-  }
-  if (alt === '<DUP>') {
+  } else if (alt === '<DUP>') {
     return ['duplication', alt]
-  }
-  if (alt === '<CNV>') {
+  } else if (alt === '<CNV>') {
     return ['cnv', alt]
-  }
-  if (alt === '<INV>') {
+  } else if (alt === '<INV>') {
     return ['inversion', alt]
-  }
-  if (alt === '<TRA>') {
+  } else if (alt === '<TRA>') {
     return ['translocation', alt]
-  }
-  if (alt.includes('<')) {
+  } else if (alt.includes('<')) {
     return ['sv', alt]
-  }
-  if (ref.length === alt.length) {
-    return ref.split('').reverse().join('') === alt
-      ? ['inversion', makeDescriptionString('inversion', ref, alt)]
-      : ['substitution', makeDescriptionString('substitution', ref, alt)]
-  }
-  if (ref.length <= alt.length) {
+  } else if (ref.length === alt.length) {
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    if (lenRef > 5 || lenAlt > 5) {
+      const lena = getBpDisplayStr(lenRef)
+      const lenb = getBpDisplayStr(lenAlt)
+      return ref.split('').reverse().join('') === alt
+        ? ['inverson', makeDescriptionString('inv', lena, lenb)]
+        : ['substitution', makeDescriptionString('substitution', lena, lenb)]
+    } else {
+      return ref.split('').reverse().join('') === alt
+        ? ['inversion', makeDescriptionString('inv', ref, alt)]
+        : ['substitution', makeDescriptionString('substitution', ref, alt)]
+    }
+  } else if (ref.length <= alt.length) {
     const len = alt.length - ref.length
-    const lena = len.toLocaleString('en-US')
+    const lenAlt = alt.length
+    const lenRef = ref.length
+    const lena = getBpDisplayStr(len)
     return [
       'insertion',
-      len > 5 ? `${lena}bp INS` : makeDescriptionString('insertion', ref, alt),
+      lenRef > 5 || lenAlt > 5
+        ? `${lena} INS`
+        : makeDescriptionString('insertion', len > 5 ? lena : ref, alt),
     ]
-  }
-  if (ref.length > alt.length) {
-    const len = ref.length - alt.length
-    const lena = len.toLocaleString('en-US')
+  } else if (ref.length > alt.length) {
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    const lena = getBpDisplayStr(lenRef - lenAlt)
     return [
       'deletion',
-      len > 5 ? `${lena}bp DEL` : makeDescriptionString('deletion', ref, alt),
+      lenRef > 5 || lenAlt > 5
+        ? `${lena} DEL`
+        : makeDescriptionString('deletion', ref, alt),
     ]
+  } else {
+    return ['indel', makeDescriptionString('indel', ref, alt)]
   }
+}
 
-  return ['indel', makeDescriptionString('indel', ref, alt)]
+export function getMinimalDesc(ref: string, alt: string) {
+  const bnd = parseBreakend(alt)
+  if (bnd) {
+    return alt
+  } else if (ref.length === 1 && alt.length === 1) {
+    // note: SNV is used instead of SNP because SO definition of SNP says
+    // abundance must be at least 1% in population
+    return alt
+  } else if (alt === '<INS>') {
+    return alt
+  } else if (alt === '<DEL>') {
+    return alt
+  } else if (alt === '<DUP>') {
+    return alt
+  } else if (alt === '<CNV>') {
+    return alt
+  } else if (alt === '<INV>') {
+    return alt
+  } else if (alt === '<TRA>') {
+    return alt
+  } else if (alt.includes('<')) {
+    return alt
+  } else if (ref.length === alt.length) {
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    if (lenRef > 5 || lenAlt > 5) {
+      const lena = getBpDisplayStr(lenRef)
+      const lenb = getBpDisplayStr(lenAlt)
+      return ref.split('').reverse().join('') === alt
+        ? makeDescriptionString('inv', lena, lenb)
+        : makeDescriptionString('substitution', lena, lenb)
+    } else {
+      return ref.split('').reverse().join('') === alt
+        ? makeDescriptionString('inv', ref, alt)
+        : makeDescriptionString('substitution', ref, alt)
+    }
+  } else if (ref.length <= alt.length) {
+    const len = alt.length - ref.length
+    const lenAlt = alt.length
+    const lenRef = ref.length
+    const lena = getBpDisplayStr(len)
+    return lenRef > 5 || lenAlt > 5
+      ? `${lena} INS`
+      : makeDescriptionString('insertion', len > 5 ? lena : ref, alt)
+  } else if (ref.length > alt.length) {
+    const lenRef = ref.length
+    const lenAlt = alt.length
+    const lena = getBpDisplayStr(lenRef - lenAlt)
+    return lenRef > 5 || lenAlt > 5
+      ? `${lena} DEL`
+      : makeDescriptionString('deletion', ref, alt)
+  } else {
+    return makeDescriptionString('indel', ref, alt)
+  }
 }
 
 function makeDescriptionString(soTerm: string, ref: string, alt: string) {
-  return `${soTerm} ${ref} -> ${alt}`
+  return `${soTerm} ${[ref, alt].join(' -> ')}`
+}
+
+export function makeSimpleAltString(
+  genotype: string,
+  ref: string,
+  alt: string[],
+) {
+  return genotype
+    .split(/[/|]/)
+    .map(r =>
+      r === '.'
+        ? '.'
+        : +r === 0
+          ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
+          : getMinimalDesc(ref, alt[+r - 1] || ''),
+    )
+    .join(genotype.includes('|') ? '|' : '/')
 }

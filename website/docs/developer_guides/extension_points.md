@@ -3,6 +3,15 @@ id: extension_points
 title: Extension points
 ---
 
+## What are extension points?
+
+Extension points are a basic bit of logic that allows plugin developers to
+register a callback that can be called in some other part of the code
+
+## Adding to extension points
+
+## Using extension points
+
 The basic API is that producers can say:
 
 ```typescript
@@ -14,13 +23,19 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 And consumers can say:
 
 ```typescript
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
+pluginManager.addToExtensionPoint(
+  'ExtensionPointName',
+  (arg: { value: number }) => {
+    return { value: arg.value + 1 }
+  },
+)
 
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
+pluginManager.addToExtensionPoint(
+  'ExtensionPointName',
+  (arg: { value: number }) => {
+    return { value: arg.value + 1 }
+  },
+)
 ```
 
 In this case, `arg` that is passed in evaluateExtensionPoint calls all the
@@ -32,10 +47,9 @@ together).
 So in the example above, ret would be `{value:3}` after evaluating the extension
 point.
 
-In the core codebase, we have the concept of extension points that users can
-call or add to.
+## API description of extension points
 
-The API is
+### Evaluation API
 
 ```typescript
 // extra props are optional, can pass an extra context object your extension
@@ -43,10 +57,11 @@ The API is
 pluginManager.evaluateExtensionPoint(extensionPointName, args, props)
 ```
 
-Args are 'accumulated' (e.g. the return value of your extension point is passed
-along to the args argument of the next one), and props are just passed along
+Args are 'accumulated' (which means: the return value of your extension point is
+passed along to the args argument of the next one), while the props variable is
+just passed along
 
-There is also an async method:
+There is also an async version of the extension point evaluation:
 
 ```typescript
 // extra props are optional, can pass an extra context object your extension
@@ -57,12 +72,20 @@ pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
 Users can additionally add to extension points, so that when they are evaluated,
 it runs a chain of callbacks that are registered to that extension point:
 
+### Registration API
+
 ```typescript
 pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
 ```
 
+The addToExtensionPoint API will create a new one if it does not already exist,
+so "add to" will also "create extension point if not already existing, or
+otherwise add to it"
+
 The newArgs returned by your callback are passed on as the args to the next in
 the chain.
+
+## Current listing of extension points used in codebase
 
 Here are the extension points in the core codebase:
 

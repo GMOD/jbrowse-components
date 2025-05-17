@@ -1,7 +1,11 @@
 import IntervalTree from '@flatten-js/interval-tree'
 import BED from '@gmod/bed'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  fetchAndMaybeUnzip,
+  getProgressDisplayStr,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -29,32 +33,47 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  private async loadDataP(opts: BaseOptions = {}) {
-    const pm = this.pluginManager
+  private async loadDataP(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
     const bedLoc = this.getConf('bedLocation')
-    const buffer = await fetchAndMaybeUnzip(openLocation(bedLoc, pm), opts)
-    // 512MB  max chrome string length is 512MB
-    if (buffer.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-    const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
-    const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
+    const buffer = await fetchAndMaybeUnzip(
+      openLocation(bedLoc, this.pluginManager),
+      opts,
+    )
+
     const headerLines = []
+    const features = {} as Record<string, string[]>
+    let blockStart = 0
     let i = 0
-    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
-      headerLines.push(lines[i])
+    const decoder = new TextDecoder('utf8')
+    while (blockStart < buffer.length) {
+      const n = buffer.indexOf(10, blockStart)
+      // could be a non-newline ended file, so subarray to end of file if n===-1
+      const b =
+        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
+      const line = decoder.decode(b).trim()
+      if (line) {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else if (line.startsWith('>')) {
+          break
+        } else {
+          const tab = line.indexOf('\t')
+          const refName = line.slice(0, tab)
+          if (!features[refName]) {
+            features[refName] = []
+          }
+          features[refName].push(line)
+        }
+      }
+      if (i++ % 10_000 === 0) {
+        statusCallback(
+          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
+        )
+      }
+      blockStart = n + 1
     }
     const header = headerLines.join('\n')
-    const features = {} as Record<string, string[]>
-    for (; i < lines.length; i++) {
-      const line = lines[i]!
-      const tab = line.indexOf('\t')
-      const refName = line.slice(0, tab)
-      if (!features[refName]) {
-        features[refName] = []
-      }
-      features[refName].push(line)
-    }
 
     const autoSql = this.getConf('autoSql') as string
     const parser = new BED({ autoSql })
@@ -122,6 +141,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const names = await this.getNames()
 
     const intervalTree = new IntervalTree()
+    // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
       const uniqueId = `${this.id}-${refName}-${i}`
@@ -168,6 +188,4 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     }, opts.stopToken)
   }
-
-  public freeResources(): void {}
 }

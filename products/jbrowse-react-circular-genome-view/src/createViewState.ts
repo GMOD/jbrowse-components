@@ -64,7 +64,7 @@ export default function createViewState(opts: ViewStateOptions) {
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })
-  stateTree.config.internetAccounts.forEach(account => {
+  for (const account of stateTree.config.internetAccounts) {
     const internetAccountType = pluginManager.getInternetAccountType(
       account.type,
     )
@@ -75,7 +75,7 @@ export default function createViewState(opts: ViewStateOptions) {
       type: account.type,
       configuration: account,
     })
-  })
+  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   autorun(reaction => {

@@ -1,7 +1,7 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -12,7 +12,10 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
@@ -198,12 +201,12 @@ function stateModelFactory() {
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
         let ret: LayoutRecord | undefined
-        self.blockState.forEach(block => {
+        for (const block of self.blockState.values()) {
           const val = block.layout?.getByID(id)
           if (val) {
             ret = val
           }
-        })
+        }
         return ret
       },
     }))
@@ -231,25 +234,36 @@ function stateModelFactory() {
       /**
        * #action
        */
-      selectFeature(feature: Feature) {
+      async selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'BaseFeatureWidget',
-            'baseFeature',
+          const { rpcManager } = session
+          const sessionId = getRpcSessionId(self)
+          const track = getContainingTrack(self)
+          const view = getContainingView(self)
+          const adapterConfig = getConf(track, 'adapter')
+          const descriptions = await rpcManager.call(
+            sessionId,
+            'CoreGetMetadata',
             {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-              featureData: feature.toJSON(),
+              adapterConfig,
             },
           )
-
-          session.showWidget(featureWidget)
+          session.showWidget(
+            session.addWidget('BaseFeatureWidget', 'baseFeature', {
+              featureData: feature.toJSON(),
+              view,
+              track,
+              descriptions,
+            }),
+          )
         }
+
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
         }
       },
+
       /**
        * #action
        */
@@ -293,9 +307,9 @@ function stateModelFactory() {
           self.setError()
           self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
-          ;[...self.blockState.values()].forEach(val => {
+          for (const val of self.blockState.values()) {
             val.doReload()
-          })
+          }
           superReload()
         },
       }
@@ -321,7 +335,11 @@ function stateModelFactory() {
                   icon: MenuOpenIcon,
                   onClick: () => {
                     if (self.contextMenuFeature) {
-                      self.selectFeature(self.contextMenuFeature)
+                      self
+                        .selectFeature(self.contextMenuFeature)
+                        .catch((e: unknown) => {
+                          getSession(e).notifyError(`${e}`, e)
+                        })
                     }
                   },
                 },
@@ -355,7 +373,9 @@ function stateModelFactory() {
             } else {
               const feature = self.features.get(f)
               if (feature) {
-                self.selectFeature(feature)
+                self.selectFeature(feature).catch((e: unknown) => {
+                  getSession(e).notifyError(`${e}`, e)
+                })
               }
             }
           },
@@ -408,17 +428,17 @@ function stateModelFactory() {
             if (!view.initialized) {
               return
             }
-            self.blockDefinitions.contentBlocks.forEach(block => {
+            for (const block of self.blockDefinitions.contentBlocks) {
               blocksPresent[block.key] = true
               if (!self.blockState.has(block.key)) {
                 self.addBlock(block.key, block)
               }
-            })
-            self.blockState.forEach((_, key) => {
+            }
+            for (const key of self.blockState.keys()) {
               if (!blocksPresent[key]) {
-                self.deleteBlock(key as string)
+                self.deleteBlock(key)
               }
-            })
+            }
           }),
         )
       },

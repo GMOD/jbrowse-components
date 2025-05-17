@@ -1,6 +1,6 @@
 ---
 id: creating_track
-title: Creating a custom track type
+title: Creating custom track types
 ---
 
 Important note: track types are "high level concepts", and don't do a lot of

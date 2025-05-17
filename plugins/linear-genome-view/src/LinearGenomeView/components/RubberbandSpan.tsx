@@ -1,8 +1,10 @@
 import { useState } from 'react'
 
-import { stringify, toLocale } from '@jbrowse/core/util'
-import { Popover, Typography, alpha } from '@mui/material'
+import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
+import { Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+import RubberbandTooltip from './RubberbandTooltip'
 
 const useStyles = makeStyles()(theme => {
   const { tertiary } = theme.palette
@@ -21,15 +23,7 @@ const useStyles = makeStyles()(theme => {
       minHeight: 8,
     },
     rubberbandText: {
-      color: tertiary.contrastText,
-    },
-    popover: {
-      mouseEvents: 'none',
-      cursor: 'crosshair',
-    },
-    paper: {
-      paddingLeft: theme.spacing(1),
-      paddingRight: theme.spacing(1),
+      color: theme.palette.tertiary.contrastText,
     },
   }
 })
@@ -38,38 +32,6 @@ interface Offset {
   coord: number
   refName?: string
   oob?: boolean
-}
-
-function Tooltip({
-  anchorEl,
-  side,
-  text,
-}: {
-  anchorEl: HTMLSpanElement
-  side: string
-  text: string
-}) {
-  const { classes } = useStyles()
-  return (
-    <Popover
-      className={classes.popover}
-      classes={{ paper: classes.paper }}
-      open
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: side === 'left' ? 'right' : 'left',
-      }}
-      transformOrigin={{
-        vertical: 'bottom',
-        horizontal: side === 'left' ? 'left' : 'right',
-      }}
-      keepMounted
-      disableRestoreFocus
-    >
-      <Typography>{text}</Typography>
-    </Popover>
-  )
 }
 
 export default function RubberbandSpan({
@@ -95,12 +57,12 @@ export default function RubberbandSpan({
     <>
       {anchorEl ? (
         <>
-          <Tooltip
+          <RubberbandTooltip
             side="left"
             anchorEl={anchorEl}
             text={stringify(leftBpOffset)}
           />
-          <Tooltip
+          <RubberbandTooltip
             side="right"
             anchorEl={anchorEl}
             text={stringify(rightBpOffset)}
@@ -120,7 +82,7 @@ export default function RubberbandSpan({
               position: sticky ? 'sticky' : undefined,
             }}
           >
-            {toLocale(numOfBpSelected)} bp
+            {getBpDisplayStr(numOfBpSelected)}
           </Typography>
         ) : null}
       </div>

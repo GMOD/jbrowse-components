@@ -1,5 +1,5 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, doesIntersect2 } from '@jbrowse/core/util'
+import { SimpleFeature, doesIntersect2, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -37,14 +37,17 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return this.setupP
   }
   async setupPre(opts: BaseOptions) {
+    const { statusCallback = () => {} } = opts
     const assemblyNames = this.getConf('assemblyNames') as string[]
 
     const pm = this.pluginManager
     const bed1 = openLocation(this.getConf('bed1Location'), pm)
     const bed2 = openLocation(this.getConf('bed2Location'), pm)
     const mcscan = openLocation(this.getConf('mcscanAnchorsLocation'), pm)
-    const [bed1text, bed2text, mcscantext] = await Promise.all(
-      [bed1, bed2, mcscan].map(r => readFile(r, opts)),
+    const [bed1text, bed2text, mcscantext] = await updateStatus(
+      'Downloading data',
+      statusCallback,
+      () => Promise.all([bed1, bed2, mcscan].map(r => readFile(r, opts))),
     )
 
     const bed1Map = parseBed(bed1text!)
@@ -106,7 +109,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const flip = index === 0
-        feats.forEach(f => {
+        for (const f of feats) {
           const [r1, r2, score, rowNum] = f
           const [f1, f2] = !flip ? [r2, r1] : [r1, r2]
           if (
@@ -131,7 +134,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
               }),
             )
           }
-        })
+        }
       }
 
       observer.complete()
@@ -143,5 +146,4 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */): void {}
 }

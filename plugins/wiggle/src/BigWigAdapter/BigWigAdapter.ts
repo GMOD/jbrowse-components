@@ -71,8 +71,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end } = region
     const {
       bpPerPx = 0,
-      stopToken,
       resolution = 1,
+      stopToken,
       statusCallback = () => {},
     } = opts
     return ObservableCreate<Feature>(async observer => {
@@ -116,6 +116,4 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       featureDensity: 0,
     }
   }
-
-  public freeResources(): void {}
 }

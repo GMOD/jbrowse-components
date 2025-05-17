@@ -145,9 +145,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
     const pm = this.pluginManager
     const { stopToken, regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
+    checkStopToken(stopToken)
 
     // make sure the requested region's start and end are integers, if there is
     // a region specification.
@@ -196,7 +198,13 @@ export default class FeatureRendererType extends ServerSideRendererType {
     props: RenderArgsDeserialized & { features?: Map<string, Feature> },
   ): Promise<RenderResults> {
     const features = props.features || (await this.getFeatures(props))
-    const result = await super.render({ ...props, features })
-    return { ...result, features }
+    const result = await super.render({
+      ...props,
+      features,
+    })
+    return {
+      ...result,
+      features,
+    }
   }
 }

@@ -87,7 +87,7 @@ Set<string>
 
 ```js
 // type
-Set<string>
+Set<GridRowId>
 ```
 
 #### getter: assemblyNames
@@ -300,7 +300,7 @@ setFavoritesCounter: (val: number) => void
 
 ```js
 // type signature
-addToRecentlyUsed: (id: string) => void
+addToRecentlyUsed: (id: GridRowId) => void
 ```
 
 #### action: clearRecentlyUsed

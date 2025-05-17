@@ -10,7 +10,7 @@ import type { getSubAdapterType } from '../dataAdapterCache'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
 
-export abstract class BaseAdapter {
+export class BaseAdapter {
   public id: string
 
   static capabilities = [] as string[]
@@ -44,5 +44,5 @@ export abstract class BaseAdapter {
    * needed for the foreseeable future and can be purged from caches, etc
    * @param region - Region
    */
-  public abstract freeResources(region: Region): void
+  freeResources(_region: Region) {}
 }

@@ -11,11 +11,11 @@ const BedpeAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * can be plaintext or gzipped, not indexed so loaded into memory on
-     * startup
      */
     bedpeLocation: {
       type: 'fileLocation',
+      description:
+        'can be plaintext or gzipped, not indexed so loaded into memory on startup',
       defaultValue: {
         uri: '/path/to/my.bedpe.gz',
         locationType: 'UriLocation',
@@ -32,6 +32,19 @@ const BedpeAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "BedpeAdapter",
+     *   "uri": "yourfile.bedpe.gz"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri

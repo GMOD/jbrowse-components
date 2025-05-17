@@ -7,7 +7,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
 import type { Source } from '../types'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -29,7 +29,7 @@ export default function SourcesDataGrid({
 }: {
   rows: Source[]
   onChange: (arg: Source[]) => void
-  setSelected: (arg: string[]) => void
+  setSelected: (arg: GridRowId[]) => void
 }) {
   const { classes } = useStyles()
   const {
@@ -50,9 +50,8 @@ export default function SourcesDataGrid({
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
-        disableRowSelectionOnClick
         onRowSelectionModelChange={arg => {
-          setSelected(arg as string[])
+          setSelected([...arg.ids])
         }}
         rows={rows}
         rowHeight={25}

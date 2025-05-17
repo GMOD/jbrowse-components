@@ -25,8 +25,11 @@ export function processModifications({
   const fend = feature.get('end')
   const twoColor = colorBy?.modifications?.twoColor
   const isolatedModification = colorBy?.modifications?.isolatedModification
+
+  // this is a hole-y array, does not work with normal for loop
+  // eslint-disable-next-line unicorn/no-array-for-each
   getMaxProbModAtEachPosition(feature)?.forEach(
-    ({ type, prob, allProbs }, pos) => {
+    ({ allProbs, prob, type }, pos) => {
       if (isolatedModification && type !== isolatedModification) {
         return
       }
@@ -60,6 +63,7 @@ export function processModifications({
           incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
         }
       }
+      pos++
     },
   )
 }

@@ -18,35 +18,19 @@
         "trackId": "Pd8Wh30ei9R",
         "adapter": {
           "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
         }
       },
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
-          "cytobandLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/cytoBand.txt"
-          }
+          "uri": "https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz"
         }
       }
     },
@@ -58,35 +42,19 @@
         "trackId": "P6R5xbRqRr",
         "adapter": {
           "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
         }
       },
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
-          "cytobandLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
-          }
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
         }
       }
     },
@@ -97,10 +65,7 @@
         "trackId": "P6R5xbRqRr3",
         "adapter": {
           "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.2bit",
-            "locationType": "UriLocation"
-          },
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.2bit",
           "chromSizesLocation": {
             "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chrom.sizes"
           }
@@ -109,38 +74,7 @@
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chromAlias.txt",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "chm13v2.0",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "chm13v2.0-asm",
-        "adapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.fai"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.gzi"
-          }
-        }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chromAlias.txt"
         }
       }
     }
@@ -3837,41 +3771,6 @@
       }
     },
     {
-      "type": "SyntenyTrack",
-      "category": ["Synteny"],
-      "trackId": "grch38-chm13v2.paf",
-      "name": "grch38-chm13v2.paf",
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "https://jbrowse.org/genomes/CHM13/synteny/grch38-chm13v2.paf.gz",
-          "locationType": "UriLocation"
-        },
-        "assemblyNames": ["chm13v2.0", "hg38"]
-      },
-      "assemblyNames": ["chm13v2.0", "hg38"]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "chm13v2.0.gff",
-      "name": "chm13v2.0.gff",
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      },
-      "assemblyNames": ["chm13v2.0"]
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "bonito_calls",
       "name": "Clive-ome 5mC",
@@ -4132,30 +4031,6 @@
         }
       },
       "assemblyNames": ["hg19"]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "ncbi_genes",
-      "name": "NCBI genes",
-      "metadata": {
-        "accessed_date": "2024/06/14",
-        "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_009914755.1/"
-      },
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/genomes/CHM13/genes/ncbi_genes.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/genomes/CHM13/genes/ncbi_genes.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      },
-      "assemblyNames": ["chm13v2.0"]
     },
     {
       "type": "FeatureTrack",
@@ -4801,7 +4676,7 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hg1"]
+      "assemblyNames": ["hs1"]
     },
     {
       "type": "VariantTrack",
@@ -5275,10 +5150,7 @@
       "name": "MANE 1.4 (w/ ensembl IDs)",
       "adapter": {
         "type": "BigBedAdapter",
-        "bigBedLocation": {
-          "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.ensembl.bb",
-          "locationType": "UriLocation"
-        }
+        "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.ensembl.bb"
       },
       "category": ["Annotation", "MANE"],
       "assemblyNames": ["hg38"],
@@ -5302,11 +5174,35 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "Gff3Adapter",
-        "gffLocation": {
-          "locationType": "UriLocation",
-          "uri": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz"
-        }
+        "uri": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz"
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hgsvc3_inversions",
+      "name": "HGSVC3 Inversions",
+      "metadata": {
+        "source": "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/GRCh38/",
+        "note": "Manually added END= field to INFO"
+      },
+      "adapter": {
+        "type": "VcfAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/variants_GRCh38_sv_inv_sym_HGSVC2024v1.0_add_END_to_INFO.vcf"
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencodeV47lift37",
+      "name": "gencodeV47lift37",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gencode/gencodeV47lift37.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
     }
   ],
   "connections": [],
@@ -5322,35 +5218,13 @@
     {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
-      "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
-        "locationType": "UriLocation"
-      },
-      "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
-        "locationType": "UriLocation"
-      },
+      "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
       "assemblyNames": ["hg19"]
     },
     {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg38-index",
-      "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix",
-        "locationType": "UriLocation"
-      },
-      "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json",
-        "locationType": "UriLocation"
-      },
+      "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix",
       "assemblyNames": ["hg38"]
     }
   ]

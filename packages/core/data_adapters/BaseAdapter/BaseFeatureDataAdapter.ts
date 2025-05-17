@@ -199,20 +199,27 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         ).pipe(toArray()),
       )
 
-      return maybeRecordStats(
-        length,
-        { featureDensity: features.length / length },
-        features.length,
+      return maybeRecordStats({
+        interval: length,
+        statsSampleFeatures: features.length,
         expansionTime,
-      )
+        stats: {
+          featureDensity: features.length / length,
+        },
+      })
     }
 
-    const maybeRecordStats = async (
-      interval: number,
-      stats: FeatureDensityStats,
-      statsSampleFeatures: number,
-      expansionTime: number,
-    ): Promise<FeatureDensityStats> => {
+    const maybeRecordStats = async ({
+      interval,
+      stats,
+      statsSampleFeatures,
+      expansionTime,
+    }: {
+      interval: number
+      stats: FeatureDensityStats
+      statsSampleFeatures: number
+      expansionTime: number
+    }): Promise<FeatureDensityStats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
         return stats

@@ -54,10 +54,10 @@ const PreferencesDialog = observer(function ({
         <FormGroup>
           <FormControlLabel
             control={<Checkbox checked={session.stickyViewHeaders} />}
+            label="Keep view header visible"
             onChange={(_, checked) => {
               session.setStickyViewHeaders(checked)
             }}
-            label="Keep view header visible"
           />
         </FormGroup>
       </DialogContent>

@@ -1,4 +1,4 @@
-import { DataGrid, GridToolbar, useGridApiRef } from '@mui/x-data-grid'
+import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { SpreadsheetModel } from '../SpreadsheetModel'
@@ -14,14 +14,15 @@ const SpreadsheetDataGrid = observer(function ({
     <DataGrid
       apiRef={apiRef}
       checkboxSelection
-      disableRowSelectionOnClick
       columnHeaderHeight={35}
       columnVisibilityModel={visibleColumns}
       onFilterModelChange={() => {
         // might be an x-data-grid undocumented api, if it stops working, can
         // consider using controlled filtering
         setTimeout(() => {
-          model.setVisibleRows(apiRef.current.state.visibleRowsLookup)
+          if (apiRef.current) {
+            model.setVisibleRows(apiRef.current.state.visibleRowsLookup)
+          }
         })
       }}
       onColumnVisibilityModelChange={n => {
@@ -29,14 +30,12 @@ const SpreadsheetDataGrid = observer(function ({
       }}
       rowHeight={25}
       hideFooter={rows.length < 100}
-      slots={{
-        toolbar: GridToolbar,
-      }}
       slotProps={{
         toolbar: {
           showQuickFilter: true,
         },
       }}
+      showToolbar
       rows={rows}
       columns={dataGridColumns}
     />

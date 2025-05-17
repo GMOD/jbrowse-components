@@ -39,6 +39,7 @@ export function drawRef(
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
+  const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
@@ -125,6 +126,7 @@ export function drawRef(
         let px1 = 0
         let px2 = 0
         const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
 
@@ -172,12 +174,19 @@ export function drawRef(
               // allow rendering the dominant color when using continuing
               // flag if the last element of continuing was a large
               // feature, else just use match
-              ctx1.fillStyle =
-                colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+              const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
+              ctx1.fillStyle = colorMap[letter]
               continuingFlag = false
 
-              draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-              ctx1.fill()
+              if (drawCIGARMatchesOnly) {
+                if (letter === 'M') {
+                  draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                  ctx1.fill()
+                }
+              } else {
+                draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                ctx1.fill()
+              }
               if (ctx3) {
                 ctx3.fillStyle = makeColor(idx)
                 draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
@@ -200,6 +209,8 @@ export function drawRef(
   }
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
+
+  // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < featPositions.length; i++) {
     const feature = featPositions[i]!
     const idx = i * unitMultiplier + 1

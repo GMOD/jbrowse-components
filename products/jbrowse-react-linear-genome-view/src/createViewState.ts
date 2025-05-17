@@ -43,27 +43,15 @@ export default function createViewState(opts: ViewStateOptions) {
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins,
+    plugins = [],
     location,
     highlight,
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
+    defaultSession,
   } = opts
-  const { model, pluginManager } = createModel(
-    plugins || [],
-    makeWorkerInstance,
-  )
-  let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-      view: {
-        id: 'linearGenomeView',
-        type: 'LinearGenomeView',
-      },
-    }
-  }
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
       config: {
@@ -74,11 +62,17 @@ export default function createViewState(opts: ViewStateOptions) {
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
-      session: defaultSession,
+      session: defaultSession ?? {
+        name: 'this session',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+        },
+      },
     },
     { pluginManager },
   )
-  stateTree.config.internetAccounts.forEach(account => {
+  for (const account of stateTree.config.internetAccounts) {
     const internetAccountType = pluginManager.getInternetAccountType(
       account.type,
     )
@@ -89,7 +83,7 @@ export default function createViewState(opts: ViewStateOptions) {
       type: account.type,
       configuration: account,
     })
-  })
+  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
@@ -104,7 +98,7 @@ export default function createViewState(opts: ViewStateOptions) {
           assembly.name,
         )
         if (highlight) {
-          highlight.forEach(h => {
+          for (const h of highlight) {
             if (h) {
               const p = parseLocString(h, refName =>
                 isValidRefName(refName, assembly.name),
@@ -119,7 +113,7 @@ export default function createViewState(opts: ViewStateOptions) {
                 })
               }
             }
-          })
+          }
         }
       } catch (e) {
         session.notifyError(`${e}`, e)
