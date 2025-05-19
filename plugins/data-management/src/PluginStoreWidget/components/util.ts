@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import type { JBrowsePlugin } from '@jbrowse/core/util/types'
+import { getEnv, isSessionWithSessionPlugins } from '@jbrowse/core/util'
+
+import type {
+  AbstractSessionModel,
+  BasePlugin,
+  JBrowsePlugin,
+} from '@jbrowse/core/util/types'
 
 export function useFetchPlugins() {
   const [plugins, setPlugins] = useState<JBrowsePlugin[]>()
@@ -23,4 +29,16 @@ export function useFetchPlugins() {
     })()
   }, [])
   return { plugins, error }
+}
+
+export function isSessionPlugin(
+  plugin: BasePlugin,
+  session: AbstractSessionModel,
+) {
+  const { pluginManager } = getEnv(session)
+  return isSessionWithSessionPlugins(session)
+    ? session.sessionPlugins.some(
+        p => pluginManager.pluginMetadata[plugin.name]?.url === p.url,
+      )
+    : false
 }
