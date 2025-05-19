@@ -8,8 +8,8 @@ import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
-import { calc, getBlockFeatures, intersect } from './util'
 import { getClip } from './getClip'
+import { calc, getBlockFeatures, intersect } from './util'
 
 import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -271,22 +271,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(async () => {
             try {
+              // check all views 'initialized'
               if (!self.views.every(view => view.initialized)) {
                 return
               }
+              // check that tracks are 'ready' (not notReady)
+              if (
+                self.matchedTracks.some(track => track.displays[0].notReady?.())
+              ) {
+                return
+              }
+
+              console.log(
+                self.matchedTracks.map(track => track.displays[0].notReady?.()),
+              )
               self.setMatchedTrackFeatures(
                 Object.fromEntries(
                   await Promise.all(
-                    self.matchedTracks.map(async track => {
-                      console.log(
-                        track,
-                        track.displays[0].PileupDisplay?.renderReady(),
-                      )
-                      return [
-                        track.configuration.trackId,
-                        await getBlockFeatures(self, track),
-                      ]
-                    }),
+                    self.matchedTracks.map(async track => [
+                      track.configuration.trackId,
+                      await getBlockFeatures(self, track),
+                    ]),
                   ),
                 ),
               )

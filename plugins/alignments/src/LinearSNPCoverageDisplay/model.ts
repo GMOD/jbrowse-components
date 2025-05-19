@@ -292,17 +292,11 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get renderReady() {
+        renderReady() {
           const superProps = superRenderProps()
           return !superProps.notReady && self.modificationsReady
         },
 
-        /**
-         * #getter
-         */
-        get ready() {
-          return this.renderReady
-        },
         /**
          * #method
          */
@@ -310,7 +304,7 @@ function stateModelFactory(
           const { colorBy, visibleModifications } = self
           return {
             ...superRenderProps(),
-            notReady: !this.ready,
+            notReady: !this.renderReady(),
             colorBy,
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),

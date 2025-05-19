@@ -165,6 +165,20 @@ function stateModelFactory(
           displayId: `${self.configuration.displayId}_snpcoverage_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
         }
       },
+
+      /**
+       * #method
+       */
+      notReady() {
+        const pNotReady = self.PileupDisplay.renderProps().notReady
+        const snpNotReady = self.SNPCoverageDisplay.renderProps().notReady
+        console.log({ pNotReady, snpNotReady })
+
+        return (
+          self.PileupDisplay.renderProps().notReady ||
+          self.SNPCoverageDisplay.renderProps().notReady
+        )
+      },
     }))
     .actions(self => ({
       /**
@@ -281,11 +295,7 @@ function stateModelFactory(
        */
       async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(
-          () =>
-            !self.PileupDisplay.renderProps().notReady &&
-            !self.SNPCoverageDisplay.renderProps().notReady,
-        )
+        await when(() => !self.notReady())
         return (
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
