@@ -158,6 +158,8 @@ module.exports = {
             'https://github.com/GMOD/jbrowse-components/edit/main/website/',
         },
         blog: {
+          onUntruncatedBlogPosts: 'ignore',
+          onInlineAuthors: 'ignore',
           blogSidebarCount: 'ALL',
           // Please change this to your repo.
           editUrl:
