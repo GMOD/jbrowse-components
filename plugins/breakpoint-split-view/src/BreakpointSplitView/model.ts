@@ -280,7 +280,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-                      await getBlockFeatures(self as any, track),
+                      await getBlockFeatures(self, track),
                     ]),
                   ),
                 ),

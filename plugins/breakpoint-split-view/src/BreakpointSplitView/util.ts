@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { clamp, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -117,9 +118,9 @@ export async function getBlockFeatures(
   }
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
-    return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
+    return undefined
   }
-  const sessionId = track.configuration.trackId
+  const sessionId = getRpcSessionId(track)
   return Promise.all(
     views.map(async view =>
       (
