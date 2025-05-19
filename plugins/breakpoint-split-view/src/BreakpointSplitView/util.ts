@@ -122,14 +122,13 @@ export async function getBlockFeatures(
   }
   const sessionId = getRpcSessionId(track)
   return Promise.all(
-    views.map(async view =>
-      (
+    views.flatMap(
+      async view =>
         (await rpcManager.call(sessionId, 'CoreGetFeatures', {
           adapterConfig: getConf(track, ['adapter']),
           sessionId,
           regions: view.staticBlocks.contentBlocks,
-        })) as Feature[][]
-      ).flat(),
+        })) as Feature[][],
     ),
   )
 }
