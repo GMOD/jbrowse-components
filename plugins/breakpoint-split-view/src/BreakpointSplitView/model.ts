@@ -282,9 +282,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
 
-              console.log(
-                self.matchedTracks.map(track => track.displays[0].notReady?.()),
-              )
               self.setMatchedTrackFeatures(
                 Object.fromEntries(
                   await Promise.all(

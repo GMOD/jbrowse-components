@@ -170,10 +170,6 @@ function stateModelFactory(
        * #method
        */
       notReady() {
-        const pNotReady = self.PileupDisplay.renderProps().notReady
-        const snpNotReady = self.SNPCoverageDisplay.renderProps().notReady
-        console.log({ pNotReady, snpNotReady })
-
         return (
           self.PileupDisplay.renderProps().notReady ||
           self.SNPCoverageDisplay.renderProps().notReady
