@@ -27,11 +27,16 @@ const useStyles = makeStyles()(theme => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
+  errorBox: {
+    width: 800,
+    margin: 40,
+  },
 }))
 
 function DialogError({ error }: { error: unknown }) {
+  const { classes } = useStyles()
   return (
-    <div style={{ width: 800, margin: 40 }}>
+    <div className={classes.errorBox}>
       <ErrorMessage error={error} />
     </div>
   )
@@ -39,21 +44,23 @@ function DialogError({ error }: { error: unknown }) {
 
 interface Props extends DialogProps {
   header?: React.ReactNode
+  titleNode?: React.ReactNode
 }
 
 const Dialog = observer(function (props: Props) {
   const { classes } = useStyles()
-  const { title, header, children, onClose } = props
+  const { titleNode, ...rest } = props
+  const { title, header, children, onClose } = rest
   const theme = useTheme()
 
   return (
-    <MUIDialog {...props}>
+    <MUIDialog {...rest}>
       <ScopedCssBaseline>
         {isValidElement(header) ? (
           header
         ) : (
           <DialogTitle>
-            <SanitizedHTML html={title || ''} />
+            {titleNode || <SanitizedHTML html={title || ''} />}
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
