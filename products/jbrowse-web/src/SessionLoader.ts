@@ -191,10 +191,10 @@ const SessionLoader = types
      * #getter
      */
     get isSessionLoaded() {
-      if (self.sessionError || self.blankSession) {
+      if (self.sessionError || self.blankSession || self.sessionSpec) {
         return true
       }
-      if ((self.sessionSnapshot || self.sessionSpec) && self.sessionPlugins) {
+      if (self.sessionSnapshot && self.sessionPlugins) {
         return true
       }
       return false
