@@ -260,11 +260,12 @@ export default function RootModel({
               () => {
                 if (self.session) {
                   const s = self.session as AbstractSessionModel
+                  const sessionSnap = getSnapshot(s)
                   try {
                     sessionStorage.setItem(
                       'current',
                       JSON.stringify({
-                        session: getSnapshot(s),
+                        session: sessionSnap,
                         createdAt: new Date(),
                       }),
                     )
@@ -279,6 +280,7 @@ export default function RootModel({
                     if (self.pluginsUpdated) {
                       self.reloadPluginManagerCallback(
                         JSON.parse(JSON.stringify(getSnapshot(self.jbrowse))),
+                        JSON.parse(JSON.stringify(sessionSnap)),
                       )
                     }
                   } catch (e) {

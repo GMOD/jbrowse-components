@@ -83,10 +83,6 @@ const SessionLoader = types
     /**
      * #volatile
      */
-    pluginsLoaded: false,
-    /**
-     * #volatile
-     */
     sessionTriaged: undefined as SessionTriagedInfo | undefined,
     /**
      * #volatile
@@ -103,11 +99,11 @@ const SessionLoader = types
     /**
      * #volatile
      */
-    runtimePlugins: [] as PluginRecord[],
+    runtimePlugins: undefined as PluginRecord[] | undefined,
     /**
      * #volatile
      */
-    sessionPlugins: [] as PluginRecord[],
+    sessionPlugins: undefined as PluginRecord[] | undefined,
     /**
      * #volatile
      */
@@ -182,7 +178,7 @@ const SessionLoader = types
      */
     get ready() {
       return Boolean(
-        this.isSessionLoaded && !self.configError && self.pluginsLoaded,
+        this.isSessionLoaded && !self.configError && self.runtimePlugins,
       )
     },
     /**
@@ -195,12 +191,13 @@ const SessionLoader = types
      * #getter
      */
     get isSessionLoaded() {
-      return Boolean(
-        self.sessionError ||
-          self.sessionSnapshot ||
-          self.blankSession ||
-          self.sessionSpec,
-      )
+      if (self.sessionError || self.blankSession) {
+        return true
+      }
+      if ((self.sessionSnapshot || self.sessionSpec) && self.sessionPlugins) {
+        return true
+      }
+      return false
     },
     /**
      * #getter
@@ -216,12 +213,6 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    /**
-     * action
-     */
-    setPluginsLoaded(isLoaded: boolean) {
-      self.pluginsLoaded = isLoaded
-    },
     /**
      * #action
      */
@@ -289,7 +280,6 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load(window.location.href)
         self.setRuntimePlugins([...runtimePlugins])
-        self.setPluginsLoaded(true)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -392,8 +382,8 @@ const SessionLoader = types
       const { configSnapshot } = self
       const config = JSON.parse(JSON.stringify(configSnapshot))
       addRelativeUris(config, configUri)
-      await this.fetchPlugins(config)
       self.setConfigSnapshot(config)
+      await this.fetchPlugins(config)
     },
     /**
      * #action
@@ -547,6 +537,7 @@ const SessionLoader = types
                   isJsonSession,
                   isJb1StyleSession,
                   isHubSession,
+                  sessionPlugins,
                   sessionQuery,
                   sessionSnapshot,
                   configSnapshot,
@@ -566,6 +557,10 @@ const SessionLoader = types
                   }
                 }
                 if (sessionSnapshot) {
+                  if (!sessionPlugins) {
+                    // @ts-expect-error
+                    await this.setSessionSnapshot(sessionSnapshot)
+                  }
                   return
                 }
 
