@@ -103,8 +103,8 @@ const Renderer = observer(function ({
 
   useEffect(() => {
     const reloadPluginManager = (
-      configSnapshot?: Record<string, unknown>,
-      sessionSnapshot?: Record<string, unknown>,
+      configSnapshot: Record<string, unknown>,
+      sessionSnapshot: Record<string, unknown>,
     ) => {
       const newLoader = SessionLoader.create({
         configPath: loader.configPath,

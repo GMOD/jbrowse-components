@@ -157,8 +157,8 @@ export default function RootModel({
        * #volatile
        */
       reloadPluginManagerCallback: (
-        _configSnapshot?: Record<string, unknown>,
-        _sessionSnapshot?: Record<string, unknown>,
+        _configSnapshot: Record<string, unknown>,
+        _sessionSnapshot: Record<string, unknown>,
       ) => {
         console.error('reloadPluginManagerCallback unimplemented')
       },
@@ -334,8 +334,8 @@ export default function RootModel({
        */
       setReloadPluginManagerCallback(
         callback: (
-          configSnapshot?: Record<string, unknown>,
-          sessionSnapshot?: Record<string, unknown>,
+          configSnapshot: Record<string, unknown>,
+          sessionSnapshot: Record<string, unknown>,
         ) => void,
       ) {
         self.reloadPluginManagerCallback = callback

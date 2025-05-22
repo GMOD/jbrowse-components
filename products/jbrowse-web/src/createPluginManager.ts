@@ -12,8 +12,8 @@ import type { SessionLoaderModel } from './SessionLoader'
 export function createPluginManager(
   model: SessionLoaderModel,
   reloadPluginManagerCallback: (
-    configSnapshot?: Record<string, unknown>,
-    sessionSnapshot?: Record<string, unknown>,
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
   ) => void,
 ) {
   // it is ready when a session has loaded and when there is no config error
