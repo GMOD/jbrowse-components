@@ -13,6 +13,7 @@ import FileInfoPanel from './FileInfoPanel'
 import RefNameInfoDialog from './RefNameInfoDialog'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import AssemblyRefNameInfoDialog from './AssemblyRefNameInfoDialog'
 
 const useStyles = makeStyles()({
   content: {
@@ -34,7 +35,7 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
   return obj
 }
 
-const AboutDialogContents = observer(function ({
+const AssemblyAboutDialogContents = observer(function ({
   config,
 }: {
   config: AnyConfigurationModel
@@ -51,7 +52,7 @@ const AboutDialogContents = observer(function ({
 
   const { pluginManager } = getEnv(session)
   const confPostExt = pluginManager.evaluateExtensionPoint(
-    'Core-customizeAbout',
+    'Core-customizeAssemblyAbout',
     {
       config: {
         ...conf,
@@ -65,13 +66,18 @@ const AboutDialogContents = observer(function ({
     },
   ) as {
     config: {
-      metadata?: Record<string, unknown>
-      [key: string]: unknown
+      sequence: {
+        metadata?: Record<string, unknown>
+        [key: string]: unknown
+      }
     }
   }
 
+  const { sequence, ...rest } = confPostExt.config
+  const { metadata, ...configPostExtSelection } = sequence
+
   const ExtraPanel = pluginManager.evaluateExtensionPoint(
-    'Core-extraAboutPanel',
+    'Core-extraAssemblyAboutPanel',
     null,
     {
       session,
@@ -84,7 +90,7 @@ const AboutDialogContents = observer(function ({
 
   return (
     <div className={classes.content}>
-      <BaseCard title="Configuration">
+      <BaseCard title="Assembly">
         {!hideUris ? (
           <span className={classes.button}>
             <Button
@@ -111,29 +117,34 @@ const AboutDialogContents = observer(function ({
             </Button>
           </span>
         ) : null}
-        <Attributes
-          attributes={confPostExt.config}
-          omit={['displays', 'baseUri', 'refNames', 'formatAbout', 'metadata']}
-          hideUris={hideUris}
-        />
+        <Attributes attributes={rest} />
       </BaseCard>
-      {confPostExt.config.metadata ? (
+      {metadata ? (
         <BaseCard title="Metadata">
           <Attributes
-            attributes={confPostExt.config.metadata}
+            attributes={metadata}
             omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
             hideUris={hideUris}
           />
         </BaseCard>
       ) : null}
+      <BaseCard title="Configuration">
+        <Attributes
+          attributes={configPostExtSelection}
+          omit={['displays', 'baseUri', 'refNames', 'formatAbout', 'metadata']}
+          hideUris={hideUris}
+        />
+      </BaseCard>
+
       {ExtraPanel ? (
         <BaseCard title={ExtraPanel.name}>
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfoPanel config={config} />
+
+      <FileInfoPanel config={config.sequence} />
       {showRefNames ? (
-        <RefNameInfoDialog
+        <AssemblyRefNameInfoDialog
           config={config}
           onClose={() => {
             setShowRefNames(false)
@@ -144,4 +155,4 @@ const AboutDialogContents = observer(function ({
   )
 })
 
-export default AboutDialogContents
+export default AssemblyAboutDialogContents

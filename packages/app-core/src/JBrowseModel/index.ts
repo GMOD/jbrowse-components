@@ -42,6 +42,12 @@ export function JBrowseModelF({
       get rpcManager(): RpcManager {
         return getParent<any>(self).rpcManager
       },
+      /**
+       * #getter
+       */
+      get assemblyManager() {
+        return getParent<any>(self).assemblyManager
+      },
     }))
     .actions(self => ({
       /**

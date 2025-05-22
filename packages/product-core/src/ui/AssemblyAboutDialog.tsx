@@ -3,11 +3,11 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
-import AboutDialogContents from './AboutDialogContents'
+import AssemblyAboutDialogContents from './AssemblyAboutDialogContents'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-const AboutDialog = observer(function ({
+const AssemblyAboutDialog = observer(function ({
   config,
   handleClose,
 }: {
@@ -18,17 +18,20 @@ const AboutDialog = observer(function ({
   const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
 
-  const AboutDialogContents2 = pluginManager.evaluateExtensionPoint(
-    'Core-replaceAbout',
-    AboutDialogContents,
-    { session, config },
+  const AssemblyAboutDialogContents2 = pluginManager.evaluateExtensionPoint(
+    'Core-replaceAssemblyAbout',
+    AssemblyAboutDialogContents,
+    {
+      session,
+      config,
+    },
   ) as React.FC<any>
 
   return (
     <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
-      <AboutDialogContents2 config={config} />
+      <AssemblyAboutDialogContents2 config={config} />
     </Dialog>
   )
 })
 
-export default AboutDialog
+export default AssemblyAboutDialog

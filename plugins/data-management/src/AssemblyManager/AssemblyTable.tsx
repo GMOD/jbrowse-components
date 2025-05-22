@@ -3,6 +3,7 @@ import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import AddIcon from '@mui/icons-material/Add'
 import CreateIcon from '@mui/icons-material/Create'
 import DeleteIcon from '@mui/icons-material/Delete'
+import InfoIcon from '@mui/icons-material/Info'
 import { Button, DialogActions, DialogContent, IconButton } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
@@ -12,12 +13,14 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const AssemblyTable = observer(function ({
   onEditAssembly,
+  onGetAssemblyInfo,
   onAddAssembly,
   onClose,
   session,
 }: {
   onEditAssembly: (arg: AnyConfigurationModel) => void
   onAddAssembly: () => void
+  onGetAssemblyInfo: (arg: AnyConfigurationModel) => void
   onClose: () => void
   session: AbstractSessionModel
 }) {
@@ -50,6 +53,13 @@ const AssemblyTable = observer(function ({
                     : session.adminMode
                   return (
                     <>
+                      <IconButton
+                        onClick={() => {
+                          onGetAssemblyInfo(assembly)
+                        }}
+                      >
+                        <InfoIcon />
+                      </IconButton>
                       <IconButton
                         disabled={!editable}
                         onClick={() => {
