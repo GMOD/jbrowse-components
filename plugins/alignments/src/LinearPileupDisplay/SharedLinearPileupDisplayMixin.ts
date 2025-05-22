@@ -375,7 +375,7 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Open feature details',
                   icon: MenuOpenIcon,
-                  onClick: (): void => {
+                  onClick: () => {
                     self.clearFeatureSelection()
                     self.selectFeature(feat)
                   },
@@ -383,7 +383,7 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
-                  onClick: (): void => {
+                  onClick: () => {
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -439,7 +439,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
 
@@ -473,7 +473,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
           }

@@ -8,8 +8,12 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class ChainAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
-    const loc = openLocation(this.getConf('chainLocation'), this.pluginManager)
-    const buf = await fetchAndMaybeUnzip(loc, opts)
-    return paf_chain2paf(buf)
+    return paf_chain2paf(
+      await fetchAndMaybeUnzip(
+        openLocation(this.getConf('chainLocation'), this.pluginManager),
+        opts,
+      ),
+      opts,
+    )
   }
 }

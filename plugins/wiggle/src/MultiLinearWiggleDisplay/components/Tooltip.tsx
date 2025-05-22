@@ -44,7 +44,15 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
             <tbody>
               {Object.entries(sources).map(([source, data]) => (
                 <tr key={source}>
-                  <td style={{ background: obj[source]!.color }}> </td>
+                  <td>
+                    <div
+                      style={{
+                        width: 16,
+                        height: 16,
+                        background: obj[source]!.color,
+                      }}
+                    ></div>
+                  </td>
                   <td>{source}</td>
                   <td>{toP(data.score)}</td>
                 </tr>

@@ -1,7 +1,7 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -13,7 +13,10 @@ import {
   mergeIntervals,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, when } from 'mobx'
@@ -247,22 +250,42 @@ function stateModelFactory() {
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'BaseFeatureWidget',
-            'baseFeature',
-            {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-              featureData: feature.toJSON(),
-            },
-          )
+          const { rpcManager } = session
+          const sessionId = getRpcSessionId(self)
+          const track = getContainingTrack(self)
+          const view = getContainingView(self)
+          const adapterConfig = getConf(track, 'adapter')
 
-          session.showWidget(featureWidget)
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const descriptions = await rpcManager.call(
+                sessionId,
+                'CoreGetMetadata',
+                {
+                  adapterConfig,
+                },
+              )
+              session.showWidget(
+                session.addWidget('BaseFeatureWidget', 'baseFeature', {
+                  featureData: feature.toJSON(),
+                  view,
+                  track,
+                  descriptions,
+                }),
+              )
+            } catch (e) {
+              console.error(e)
+              getSession(e).notifyError(`${e}`, e)
+            }
+          })()
         }
+
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
         }
       },
+
       /**
        * #action
        */

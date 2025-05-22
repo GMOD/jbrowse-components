@@ -91,27 +91,6 @@ addView: (typeName: string, initialState?: {}) => any
 removeView: (view: { id: string; displayName: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setWidth(newWidth: number): void; setMinimized(flag: boolean): void; } & IStateTreeNode<...>) => void
 ```
 
-#### action: addLinearGenomeViewOfAssembly
-
-```js
-// type signature
-addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
-```
-
-#### action: addViewOfAssembly
-
-```js
-// type signature
-addViewOfAssembly: (viewType: string, assemblyName: string, initialState?: Record<string, unknown>) => any
-```
-
-#### action: addViewFromAnotherView
-
-```js
-// type signature
-addViewFromAnotherView: (viewType: string, otherView: { id: string; displayName: string; minimized: boolean; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>;...
-```
-
 #### action: setStickyViewHeaders
 
 ```js

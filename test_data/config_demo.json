@@ -1585,7 +1585,7 @@
         "type": "HicAdapter",
         "resolutionMultiplier": 10,
         "hicLocation": {
-          "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
+          "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic",
           "locationType": "UriLocation"
         }
       }

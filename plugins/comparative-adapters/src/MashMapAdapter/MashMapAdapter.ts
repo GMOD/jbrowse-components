@@ -8,9 +8,14 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
-    const outLoc = openLocation(this.getConf('outLocation'), this.pluginManager)
-    const buf = await fetchAndMaybeUnzip(outLoc, opts)
-    return parseLineByLine(buf, parseMashMapLine, opts)
+    return parseLineByLine(
+      await fetchAndMaybeUnzip(
+        openLocation(this.getConf('outLocation'), this.pluginManager),
+        opts,
+      ),
+      parseMashMapLine,
+      opts,
+    )
   }
 }
 

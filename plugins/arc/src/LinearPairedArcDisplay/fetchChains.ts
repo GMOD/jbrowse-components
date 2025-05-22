@@ -1,9 +1,5 @@
-import {
-  dedupe,
-  getContainingTrack,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { dedupe, getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LinearArcDisplayModel } from './model'
 import type { Feature } from '@jbrowse/core/util'
@@ -40,8 +36,7 @@ export interface ChainData {
 }
 
 export async function fetchChains(self: LinearArcDisplayModel) {
-  // @ts-expect-error
-  const { rpcSessionId: sessionId } = getContainingTrack(self)
+  const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LGV
 

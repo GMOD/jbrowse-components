@@ -40,7 +40,7 @@ Start it in one of two ways:
 
 #### In the terminal
 
-Using the AppImage file on linux, all that is needed is to make the file
+Using the AppImage file on Linux, all that is needed is to make the file
 executable which you can do in a terminal
 
 ```sh
@@ -68,12 +68,12 @@ like this:
 
 <Figure src="/img/desktop-landing.png" caption="Screenshot showing the start screen on JBrowse desktop"/>
 
-**On the left hand panel,** "Launch new session" can launch a new session using
+**On the left-hand panel,** "Launch new session" can launch a new session using
 either your own custom genome (which you can load using an indexed FASTA or a
 twobit file via `open sequence file`) or a pre-loaded genome via the "Quickstart
 list".
 
-**On the right hand panel** is the "Recently opened sessions". This includes
+**On the right-hand panel** is the "Recently opened sessions". This includes
 sessions that you have explicitly saved, and sessions that were autosaved (i.e.
 ones that you didn't explicitly use "Save as" on). You can re-open your sessions
 by clicking on the session name.

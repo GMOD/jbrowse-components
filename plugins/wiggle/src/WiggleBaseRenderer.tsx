@@ -56,12 +56,16 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       'Rendering plot',
       statusCallback,
       () =>
-        renderToAbstractCanvas(width, height, renderProps, ctx =>
-          this.draw(ctx, {
-            ...renderProps,
-            features,
-            inverted,
-          }),
+        renderToAbstractCanvas(
+          width,
+          height,
+          renderProps,
+          ctx =>
+            this.draw(ctx, {
+              ...renderProps,
+              features,
+              inverted,
+            }) as Promise<{ reducedFeatures: Feature[] | undefined }>,
         ),
     )
 
@@ -77,9 +81,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       ...results,
       ...rest,
       features: reducedFeatures
-        ? new Map<string, Feature>(
-            (reducedFeatures as Feature[]).map(r => [r.id(), r]),
-          )
+        ? new Map<string, Feature>(reducedFeatures.map(r => [r.id(), r]))
         : results.features,
       height,
       width,

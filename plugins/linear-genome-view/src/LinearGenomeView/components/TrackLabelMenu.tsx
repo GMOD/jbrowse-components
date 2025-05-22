@@ -23,16 +23,10 @@ const TrackLabelMenu = observer(function ({
   const trackConf = track.configuration
   const minimized = track.minimized
   const pinned = track.pinned
-  let lgvHasParentView: boolean
-  try {
-    getContainingView(view)
-    lgvHasParentView = true
-  } catch (error) {
-    lgvHasParentView = false
-  }
+  const { isTopLevelView } = view
 
   const items = [
-    ...(lgvHasParentView
+    ...(isTopLevelView
       ? []
       : [
           {

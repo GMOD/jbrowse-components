@@ -345,13 +345,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
       },
+      /**
+       * #getter
+       * checking if lgv is a 'top-level' view is used for toggling pin track
+       * capability, sticky positioning
+       */
+      get isTopLevelView() {
+        const session = getSession(self)
+        return session.views.find(r => r.id === self.id)
+      },
+      /**
+       * #getter
+       * only uses sticky view headers when it is a 'top-level' view and
+       * session allows it
+       */
       get stickyViewHeaders() {
         const session = getSession(self)
         return isSessionWithMultipleViews(session)
-          ? session.stickyViewHeaders
+          ? this.isTopLevelView && session.stickyViewHeaders
           : false
       },
 
+      /**
+       * #getter
+       */
       get rubberbandTop() {
         let pinnedTracksTop = 0
         if (this.stickyViewHeaders) {
@@ -1471,7 +1488,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param optAssemblyName - (optional) the assembly name to use when
        * navigating to the locstring
        */
-      async navToLocString(input: string, optAssemblyName?: string) {
+      async navToLocString(
+        input: string,
+        optAssemblyName?: string,
+        grow?: number,
+      ) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const assemblyName = optAssemblyName || assemblyNames[0]!
@@ -1484,6 +1505,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyManager.isValidRefName(ref, asm),
           ),
           assemblyName,
+          grow,
         )
       },
 
@@ -1516,8 +1538,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async navToLocation(
         parsedLocString: ParsedLocString,
         assemblyName?: string,
+        grow?: number,
       ) {
-        return this.navToLocations([parsedLocString], assemblyName)
+        return this.navToLocations([parsedLocString], assemblyName, grow)
       },
 
       /**
@@ -1527,17 +1550,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * `setDisplayedRegions` if changing regions
        */
       async navToLocations(
-        parsedLocStrings: ParsedLocString[],
+        regions: ParsedLocString[],
         assemblyName?: string,
+        grow?: number,
       ) {
         const { assemblyManager } = getSession(self)
         await when(() => self.volatileWidth !== undefined)
-
-        const locations = await generateLocations(
-          parsedLocStrings,
+        const locations = await generateLocations({
+          regions,
           assemblyManager,
           assemblyName,
-        )
+          grow,
+        })
 
         if (locations.length === 1) {
           const loc = locations[0]!

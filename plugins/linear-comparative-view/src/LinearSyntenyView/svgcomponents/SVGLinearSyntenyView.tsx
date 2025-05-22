@@ -18,7 +18,8 @@ import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 
-import type { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
+import type { LinearSyntenyViewModel } from '../model'
+import type { ExportSvgOptions } from '../types'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -86,7 +87,6 @@ export async function renderToSvg(
             } else if ('canvasRecordedData' in r) {
               return {
                 html: await getSerializedSvg({
-                  // @ts-expect-error
                   ...r,
                   width,
                   height: level.height,
@@ -145,10 +145,7 @@ export async function renderToSvg(
           transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
           clipPath={`url(#synclip-${i})`}
         >
-          {rendering?.map((r, i) => (
-            /* biome-ignore lint/suspicious/noArrayIndexKey: */
-            <ReactRendering key={i} rendering={r} />
-          ))}
+          {rendering?.map((r, i) => <ReactRendering key={i} rendering={r} />)}
         </g>
         <g transform={`translate(0 ${levelHeight})`}>
           <SVGLinearGenomeView

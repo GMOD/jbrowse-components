@@ -40,8 +40,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile((/* self */) => ({
+      /**
+       * #volatile
+       */
       renderInProgress: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       features: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       */
       message: undefined as string | undefined,
     }))
     .views(self => ({

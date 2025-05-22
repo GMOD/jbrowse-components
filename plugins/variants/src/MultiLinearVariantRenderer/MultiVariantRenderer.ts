@@ -15,7 +15,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
 
     const { makeImageData } = await import('./makeImageData')
 
-    const rest = await renderToAbstractCanvas(
+    const ret = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
@@ -33,7 +33,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
 
     const results = await super.render({
       ...renderProps,
-      ...rest,
+      ...ret,
       features,
       height,
       width,
@@ -41,7 +41,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
 
     return {
       ...results,
-      ...rest,
+      ...ret,
       features: new Map<string, Feature>(),
       height,
       width,

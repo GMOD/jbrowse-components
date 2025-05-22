@@ -17,21 +17,30 @@ interface RenderToAbstractCanvasOptions {
   highResolutionScaling?: number
 }
 
-export async function renderToAbstractCanvas<T>(
+type R<T extends Record<string, unknown> | undefined> = Omit<T, never> &
+  (
+    | { canvasRecordedData: Record<string, unknown> }
+    | { imageData: any }
+    | { reactElement: React.ReactElement }
+  )
+
+export async function renderToAbstractCanvas<
+  T extends Record<string, unknown> | undefined,
+>(
   width: number,
   height: number,
   opts: RenderToAbstractCanvasOptions,
-  cb: (ctx: CanvasRenderingContext2D) => T,
-) {
+  cb: (ctx: CanvasRenderingContext2D) => Promise<T> | T,
+): Promise<R<T>> {
   const { exportSVG, highResolutionScaling = 1 } = opts
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
       const fakeCtx = new CanvasSequence()
-      const result = await cb(fakeCtx)
+      const callbackResult = await cb(fakeCtx)
       return {
-        ...result,
-        canvasRecordedData: fakeCtx.toJSON(),
+        ...callbackResult,
+        canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
       }
     } else {
       const s = exportSVG.scale || highResolutionScaling
@@ -41,12 +50,12 @@ export async function renderToAbstractCanvas<T>(
         throw new Error('2d canvas rendering not supported on this platform')
       }
       ctx.scale(s, s)
-      const result = await cb(ctx)
+      const callbackResult = await cb(ctx)
 
       // two methods needed for converting canvas to PNG, one for webworker
       // offscreen canvas, one for main thread
       return {
-        ...result,
+        ...callbackResult,
         reactElement: (
           <image
             width={width}
@@ -72,9 +81,9 @@ export async function renderToAbstractCanvas<T>(
       throw new Error('2d canvas rendering not supported on this platform')
     }
     ctx.scale(s, s)
-    const result = await cb(ctx)
+    const callbackResult = await cb(ctx)
     return {
-      ...result,
+      ...callbackResult,
       imageData: await createImageBitmap(canvas),
     }
   }

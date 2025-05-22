@@ -149,12 +149,10 @@ export default class TextSearchManager {
     const uf = new uFuzzy({})
 
     // does fuzzy matching on the 'display string'
-    const haystackPre = Object.fromEntries(
-      results.map((r, idx) => [r.getDisplayString(), idx]),
-    )
+    const haystack = results.map(r => r.getDisplayString())
+
     // this code sample relatively unmodified from
     // https://github.com/leeoniya/uFuzzy?tab=readme-ov-file#example
-    const haystack = Object.keys(haystackPre)
     const needle = args.queryString
 
     // false positive, this is not Array.prototype.filter
@@ -174,9 +172,9 @@ export default class TextSearchManager {
       for (const element of order) {
         // using info.idx here instead of idxs because uf.info() may have
         // further reduced the initial idxs based on prefix/suffix rules
-        res.push(haystack[info.idx[element]!]!)
+        res.push(results[info.idx[element]!]!)
       }
     }
-    return rankFn(res.map(r => results[haystackPre[r]!]!))
+    return rankFn(res)
   }
 }

@@ -48,9 +48,6 @@ import * as rxjs from '../util/rxjs'
 import * as trackUtils from '../util/tracks'
 import * as mstTypes from '../util/types/mst'
 
-const r0 = lazyMap(Entries, '@mui/material/')
-const r1 = lazyMap(Entries, '@material-ui/core/')
-
 const libs = {
   mobx,
   'mobx-state-tree': mst,
@@ -63,7 +60,7 @@ const libs = {
     useGridApiContext,
     useGridApiRef,
     useGridRootProps,
-    ...lazyMap(DataGridEntries, '@mui/x-data-grid/'),
+    ...lazyMap(DataGridEntries),
   },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
@@ -74,7 +71,7 @@ const libs = {
   },
 
   '@material-ui/core': {
-    ...r1,
+    ...lazyMap(Entries),
     useTheme,
     alpha,
 
@@ -84,13 +81,13 @@ const libs = {
     },
   },
   '@mui/material': {
-    ...r0,
+    ...lazyMap(Entries),
     alpha,
     useTheme,
     createTheme,
   },
-  ...r0,
-  ...r1,
+  ...lazyMap(Entries, '@mui/material/'),
+  ...lazyMap(Entries, '@material-ui/core/'),
 
   '@mui/material/styles': {
     ...MUIStyles,

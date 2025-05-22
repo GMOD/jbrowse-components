@@ -11,30 +11,23 @@ callback.
 For example, create a file named "myplugin.js" (see also Footnote 1)
 
 ```js
-// myplugin.js
-;(function () {
-  class MyPlugin {
-    install() {}
-    configure(pluginManager) {
-      pluginManager.jexl.addFunction('colorFeature', feature => {
-        let type = feature.get('type')
-        if (type === 'CDS') {
-          return 'red'
-        } else if (type === 'exon') {
-          return 'green'
-        } else {
-          return 'purple'
-        }
-      })
-    }
+export default class MyPlugin {
+  name = 'MyPlugin'
+  version = '1.0.0'
+  install() {}
+  configure(pluginManager) {
+    pluginManager.jexl.addFunction('colorFeature', feature => {
+      let type = feature.get('type')
+      if (type === 'CDS') {
+        return 'red'
+      } else if (type === 'exon') {
+        return 'green'
+      } else {
+        return 'purple'
+      }
+    })
   }
-
-  // the plugin will be included in both the main thread and web worker, so
-  // install plugin to either window or self (webworker global scope)
-  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
-    default: MyPlugin,
-  }
-})()
+}
 ```
 
 Then put `myplugin.js` in the same folder as your config file, and then you can
@@ -45,7 +38,7 @@ use the custom `jexl` function in your config callbacks as follows:
   "plugins": [
     {
       "name": "MyPlugin",
-      "umdLoc": { "uri": "myplugin.js" }
+      "esmLoc": { "uri": "myplugin.js" }
     }
   ],
   "tracks": [
@@ -85,7 +78,7 @@ more info on setting up a simple plugin for doing these customizations.
 #### Footnote 1
 
 `myplugin.js` does not have to use the jbrowse-plugin-template if it is small
-and self contained like this, and does not import other modules. if you import
+and self-contained like this, and does not import other modules. If you import
 other modules from your plugin, then it can be worth it to use the
 jbrowse-plugin-template.
 

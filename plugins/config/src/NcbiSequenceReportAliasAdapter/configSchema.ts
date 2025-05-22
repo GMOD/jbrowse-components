@@ -20,6 +20,9 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
       },
     },
 
+    /**
+     * #slot
+     */
     useNameOverride: {
       type: 'boolean',
       defaultValue: true,

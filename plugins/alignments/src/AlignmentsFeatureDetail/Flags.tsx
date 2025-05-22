@@ -26,10 +26,9 @@ const flagNames = [
   'supplementary alignment',
 ]
 
-export default function AlignmentFlags(props: { feature: { flags: number } }) {
+export default function AlignmentFlags(props: { flags: number }) {
   const { classes } = useStyles()
-  const { feature } = props
-  const { flags } = feature
+  const { flags } = props
 
   return (
     <BaseCard {...props} title="Flags">
