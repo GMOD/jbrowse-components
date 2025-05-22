@@ -8,7 +8,8 @@ import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
-import { calc, getBlockFeatures, getClip, intersect } from './util'
+import { getClip } from './getClip'
+import { calc, getBlockFeatures, intersect } from './util'
 
 import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -25,7 +26,6 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
  * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
-  const minHeight = 40
   const defaultHeight = 400
   return types
     .compose(
@@ -39,14 +39,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement(
-            'viewHeight',
-            types.number,
-            (n: number) => n >= minHeight,
-          ),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */
@@ -73,7 +66,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: 800,
+      /**
+       * #volatile
+       */
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
@@ -272,9 +271,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(async () => {
             try {
+              // check all views 'initialized'
               if (!self.views.every(view => view.initialized)) {
                 return
               }
+              // check that tracks are 'ready' (not notReady)
+              if (
+                self.matchedTracks.some(track => track.displays[0].notReady?.())
+              ) {
+                return
+              }
+
               self.setMatchedTrackFeatures(
                 Object.fromEntries(
                   await Promise.all(
