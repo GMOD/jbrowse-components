@@ -178,7 +178,7 @@ const SessionLoader = types
      */
     get ready() {
       return Boolean(
-        this.isSessionLoaded && !self.configError && self.runtimePlugins,
+        this.isSessionLoaded && !self.configError && this.pluginsLoaded,
       )
     },
     /**
@@ -190,14 +190,23 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get isSessionLoaded() {
+    get pluginsLoaded() {
       if (self.sessionError || self.blankSession || self.sessionSpec) {
-        return true
+        // don't need session plugins for these cases
+        return Boolean(self.runtimePlugins)
       }
-      if (self.sessionSnapshot && self.sessionPlugins) {
-        return true
-      }
-      return false
+      return Boolean(self.runtimePlugins && self.sessionPlugins)
+    },
+    /**
+     * #getter
+     */
+    get isSessionLoaded() {
+      return Boolean(
+        self.sessionError ||
+          self.sessionSnapshot ||
+          self.blankSession ||
+          self.sessionSpec,
+      )
     },
     /**
      * #getter
