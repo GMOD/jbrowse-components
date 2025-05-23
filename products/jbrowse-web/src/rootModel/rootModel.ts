@@ -279,8 +279,8 @@ export default function RootModel({
                     // storage snapshot being set above
                     if (self.pluginsUpdated) {
                       self.reloadPluginManagerCallback(
-                        JSON.parse(JSON.stringify(getSnapshot(self.jbrowse))),
-                        JSON.parse(JSON.stringify(sessionSnap)),
+                        structuredClone(getSnapshot(self.jbrowse)),
+                        structuredClone(sessionSnap),
                       )
                     }
                   } catch (e) {
