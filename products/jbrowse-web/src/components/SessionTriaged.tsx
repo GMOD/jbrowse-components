@@ -21,7 +21,7 @@ const SessionTriaged = observer(function ({
         const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
 
         // second param true says we passed user confirmation
-        await loader.setSessionSnapshot({ ...session, id: nanoid() }, true)
+        await loader.loadSession({ ...session, id: nanoid() }, true)
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {

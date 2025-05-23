@@ -264,7 +264,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    setSessionSnapshotSuccess(snap: Record<string, unknown>) {
+    setSessionSnapshot(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
     },
   }))
@@ -304,7 +304,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    async setSessionSnapshot(
+    async loadSession(
       snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
     ) {
@@ -313,7 +313,7 @@ const SessionLoader = types
         const sessionPluginsAllowed = await checkPlugins(sessionPlugins)
         if (sessionPluginsAllowed || userAcceptedConfirmation) {
           await this.fetchSessionPlugins(snap)
-          self.setSessionSnapshotSuccess(snap)
+          self.setSessionSnapshot(snap)
         } else {
           self.setSessionTriaged({
             snap,
@@ -395,7 +395,7 @@ const SessionLoader = types
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          return this.setSessionSnapshot(sessionSnap)
+          return this.loadSession(sessionSnap)
         }
       }
 
@@ -414,13 +414,24 @@ const SessionLoader = types
               }, 1000)
             },
           )
-          await this.setSessionSnapshot({ ...result, id: nanoid() })
+          await this.loadSession({ ...result, id: nanoid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
         }
       }
       throw new Error('Local storage session not found')
+    },
+    /**
+     * #action
+     */
+    async checkExistingSession(sessionSnapshot: Record<string, unknown>) {
+      if (!self.sessionPlugins) {
+        // session snapshot probably provided during .create() but plugins
+        // haven't been loaded yet
+        // @ts-expect-error
+        await this.loadSession(sessionSnapshot)
+      }
     },
     /**
      * #action
@@ -435,7 +446,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.setSessionSnapshot({
+      await this.loadSession({
         ...session,
         id: nanoid(),
       })
@@ -448,7 +459,7 @@ const SessionLoader = types
         // @ts-expect-error
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      await this.setSessionSnapshot({
+      await this.loadSession({
         ...session,
         id: nanoid(),
       })
@@ -511,7 +522,7 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-expect-error
       const { session } = JSON.parse(self.sessionQuery.replace(/^json-/, ''))
-      await this.setSessionSnapshot({
+      await this.loadSession({
         ...session,
         id: nanoid(),
       })
@@ -537,7 +548,6 @@ const SessionLoader = types
                   isJsonSession,
                   isJb1StyleSession,
                   isHubSession,
-                  sessionPlugins,
                   sessionQuery,
                   sessionSnapshot,
                   configSnapshot,
@@ -557,14 +567,8 @@ const SessionLoader = types
                   }
                 }
                 if (sessionSnapshot) {
-                  if (!sessionPlugins) {
-                    // @ts-expect-error
-                    await this.setSessionSnapshot(sessionSnapshot)
-                  }
-                  return
-                }
-
-                if (isSharedSession) {
+                  await this.checkExistingSession(sessionSnapshot)
+                } else if (isSharedSession) {
                   await this.fetchSharedSession()
                 } else if (isSpecSession) {
                   this.decodeSessionSpec()
