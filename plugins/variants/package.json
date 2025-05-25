@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bgzf-filehandle": "^3.0.2",
+    "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/tabix": "^3.0.1",
     "@gmod/vcf": "^6.0.8",
     "@jbrowse/core": "^3.4.0",
