@@ -2088,9 +2088,9 @@
     "@floating-ui/dom" "^1.0.0"
 
 "@floating-ui/react@^0.27.0":
-  version "0.27.8"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.27.8.tgz#6d7f4bf7bfe2065934ba18d54f7383b777f87dd5"
-  integrity sha512-EQJ4Th328y2wyHR3KzOUOoTW2UKjFk53fmyahfwExnFQ8vnsMYqKc+fFPOkeYtj5tcp1DUMiNJ7BFhed7e9ONw==
+  version "0.27.9"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.27.9.tgz#b3c445a85ead27b73715c978a19b5506532ff097"
+  integrity sha512-Y0aCJBNtfVF6ikI1kVzA0WzSAhVBz79vFWOhvb5MLCRNODZ1ylGSLTuncchR7JsLyn9QzV6JD44DyZhhOtvpRw==
   dependencies:
     "@floating-ui/react-dom" "^2.1.2"
     "@floating-ui/utils" "^0.2.9"
@@ -9244,9 +9244,9 @@ gauge@^4.0.3:
     wide-align "^1.1.5"
 
 generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.5:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.6.tgz#95c8e1a3a155ad3fcc124a8592dc0af747427aa1"
-  integrity sha512-HuTg0EGkBVfR11ZpNY9JW6IEKPIMFIn2xxHniVyBpiqyp2Ow/zmz/maBvriVWLI5PJMRQN6sEYaDl2f1xPu2PQ==
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.7.tgz#0165be9f09f181911c160d793fe2f1711bc947cf"
+  integrity sha512-CIH5A41LAy+swTaVxIOqY6B/gDulAUeDBFzc31E23BN/thgLK/Kum3E399KBqpe5D7Mo4oMZuKrhpqrefAZ1XA==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
