@@ -377,9 +377,7 @@ export function SharedLinearPileupDisplayMixin(
                   icon: MenuOpenIcon,
                   onClick: () => {
                     self.clearFeatureSelection()
-                    self.selectFeature(feat).catch((e: unknown) => {
-                      getSession(self).notifyError(`${e}`, e)
-                    })
+                    self.selectFeature(feat)
                   },
                 },
                 {
@@ -436,7 +434,7 @@ export function SharedLinearPileupDisplayMixin(
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (isAlive(self) && feature) {
-                    await self.selectFeature(new SimpleFeature(feature))
+                    self.selectFeature(new SimpleFeature(feature))
                   }
                 }
               } catch (e) {

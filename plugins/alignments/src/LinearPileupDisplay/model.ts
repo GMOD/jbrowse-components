@@ -284,7 +284,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-
             {
               label: 'Sort by...',
               icon: SwapVertIcon,

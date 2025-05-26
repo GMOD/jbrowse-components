@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { clamp, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -14,11 +15,13 @@ interface Display {
   height: number
   scrollTop: number
   SNPCoverageDisplay?: { height: number }
+  notReady?: () => boolean
   searchFeatureByID?: (str: string) => LayoutRecord
 }
 
 interface Track {
   displays: Display[]
+  configuration: AnyConfigurationModel
 }
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
@@ -92,43 +95,26 @@ export function intersect<T>(
   return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }
 
-const startClip = new RegExp(/(\d+)[SH]$/)
-const endClip = new RegExp(/^(\d+)([SH])/)
-
-export function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(startClip.exec(cigar) || [])[1]! || 0
-    : +(endClip.exec(cigar) || [])[1]! || 0
-}
-
 export function calc(track: Track, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
 export async function getBlockFeatures(
   model: { views: LinearGenomeViewModel[] },
-  track: { configuration: AnyConfigurationModel },
+  track: Track,
 ) {
   const { views } = model
-  const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0]?.assemblyNames[0]
-  if (!assemblyName) {
-    return undefined
-  }
-  const assembly = await assemblyManager.waitForAssembly(assemblyName)
-  if (!assembly) {
-    return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
-  }
-  const sessionId = track.configuration.trackId
+  const { rpcManager } = getSession(model)
+  const sessionId = getRpcSessionId(track)
+
   return Promise.all(
-    views.map(async view =>
-      (
+    views.flatMap(
+      async view =>
         (await rpcManager.call(sessionId, 'CoreGetFeatures', {
           adapterConfig: getConf(track, ['adapter']),
           sessionId,
           regions: view.staticBlocks.contentBlocks,
-        })) as Feature[][]
-      ).flat(),
+        })) as Feature[][],
     ),
   )
 }

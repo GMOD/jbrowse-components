@@ -234,7 +234,7 @@ function stateModelFactory() {
       /**
        * #action
        */
-      async selectFeature(feature: Feature) {
+      selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
           const { rpcManager } = session
@@ -242,21 +242,30 @@ function stateModelFactory() {
           const track = getContainingTrack(self)
           const view = getContainingView(self)
           const adapterConfig = getConf(track, 'adapter')
-          const descriptions = await rpcManager.call(
-            sessionId,
-            'CoreGetMetadata',
-            {
-              adapterConfig,
-            },
-          )
-          session.showWidget(
-            session.addWidget('BaseFeatureWidget', 'baseFeature', {
-              featureData: feature.toJSON(),
-              view,
-              track,
-              descriptions,
-            }),
-          )
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const descriptions = await rpcManager.call(
+                sessionId,
+                'CoreGetMetadata',
+                {
+                  adapterConfig,
+                },
+              )
+              session.showWidget(
+                session.addWidget('BaseFeatureWidget', 'baseFeature', {
+                  featureData: feature.toJSON(),
+                  view,
+                  track,
+                  descriptions,
+                }),
+              )
+            } catch (e) {
+              console.error(e)
+              getSession(e).notifyError(`${e}`, e)
+            }
+          })()
         }
 
         if (isSelectionContainer(session)) {
@@ -335,11 +344,7 @@ function stateModelFactory() {
                   icon: MenuOpenIcon,
                   onClick: () => {
                     if (self.contextMenuFeature) {
-                      self
-                        .selectFeature(self.contextMenuFeature)
-                        .catch((e: unknown) => {
-                          getSession(e).notifyError(`${e}`, e)
-                        })
+                      self.selectFeature(self.contextMenuFeature)
                     }
                   },
                 },
@@ -373,9 +378,7 @@ function stateModelFactory() {
             } else {
               const feature = self.features.get(f)
               if (feature) {
-                self.selectFeature(feature).catch((e: unknown) => {
-                  getSession(e).notifyError(`${e}`, e)
-                })
+                self.selectFeature(feature)
               }
             }
           },
