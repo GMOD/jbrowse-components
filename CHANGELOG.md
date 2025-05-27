@@ -1,3 +1,53 @@
+yarn run v1.22.18 $ lerna-changelog --silent --silent --next-version 3.5.0
+
+## 3.5.0 (2025-05-27)
+
+#### :rocket: Enhancement
+
+- [#5042](https://github.com/GMOD/jbrowse-components/pull/5042) Avoid inferring
+  CDS subfeatures from non-coding gene pred features
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#5035](https://github.com/GMOD/jbrowse-components/pull/5035) Use trash icon
+  for uninstall in plugin store, and add version number string
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4735](https://github.com/GMOD/jbrowse-components/pull/4735) Remove
+  jbrowse-web start screen ([@cmdcolin](https://github.com/cmdcolin))
+- [#5025](https://github.com/GMOD/jbrowse-components/pull/5025) Allow hiding
+  insertion and deletion in synteny view to help chain file visualization
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#5037](https://github.com/GMOD/jbrowse-components/pull/5037) Check that
+    breakpoint split view is ready before fetching to avoid crash/large data
+    fetching ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5033](https://github.com/GMOD/jbrowse-components/pull/5033) Bump @gmod/bbi
+    to fix loading bigwig files from bigtools
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5024](https://github.com/GMOD/jbrowse-components/pull/5024) Fix lines
+    crossing over view headers in breakpoint split view by only setting sticky
+    view headers on top-level views ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5029](https://github.com/GMOD/jbrowse-components/pull/5029) Fix data grid
+    re-exports ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#5039](https://github.com/GMOD/jbrowse-components/pull/5039) Add titleNode
+    prop to @jbrowse/core/ui/Dialog ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#5036](https://github.com/GMOD/jbrowse-components/pull/5036) Remove the
+    async keyword from BaseLinearDisplayModel
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.78s.
+
 yarn run v1.22.18 $ lerna-changelog --silent --silent --next-version 3.4.0
 
 ## 3.4.0 (2025-05-13)
