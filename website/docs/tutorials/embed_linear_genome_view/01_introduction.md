@@ -1,6 +1,6 @@
 ---
 id: 01_introduction
-title: Introduction
+title: Embedding JBrowse
 ---
 
 import Figure from '../../figure'
@@ -51,8 +51,8 @@ page from scratch so you don't need an existing page to do this tutorial.
 
 If your web page is built with React, you can install our
 [JBrowse Linear Genome View React Component](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
-from NPM instead of adding it like is done in this guide. A lot of the content
-of this tutorial would still be relevant to setting up and configuring the view,
+from NPM instead of adding it as is done in this guide. A lot of the content of
+this tutorial would still be relevant to setting up and configuring the view,
 though.
 
 Also, another option for your web site is to add the full JBrowse Web app as a
@@ -78,3 +78,162 @@ We'll also be using the JBrowse CLI, although you can technically complete the
 tutorial without it. You can install it after installing Node.js by running
 `npm install -g @jbrowse/cli`. Check that it installed properly by running
 `jbrowse --help`.
+
+## Create a simple web page
+
+Let's get started! The first thing we're going to do is create a simple web page
+into which we can embed JBrowse Linear Genome View. First, create a folder to
+the files in. Inside that folder, create a new file called "index.html" and open
+it in your preferred text editor/IDE. Paste the following into the file and save
+it:
+
+```html title="index.html"
+<html>
+  <body>
+    <h1>We're using JBrowse Linear Genome View!</h1>
+  </body>
+</html>
+```
+
+## Start the server
+
+Open your terminal and navigate to the folder where you saved your "index.html".
+From there, run the command `npx serve`. It should print out a message that
+looks something like this:
+
+```
+
+   Serving!
+
+   Local:  http://localhost:5000
+
+   Copied local address to clipboard!
+
+```
+
+Now open your web browser and navigate to the url (e.g.
+[http://localhost:5000](http://localhost:5000)) You should see a web page that
+says "We're using JBrowse Linear Genome View!". If so, congrats, you're on your
+way to adding JBrowse Linear Genome View to a website!
+
+## Add JBrowse
+
+To add JBrowse Linear Genome View, you need to add the source to your page and
+then render the component.
+
+You can see a complete example of an index.html that renders a JBrowse Linear
+Genome View below
+
+```html {2-16,19} title="index.html"
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>JBrowse Linear Genome View</title>
+
+    <script
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@3.5.0/dist/react-linear-genome-view.umd.production.min.js"
+      crossorigin
+    ></script>
+  </head>
+
+  <body>
+    <div id="jbrowse_linear_genome_view"></div>
+
+    <script>
+      const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
+
+      const state = new createViewState({
+        assembly: {
+          name: 'hg38',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'GRCh38-ReferenceSequenceTrack',
+            adapter: {
+              type: 'BgzipFastaAdapter',
+              uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+            },
+          },
+          refNameAliases: {
+            adapter: {
+              type: 'RefNameAliasAdapter',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+            },
+          },
+          cytobands: {
+            adapter: {
+              type: 'CytobandAdapter',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt',
+            },
+          },
+        },
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'genes',
+            name: 'NCBI RefSeq Genes',
+            assemblyNames: ['hg38'],
+            category: ['Genes'],
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+            },
+            textSearching: {
+              textSearchAdapter: {
+                type: 'TrixTextSearchAdapter',
+                textSearchAdapterId: 'gff3tabix_genes-index',
+                uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
+                assemblyNames: ['GRCh38'],
+              },
+            },
+          },
+        ],
+        defaultSession: {
+          name: 'My session',
+          margin: 0,
+          view: {
+            id: 'linearGenomeView',
+            type: 'LinearGenomeView',
+            init: {
+              assembly: 'hg38',
+              loc: '10:29,838,565..29,838,850',
+              tracks: ['genes'],
+            },
+          },
+        },
+      })
+
+      const root = createRoot(
+        document.getElementById('jbrowse_linear_genome_view'),
+      )
+      root.render(
+        React.createElement(JBrowseLinearGenomeView, {
+          viewState: state,
+        }),
+      )
+    </script>
+  </body>
+</html>
+```
+
+You can see an example of this live, with a couple extra tracks (BAM, BigWig,
+VCF) here
+
+- GitHub https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo
+- Live https://jbrowse.org/demos/lgv-vanillajs/
+- Storybook Docs
+  https://jbrowse.org/storybook/lgv/main/?path=/docs/getting-started--docs
+
+You can also see the "@jbrowse/react-app" version, which allows loading multiple
+assemblies, showing synteny, etc here
+
+- Github example https://github.com/GMOD/jbrowse-react-app-vanillajs-demo
+- Live https://jbrowse.org/demos/app-vanillajs
+- Storybook Docs
+  https://jbrowse.org/storybook/app/main/?path=/docs/getting-started--docs
+
+And also, if you haven't checked it out, the "jbrowse-web" quickstart guide here
+is our main suggestion for deployment
+
+- Quickstart guide https://jbrowse.org/jb2/docs/quickstart_web/
