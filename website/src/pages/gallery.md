@@ -64,7 +64,7 @@ sequencing coverage is computed from mosdepth and stored in BigWig files
 ![](/img/skbr3_translocation.png)
 
 Image of a possible translocation in the SKBR3 dataset using the "breakpoint
-split view" which can connects supporting reads (black curves) and the variant
+split view" which can connect supporting reads (black curves) and the variant
 call itself (green thicker line, with feet indicating directionality)
 ([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l))
 

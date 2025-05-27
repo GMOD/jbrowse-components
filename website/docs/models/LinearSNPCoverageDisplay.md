@@ -144,14 +144,7 @@ boolean
 
 ```js
 // type
-boolean
-```
-
-#### getter: ready
-
-```js
-// type
-any
+;() => boolean
 ```
 
 #### getter: TooltipComponent
