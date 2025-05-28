@@ -200,7 +200,7 @@ export default class PluginManager {
       if (plugin.rootConfigurationSchema) {
         configurationSchemas = {
           ...configurationSchemas,
-          ...plugin.rootConfigurationSchema,
+          ...plugin.rootConfigurationSchema(this),
         }
       }
     }
