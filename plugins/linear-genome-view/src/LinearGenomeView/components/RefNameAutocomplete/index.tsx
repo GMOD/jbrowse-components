@@ -44,11 +44,13 @@ const RefNameAutocomplete = observer(function ({
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
-  const debouncedSearch = useDebounce(currentSearch, 300)
+  const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
+  // this callback runs an async search. the typescript code claims that
   useEffect(() => {
+    const isCurrent = { cancelled: false }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -57,18 +59,27 @@ const RefNameAutocomplete = observer(function ({
         }
 
         setLoaded(false)
-        setSearchOptions(
-          getDeduplicatedResult(await fetchResults(debouncedSearch)),
-        )
+        const results = await fetchResults(debouncedSearch)
+
+        if (!isCurrent.cancelled) {
+          setSearchOptions(getDeduplicatedResult(results))
+        }
       } catch (e) {
         console.error(e)
-        session.notifyError(`${e}`, e)
+        if (!isCurrent.cancelled) {
+          session.notifyError(`${e}`, e)
+        }
       } finally {
-        setLoaded(true)
+        if (!isCurrent.cancelled) {
+          setLoaded(true)
+        }
       }
     })()
-  }, [assemblyName, fetchResults, debouncedSearch, session])
 
+    return () => {
+      isCurrent.cancelled = true
+    }
+  }, [assemblyName, fetchResults, debouncedSearch, session])
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   const regions = assembly?.regions
