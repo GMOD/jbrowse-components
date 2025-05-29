@@ -9,7 +9,7 @@ import Figure from '../figure'
 ## Introduction
 
 In some scenarios, it can be useful to gather genome sequencing data from both
-the parents and offspring...this can form a "trio" (e.g. mom, dad, and child)
+the parents and offspring, this can form a "trio" (e.g. mom, dad, and child)
 
 After doing variant calling and producing a VCF file, the VCF data can
 additionally be "phased" which tells us information about each "haplotype" of a
@@ -60,9 +60,9 @@ requires specialized programs like SHAPEIT
 The term "visual phasing" comes from the genetic genealogy subfield. I am
 borrowing it here, but the idea is simple: you can look at the genotype matrix
 here, and see areas where different rows are matching. You would expect that the
-child would match the mom in some places, and the dad in the other. And indeed,
-each row looks somewhat like a barcode, so you can find matching pieces like
-this
+child would match the mom in some places, and the dad in other places. And
+indeed, each row looks somewhat like a barcode, so you can find matching pieces
+like this
 
 <Figure caption="Screenshot showing the phased rendering mode without any added markup. You can look at this figure and see various areas where rows match one another. The first two rows are the two haplotypes of the child, next two rows are the two haplotypes of the mom, and next two rows are the two haplotypes of the father" src="/img/trio-matrix-phased-clean.png"/>
 
@@ -81,20 +81,6 @@ The hap-ibd program takes as input:
   (https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - a genetic map in PLINK format (the README of hap-ibd provides these for
   GRCh38)
-
-## Background: relationship between phased blocks, and the biology of recombination
-
-Many people have heard of the term "recombination" or "crossing over" with
-regards to DNA, but what is it?
-
-NHGRI definition: "Crossing over, as related to genetics and genomics, refers to
-the exchange of DNA between paired homologous chromosomes (one from each parent)
-that occurs during the development of egg and sperm cells (meiosis)."
-(https://www.genome.gov/genetics-glossary/Crossing-Over)
-
-But this is an important point: Your parents genomes don't recombine during
-fertilization. Instead, your grandparents genomes recombine during the
-production of the parents gametes. We will see shortly why this is the case
 
 ## Converting hap-ibd data into a format for JBrowse
 
@@ -115,6 +101,24 @@ After this conversion, we can load this simple BED file into JBrowse via the GUI
 or the CLI. It is probably small enough that it doesn't even need tabix
 conversion
 
+## Background: relationship between phased blocks, and the biology of recombination
+
+Many people have heard of the term "recombination" or "crossing over" with
+regards to DNA, but what is it?
+
+NHGRI "Crossing over, as related to genetics and genomics, refers to the
+exchange of DNA between paired homologous chromosomes (one from each parent)
+that occurs during the development of egg and sperm cells (meiosis)."
+(https://www.genome.gov/genetics-glossary/Crossing-Over)
+
+![](/img/crossing_over.jpg) Figure from
+https://www.genome.gov/genetics-glossary/Crossing-Over
+
+But there is a subtle but important point here: Your parents' genomes don't
+recombine during fertilization. Recombination happens during the production of
+their gametes. Therefore, your grandparents' genomes recombine during the
+production your parents sperm/eggs. We will see this visually below
+
 ## Visualizing phased blocks and crossing over points in phased VCF files in JBrowse
 
 After loading the hap-ibd track, we can see the blocks that hap-ibd calculated.
@@ -123,9 +127,9 @@ isn't straightforward, we have to follow the lines from the genomic position to
 the matrix position),
 
 We can see this in the trio dataset where the child has a mixture of the dad's
-haplotypes, and a mixture of mom's haplotypes
+haplotypes and a mixture of the mom's haplotypes
 
-<Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked up using Google Slides. As a result of this visualization, we can see a crossing-over point that occurred (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
+<Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked-up using Google Slides. As a result of this visualization, we can see a crossing-over point that occurred (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
 
 In the above screenshot, you can look at the 'barcode-like' patterns to see the
 matches between MOM A1 (allele 1) in mom and the child, MOM A2 (allele 2) in mom
@@ -134,12 +138,12 @@ child
 
 You can see why we mentioned the grandparents above: for instance, the DAD A1
 and DAD A2 alleles come from the crossing over of his two copies of his
-chromosomes (e.g. the chromosomes he got from his grandparents) and then merges
-into a single line in the child!
+chromosomes that he got from his parents, which then recombine into a single
+chromosome in his child!
 
 ## Footnote
 
-The above procedure, particularly the final visualization with marked up blocks,
+The above procedure, particularly the final visualization with marked-up blocks,
 was done manually. It may be able to be improved in the future!
 
 Author note: I found it quite wonderful to see this type of visualization! Feel
