@@ -44,9 +44,6 @@ display
 
 In the above figure, the default coloring for this matrix view is enabled.
 
-We won't be focusing on this here, see rice example for more info on this
-coloring
-
 ## Enabling the "phased mode" of the matrix view
 
 The matrix mode offers several options, one of which is the "phased" mode. If
