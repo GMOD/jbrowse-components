@@ -94,7 +94,7 @@ that occurs during the development of egg and sperm cells (meiosis)."
 
 But this is an important point: Your parents genomes don't recombine during
 fertilization. Instead, your grandparents genomes recombine during the
-production of the parents gametes.
+production of the parents gametes. We will see shortly why this is the case
 
 ## Converting hap-ibd data into a format for JBrowse
 
@@ -131,6 +131,11 @@ In the above screenshot, you can look at the 'barcode-like' patterns to see the
 matches between MOM A1 (allele 1) in mom and the child, MOM A2 (allele 2) in mom
 and child, DAD A1 (allele 1) in dad and child, DAD A2 (allele 2) in dad and
 child
+
+You can see why we mentioned the grandparents above: for instance, the DAD A1
+and DAD A2 alleles come from the crossing over of his two copies of his
+chromosomes (e.g. the chromosomes he got from his grandparents) and then merges
+into a single line in the child!
 
 ## Footnote
 

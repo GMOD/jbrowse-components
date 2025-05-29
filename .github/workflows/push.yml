@@ -1,10 +1,39 @@
 name: Push
 
-on: push
+on:
+  push:
+    branches:
+      - '*'
 
 jobs:
+  check_commit_message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    outputs:
+      skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check commit message
+        id: check_message
+        run: |
+          commit_message=$(git log -1 --pretty=%B)
+          if [[ "$commit_message" == *"[update docs only]"* ]]; then
+            echo "skip_jobs=true" >> $GITHUB_OUTPUT
+            echo "Commit message contains [update docs only], skipping regular push jobs"
+          else
+            echo "skip_jobs=false" >> $GITHUB_OUTPUT
+            echo "Running regular push jobs"
+          fi
+
+  # Conditionally run the buildwebsite job
   buildwebsite:
     name: Build website
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +57,11 @@ jobs:
         with:
           args: website/testing/ --check-anchors
 
+  # Conditionally run the buildwholerepo job
   buildwholerepo:
     name: Build whole repo
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,8 +92,11 @@ jobs:
           yarn e2e
         working-directory: component_tests/app-vite
 
+  # Conditionally run the buildjbrowseweb job
   buildjbrowseweb:
     name: Deploy jbrowse-web and storybooks to S3
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -143,8 +178,11 @@ jobs:
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
+  # Conditionally run the formatchecks job
   formatchecks:
     name: Lint, typecheck, test
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get -y install tabix
@@ -170,3 +208,4 @@ jobs:
         uses: codecov/codecov-action@v4
       - name: Typecheck codebase
         run: yarn typecheck
+
