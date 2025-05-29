@@ -85,21 +85,20 @@ async function loadRefNameMap(
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
   }
 
-  const refNameMap = Object.fromEntries(
+  const forwardMap = new Map(
     refNames.map(name => {
-      checkRefName(name)
       return [assembly.getCanonicalRefName(name), name]
     }),
   )
 
+  const reverseMap = new Map()
+  for (const [canonicalName, adapterName] of forwardMap.entries()) {
+    reverseMap.set(adapterName, canonicalName)
+  }
+
   return {
-    forwardMap: refNameMap,
-    reverseMap: Object.fromEntries(
-      Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
-        adapterName,
-        canonicalName,
-      ]),
-    ),
+    forwardMap,
+    reverseMap,
   }
 }
 
@@ -110,7 +109,7 @@ function checkRefName(refName: string) {
   }
 }
 
-type RefNameAliases = Record<string, string>
+type RefNameAliases = Map<string, string>
 
 interface CacheData {
   adapterConf: unknown
@@ -120,8 +119,8 @@ interface CacheData {
 }
 
 export interface RefNameMap {
-  forwardMap: RefNameAliases
-  reverseMap: RefNameAliases
+  forwardMap: Map<string, string>
+  reverseMap: Map<string, string>
 }
 
 export interface BasicRegion {
@@ -139,7 +138,9 @@ export default function assemblyFactory(
   pluginManager: PluginManager,
 ) {
   const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
-    cache: new QuickLRU({ maxSize: 1000 }),
+    cache: new QuickLRU({
+      maxSize: 1000,
+    }),
 
     // @ts-expect-error
     // TODO:ABORT (possible? desirable??)
@@ -176,10 +177,7 @@ export default function assemblyFactory(
        * #volatile
        */
       refNameAliases: undefined as RefNameAliases | undefined,
-      /**
-       * #volatile
-       */
-      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+
       /**
        * #volatile
        */
@@ -191,6 +189,20 @@ export default function assemblyFactory(
        */
       getConf(arg: string) {
         return self.configuration ? getConf(self, arg) : undefined
+      },
+      /**
+       * #getter
+       */
+      get lowerCaseRefNameAliases() {
+        if (self.refNameAliases) {
+          const lowerCaseRefNameAliases = new Map<string, string>()
+          for (const [key, val] of self.refNameAliases) {
+            lowerCaseRefNameAliases.set(key.toLowerCase(), val)
+          }
+          return lowerCaseRefNameAliases
+        } else {
+          return undefined
+        }
       },
     }))
     .views(self => ({
@@ -257,23 +269,32 @@ export default function assemblyFactory(
       get allRefNames() {
         return !self.refNameAliases
           ? undefined
-          : Object.keys(self.refNameAliases)
+          : Array.from(self.refNameAliases.keys())
       },
+
       /**
        * #getter
        */
       get lowerCaseRefNames() {
         return !self.lowerCaseRefNameAliases
           ? undefined
-          : Object.keys(self.lowerCaseRefNameAliases)
+          : Array.from(self.lowerCaseRefNameAliases.keys())
       },
 
       /**
        * #getter
        */
       get allRefNamesWithLowerCase() {
+        const r = this.allRefNamesWithLowerCaseSet
+        return r ? [...r] : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get allRefNamesWithLowerCaseSet() {
         return this.allRefNames && this.lowerCaseRefNames
-          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
+          ? new Set([...this.allRefNames, ...this.lowerCaseRefNames])
           : undefined
       },
       /**
@@ -310,7 +331,8 @@ export default function assemblyFactory(
         }
 
         return (
-          self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
+          self.refNameAliases.get(refName) ||
+          self.lowerCaseRefNameAliases.get(refName)
         )
       },
       /**
@@ -344,16 +366,14 @@ export default function assemblyFactory(
       setLoaded({
         regions,
         refNameAliases,
-        lowerCaseRefNameAliases,
         cytobands,
       }: {
         regions: Region[]
         refNameAliases: RefNameAliases
-        lowerCaseRefNameAliases: RefNameAliases
         cytobands: Feature[]
       }) {
         this.setRegions(regions)
-        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
+        this.setRefNameAliases(refNameAliases)
         this.setCytobands(cytobands)
       },
       /**
@@ -371,12 +391,8 @@ export default function assemblyFactory(
       /**
        * #action
        */
-      setRefNameAliases(
-        aliases: RefNameAliases,
-        lowerCaseAliases: RefNameAliases,
-      ) {
+      setRefNameAliases(aliases: RefNameAliases) {
         self.refNameAliases = aliases
-        self.lowerCaseRefNameAliases = lowerCaseAliases
       },
       /**
        * #action
@@ -417,49 +433,46 @@ export default function assemblyFactory(
           pluginManager,
         })
 
-        const adapterRegionsWithAssembly = regions.map(r => {
-          checkRefName(r.refName)
-          return { ...r, assemblyName }
-        })
-        const refNameAliases = {} as Record<string, string>
+        for (let i = 0, l = regions.length; i < l; i++) {
+          checkRefName(regions[i]!.refName)
+        }
+
+        const refNameAliases = new Map<string, string>()
 
         const refNameAliasCollection = await getRefNameAliases({
           config: refNameAliasesAdapterConf,
           pluginManager,
         })
 
-        for (const { refName, aliases, override } of refNameAliasCollection) {
-          for (const alias of aliases) {
-            checkRefName(alias)
-            refNameAliases[alias] = refName
+        for (let i = 0, l = refNameAliasCollection.length; i < l; i++) {
+          const e = refNameAliasCollection[i]!
+          for (const alias of e.aliases) {
+            refNameAliases.set(alias, e.refName)
           }
           // the override field is supplied by a RefNameAliasAdapter to make
           // the refName field returned by the adapter to be used as the
           // primary names for this assembly
-          if (override) {
-            refNameAliases[refName] = refName
+          if (e.override) {
+            refNameAliases.set(e.refName, e.refName)
           }
         }
         // add identity to the refNameAliases list
-        for (const region of adapterRegionsWithAssembly) {
-          // this ||= means that if the refNameAliasAdapter already set a
-          // mapping for the primary region to be an alias
-          refNameAliases[region.refName] ||= region.refName
+        for (let i = 0, l = regions.length; i < l; i++) {
+          const region = regions[i]!
+          // this means that if the refNameAliasAdapter already set a mapping
+          // for the primary region to be an alias, don't override it
+          if (!refNameAliases.has(region.refName)) {
+            refNameAliases.set(region.refName, region.refName)
+          }
         }
-        const lowerCaseRefNameAliases = Object.fromEntries(
-          Object.entries(refNameAliases).map(([key, val]) => [
-            key.toLowerCase(),
-            val,
-          ]),
-        )
 
         this.setLoaded({
           refNameAliases,
-          regions: adapterRegionsWithAssembly.map(r => ({
+          regions: regions.map(r => ({
             ...r,
-            refName: refNameAliases[r.refName] || r.refName,
+            refName: refNameAliases.get(r.refName) ?? r.refName,
+            assemblyName,
           })),
-          lowerCaseRefNameAliases,
           cytobands: await getCytobands({
             config: cytobandAdapterConf,
             pluginManager,
