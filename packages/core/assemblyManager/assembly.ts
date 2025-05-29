@@ -1,5 +1,6 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import { getParent, types } from 'mobx-state-tree'
+import { autorun } from 'mobx'
+import { addDisposer, getParent, types } from 'mobx-state-tree'
 
 import { getConf } from '../configuration'
 import { adapterConfigCacheKey } from '../data_adapters/util'
@@ -515,6 +516,20 @@ export default function assemblyFactory(
       ) {
         const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.reverseMap
+      },
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(() => {
+            // force getter not to go stale. helps with very fragmented
+            // assemblies e.g. 1,000,000 scaffolds to avoid recomputing
+            //
+            // xref solution https://github.com/mobxjs/mobx/issues/266#issuecomment-222007278
+            // xref problem https://github.com/GMOD/react-msaview/issues/75
+            // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
+            self.allRefNamesWithLowerCase
+          }),
+        )
       },
     }))
 }

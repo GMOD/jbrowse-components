@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -83,15 +83,18 @@ const RefNameAutocomplete = observer(function ({
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   const regions = assembly?.regions
-  const regionOptions =
-    regions?.map(region => ({
-      result: new RefSequenceResult({
-        refName: region.refName,
-        label: region.refName,
-        displayString: region.refName,
-        matchedAttribute: 'refName',
-      }),
-    })) || []
+  const regionOptions = useMemo(
+    () =>
+      regions?.map(region => ({
+        result: new RefSequenceResult({
+          refName: region.refName,
+          label: region.refName,
+          displayString: region.refName,
+          matchedAttribute: 'refName',
+        }),
+      })) || [],
+    [regions],
+  )
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
