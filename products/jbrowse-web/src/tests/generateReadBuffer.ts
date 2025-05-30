@@ -3,19 +3,25 @@ import RangeParser from 'range-parser'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 // kind of arbitrary, part of the rangeParser
-const maxRangeRequest = 10000000
+const maxRangeRequest = 20000000
 
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
-  return (request: Request) => handleRequest(getFile(request.url), request)
+  // Ensure the function always returns a Promise<Response>
+  return async (request: Request): Promise<Response> =>
+    handleRequest(getFile(request.url), request)
 }
 
-export function handleRequest(file: GenericFilehandle, request?: RequestInit) {
+export async function handleRequest(
+  file: GenericFilehandle,
+  request?: RequestInit,
+): Promise<Response> {
   try {
-    // @ts-expect-error
-    const rangeHeader = request?.headers?.range
+    const rangeHeader =
+      // @ts-expect-error
+      request?.headers?.range || request?.headers?.get('range')
     return rangeHeader
-      ? handleRangeRequest(file, rangeHeader)
-      : handleFullRequest(file)
+      ? await handleRangeRequest(file, rangeHeader)
+      : await handleFullRequest(file)
   } catch (e) {
     console.error(e)
     return new Response(undefined, {
