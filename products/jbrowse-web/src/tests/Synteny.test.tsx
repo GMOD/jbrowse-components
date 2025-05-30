@@ -2,7 +2,6 @@ import { render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import rangeParser from 'range-parser'
 
-// local
 import { App } from './loaderUtil'
 import { expectCanvasMatch, setup } from './util'
 setup()
