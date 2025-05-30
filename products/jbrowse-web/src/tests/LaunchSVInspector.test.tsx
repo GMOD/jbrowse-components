@@ -18,7 +18,7 @@ const delay = { timeout: 20000 }
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   return `${url}`.includes('jb2=true')
     ? new Response('{}')
-    : handleRequest(getFile(`${url}`), args)
+    : handleRequest(() => getFile(`${url}`), args)
 })
 
 test('can use a spec url for sv inspector view', async () => {

@@ -8,20 +8,22 @@ const maxRangeRequest = 20000000
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
   // Ensure the function always returns a Promise<Response>
   return async (request: Request): Promise<Response> =>
-    handleRequest(getFile(request.url), request)
+    handleRequest(() => getFile(request.url), request)
 }
 
+// the first argument is a callback so if e.g. a require.resolve fails, it
+// returns 404
 export async function handleRequest(
-  file: GenericFilehandle,
+  cb: () => GenericFilehandle,
   request?: RequestInit,
 ): Promise<Response> {
   try {
     const rangeHeader =
       // @ts-expect-error
-      request?.headers?.range || request?.headers?.get('range')
+      request?.headers?.range || request?.headers?.get?.('range')
     return rangeHeader
-      ? await handleRangeRequest(file, rangeHeader)
-      : await handleFullRequest(file)
+      ? await handleRangeRequest(cb(), rangeHeader)
+      : await handleFullRequest(cb())
   } catch (e) {
     console.error(e)
     return new Response(undefined, {

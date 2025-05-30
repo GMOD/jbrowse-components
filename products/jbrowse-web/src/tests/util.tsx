@@ -7,8 +7,6 @@ import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-// Remove the declaration since it's causing issues
-
 import { generateReadBuffer } from './generateReadBuffer'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
@@ -174,14 +172,10 @@ export function mockFile404(
   str: string,
   readBuffer: (request: Request) => Promise<Response>,
 ) {
-  // Fix: Ensure the function always returns Promise<Response>
-  // Use type assertion for fetch since jest-fetch-mock extends the fetch object
   // @ts-expect-error
-  fetch.mockResponse(async (request: Request): Promise<Response> => {
-    return request.url === str
-      ? new Response(undefined, { status: 404 })
-      : readBuffer(request)
-  })
+  fetch.mockResponse(async request =>
+    request.url === str ? { status: 404 } : readBuffer(request),
+  )
 }
 
 export { default as JBrowse } from './TestingJBrowse'

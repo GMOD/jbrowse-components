@@ -34,7 +34,7 @@ test('reloads bigwig (BW 404)', async () => {
     view.setNewView(10, 0)
     fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    // No need for @ts-expect-error now that readBuffer always returns Promise<Response>
+    // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)

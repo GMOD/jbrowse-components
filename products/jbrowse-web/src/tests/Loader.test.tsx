@@ -48,7 +48,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   } else if (`${url}`.includes('jb2=true')) {
     return new Response('{}')
   } else {
-    return handleRequest(getFile(`${url}`), args)
+    return handleRequest(() => getFile(`${url}`), args)
   }
 })
 
