@@ -6,12 +6,12 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import ViewHeader from './ViewHeader'
-import ViewWrapper from './ViewWrapper'
 
 import type {
   AbstractViewModel,
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
+import ViewWrapper from './ViewWrapper'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -31,14 +31,21 @@ const useStyles = makeStyles()(theme => ({
 
 const ViewContainer = observer(function ({
   view,
+  onClose,
+  onMinimize,
   session,
+  children,
 }: {
   view: AbstractViewModel
+  onClose: () => void
+  onMinimize: () => void
   session: SessionWithFocusedViewAndDrawerWidgets
+  children: React.ReactNode
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes, cx } = useStyles()
+  console.log({ session })
 
   useEffect(() => {
     function handleSelectView(e: Event) {
@@ -66,19 +73,30 @@ const ViewContainer = observer(function ({
 
   return (
     <Paper ref={ref} elevation={12} className={viewContainerClassName}>
-      <ViewHeader
-        view={view}
-        onClose={() => {
-          session.removeView(view)
-        }}
-        onMinimize={() => {
-          view.setMinimized(!view.minimized)
-        }}
-        className={backgroundColorClassName}
-      />
-      <Paper elevation={0}>
-        <ViewWrapper view={view} session={session} />
-      </Paper>
+      {view.isFloating ? (
+        <>
+          <div style={{ cursor: 'all-scroll' }}>
+            <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+          </div>
+          <Paper>{children}</Paper>
+        </>
+      ) : (
+        <>
+          <ViewHeader
+            view={view}
+            onClose={() => {
+              session.removeView(view)
+            }}
+            onMinimize={() => {
+              view.setMinimized(!view.minimized)
+            }}
+            className={backgroundColorClassName}
+          />
+          <Paper elevation={0}>
+            <ViewWrapper view={view} session={session} />
+          </Paper>
+        </>
+      )}
     </Paper>
   )
 })

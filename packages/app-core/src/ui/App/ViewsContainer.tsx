@@ -3,7 +3,9 @@ import { Suspense, lazy } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import ViewContainer from './ViewContainer'
+import FloatingViewPanel from './FloatingViewPanel'
+import StaticViewPanel from './StaticViewPanel'
+
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
@@ -33,13 +35,21 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
   return (
     <div className={classes.viewsContainer}>
       {views.length > 0 ? (
-        views.map(view => (
-          <ViewContainer
-            key={`view-${view.id}`}
-            view={view}
-            session={session}
-          />
-        ))
+        views.map(view =>
+          view.isFloating ? (
+            <FloatingViewPanel
+              key={`view-${view.id}`}
+              view={view}
+              session={session}
+            />
+          ) : (
+            <StaticViewPanel
+              key={`view-${view.id}`}
+              view={view}
+              session={session}
+            />
+          ),
+        )
       ) : (
         <Suspense fallback={null}>
           <ViewLauncher {...props} />
