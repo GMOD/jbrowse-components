@@ -351,18 +351,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assemblyDisplayNames() {
         const session = getSession(self)
         const { assemblyManager } = session
-        return [
-          ...new Set(
-            self.displayedRegions.map(region => {
-              const { assemblyName } = region
-              const assembly = assemblyManager.get(assemblyName)
-              if (!assembly) {
-                return assemblyName
-              }
-              return assembly.displayName ?? assembly.name
-            }),
-          ),
-        ]
+        return this.assemblyNames.map(assemblyName => {
+          const assembly = assemblyManager.get(assemblyName)
+          if (!assembly) {
+            return assemblyName
+          }
+          return assembly.displayName ?? assembly.name
+        })
       },
       /**
        * #getter
