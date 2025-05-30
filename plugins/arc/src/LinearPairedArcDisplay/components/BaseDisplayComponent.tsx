@@ -9,7 +9,6 @@ import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// local
 import type { LinearArcDisplayModel } from '../model'
 
 const ErrorMessageStackTraceDialog = lazy(

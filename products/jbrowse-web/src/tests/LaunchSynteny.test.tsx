@@ -1,8 +1,7 @@
 import { render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import rangeParser from 'range-parser'
 
-// local
+import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
 import { expectCanvasMatch, setup } from './util'
 setup()
@@ -16,34 +15,10 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 20000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url: any, args: any) => {
-  // this is the analytics
-  if (/jb2=true/.exec(`${url}`)) {
-    return new Response('{}')
-  }
-  try {
-    const file = getFile(`${url}`)
-    const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args?.headers && 'range' in args.headers) {
-      const range = rangeParser(maxRangeRequest, args.headers.range)
-      if (range === -2 || range === -1) {
-        throw new Error(`Error parsing range "${args.headers.range}"`)
-      }
-      const { start, end } = range[0]!
-      const len = end - start + 1
-      const buf = await file.read(len, start)
-      const stat = await file.stat()
-      return new Response(buf, {
-        status: 206,
-        headers: [['content-range', `${start}-${end}/${stat.size}`]],
-      })
-    }
-    const body = await file.readFile()
-    return new Response(body, { status: 200 })
-  } catch (e) {
-    console.error(e)
-    return new Response(undefined, { status: 404 })
-  }
+jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+  return `${url}`.includes('jb2=true')
+    ? new Response('{}')
+    : handleRequest(() => getFile(`${url}`), args)
 })
 
 afterEach(() => {
