@@ -2,6 +2,7 @@
 import { isModelType, isType, types } from 'mobx-state-tree'
 
 import CorePlugin from './CorePlugin'
+import PhasedScheduler from './PhasedScheduler'
 import ReExports from './ReExports'
 import {
   ConfigurationSchema,
@@ -29,38 +30,6 @@ import type {
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
 import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
-
-// helper class that keeps groups of callbacks that are then run in a specified
-// order by group
-class PhasedScheduler<PhaseName extends string> {
-  phaseCallbacks = new Map<PhaseName, Function[]>()
-
-  phaseOrder: PhaseName[] = []
-
-  constructor(...phaseOrder: PhaseName[]) {
-    this.phaseOrder = phaseOrder
-  }
-
-  add(phase: PhaseName, callback: Function) {
-    if (!this.phaseOrder.includes(phase)) {
-      throw new Error(`unknown phase ${phase}`)
-    }
-    let phaseCallbacks = this.phaseCallbacks.get(phase)
-    if (!phaseCallbacks) {
-      phaseCallbacks = []
-      this.phaseCallbacks.set(phase, phaseCallbacks)
-    }
-    phaseCallbacks.push(callback)
-  }
-
-  run() {
-    for (const phaseName of this.phaseOrder) {
-      for (const callback of this.phaseCallbacks.get(phaseName) || []) {
-        callback()
-      }
-    }
-  }
-}
 
 type PluggableElementTypeGroup =
   | 'renderer'
@@ -202,11 +171,37 @@ export default class PluginManager {
     }
   }
 
-  pluginConfigurationSchemas() {
+  pluginConfigurationNamespacedSchemas() {
     const configurationSchemas: Record<string, unknown> = {}
     for (const plugin of this.plugins) {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema
+      }
+    }
+    return configurationSchemas
+  }
+
+  pluginConfigurationUnnamespacedSchemas() {
+    let configurationSchemas: Record<string, unknown> = {}
+    for (const plugin of this.plugins) {
+      if (plugin.configurationSchemaUnnamespaced) {
+        configurationSchemas = {
+          ...configurationSchemas,
+          ...plugin.configurationSchemaUnnamespaced,
+        }
+      }
+    }
+    return configurationSchemas
+  }
+
+  pluginConfigurationRootSchemas() {
+    let configurationSchemas: Record<string, unknown> = {}
+    for (const plugin of this.plugins) {
+      if (plugin.rootConfigurationSchema) {
+        configurationSchemas = {
+          ...configurationSchemas,
+          ...plugin.rootConfigurationSchema(this),
+        }
       }
     }
     return configurationSchemas

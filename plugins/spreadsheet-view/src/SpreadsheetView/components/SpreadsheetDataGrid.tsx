@@ -14,6 +14,7 @@ const SpreadsheetDataGrid = observer(function ({
     <DataGrid
       apiRef={apiRef}
       checkboxSelection
+      disableRowSelectionOnClick
       columnHeaderHeight={35}
       columnVisibilityModel={visibleColumns}
       onFilterModelChange={() => {

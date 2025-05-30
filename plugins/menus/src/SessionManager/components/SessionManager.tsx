@@ -1,5 +1,3 @@
-import React from 'react'
-
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -19,7 +17,6 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { SessionModel } from './util'
-import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   mb: {
@@ -87,6 +84,7 @@ const SessionManager = observer(function ({
       {rows ? (
         <DataGridFlexContainer>
           <DataGrid
+            disableRowSelectionOnClick
             columnHeaderHeight={35}
             rowHeight={25}
             hideFooter={rows.length < 100}
@@ -116,7 +114,7 @@ const SessionManager = observer(function ({
                     {row.fav ? <StarIcon /> : <StarBorderIcon />}
                   </IconButton>
                 ),
-              } satisfies GridColDef<(typeof rows)[0]>,
+              },
               {
                 field: 'name',
                 headerName: 'Name',
@@ -136,7 +134,7 @@ const SessionManager = observer(function ({
                     {session.id === row.id ? ' (current)' : ''}
                   </>
                 ),
-              } satisfies GridColDef<(typeof rows)[0]>,
+              },
               {
                 headerName: 'Created at',
                 field: 'createdAt',
@@ -157,7 +155,7 @@ const SessionManager = observer(function ({
                     </div>
                   </Tooltip>
                 ),
-              } satisfies GridColDef<(typeof rows)[0]>,
+              },
               {
                 field: 'delete',
                 width: 10,
@@ -172,7 +170,7 @@ const SessionManager = observer(function ({
                     <DeleteIcon />
                   </IconButton>
                 ),
-              } satisfies GridColDef<(typeof rows)[0]>,
+              },
             ]}
           />
         </DataGridFlexContainer>

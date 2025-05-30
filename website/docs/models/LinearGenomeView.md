@@ -296,6 +296,33 @@ number
 any[]
 ```
 
+#### getter: isTopLevelView
+
+checking if lgv is a 'top-level' view is used for toggling pin track capability,
+sticky positioning
+
+```js
+// type
+AbstractViewModel
+```
+
+#### getter: stickyViewHeaders
+
+only uses sticky view headers when it is a 'top-level' view and session allows
+it
+
+```js
+// type
+boolean
+```
+
+#### getter: rubberbandTop
+
+```js
+// type
+number
+```
+
 #### getter: assembliesNotFound
 
 ```js

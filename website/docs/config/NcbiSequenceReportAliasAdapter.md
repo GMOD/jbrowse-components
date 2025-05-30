@@ -44,3 +44,14 @@ location: {
       },
     }
 ```
+
+#### slot: useNameOverride
+
+```js
+useNameOverride: {
+      type: 'boolean',
+      defaultValue: true,
+      description:
+        'forces usage of the UCSC names over the NCBI style names from a FASTA',
+    }
+```

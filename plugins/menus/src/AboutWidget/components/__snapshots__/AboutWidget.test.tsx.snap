@@ -19,8 +19,7 @@ exports[`<AboutWidget /> renders 1`] = `
       class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-1j3qii7-MuiTypography-root"
       style="--Typography-textAlign: center;"
     >
-      JBrowse is a
-       
+      JBrowse is a 
       <a
         class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
         href="http://gmod.org/"
@@ -28,6 +27,18 @@ exports[`<AboutWidget /> renders 1`] = `
         target="_blank"
       >
         GMOD
+         
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+          data-testid="OpenInNewIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+          />
+        </svg>
       </a>
        
       project
@@ -56,6 +67,18 @@ exports[`<AboutWidget /> renders 1`] = `
             target="_blank"
           >
             HelloPlugin 1.0.0
+             
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+              data-testid="OpenInNewIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+              />
+            </svg>
           </a>
         </li>
       </ul>

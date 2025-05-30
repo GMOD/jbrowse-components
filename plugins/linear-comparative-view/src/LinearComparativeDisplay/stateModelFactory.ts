@@ -195,7 +195,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
     ? {
         rpcManager,
         renderProps: {
-          ...display.renderProps(),
+          ...(display.renderProps() as Record<string, unknown>),
           level,
           view: parent,
           adapterConfig,
@@ -213,11 +213,11 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   }
 
   const { rpcManager, renderProps } = props
-  const { adapterConfig, level } = renderProps
-  const view = renderProps.view.views[level]
+  const { sessionId, adapterConfig, level } = renderProps
+  const view = renderProps.view.views[level]!
   const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
     regions: view.staticBlocks.contentBlocks,
-    sessionId: 'getFeats',
+    sessionId,
     adapterConfig,
   })) as Feature[]
 

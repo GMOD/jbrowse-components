@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 // ui elements
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'

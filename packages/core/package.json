@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -32,7 +32,7 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^3.0.1",
-    "@gmod/bgzf-filehandle": "^3.0.2",
+    "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/http-range-fetcher": "^5.0.0",
     "@leeoniya/ufuzzy": "^1.0.18",
     "@mui/icons-material": "^7.0.0",
