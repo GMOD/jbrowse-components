@@ -11,10 +11,7 @@ const config = {
         trackId: 'volvox_refseq',
         adapter: {
           type: 'TwoBitAdapter',
-          twoBitLocation: {
-            uri: 'volvox.2bit',
-            locationType: 'UriLocation',
-          },
+          uri: 'volvox.2bit',
         },
       },
       refNameAliases: {
@@ -66,20 +63,12 @@ const config = {
       category: ['Alignments'],
       adapter: {
         type: 'CramAdapter',
-        cramLocation: {
-          uri: 'volvox-sorted.cram',
-          locationType: 'UriLocation',
-        },
-        craiLocation: {
-          uri: 'volvox-sorted.cram.crai',
-          locationType: 'UriLocation',
-        },
+        uri: 'volvox-sorted.cram',
+        locationType: 'UriLocation',
+
         sequenceAdapter: {
           type: 'TwoBitAdapter',
-          twoBitLocation: {
-            uri: 'volvox.2bit',
-            locationType: 'UriLocation',
-          },
+          uri: 'volvox.2bit',
         },
       },
     },
