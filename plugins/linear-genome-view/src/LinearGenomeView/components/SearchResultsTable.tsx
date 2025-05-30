@@ -1,4 +1,9 @@
-import { getEnv, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getEnv,
+  getSession,
+  parseLocString,
+} from '@jbrowse/core/util'
 import {
   Button,
   Paper,
@@ -77,41 +82,61 @@ export default function SearchResultsTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {searchResults.map(result => (
-            <TableRow key={result.getId()}>
-              <TableCell component="th" scope="row">
-                {result.getLabel()}
-              </TableCell>
-              <TableCell align="right">{result.getLocation()}</TableCell>
-              <TableCell align="right">
-                {getTrackName(result.getTrackId()) || 'N/A'}
-              </TableCell>
-              <TableCell align="right">
-                <Button
-                  onClick={async () => {
-                    try {
-                      await handleClick(
-                        // label is used if it is a refName, it has no location
-                        result.getLocation() || result.getLabel(),
-                      )
-                      const resultTrackId = result.getTrackId()
-                      if (resultTrackId) {
-                        model.showTrack(resultTrackId)
+          {searchResults.map(result => {
+            const locString = result.getLocation()
+            let loc
+            try {
+              loc = locString
+                ? parseLocString(locString, refName =>
+                    assembly.isValidRefName(refName),
+                  )
+                : undefined
+            } catch (e) {}
+            return (
+              <TableRow key={result.getId()}>
+                <TableCell component="th" scope="row">
+                  {result.getLabel()}
+                </TableCell>
+                <TableCell align="right">
+                  {loc
+                    ? assembleLocString({
+                        ...loc,
+                        refName:
+                          assembly.getCanonicalRefName(loc.refName) ||
+                          loc.refName,
+                      })
+                    : locString}
+                </TableCell>
+                <TableCell align="right">
+                  {getTrackName(result.getTrackId()) || 'N/A'}
+                </TableCell>
+                <TableCell align="right">
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await handleClick(
+                          // label is used if it is a refName, it has no location
+                          result.getLocation() || result.getLabel(),
+                        )
+                        const resultTrackId = result.getTrackId()
+                        if (resultTrackId) {
+                          model.showTrack(resultTrackId)
+                        }
+                      } catch (e) {
+                        console.error(e)
+                        session.notifyError(`${e}`, e)
                       }
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    }
-                    handleClose()
-                  }}
-                  color="primary"
-                  variant="contained"
-                >
-                  Go
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+                      handleClose()
+                    }}
+                    color="primary"
+                    variant="contained"
+                  >
+                    Go
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
     </TableContainer>
