@@ -31,13 +31,6 @@ const HoverMenu: React.ComponentType<MenuProps> = React.forwardRef(
         {...props}
         ref={ref}
         style={{ pointerEvents: 'none', ...props.style }}
-        PaperProps={{
-          ...props.PaperProps,
-          style: {
-            pointerEvents: 'auto',
-            ...props.PaperProps?.style,
-          },
-        }}
         slotProps={{
           ...props.slotProps,
           paper: paperSlotProps,
