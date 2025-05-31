@@ -177,17 +177,11 @@ function CascadingMenuList({
   closeAfterItemClick: boolean
   onMenuItemClick: Function
 }) {
-  function handleClick(callback: Function) {
-    return (event: React.MouseEvent<HTMLLIElement>) => {
-      onMenuItemClick(event, callback)
-    }
-  }
-
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   return (
     <>
       {menuItems
-        .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+        .toSorted((a, b) => (b.priority || 0) - (a.priority || 0))
         .map((item, idx) => {
           return 'subMenu' in item ? (
             <CascadingSubmenu
@@ -220,7 +214,11 @@ function CascadingMenuList({
               key={`${item.label}-${idx}`}
               closeAfterItemClick={closeAfterItemClick}
               onClick={
-                'onClick' in item ? handleClick(item.onClick) : undefined
+                'onClick' in item
+                  ? (event: React.MouseEvent<HTMLLIElement>) => {
+                      onMenuItemClick(event, item.onClick)
+                    }
+                  : undefined
               }
               disabled={Boolean(item.disabled)}
             >

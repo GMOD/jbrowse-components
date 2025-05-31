@@ -12,20 +12,9 @@ import {
 } from 'react'
 import * as React from 'react'
 
-import { type PopoverPosition, type PopoverReference } from '@mui/material'
+import type { PopoverPosition, PopoverReference } from '@mui/material'
 
 import { useEvent } from './useEvent'
-
-const printedWarnings: Record<string, boolean> = {}
-
-function warn(key: string, message: string) {
-  if (printedWarnings[key]) {
-    return
-  }
-  printedWarnings[key] = true
-
-  console.error('[material-ui-popup-state] WARNING', message)
-}
 
 export type Variant = 'popover' | 'popper' | 'dialog'
 
@@ -164,13 +153,6 @@ export function usePopupState({
         : undefined
 
     const doOpen = (state: CoreState): CoreState => {
-      if (!eventOrAnchorEl && !state.setAnchorElUsed && variant !== 'dialog') {
-        warn(
-          'missingEventOrAnchorEl',
-          'eventOrAnchorEl should be defined if setAnchorEl is not used',
-        )
-      }
-
       if (parentPopupState) {
         if (!parentPopupState.isOpen) {
           return state
