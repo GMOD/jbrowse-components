@@ -278,7 +278,7 @@ export function usePopupState({
     (_childPopupState: PopupState | null | undefined) => {
       setState(state => ({ ...state, _childPopupState }))
     },
-    [],
+    [setState],
   )
 
   const popupState: PopupState = {
@@ -349,24 +349,6 @@ export function bindTrigger(popupState: PopupState): ControlAriaProps & {
     ...controlAriaProps(popupState),
     onClick: popupState.open,
     onTouchStart: popupState.open,
-  }
-}
-
-/**
- * Creates props for a component that opens the popup on its contextmenu event (right click).
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-export function bindContextMenu(popupState: PopupState): ControlAriaProps & {
-  onContextMenu: (event: MouseEvent) => void
-} {
-  return {
-    ...controlAriaProps(popupState),
-    onContextMenu: (e: MouseEvent) => {
-      e.preventDefault()
-      popupState.open(e)
-    },
   }
 }
 
@@ -546,35 +528,4 @@ export function bindPopper({
     open: isOpen,
     onMouseLeave,
   }
-}
-
-function getPopup(
-  element: Element,
-  { popupId }: PopupState,
-): Element | null | undefined {
-  if (!popupId) {
-    return null
-  }
-  const rootNode: any =
-    typeof element.getRootNode === 'function' ? element.getRootNode() : document
-  if (typeof rootNode.getElementById === 'function') {
-    return rootNode.getElementById(popupId)
-  }
-  return null
-}
-
-function isAncestor(
-  parent: Element | null | undefined,
-  child: Element | null | undefined,
-): boolean {
-  if (!parent) {
-    return false
-  }
-  while (child) {
-    if (child === parent) {
-      return true
-    }
-    child = child.parentElement
-  }
-  return false
 }
