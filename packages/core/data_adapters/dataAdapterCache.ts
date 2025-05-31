@@ -1,3 +1,5 @@
+import { isStateTreeNode } from 'mobx-state-tree'
+
 import { adapterConfigCacheKey } from './util'
 
 import type PluginManager from '../PluginManager'
@@ -50,13 +52,15 @@ export async function getAdapter(
 
     // instantiate the data adapter's config schema so it gets its defaults,
     // callbacks, etc
-    const adapterConfig = dataAdapterType.configSchema.create(
-      adapterConfigSnapshot,
-      { pluginManager },
-    )
+    const adapterConfig = isStateTreeNode(adapterConfigSnapshot)
+      ? adapterConfigSnapshot
+      : dataAdapterType.configSchema.create(adapterConfigSnapshot, {
+          pluginManager,
+        })
 
     const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
     const CLASS = await dataAdapterType.getAdapterClass()
+    // @ts-expect-error
     const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
     // store it in our cache
