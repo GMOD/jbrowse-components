@@ -28,14 +28,16 @@ const CascadingContext = createContext({
 function CascadingMenuItem({
   onClick,
   closeAfterItemClick,
+  onMouseOver,
   ...props
 }: {
   closeAfterItemClick: boolean
-  onClick?: Function
+  onClick?: (event: React.MouseEvent<HTMLLIElement>) => void
+  onMouseOver?: (event: React.MouseEvent<HTMLLIElement>) => void
   disabled?: boolean
   children: React.ReactNode
 }) {
-  const { rootPopupState } = useContext(CascadingContext)
+  const { rootPopupState, parentPopupState } = useContext(CascadingContext)
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
@@ -48,6 +50,14 @@ function CascadingMenuItem({
           rootPopupState.close()
         }
         onClick?.(event)
+      }}
+      onMouseOver={event => {
+        // Close any sibling submenus when hovering over this menu item
+        if (parentPopupState?._childPopupState) {
+          parentPopupState._childPopupState.close()
+          parentPopupState._setChildPopupState(null)
+        }
+        onMouseOver?.(event)
       }}
     />
   )
@@ -75,9 +85,28 @@ function CascadingSubmenu({
     variant: 'popover',
     parentPopupState,
   })
+
+  const handleMouseOver = (event: React.MouseEvent) => {
+    // Close any sibling submenus at the same level when hovering
+    if (
+      parentPopupState?._childPopupState &&
+      parentPopupState._childPopupState !== popupState
+    ) {
+      parentPopupState._childPopupState.close()
+      parentPopupState._setChildPopupState(null)
+    }
+
+    // Use the existing bindHover functionality
+    bindHover(popupState).onMouseOver(event)
+  }
+
   return (
     <>
-      <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
+      <MenuItem
+        {...bindFocus(popupState)}
+        onMouseOver={handleMouseOver}
+        onTouchStart={bindHover(popupState).onTouchStart}
+      >
         {Icon ? (
           <ListItemIcon>
             <Icon />
@@ -215,7 +244,7 @@ function CascadingMenuList({
               closeAfterItemClick={closeAfterItemClick}
               onClick={
                 'onClick' in item
-                  ? (event: React.MouseEvent<HTMLLIElement>) => {
+                  ? event => {
                       onMenuItemClick(event, item.onClick)
                     }
                   : undefined
@@ -232,13 +261,17 @@ function CascadingMenuList({
                 secondary={item.subLabel}
                 inset={hasIcon && !item.icon}
               />
-              <div style={{ flexGrow: 1, minWidth: 10 }} />
+              <CascadingSpacer />
               <EndDecoration item={item} />
             </CascadingMenuItem>
           )
         })}
     </>
   )
+}
+
+function CascadingSpacer() {
+  return <div style={{ flexGrow: 1, minWidth: 10 }} />
 }
 
 function CascadingMenuChildren(props: {

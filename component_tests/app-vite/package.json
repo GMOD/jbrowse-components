@@ -39,6 +39,7 @@
     "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
+    "@jbrowse/app-core": "file:./packed/jbrowse-app-core.tgz",
     "@jbrowse/react-app2": "file:./packed/jbrowse-react-app2.tgz"
   },
   "devDependencies": {
