@@ -1,9 +1,9 @@
 ---
-id: 01_introduction
+id: embed_linear_genome_view
 title: Embedding JBrowse
 ---
 
-import Figure from '../../figure'
+import Figure from '../figure'
 
 ## Welcome!
 
