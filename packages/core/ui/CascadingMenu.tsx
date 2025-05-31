@@ -16,7 +16,6 @@ import HoverMenu from './HoverMenu'
 import { MenuItemEndDecoration } from './Menu'
 import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
 
-
 import type { MenuItem as JBMenuItem } from './Menu'
 import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'

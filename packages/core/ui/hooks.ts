@@ -91,7 +91,7 @@ export function usePopupState({
   popupId = defaultPopupId(),
   variant,
   disableAutoFocus,
-  closeDelay = 300,
+  closeDelay = 800,
 }: {
   parentPopupState?: PopupState | null | undefined
   popupId?: string | null
@@ -271,61 +271,65 @@ export function usePopupState({
 
   // Create a forward reference to popupState that will be defined later
   const popupStateRef = useRef<PopupState | null>(null)
-  
-  const onMouseLeave = useCallback((event: MouseEvent) => {
-    const { relatedTarget } = event
 
-    setState((state: CoreState): CoreState => {
-      if (
-        state.hovered &&
-        !(
-          relatedTarget instanceof Element &&
-          popupStateRef.current && isElementInPopup(relatedTarget, popupStateRef.current)
-        )
-      ) {
-        if (state.focused) {
-          return { ...state, hovered: false }
-        } else {
-          // Clear any existing timeout
-          if (closeTimeoutRef.current !== null) {
-            window.clearTimeout(closeTimeoutRef.current)
-          }
+  const onMouseLeave = useCallback(
+    (event: MouseEvent) => {
+      const { relatedTarget } = event
 
-          // Set a new timeout to close the popup after the delay
-          closeTimeoutRef.current = window.setTimeout(() => {
-            if (isMounted.current) {
-              setState((state: CoreState): CoreState => {
-                // Don't close if mouse has re-entered during the timeout
-                if (state._mouseReEntered) {
-                  closeTimeoutRef.current = null
-                  return state
-                }
-                
-                const { _childPopupState } = state
-                setTimeout(() => {
-                  _childPopupState?.close()
-                  parentPopupState?._setChildPopupState(null)
-                })
-                return {
-                  ...state,
-                  isOpen: false,
-                  hovered: false,
-                  focused: false,
-                  _mouseReEntered: false,
-                }
-              })
-              closeTimeoutRef.current = null
+      setState((state: CoreState): CoreState => {
+        if (
+          state.hovered &&
+          !(
+            relatedTarget instanceof Element &&
+            popupStateRef.current &&
+            isElementInPopup(relatedTarget, popupStateRef.current)
+          )
+        ) {
+          if (state.focused) {
+            return { ...state, hovered: false }
+          } else {
+            // Clear any existing timeout
+            if (closeTimeoutRef.current !== null) {
+              window.clearTimeout(closeTimeoutRef.current)
             }
-          }, closeDelay)
 
-          // Return the current state unchanged, the timeout will handle
-          // closing
-          return { ...state, _mouseReEntered: false }
+            // Set a new timeout to close the popup after the delay
+            closeTimeoutRef.current = window.setTimeout(() => {
+              if (isMounted.current) {
+                setState((state: CoreState): CoreState => {
+                  // Don't close if mouse has re-entered during the timeout
+                  if (state._mouseReEntered) {
+                    closeTimeoutRef.current = null
+                    return state
+                  }
+
+                  const { _childPopupState } = state
+                  setTimeout(() => {
+                    _childPopupState?.close()
+                    parentPopupState?._setChildPopupState(null)
+                  })
+                  return {
+                    ...state,
+                    isOpen: false,
+                    hovered: false,
+                    focused: false,
+                    _mouseReEntered: false,
+                  }
+                })
+                closeTimeoutRef.current = null
+              }
+            }, closeDelay)
+
+            // Return the current state unchanged, the timeout will handle
+            // closing
+            return { ...state, _mouseReEntered: false }
+          }
         }
-      }
-      return state
-    })
-  }, [closeDelay, isMounted, parentPopupState, setState])
+        return state
+      })
+    },
+    [closeDelay, isMounted, parentPopupState, setState],
+  )
 
   const onBlur = (event?: FocusEvent) => {
     if (!event) {
@@ -355,10 +359,10 @@ export function usePopupState({
 
   // Generate a unique ID for this popup state instance
   const popupStateIdRef = useRef<string>(
-    `popup_state_${Math.random().toString(36).substring(2, 11)}`,
+    `popup_state_${Math.random().toString(36).slice(2, 11)}`,
   )
 
-  const popupState: PopupState = popupStateRef.current = {
+  const popupState: PopupState = (popupStateRef.current = {
     ...state,
     setAnchorEl,
     popupId: popupId ?? undefined,
@@ -374,7 +378,7 @@ export function usePopupState({
       disableAutoFocus ?? Boolean(state.hovered || state.focused),
     _setChildPopupState,
     _popupStateId: popupStateIdRef.current,
-  }
+  })
 
   return popupState
 }
