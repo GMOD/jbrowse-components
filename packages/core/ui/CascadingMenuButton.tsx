@@ -2,12 +2,9 @@ import { useEffect } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
-import {
-  bindPopover,
-  bindTrigger,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
 import { observer } from 'mobx-react'
+
+import { bindPopover, bindTrigger, usePopupState } from './hooks'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
