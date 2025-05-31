@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 import { StringParam, useQueryParam } from 'use-query-params'
 
 import JBrowse from './JBrowse'
-import StartScreen from './StartScreen'
+import StartScreen from './StartScreen/StartScreen'
 import { loadPluginManager } from './StartScreen/util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
