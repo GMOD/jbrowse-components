@@ -1,5 +1,12 @@
 /* eslint-env browser */
 
+//  this code adapted from material-ui-popup-state by Andy Edwards, MIT license
+//  https://github.com/jcoreio/material-ui-popup-state/blob/9dba66241a0c25b172c93ae7d9e45a9745f138e8/LICENSE.md
+//  the main changes included
+//
+//  - refactoring to use separate useState variables
+//  - removal of 'efficiency' hooks like useCallback, useEvent...favor correctness
+//  - to not close the menu onMouseLeave
 import {
   type FocusEvent,
   type MouseEvent,
@@ -180,7 +187,9 @@ export function usePopupState({
       }
 
       // Set this popup as the child of the parent
-      setTimeout(() => parentPopupState._setChildPopupState(self))
+      setTimeout(() => {
+        parentPopupState._setChildPopupState(self)
+      })
     }
 
     // Update individual state variables
