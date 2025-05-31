@@ -4,7 +4,13 @@ title: Embedded components
 toplevel: true
 ---
 
-Our embedded components allow you to use JBrowse in your application
+Our embedded components allow you to embed JBrowse components on your webpage
+
+You can see a tutorial for setting up the embedded components here
+https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/01_introduction/
+
+See also our FAQ entry on embedded components
+http://jbrowse.org/jb2/docs/faq/#embedded-views-versus-full-jbrowse-app
 
 ## @jbrowse/react-app2
 
