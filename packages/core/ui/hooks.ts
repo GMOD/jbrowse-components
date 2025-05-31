@@ -335,19 +335,6 @@ export function usePopupState({
     if (!event) {
       return
     }
-    // const { relatedTarget } = event
-    // setState((state: CoreState): CoreState => {
-    //   if (
-    //     state.focused &&
-    //     !(
-    //       relatedTarget instanceof Element &&
-    //       isElementInPopup(relatedTarget, popupState)
-    //     )
-    //   ) {
-    //     return state.hovered ? { ...state, focused: false } : doClose(state)
-    //   }
-    //   return state
-    // })
   }
 
   const _setChildPopupState = useCallback(
@@ -436,24 +423,6 @@ export function bindTrigger(popupState: PopupState): ControlAriaProps & {
 }
 
 /**
- * Creates props for a component that opens the popup on its contextmenu event (right click).
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-export function bindContextMenu(popupState: PopupState): ControlAriaProps & {
-  onContextMenu: (event: MouseEvent) => void
-} {
-  return {
-    ...controlAriaProps(popupState),
-    onContextMenu: (e: MouseEvent) => {
-      e.preventDefault()
-      popupState.open(e)
-    },
-  }
-}
-
-/**
  * Creates props for a component that toggles the popup when clicked.
  *
  * @param {object} popupState the argument passed to the child function of
@@ -511,32 +480,6 @@ export function bindFocus(popupState: PopupState): ControlAriaProps & {
 }
 
 /**
- * Creates props for a component that opens the popup while double click.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-export function bindDoubleClick({
-  isOpen,
-  open,
-  popupId,
-  variant,
-}: PopupState): {
-  'aria-controls'?: string
-  'aria-describedby'?: string
-  'aria-haspopup'?: true
-  onDoubleClick: (event: MouseEvent) => any
-} {
-  return {
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
-      ? popupId
-      : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onDoubleClick: open,
-  }
-}
-
-/**
  * Creates props for a `Popover` component.
  *
  * @param {object} popupState the argument passed to the child function of
@@ -582,20 +525,6 @@ export function bindPopover({
     }),
   }
 }
-
-/**
- * Creates props for a `Menu` component.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-
-/**
- * Creates props for a `Popover` component.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
 export function bindMenu({
   isOpen,
   anchorEl,
@@ -640,12 +569,7 @@ export function bindMenu({
     }),
   }
 }
-/**
- * Creates props for a `Popper` component.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
+
 export function bindPopper({
   isOpen,
   anchorEl,
@@ -665,22 +589,6 @@ export function bindPopper({
     open: isOpen,
     onMouseLeave,
     onMouseEnter,
-  }
-}
-
-/**
- * Creates props for a `Dialog` component.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-export function bindDialog({ isOpen, close }: PopupState): {
-  open: boolean
-  onClose: (event: SyntheticEvent) => any
-} {
-  return {
-    open: isOpen,
-    onClose: close,
   }
 }
 
