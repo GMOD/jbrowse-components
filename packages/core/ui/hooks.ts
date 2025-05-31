@@ -14,22 +14,6 @@ import * as React from 'react'
 
 import { type PopoverPosition, type PopoverReference } from '@mui/material'
 
-// Custom useEvent hook to create stable callback functions
-function useEvent<T extends (...args: any[]) => any>(fn: T): T {
-  const fnRef = useRef<T>(fn)
-  
-  // Update ref.current value if fn changes
-  useEffect(() => {
-    fnRef.current = fn
-  }, [fn])
-  
-  const stableFn = useCallback((...args: Parameters<T>) => {
-    return fnRef.current(...args)
-  }, []) as T
-  
-  return stableFn
-}
-
 const printedWarnings: Record<string, boolean> = {}
 
 function warn(key: string, message: string) {
@@ -157,7 +141,6 @@ export function usePopupState({
   }
 
   const open = (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
-    console.log('open')
     // Clear any pending close timeout when opening
     if (closeTimeoutRef.current !== null) {
       window.clearTimeout(closeTimeoutRef.current)
@@ -237,7 +220,6 @@ export function usePopupState({
   }
 
   const close = (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
-    console.log('close')
     const event =
       eventOrAnchorEl instanceof Element ? undefined : eventOrAnchorEl
 
