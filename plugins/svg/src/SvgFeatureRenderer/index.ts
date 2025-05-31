@@ -1,4 +1,3 @@
-
 import SvgFeatureRenderer from './SvgFeatureRenderer'
 import ReactComponent from './components/SvgFeatureRendering'
 import configSchema from './configSchema'
