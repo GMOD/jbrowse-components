@@ -119,13 +119,16 @@ export function usePopupState({
     [],
   )
 
-  const setAnchorEl = useCallback((anchorEl: Element | null | undefined) => {
-    setState(state => ({
-      ...state,
-      setAnchorElUsed: true,
-      anchorEl: anchorEl ?? undefined,
-    }))
-  }, [])
+  const setAnchorEl = useCallback(
+    (anchorEl: Element | null | undefined) => {
+      setState(state => ({
+        ...state,
+        setAnchorElUsed: true,
+        anchorEl: anchorEl ?? undefined,
+      }))
+    },
+    [setState],
+  )
 
   const toggle = useEvent(
     (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
@@ -260,48 +263,15 @@ export function usePopupState({
         close(eventOrAnchorEl)
       }
     },
-    [],
+    [open, close],
   )
 
-  const onMouseLeave = useEvent((event: MouseEvent) => {
-    // const { relatedTarget } = event
-    // setState((state: CoreState): CoreState => {
-    //   if (
-    //     state.hovered &&
-    //     !(
-    //       relatedTarget instanceof Element &&
-    //       isElementInPopup(relatedTarget, popupState)
-    //     )
-    //   ) {
-    //     if (state.focused) {
-    //       return { ...state, hovered: false }
-    //     } else {
-    //       return doClose(state)
-    //     }
-    //   }
-    //   return state
-    // })
+  const onMouseLeave = useEvent((_event: MouseEvent) => {
+    // changed to do nothing compared to material-ui-popup-state
   })
 
-  const onBlur = useEvent((event?: FocusEvent) => {
-    // if (!event) return
-    // const { relatedTarget } = event
-    // setState((state: CoreState): CoreState => {
-    //   if (
-    //     state.focused &&
-    //     !(
-    //       relatedTarget instanceof Element &&
-    //       isElementInPopup(relatedTarget, popupState)
-    //     )
-    //   ) {
-    //     if (state.hovered) {
-    //       return { ...state, focused: false }
-    //     } else {
-    //       return doClose(state)
-    //     }
-    //   }
-    //   return state
-    // })
+  const onBlur = useEvent((_event?: FocusEvent) => {
+    // changed to do nothing compared to material-ui-popup-state
   })
 
   const _setChildPopupState = useCallback(
@@ -456,33 +426,6 @@ export function bindFocus(popupState: PopupState): ControlAriaProps & {
 }
 
 /**
- * Creates props for a component that opens the popup while double click.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-export function bindDoubleClick({
-  isOpen,
-  open,
-  popupId,
-  variant,
-}: PopupState): {
-  'aria-controls'?: string
-  'aria-describedby'?: string
-  'aria-haspopup'?: true
-  onDoubleClick: (event: MouseEvent) => any
-} {
-  return {
-    // $FlowFixMe
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
-      ? popupId
-      : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onDoubleClick: open,
-  }
-}
-
-/**
  * Creates props for a `Popover` component.
  *
  * @param {object} popupState the argument passed to the child function of
@@ -605,22 +548,6 @@ export function bindPopper({
   }
 }
 
-/**
- * Creates props for a `Dialog` component.
- *
- * @param {object} popupState the argument passed to the child function of
- * `PopupState`
- */
-export function bindDialog({ isOpen, close }: PopupState): {
-  open: boolean
-  onClose: (event: SyntheticEvent) => any
-} {
-  return {
-    open: isOpen,
-    onClose: close,
-  }
-}
-
 function getPopup(
   element: Element,
   { popupId }: PopupState,
@@ -634,15 +561,6 @@ function getPopup(
     return rootNode.getElementById(popupId)
   }
   return null
-}
-
-function isElementInPopup(element: Element, popupState: PopupState): boolean {
-  const { anchorEl, _childPopupState } = popupState
-  return (
-    isAncestor(anchorEl, element) ||
-    isAncestor(getPopup(element, popupState), element) ||
-    (_childPopupState != null && isElementInPopup(element, _childPopupState))
-  )
 }
 
 function isAncestor(
