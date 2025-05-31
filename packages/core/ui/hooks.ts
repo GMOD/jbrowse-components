@@ -14,7 +14,21 @@ import * as React from 'react'
 
 import { type PopoverPosition, type PopoverReference } from '@mui/material'
 
-import { useEvent } from './useEvent'
+// Custom useEvent hook to create stable callback functions
+function useEvent<T extends (...args: any[]) => any>(fn: T): T {
+  const fnRef = useRef<T>(fn)
+  
+  // Update ref.current value if fn changes
+  useEffect(() => {
+    fnRef.current = fn
+  }, [fn])
+  
+  const stableFn = useCallback((...args: Parameters<T>) => {
+    return fnRef.current(...args)
+  }, []) as T
+  
+  return stableFn
+}
 
 const printedWarnings: Record<string, boolean> = {}
 
@@ -35,6 +49,7 @@ export interface PopupState {
   toggle: (eventOrAnchorEl?: SyntheticEvent | Element | null) => void
   onBlur: (event: FocusEvent) => void
   onMouseLeave: (event: MouseEvent) => void
+  onMouseEnter: () => void
   setOpen: (
     open: boolean,
     eventOrAnchorEl?: SyntheticEvent | Element | null,
@@ -62,8 +77,7 @@ export interface CoreState {
   focused: boolean
   _openEventType: string | null | undefined
   _childPopupState: PopupState | null | undefined
-  _deferNextOpen: boolean
-  _deferNextClose: boolean
+  _mouseReEntered: boolean
 }
 
 export const initCoreState: CoreState = {
@@ -75,8 +89,7 @@ export const initCoreState: CoreState = {
   focused: false,
   _openEventType: null,
   _childPopupState: null,
-  _deferNextOpen: false,
-  _deferNextClose: false,
+  _mouseReEntered: false,
 }
 
 // https://github.com/jcoreio/material-ui-popup-state/issues/138
@@ -94,7 +107,7 @@ export function usePopupState({
   popupId = defaultPopupId(),
   variant,
   disableAutoFocus,
-  closeDelay = 800,
+  closeDelay = 300,
 }: {
   parentPopupState?: PopupState | null | undefined
   popupId?: string | null
@@ -103,11 +116,15 @@ export function usePopupState({
   closeDelay?: number
 }): PopupState {
   const isMounted = useRef(true)
+  const closeTimeoutRef = useRef<number | null>(null)
 
   useEffect((): (() => void) => {
     isMounted.current = true
     return () => {
       isMounted.current = false
+      if (closeTimeoutRef.current !== null) {
+        window.clearTimeout(closeTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -130,18 +147,23 @@ export function usePopupState({
     }))
   }, [])
 
-  const toggle = useEvent(
-    (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
-      if (state.isOpen) {
-        close(eventOrAnchorEl)
-      } else {
-        open(eventOrAnchorEl)
-      }
-      return state
-    },
-  )
+  const toggle = (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
+    if (state.isOpen) {
+      close(eventOrAnchorEl)
+    } else {
+      open(eventOrAnchorEl)
+    }
+    return state
+  }
 
-  const open = useEvent((eventOrAnchorEl?: SyntheticEvent | Element | null) => {
+  const open = (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
+    console.log('open')
+    // Clear any pending close timeout when opening
+    if (closeTimeoutRef.current !== null) {
+      window.clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+
     const event =
       eventOrAnchorEl instanceof Element ? undefined : eventOrAnchorEl
     const element =
@@ -152,14 +174,10 @@ export function usePopupState({
           : undefined
 
     if (event?.type === 'touchstart') {
-      setState(state => ({ ...state, _deferNextOpen: true }))
+      setState(state => ({
+        ...state,
+      }))
       return
-    }
-
-    // Clear any existing close timeout when opening a new menu
-    if (closeTimeoutRef.current !== null) {
-      clearTimeout(closeTimeoutRef.current)
-      closeTimeoutRef.current = null
     }
 
     // Use MouseEvent type to access clientX and clientY
@@ -170,7 +188,7 @@ export function usePopupState({
         ? { left: clientX, top: clientY }
         : undefined
 
-    const doOpen = (state: CoreState): CoreState => {
+    setState((state: CoreState): CoreState => {
       if (!eventOrAnchorEl && !state.setAnchorElUsed && variant !== 'dialog') {
         warn(
           'missingEventOrAnchorEl',
@@ -215,51 +233,35 @@ export function usePopupState({
       }
 
       return newState
+    })
+  }
+
+  const close = (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
+    console.log('close')
+    const event =
+      eventOrAnchorEl instanceof Element ? undefined : eventOrAnchorEl
+
+    if (event?.type === 'touchstart') {
+      setState(state => ({
+        ...state,
+      }))
+      return
     }
 
     setState((state: CoreState): CoreState => {
-      if (state._deferNextOpen) {
-        setTimeout(() => {
-          setState(doOpen)
-        }, 0)
-        return { ...state, _deferNextOpen: false }
-      } else {
-        return doOpen(state)
-      }
-    })
-  })
-
-  const doClose = (state: CoreState): CoreState => {
-    const { _childPopupState } = state
-    setTimeout(() => {
-      _childPopupState?.close()
-      parentPopupState?._setChildPopupState(null)
-    })
-    return { ...state, isOpen: false, hovered: false, focused: false }
-  }
-
-  const close = useEvent(
-    (eventOrAnchorEl?: SyntheticEvent | Element | null) => {
-      const event =
-        eventOrAnchorEl instanceof Element ? undefined : eventOrAnchorEl
-
-      if (event?.type === 'touchstart') {
-        setState(state => ({ ...state, _deferNextClose: true }))
-        return
-      }
-
-      setState((state: CoreState): CoreState => {
-        if (state._deferNextClose) {
-          setTimeout(() => {
-            setState(doClose)
-          }, 0)
-          return { ...state, _deferNextClose: false }
-        } else {
-          return doClose(state)
-        }
+      const { _childPopupState } = state
+      setTimeout(() => {
+        _childPopupState?.close()
+        parentPopupState?._setChildPopupState(null)
       })
-    },
-  )
+      return {
+        ...state,
+        isOpen: false,
+        hovered: false,
+        focused: false,
+      }
+    })
+  }
 
   const setOpen = useCallback(
     (
@@ -275,61 +277,92 @@ export function usePopupState({
     [],
   )
 
-  const closeTimeoutRef = useRef<number | null>(null)
+  const onMouseEnter = useCallback(() => {
+    setState((state: CoreState): CoreState => {
+      return {
+        ...state,
+        _mouseReEntered: true,
+        hovered: true,
+      }
+    })
+  }, [setState])
 
-  const onMouseLeave = useEvent((event: MouseEvent) => {
+  // Create a forward reference to popupState that will be defined later
+  const popupStateRef = useRef<PopupState | null>(null)
+  
+  const onMouseLeave = useCallback((event: MouseEvent) => {
     const { relatedTarget } = event
-
-    // Clear any existing timeout
-    if (closeTimeoutRef.current !== null) {
-      clearTimeout(closeTimeoutRef.current)
-      closeTimeoutRef.current = null
-    }
 
     setState((state: CoreState): CoreState => {
       if (
         state.hovered &&
         !(
           relatedTarget instanceof Element &&
-          isElementInPopup(relatedTarget, popupState)
+          popupStateRef.current && isElementInPopup(relatedTarget, popupStateRef.current)
         )
       ) {
         if (state.focused) {
           return { ...state, hovered: false }
         } else {
-          if (closeDelay > 0) {
-            // Set timeout for delayed closing
-            closeTimeoutRef.current = window.setTimeout(() => {
-              setState(doClose)
-            }, closeDelay)
-            return state
-          } else {
-            return doClose(state)
+          // Clear any existing timeout
+          if (closeTimeoutRef.current !== null) {
+            window.clearTimeout(closeTimeoutRef.current)
           }
+
+          // Set a new timeout to close the popup after the delay
+          closeTimeoutRef.current = window.setTimeout(() => {
+            if (isMounted.current) {
+              setState((state: CoreState): CoreState => {
+                // Don't close if mouse has re-entered during the timeout
+                if (state._mouseReEntered) {
+                  closeTimeoutRef.current = null
+                  return state
+                }
+                
+                const { _childPopupState } = state
+                setTimeout(() => {
+                  _childPopupState?.close()
+                  parentPopupState?._setChildPopupState(null)
+                })
+                return {
+                  ...state,
+                  isOpen: false,
+                  hovered: false,
+                  focused: false,
+                  _mouseReEntered: false,
+                }
+              })
+              closeTimeoutRef.current = null
+            }
+          }, closeDelay)
+
+          // Return the current state unchanged, the timeout will handle
+          // closing
+          return { ...state, _mouseReEntered: false }
         }
       }
       return state
     })
-  })
+  }, [closeDelay, isMounted, parentPopupState, setState])
 
-  const onBlur = useEvent((event?: FocusEvent) => {
+  const onBlur = (event?: FocusEvent) => {
     if (!event) {
       return
     }
-    const { relatedTarget } = event
-    setState((state: CoreState): CoreState => {
-      if (
-        state.focused &&
-        !(
-          relatedTarget instanceof Element &&
-          isElementInPopup(relatedTarget, popupState)
-        )
-      ) {
-        return state.hovered ? { ...state, focused: false } : doClose(state)
-      }
-      return state
-    })
-  })
+    // const { relatedTarget } = event
+    // setState((state: CoreState): CoreState => {
+    //   if (
+    //     state.focused &&
+    //     !(
+    //       relatedTarget instanceof Element &&
+    //       isElementInPopup(relatedTarget, popupState)
+    //     )
+    //   ) {
+    //     return state.hovered ? { ...state, focused: false } : doClose(state)
+    //   }
+    //   return state
+    // })
+  }
 
   const _setChildPopupState = useCallback(
     (_childPopupState: PopupState | null | undefined) => {
@@ -343,7 +376,7 @@ export function usePopupState({
     `popup_state_${Math.random().toString(36).substring(2, 11)}`,
   )
 
-  const popupState: PopupState = {
+  const popupState: PopupState = popupStateRef.current = {
     ...state,
     setAnchorEl,
     popupId: popupId ?? undefined,
@@ -354,6 +387,7 @@ export function usePopupState({
     setOpen,
     onBlur,
     onMouseLeave,
+    onMouseEnter,
     disableAutoFocus:
       disableAutoFocus ?? Boolean(state.hovered || state.focused),
     _setChildPopupState,
@@ -460,13 +494,15 @@ export function bindHover(popupState: PopupState): ControlAriaProps & {
   onTouchStart: (event: TouchEvent) => any
   onMouseOver: (event: MouseEvent) => any
   onMouseLeave: (event: MouseEvent) => any
+  onMouseEnter: () => any
 } {
-  const { open, onMouseLeave } = popupState
+  const { open, onMouseLeave, onMouseEnter } = popupState
   return {
     ...controlAriaProps(popupState),
     onTouchStart: open,
     onMouseOver: open,
     onMouseLeave,
+    onMouseEnter,
   }
 }
 
@@ -527,6 +563,7 @@ export function bindPopover({
   close,
   popupId,
   onMouseLeave,
+  onMouseEnter,
   disableAutoFocus,
   _openEventType,
 }: PopupState): {
@@ -537,6 +574,7 @@ export function bindPopover({
   open: boolean
   onClose: () => void
   onMouseLeave: (event: MouseEvent) => void
+  onMouseEnter: () => void
   disableAutoFocus?: boolean
   disableEnforceFocus?: boolean
   disableRestoreFocus?: boolean
@@ -550,6 +588,7 @@ export function bindPopover({
     open: isOpen,
     onClose: close,
     onMouseLeave,
+    onMouseEnter,
     ...(disableAutoFocus && {
       disableAutoFocus: true,
       disableEnforceFocus: true,
@@ -578,6 +617,7 @@ export function bindMenu({
   close,
   popupId,
   onMouseLeave,
+  onMouseEnter,
   disableAutoFocus,
   _openEventType,
 }: PopupState): {
@@ -588,6 +628,7 @@ export function bindMenu({
   open: boolean
   onClose: () => void
   onMouseLeave: (event: MouseEvent) => void
+  onMouseEnter: () => void
   autoFocus?: boolean
   disableAutoFocusItem?: boolean
   disableAutoFocus?: boolean
@@ -603,6 +644,7 @@ export function bindMenu({
     open: isOpen,
     onClose: close,
     onMouseLeave,
+    onMouseEnter,
     ...(disableAutoFocus && {
       autoFocus: false,
       disableAutoFocusItem: true,
@@ -623,17 +665,20 @@ export function bindPopper({
   anchorEl,
   popupId,
   onMouseLeave,
+  onMouseEnter,
 }: PopupState): {
   id?: string
   anchorEl?: Element | null
   open: boolean
   onMouseLeave: (event: MouseEvent) => void
+  onMouseEnter: () => void
 } {
   return {
     id: popupId,
     anchorEl,
     open: isOpen,
     onMouseLeave,
+    onMouseEnter,
   }
 }
 
