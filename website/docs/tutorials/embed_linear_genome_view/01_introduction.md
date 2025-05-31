@@ -13,10 +13,9 @@ in a website.
 This tutorial will set you up with just the "linear genome view" component in a
 way that you can copy and paste onto your webpage
 
-Please note: this demo is just the basic linear genome view component and does
-not contain e.g. the synteny view, and does not read or write to the URL
-parameters. See our jbrowse-web [quickstart_web](/quickstart_web) for the "full
-application"
+Please note: this tutorial only sets up the embedded linear genome view
+component. See our jbrowse-web [quickstart_web](/docs/quickstart_web) for the
+"full application"
 
 <Figure caption="JBrowse Linear Genome View in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
