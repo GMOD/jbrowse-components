@@ -7,6 +7,7 @@ self.window = {
   fetch: self.fetch.bind(self),
   location: self.location,
   Date: self.Date,
+  removeEventListener() {},
   requestIdleCallback: cb => {
     cb()
   },
@@ -19,6 +20,7 @@ self.window = {
 }
 self.document = {
   createTextNode() {},
+  addEventListener() {},
   querySelector() {
     return { appendChild() {} }
   },
