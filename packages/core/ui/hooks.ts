@@ -84,16 +84,6 @@ export function usePopupState({
     } else {
       open(eventOrAnchorEl)
     }
-    // return {
-    //   isOpen,
-    //   setAnchorElUsed,
-    //   anchorEl,
-    //   anchorPosition,
-    //   hovered,
-    //   focused,
-    //   _openEventType: openEventType,
-    //   _childPopupState: childPopupState,
-    // } as CoreState
   }
 
   const open = (eventOrAnchorEl?: SyntheticEvent | Element) => {
