@@ -2,12 +2,9 @@ import { useEffect } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
-import {
-  bindPopover,
-  bindTrigger,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
 import { observer } from 'mobx-react'
+
+import { bindPopover, bindTrigger, usePopupState } from './hooks'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -28,11 +25,8 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
 }) {
-  const popupState = usePopupState({
-    popupId: 'viewMenu',
-    variant: 'popover',
-  })
-  const { onClick, onTouchStart, ...rest2 } = bindTrigger(popupState)
+  const popupState = usePopupState()
+  const { onClick, ...rest2 } = bindTrigger(popupState)
   const { isOpen } = popupState
   useEffect(() => {
     setOpen?.(isOpen)
@@ -46,13 +40,6 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
             event.stopPropagation()
           }
           onClick(event)
-          onClickExtra?.()
-        }}
-        onTouchStart={event => {
-          if (stopPropagation) {
-            event.stopPropagation()
-          }
-          onTouchStart(event)
           onClickExtra?.()
         }}
         {...rest2}
