@@ -31,12 +31,10 @@ const CascadingContext = createContext({
 function CascadingMenuItem({
   onClick,
   closeAfterItemClick,
-  onMouseOver,
   ...props
 }: {
   closeAfterItemClick: boolean
   onClick?: (event: React.MouseEvent<HTMLLIElement>) => void
-  onMouseOver?: (event: React.MouseEvent<HTMLLIElement>) => void
   disabled?: boolean
   children: React.ReactNode
 }) {
@@ -54,13 +52,11 @@ function CascadingMenuItem({
         }
         onClick?.(event)
       }}
-      onMouseOver={event => {
-        // Close any sibling submenus when hovering over this menu item
-        if (parentPopupState?._childPopupState) {
-          parentPopupState._childPopupState.close()
-          parentPopupState._setChildPopupState(undefined)
+      onMouseOver={() => {
+        if (parentPopupState?.childHandle) {
+          parentPopupState.childHandle.close()
+          parentPopupState.setChildHandle(undefined)
         }
-        onMouseOver?.(event)
       }}
     />
   )
@@ -81,30 +77,22 @@ function CascadingSubmenu({
 }) {
   const { parentPopupState } = useContext(CascadingContext)
   const popupState = usePopupState({
-    variant: 'popover',
     parentPopupState,
   })
-
-  const handleMouseOver = (event: React.MouseEvent) => {
-    // Close any sibling submenus at the same level when hovering
-    if (
-      parentPopupState?._childPopupState &&
-      parentPopupState._childPopupState !== popupState
-    ) {
-      parentPopupState._childPopupState.close()
-      parentPopupState._setChildPopupState(undefined)
-    }
-
-    // Use the existing bindHover functionality
-    bindHover(popupState).onMouseOver(event)
-  }
 
   return (
     <>
       <MenuItem
         {...bindFocus(popupState)}
-        onMouseOver={handleMouseOver}
-        onTouchStart={bindHover(popupState).onTouchStart}
+        onMouseOver={(event: React.MouseEvent) => {
+          if (parentPopupState?.childHandle) {
+            parentPopupState.childHandle.close()
+            parentPopupState.setChildHandle(undefined)
+          }
+
+          // Use the existing bindHover functionality
+          bindHover(popupState).onMouseOver(event)
+        }}
       >
         {Icon ? (
           <ListItemIcon>
@@ -149,6 +137,7 @@ function CascadingSubmenuHover({
 
   return (
     <CascadingContext.Provider value={context}>
+      {/* @ts-expect-error */}
       <HoverMenu {...props} {...bindMenu(popupState)} />
     </CascadingContext.Provider>
   )
@@ -175,6 +164,7 @@ function CascadingMenu({
 
   return (
     <CascadingContext.Provider value={context}>
+      {/* @ts-expect-error */}
       <Menu {...props} {...bindMenu(popupState)} />
     </CascadingContext.Provider>
   )
