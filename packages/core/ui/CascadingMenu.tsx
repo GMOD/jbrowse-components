@@ -21,9 +21,12 @@ import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 
 const CascadingContext = createContext({
-  parentPopupState: null,
-  rootPopupState: null,
-} as { parentPopupState: PopupState | null; rootPopupState: PopupState | null })
+  parentPopupState: undefined,
+  rootPopupState: undefined,
+} as {
+  parentPopupState: PopupState | undefined
+  rootPopupState: PopupState | undefined
+})
 
 function CascadingMenuItem({
   onClick,
@@ -55,7 +58,7 @@ function CascadingMenuItem({
         // Close any sibling submenus when hovering over this menu item
         if (parentPopupState?._childPopupState) {
           parentPopupState._childPopupState.close()
-          parentPopupState._setChildPopupState(null)
+          parentPopupState._setChildPopupState(undefined)
         }
         onMouseOver?.(event)
       }}
@@ -89,7 +92,7 @@ function CascadingSubmenu({
       parentPopupState._childPopupState !== popupState
     ) {
       parentPopupState._childPopupState.close()
-      parentPopupState._setChildPopupState(null)
+      parentPopupState._setChildPopupState(undefined)
     }
 
     // Use the existing bindHover functionality
