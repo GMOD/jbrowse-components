@@ -26,7 +26,6 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   [key: string]: unknown
 }) {
   const popupState = usePopupState({
-    popupId: 'viewMenu',
     variant: 'popover',
   })
   const { onClick, onTouchStart, ...rest2 } = bindTrigger(popupState)

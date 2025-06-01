@@ -67,21 +67,17 @@ function CascadingSubmenu({
   title,
   Icon,
   inset,
-  popupId,
   ...props
 }: {
   children: React.ReactNode
   title: React.ReactNode
   onMenuItemClick: Function
   Icon: React.ComponentType<SvgIconProps> | undefined
-
   inset: boolean
   menuItems: JBMenuItem[]
-  popupId: string
 }) {
   const { parentPopupState } = useContext(CascadingContext)
   const popupState = usePopupState({
-    popupId,
     variant: 'popover',
     parentPopupState,
   })
@@ -215,7 +211,6 @@ function CascadingMenuList({
           return 'subMenu' in item ? (
             <CascadingSubmenu
               key={`subMenu-${item.label}-${idx}`}
-              popupId={`subMenu-${item.label}`}
               title={item.label}
               Icon={item.icon}
               inset={hasIcon && !item.icon}

@@ -20,7 +20,6 @@ const ViewMenu = observer(function ({
   IconProps: SvgIconProps
 }) {
   const popupState = usePopupState({
-    popupId: 'viewMenu',
     variant: 'popover',
   })
   return (

@@ -68,28 +68,17 @@ export const initCoreState: CoreState = {
   _childPopupState: null,
 }
 
-// https://github.com/jcoreio/material-ui-popup-state/issues/138
-// Webpack prod build doesn't like it if we refer to React.useId conditionally,
-// but aliasing to a variable like this works
-const _react = React
-const defaultPopupId =
-  'useId' in _react
-    ? () => _react.useId()
-    : // istanbul ignore next
-      () => undefined
-
 export function usePopupState({
   parentPopupState,
-  popupId = defaultPopupId(),
   variant,
   disableAutoFocus,
 }: {
   parentPopupState?: PopupState | null | undefined
-  popupId?: string | null
   variant: Variant
   disableAutoFocus?: boolean | null | undefined
 }): PopupState {
   // Split the monolithic state into individual state variables
+  const popupId = React.useId()
   const [isOpen, setIsOpen] = useState(false)
   const [setAnchorElUsed, setSetAnchorElUsed] = useState(false)
   const [anchorEl, _setAnchorEl] = useState<Element | undefined>(undefined)
@@ -162,7 +151,7 @@ export function usePopupState({
         anchorPosition,
         setAnchorElUsed,
         setAnchorEl,
-        popupId: popupId ?? undefined,
+        popupId,
         variant,
         open,
         close,
@@ -179,12 +168,6 @@ export function usePopupState({
       } as PopupState
 
       parentPopupState._setChildPopupState(undefined)
-
-      // Close any other popups at the current level before opening this one
-      const currentChildPopupState = parentPopupState._childPopupState
-      if (currentChildPopupState && currentChildPopupState !== self) {
-        currentChildPopupState.close()
-      }
 
       // Set this popup as the child of the parent
       setTimeout(() => {
@@ -261,7 +244,7 @@ export function usePopupState({
     anchorPosition,
     setAnchorElUsed,
     setAnchorEl,
-    popupId: popupId ?? undefined,
+    popupId,
     variant,
     open,
     close,

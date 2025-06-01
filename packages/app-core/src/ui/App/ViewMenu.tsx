@@ -33,7 +33,6 @@ const ViewMenu = observer(function ({
   }
 
   const popupState = usePopupState({
-    popupId: 'viewMenu',
     variant: 'popover',
   })
 
