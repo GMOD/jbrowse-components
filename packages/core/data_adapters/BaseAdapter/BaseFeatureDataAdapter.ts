@@ -3,9 +3,7 @@ import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter'
 import { max, min, sum } from '../../util'
-import { ObservableCreate } from '../../util/rxjs'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
-import { checkStopToken } from '../../util/stopToken'
 
 import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
@@ -82,15 +80,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * sequence, and then gets the features in the region if it does.
    */
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const hasData = await this.hasDataForRefName(region.refName, opts)
-      checkStopToken(opts.stopToken)
-      if (!hasData) {
-        observer.complete()
-      } else {
-        this.getFeatures(region, opts).subscribe(observer)
-      }
-    })
+    return this.getFeatures(region, opts)
   }
 
   /**
