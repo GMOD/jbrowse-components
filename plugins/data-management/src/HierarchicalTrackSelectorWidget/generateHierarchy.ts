@@ -28,9 +28,7 @@ export function generateHierarchy({
     return []
   }
   const session = getSession(model)
-  const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
-  const viewTrackIds = new Set(view.tracks.map(f => f.configuration.trackId))
 
   // uses getConf
   for (const conf of sortConfs(
@@ -85,7 +83,6 @@ export function generateHierarchy({
       trackId: conf.trackId,
       name: getTrackName(conf, session),
       conf,
-      checked: viewTrackIds.has(conf.trackId),
       children: [],
       nestingLevel: categories.length + 1,
       type: 'track' as const,
