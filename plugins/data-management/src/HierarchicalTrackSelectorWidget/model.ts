@@ -15,6 +15,7 @@ import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 
+import type { TreeNode } from './generateHierarchy'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridRowId } from '@mui/x-data-grid'
@@ -481,6 +482,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             type: 'category' as const,
             isOpenByDefault: !self.collapsed.get(s.group),
             menuItems: s.menuItems,
+            nestingLevel: 1,
             children: generateHierarchy({
               model: self,
               trackConfs: s.tracks,
@@ -489,6 +491,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             }),
           })),
         }
+      },
+    }))
+    .views(self => ({
+      get flattenedItems() {
+        const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
+          for (const item of items) {
+            result.push(item)
+            if (item.children.length > 0 && !self.collapsed.get(item.id)) {
+              flatten(item.children, result)
+            }
+          }
+          return result
+        }
+
+        return flatten(self.hierarchy.children)
       },
     }))
     .actions(self => ({

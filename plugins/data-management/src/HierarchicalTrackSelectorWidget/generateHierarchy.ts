@@ -48,6 +48,7 @@ export interface TreeTrackNode {
   conf: AnyConfigurationModel
   checked: boolean
   children: TreeNode[] // empty
+  nestingLevel: number
   type: 'track'
 }
 
@@ -56,10 +57,21 @@ export interface TreeCategoryNode {
   id: string
   isOpenByDefault: boolean
   children: TreeNode[]
+  nestingLevel: number
   type: 'category'
 }
 
 export type TreeNode = TreeTrackNode | TreeCategoryNode
+
+interface MinimalModel {
+  filterText: string
+  activeSortTrackNames: boolean
+  activeSortCategories: boolean
+  collapsed: Map<string | number, boolean>
+  view?: {
+    tracks: { configuration: AnyConfigurationModel }[]
+  }
+}
 
 export function generateHierarchy({
   model,
@@ -68,15 +80,7 @@ export function generateHierarchy({
   noCategories,
   menuItems,
 }: {
-  model: {
-    filterText: string
-    activeSortTrackNames: boolean
-    activeSortCategories: boolean
-    collapsed: Map<string | number, boolean>
-    view?: {
-      tracks: { configuration: AnyConfigurationModel }[]
-    }
-  }
+  model: MinimalModel
   noCategories?: boolean
   menuItems?: MenuItem[]
   trackConfs: AnyConfigurationModel[]
@@ -129,6 +133,7 @@ export function generateHierarchy({
             id,
             isOpenByDefault: !collapsed.get(id),
             menuItems,
+            nestingLevel: categories.length,
             type: 'category' as const,
           }
           currLevel.children.push(n)
@@ -151,6 +156,7 @@ export function generateHierarchy({
       conf,
       checked: viewTracks.some(f => f.configuration === conf),
       children: [],
+      nestingLevel: categories.length,
       type: 'track' as const,
     })
   }

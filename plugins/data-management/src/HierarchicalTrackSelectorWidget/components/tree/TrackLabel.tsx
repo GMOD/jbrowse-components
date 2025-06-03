@@ -1,12 +1,15 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { getSession } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import { isUnsupported } from '../util'
 import TrackLabelMenu from './TrackLabelMenu'
 
-import type { NodeData } from '../util'
+import type { TreeTrackNode } from '../../generateHierarchy'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
@@ -31,20 +34,20 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
-export default function TrackLabel({ data }: { data: NodeData }) {
+const TrackLabel = observer(function TrackLabel({
+  model,
+  item,
+}: {
+  model: HierarchicalTrackSelectorModel
+  item: TreeTrackNode
+}) {
   const { classes } = useStyles()
-  const {
-    checked,
-    conf,
-    model,
-    drawerPosition,
-    id,
-    trackId,
-    name,
-    selected,
-    onChange,
-  } = data
+  const { drawerPosition } = getSession(model)
+  const { id, name, conf } = item
+  const trackId = readConfObject(conf, 'trackId')
   const description = readConfObject(conf, 'description')
+  const selected = model.selectionSet.has(trackId)
+  const checked = model.shownTrackIds.has(trackId)
   return (
     <>
       <Tooltip
@@ -68,7 +71,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
               className={classes.compactCheckbox}
               checked={checked}
               onChange={() => {
-                onChange(trackId)
+                model.view.toggleTrack(trackId)
               }}
               disabled={isUnsupported(name)}
               slotProps={{
@@ -92,4 +95,6 @@ export default function TrackLabel({ data }: { data: NodeData }) {
       <TrackLabelMenu model={model} trackId={trackId} id={id} conf={conf} />
     </>
   )
-}
+})
+
+export default TrackLabel

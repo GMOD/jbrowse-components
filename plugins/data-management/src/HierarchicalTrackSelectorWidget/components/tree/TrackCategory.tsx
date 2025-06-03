@@ -5,11 +5,13 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
-import type { NodeData } from '../util'
+import type { TreeCategoryNode } from '../../generateHierarchy'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -24,26 +26,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function Category({
-  isOpen,
-  setOpen,
-  data,
+const TrackCategory = observer(function ({
+  item,
+  model,
 }: {
-  isOpen: boolean
-  setOpen: (arg: boolean) => void
-  data: NodeData
+  item: TreeCategoryNode
+  model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { menuItems = [], name, model, id, tree } = data
+  const { menuItems = [], name, id, tree } = item
+  const isOpen = !model.collapsed.get(id)
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
         if (!menuEl) {
-          data.toggleCollapse(id)
-          setOpen(!isOpen)
+          model.toggleCategory(id)
         }
       }}
     >
@@ -112,4 +112,6 @@ export default function Category({
       ) : null}
     </div>
   )
-}
+})
+
+export default TrackCategory
