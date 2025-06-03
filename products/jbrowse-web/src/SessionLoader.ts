@@ -83,10 +83,6 @@ const SessionLoader = types
     /**
      * #volatile
      */
-    pluginsLoaded: false,
-    /**
-     * #volatile
-     */
     sessionTriaged: undefined as SessionTriagedInfo | undefined,
     /**
      * #volatile
@@ -103,11 +99,11 @@ const SessionLoader = types
     /**
      * #volatile
      */
-    runtimePlugins: [] as PluginRecord[],
+    runtimePlugins: undefined as PluginRecord[] | undefined,
     /**
      * #volatile
      */
-    sessionPlugins: [] as PluginRecord[],
+    sessionPlugins: undefined as PluginRecord[] | undefined,
     /**
      * #volatile
      */
@@ -182,7 +178,7 @@ const SessionLoader = types
      */
     get ready() {
       return Boolean(
-        this.isSessionLoaded && !self.configError && self.pluginsLoaded,
+        this.isSessionLoaded && !self.configError && this.pluginsLoaded,
       )
     },
     /**
@@ -190,6 +186,16 @@ const SessionLoader = types
      */
     get error() {
       return self.configError || self.sessionError
+    },
+    /**
+     * #getter
+     */
+    get pluginsLoaded() {
+      if (self.sessionError || self.blankSession || self.sessionSpec) {
+        // don't need session plugins for these cases
+        return Boolean(self.runtimePlugins)
+      }
+      return Boolean(self.runtimePlugins && self.sessionPlugins)
     },
     /**
      * #getter
@@ -216,12 +222,6 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    /**
-     * action
-     */
-    setPluginsLoaded(isLoaded: boolean) {
-      self.pluginsLoaded = isLoaded
-    },
     /**
      * #action
      */
@@ -273,7 +273,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    setSessionSnapshotSuccess(snap: Record<string, unknown>) {
+    setSessionSnapshot(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
     },
   }))
@@ -289,7 +289,6 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load(window.location.href)
         self.setRuntimePlugins([...runtimePlugins])
-        self.setPluginsLoaded(true)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -314,7 +313,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    async setSessionSnapshot(
+    async loadSession(
       snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
     ) {
@@ -323,7 +322,7 @@ const SessionLoader = types
         const sessionPluginsAllowed = await checkPlugins(sessionPlugins)
         if (sessionPluginsAllowed || userAcceptedConfirmation) {
           await this.fetchSessionPlugins(snap)
-          self.setSessionSnapshotSuccess(snap)
+          self.setSessionSnapshot(snap)
         } else {
           self.setSessionTriaged({
             snap,
@@ -392,8 +391,8 @@ const SessionLoader = types
       const { configSnapshot } = self
       const config = JSON.parse(JSON.stringify(configSnapshot))
       addRelativeUris(config, configUri)
-      await this.fetchPlugins(config)
       self.setConfigSnapshot(config)
+      await this.fetchPlugins(config)
     },
     /**
      * #action
@@ -405,7 +404,7 @@ const SessionLoader = types
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          return this.setSessionSnapshot(sessionSnap)
+          return this.loadSession(sessionSnap)
         }
       }
 
@@ -424,13 +423,24 @@ const SessionLoader = types
               }, 1000)
             },
           )
-          await this.setSessionSnapshot({ ...result, id: nanoid() })
+          await this.loadSession({ ...result, id: nanoid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
         }
       }
       throw new Error('Local storage session not found')
+    },
+    /**
+     * #action
+     */
+    async checkExistingSession(sessionSnapshot: Record<string, unknown>) {
+      if (!self.sessionPlugins) {
+        // session snapshot probably provided during .create() but plugins
+        // haven't been loaded yet
+        // @ts-expect-error
+        await this.loadSession(sessionSnapshot)
+      }
     },
     /**
      * #action
@@ -445,7 +455,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.setSessionSnapshot({
+      await this.loadSession({
         ...session,
         id: nanoid(),
       })
@@ -458,7 +468,7 @@ const SessionLoader = types
         // @ts-expect-error
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      await this.setSessionSnapshot({
+      await this.loadSession({
         ...session,
         id: nanoid(),
       })
@@ -521,7 +531,7 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-expect-error
       const { session } = JSON.parse(self.sessionQuery.replace(/^json-/, ''))
-      await this.setSessionSnapshot({
+      await this.loadSession({
         ...session,
         id: nanoid(),
       })
@@ -566,10 +576,8 @@ const SessionLoader = types
                   }
                 }
                 if (sessionSnapshot) {
-                  return
-                }
-
-                if (isSharedSession) {
+                  await this.checkExistingSession(sessionSnapshot)
+                } else if (isSharedSession) {
                   await this.fetchSharedSession()
                 } else if (isSpecSession) {
                   this.decodeSessionSpec()

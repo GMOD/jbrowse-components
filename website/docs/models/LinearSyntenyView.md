@@ -44,6 +44,15 @@ true
 drawCIGAR: true
 ```
 
+#### property: /
+
+```js
+// type signature
+false
+// code
+drawCIGARMatchesOnly: false
+```
+
 #### property: drawCurves
 
 ```js
@@ -107,6 +116,13 @@ setDrawCurves: (arg: boolean) => void
 ```js
 // type signature
 setDrawCIGAR: (arg: boolean) => void
+```
+
+#### action: setDrawCIGARMatchesOnly
+
+```js
+// type signature
+setDrawCIGARMatchesOnly: (arg: boolean) => void
 ```
 
 #### action: showAllRegions

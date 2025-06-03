@@ -18,7 +18,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// other
 import { findLastIndex } from '../util'
 
 import type {

@@ -4,7 +4,6 @@ import path from 'path'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 
-// local
 import { booleanize } from './util'
 
 import type { Entry } from './parseArgv'

@@ -5,11 +5,13 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
-import type { NodeData } from '../util'
+import type { TreeCategoryNode } from '../../types'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -24,26 +26,25 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function Category({
-  isOpen,
-  setOpen,
-  data,
+const TrackCategory = observer(function ({
+  item,
+  model,
 }: {
-  isOpen: boolean
-  setOpen: (arg: boolean) => void
-  data: NodeData
+  item: TreeCategoryNode
+  model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { menuItems = [], name, model, id, tree } = data
+  const { name, id } = item
+  const isOpen = !model.collapsed.get(id)
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
+        console.log('HEREE!!!', { menuEl, id, name, item })
         if (!menuEl) {
-          data.toggleCollapse(id)
-          setOpen(!isOpen)
+          model.toggleCategory(id)
         }
       }}
     >
@@ -51,11 +52,11 @@ export default function Category({
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
         <IconButton
+          className={classes.contrastColor}
           onClick={event => {
             setMenuEl(event.currentTarget)
             event.stopPropagation()
           }}
-          className={classes.contrastColor}
         >
           <MoreHorizIcon />
         </IconButton>
@@ -67,21 +68,21 @@ export default function Category({
             {
               label: 'Add to selection',
               onClick: () => {
-                const r = treeToMap(tree).get(id)
+                const r = treeToMap(item).get(id)
                 model.addToSelection(getAllChildren(r))
               },
             },
             {
               label: 'Remove from selection',
               onClick: () => {
-                const r = treeToMap(tree).get(id)
+                const r = treeToMap(item).get(id)
                 model.removeFromSelection(getAllChildren(r))
               },
             },
             {
               label: 'Show all tracks',
               onClick: () => {
-                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
                     model.view.showTrack(entry.trackId)
                   }
@@ -91,14 +92,14 @@ export default function Category({
             {
               label: 'Hide all tracks',
               onClick: () => {
-                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
                     model.view.hideTrack(entry.trackId)
                   }
                 }
               },
             },
-            ...menuItems,
+            // ...menuItems,
           ]}
           onMenuItemClick={(_event, callback) => {
             callback()
@@ -112,4 +113,6 @@ export default function Category({
       ) : null}
     </div>
   )
-}
+})
+
+export default TrackCategory

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -101,10 +101,10 @@ const Renderer = observer(function ({
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [error, setError] = useState<unknown>()
 
-  const reloadPluginManager = useCallback(
-    (
-      configSnapshot?: Record<string, unknown>,
-      sessionSnapshot?: Record<string, unknown>,
+  useEffect(() => {
+    const reloadPluginManager = (
+      configSnapshot: Record<string, unknown>,
+      sessionSnapshot: Record<string, unknown>,
     ) => {
       const newLoader = SessionLoader.create({
         configPath: loader.configPath,
@@ -124,11 +124,8 @@ const Renderer = observer(function ({
         sessionSnapshot,
       })
       setLoader(newLoader)
-    },
-    [loader],
-  )
+    }
 
-  useEffect(() => {
     try {
       if (ready) {
         setPluginManager(createPluginManager(loader, reloadPluginManager))
@@ -137,7 +134,7 @@ const Renderer = observer(function ({
       console.error(e)
       setError(e)
     }
-  }, [loader, ready, reloadPluginManager])
+  }, [loader, ready])
 
   const err = configError || error
   if (err) {

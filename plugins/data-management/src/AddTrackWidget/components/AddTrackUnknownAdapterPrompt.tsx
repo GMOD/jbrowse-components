@@ -1,4 +1,5 @@
-import { Link, Typography } from '@mui/material'
+import { ExternalLink } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackAdapterSelector from './TrackAdapterSelector'
@@ -21,21 +22,13 @@ export default function UnknownAdapterPrompt({
       <Typography className={classes.spacing}>
         JBrowse was not able to guess the adapter type for this data, but it may
         be in the list below. If not, you can{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/releases"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <ExternalLink href="https://github.com/GMOD/jbrowse-components/releases">
           check for new releases
-        </Link>{' '}
+        </ExternalLink>{' '}
         of JBrowse to see if they support this data type or{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/issues/new"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <ExternalLink href="https://github.com/GMOD/jbrowse-components/issues/new">
           file an issue
-        </Link>{' '}
+        </ExternalLink>{' '}
         and add a feature request for this data type.
       </Typography>
       <TrackAdapterSelector model={model} />

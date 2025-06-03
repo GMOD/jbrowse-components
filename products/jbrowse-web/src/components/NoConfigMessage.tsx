@@ -4,7 +4,6 @@ export default function NoConfigMessage() {
     ['test_data/config.json', 'Human basic'],
     ['test_data/config_demo.json', 'Human sample data'],
     ['test_data/sars-cov2/config.json', 'SARS-CoV2'],
-    ['test_data/tomato/config.json', 'Tomato SVs'],
     ['test_data/cfam2/config.json', 'Dog (NCBI sequence aliases adapter)'],
     ['test_data/breakpoint/config.json', 'Breakpoint'],
     ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],

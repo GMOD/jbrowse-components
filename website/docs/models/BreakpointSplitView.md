@@ -41,14 +41,7 @@ type: types.literal('BreakpointSplitView')
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(
-          types.refinement(
-            'viewHeight',
-            types.number,
-            (n: number) => n >= minHeight,
-          ),
-          defaultHeight,
-        )
+height: types.optional(types.number, defaultHeight)
 ```
 
 #### property: trackSelectorType

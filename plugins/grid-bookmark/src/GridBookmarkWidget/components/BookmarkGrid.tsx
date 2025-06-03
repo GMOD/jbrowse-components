@@ -14,7 +14,6 @@ import { makeStyles } from 'tss-react/mui'
 import { navToBookmark } from '../utils'
 
 import type { GridBookmarkModel } from '../model'
-import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(() => ({
   cell: {
@@ -73,12 +72,13 @@ const BookmarkGrid = observer(function ({
     <DataGridFlexContainer>
       <DataGrid
         density="compact"
+        disableRowSelectionOnClick
         rows={rows}
         columns={[
           {
             ...GRID_CHECKBOX_SELECTION_COL_DEF,
             width: widths[0],
-          } satisfies GridColDef<(typeof rows)[0]>,
+          },
           {
             field: 'locString',
             headerName: 'Bookmark link',
@@ -96,18 +96,18 @@ const BookmarkGrid = observer(function ({
                 {value}
               </Link>
             ),
-          } satisfies GridColDef<(typeof rows)[0]>,
+          },
           {
             field: 'label',
             headerName: 'Label',
             width: widths[2],
             editable: true,
-          } satisfies GridColDef<(typeof rows)[0]>,
+          },
           {
             field: 'assemblyName',
             headerName: 'Assembly',
             width: widths[3],
-          } satisfies GridColDef<(typeof rows)[0]>,
+          },
           {
             field: 'highlight',
             headerName: 'Highlight',
@@ -120,7 +120,7 @@ const BookmarkGrid = observer(function ({
                 }}
               />
             ),
-          } satisfies GridColDef<(typeof rows)[0]>,
+          },
         ]}
         processRowUpdate={row => {
           const target = rows[row.id]!

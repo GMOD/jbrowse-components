@@ -128,15 +128,15 @@ exports[`renders 1`] = `
                     >
                       A track or assembly hub in the Track Hub format
                       <a
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1evhbjz-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-366eis-MuiTypography-root-MuiLink-root"
                         href="https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
                         rel="noopener noreferrer"
-                        tabindex="0"
                         target="_blank"
                       >
+                         
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
                           data-testid="OpenInNewIcon"
                           focusable="false"
                           viewBox="0 0 24 24"

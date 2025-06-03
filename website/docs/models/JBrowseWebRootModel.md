@@ -78,7 +78,7 @@ setSessionDB: (sessionDB: IDBPDatabase<SessionDB>) => void
 
 ```js
 // type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
 ```
 
 #### action: setPluginsUpdated
@@ -86,6 +86,13 @@ setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOption
 ```js
 // type signature
 setPluginsUpdated: (flag: boolean) => void
+```
+
+#### action: setReloadPluginManagerCallback
+
+```js
+// type signature
+setReloadPluginManagerCallback: (callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void
 ```
 
 #### action: setDefaultSession

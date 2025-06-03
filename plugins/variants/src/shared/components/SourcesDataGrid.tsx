@@ -50,6 +50,7 @@ export default function SourcesDataGrid({
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
+        disableRowSelectionOnClick
         onRowSelectionModelChange={arg => {
           setSelected([...arg.ids])
         }}

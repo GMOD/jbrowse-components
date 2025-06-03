@@ -84,6 +84,7 @@ export default function DataGridDetails({
         />
         <DataGridFlexContainer>
           <DataGrid
+            disableRowSelectionOnClick
             rows={rows}
             rowHeight={20}
             columnHeaderHeight={35}

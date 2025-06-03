@@ -6,6 +6,7 @@ import {
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
 import { types } from 'mobx-state-tree'
+import RootConfiguration from './RootConfiguration'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -41,61 +42,8 @@ export function JBrowseConfigF({
   adminMode: boolean
 }) {
   return types.model('JBrowseConfig', {
-    configuration: ConfigurationSchema('Root', {
-      /**
-       * #slot configuration.rpc
-       */
-      rpc: RpcManager.configSchema,
-
-      /**
-       * #slot configuration.highResolutionScaling
-       */
-      highResolutionScaling: {
-        type: 'number',
-        defaultValue: 2,
-      },
-
-      formatDetails: FormatDetailsConfigSchemaFactory(),
-      formatAbout: FormatAboutConfigSchemaFactory(),
-
-      /*
-       * #slot configuration.shareURL
-       */
-      shareURL: {
-        type: 'string',
-        defaultValue: 'https://share.jbrowse.org/api/v1/',
-      },
-      /**
-       * #slot configuration.disableAnalytics
-       */
-      disableAnalytics: {
-        type: 'boolean',
-        defaultValue: false,
-      },
-
-      hierarchical: HierarchicalConfigSchemaFactory(),
-      /**
-       * #slot configuration.theme
-       */
-      theme: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-      /**
-       * #slot configuration.extraThemes
-       */
-      extraThemes: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-      /**
-       * #slot configuration.logoPath
-       */
-      logoPath: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      },
-      ...pluginManager.pluginConfigurationSchemas(),
+    configuration: RootConfiguration({
+      pluginManager,
     }),
     /**
      * #slot

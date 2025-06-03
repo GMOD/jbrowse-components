@@ -12,8 +12,8 @@ import type { SessionLoaderModel } from './SessionLoader'
 export function createPluginManager(
   model: SessionLoaderModel,
   reloadPluginManagerCallback: (
-    configSnapshot?: Record<string, unknown>,
-    sessionSnapshot?: Record<string, unknown>,
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
   ) => void,
 ) {
   // it is ready when a session has loaded and when there is no config error
@@ -25,7 +25,7 @@ export function createPluginManager(
       plugin: new P(),
       metadata: { isCore: true },
     })),
-    ...model.runtimePlugins.map(({ plugin: P, definition }) => ({
+    ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {
@@ -33,7 +33,7 @@ export function createPluginManager(
         url: definition.url,
       },
     })),
-    ...model.sessionPlugins.map(({ plugin: P, definition }) => ({
+    ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {

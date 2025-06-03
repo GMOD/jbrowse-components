@@ -16,7 +16,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           class="css-10rokvf-container"
         >
           <button
-            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-iwqq6r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
             tabindex="0"
@@ -255,7 +254,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                               autocapitalize="none"
                               autocomplete="off"
                               class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="«r5»"
+                              id="«r6»"
                               placeholder="Search for location"
                               role="combobox"
                               spellcheck="false"

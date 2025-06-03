@@ -153,7 +153,7 @@ indexed FASTA, and 2bit files.
 
 ### Adding a BAM or CRAM track
 
-For this example we will use a BAM file to add an alignments track. As with
+For this example, we will use a BAM file to add an alignments track. As with
 assemblies, you can add a track using local files or remote locations of your
 files.
 
@@ -166,7 +166,7 @@ jbrowse add-track file.cram --load copy --out /var/www/html/jbrowse
 
 This will add a track configuration entry to /var/www/html/jbrowse/config.json
 and copy the files into the folder as well. If you use --load symlink, it can
-symlink the files instead. To see more options adding the track, such as
+symlink the files instead. To see more options for adding the track, such as
 specifying a name, run `jbrowse add-track --help`.
 
 If you have JBrowse 2

@@ -16,15 +16,7 @@ const config = {
         trackId: 'GRCh38-ReferenceSequenceTrack',
         adapter: {
           type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-          faiLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-          },
-          gziLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         },
       },
       refNameAliases: {
@@ -46,28 +38,13 @@ const config = {
       category: ['Genes'],
       adapter: {
         type: 'Gff3TabixAdapter',
-        gffGzLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-        },
-        index: {
-          location: {
-            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
-          },
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
       },
       textSearching: {
         textSearchAdapter: {
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: 'gff3tabix_genes-index',
-          ixFilePath: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-          },
-          ixxFilePath: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
-          },
-          metaFilePath: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
           assemblyNames: ['GRCh38'],
         },
       },
@@ -80,10 +57,7 @@ const config = {
       category: ['Annotation'],
       adapter: {
         type: 'BigBedAdapter',
-        bigBedLocation: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
-          locationType: 'UriLocation',
-        },
+        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
       },
     },
     {
@@ -94,23 +68,10 @@ const config = {
       category: ['1000 Genomes', 'Alignments'],
       adapter: {
         type: 'CramAdapter',
-        cramLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-        },
-        craiLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai',
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
         sequenceAdapter: {
           type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-          faiLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-          },
-          gziLocation: {
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         },
       },
     },
@@ -123,14 +84,7 @@ const config = {
       category: ['1000 Genomes', 'Variants'],
       adapter: {
         type: 'VcfTabixAdapter',
-        vcfGzLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
-        },
-        index: {
-          location: {
-            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz.tbi',
-          },
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
       },
     },
     {
@@ -141,10 +95,7 @@ const config = {
       assemblyNames: ['hg38'],
       adapter: {
         type: 'BigWigAdapter',
-        bigWigLocation: {
-          uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-          locationType: 'UriLocation',
-        },
+        uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
       },
     },
   ],

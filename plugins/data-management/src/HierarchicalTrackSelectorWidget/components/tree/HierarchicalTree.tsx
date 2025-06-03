@@ -1,118 +1,151 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useRef, useState } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { VariableSizeTree } from 'react-vtree'
+import { makeStyles } from 'tss-react/mui'
 
-import Node from './TrackListNode'
+import TrackCategory from './TrackCategory'
+import TrackLabel from './TrackLabel'
+import { type HierarchicalTrackSelectorModel, getItemHeight } from '../../model'
 
-import type { TreeNode } from '../../generateHierarchy'
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { TreeNode } from '../../types'
 
-function getNodeData(
-  node: TreeNode,
-  nestingLevel: number,
-  extra: Record<string, unknown>,
-  selection: Record<string, unknown>,
-) {
-  const isLeaf = node.type === 'track'
-  const selected = isLeaf ? selection[node.trackId] : false
-  return {
-    data: {
-      defaultHeight: isLeaf ? 22 : 40,
-      isLeaf,
-      isOpenByDefault: true,
-      nestingLevel,
-      selected,
-      ...node,
-      ...extra,
-    },
-    nestingLevel,
-    node,
-  }
+const levelWidth = 10
+
+const useStyles = makeStyles()(theme => ({
+  nestingLevelMarker: {
+    position: 'absolute',
+    borderLeft: '1.5px solid #555',
+  },
+  // accordionColor set's display:flex so that the child accordionText use
+  // vertically centered text
+  accordionColor: {
+    background: theme.palette.tertiary.main,
+    color: theme.palette.tertiary.contrastText,
+    width: '100%',
+    display: 'flex',
+    paddingLeft: 5,
+  },
+}))
+
+function getLeft(item: TreeNode) {
+  return (
+    item.nestingLevel * levelWidth + (!item.children.length ? levelWidth : 0)
+  )
 }
 
-type NodeData = ReturnType<typeof getNodeData>
-
-// this is the main tree component for the hierarchical track selector in note:
-// in jbrowse-web the toolbar is position="sticky" which means the autosizer
-// includes the height of the toolbar, so we subtract the given offsets
-const HierarchicalTree = observer(function HierarchicalTree({
-  height,
-  tree,
+const TreeItem = observer(function ({
+  item,
   model,
+  itemOffset,
 }: {
-  height: number
-  tree: TreeNode
+  item: TreeNode
   model: HierarchicalTrackSelectorModel
+  itemOffset: number
 }) {
-  const { filterText, selection, view } = model
-  const treeRef = useRef<NodeData>(null)
-  const session = getSession(model)
-  const { drawerPosition } = session
-  const obj = useMemo(
-    () => Object.fromEntries(selection.map(s => [s.trackId, s])),
-    [selection],
-  )
+  const { classes } = useStyles()
+  const hasChildren = item.children.length > 0
+  const top = itemOffset
+  const { nestingLevel } = item
 
-  const extra = useMemo(
-    () => ({
-      onChange: (trackId: string) => {
-        const trackTurnedOn = view.toggleTrack(trackId)
-        if (trackTurnedOn) {
-          model.addToRecentlyUsed(trackId)
-        }
-      },
-      toggleCollapse: (pathName: string) => {
-        model.toggleCategory(pathName)
-      },
-      tree,
-      model,
-      drawerPosition,
-    }),
-    [view, model, drawerPosition, tree],
-  )
-
-  // doing this properly without ts-expect-error is tricky, react-vtree has
-  // some typescript examples that could help
-  const treeWalker = useCallback(
-    // @ts-expect-error
-    function* treeWalker() {
-      for (const child of tree.children) {
-        yield getNodeData(child, 0, extra, obj)
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      while (true) {
-        // @ts-expect-error
-        const parentMeta = yield
-
-        // @ts-expect-error
-        for (const curr of parentMeta.node.children) {
-          yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
-        }
-      }
-    },
-    [tree, extra, obj],
-  )
-
-  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
-  useEffect(() => {
-    // @ts-expect-error
-    treeRef.current.recomputeTree({
-      refreshNodes: true,
-      useDefaultHeight: true,
-    })
-  }, [tree, filterText])
   return (
-    <>
-      {/* @ts-expect-error */}
-      <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
-        {/* @ts-expect-error */}
-        {Node}
-      </VariableSizeTree>
-    </>
+    <div
+      style={{
+        position: 'absolute',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'pointer',
+        height: getItemHeight(item),
+        top,
+        left: 0,
+      }}
+    >
+      <div>
+        {new Array(nestingLevel).fill(0).map((_, idx) => (
+          <div
+            /* biome-ignore lint/suspicious/noArrayIndexKey: */
+            key={`mark-${idx}`}
+            style={{ left: idx * levelWidth, height: 40 }}
+            className={classes.nestingLevelMarker}
+          />
+        ))}
+        <div
+          style={{
+            whiteSpace: 'nowrap',
+            width: '100%',
+            position: 'absolute',
+            left: getLeft(item),
+            marginBottom: 2,
+          }}
+          className={hasChildren ? classes.accordionColor : undefined}
+        >
+          {item.type !== 'category' ? (
+            <TrackLabel model={model} item={item} />
+          ) : (
+            <TrackCategory model={model} item={item} />
+          )}
+        </div>
+      </div>
+    </div>
   )
 })
 
-export default HierarchicalTree
+const TreeView = observer(function ({
+  height,
+  model,
+}: {
+  height: number
+  model: HierarchicalTrackSelectorModel
+}) {
+  const { flattenedItems } = model
+  const parentRef = useRef(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
+    height,
+    scrollTop,
+  )
+
+  return (
+    <div
+      style={{
+        overflow: 'hidden',
+        marginLeft: 2,
+      }}
+    >
+      <div
+        ref={parentRef}
+        style={{
+          height,
+          overflowY: 'auto',
+          contain: 'strict',
+        }}
+        onScroll={e => {
+          setScrollTop((e.target as HTMLUnknownElement).scrollTop)
+        }}
+      >
+        <div
+          style={{
+            height: totalHeight,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
+            const index = startIndex + i
+            const item = flattenedItems[index]
+            return item ? (
+              <TreeItem
+                model={model}
+                key={item.id}
+                item={item}
+                itemOffset={itemOffsets[index]!}
+              />
+            ) : null
+          })}
+        </div>
+      </div>
+    </div>
+  )
+})
+
+export default TreeView

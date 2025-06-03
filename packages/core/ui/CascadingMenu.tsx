@@ -11,24 +11,22 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material'
-import HoverMenu from 'material-ui-popup-state/HoverMenu'
-import {
-  bindFocus,
-  bindHover,
-  bindMenu,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
 
+import HoverMenu from './HoverMenu'
 import { MenuItemEndDecoration } from './Menu'
+import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
 
 import type { MenuItem as JBMenuItem } from './Menu'
+import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
-import type { PopupState } from 'material-ui-popup-state/hooks'
 
 const CascadingContext = createContext({
-  parentPopupState: null,
-  rootPopupState: null,
-} as { parentPopupState: PopupState | null; rootPopupState: PopupState | null })
+  parentPopupState: undefined,
+  rootPopupState: undefined,
+} as {
+  parentPopupState: PopupState | undefined
+  rootPopupState: PopupState | undefined
+})
 
 function CascadingMenuItem({
   onClick,
@@ -36,11 +34,11 @@ function CascadingMenuItem({
   ...props
 }: {
   closeAfterItemClick: boolean
-  onClick?: Function
+  onClick?: (event: React.MouseEvent<HTMLLIElement>) => void
   disabled?: boolean
   children: React.ReactNode
 }) {
-  const { rootPopupState } = useContext(CascadingContext)
+  const { rootPopupState, parentPopupState } = useContext(CascadingContext)
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
@@ -54,6 +52,12 @@ function CascadingMenuItem({
         }
         onClick?.(event)
       }}
+      onMouseOver={() => {
+        if (parentPopupState?.childHandle) {
+          parentPopupState.childHandle.close()
+          parentPopupState.setChildHandle(undefined)
+        }
+      }}
     />
   )
 }
@@ -62,27 +66,34 @@ function CascadingSubmenu({
   title,
   Icon,
   inset,
-  popupId,
   ...props
 }: {
   children: React.ReactNode
   title: React.ReactNode
   onMenuItemClick: Function
   Icon: React.ComponentType<SvgIconProps> | undefined
-
   inset: boolean
   menuItems: JBMenuItem[]
-  popupId: string
 }) {
   const { parentPopupState } = useContext(CascadingContext)
   const popupState = usePopupState({
-    popupId,
-    variant: 'popover',
     parentPopupState,
   })
+
   return (
     <>
-      <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
+      <MenuItem
+        {...bindFocus(popupState)}
+        onMouseOver={(event: React.MouseEvent) => {
+          if (parentPopupState?.childHandle) {
+            parentPopupState.childHandle.close()
+            parentPopupState.setChildHandle(undefined)
+          }
+
+          // Use the existing bindHover functionality
+          bindHover(popupState).onMouseOver(event)
+        }}
+      >
         {Icon ? (
           <ListItemIcon>
             <Icon />
@@ -126,6 +137,7 @@ function CascadingSubmenuHover({
 
   return (
     <CascadingContext.Provider value={context}>
+      {/* @ts-expect-error */}
       <HoverMenu {...props} {...bindMenu(popupState)} />
     </CascadingContext.Provider>
   )
@@ -152,6 +164,7 @@ function CascadingMenu({
 
   return (
     <CascadingContext.Provider value={context}>
+      {/* @ts-expect-error */}
       <Menu {...props} {...bindMenu(popupState)} />
     </CascadingContext.Provider>
   )
@@ -182,22 +195,15 @@ function CascadingMenuList({
   closeAfterItemClick: boolean
   onMenuItemClick: Function
 }) {
-  function handleClick(callback: Function) {
-    return (event: React.MouseEvent<HTMLLIElement>) => {
-      onMenuItemClick(event, callback)
-    }
-  }
-
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   return (
     <>
       {menuItems
-        .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+        .toSorted((a, b) => (b.priority || 0) - (a.priority || 0))
         .map((item, idx) => {
           return 'subMenu' in item ? (
             <CascadingSubmenu
               key={`subMenu-${item.label}-${idx}`}
-              popupId={`subMenu-${item.label}`}
               title={item.label}
               Icon={item.icon}
               inset={hasIcon && !item.icon}
@@ -225,7 +231,11 @@ function CascadingMenuList({
               key={`${item.label}-${idx}`}
               closeAfterItemClick={closeAfterItemClick}
               onClick={
-                'onClick' in item ? handleClick(item.onClick) : undefined
+                'onClick' in item
+                  ? event => {
+                      onMenuItemClick(event, item.onClick)
+                    }
+                  : undefined
               }
               disabled={Boolean(item.disabled)}
             >
@@ -239,13 +249,17 @@ function CascadingMenuList({
                 secondary={item.subLabel}
                 inset={hasIcon && !item.icon}
               />
-              <div style={{ flexGrow: 1, minWidth: 10 }} />
+              <CascadingSpacer />
               <EndDecoration item={item} />
             </CascadingMenuItem>
           )
         })}
     </>
   )
+}
+
+function CascadingSpacer() {
+  return <div style={{ flexGrow: 1, minWidth: 10 }} />
 }
 
 function CascadingMenuChildren(props: {

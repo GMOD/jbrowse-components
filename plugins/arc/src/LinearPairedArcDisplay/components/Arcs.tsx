@@ -15,8 +15,6 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// local
-
 const ArcTooltip = lazy(() => import('../../ArcTooltip'))
 
 type LGV = LinearGenomeViewModel

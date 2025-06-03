@@ -7,17 +7,14 @@ import HierarchicalFab from './HierarchicalFab'
 import HierarchicalHeader from './tree/HierarchicalHeader'
 import HierarchicalTree from './tree/HierarchicalTree'
 
-import type { TreeNode } from '../generateHierarchy'
 import type { HierarchicalTrackSelectorModel } from '../model'
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests
 const AutoSizedHierarchicalTree = ({
-  tree,
   model,
   offset,
 }: {
-  tree: TreeNode
   model: HierarchicalTrackSelectorModel
   offset: number
 }) => {
@@ -27,12 +24,11 @@ const AutoSizedHierarchicalTree = ({
         <HierarchicalTree
           height={(args.height || offset) - offset}
           model={model}
-          tree={tree}
         />
       )}
     </AutoSizer>
   ) : (
-    <HierarchicalTree height={9000} model={model} tree={tree} />
+    <HierarchicalTree height={9000} model={model} />
   )
 }
 
@@ -78,7 +74,6 @@ const HierarchicalTrackSelector = observer(function ({
     <>
       <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
       <AutoSizedHierarchicalTree
-        tree={model.hierarchy}
         model={model}
         offset={toolbarHeight + headerHeight}
       />

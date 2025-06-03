@@ -2,64 +2,12 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
+import { sortConfs } from './sortUtils'
 import { matches } from './util'
 
+import type { MinimalModel, TreeNode } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-function sortConfs(
-  confs: AnyConfigurationModel[],
-  sortNames: boolean,
-  sortCategories: boolean,
-) {
-  // uses readConfObject instead of getTrackName so that the undefined
-  // reference sequence track is sorted to the top
-  const ret = confs.map(c => [
-    c,
-    readConfObject(c, 'name'),
-    readConfObject(c, 'category')?.[0] || '',
-    readConfObject(c, 'category')?.[1] || '',
-    readConfObject(c, 'category')?.[2] || '',
-  ])
-  if (sortNames) {
-    ret.sort((a, b) => a[1].localeCompare(b[1]))
-  }
-  if (sortCategories) {
-    // sort up to three sub-category levels, harder to code it to go deeper
-    // than this and likely rarely used
-    ret.sort((a, b) => {
-      if (a[2] !== b[2]) {
-        return a[2].localeCompare(b[2])
-      } else if (a[3] !== b[3]) {
-        return a[3].localeCompare(b[3])
-      } else if (a[4] !== b[4]) {
-        return a[4].localeCompare(b[4])
-      }
-      return 0
-    })
-  }
-  return ret.map(a => a[0])
-}
-
-export interface TreeTrackNode {
-  name: string
-  id: string
-  trackId: string
-  conf: AnyConfigurationModel
-  checked: boolean
-  children: TreeNode[] // empty
-  type: 'track'
-}
-
-export interface TreeCategoryNode {
-  name: string
-  id: string
-  isOpenByDefault: boolean
-  children: TreeNode[]
-  type: 'category'
-}
-
-export type TreeNode = TreeTrackNode | TreeCategoryNode
 
 export function generateHierarchy({
   model,
@@ -68,34 +16,19 @@ export function generateHierarchy({
   noCategories,
   menuItems,
 }: {
-  model: {
-    filterText: string
-    activeSortTrackNames: boolean
-    activeSortCategories: boolean
-    collapsed: Map<string | number, boolean>
-    view?: {
-      tracks: {
-        configuration: AnyConfigurationModel
-      }[]
-    }
-  }
+  model: MinimalModel
   noCategories?: boolean
   menuItems?: MenuItem[]
   trackConfs: AnyConfigurationModel[]
   extra?: string
 }): TreeNode[] {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const {
-    collapsed,
-    filterText,
-    activeSortTrackNames,
-    activeSortCategories,
-    view,
-  } = model
+  const { filterText, activeSortTrackNames, activeSortCategories, view } = model
   if (!view) {
     return []
   }
   const session = getSession(model)
+  const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
   const viewTrackIds = new Set(view.tracks.map(f => f.configuration.trackId))
 
@@ -129,7 +62,8 @@ export function generateHierarchy({
             children: [],
             name: category,
             id,
-            isOpenByDefault: !collapsed.get(id),
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            nestingLevel: (currLevel?.nestingLevel || 0) + 1,
             menuItems,
             type: 'category' as const,
           }
@@ -141,8 +75,11 @@ export function generateHierarchy({
       }
     }
 
-    const r = currLevel.children.findLastIndex(elt => !elt.children.length)
-    const idx = r === -1 ? currLevel.children.length : r + 1
+    // uses splice to try to put all leaf nodes above "category nodes" if you
+    // change the splice to a simple push and open
+    // test_data/test_order/config.json you will see the weirdness
+    const r = currLevel.children.findIndex(elt => elt.children.length)
+    const idx = r === -1 ? currLevel.children.length : r
     currLevel.children.splice(idx, 0, {
       id: [extra, conf.trackId].filter(f => !!f).join(','),
       trackId: conf.trackId,
@@ -150,6 +87,7 @@ export function generateHierarchy({
       conf,
       checked: viewTrackIds.has(conf.trackId),
       children: [],
+      nestingLevel: categories.length + 1,
       type: 'track' as const,
     })
   }
