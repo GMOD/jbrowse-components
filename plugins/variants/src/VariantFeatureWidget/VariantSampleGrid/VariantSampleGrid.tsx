@@ -119,7 +119,7 @@ export default function VariantSampleGrid(props: {
   )
 
   const s1 = new Set(['sample', 'GT'])
-  const s2 = new Set(['sample', 'genotype'])
+  const s2 = new Set(['sample', 'GT', 'genotype'])
 
   return !rows.length ? null : (
     <>
@@ -130,33 +130,28 @@ export default function VariantSampleGrid(props: {
       </BaseCard>
       <BaseCard {...props} title="Samples">
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
-
-        <Checkbox2
-          label="Show filters"
-          checked={showFilters}
-          onChange={event => {
-            setShowFilters(event.target.checked)
-          }}
-        />
-        <div style={{ marginBottom: '16px' }}>
-          <Typography variant="body2" style={{ marginBottom: '8px' }}>
-            Column Display
-          </Typography>
+        <div>
+          <Checkbox2
+            label="Show filters"
+            checked={showFilters}
+            onChange={event => {
+              setShowFilters(event.target.checked)
+            }}
+          />
           <ToggleButtonGroup
             value={columnDisplayMode}
             exclusive
+            size="small"
             onChange={(_, newValue) => {
               if (newValue !== null) {
                 setColumnDisplayMode(newValue as ColumnDisplayMode)
               }
             }}
-            size="small"
-            aria-label="column display options"
           >
-            <ToggleButton value="all">All columns</ToggleButton>
+            <ToggleButton value="all">All</ToggleButton>
             <ToggleButton value="gtOnly">GT only</ToggleButton>
             <ToggleButton value="genotypeOnly">
-              Resolved genotype only
+              GT+resolved genotype
             </ToggleButton>
           </ToggleButtonGroup>
         </div>
