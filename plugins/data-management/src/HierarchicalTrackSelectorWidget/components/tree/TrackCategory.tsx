@@ -35,7 +35,7 @@ const TrackCategory = observer(function ({
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { menuItems = [], name, id, tree } = item
+  const { name, id } = item
   const isOpen = !model.collapsed.get(id)
 
   return (

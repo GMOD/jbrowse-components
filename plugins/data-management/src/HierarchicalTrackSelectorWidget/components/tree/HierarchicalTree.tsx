@@ -42,8 +42,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function getPaddingLeft(item: TreeNode) {
-  return item.nestingLevel * width
+function getLeft(item: TreeNode) {
+  return item.nestingLevel * width + 10
 }
 
 const TreeItem = observer(function ({
@@ -59,8 +59,6 @@ const TreeItem = observer(function ({
   const hasChildren = item.children.length > 0
   const top = index * itemHeight
   const { nestingLevel } = item
-
-  console.log({ item })
   const isLeaf = !hasChildren
 
   return (
@@ -75,11 +73,15 @@ const TreeItem = observer(function ({
         top,
         left: 0,
       }}
-      onClick={() => hasChildren && model.toggleCategory(item.id)}
+      onClick={() => {
+        if (hasChildren) {
+          model.toggleCategory(item.id)
+        }
+      }}
     >
       <div
         style={{
-          marginLeft: getPaddingLeft(item),
+          marginLeft: getLeft(item),
           marginBottom: 2,
         }}
         className={hasChildren ? classes.accordionColor : undefined}
@@ -140,43 +142,36 @@ const TreeView = observer(function ({
   }, [scrollTop, height, flattenedItems.length])
 
   return (
-    <div style={{ maxWidth: '28rem', marginLeft: 'auto', marginRight: 'auto' }}>
+    <div
+      style={{
+        overflow: 'hidden',
+      }}
+    >
       <div
+        ref={parentRef}
         style={{
-          overflow: 'hidden',
+          height,
+          overflowY: 'auto',
+          contain: 'strict',
+        }}
+        onScroll={e => {
+          setScrollTop((e.target as HTMLUnknownElement).scrollTop)
         }}
       >
         <div
-          ref={parentRef}
           style={{
-            height,
-            overflowY: 'auto',
-            contain: 'strict',
-          }}
-          onScroll={e => {
-            setScrollTop((e.target as HTMLUnknownElement).scrollTop)
+            height: totalHeight,
+            width: '100%',
+            position: 'relative',
           }}
         >
-          <div
-            style={{
-              height: totalHeight,
-              width: '100%',
-              position: 'relative',
-            }}
-          >
-            {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
-              const index = startIndex + i
-              const item = flattenedItems[index]
-              return item ? (
-                <TreeItem
-                  model={model}
-                  key={item.id}
-                  item={item}
-                  index={index}
-                />
-              ) : null
-            })}
-          </div>
+          {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
+            const index = startIndex + i
+            const item = flattenedItems[index]
+            return item ? (
+              <TreeItem model={model} key={item.id} item={item} index={index} />
+            ) : null
+          })}
         </div>
       </div>
     </div>
