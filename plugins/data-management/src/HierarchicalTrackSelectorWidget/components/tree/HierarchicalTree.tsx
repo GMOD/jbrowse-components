@@ -1,118 +1,268 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
-import { VariableSizeTree } from 'react-vtree'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import { HierarchicalTrackSelectorModel } from '../../model'
 
-import Node from './TrackListNode'
-
-import type { TreeNode } from '../../generateHierarchy'
-import type { HierarchicalTrackSelectorModel } from '../../model'
-
-function getNodeData(
-  node: TreeNode,
-  nestingLevel: number,
-  extra: Record<string, unknown>,
-  selection: Record<string, unknown>,
-) {
-  const isLeaf = node.type === 'track'
-  const selected = isLeaf ? selection[node.trackId] : false
-  return {
-    data: {
-      defaultHeight: isLeaf ? 22 : 40,
-      isLeaf,
-      isOpenByDefault: true,
-      nestingLevel,
-      selected,
-      ...node,
-      ...extra,
-    },
-    nestingLevel,
-    node,
-  }
-}
-
-type NodeData = ReturnType<typeof getNodeData>
-
-// this is the main tree component for the hierarchical track selector in note:
-// in jbrowse-web the toolbar is position="sticky" which means the autosizer
-// includes the height of the toolbar, so we subtract the given offsets
-const HierarchicalTree = observer(function HierarchicalTree({
+const TreeView = ({
   height,
-  tree,
   model,
 }: {
   height: number
-  tree: TreeNode
   model: HierarchicalTrackSelectorModel
-}) {
-  const { filterText, selection, view } = model
-  const treeRef = useRef<NodeData>(null)
-  const session = getSession(model)
-  const { drawerPosition } = session
-  const obj = useMemo(
-    () => Object.fromEntries(selection.map(s => [s.trackId, s])),
-    [selection],
+}) => {
+  const [expandedItems, setExpandedItems] = useState(
+    new Set(['tracks', 'alignments', 'bigwig', 'density']),
+  )
+  const [checkedItems, setCheckedItems] = useState(
+    new Set(['volvox-sorted-bam']),
   )
 
-  const extra = useMemo(
-    () => ({
-      onChange: (trackId: string) => {
-        const trackTurnedOn = view.toggleTrack(trackId)
-        if (trackTurnedOn) {
-          model.addToRecentlyUsed(trackId)
+  // Flatten tree structure for virtualization
+  const flattenedItems = useMemo(() => {
+    const flatten = (items, result = []) => {
+      items.forEach(item => {
+        result.push(item)
+        if (item.children.length > 0 && expandedItems.has(item.id)) {
+          flatten(item.children, result)
         }
-      },
-      toggleCollapse: (pathName: string) => {
-        model.toggleCategory(pathName)
-      },
-      tree,
-      model,
-      drawerPosition,
-    }),
-    [view, model, drawerPosition, tree],
-  )
+      })
+      return result
+    }
 
-  // doing this properly without ts-expect-error is tricky, react-vtree has
-  // some typescript examples that could help
-  const treeWalker = useCallback(
-    // @ts-expect-error
-    function* treeWalker() {
-      for (const child of tree.children) {
-        yield getNodeData(child, 0, extra, obj)
-      }
+    console.log(model.hierarchy)
+    return flatten(model.hierarchy.children)
+  }, [expandedItems])
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      while (true) {
-        // @ts-expect-error
-        const parentMeta = yield
+  const parentRef = useRef(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(400)
 
-        // @ts-expect-error
-        for (const curr of parentMeta.node.children) {
-          yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
-        }
-      }
-    },
-    [tree, extra, obj],
-  )
+  const itemHeight = 28
+  const overscan = 5
 
-  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
+  // Calculate visible range
+  const { startIndex, endIndex, totalHeight } = useMemo(() => {
+    const start = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan)
+    const visibleCount = Math.ceil(containerHeight / itemHeight)
+    const end = Math.min(
+      flattenedItems.length - 1,
+      start + visibleCount + overscan * 2,
+    )
+
+    return {
+      startIndex: start,
+      endIndex: end,
+      totalHeight: flattenedItems.length * itemHeight,
+    }
+  }, [scrollTop, containerHeight, flattenedItems.length])
+
+  const handleScroll = e => {
+    setScrollTop(e.target.scrollTop)
+  }
+
   useEffect(() => {
-    // @ts-expect-error
-    treeRef.current.recomputeTree({
-      refreshNodes: true,
-      useDefaultHeight: true,
-    })
-  }, [tree, filterText])
-  return (
-    <>
-      {/* @ts-expect-error */}
-      <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
-        {/* @ts-expect-error */}
-        {Node}
-      </VariableSizeTree>
-    </>
-  )
-})
+    const updateHeight = () => {
+      if (parentRef.current) {
+        setContainerHeight(parentRef.current.clientHeight)
+      }
+    }
 
-export default HierarchicalTree
+    updateHeight()
+    window.addEventListener('resize', updateHeight)
+    return () => window.removeEventListener('resize', updateHeight)
+  }, [])
+
+  const toggleExpand = itemId => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
+  const toggleCheck = (itemId, e) => {
+    e.stopPropagation()
+    setCheckedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
+  const TreeItem = ({ item, index }) => {
+    const isExpanded = expandedItems.has(item.id)
+    const isChecked = checkedItems.has(item.id)
+    const hasChildren = item.children.length > 0
+    const top = index * itemHeight
+
+    const getItemStyle = () => {
+      if (item.type === 'category') {
+        return {
+          backgroundColor: '#0d9488',
+          color: 'white',
+          fontWeight: 500,
+        }
+      }
+      return {
+        backgroundColor: '#f9fafb',
+        color: '#1f2937',
+        ':hover': {
+          backgroundColor: '#f3f4f6',
+        },
+      }
+    }
+
+    const getPaddingLeft = () => {
+      if (item.type === 'category') return 8
+      return item.depth === 1 ? 32 : 56
+    }
+
+    const baseStyle = getItemStyle()
+    const iconColor =
+      item.type === 'section' || item.type === 'subsection'
+        ? 'white'
+        : '#4b5563'
+    const textColor =
+      item.type === 'section' || item.type === 'subsection'
+        ? 'white'
+        : '#1f2937'
+    const moreIconColor =
+      item.type === 'section' || item.type === 'subsection'
+        ? 'white'
+        : '#9ca3af'
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          borderBottom: '1px solid #e5e7eb',
+          height: `${itemHeight}px`,
+          top: `${top}px`,
+          left: 0,
+          ...baseStyle,
+        }}
+        onClick={() => hasChildren && toggleExpand(item.id)}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            paddingTop: '0.25rem',
+            paddingBottom: '0.25rem',
+            paddingLeft: `${getPaddingLeft()}px`,
+            paddingRight: '0.5rem',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              minWidth: 0,
+              flex: 1,
+            }}
+          >
+            {hasChildren && (
+              <div style={{ flexShrink: 0 }}>
+                {isExpanded ? (
+                  <ArrowDropDownIcon style={{ color: iconColor }} />
+                ) : (
+                  <ArrowRightIcon style={{ color: iconColor }} />
+                )}
+              </div>
+            )}
+
+            {item.type !== 'category' && (
+              <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={e => toggleCheck(item.id, e)}
+                style={{
+                  width: '0.75rem',
+                  height: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  flexShrink: 0,
+                }}
+                onClick={e => e.stopPropagation()}
+              />
+            )}
+
+            <span
+              style={{
+                fontSize: '0.75rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                color: textColor,
+              }}
+            >
+              {item.name}
+            </span>
+
+            <div style={{ flexShrink: 0, marginLeft: 'auto' }}>
+              <MoreHorizIcon style={{ color: moreIconColor }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ maxWidth: '28rem', marginLeft: 'auto', marginRight: 'auto' }}>
+      <div
+        style={{
+          backgroundColor: 'white',
+          boxShadow:
+            '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          border: '1px solid #d1d5db',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          ref={parentRef}
+          style={{
+            height,
+            overflowY: 'auto',
+            backgroundColor: 'white',
+            contain: 'strict',
+          }}
+          onScroll={handleScroll}
+        >
+          <div
+            style={{
+              height: `${totalHeight}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
+              const index = startIndex + i
+              const item = flattenedItems[index]
+              if (!item) return null
+
+              return <TreeItem key={item.id} item={item} index={index} />
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default TreeView
