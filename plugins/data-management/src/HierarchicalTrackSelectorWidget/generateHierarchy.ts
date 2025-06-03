@@ -36,6 +36,7 @@ export function generateHierarchy({
   const session = getSession(model)
   const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
+  console.log('here', [...collapsed])
 
   // uses getConf
   for (const conf of sortConfs(
@@ -67,9 +68,8 @@ export function generateHierarchy({
             children: [],
             name: category,
             id,
-            isOpenByDefault: !collapsed.get(id),
+            nestingLevel: (currLevel?.nestingLevel || 0) + 1,
             menuItems,
-            nestingLevel: categories.length - 1,
             type: 'category' as const,
           }
           currLevel.children.push(n)
@@ -92,7 +92,7 @@ export function generateHierarchy({
       conf,
       checked: viewTracks.some(f => f.configuration === conf),
       children: [],
-      nestingLevel: categories.length,
+      nestingLevel: categories.length + 1,
       type: 'track' as const,
     })
   }

@@ -304,6 +304,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleCategory(pathName: string) {
+        console.log({ pathName })
         self.collapsed.set(pathName, !self.collapsed.get(pathName))
       },
       /**
@@ -474,13 +475,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
-          isOpenByDefault: true,
           type: 'category' as const,
           children: self.allTracks.map(s => ({
             name: s.group,
             id: s.group,
             type: 'category' as const,
-            isOpenByDefault: !self.collapsed.get(s.group),
             menuItems: s.menuItems,
             nestingLevel: 1,
             children: generateHierarchy({
@@ -495,9 +494,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
+        console.log('wow')
         const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
           for (const item of items) {
             result.push(item)
+            console.log(self.collapsed.get(item.id), item.id)
             if (item.children.length > 0 && !self.collapsed.get(item.id)) {
               flatten(item.children, result)
             }

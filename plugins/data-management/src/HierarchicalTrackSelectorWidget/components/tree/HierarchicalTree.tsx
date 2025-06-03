@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 
 const defaultItemHeight = 20
 const categoryItemHeight = 32
-const width = 10
+const levelWidth = 10
 const overscan = 5
 
 // Function to determine the height of an item based on its type
@@ -49,7 +49,9 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 function getLeft(item: TreeNode) {
-  return item.nestingLevel * width + 10
+  return (
+    item.nestingLevel * levelWidth + (!item.children.length ? levelWidth : 0)
+  )
 }
 
 const TreeItem = observer(function ({
@@ -82,42 +84,31 @@ const TreeItem = observer(function ({
         top,
         left: 0,
       }}
-      onClick={() => {
-        if (hasChildren) {
-          model.toggleCategory(item.id)
-        }
-      }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          left: getLeft(item),
-          marginBottom: 2,
-        }}
-        className={hasChildren ? classes.accordionColor : undefined}
-      >
-        <div>
-          {new Array(nestingLevel).fill(0).map((_, idx) => (
-            <div
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              key={`mark-${idx}`}
-              className={classes.nestingLevelMarker}
-            />
-          ))}
+      <div>
+        {new Array(nestingLevel).fill(0).map((_, idx) => (
           <div
-            style={{
-              whiteSpace: 'nowrap',
-              width: '100%',
-            }}
-          >
-            <div className={!isLeaf ? classes.accordionColor : undefined}>
-              {isLeaf ? (
-                <TrackLabel model={model} item={item} />
-              ) : (
-                <TrackCategory model={model} item={item} />
-              )}
-            </div>
-          </div>
+            /* biome-ignore lint/suspicious/noArrayIndexKey: */
+            key={`mark-${idx}`}
+            style={{ left: idx * levelWidth + 4, height: 32 }}
+            className={classes.nestingLevelMarker}
+          />
+        ))}
+        <div
+          style={{
+            whiteSpace: 'nowrap',
+            width: '100%',
+            position: 'absolute',
+            left: getLeft(item),
+            marginBottom: 2,
+          }}
+          className={hasChildren ? classes.accordionColor : undefined}
+        >
+          {isLeaf ? (
+            <TrackLabel model={model} item={item} />
+          ) : (
+            <TrackCategory model={model} item={item} />
+          )}
         </div>
       </div>
     </div>

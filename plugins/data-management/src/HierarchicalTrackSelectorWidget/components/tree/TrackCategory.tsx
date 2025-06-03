@@ -42,6 +42,7 @@ const TrackCategory = observer(function ({
     <div
       className={classes.accordionText}
       onClick={() => {
+        console.log('HEREE!!!', { menuEl, id, name, item })
         if (!menuEl) {
           model.toggleCategory(id)
         }
@@ -51,11 +52,11 @@ const TrackCategory = observer(function ({
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
         <IconButton
+          className={classes.contrastColor}
           onClick={event => {
             setMenuEl(event.currentTarget)
             event.stopPropagation()
           }}
-          className={classes.contrastColor}
         >
           <MoreHorizIcon />
         </IconButton>

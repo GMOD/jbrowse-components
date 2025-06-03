@@ -14,7 +14,6 @@ export interface TreeTrackNode {
 export interface TreeCategoryNode {
   name: string
   id: string
-  isOpenByDefault: boolean
   children: TreeNode[]
   nestingLevel: number
   type: 'category'
