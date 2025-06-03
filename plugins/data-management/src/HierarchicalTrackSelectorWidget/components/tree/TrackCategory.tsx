@@ -67,21 +67,21 @@ const TrackCategory = observer(function ({
             {
               label: 'Add to selection',
               onClick: () => {
-                const r = treeToMap(tree).get(id)
+                const r = treeToMap(item).get(id)
                 model.addToSelection(getAllChildren(r))
               },
             },
             {
               label: 'Remove from selection',
               onClick: () => {
-                const r = treeToMap(tree).get(id)
+                const r = treeToMap(item).get(id)
                 model.removeFromSelection(getAllChildren(r))
               },
             },
             {
               label: 'Show all tracks',
               onClick: () => {
-                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
                     model.view.showTrack(entry.trackId)
                   }
@@ -91,14 +91,14 @@ const TrackCategory = observer(function ({
             {
               label: 'Hide all tracks',
               onClick: () => {
-                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
                     model.view.hideTrack(entry.trackId)
                   }
                 }
               },
             },
-            ...menuItems,
+            // ...menuItems,
           ]}
           onMenuItemClick={(_event, callback) => {
             callback()

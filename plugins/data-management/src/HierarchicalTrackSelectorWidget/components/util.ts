@@ -1,24 +1,5 @@
-import type { TreeNode } from '../generateHierarchy'
-import type { HierarchicalTrackSelectorModel } from '../model'
+import type { TreeNode } from '../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
-
-export interface NodeData {
-  nestingLevel: number
-  checked: boolean
-  conf: AnyConfigurationModel
-  drawerPosition: unknown
-  id: string
-  trackId: string
-  isLeaf: boolean
-  name: string
-  onChange: (trackId: string) => void
-  toggleCollapse: (arg: string) => void
-  tree: TreeNode
-  selected: boolean
-  menuItems?: MenuItem[]
-  model: HierarchicalTrackSelectorModel
-}
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   return subtree?.type === 'category'

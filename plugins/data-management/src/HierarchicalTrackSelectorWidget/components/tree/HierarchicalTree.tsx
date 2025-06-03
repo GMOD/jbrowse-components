@@ -154,11 +154,11 @@ const TreeView = observer(function ({
       while (low <= high) {
         const mid = Math.floor((low + high) / 2)
         if (
-          offsets[mid] <= offset &&
-          (mid === offsets.length - 1 || offsets[mid + 1] > offset)
+          offsets[mid]! <= offset &&
+          (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
         ) {
           return mid
-        } else if (offsets[mid] < offset) {
+        } else if (offsets[mid]! < offset) {
           low = mid + 1
         } else {
           high = mid - 1
@@ -173,7 +173,7 @@ const TreeView = observer(function ({
 
     // Estimate the end index (this is an approximation)
     let end = start
-    let currentHeight = offsets[start]
+    let currentHeight = offsets[start]!
     const targetHeight =
       scrollTop +
       height +
@@ -181,7 +181,7 @@ const TreeView = observer(function ({
 
     while (end < flattenedItems.length - 1 && currentHeight < targetHeight) {
       end++
-      currentHeight = offsets[end] + getItemHeight(flattenedItems[end])
+      currentHeight = offsets[end]! + getItemHeight(flattenedItems[end]!)
     }
 
     return {
