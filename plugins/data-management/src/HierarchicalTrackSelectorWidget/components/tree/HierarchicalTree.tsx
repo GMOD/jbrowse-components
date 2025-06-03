@@ -1,38 +1,17 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackCategory from './TrackCategory'
 import TrackLabel from './TrackLabel'
+import { type HierarchicalTrackSelectorModel, getItemHeight } from '../../model'
 
 import type { TreeNode } from '../../types'
-import type { HierarchicalTrackSelectorModel } from '../../model'
-import { observer } from 'mobx-react'
 
-const defaultItemHeight = 20
-const categoryItemHeight = 32
 const levelWidth = 10
-const overscan = 5
-
-// Function to determine the height of an item based on its type
-function getItemHeight(item: TreeNode) {
-  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
-}
 
 const useStyles = makeStyles()(theme => ({
-  // this accordionBase element's small padding is used to give a margin to
-  // accordionColor it a "margin" because the virtualized elements can't really
-  // use margin in a conventional way (it doesn't affect layout)
-  accordionBase: {
-    display: 'flex',
-  },
-
-  accordionCard: {
-    padding: 3,
-    cursor: 'pointer',
-    display: 'flex',
-  },
-
   nestingLevelMarker: {
     position: 'absolute',
     borderLeft: '1.5px solid #555',
@@ -56,21 +35,17 @@ function getLeft(item: TreeNode) {
 
 const TreeItem = observer(function ({
   item,
-  index,
   model,
-  itemOffsets,
+  itemOffset,
 }: {
   item: TreeNode
-  index: number
   model: HierarchicalTrackSelectorModel
-  itemOffsets: number[]
+  itemOffset: number
 }) {
   const { classes } = useStyles()
   const hasChildren = item.children.length > 0
-  const top = itemOffsets[index]
+  const top = itemOffset
   const { nestingLevel } = item
-  const isLeaf = !hasChildren
-  const currentItemHeight = getItemHeight(item)
 
   return (
     <div
@@ -80,7 +55,7 @@ const TreeItem = observer(function ({
         display: 'flex',
         alignItems: 'center',
         cursor: 'pointer',
-        height: currentItemHeight,
+        height: getItemHeight(item),
         top,
         left: 0,
       }}
@@ -90,7 +65,7 @@ const TreeItem = observer(function ({
           <div
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
             key={`mark-${idx}`}
-            style={{ left: idx * levelWidth + 4, height: 32 }}
+            style={{ left: idx * levelWidth, height: 40 }}
             className={classes.nestingLevelMarker}
           />
         ))}
@@ -104,7 +79,7 @@ const TreeItem = observer(function ({
           }}
           className={hasChildren ? classes.accordionColor : undefined}
         >
-          {isLeaf ? (
+          {item.type !== 'category' ? (
             <TrackLabel model={model} item={item} />
           ) : (
             <TrackCategory model={model} item={item} />
@@ -125,68 +100,16 @@ const TreeView = observer(function ({
   const { flattenedItems } = model
   const parentRef = useRef(null)
   const [scrollTop, setScrollTop] = useState(0)
-
-  // Calculate visible range with variable height items
-  const { startIndex, endIndex, totalHeight, itemOffsets } = useMemo(() => {
-    // Calculate the cumulative height offsets for each item
-    const offsets: number[] = []
-    let cumulativeHeight = 0
-
-    flattenedItems.forEach(item => {
-      offsets.push(cumulativeHeight)
-      cumulativeHeight += getItemHeight(item)
-    })
-
-    // Binary search to find the start index based on scroll position
-    const findIndexAtOffset = (offset: number) => {
-      let low = 0
-      let high = offsets.length - 1
-
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2)
-        if (
-          offsets[mid]! <= offset &&
-          (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
-        ) {
-          return mid
-        } else if (offsets[mid]! < offset) {
-          low = mid + 1
-        } else {
-          high = mid - 1
-        }
-      }
-
-      return 0
-    }
-
-    // Find the approximate start index
-    const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
-
-    // Estimate the end index (this is an approximation)
-    let end = start
-    let currentHeight = offsets[start]!
-    const targetHeight =
-      scrollTop +
-      height +
-      overscan * Math.min(categoryItemHeight, defaultItemHeight)
-
-    while (end < flattenedItems.length - 1 && currentHeight < targetHeight) {
-      end++
-      currentHeight = offsets[end]! + getItemHeight(flattenedItems[end]!)
-    }
-
-    return {
-      startIndex: start,
-      endIndex: end,
-      totalHeight: cumulativeHeight,
-      itemOffsets: offsets,
-    }
-  }, [scrollTop, height, flattenedItems])
+  const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
+    height,
+    scrollTop,
+  )
 
   return (
     <div
       style={{
         overflow: 'hidden',
+        marginLeft: 2,
       }}
     >
       <div
@@ -215,8 +138,7 @@ const TreeView = observer(function ({
                 model={model}
                 key={item.id}
                 item={item}
-                index={index}
-                itemOffsets={itemOffsets}
+                itemOffset={itemOffsets[index]!}
               />
             ) : null
           })}

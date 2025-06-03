@@ -27,6 +27,10 @@ type MaybeBoolean = boolean | undefined
 
 type MaybeCollapsedKeys = [string, boolean][] | undefined
 
+const defaultItemHeight = 20
+const categoryItemHeight = 32
+const overscan = 5
+
 // for settings that are config dependent
 function keyConfigPostFix() {
   return typeof window !== 'undefined'
@@ -37,6 +41,11 @@ function keyConfigPostFix() {
         .filter(f => !!f)
         .join('-')
     : 'empty'
+}
+
+// Function to determine the height of an item based on its type
+export function getItemHeight(item: TreeNode) {
+  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -304,7 +313,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleCategory(pathName: string) {
-        console.log({ pathName })
         self.collapsed.set(pathName, !self.collapsed.get(pathName))
       },
       /**
@@ -481,7 +489,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             id: s.group,
             type: 'category' as const,
             menuItems: s.menuItems,
-            nestingLevel: 1,
+            nestingLevel: 0,
             children: generateHierarchy({
               model: self,
               trackConfs: s.tracks,
@@ -494,11 +502,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
-        console.log('wow')
         const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
           for (const item of items) {
             result.push(item)
-            console.log(self.collapsed.get(item.id), item.id)
             if (item.children.length > 0 && !self.collapsed.get(item.id)) {
               flatten(item.children, result)
             }
@@ -507,6 +513,72 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         }
 
         return flatten(self.hierarchy.children)
+      },
+      get flattenedItemOffsets() {
+        const offsets: number[] = []
+        let cumulativeHeight = 0
+
+        for (let i = 0, l = this.flattenedItems.length; i < l; i++) {
+          offsets.push(cumulativeHeight)
+          cumulativeHeight +=
+            getItemHeight(this.flattenedItems[i]!) +
+            (this.flattenedItems[i]!.type === 'category' ? 5 : 0)
+        }
+        return { cumulativeHeight, offsets }
+      },
+    }))
+    .views(self => ({
+      itemOffsets(height: number, scrollTop: number) {
+        const { flattenedItems, flattenedItemOffsets } = self
+        const { cumulativeHeight, offsets } = flattenedItemOffsets
+
+        // Binary search to find the start index based on scroll position
+        const findIndexAtOffset = (offset: number) => {
+          let low = 0
+          let high = offsets.length - 1
+
+          while (low <= high) {
+            const mid = Math.floor((low + high) / 2)
+            if (
+              offsets[mid]! <= offset &&
+              (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
+            ) {
+              return mid
+            } else if (offsets[mid]! < offset) {
+              low = mid + 1
+            } else {
+              high = mid - 1
+            }
+          }
+
+          return 0
+        }
+
+        // Find the approximate start index
+        const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
+
+        // Estimate the end index (this is an approximation)
+        let end = start
+        let currentHeight = offsets[start]!
+        const targetHeight =
+          scrollTop +
+          height +
+          overscan * Math.min(categoryItemHeight, defaultItemHeight)
+
+        while (
+          end < flattenedItems.length - 1 &&
+          currentHeight < targetHeight
+        ) {
+          end++
+          currentHeight = offsets[end]! + getItemHeight(flattenedItems[end]!)
+        }
+
+        return {
+          startIndex: start,
+          endIndex: end,
+          totalHeight: cumulativeHeight,
+          itemOffsets: offsets,
+        }
       },
     }))
     .actions(self => ({

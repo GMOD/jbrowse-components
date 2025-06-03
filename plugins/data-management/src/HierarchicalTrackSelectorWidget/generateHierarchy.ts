@@ -2,12 +2,12 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import { matches } from './util'
 import { sortConfs } from './sortUtils'
+import { matches } from './util'
 
+import type { MinimalModel, TreeNode } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { MinimalModel, TreeNode } from './types'
 
 export function generateHierarchy({
   model,
@@ -23,20 +23,13 @@ export function generateHierarchy({
   extra?: string
 }): TreeNode[] {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const {
-    collapsed,
-    filterText,
-    activeSortTrackNames,
-    activeSortCategories,
-    view,
-  } = model
+  const { filterText, activeSortTrackNames, activeSortCategories, view } = model
   if (!view) {
     return []
   }
   const session = getSession(model)
   const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
-  console.log('here', [...collapsed])
 
   // uses getConf
   for (const conf of sortConfs(
@@ -68,6 +61,7 @@ export function generateHierarchy({
             children: [],
             name: category,
             id,
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             nestingLevel: (currLevel?.nestingLevel || 0) + 1,
             menuItems,
             type: 'category' as const,
