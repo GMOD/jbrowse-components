@@ -5,13 +5,12 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { Typography } from '@mui/material'
+import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 import Checkbox2 from '../Checkbox2'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
-import { areSetsEqual } from './util'
 import { makeSimpleAltString } from '../../VcfFeature/util'
 
 import type {
@@ -23,17 +22,19 @@ import type {
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
-export default function VariantSampleGrid(props: {
-  feature: SimpleFeatureSerialized
-  descriptions?: VariantFieldDescriptions | null
-}) {
-  const { feature, descriptions = {} } = props
-  const [filter, setFilter] = useState<Filters>({})
-  const [showOnlyGenotypeColumns, setShowOnlyGenotypeColumns] = useState(true)
-  const [showFilters, setShowFilters] = useState(false)
-  const samples = (feature.samples || {}) as Record<string, InfoFields>
-  const ALT = feature.ALT as string[]
-  const REF = feature.REF as string
+/**
+ * Process sample data and apply filters to generate rows for the sample grid
+ */
+function getSampleGridRows(
+  samples: Record<string, InfoFields>,
+  REF: string,
+  ALT: string[],
+  filter: Filters,
+): {
+  rows: VariantSampleGridRow[]
+  error: unknown
+  preFilteredRows: readonly (readonly [string, Record<string, any>])[]
+} {
   const preFilteredRows = Object.entries(samples).map(
     ([key, val]) =>
       [
@@ -82,7 +83,31 @@ export default function VariantSampleGrid(props: {
     error = e
   }
 
-  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
+  return { rows, error, preFilteredRows }
+}
+
+// Define a type for the column display mode
+type ColumnDisplayMode = 'all' | 'gtOnly' | 'genotypeOnly'
+
+export default function VariantSampleGrid(props: {
+  feature: SimpleFeatureSerialized
+  descriptions?: VariantFieldDescriptions | null
+}) {
+  const { feature, descriptions = {} } = props
+  const [filter, setFilter] = useState<Filters>({})
+  const [columnDisplayMode, setColumnDisplayMode] =
+    useState<ColumnDisplayMode>('all')
+  const [showFilters, setShowFilters] = useState(false)
+  const samples = (feature.samples || {}) as Record<string, InfoFields>
+  const ALT = feature.ALT as string[]
+  const REF = feature.REF as string
+
+  // Use the getSampleGridRows function to process the data
+  const { rows, error } = getSampleGridRows(samples, REF, ALT, filter)
+
+  const colKeySet = new Set(['sample', ...Object.keys(rows[0] || {})])
+  colKeySet.delete('id')
+  const keys = [...colKeySet]
   const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
   const columns = keys.map(
     (field, index) =>
@@ -93,12 +118,10 @@ export default function VariantSampleGrid(props: {
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
-  const s1 = new Set(['sample', 'GT', 'genotype'])
-  const s2 = new Set(keys)
+  const s1 = new Set(['sample', 'GT'])
+  const s2 = new Set(['sample', 'genotype'])
 
-  //  helps avoid
-  // https://github.com/mui-org/material-ui-x/issues/1197
-  return !preFilteredRows.length ? null : (
+  return !rows.length ? null : (
     <>
       <BaseCard {...props} title="Genotype frequencies">
         <ErrorBoundary FallbackComponent={ErrorMessage}>
@@ -115,15 +138,28 @@ export default function VariantSampleGrid(props: {
             setShowFilters(event.target.checked)
           }}
         />
-        {areSetsEqual(s1, s2) ? null : (
-          <Checkbox2
-            label="Show only genotype columns"
-            checked={showOnlyGenotypeColumns}
-            onChange={event => {
-              setShowOnlyGenotypeColumns(event.target.checked)
+        <div style={{ marginBottom: '16px' }}>
+          <Typography variant="body2" style={{ marginBottom: '8px' }}>
+            Column Display
+          </Typography>
+          <ToggleButtonGroup
+            value={columnDisplayMode}
+            exclusive
+            onChange={(_, newValue) => {
+              if (newValue !== null) {
+                setColumnDisplayMode(newValue as ColumnDisplayMode)
+              }
             }}
-          />
-        )}
+            size="small"
+            aria-label="column display options"
+          >
+            <ToggleButton value="all">All columns</ToggleButton>
+            <ToggleButton value="gtOnly">GT only</ToggleButton>
+            <ToggleButton value="genotypeOnly">
+              Resolved genotype only
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </div>
 
         {showFilters ? (
           <SampleFilters
@@ -138,9 +174,11 @@ export default function VariantSampleGrid(props: {
             rows={rows}
             hideFooter={rows.length < 100}
             columns={
-              showOnlyGenotypeColumns
+              columnDisplayMode === 'gtOnly'
                 ? columns.filter(f => s1.has(f.field))
-                : columns
+                : columnDisplayMode === 'genotypeOnly'
+                  ? columns.filter(f => s2.has(f.field))
+                  : columns
             }
             rowHeight={25}
             columnHeaderHeight={35}
