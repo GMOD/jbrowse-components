@@ -15,7 +15,7 @@ import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 
-import type { TreeNode } from './generateHierarchy'
+import type { TreeNode } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridRowId } from '@mui/x-data-grid'

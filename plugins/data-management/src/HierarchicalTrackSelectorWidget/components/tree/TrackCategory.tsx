@@ -10,7 +10,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
-import type { TreeCategoryNode } from '../../generateHierarchy'
+import type { TreeCategoryNode } from '../../types'
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
