@@ -2,7 +2,6 @@ import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -27,7 +26,6 @@ const BaseLinearDisplay = observer(function (props: {
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
   const ref = useRef<HTMLDivElement>(null)
   const [clientRect, setClientRect] = useState<DOMRect>()
   const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
@@ -36,6 +34,7 @@ const BaseLinearDisplay = observer(function (props: {
   const { model, children } = props
   const { TooltipComponent, DisplayMessageComponent, height } = model
   const items = model.contextMenuItems()
+  const open = Boolean(contextCoord) && items.length > 0
   return (
     <div
       ref={ref}
@@ -79,35 +78,34 @@ const BaseLinearDisplay = observer(function (props: {
         />
       </Suspense>
 
-      <Menu
-        open={Boolean(contextCoord) && items.length > 0}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setContextCoord(undefined)
-        }}
-        onClose={() => {
-          setContextCoord(undefined)
-          model.setContextMenuFeature(undefined)
-        }}
-        slotProps={{
-          transition: {
-            onExit: () => {
-              setContextCoord(undefined)
-              model.setContextMenuFeature(undefined)
+      {open ? (
+        <Menu
+          open
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setContextCoord(undefined)
+          }}
+          onClose={() => {
+            setContextCoord(undefined)
+            model.setContextMenuFeature(undefined)
+          }}
+          slotProps={{
+            transition: {
+              onExit: () => {
+                setContextCoord(undefined)
+                model.setContextMenuFeature(undefined)
+              },
             },
-          },
-        }}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          contextCoord
-            ? { top: contextCoord[1], left: contextCoord[0] }
-            : undefined
-        }
-        style={{
-          zIndex: theme.zIndex.tooltip,
-        }}
-        menuItems={items}
-      />
+          }}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            contextCoord
+              ? { top: contextCoord[1], left: contextCoord[0] }
+              : undefined
+          }
+          menuItems={items}
+        />
+      ) : null}
     </div>
   )
 })

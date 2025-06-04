@@ -17,7 +17,9 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import copy from 'copy-to-clipboard'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
@@ -152,6 +154,15 @@ function stateModelFactory() {
           }
         }
         return undefined
+      },
+      /**
+       * #method
+       */
+      copyInfoToClipboard(feature: Feature) {
+        const { uniqueId, ...rest } = feature.toJSON()
+        const session = getSession(self)
+        copy(JSON.stringify(rest, null, 4))
+        session.notify('Copied to clipboard', 'success')
       },
     }))
     .views(self => ({
@@ -336,30 +347,32 @@ function stateModelFactory() {
        * #method
        */
       contextMenuItems(): MenuItem[] {
-        return [
-          ...(self.contextMenuFeature
-            ? [
-                {
-                  label: 'Open feature details',
-                  icon: MenuOpenIcon,
-                  onClick: () => {
-                    if (self.contextMenuFeature) {
-                      self.selectFeature(self.contextMenuFeature)
-                    }
-                  },
+        const feat = self.contextMenuFeature
+        return feat
+          ? [
+              {
+                label: 'Open feature details',
+                icon: MenuOpenIcon,
+                onClick: () => {
+                  self.selectFeature(feat)
                 },
-                {
-                  label: 'Zoom to feature',
-                  icon: CenterFocusStrongIcon,
-                  onClick: () => {
-                    if (self.contextMenuFeature) {
-                      self.navToFeature(self.contextMenuFeature)
-                    }
-                  },
+              },
+              {
+                label: 'Zoom to feature',
+                icon: CenterFocusStrongIcon,
+                onClick: () => {
+                  self.navToFeature(feat)
                 },
-              ]
-            : []),
-        ]
+              },
+              {
+                label: 'Copy info to clipboard',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  self.copyInfoToClipboard(feat)
+                },
+              },
+            ]
+          : []
       },
       /**
        * #method
