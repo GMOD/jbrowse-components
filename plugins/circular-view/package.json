@@ -2,10 +2,7 @@
   "name": "@jbrowse/plugin-circular-view",
   "version": "3.5.0",
   "description": "JBrowse 2 circular view",
-  "keywords": [
-    "jbrowse",
-    "jbrowse2"
-  ],
+  "keywords": ["jbrowse", "jbrowse2"],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
@@ -18,10 +15,7 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "files": [
-    "dist",
-    "esm"
-  ],
+  "files": ["dist", "esm"],
   "scripts": {
     "build": "npm-run-all build:*",
     "test": "cd ../..; jest --passWithNoTests plugins/circular-view",

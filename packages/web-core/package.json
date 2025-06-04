@@ -2,13 +2,7 @@
   "name": "@jbrowse/web-core",
   "version": "3.5.0",
   "description": "JBrowse 2 code shared between web-app type products",
-  "keywords": [
-    "jbrowse",
-    "jbrowse2",
-    "bionode",
-    "biojs",
-    "genomics"
-  ],
+  "keywords": ["jbrowse", "jbrowse2", "bionode", "biojs", "genomics"],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
@@ -24,10 +18,7 @@
   "srcModule": "src/index.ts",
   "main": "src/index.ts",
   "module": "",
-  "files": [
-    "dist",
-    "esm"
-  ],
+  "files": ["dist", "esm"],
   "scripts": {
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",

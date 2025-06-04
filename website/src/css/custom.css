@@ -6,7 +6,7 @@
  */
 
 /* You can override the default Infima variables here. */
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
 
 :root {
   --ifm-color-primary: #25c2a0;
@@ -19,7 +19,7 @@
   --ifm-code-font-size: 95%;
   --ifm-navbar-background-color: #0d223f;
   --ifm-navbar-link-color: white;
-  --ifm-font-family-base: 'Roboto';
+  --ifm-font-family-base: "Roboto";
 }
 
 .docusaurus-highlight-code-line {
@@ -35,7 +35,7 @@
 
 .navbar-social-github:after {
   transition: opacity 0.2s;
-  content: '';
+  content: "";
   width: 24px;
   height: 24px;
   display: flex;
@@ -47,19 +47,19 @@
 
 .navbar-social-bluesky:after {
   transition: opacity 0.2s;
-  content: '';
+  content: "";
   width: 24px;
   height: 24px;
   display: flex;
   background-repeat: no-repeat;
   filter: brightness(0) invert(1);
   background-position: center;
-  background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg%20version%3D%221.1%22%20viewBox%3D%270%200%20600%20530%27%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%3Cpath%20d%3D%22m135.72%2044.03c66.496%2049.921%20138.02%20151.14%20164.28%20205.46%2026.262-54.316%2097.782-155.54%20164.28-205.46%2047.98-36.021%20125.72-63.892%20125.72%2024.795%200%2017.712-10.155%20148.79-16.111%20170.07-20.703%2073.984-96.144%2092.854-163.25%2081.433%20117.3%2019.964%20147.14%2086.092%2082.697%20152.22-122.39%20125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937%200.51669-3.7077%207.8964-13.714%2040.255-67.233%20197.36-189.63%2071.766-64.444-66.128-34.605-132.26%2082.697-152.22-67.108%2011.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07%200-88.687%2077.742-60.816%20125.72-24.795z%22%20%2F%3E%0A%3C%2Fsvg%3E');
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20version%3D%221.1%22%20viewBox%3D%270%200%20600%20530%27%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%3Cpath%20d%3D%22m135.72%2044.03c66.496%2049.921%20138.02%20151.14%20164.28%20205.46%2026.262-54.316%2097.782-155.54%20164.28-205.46%2047.98-36.021%20125.72-63.892%20125.72%2024.795%200%2017.712-10.155%20148.79-16.111%20170.07-20.703%2073.984-96.144%2092.854-163.25%2081.433%20117.3%2019.964%20147.14%2086.092%2082.697%20152.22-122.39%20125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937%200.51669-3.7077%207.8964-13.714%2040.255-67.233%20197.36-189.63%2071.766-64.444-66.128-34.605-132.26%2082.697-152.22-67.108%2011.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07%200-88.687%2077.742-60.816%20125.72-24.795z%22%20%2F%3E%0A%3C%2Fsvg%3E");
 }
 
 .navbar-social-mastodon:after {
   transition: opacity 0.2s;
-  content: '';
+  content: "";
   width: 24px;
   height: 24px;
   display: flex;
@@ -87,7 +87,7 @@
 }
 .navbar-social-twitter:after {
   transition: opacity 0.2s;
-  content: '';
+  content: "";
   width: 24px;
   height: 24px;
   display: flex;

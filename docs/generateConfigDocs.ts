@@ -101,7 +101,6 @@ function generateConfigDocs(files: string[]) {
   })
   return contents
 }
-
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
   const contents = generateConfigDocs(await getAllFiles())

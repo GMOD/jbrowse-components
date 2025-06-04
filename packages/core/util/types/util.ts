@@ -7,7 +7,9 @@ import type PluginManager from '../../PluginManager'
  * Differs from core Typescript InstanceType in that it returns never if not matched.
  */
 export type InstanceTypeRestrictive<
-  CONSTRUCTOR extends new (...args: any[]) => any,
+  CONSTRUCTOR extends new (
+    ...args: any[]
+  ) => any,
 > = CONSTRUCTOR extends new (...args: any[]) => infer CLASS ? CLASS : never
 
 /** extracts the class type from a factory function that returns a constructor */

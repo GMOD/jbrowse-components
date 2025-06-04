@@ -1,0 +1,43 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.4.1/schema.json",
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "asNeeded"
+    }
+  },
+  "files": {
+    "maxSize": 100000000,
+    "ignore": [
+      "**/coverage/",
+      "**/umd",
+      "**/dist/",
+      "**/esm/",
+      "**/build/",
+      "**/lib/",
+      "**/tmp/",
+      "**/.docusaurus/**",
+      "**/titlemod.md",
+      "**/combined.md",
+      "**/cli.md",
+      "**/.next/",
+      "**/_next/",
+      "**/*nclist*/**/*.json",
+      "**/ensembl_genes/**/*.json",
+      "**/storybook-static/*"
+    ]
+  }
+}

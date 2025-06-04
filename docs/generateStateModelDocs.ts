@@ -105,7 +105,6 @@ function generateStateModelDocs(files: string[]) {
   })
   return contents
 }
-
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
   const contents = generateStateModelDocs(await getAllFiles())

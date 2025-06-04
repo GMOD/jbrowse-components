@@ -198,7 +198,7 @@ jobs:
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
       - name: Check codebase format
-        run: yarn prettier --check .
+        run: yarn check-format
       - name: Check autogen docs
         run: yarn statedocs && yarn configdocs
       - name: Spellcheck

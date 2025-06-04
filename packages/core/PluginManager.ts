@@ -51,7 +51,9 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   constructor(
     public typeName: string,
     public baseClass:
-      | (new (...args: unknown[]) => ElementClass)
+      | (new (
+          ...args: unknown[]
+        ) => ElementClass)
       // covers abstract class case
       | (Function & {
           prototype: ElementClass

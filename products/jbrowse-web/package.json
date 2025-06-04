@@ -70,13 +70,9 @@
     "use-query-params": "^2.0.0"
   },
   "browserslist": {
-    "production": [
-      "last 1 chrome version"
-    ],
+    "production": ["last 1 chrome version"],
     "license": "Apache-2.0",
-    "development": [
-      "last 1 chrome version"
-    ]
+    "development": ["last 1 chrome version"]
   },
   "private": true
 }

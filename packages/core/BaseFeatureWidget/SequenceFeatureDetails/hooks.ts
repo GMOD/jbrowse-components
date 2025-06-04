@@ -50,7 +50,6 @@ export function useFeatureSequence(
       const [feat] = feats as Feature[]
       return (feat?.get('seq') as string | undefined) || ''
     }
-
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {

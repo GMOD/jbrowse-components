@@ -215,7 +215,6 @@ export default class GridBookmarkPlugin extends Plugin {
                 })
               },
             }))
-
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }
         return pluggableElement

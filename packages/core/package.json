@@ -2,13 +2,7 @@
   "name": "@jbrowse/core",
   "version": "3.5.0",
   "description": "JBrowse 2 core libraries used by plugins",
-  "keywords": [
-    "jbrowse",
-    "jbrowse2",
-    "bionode",
-    "biojs",
-    "genomics"
-  ],
+  "keywords": ["jbrowse", "jbrowse2", "bionode", "biojs", "genomics"],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",

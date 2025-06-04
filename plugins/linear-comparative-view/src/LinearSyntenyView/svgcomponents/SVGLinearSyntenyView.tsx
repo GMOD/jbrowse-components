@@ -145,7 +145,9 @@ export async function renderToSvg(
           transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
           clipPath={`url(#synclip-${i})`}
         >
-          {rendering?.map((r, i) => <ReactRendering key={i} rendering={r} />)}
+          {rendering?.map((r, i) => (
+            <ReactRendering key={i} rendering={r} />
+          ))}
         </g>
         <g transform={`translate(0 ${levelHeight})`}>
           <SVGLinearGenomeView

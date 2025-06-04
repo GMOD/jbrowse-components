@@ -2,11 +2,7 @@
   "name": "root",
   "private": true,
   "repository": "https://github.com/GMOD/jbrowse-components",
-  "workspaces": [
-    "packages/*",
-    "products/*",
-    "plugins/*"
-  ],
+  "workspaces": ["packages/*", "products/*", "plugins/*"],
   "scripts": {
     "build": "yarn useDist && node --experimental-strip-types scripts/build.ts && yarn useSrc",
     "changelog": "lerna-changelog --silent",
@@ -14,8 +10,8 @@
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "lerna-publish": "lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write .",
-    "check-format": "prettier --check .",
+    "format": "biome format --write .",
+    "check-format": "biome format .",
     "typecheck": "tsc --noEmit",
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage",
     "built-test-ci": "jest --ci integration.test.js",
@@ -32,6 +28,7 @@
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.3.3",
+    "@biomejs/biome": "^1.9.4",
     "@electron/notarize": "^2.0.0",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",

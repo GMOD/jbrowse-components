@@ -99,7 +99,9 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
             name: cols[0]!,
             ...Object.fromEntries(
               // force col 0 to be called name
-              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
+              cols
+                .slice(1)
+                .map((c, idx) => [header[idx + 1]!, c] as const),
             ),
           }
         })

@@ -41,7 +41,6 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
             }
           },
         )
-
         ;(pluggableElement as DisplayType).stateModel = newStateModel
       }
       return pluggableElement

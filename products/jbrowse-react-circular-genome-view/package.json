@@ -2,10 +2,7 @@
   "name": "@jbrowse/react-circular-genome-view2",
   "version": "3.5.0",
   "description": "JBrowse 2 circular genome view React component",
-  "keywords": [
-    "jbrowse",
-    "jbrowse2"
-  ],
+  "keywords": ["jbrowse", "jbrowse2"],
   "license": "MIT",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
@@ -17,11 +14,7 @@
   "author": "JBrowse Team",
   "main": "dist/index.js",
   "module": "esm/index.js",
-  "files": [
-    "dist",
-    "esm",
-    "docs"
-  ],
+  "files": ["dist", "esm", "docs"],
   "scripts": {
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",

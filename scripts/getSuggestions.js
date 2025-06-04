@@ -41,7 +41,6 @@ async function getFiles(dir) {
 
   return files.filter(Boolean).flat()
 }
-
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
   const child = cp.spawn('yarn', ['tsserver'])

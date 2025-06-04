@@ -296,10 +296,12 @@ function stateModelFactory(
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
             <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {await self.PileupDisplay.renderSvg({
-                ...opts,
-                overrideHeight: pileupHeight,
-              })}
+              {
+                await self.PileupDisplay.renderSvg({
+                  ...opts,
+                  overrideHeight: pileupHeight,
+                })
+              }
             </g>
           </>
         )

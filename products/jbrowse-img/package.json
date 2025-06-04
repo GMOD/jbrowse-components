@@ -11,10 +11,7 @@
   "bin": {
     "jb2export": "./dist/bin.js"
   },
-  "files": [
-    "dist",
-    "esm"
-  ],
+  "files": ["dist", "esm"],
   "scripts": {
     "clean": "rm -rf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",

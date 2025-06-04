@@ -2,10 +2,7 @@
   "name": "@jbrowse/plugin-linear-genome-view",
   "version": "3.5.0",
   "description": "JBrowse 2 linear genome view",
-  "keywords": [
-    "jbrowse",
-    "jbrowse2"
-  ],
+  "keywords": ["jbrowse", "jbrowse2"],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
@@ -20,10 +17,7 @@
   "srcMain": "src/index.ts",
   "srcModule": "src/index.ts",
   "main": "src/index.ts",
-  "files": [
-    "dist",
-    "esm"
-  ],
+  "files": ["dist", "esm"],
   "scripts": {
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",

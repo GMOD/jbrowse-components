@@ -2,10 +2,7 @@
   "name": "@jbrowse/react-app2",
   "version": "3.5.0",
   "description": "JBrowse 2 app React component",
-  "keywords": [
-    "jbrowse",
-    "jbrowse2"
-  ],
+  "keywords": ["jbrowse", "jbrowse2"],
   "license": "MIT",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
@@ -21,11 +18,7 @@
   "srcModule": "src/index.ts",
   "module": "",
   "main": "src/index.ts",
-  "files": [
-    "dist",
-    "esm",
-    "docs"
-  ],
+  "files": ["dist", "esm", "docs"],
   "scripts": {
     "build": "npm-run-all build:*",
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",

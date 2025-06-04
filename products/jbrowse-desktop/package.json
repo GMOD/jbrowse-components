@@ -103,9 +103,7 @@
   "devDependencies": {
     "electron": "36.3.1"
   },
-  "browserslist": [
-    "last 1 chrome version"
-  ],
+  "browserslist": ["last 1 chrome version"],
   "build": {
     "electronVersion": "36.3.1",
     "extraMetadata": {
@@ -116,18 +114,12 @@
     "copyright": "Copyright © 2019",
     "win": {
       "sign": "./sign.js",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
-      "publish": [
-        "github"
-      ],
+      "signingHashAlgorithms": ["sha256"],
+      "publish": ["github"],
       "artifactName": "jbrowse-desktop-v${version}-win.${ext}"
     },
     "linux": {
-      "publish": [
-        "github"
-      ],
+      "publish": ["github"],
       "target": [
         {
           "target": "AppImage"
@@ -141,43 +133,27 @@
     },
     "snap": {
       "confinement": "strict",
-      "plugs": [
-        "default",
-        "removable-media"
-      ],
-      "slots": [
-        "default"
-      ]
+      "plugs": ["default", "removable-media"],
+      "slots": ["default"]
     },
     "mac": {
       "mergeASARs": false,
       "target": [
         {
           "target": "dmg",
-          "arch": [
-            "universal"
-          ]
+          "arch": ["universal"]
         },
         {
           "target": "zip",
-          "arch": [
-            "universal"
-          ]
+          "arch": ["universal"]
         }
       ],
-      "publish": [
-        "github"
-      ],
+      "publish": ["github"],
       "category": "public.app-category.utilities",
       "artifactName": "jbrowse-desktop-v${version}-mac.${ext}"
     },
-    "files": [
-      "build/**/*",
-      "node_modules/**/*"
-    ],
-    "publish": [
-      "github"
-    ],
+    "files": ["build/**/*", "node_modules/**/*"],
+    "publish": ["github"],
     "directories": {
       "buildResources": "assets/"
     },
