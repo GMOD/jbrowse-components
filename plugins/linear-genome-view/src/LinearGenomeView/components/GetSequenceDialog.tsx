@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { complement, getSession, reverse } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
