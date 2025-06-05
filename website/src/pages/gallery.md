@@ -104,7 +104,7 @@ click-and-drag action (lower panel, in blue)
 ![](/img/modifications.png)
 
 A methylated and unmethylated CpG island shown using the MM tag with nanopore
-reads on the COLO829 (melanoma) cancer cell line. This dataset
+reads on the COLO829 (melanoma) cancer cell line.
 ([live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl))
 
 ---
