@@ -1,98 +1,11 @@
-import type React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import Box from './Box'
-import ProcessedTranscript from './ProcessedTranscript'
-import Segments from './Segments'
-import Subfeatures from './Subfeatures'
+import { chooseGlyphComponent } from './chooseGlyphComponent'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { FeatureLayOutArgs, SubfeatureLayOutArgs } from './types'
+import type { Feature } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
-
-export interface Glyph
-  extends React.FC<{
-    colorByCDS: boolean
-    feature: Feature
-    featureLayout: SceneGraph
-    selected?: boolean
-    config: AnyConfigurationModel
-    region: Region
-    bpPerPx: number
-    topLevel?: boolean
-    [key: string]: unknown
-  }> {
-  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
-}
-
-type LayoutRecord = [number, number, number, number]
-
-export interface DisplayModel {
-  getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
-  getFeatureOverlapping?: (
-    blockKey: string,
-    bp: number,
-    y: number,
-  ) => string | undefined
-  selectedFeatureId?: string
-  featureIdUnderMouse?: string
-  contextMenuFeature?: Feature
-}
-
-export interface ExtraGlyphValidator {
-  glyph: Glyph
-  validator: (feature: Feature) => boolean
-}
-
-export function chooseGlyphComponent({
-  feature,
-  extraGlyphs,
-  config,
-}: {
-  feature: Feature
-  config: AnyConfigurationModel
-  extraGlyphs?: ExtraGlyphValidator[]
-}): Glyph {
-  const type = feature.get('type')
-  const subfeatures = feature.get('subfeatures')
-  const transcriptTypes = readConfObject(config, 'transcriptTypes')
-  const containerTypes = readConfObject(config, 'containerTypes')
-
-  if (subfeatures?.length && type !== 'CDS') {
-    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
-    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
-    if (transcriptTypes.includes(type) && hasCDS) {
-      return ProcessedTranscript
-    } else if (
-      (!feature.parent() && hasSubSub) ||
-      containerTypes.includes(type)
-    ) {
-      return Subfeatures
-    } else {
-      return Segments
-    }
-  } else {
-    return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
-  }
-}
-
-interface BaseLayOutArgs {
-  layout: SceneGraph
-  bpPerPx: number
-  reversed?: boolean
-  config: AnyConfigurationModel
-}
-
-interface FeatureLayOutArgs extends BaseLayOutArgs {
-  feature: Feature
-  extraGlyphs?: ExtraGlyphValidator[]
-}
-
-interface SubfeatureLayOutArgs extends BaseLayOutArgs {
-  subfeatures: Feature[]
-  extraGlyphs?: ExtraGlyphValidator[]
-}
 
 export function layOut({
   layout,
