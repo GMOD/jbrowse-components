@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import cors from 'cors'
 import express from 'express'
@@ -17,7 +18,15 @@ app.use(
       admin: 'password',
     },
   }),
-  express.static(path.join(__dirname, '..', '..', 'test_data', 'volvox')),
+  express.static(
+    path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      '..',
+      'test_data',
+      'volvox',
+    ),
+  ),
 )
 
 console.log('HTTP BasicAuth Server listening on port', port)

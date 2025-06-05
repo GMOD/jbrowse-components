@@ -1,6 +1,6 @@
 import OAuthServer from '@node-oauth/express-oauth-server'
 
-import model from './model'
+import model from './model.ts'
 
 export default new OAuthServer({
   model,
