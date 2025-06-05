@@ -50,7 +50,6 @@
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.4.3",
-    "@types/base64-js": "^1.2.5",
     "@types/cli-progress": "^3.9.2",
     "@types/command-exists": "^1.2.2",
     "@types/cors": "^2.8.13",
