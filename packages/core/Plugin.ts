@@ -22,7 +22,9 @@ export default abstract class Plugin {
   configurationSchemaUnnamespaced?: AnyConfigurationSchemaType
 
   // this is spread into the root config, just configSlot
-  rootConfigurationSchema?: (arg: PluginManager) => AnyConfigurationSchemaType
+  rootConfigurationSchema?: (
+    arg: PluginManager,
+  ) => Record<string, AnyConfigurationSchemaType>
 }
 
 export type PluginConstructor = new (...args: unknown[]) => Plugin
