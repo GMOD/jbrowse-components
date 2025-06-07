@@ -1,5 +1,6 @@
 #!/bin/bash
 
+JB2TMP=${JB2TMP:-~/jb2tmp}
 ## linear
 cp base/linear/config.ts $JB2TMP/jbrowse-react-linear-genome-view-cra5-demo/src/
 cp base/linear/config.ts $JB2TMP/jbrowse-react-linear-genome-view-vite-demo/src/

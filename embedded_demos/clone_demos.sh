@@ -1,4 +1,6 @@
 #!/bin/bash
+
+JB2TMP=${JB2TMP:-~/jb2tmp}
 mkdir $JB2TMP
 cd $JB2TMP
 git clone git@github.com:GMOD/jbrowse-react-linear-genome-view-vanillajs-demo
