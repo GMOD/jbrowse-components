@@ -9008,9 +9008,9 @@ gauge@^4.0.3:
     wide-align "^1.1.5"
 
 generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.5:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.8.tgz#d834d130cd7d995870f2b83dcd10c83aa928c6ad"
-  integrity sha512-nqJ56woFFMstafHGF9Wi0pH3Nedm/R2XdtDanTdpXu+rEtsQ2I7jwvfvDCCbCeoRUZkUb41nCoGIog6hhndDoA==
+  version "2.0.10"
+  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.10.tgz#98394ccca53bff94045aa6290590ff5af71631b9"
+  integrity sha512-8dUyacZU6vJ8upaxPopC/htV2hoNx31zsuuaH3enc+lQRo80xzMLSHnxjjI474tguAXFqK2cZtqrCzAxto/8uw==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
