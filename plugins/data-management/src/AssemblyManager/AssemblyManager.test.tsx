@@ -1,10 +1,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
-import { getParent } from 'mobx-state-tree'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import AssemblyManager from './AssemblyManager'
-
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 afterEach(() => {
   cleanup()
@@ -33,35 +30,56 @@ function makeRoot() {
       removeAssemblyConf: vi.fn(),
     },
     session: {
+      adminMode: true,
       notify: vi.fn(),
+      addAssembly: vi.fn(),
+      sessionAssemblies: [],
+      removeAssembly: vi.fn(),
+      assemblies: [
+        {
+          name: 'testAssembly',
+          sequence: {
+            type: 'testSequenceTrack',
+            trackId: '',
+            adapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
     },
   }
-  // @ts-expect-error
-  const s = mockRootModel.session as AbstractSessionModel
-  return s
+  return mockRootModel
 }
 
 test('renders successfully', () => {
-  const s = makeRoot()
+  const root = makeRoot()
   const { getByText } = render(
-    <AssemblyManager session={s} onClose={() => {}} />,
+    // @ts-expect-error
+    <AssemblyManager session={root.session} onClose={() => {}} />,
   )
   expect(getByText('Assembly manager')).toBeTruthy()
 })
 
 test('opens up the Add Assembly Form when clicked', () => {
-  const s = makeRoot()
+  const root = makeRoot()
   const { getByText } = render(
-    <AssemblyManager session={s} onClose={() => {}} />,
+    // @ts-expect-error
+    <AssemblyManager session={root.session} onClose={() => {}} />,
   )
   fireEvent.click(getByText('Add new assembly'))
-  expect(getByText('Create new assembly')).toBeTruthy()
+  expect(getByText('Submit')).toBeTruthy()
 })
 
 test('calls addAssemblyConf from the Add Assembly form', () => {
-  const s = makeRoot()
+  const root = makeRoot()
   const { getByText, getByTestId } = render(
-    <AssemblyManager session={s} onClose={() => {}} />,
+    // @ts-expect-error
+    <AssemblyManager session={root.session} onClose={() => {}} />,
   )
   fireEvent.click(getByText('Add new assembly'))
 
@@ -71,39 +89,39 @@ test('calls addAssemblyConf from the Add Assembly form', () => {
       value: 'ce11',
     },
   })
-  fireEvent.click(getByText('Create new assembly'))
-
-  expect(getParent<any>(s).jbrowse.addAssemblyConf).toHaveBeenCalledTimes(1)
+  fireEvent.click(getByText('Submit'))
+  expect(root.session.addAssembly).toHaveBeenCalledTimes(1)
 })
 
 test("prompts the user for a name when adding assembly if they don't", () => {
-  const s = makeRoot()
+  const root = makeRoot()
   const { getByText } = render(
-    <AssemblyManager session={s} onClose={() => {}} />,
+    // @ts-expect-error
+    <AssemblyManager session={root.session} onClose={() => {}} />,
   )
   fireEvent.click(getByText('Add new assembly'))
-  fireEvent.click(getByText('Create new assembly'))
-  expect(s.notify).toHaveBeenCalledWith(
+  fireEvent.click(getByText('Submit'))
+  expect(root.session.notify).toHaveBeenCalledWith(
     "Can't create an assembly without a name",
   )
 })
 
 test('deletes an assembly when delete button clicked', () => {
-  const s = makeRoot()
+  const root = makeRoot()
   const { getByTestId } = render(
-    <AssemblyManager session={s} onClose={() => {}} />,
+    // @ts-expect-error
+    <AssemblyManager session={root.session} onClose={() => {}} />,
   )
   fireEvent.click(getByTestId('testAssembly-delete'))
-  expect(getParent<any>(s).jbrowse.removeAssemblyConf).toHaveBeenCalledWith(
-    'testAssembly',
-  )
+  expect(root.session.removeAssembly).toHaveBeenCalledWith('testAssembly')
 })
 
 test('closes when the Close button is clicked', () => {
-  const s = makeRoot()
+  const root = makeRoot()
   const onClose = vi.fn()
   const { getByText } = render(
-    <AssemblyManager session={s} onClose={onClose} />,
+    // @ts-expect-error
+    <AssemblyManager session={root.session} onClose={onClose} />,
   )
   fireEvent.click(getByText('Close'))
   expect(onClose).toHaveBeenCalled()
