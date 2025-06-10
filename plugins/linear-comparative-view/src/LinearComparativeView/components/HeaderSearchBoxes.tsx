@@ -23,12 +23,12 @@ const HeaderSearchBoxes = observer(function ({
   view: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { assemblyNames, coarseTotalBp } = view
+  const { assemblyDisplayNames, coarseTotalBp } = view
   return (
     <span className={classes.searchBox}>
       <SearchBox model={view} showHelp={false} />
       <Typography variant="body2" color="textSecondary" className={classes.bp}>
-        {assemblyNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
+        {assemblyDisplayNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
       </Typography>
     </span>
   )

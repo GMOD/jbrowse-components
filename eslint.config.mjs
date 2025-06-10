@@ -25,6 +25,7 @@ export default tseslint.config(
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',
       'products/jbrowse-desktop/scripts/notarize.js',
+      'auth_test_utils/**/*',
       'component_tests/**/*',
       'embedded_demos/**/*',
       '**/output-version.js',

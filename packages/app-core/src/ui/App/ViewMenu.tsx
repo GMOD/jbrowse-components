@@ -1,4 +1,5 @@
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
+import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
 import { getSession } from '@jbrowse/core/util'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -6,11 +7,6 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton } from '@mui/material'
-import {
-  bindPopover,
-  bindTrigger,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
 import { observer } from 'mobx-react'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -37,7 +33,6 @@ const ViewMenu = observer(function ({
   }
 
   const popupState = usePopupState({
-    popupId: 'viewMenu',
     variant: 'popover',
   })
 

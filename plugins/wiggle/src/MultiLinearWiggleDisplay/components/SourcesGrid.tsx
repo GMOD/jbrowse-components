@@ -59,37 +59,37 @@ function SourcesGrid({
         Change color of selected items
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveUp([...rows], selected))
         }}
-        disabled={!selected.length}
       >
         <KeyboardArrowUpIcon />
         {showTips ? 'Move selected items up' : null}
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveDown([...rows], selected))
         }}
-        disabled={!selected.length}
       >
         <KeyboardArrowDownIcon />
         {showTips ? 'Move selected items down' : null}
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveUp([...rows], selected, rows.length))
         }}
-        disabled={!selected.length}
       >
         <KeyboardDoubleArrowUpIcon />
         {showTips ? 'Move selected items to top' : null}
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveDown([...rows], selected, rows.length))
         }}
-        disabled={!selected.length}
       >
         <KeyboardDoubleArrowDownIcon />
         {showTips ? 'Move selected items to bottom' : null}
@@ -114,6 +114,7 @@ function SourcesGrid({
       />
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
+          disableRowSelectionOnClick
           getRowId={row => row.name}
           checkboxSelection
           onRowSelectionModelChange={arg => {

@@ -1,10 +1,41 @@
 name: Push
 
-on: push
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
 
 jobs:
+  check_commit_message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    outputs:
+      skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check commit message
+        id: check_message
+        run: |
+          commit_message="${{ github.event.head_commit.message }}"
+          if [[ "$commit_message" == *"[update docs only]"* ]]; then
+            echo "skip_jobs=true" >> $GITHUB_OUTPUT
+            echo "Commit message contains [update docs only], skipping regular push jobs"
+          else
+            echo "skip_jobs=false" >> $GITHUB_OUTPUT
+            echo "Running regular push jobs"
+          fi
+
+  # Conditionally run the buildwebsite job
   buildwebsite:
     name: Build website
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +59,11 @@ jobs:
         with:
           args: website/testing/ --check-anchors
 
+  # Conditionally run the buildwholerepo job
   buildwholerepo:
     name: Build whole repo
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,8 +94,11 @@ jobs:
           yarn e2e
         working-directory: component_tests/app-vite
 
+  # Conditionally run the buildjbrowseweb job
   buildjbrowseweb:
     name: Deploy jbrowse-web and storybooks to S3
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,7 +125,7 @@ jobs:
         run: |
           cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          aws s3 sync --delete --exclude="*.map" products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
 
       - name: Build LGV
@@ -103,6 +140,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy LGV
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
@@ -120,6 +158,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Deploy React App
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)
@@ -137,14 +176,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Deploy CGV
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
+  # Conditionally run the formatchecks job
   formatchecks:
     name: Lint, typecheck, test
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get -y install tabix

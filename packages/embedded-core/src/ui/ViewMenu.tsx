@@ -1,11 +1,7 @@
 import { CascadingMenu } from '@jbrowse/core/ui'
+import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
 import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton } from '@mui/material'
-import {
-  bindPopover,
-  bindTrigger,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
 import { observer } from 'mobx-react'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -24,7 +20,6 @@ const ViewMenu = observer(function ({
   IconProps: SvgIconProps
 }) {
   const popupState = usePopupState({
-    popupId: 'viewMenu',
     variant: 'popover',
   })
   return (

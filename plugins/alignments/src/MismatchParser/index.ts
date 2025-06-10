@@ -4,12 +4,26 @@ import { mdToMismatches } from './mdToMismatches'
 import type { Mismatch } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
-const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
-export function parseCigar(cigar = '') {
-  return cigar.split(cigarRegex).slice(0, -1)
+export function parseCigar(s = '') {
+  let currLen = ''
+  let len
+  let op
+  const ret = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const c = s[i]!
+    if (c >= '0' && c <= '9') {
+      currLen = currLen + c
+    } else {
+      len = currLen
+      op = c
+      currLen = ''
+      ret.push(len, op)
+    }
+  }
+  return ret
 }
 
 export function getMismatches(

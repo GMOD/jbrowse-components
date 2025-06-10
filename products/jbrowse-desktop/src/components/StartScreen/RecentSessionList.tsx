@@ -91,6 +91,7 @@ export default function RecentSessionsList({
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
+        disableRowSelectionOnClick
         onRowSelectionModelChange={args => {
           setSelectedSessions(sessions.filter(s => args.ids.has(s.path)))
         }}

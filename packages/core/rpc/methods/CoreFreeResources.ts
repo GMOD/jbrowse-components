@@ -11,7 +11,7 @@ export default class CoreFreeResources extends RpcMethodType {
   name = 'CoreFreeResources'
 
   async execute(args: Record<string, unknown>) {
-    freeAdapterResources(args)
+    await freeAdapterResources(args)
     for (const renderer of this.pluginManager.getRendererTypes()) {
       renderer.freeResources(args)
     }
