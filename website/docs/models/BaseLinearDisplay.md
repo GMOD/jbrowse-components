@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseLinearDisplay.md)
 
@@ -143,6 +143,13 @@ any
 ```
 
 ### BaseLinearDisplay - Methods
+
+#### method: copyInfoToClipboard
+
+```js
+// type signature
+copyInfoToClipboard: (feature: Feature) => void
+```
 
 #### method: trackMenuItems
 
