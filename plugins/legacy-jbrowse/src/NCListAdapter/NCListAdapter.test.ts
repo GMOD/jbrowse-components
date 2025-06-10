@@ -21,25 +21,37 @@ function generateReadBuffer(
 }
 
 beforeEach(() => {
-  global.fetch = vi
-    .fn()
-    .mockImplementation(
-      generateReadBuffer(
-        (url: string) =>
-          new LocalFile(path.join(__dirname, `../../test_data/${url}`)),
-      ),
-    )
+  global.fetch = vi.fn().mockImplementation((url: string) =>
+    Promise.resolve({
+      arrayBuffer: () =>
+        new LocalFile(path.join(__dirname, `../../test_data/${url}`)).readFile(
+          'utf8',
+        ),
+      json: () =>
+        new LocalFile(path.join(__dirname, `../../test_data/${url}`))
+          .readFile('utf8')
+          .then(text => JSON.parse(text)),
+      text: () =>
+        new LocalFile(path.join(__dirname, `../../test_data/${url}`)).readFile(
+          'utf8',
+        ),
+      status: 200,
+      ok: true,
+      headers: new Map(),
+    }),
+  )
 })
 
 test('adapter can fetch features from ensembl_genes test set', async () => {
-  const args = {
-    refNames: [],
-    rootUrlTemplate: {
-      uri: 'ensembl_genes/{refseq}/trackData.json',
-      locationType: 'UriLocation',
-    },
-  }
-  const adapter = new Adapter(configSchema.create(args))
+  const adapter = new Adapter(
+    configSchema.create({
+      refNames: [],
+      rootUrlTemplate: {
+        uri: 'ensembl_genes/{refseq}/trackData.json',
+        locationType: 'UriLocation',
+      },
+    }),
+  )
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',

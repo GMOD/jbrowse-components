@@ -9,9 +9,11 @@ import { cleanup, render } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
 import ConfigurationEditor from './ConfigurationEditor'
+
 afterEach(() => {
   cleanup()
 })
+
 test('renders with just the required model elements', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
     foo: {

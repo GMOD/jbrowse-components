@@ -99,7 +99,11 @@ interface Results extends ReturnType<typeof render> {
 
 export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
-  const rest = render(<JBrowse pluginManager={pluginManager} />)
+  const rest = render(
+    <ThemeProvider>
+      <JBrowse pluginManager={pluginManager} />
+    </ThemeProvider>,
+  )
   const session = rootModel.session! as AbstractSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
