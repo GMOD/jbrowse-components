@@ -2,9 +2,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import LocalFile from '@jbrowse/core/util/io/localFile'
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import { generateReadBuffer } from './generateReadBuffer'
