@@ -1,6 +1,6 @@
 import path from 'path'
 
-import LocalFile from '@jbrowse/core/util/io/localFile'
+import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 

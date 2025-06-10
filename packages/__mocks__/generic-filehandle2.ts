@@ -2,7 +2,7 @@ import { open, readFile, stat } from 'fs/promises'
 
 import type { FilehandleOptions, GenericFilehandle } from 'generic-filehandle2'
 
-export default class LocalFile implements GenericFilehandle {
+export class LocalFile implements GenericFilehandle {
   private filename: string
 
   public constructor(source: string, _opts: FilehandleOptions = {}) {
@@ -42,3 +42,5 @@ export default class LocalFile implements GenericFilehandle {
     /* do nothing */
   }
 }
+
+export { BlobFile, RemoteFile } from 'generic-filehandle2'

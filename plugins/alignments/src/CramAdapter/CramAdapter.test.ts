@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import LocalFile from '@jbrowse/core/util/io/localFile'
+import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
