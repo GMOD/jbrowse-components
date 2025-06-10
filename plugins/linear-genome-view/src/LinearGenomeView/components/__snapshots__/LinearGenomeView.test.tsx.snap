@@ -173,7 +173,7 @@ exports[`renders one track, one region 1`] = `
                       autocapitalize="none"
                       autocomplete="off"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="«rp»"
+                      id="«rq»"
                       placeholder="Search for location"
                       role="combobox"
                       spellcheck="false"
@@ -325,7 +325,6 @@ exports[`renders one track, one region 1`] = `
                 </button>
               </span>
               <button
-                aria-haspopup="true"
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 type="button"
@@ -565,7 +564,6 @@ exports[`renders one track, one region 1`] = `
             </span>
           </span>
           <button
-            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
@@ -822,7 +820,7 @@ exports[`renders two tracks, two regions 1`] = `
                       autocapitalize="none"
                       autocomplete="off"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="«r1b»"
+                      id="«r1e»"
                       placeholder="Search for location"
                       role="combobox"
                       spellcheck="false"
@@ -973,7 +971,6 @@ exports[`renders two tracks, two regions 1`] = `
                 </button>
               </span>
               <button
-                aria-haspopup="true"
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 type="button"
@@ -1637,7 +1634,6 @@ exports[`renders two tracks, two regions 1`] = `
             </span>
           </span>
           <button
-            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
@@ -1761,7 +1757,6 @@ exports[`renders two tracks, two regions 1`] = `
             </span>
           </span>
           <button
-            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
