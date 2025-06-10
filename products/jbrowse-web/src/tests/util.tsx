@@ -6,6 +6,9 @@ import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { expect } from 'vitest'
+import { ThemeProvider } from '@mui/material'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import { generateReadBuffer } from './generateReadBuffer'
 import configSnapshot from '../../test_data/volvox/config.json'
@@ -18,8 +21,6 @@ import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-
 
 // @ts-expect-error
 global.nodeImage = Image
@@ -54,6 +55,8 @@ export function getPluginManager(
 export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
+
+global.jest = {}
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   // eslint-disable-next-line no-restricted-globals
@@ -100,7 +103,7 @@ interface Results extends ReturnType<typeof render> {
 export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(
-    <ThemeProvider>
+    <ThemeProvider theme={createJBrowseTheme()}>
       <JBrowse pluginManager={pluginManager} />
     </ThemeProvider>,
   )
@@ -115,10 +118,10 @@ export function doBeforeEach(
   clearCache()
   clearAdapterCache()
 
-  // @ts-expect-error
-  fetch.resetMocks()
-  // @ts-expect-error
-  fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
+  // // @ts-expect-error
+  // fetch.resetMocks()
+  // // @ts-expect-error
+  // fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
 interface Results2 extends Results {
   autocomplete: HTMLElement

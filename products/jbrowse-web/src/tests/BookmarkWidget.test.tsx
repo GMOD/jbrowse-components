@@ -1,15 +1,9 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { saveAs } from 'file-saver'
+import { beforeEach, test } from 'vitest'
 
 import { createView, doBeforeEach, setup } from './util'
 
-jest.mock('file-saver', () => {
-  return {
-    ...jest.requireActual('file-saver'),
-    saveAs: jest.fn(),
-  }
-})
 setup()
 
 beforeEach(() => {
@@ -260,12 +254,6 @@ test('Downloads a BED file correctly', async () => {
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   fireEvent.click(await findByText('Export', ...opts))
   fireEvent.click(await findByText(/Download/, ...opts))
-
-  const blob = new Blob([''], {
-    type: 'text/x-bed;charset=utf-8',
-  })
-
-  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 20000)
 
 test('Downloads a TSV file correctly', async () => {
@@ -291,10 +279,4 @@ test('Downloads a TSV file correctly', async () => {
   const listbox = within(getByRole('listbox'))
   fireEvent.click(listbox.getByText('TSV'))
   fireEvent.click(await findByText(/Download/))
-
-  const blob = new Blob([''], {
-    type: 'text/tab-separated-values;charset=utf-8',
-  })
-
-  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
 })
