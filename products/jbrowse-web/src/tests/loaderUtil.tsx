@@ -5,7 +5,7 @@ import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import { Loader } from '../components/Loader'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 export function App({ search }: { search: string }) {
   const location = {

@@ -4,7 +4,7 @@ import { fireEvent } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts, setup } from './util'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 setup()
 

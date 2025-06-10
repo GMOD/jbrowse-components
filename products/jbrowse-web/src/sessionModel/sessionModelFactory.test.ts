@@ -3,7 +3,7 @@ import { getSnapshot, types } from 'mobx-state-tree'
 
 import sessionModelFactory from '.'
 import { createTestSession } from '../rootModel'
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 describe('JBrowseWebSessionModel', () => {
   it('creates with no parent and just a name', () => {

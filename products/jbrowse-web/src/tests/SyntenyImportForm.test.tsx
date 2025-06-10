@@ -3,7 +3,7 @@ import { fireEvent, waitFor, within } from '@testing-library/react'
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 setup()
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 const delay = { timeout: 20000 }
 beforeEach(() => {

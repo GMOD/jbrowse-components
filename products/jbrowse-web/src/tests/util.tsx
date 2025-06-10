@@ -19,7 +19,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 // @ts-expect-error
 global.nodeImage = Image

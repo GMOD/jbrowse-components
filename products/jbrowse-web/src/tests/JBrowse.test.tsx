@@ -12,7 +12,7 @@ import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
 import { createView, doBeforeEach, hts, setup } from './util'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 setup()
 

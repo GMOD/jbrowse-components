@@ -5,7 +5,7 @@ import { LocalFile } from 'generic-filehandle2'
 import { createView, doBeforeEach, generateReadBuffer } from './util'
 import configSnapshot from '../../test_data/volvox/config.json'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 beforeEach(() => {
   doBeforeEach()

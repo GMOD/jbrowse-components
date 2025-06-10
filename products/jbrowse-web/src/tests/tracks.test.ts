@@ -1,7 +1,7 @@
 import { guessAdapter as guessAdapter2 } from '@jbrowse/core/util/tracks'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 function makeLoc(uri: string) {
   return {

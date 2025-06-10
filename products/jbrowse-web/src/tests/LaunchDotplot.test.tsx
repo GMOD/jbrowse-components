@@ -5,7 +5,7 @@ import { LocalFile } from 'generic-filehandle2'
 import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 // @ts-ignore
 global.nodeImage = Image
@@ -17,7 +17,7 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 const delay = { timeout: 20000 }
 

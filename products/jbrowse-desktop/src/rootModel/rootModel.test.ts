@@ -10,7 +10,7 @@ import corePlugins from '../corePlugins'
 import rootModelFactory from './rootModel'
 import sessionModelFactory from '../sessionModel/sessionModel'
 
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 function getRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))

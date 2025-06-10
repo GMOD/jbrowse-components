@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts } from './util'
-jest.mock('../makeWorkerInstance', () => () => {})
+
 
 const delay = { timeout: 30000 }
 
