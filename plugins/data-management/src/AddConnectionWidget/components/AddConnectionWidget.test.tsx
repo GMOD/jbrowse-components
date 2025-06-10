@@ -5,15 +5,8 @@ import { cleanup, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import AddConnectionWidgetComponent from './AddConnectionWidget'
+import AddConnectionWidget from './AddConnectionWidget'
 
-function AddConnectionWidget({ model }: { model: unknown }) {
-  return (
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <AddConnectionWidgetComponent model={model} />
-    </ThemeProvider>
-  )
-}
 afterEach(() => {
   cleanup()
 })
@@ -46,8 +39,17 @@ function makeSession() {
 function renderWidget() {
   const user = userEvent.setup()
   const { model, session } = makeSession()
-  const result = render(<AddConnectionWidget model={model} />)
-  return { ...result, session, model, user }
+  const result = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <AddConnectionWidget model={model} />
+    </ThemeProvider>,
+  )
+  return {
+    ...result,
+    session,
+    model,
+    user,
+  }
 }
 
 test('renders', () => {
