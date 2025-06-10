@@ -8,10 +8,8 @@ import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
 import { expect, test } from 'vitest'
 
-// locals
 import VariantFeatureDetails from './VariantFeatureWidget'
 import { stateModelFactory } from './stateModelFactory'
-
 
 test('renders with just the required model elements', () => {
   const pluginManager = new PluginManager([])

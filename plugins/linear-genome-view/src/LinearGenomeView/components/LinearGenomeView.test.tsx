@@ -4,7 +4,6 @@ import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
-
 import LinearGenomeView from './LinearGenomeView'
 
 import type { LinearGenomeViewModel } from '../model'
@@ -12,7 +11,6 @@ import type { LinearGenomeViewModel } from '../model'
 afterEach(() => {
   cleanup()
 })
-
 
 function LGV({ model }: { model: LinearGenomeViewModel }) {
   return (

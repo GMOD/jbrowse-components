@@ -4,7 +4,6 @@ import { afterEach, expect, test } from 'vitest'
 
 import Scalebar from './Scalebar'
 
-
 afterEach(() => {
   cleanup()
 })

@@ -4,7 +4,6 @@ import { ThemeProvider } from '@mui/material'
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
-
 import HierarchicalTrackSelector2 from './HierarchicalTrackSelector'
 
 // test data

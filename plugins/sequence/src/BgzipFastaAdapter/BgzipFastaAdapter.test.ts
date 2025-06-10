@@ -5,7 +5,6 @@ import { expect, test } from 'vitest'
 import Adapter from './BgzipFastaAdapter'
 import configSchema from './configSchema'
 
-
 test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter(
     configSchema.create({

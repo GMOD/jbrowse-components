@@ -5,13 +5,12 @@ import { cleanup, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import AddConnectionWidget2 from './AddConnectionWidget'
-
+import AddConnectionWidgetComponent from './AddConnectionWidget'
 
 function AddConnectionWidget({ model }: { model: unknown }) {
   return (
     <ThemeProvider theme={createJBrowseTheme()}>
-      <AddConnectionWidget2 model={model} />
+      <AddConnectionWidgetComponent model={model} />
     </ThemeProvider>
   )
 }

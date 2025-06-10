@@ -6,18 +6,17 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { waitFor } from '@testing-library/react'
+import { cleanup, waitFor } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
-import { beforeEach, describe, expect, it, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest'
 
-// locals
 import { stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
 
-import type { LinearGenomeViewModel} from '.'
+import type { LinearGenomeViewModel } from '.'
 
 type LGV = LinearGenomeViewModel
 
@@ -114,6 +113,10 @@ function initialize() {
 
   return { Session, LinearGenomeModel, Assembly }
 }
+
+afterEach(() => {
+  cleanup()
+})
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const { Session, LinearGenomeModel } = initialize()
@@ -578,6 +581,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   model.setError(new Error('pxToBp failed to map to a region'))
   expect(`${model.error}`).toEqual('Error: pxToBp failed to map to a region')
 })
+
 // determined objectively by looking at
 // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-Se2K5q_Jog&password=qT9on
 //
