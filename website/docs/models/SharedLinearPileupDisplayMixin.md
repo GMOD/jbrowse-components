@@ -195,11 +195,20 @@ string
 
 ### SharedLinearPileupDisplayMixin - Methods
 
+#### method: copyFeatureToClipboard
+
+uses copy-to-clipboard and generates notification
+
+```js
+// type signature
+copyFeatureToClipboard: (feature: Feature) => void
+```
+
 #### method: contextMenuItems
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: (props: SvgIconProps) => Element; onClick: () => void; }[]
+contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
 #### method: renderPropsPre
@@ -279,15 +288,6 @@ setFeatureUnderMouse: (feat?: Feature) => void
 ```js
 // type signature
 selectFeature: (feature: Feature) => void
-```
-
-#### action: copyFeatureToClipboard
-
-uses copy-to-clipboard and generates notification
-
-```js
-// type signature
-copyFeatureToClipboard: (feature: Feature) => void
 ```
 
 #### action: setConfig
