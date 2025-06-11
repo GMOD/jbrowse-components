@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 
-// core
 import { getEnv, getSession } from '@jbrowse/core/util'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import Base1DViewF from '@jbrowse/core/util/Base1DViewModel'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -246,7 +245,7 @@ const OverviewScalebar = observer(function ({
   const modWidth = width - cytobandOffset
   const str = JSON.stringify(displayedRegions)
   const overview = useMemo(() => {
-    const overview = Base1DView.create({
+    const overview = Base1DViewF().create({
       displayedRegions: JSON.parse(str),
       interRegionPaddingWidth: 0,
       minimumBlockWidth,

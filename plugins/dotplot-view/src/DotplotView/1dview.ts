@@ -1,4 +1,4 @@
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import Base1DViewF from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { observable } from 'mobx'
 import { getParent } from 'mobx-state-tree'
@@ -11,7 +11,7 @@ import type { Instance } from 'mobx-state-tree'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-const Dotplot1DView = Base1DView.extend(self => {
+const Dotplot1DView = Base1DViewF().extend(self => {
   const scaleFactor = observable.box(1)
   return {
     views: {

@@ -1,7 +1,7 @@
-import Base1DView from './Base1DViewModel'
+import Base1DViewF from './Base1DViewModel'
 
 test('create Base1DView and set displayedRegions', () => {
-  const model = Base1DView.create({
+  const model = Base1DViewF().create({
     bpPerPx: 1,
     offsetPx: 0,
   })
@@ -17,7 +17,7 @@ test('create Base1DView and set displayedRegions', () => {
 })
 
 test('Able to set bpPerPx, width and calculate widths', () => {
-  const model = Base1DView.create({
+  const model = Base1DViewF().create({
     bpPerPx: 0,
     offsetPx: 0,
   })
@@ -38,7 +38,7 @@ test('Able to set bpPerPx, width and calculate widths', () => {
 })
 
 test('Able to set and showAll Regions', () => {
-  const model = Base1DView.create({
+  const model = Base1DViewF().create({
     bpPerPx: 0,
     offsetPx: 0,
   })
@@ -61,7 +61,7 @@ test('Able to set and showAll Regions', () => {
 })
 
 test('Navigate to displayedRegions', () => {
-  const model = Base1DView.create({
+  const model = Base1DViewF().create({
     bpPerPx: 0,
     offsetPx: 0,
   })

@@ -20,7 +20,7 @@ import {
   sum,
 } from '@jbrowse/core/util'
 import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import Base1DViewF from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -1000,7 +1000,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
         const snap = getSnapshot(self)
-        const simView = Base1DView.create({
+        const simView = Base1DViewF().create({
           ...snap,
           interRegionPaddingWidth: self.interRegionPaddingWidth,
         })

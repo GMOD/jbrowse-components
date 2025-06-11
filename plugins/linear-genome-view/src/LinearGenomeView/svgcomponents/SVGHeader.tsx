@@ -1,5 +1,5 @@
 import { getSession, stripAlpha } from '@jbrowse/core/util'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import Base1DViewF from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
 
 import SVGRuler from './SVGRuler'
@@ -27,7 +27,7 @@ export default function SVGHeader({
   const assembly = assemblyManager.get(assemblyName)
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.primary)
-  const overview = Base1DView.create({
+  const overview = Base1DViewF().create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
     interRegionPaddingWidth: 0,
     minimumBlockWidth: model.minimumBlockWidth,
