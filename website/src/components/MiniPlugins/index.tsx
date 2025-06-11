@@ -2,15 +2,12 @@ import pluginStyles from './styles.module.css'
 import Link from '@mui/material/Link'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
 
 import Person from '@mui/icons-material/Person'
 import AccountBalance from '@mui/icons-material/AccountBalance'
 import GitHub from '@mui/icons-material/GitHub'
-import Book from '@mui/icons-material/Book'
 import Outbound from '@mui/icons-material/Outbound'
 
 const plugins = [

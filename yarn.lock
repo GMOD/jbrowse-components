@@ -2132,9 +2132,9 @@
     quick-lru "^4.0.0"
 
 "@gmod/bbi@^7.0.0":
-  version "7.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-7.0.4.tgz#c0134a815d82f56e377529a01163759f70dea2b1"
-  integrity sha512-MZivMEHWlUYsX441FyqLR40134kutdzbY6jz0g6hb2GkKqXvBzi/5hlNnEEVBHNd+4jaPUB65JuAfCrgjGHZ/w==
+  version "7.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-7.0.5.tgz#f791d4219536318f302717caeef0cd86f3b87864"
+  integrity sha512-XTWmeheoG5LWF4Rm2a5tttt+93PDyKnPp3pXle4bRYdwNWY534iK3ifpSx5cjGggjt4xOrWwGpM0Tqpmh7LaRA==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     generic-filehandle2 "^2.0.10"
@@ -13392,9 +13392,9 @@ react-dev-utils@^12.0.1:
     text-table "^0.2.0"
 
 react-docgen-typescript@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/react-docgen-typescript/-/react-docgen-typescript-2.2.2.tgz#4611055e569edc071204aadb20e1c93e1ab1659c"
-  integrity sha512-tvg2ZtOpOi6QDwsb3GZhOjDkkX0h8Z2gipvTg6OVMUyoYoURhEiRNePT8NZItTVCDh39JJHnLdfCOkzoLbFnTg==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/react-docgen-typescript/-/react-docgen-typescript-2.4.0.tgz#033428b4a6a639d050ac8baf2a5195c596521713"
+  integrity sha512-ZtAp5XTO5HRzQctjPU0ybY0RRCQO19X/8fxn3w7y2VVTUbGHDKULPTL4ky3vB05euSgG5NpALhEhDPvQ56wvXg==
 
 react-docgen@^7.1.1:
   version "7.1.1"
@@ -16257,6 +16257,6 @@ zod-validation-error@^3.0.3:
   integrity sha512-1KP64yqDPQ3rupxNv7oXhf7KdhHHgaqbKuspVoiN93TT0xrBjql+Svjkdjq/Qh/7GSMmgQs3AfvBT0heE35thw==
 
 zod@^3.22.4:
-  version "3.25.57"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.57.tgz#317c8a6eb8a8460bb4b58defb19e8b50c1200e51"
-  integrity sha512-6tgzLuwVST5oLUxXTmBqoinKMd3JeesgbgseXeFasKKj8Q1FCZrHnbqJOyiEvr4cVAlbug+CgIsmJ8cl/pU5FA==
+  version "3.25.58"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.58.tgz#7cd680cbbf01d0994cd2e943a08dc7e77c6d2b7a"
+  integrity sha512-DVLmMQzSZwNYzQoMaM3MQWnxr2eq+AtM9Hx3w1/Yl0pH8sLTSjN4jGP7w6f7uand6Hw44tsnSu1hz1AOA6qI2Q==
