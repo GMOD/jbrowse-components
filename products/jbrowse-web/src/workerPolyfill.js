@@ -19,6 +19,9 @@ self.window = {
   navigator: {},
 }
 self.document = {
+  head: {
+    appendChild: () => {},
+  },
   createTextNode() {},
   addEventListener() {},
   querySelector() {
