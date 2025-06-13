@@ -77,7 +77,6 @@
     "@types/rbush": "^3.0.0",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
-    "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/set-value": "^4.0.1",
     "@types/string-template": "^1.0.2",
     "@types/tmp": "^0.2.1",
