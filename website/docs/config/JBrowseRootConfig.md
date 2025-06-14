@@ -36,57 +36,6 @@ have a configurationSchema field on their class are mixed into this object
 
 ### JBrowseRootConfig - Slots
 
-#### slot: configuration.rpc
-
-```js
-rpc: RpcManager.configSchema
-```
-
-#### slot: configuration.highResolutionScaling
-
-```js
-highResolutionScaling: {
-        type: 'number',
-        defaultValue: 2,
-      }
-```
-
-#### slot: configuration.disableAnalytics
-
-```js
-disableAnalytics: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
-
-#### slot: configuration.theme
-
-```js
-theme: {
-        type: 'frozen',
-        defaultValue: {},
-      }
-```
-
-#### slot: configuration.extraThemes
-
-```js
-extraThemes: {
-        type: 'frozen',
-        defaultValue: {},
-      }
-```
-
-#### slot: configuration.logoPath
-
-```js
-logoPath: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      }
-```
-
 #### slot: plugins
 
 defines plugins of the format
