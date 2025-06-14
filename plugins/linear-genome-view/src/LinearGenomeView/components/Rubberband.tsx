@@ -85,7 +85,7 @@ const Rubberband = observer(function ({
           position: stickyViewHeaders ? 'sticky' : undefined,
         }}
         ref={ref}
-        onMouseDown={mouseDown}
+        onMouseDown={!anchorPosition ? mouseDown : undefined}
         onMouseMove={mouseMove}
         onMouseOut={mouseOut}
       >
