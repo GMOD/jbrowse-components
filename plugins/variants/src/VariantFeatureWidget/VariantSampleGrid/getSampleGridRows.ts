@@ -11,17 +11,21 @@ export function getSampleGridRows(
   rows: VariantSampleGridRow[]
   error: unknown
 } {
-  const preFilteredRows = Object.entries(samples).map(
-    ([key, val]) =>
-      [
-        key,
-        {
-          ...val,
-          GT: `${val.GT?.[0]}`,
-          genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
-        },
-      ] as const,
-  )
+  const preFilteredRows = Object.entries(samples).map(([key, val]) => {
+    const gt = val.GT?.[0]
+    return [
+      key,
+      {
+        ...val,
+        ...(gt
+          ? {
+              GT: `${gt}`,
+              genotype: makeSimpleAltString(`${gt}`, REF, ALT),
+            }
+          : {}),
+      },
+    ] as const
+  })
 
   let error: unknown
   let rows = [] as VariantSampleGridRow[]
