@@ -1,18 +1,4 @@
-import { Tooltip, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-const useStyles = makeStyles()(theme => {
-  return {
-    popover: {
-      mouseEvents: 'none',
-      cursor: 'crosshair',
-    },
-    paper: {
-      paddingLeft: theme.spacing(1),
-      paddingRight: theme.spacing(1),
-    },
-  }
-})
+import { Tooltip } from '@mui/material'
 
 export default function RubberbandTooltip({
   anchorEl,
@@ -23,16 +9,11 @@ export default function RubberbandTooltip({
   side: string
   text: string
 }) {
-  const { classes } = useStyles()
   return (
     <Tooltip
-      title={<Typography>{text}</Typography>}
+      title={text}
       open
       placement={side === 'left' ? 'left-start' : 'right-start'}
-      classes={{
-        tooltip: classes.paper,
-        popper: classes.popover,
-      }}
       slotProps={{
         popper: {
           anchorEl,
@@ -40,6 +21,8 @@ export default function RubberbandTooltip({
             {
               name: 'offset',
               options: {
+                // first number is y-offset (which docs refer to as skid),
+                // second number is x-offset (which docs refer to as distance)
                 offset: [-30, -10],
               },
             },
