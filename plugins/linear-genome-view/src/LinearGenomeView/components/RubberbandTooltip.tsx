@@ -1,4 +1,4 @@
-import { Popover, Typography } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => {
@@ -25,23 +25,21 @@ export default function RubberbandTooltip({
 }) {
   const { classes } = useStyles()
   return (
-    <Popover
-      className={classes.popover}
-      classes={{ paper: classes.paper }}
+    <Tooltip
+      title={<Typography>{text}</Typography>}
       open
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: side === 'left' ? 'left' : 'right',
+      placement={side === 'left' ? 'left' : 'right'}
+      PopperProps={{
+        anchorEl,
+        disableRestoreFocus: true,
+        keepMounted: true,
       }}
-      transformOrigin={{
-        vertical: 'bottom',
-        horizontal: side === 'left' ? 'right' : 'left',
+      classes={{
+        tooltip: classes.paper,
+        popper: classes.popover,
       }}
-      keepMounted
-      disableRestoreFocus
     >
-      <Typography>{text}</Typography>
-    </Popover>
+      <span></span>
+    </Tooltip>
   )
 }
