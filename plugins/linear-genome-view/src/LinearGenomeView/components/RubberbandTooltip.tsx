@@ -28,15 +28,23 @@ export default function RubberbandTooltip({
     <Tooltip
       title={<Typography>{text}</Typography>}
       open
-      placement={side === 'left' ? 'left' : 'right'}
-      PopperProps={{
-        anchorEl,
-        disableRestoreFocus: true,
-        keepMounted: true,
-      }}
+      placement={side === 'left' ? 'left-start' : 'right-start'}
       classes={{
         tooltip: classes.paper,
         popper: classes.popover,
+      }}
+      slotProps={{
+        popper: {
+          anchorEl,
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [-30, -10],
+              },
+            },
+          ],
+        },
       }}
     >
       <span></span>
