@@ -65,11 +65,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     }),
   )
 
-  // this attempts to reduce recalculation of feature positions drawn by
-  // the synteny view
+  // this attempts to reduce recalculation of feature positions drawn by the
+  // synteny view
   //
-  // uses a reaction to say "we know the positions don't change in any
-  // relevant way unless bpPerPx changes or displayedRegions changes"
+  // uses a reaction to say "we know the positions don't change in any relevant
+  // way unless bpPerPx changes or displayedRegions changes"
   addDisposer(
     self,
     reaction(
