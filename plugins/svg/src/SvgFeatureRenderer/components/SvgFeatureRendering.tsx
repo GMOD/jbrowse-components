@@ -9,7 +9,7 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
-import type { ViewParams } from './types'
+import type { Coord, ViewParams } from './types'
 import type { DisplayModel, ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -183,11 +183,6 @@ const RenderedFeatures = observer(function RenderedFeatures(props: {
   )
 })
 
-interface Coord {
-  x: number
-  y: number
-}
-
 const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>
   blockKey: string
@@ -211,6 +206,51 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   onMouseUp?: React.MouseEventHandler
   onClick?: React.MouseEventHandler
 }) {
+  const { regions = [], config, exportSVG, featureDisplayHandler } = props
+  const region = regions[0]!
+  const displayMode = readConfObject(config, 'displayMode') as string
+
+  return exportSVG ? (
+    <RenderedFeatures
+      displayMode={displayMode}
+      isFeatureDisplayed={featureDisplayHandler}
+      region={region}
+      {...props}
+    />
+  ) : (
+    <Wrapper {...props}>
+      <RenderedFeatures
+        displayMode={displayMode}
+        region={region}
+        isFeatureDisplayed={featureDisplayHandler}
+        {...props}
+      />
+    </Wrapper>
+  )
+})
+
+function Wrapper(props: {
+  layout: BaseLayout<unknown>
+  children: React.ReactNode
+  blockKey: string
+  regions: Region[]
+  bpPerPx: number
+  detectRerender?: () => void
+  config: AnyConfigurationModel
+  colorByCDS: boolean
+  features: Map<string, Feature>
+  displayModel?: DisplayModel
+  viewParams: ViewParams
+  extraGlyphs?: ExtraGlyphValidator[]
+  onMouseOut?: React.MouseEventHandler
+  onMouseDown?: React.MouseEventHandler
+  onMouseLeave?: React.MouseEventHandler
+  onMouseEnter?: React.MouseEventHandler
+  onMouseOver?: React.MouseEventHandler
+  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
+  onMouseUp?: React.MouseEventHandler
+  onClick?: React.MouseEventHandler
+}) {
   const {
     layout,
     blockKey,
@@ -218,8 +258,6 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     bpPerPx,
     config,
     displayModel = {},
-    exportSVG,
-    featureDisplayHandler,
     onMouseOut,
     onMouseDown,
     onMouseLeave,
@@ -228,11 +266,11 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     onMouseMove,
     onMouseUp,
     onClick,
+    children,
   } = props
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const displayMode = readConfObject(config, 'displayMode') as string
   const maxConfHeight = readConfObject(config, 'maxHeight') as number
 
   const ref = useRef<SVGSVGElement>(null)
@@ -246,14 +284,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
-  return exportSVG ? (
-    <RenderedFeatures
-      displayMode={displayMode}
-      isFeatureDisplayed={featureDisplayHandler}
-      region={region}
-      {...props}
-    />
-  ) : (
+  return (
     <svg
       ref={ref}
       data-testid="svgfeatures"
@@ -313,13 +344,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
         onClick?.(event)
       }}
     >
-      <RenderedFeatures
-        displayMode={displayMode}
-        region={region}
-        isFeatureDisplayed={featureDisplayHandler}
-        {...props}
-      />
-
+      {children}
       <SvgOverlay
         {...props}
         region={region}
@@ -327,6 +352,6 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
       />
     </svg>
   )
-})
+}
 
 export default SvgFeatureRendering
