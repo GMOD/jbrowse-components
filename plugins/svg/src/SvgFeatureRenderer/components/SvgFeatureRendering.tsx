@@ -9,8 +9,12 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
-import type { Coord, ViewParams } from './types'
-import type { DisplayModel, ExtraGlyphValidator } from './util'
+import type {
+  Coord,
+  DisplayModel,
+  ExtraGlyphValidator,
+  ViewParams,
+} from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -132,26 +136,27 @@ function RenderedFeatureGlyph(props: {
   )
   if (topPx === null) {
     return null
-  }
-  rootLayout.move(startPx, topPx)
+  } else {
+    rootLayout.move(startPx, topPx)
 
-  return (
-    <FeatureGlyph
-      rootLayout={rootLayout}
-      name={name}
-      shouldShowName={shouldShowName}
-      description={description}
-      shouldShowDescription={shouldShowDescription}
-      fontHeight={fontHeight}
-      allowedWidthExpansion={expansion}
-      reversed={region.reversed}
-      topLevel={true}
-      {...props}
-    />
-  )
+    return (
+      <FeatureGlyph
+        rootLayout={rootLayout}
+        name={name}
+        shouldShowName={shouldShowName}
+        description={description}
+        shouldShowDescription={shouldShowDescription}
+        fontHeight={fontHeight}
+        allowedWidthExpansion={expansion}
+        reversed={region.reversed}
+        topLevel={true}
+        {...props}
+      />
+    )
+  }
 }
 
-const RenderedFeatures = observer(function RenderedFeatures(props: {
+const RenderedFeatures = observer(function (props: {
   features?: Map<string, Feature>
   isFeatureDisplayed?: (f: Feature) => boolean
   bpPerPx: number
