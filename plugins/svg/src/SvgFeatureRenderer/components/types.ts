@@ -4,3 +4,8 @@ export interface ViewParams {
   offsetPx: number
   offsetPx1: number
 }
+
+export interface Coord {
+  x: number
+  y: number
+}
