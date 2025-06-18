@@ -7,8 +7,6 @@ import RenderedBlocks from './RenderedBlocks'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { BaseLinearDisplayModel } from '../model'
 
-type LGV = LinearGenomeViewModel
-
 const useStyles = makeStyles()({
   linearBlocks: {
     whiteSpace: 'nowrap',
@@ -26,7 +24,7 @@ const LinearBlocks = observer(function ({
 }) {
   const { classes } = useStyles()
   const { blockDefinitions } = model
-  const viewModel = getContainingView(model) as LGV
+  const viewModel = getContainingView(model) as LinearGenomeViewModel
   return (
     <div
       className={classes.linearBlocks}
