@@ -1,50 +1,39 @@
-import type React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getFrame } from '@jbrowse/core/util'
 
 import Box from './Box'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
 
+import type {
+  ExtraGlyphValidator,
+  FeatureLayOutArgs,
+  Glyph,
+  SubfeatureLayOutArgs,
+} from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
+import type { Theme } from '@mui/material'
 
-export interface Glyph
-  extends React.FC<{
-    colorByCDS: boolean
-    feature: Feature
-    featureLayout: SceneGraph
-    selected?: boolean
-    config: AnyConfigurationModel
-    region: Region
-    bpPerPx: number
-    topLevel?: boolean
-    [key: string]: unknown
-  }> {
-  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
-}
-
-type LayoutRecord = [number, number, number, number]
-
-export interface DisplayModel {
-  getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
-  getFeatureOverlapping?: (
-    blockKey: string,
-    bp: number,
-    y: number,
-  ) => string | undefined
-  selectedFeatureId?: string
-  featureIdUnderMouse?: string
-  contextMenuFeature?: Feature
-}
-
-export interface ExtraGlyphValidator {
-  glyph: Glyph
-  validator: (feature: Feature) => boolean
-}
-
+/**
+ * Selects the appropriate glyph component to render a feature based on its
+ * type and structure
+ *
+ * This function examines the feature's type and subfeatures to determine the
+ * most appropriate visualization component:
+ * - ProcessedTranscript: For transcript features with CDS subfeatures
+ * - Subfeatures: For container features with nested subfeatures
+ * - Segments: For features with simple subfeatures
+ * - Box (default): For simple features without subfeatures
+ * - Custom glyphs: Based on validator functions
+ *
+ * @param feature - The genomic feature to render
+ * @param extraGlyphs - Optional custom glyph components with validators
+ * @param config - Configuration model with display settings
+ * @returns The appropriate Glyph component to render the feature
+ */
 export function chooseGlyphComponent({
   feature,
   extraGlyphs,
@@ -77,23 +66,21 @@ export function chooseGlyphComponent({
   }
 }
 
-interface BaseLayOutArgs {
-  layout: SceneGraph
-  bpPerPx: number
-  reversed?: boolean
-  config: AnyConfigurationModel
-}
-
-interface FeatureLayOutArgs extends BaseLayOutArgs {
-  feature: Feature
-  extraGlyphs?: ExtraGlyphValidator[]
-}
-
-interface SubfeatureLayOutArgs extends BaseLayOutArgs {
-  subfeatures: Feature[]
-  extraGlyphs?: ExtraGlyphValidator[]
-}
-
+/**
+ * Main layout function that positions a feature and its subfeatures in the
+ * scene graph
+ *
+ * This function first lays out the main feature, then recursively lays out
+ * its subfeatures if the display mode permits showing subfeatures.
+ *
+ * @param layout - The scene graph to add the feature to
+ * @param feature - The feature to lay out
+ * @param bpPerPx - Base pairs per pixel (zoom level)
+ * @param reversed - Whether the display is reversed
+ * @param config - Configuration settings
+ * @param extraGlyphs - Optional custom glyphs
+ * @returns The updated scene graph with the feature and subfeatures added
+ */
 export function layOut({
   layout,
   feature,
@@ -124,6 +111,16 @@ export function layOut({
   return subLayout
 }
 
+/**
+ * Positions a single feature in the scene graph
+ *
+ * This function calculates the position of a feature based on its genomic coordinates,
+ * parent feature (if any), and display settings. It then adds the feature to the
+ * scene graph with the appropriate glyph component.
+ *
+ * @param args - Layout arguments including feature and display settings
+ * @returns The updated scene graph with the feature added
+ */
 export function layOutFeature(args: FeatureLayOutArgs) {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode') as string
@@ -138,6 +135,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
+    // Calculate x position relative to parent feature
     x =
       (reversed
         ? parentFeature.get('end') - feature.get('end')
@@ -157,9 +155,18 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   )
 }
 
+/**
+ * Lays out multiple subfeatures within a parent feature
+ *
+ * This function iterates through the subfeatures and lays out each one
+ * using either its custom layout function or the default layout function.
+ *
+ * @param args - Layout arguments including subfeatures array and display settings
+ */
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   for (const feature of subfeatures) {
+    // Use the feature's custom layout function if available, otherwise use the default
     ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
       layout,
       feature,
@@ -171,8 +178,71 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   }
 }
 
+/**
+ * Determines if a feature is an untranslated region (UTR)
+ *
+ * This function checks if the feature type contains UTR-related keywords
+ * such as "UTR", "_UTR", or "untranslated region".
+ *
+ * @param feature - The genomic feature to check
+ * @returns True if the feature is a UTR, false otherwise
+ */
 export function isUTR(feature: Feature) {
   return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
     feature.get('type') || '',
   )
+}
+
+/**
+ * Get the appropriate color for a box feature based on its properties
+ * @param feature - The genomic feature
+ * @param config - The configuration model
+ * @param colorByCDS - Whether to color by CDS frame
+ * @param theme - Material UI theme object
+ * @returns The color string to use for the feature
+ */
+export function getBoxColor({
+  feature,
+  config,
+  colorByCDS,
+  theme,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  colorByCDS: boolean
+  theme: Theme
+}): string {
+  // Get the basic color based on UTR status
+  let fill: string = isUTR(feature)
+    ? readConfObject(config, 'color3', { feature })
+    : readConfObject(config, 'color1', { feature })
+
+  // If coloring by CDS and this is a CDS feature with strand and phase
+  const featureType: string | undefined = feature.get('type')
+  const featureStrand: -1 | 1 | undefined = feature.get('strand')
+  const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
+
+  if (
+    colorByCDS &&
+    featureType === 'CDS' &&
+    featureStrand !== undefined &&
+    featurePhase !== undefined
+  ) {
+    const featureStart = feature.get('start')
+    const featureEnd = feature.get('end')
+
+    // Calculate the frame and get the corresponding color
+    const frame = getFrame(
+      featureStart,
+      featureEnd,
+      featureStrand,
+      featurePhase,
+    )
+    const frameColor = theme.palette.framesCDS.at(frame)?.main
+    if (frameColor) {
+      fill = frameColor
+    }
+  }
+
+  return fill
 }
