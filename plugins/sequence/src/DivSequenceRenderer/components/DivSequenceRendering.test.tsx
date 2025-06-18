@@ -74,30 +74,32 @@ test('renders with one feature with no seq, zoomed in, should throw', () => {
 
 test('renders with one feature with an incorrect seq, zoomed in, should throw', () => {
   const { container } = render(
-    <DivSequenceRendering
-      regions={[
-        { assemblyName: 'volvox', refName: 'zonk', start: 0, end: 1000 },
-      ]}
-      colorByCDS={false}
-      features={
-        new Map([
-          [
-            'one',
-            new SimpleFeature({
-              refName: 't1',
-              uniqueId: 'one',
-              start: 1,
-              end: 3,
-              seq: 'ABC',
-            }),
-          ],
-        ])
-      }
-      config={DivRenderingConfigSchema.create({})}
-      bpPerPx={0.05}
-      sequenceHeight={160}
-      rowHeight={20}
-    />,
+    <Base>
+      <DivSequenceRendering
+        regions={[
+          { assemblyName: 'volvox', refName: 'zonk', start: 0, end: 1000 },
+        ]}
+        colorByCDS={false}
+        features={
+          new Map([
+            [
+              'one',
+              new SimpleFeature({
+                refName: 't1',
+                uniqueId: 'one',
+                start: 1,
+                end: 3,
+                seq: 'ABC',
+              }),
+            ],
+          ])
+        }
+        config={DivRenderingConfigSchema.create({})}
+        bpPerPx={0.05}
+        sequenceHeight={160}
+        rowHeight={20}
+      />
+    </Base>,
   )
 
   expect(container).toMatchSnapshot()

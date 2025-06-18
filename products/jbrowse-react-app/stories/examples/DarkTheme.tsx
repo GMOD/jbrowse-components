@@ -2,9 +2,16 @@
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import { JBrowseApp, createViewState } from '../../src'
 
-export const BasicExample = () => {
+export const DarkTheme = () => {
   const state = createViewState({
     config: {
+      configuration: {
+        theme: {
+          palette: {
+            mode: 'dark',
+          },
+        },
+      },
       assemblies: [
         {
           name: 'volvox',
