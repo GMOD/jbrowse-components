@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx, measureText } from '@jbrowse/core/util'
@@ -9,6 +9,7 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
+import type { ViewParams } from './types'
 import type { DisplayModel, ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -34,13 +35,7 @@ function RenderedFeatureGlyph(props: {
   exportSVG?: unknown
   displayModel?: DisplayModel
   detectRerender?: () => void
-  viewParams: {
-    start: number
-    end: number
-    offsetPx: number
-    offsetPx1: number
-  }
-  [key: string]: unknown
+  viewParams: ViewParams
 }) {
   const {
     feature,
@@ -168,13 +163,7 @@ const RenderedFeatures = observer(function RenderedFeatures(props: {
   exportSVG?: unknown
   extraGlyphs?: ExtraGlyphValidator[]
   layout: BaseLayout<unknown>
-  viewParams: {
-    start: number
-    end: number
-    offsetPx: number
-    offsetPx1: number
-  }
-  [key: string]: unknown
+  viewParams: ViewParams
 }) {
   const { features = new Map(), isFeatureDisplayed } = props
   return (
@@ -194,6 +183,11 @@ const RenderedFeatures = observer(function RenderedFeatures(props: {
   )
 })
 
+interface Coord {
+  x: number
+  y: number
+}
+
 const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>
   blockKey: string
@@ -205,12 +199,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   features: Map<string, Feature>
   displayModel?: DisplayModel
   exportSVG?: boolean
-  viewParams: {
-    start: number
-    end: number
-    offsetPx: number
-    offsetPx1: number
-  }
+  viewParams: ViewParams
   featureDisplayHandler?: (f: Feature) => boolean
   extraGlyphs?: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
@@ -251,84 +240,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
-  const [initialMousePos, setInitialMousePos] = useState<{
-    x: number
-    y: number
-  }>()
-
-  const mouseDown = useCallback(
-    (event: React.MouseEvent) => {
-      setMouseIsDown(true)
-      setMovedDuringLastMouseDown(false)
-      setInitialMousePos({
-        x: event.clientX,
-        y: event.clientY,
-      })
-      return onMouseDown?.(event)
-    },
-    [onMouseDown],
-  )
-
-  const mouseUp = useCallback(
-    (event: React.MouseEvent) => {
-      setMouseIsDown(false)
-      setInitialMousePos(undefined)
-      return onMouseUp?.(event)
-    },
-    [onMouseUp],
-  )
-
-  const mouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (!ref.current) {
-        return
-      }
-      if (mouseIsDown && initialMousePos) {
-        const dx = event.clientX - initialMousePos.x
-        const dy = event.clientY - initialMousePos.y
-        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-          setMovedDuringLastMouseDown(true)
-        }
-      }
-      const { left, top } = ref.current.getBoundingClientRect()
-      const offsetX = event.clientX - left
-      const offsetY = event.clientY - top
-      const px = region.reversed ? width - offsetX : offsetX
-      const clientBp = region.start + bpPerPx * px
-
-      const featureIdCurrentlyUnderMouse = displayModel.getFeatureOverlapping?.(
-        blockKey,
-        clientBp,
-        offsetY,
-      )
-
-      if (onMouseMove) {
-        onMouseMove(event, featureIdCurrentlyUnderMouse)
-      }
-    },
-    [
-      initialMousePos,
-      blockKey,
-      bpPerPx,
-      mouseIsDown,
-      onMouseMove,
-      region.reversed,
-      region.start,
-      displayModel,
-      width,
-    ],
-  )
-
-  const click = useCallback(
-    (event: React.MouseEvent) => {
-      // don't select a feature if we are clicking and dragging
-      if (movedDuringLastMouseDown) {
-        return
-      }
-      onClick?.(event)
-    },
-    [movedDuringLastMouseDown, onClick],
-  )
+  const [initialMousePos, setInitialMousePos] = useState<Coord>()
 
   useEffect(() => {
     setHeight(layout.getTotalHeight())
@@ -351,19 +263,59 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
         // use block because svg by default is inline, which adds a margin
         display: 'block',
       }}
-      onMouseDown={mouseDown}
-      onMouseUp={mouseUp}
+      onMouseDown={event => {
+        setMouseIsDown(true)
+        setMovedDuringLastMouseDown(false)
+        setInitialMousePos({
+          x: event.clientX,
+          y: event.clientY,
+        })
+        return onMouseDown?.(event)
+      }}
+      onMouseUp={event => {
+        setMouseIsDown(false)
+        setInitialMousePos(undefined)
+        return onMouseUp?.(event)
+      }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
-      onMouseMove={mouseMove}
-      onClick={click}
+      onMouseMove={event => {
+        if (!ref.current) {
+          return
+        }
+        if (mouseIsDown && initialMousePos) {
+          const dx = event.clientX - initialMousePos.x
+          const dy = event.clientY - initialMousePos.y
+          if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+            setMovedDuringLastMouseDown(true)
+          }
+        }
+        const { left, top } = ref.current.getBoundingClientRect()
+        const offsetX = event.clientX - left
+        const offsetY = event.clientY - top
+        const px = region.reversed ? width - offsetX : offsetX
+        const clientBp = region.start + bpPerPx * px
+
+        const featureIdCurrentlyUnderMouse =
+          displayModel.getFeatureOverlapping?.(blockKey, clientBp, offsetY)
+
+        if (onMouseMove) {
+          onMouseMove(event, featureIdCurrentlyUnderMouse)
+        }
+      }}
+      onClick={event => {
+        // don't select a feature if we are clicking and dragging
+        if (movedDuringLastMouseDown) {
+          return
+        }
+        onClick?.(event)
+      }}
     >
       <RenderedFeatures
         displayMode={displayMode}
         region={region}
-        movedDuringLastMouseDown={movedDuringLastMouseDown}
         isFeatureDisplayed={featureDisplayHandler}
         {...props}
       />
