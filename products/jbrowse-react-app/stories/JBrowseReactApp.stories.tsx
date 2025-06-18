@@ -1,5 +1,6 @@
 export {
   BasicExample,
+  DarkTheme,
   HumanDemo,
   WithFetchConfigJson,
   WithImportConfigJson,
