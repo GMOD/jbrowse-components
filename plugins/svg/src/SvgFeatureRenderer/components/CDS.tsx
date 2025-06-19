@@ -4,15 +4,12 @@ import { observer } from 'mobx-react'
 
 import Arrow from './Arrow'
 import { getBoxColor } from './getBoxColor'
-import { isUTR } from './isUTR'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
-const utrHeightFraction = 0.65
-
-const Box = observer(function Box(props: {
+const CDS = observer(function CDS(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
@@ -38,17 +35,12 @@ const Box = observer(function Box(props: {
   const featureEnd = feature.get('end')
   const featureType: string | undefined = feature.get('type')
   const width = (featureEnd - featureStart) / bpPerPx
-  const { left = 0 } = featureLayout.absolute
-  let { top = 0, height = 0 } = featureLayout.absolute
+  const { left = 0, top = 0, height = 0 } = featureLayout.absolute
 
   if (left + width < 0) {
     return null
   }
 
-  if (isUTR(feature)) {
-    top += ((1 - utrHeightFraction) / 2) * height
-    height *= utrHeightFraction
-  }
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
@@ -77,4 +69,4 @@ const Box = observer(function Box(props: {
   )
 })
 
-export default Box
+export default CDS

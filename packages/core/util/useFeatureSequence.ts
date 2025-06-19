@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { getConf } from '../configuration'
+import { fetchSeq } from './fetchSeq'
 
 import type { AbstractSessionModel, Feature } from '.'
 import type { ErrorState, SeqState } from '../BaseFeatureWidget/util'
@@ -22,32 +22,10 @@ export function useFeatureSequence({
 }) {
   const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
+
   useEffect(() => {
     if (!session) {
       return
-    }
-    const { assemblyManager, rpcManager } = session
-    async function fetchSeq(start: number, end: number, refName: string) {
-      const assembly = await assemblyManager.waitForAssembly(assemblyName)
-      if (!assembly) {
-        throw new Error('assembly not found')
-      }
-      const sessionId = 'getSequence'
-      const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-        adapterConfig: getConf(assembly, ['sequence', 'adapter']),
-        sessionId,
-        regions: [
-          {
-            start,
-            end,
-            refName: assembly.getCanonicalRefName(refName),
-            assemblyName,
-          },
-        ],
-      })
-
-      const [feat] = feats as Feature[]
-      return (feat?.get('seq') as string | undefined) || ''
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -66,9 +44,27 @@ export function useFeatureSequence({
           const b = start - upDownBp
           const e = end + upDownBp
           setSequence({
-            seq: await fetchSeq(start, end, refName),
-            upstream: await fetchSeq(Math.max(0, b), start, refName),
-            downstream: await fetchSeq(end, e, refName),
+            seq: await fetchSeq({
+              start,
+              end,
+              refName,
+              assemblyName,
+              session,
+            }),
+            upstream: await fetchSeq({
+              start: Math.max(0, b),
+              end: start,
+              refName,
+              assemblyName,
+              session,
+            }),
+            downstream: await fetchSeq({
+              start: end,
+              end: e,
+              refName,
+              assemblyName,
+              session,
+            }),
           })
         }
       } catch (e) {
