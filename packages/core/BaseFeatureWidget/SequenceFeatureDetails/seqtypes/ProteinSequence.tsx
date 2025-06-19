@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
 
-import { stitch } from '../../util'
 import { proteinColor, splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
+import { convertCodingSequenceToPeptides } from './convertCodingSequenceToPeptides'
 
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'
@@ -19,14 +19,13 @@ const ProteinSequence = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   const { charactersPerRow, showCoordinates } = model
-  const str = stitch(cds, sequence)
-  let protein = ''
-  for (let i = 0; i < str.length; i += 3) {
-    // use & symbol for undefined codon, or partial slice
-    protein += codonTable[str.slice(i, i + 3)] || '&'
-  }
+  let str = convertCodingSequenceToPeptides({
+    cds,
+    sequence,
+    codonTable,
+  })
   const { segments } = splitString({
-    str: protein,
+    str,
     charactersPerRow,
     showCoordinates,
   })
