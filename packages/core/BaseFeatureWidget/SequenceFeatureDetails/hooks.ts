@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 
 import { getConf } from '../../configuration'
-import { getSession } from '../../util'
 
-import type { Feature, SimpleFeatureSerialized } from '../../util'
+import type {
+  AbstractSessionModel,
+  Feature,
+  SimpleFeatureSerialized,
+} from '../../util'
 import type { ErrorState, SeqState } from '../util'
 
 const BPLIMIT = 500_000
@@ -14,20 +17,23 @@ interface CoordFeat extends SimpleFeatureSerialized {
   end: number
 }
 
-export function useFeatureSequence(
-  model: { view?: { assemblyNames?: string[] } } | undefined,
-  feature: SimpleFeatureSerialized,
-  upDownBp: number,
-  forceLoad: boolean,
-) {
+export function useFeatureSequence({
+  session,
+  feature,
+  upDownBp,
+  forceLoad,
+  assemblyName,
+}: {
+  assemblyName: string
+  session: AbstractSessionModel
+  feature: SimpleFeatureSerialized
+  upDownBp: number
+  forceLoad: boolean
+}) {
   const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
   useEffect(() => {
-    if (!model) {
-      return
-    }
-    const { assemblyManager, rpcManager } = getSession(model)
-    const assemblyName = model.view?.assemblyNames?.[0] || ''
+    const { assemblyManager, rpcManager } = session
     async function fetchSeq(start: number, end: number, refName: string) {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!assembly) {
@@ -74,6 +80,10 @@ export function useFeatureSequence(
         setError(e)
       }
     })()
-  }, [feature, model, upDownBp, forceLoad])
-  return { sequence, error }
+  }, [feature, session, assemblyName, upDownBp, forceLoad])
+
+  return {
+    sequence,
+    error,
+  }
 }
