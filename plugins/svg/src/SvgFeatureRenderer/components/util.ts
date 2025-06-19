@@ -11,7 +11,6 @@ import type {
   Glyph,
   SubfeatureLayOutArgs,
 } from './types'
-
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'

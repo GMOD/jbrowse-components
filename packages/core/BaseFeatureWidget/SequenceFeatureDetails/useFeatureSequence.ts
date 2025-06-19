@@ -65,10 +65,11 @@ export function useFeatureSequence({
         } else {
           const b = start - upDownBp
           const e = end + upDownBp
-          const seq = await fetchSeq(start, end, refName)
-          const up = await fetchSeq(Math.max(0, b), start, refName)
-          const down = await fetchSeq(end, e, refName)
-          setSequence({ seq, upstream: up, downstream: down })
+          setSequence({
+            seq: await fetchSeq(start, end, refName),
+            upstream: await fetchSeq(Math.max(0, b), start, refName),
+            downstream: await fetchSeq(end, e, refName),
+          })
         }
       } catch (e) {
         console.error(e)

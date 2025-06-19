@@ -1,4 +1,4 @@
-import { Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Determines if a feature is an untranslated region (UTR)

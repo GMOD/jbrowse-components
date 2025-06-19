@@ -1,4 +1,6 @@
-import { Feat, stitch } from '../../util'
+import { stitch } from '../../util'
+
+import type { Feat } from '../../util'
 
 export function convertCodingSequenceToPeptides({
   cds,
