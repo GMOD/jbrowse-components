@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { getModTypes } from '../../ModificationParser'
+import { getModTypes } from '../../ModificationParser/getModTypes'
 import { getTagAlt } from '../../util'
 import PileupBaseRPC from '../base'
 
