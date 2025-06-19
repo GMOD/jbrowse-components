@@ -1,7 +1,8 @@
 import { observer } from 'mobx-react'
 
 import { stitch } from '../../util'
-import { cdsColor, splitString } from '../util'
+import { cdsColor } from '../consts'
+import { splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
 
 import type { Feat } from '../../util'
