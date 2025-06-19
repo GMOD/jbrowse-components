@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { makeUTRs } from './makeUTRs'
 import { isUTR } from './isUTR'
+import { makeUTRs } from './makeUTRs'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
