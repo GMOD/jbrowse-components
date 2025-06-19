@@ -8,7 +8,7 @@ import { ErrorMessage, LoadingEllipses } from '../../ui'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
 
-import type { SimpleFeatureSerialized } from '../../util'
+import { getSession, type SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // lazies
@@ -29,13 +29,16 @@ const SequenceFeatureDetails = observer(function ({
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const [openInDialog, setOpenInDialog] = useState(false)
-  const [force, setForce] = useState(false)
-  const { sequence, error } = useFeatureSequence(
-    model,
+  const [forceLoad, setForceLoad] = useState(false)
+  const session = getSession(model)
+  const assemblyName = model.view?.assemblyNames?.[0]
+  const { sequence, error } = useFeatureSequence({
+    assemblyName,
+    session,
     feature,
     upDownBp,
-    force,
-  )
+    forceLoad,
+  })
   useEffect(() => {
     sequenceFeatureDetails.setFeature(feature)
   }, [sequenceFeatureDetails, feature])
@@ -92,7 +95,7 @@ const SequenceFeatureDetails = observer(function ({
                 variant="contained"
                 color="inherit"
                 onClick={() => {
-                  setForce(true)
+                  setForceLoad(true)
                 }}
               >
                 Force load

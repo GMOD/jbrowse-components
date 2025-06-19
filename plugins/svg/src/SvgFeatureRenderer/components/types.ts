@@ -28,10 +28,10 @@ export interface Glyph
     featureLayout: SceneGraph
     selected?: boolean
     config: AnyConfigurationModel
+    displayModel: any
     region: Region
     bpPerPx: number
     topLevel?: boolean
-    [key: string]: unknown
   }> {
   layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
