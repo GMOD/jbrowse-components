@@ -128,7 +128,7 @@ export function SequenceFeatureDetailsF() {
        */
       get hasCDS() {
         return self.feature?.subfeatures?.some(
-          sub => sub.type?.toLowerCase() === 'CDS',
+          sub => sub.type?.toLowerCase() === 'cds',
         )
       },
       /**
