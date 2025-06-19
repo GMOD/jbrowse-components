@@ -1,6 +1,6 @@
 import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
-import { isUTR } from './util'
+import { isUTR } from './isUTR'
 
 export function makeUTRs(parent: Feature, subs: Feature[]) {
   // based on Lincoln's UTR-making code in
