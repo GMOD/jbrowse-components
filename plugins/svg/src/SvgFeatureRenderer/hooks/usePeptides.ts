@@ -1,3 +1,4 @@
+import { useSequenceData } from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/useSequenceData'
 import {
   defaultCodonTable,
   generateCodonTable,
@@ -28,6 +29,7 @@ export function usePeptides({
 }) {
   const session = displayModel ? getSession(displayModel) : undefined
   const { assemblyName } = region
+
   const { sequence } = useFeatureSequence({
     session,
     assemblyName,
@@ -35,25 +37,17 @@ export function usePeptides({
     upDownBp,
     forceLoad,
   })
+  const sequenceData = useSequenceData({
+    feature: feature.toJSON(),
+    sequence,
+  })
 
   // If we don't have a valid sequence, return undefined
-  if (!sequence || 'error' in sequence) {
-    return undefined
-  }
-
-  const start = feature.get('start')
-  return convertCodingSequenceToPeptides({
-    cds:
-      feature
-        .toJSON()
-        .subfeatures?.filter(sub => sub.type?.toLowerCase() === 'cds')
-        .sort((a, b) => a.start - b.start)
-        .map(sub => ({
-          ...sub,
-          start: sub.start - start,
-          end: sub.end - start,
-        })) || [],
-    sequence: sequence.seq,
-    codonTable: generateCodonTable(defaultCodonTable),
-  })
+  return !sequenceData
+    ? undefined
+    : convertCodingSequenceToPeptides({
+        cds: sequenceData.cds,
+        sequence: sequenceData.seq,
+        codonTable: generateCodonTable(defaultCodonTable),
+      })
 }
