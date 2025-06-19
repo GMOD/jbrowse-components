@@ -41,7 +41,8 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
 
     const uniqueModifications = new Map<string, ModificationType>()
     for (const feat of featuresArray) {
-      for (const mod of getModTypes(getTagAlt(feat, 'MM', 'Mm') || '')) {
+      const mmTag = getTagAlt(feat, 'MM', 'Mm')
+      for (const mod of getModTypes(typeof mmTag === 'string' ? mmTag : '')) {
         if (!uniqueModifications.has(mod.type)) {
           uniqueModifications.set(mod.type, mod)
         }
