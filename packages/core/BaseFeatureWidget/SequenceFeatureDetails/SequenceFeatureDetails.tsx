@@ -3,12 +3,14 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { useFeatureSequence } from './hooks'
+import { useFeatureSequence } from './useFeatureSequence'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
 
-import { getSession, type SimpleFeatureSerialized } from '../../util'
+import { getSession, SimpleFeature } from '../../util'
+
+import type { SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // lazies
@@ -35,7 +37,7 @@ const SequenceFeatureDetails = observer(function ({
   const { sequence, error } = useFeatureSequence({
     assemblyName,
     session,
-    feature,
+    feature: new SimpleFeature(feature),
     upDownBp,
     forceLoad,
   })
@@ -54,11 +56,7 @@ const SequenceFeatureDetails = observer(function ({
             {
               label: 'Open in dialog',
               onClick: () => {
-                // this is given a setTimeout because it allows the menu to
-                // close before dialog opens
-                setTimeout(() => {
-                  setOpenInDialog(true)
-                }, 1)
+                setOpenInDialog(true)
               },
             },
           ]}
