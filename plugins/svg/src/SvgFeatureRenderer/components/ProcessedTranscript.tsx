@@ -1,9 +1,10 @@
-import { useFeatureSequence } from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/useFeatureSequence'
 import {
   defaultCodonTable,
   generateCodonTable,
   getSession,
 } from '@jbrowse/core/util'
+import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
+import { useFeatureSequence } from '@jbrowse/core/util/useFeatureSequence'
 import { observer } from 'mobx-react'
 
 import Segments from './Segments'
@@ -14,7 +15,6 @@ import type { ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
-import { convertCodingSequenceToPeptides } from '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/seqtypes/convertCodingSequenceToPeptides'
 
 const ProcessedTranscript = observer(function (props: {
   feature: Feature
@@ -56,7 +56,6 @@ const ProcessedTranscript = observer(function (props: {
           codonTable: generateCodonTable(defaultCodonTable),
         })
       : undefined
-  console.log({ peptides })
 
   return <Segments {...props} subfeatures={subfeatures} />
 })

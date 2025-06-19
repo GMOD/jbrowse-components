@@ -1,12 +1,3 @@
-// note that these are currently put into the style section instead of being
-// defined in classes to aid copy and paste to an external document e.g. word
-export const intronColor = undefined
-export const utrColor = 'rgb(200,240,240)'
-export const proteinColor = 'rgb(220,160,220)'
-export const cdsColor = 'rgb(220,220,180)'
-export const updownstreamColor = 'rgba(250,200,200)'
-export const genomeColor = 'rgb(200,280,200)'
-
 /**
  * Splits a string into chunks for display with optional coordinate spacing.
  */
@@ -44,15 +35,13 @@ export function splitString({
       break
     }
 
-    if (showCoordinates) {
-      segments[chunkIndex] = formatWithCoordinateSpacing(
-        currentChunk,
-        positionCounter,
-        spacingInterval,
-      )
-    } else {
-      segments[chunkIndex] = currentChunk
-    }
+    segments[chunkIndex] = showCoordinates
+      ? formatWithCoordinateSpacing(
+          currentChunk,
+          positionCounter,
+          spacingInterval,
+        )
+      : currentChunk
 
     // Reset position counter after each row
     positionCounter = 0
@@ -79,7 +68,7 @@ function formatWithCoordinateSpacing(
   chunk: string,
   startPosition: number,
   spacingInterval: number,
-): string {
+) {
   if (!chunk) {
     return ''
   }
@@ -106,7 +95,7 @@ function calculateRemainder(
   chunkIndex: number,
   currRemainder: number,
   charactersPerRow: number,
-): number {
+) {
   // Get the length of the last segment without spaces
   const lastSegmentLength = segments.at(-1)?.replaceAll(' ', '').length || 0
 

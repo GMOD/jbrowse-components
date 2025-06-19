@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react'
 
-import { genomeColor, splitString, updownstreamColor } from '../util'
+import { genomeColor, updownstreamColor } from '../consts'
+import { splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
 
 import type { SimpleFeatureSerialized } from '../../../util'

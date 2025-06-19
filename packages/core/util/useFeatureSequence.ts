@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { getConf } from '../../configuration'
+import { getConf } from '../configuration'
 
-import type { AbstractSessionModel, Feature } from '../../util'
-import type { ErrorState, SeqState } from '../util'
+import type { AbstractSessionModel, Feature } from '.'
+import type { ErrorState, SeqState } from '../BaseFeatureWidget/util'
 
 const BPLIMIT = 500_000
 
