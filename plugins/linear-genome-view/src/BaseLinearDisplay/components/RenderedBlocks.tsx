@@ -7,12 +7,16 @@ import {
 } from './Block'
 import MaxHeightReached from './MaxHeightReachedIndicator'
 
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
 const RenderedBlocks = observer(function ({
   model,
 }: {
-  model: BaseLinearDisplayModel
+  model: {
+    id: string
+    blockDefinitions: BlockSet
+    blockState: any
+  }
 }) {
   const { blockDefinitions, blockState } = model
   return blockDefinitions.map(block => {

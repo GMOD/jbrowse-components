@@ -60,14 +60,14 @@ const CDS = observer(function CDS(props: {
 
   const elements = []
   if (g2p && protein && doRender) {
-    const len = featureEnd - featureStart
+    const len = featureEnd - featureStart + 1
     if (strand === -1) {
       for (let i = 0; i < len; i++) {
         const elt = g2p[featureEnd + 1 - i]
         elements.push(
           <text
             key={`${i}-${elt}`}
-            x={right - (1 / bpPerPx) * i}
+            x={right - (1 / bpPerPx) * i + 1 / bpPerPx / 2 - 4}
             y={top + height - 1}
             fontSize={height}
             fill="black"
@@ -82,7 +82,7 @@ const CDS = observer(function CDS(props: {
         elements.push(
           <text
             key={`${i}-${elt}`}
-            x={left + (1 / bpPerPx) * i}
+            x={left + (1 / bpPerPx) * i + 1 / bpPerPx / 2 - 4}
             y={top + height - 1}
             fontSize={height}
             fill="black"
