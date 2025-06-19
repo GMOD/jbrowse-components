@@ -14,6 +14,7 @@ import type {
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
+import CDS from './CDS'
 
 /**
  * Selects the appropriate glyph component to render a feature based on its
@@ -59,6 +60,8 @@ export function chooseGlyphComponent({
     } else {
       return Segments
     }
+  } else if (type === 'CDS') {
+    return CDS
   } else {
     return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
   }

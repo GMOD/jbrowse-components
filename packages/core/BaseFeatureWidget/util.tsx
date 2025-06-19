@@ -38,7 +38,7 @@ function getItemId(feat: Feat) {
 }
 
 // filters if successive elements share same start/end
-export function dedupe(list: Feat[]) {
+export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   return list.filter(
     (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )

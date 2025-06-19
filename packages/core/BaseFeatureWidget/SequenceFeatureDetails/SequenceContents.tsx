@@ -1,7 +1,12 @@
 import { observer } from 'mobx-react'
 
 import { defaultCodonTable, generateCodonTable, revcom } from '../../util'
-import { calculateUTRs2, calculateUTRs, dedupe, revlist } from '../util'
+import {
+  calculateUTRs2,
+  calculateUTRs,
+  filterSuccessiveElementsWithSameStartAndEndCoord,
+  revlist,
+} from '../util'
 import CDNASequence from './seqtypes/CDNASequence'
 import CDSSequence from './seqtypes/CDSSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'
@@ -32,12 +37,18 @@ function prepareSubfeatures(feature: SimpleFeatureSerialized) {
  * Processes feature data to extract and deduplicate CDS, UTR, and exon features
  */
 function processFeatureData(children: any[], feature: SimpleFeatureSerialized) {
-  // Filter duplicate entries in cds and exon lists
-  // Duplicate entries may be rare but were seen in Gencode v36 track NCList
-  // (produces broken protein translations if included)
-  const cds = dedupe(children.filter(sub => sub.type?.toLowerCase() === 'cds'))
-  const exons = dedupe(children.filter(sub => sub.type === 'exon'))
-  let utr = dedupe(children.filter(sub => sub.type?.match(/utr/i)))
+  // Filter duplicate entries in cds and exon lists Duplicate entries may be
+  // rare but were seen in Gencode v36 track NCList (produces broken protein
+  // translations if included)
+  const cds = filterSuccessiveElementsWithSameStartAndEndCoord(
+    children.filter(sub => sub.type?.toLowerCase() === 'cds'),
+  )
+  const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
+    children.filter(sub => sub.type === 'exon'),
+  )
+  let utr = filterSuccessiveElementsWithSameStartAndEndCoord(
+    children.filter(sub => sub.type?.match(/utr/i)),
+  )
 
   // Calculate UTRs if not present but we have CDS and exons
   if (!utr.length && cds.length && exons.length) {

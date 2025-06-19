@@ -84,10 +84,9 @@ ProcessedTranscript.layOut = ({
     config,
     extraGlyphs,
   })
-  const subfeatures = getSubparts(feature, config)
   layOutSubfeatures({
     layout: subLayout,
-    subfeatures,
+    subfeatures: getSubparts(feature, config),
     bpPerPx,
     reversed,
     config,
