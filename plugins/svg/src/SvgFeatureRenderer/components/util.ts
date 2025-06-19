@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import Box from './Box'
+import CDS from './CDS'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
@@ -14,7 +15,6 @@ import type {
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
-import CDS from './CDS'
 
 /**
  * Selects the appropriate glyph component to render a feature based on its

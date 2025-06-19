@@ -41,24 +41,18 @@ export function usePeptides({
     return undefined
   }
 
-  // Get feature start position for relative positioning
   const start = feature.get('start')
-
-  // Extract CDS features and adjust their positions relative to the parent feature
-  const cds =
-    feature
-      .toJSON()
-      .subfeatures?.filter(sub => sub.type?.toLowerCase() === 'cds')
-      ?.sort((a, b) => a.start - b.start)
-      .map(sub => ({
-        ...sub,
-        start: sub.start - start,
-        end: sub.end - start,
-      })) || []
-
-  // Generate peptides from the coding sequence
   return convertCodingSequenceToPeptides({
-    cds,
+    cds:
+      feature
+        .toJSON()
+        .subfeatures?.filter(sub => sub.type?.toLowerCase() === 'cds')
+        .sort((a, b) => a.start - b.start)
+        .map(sub => ({
+          ...sub,
+          start: sub.start - start,
+          end: sub.end - start,
+        })) || [],
     sequence: sequence.seq,
     codonTable: generateCodonTable(defaultCodonTable),
   })
