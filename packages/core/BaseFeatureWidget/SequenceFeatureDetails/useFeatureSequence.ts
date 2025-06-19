@@ -2,20 +2,10 @@ import { useEffect, useState } from 'react'
 
 import { getConf } from '../../configuration'
 
-import type {
-  AbstractSessionModel,
-  Feature,
-  SimpleFeatureSerialized,
-} from '../../util'
+import type { AbstractSessionModel, Feature } from '../../util'
 import type { ErrorState, SeqState } from '../util'
 
 const BPLIMIT = 500_000
-
-interface CoordFeat extends SimpleFeatureSerialized {
-  refName: string
-  start: number
-  end: number
-}
 
 export function useFeatureSequence({
   session,
@@ -25,14 +15,17 @@ export function useFeatureSequence({
   assemblyName,
 }: {
   assemblyName: string
-  session: AbstractSessionModel
-  feature: SimpleFeatureSerialized
+  session?: AbstractSessionModel
+  feature: Feature
   upDownBp: number
   forceLoad: boolean
 }) {
   const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
   useEffect(() => {
+    if (!session) {
+      return
+    }
     const { assemblyManager, rpcManager } = session
     async function fetchSeq(start: number, end: number, refName: string) {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
@@ -61,7 +54,9 @@ export function useFeatureSequence({
     ;(async () => {
       try {
         setError(undefined)
-        const { start, end, refName } = feature as CoordFeat
+        const start = feature.get('start')
+        const end = feature.get('end')
+        const refName = feature.get('refName')
 
         if (!forceLoad && end - start > BPLIMIT) {
           setSequence({

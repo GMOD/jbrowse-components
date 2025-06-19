@@ -19,6 +19,18 @@ function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
 
+type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
+type SequenceDisplayMode =
+  | ''
+  | 'gene'
+  | 'gene_collapsed_intron'
+  | 'gene_updownstream'
+  | 'cdna'
+  | 'cds'
+  | 'genomic'
+  | 'genomic_sequence_updownstream'
+  | 'protein'
+
 const p = 'sequenceFeatureDetails'
 
 export function SequenceFeatureDetailsF() {
@@ -53,7 +65,7 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
-      mode: '',
+      mode: '' as SequenceDisplayMode,
     }))
     .actions(self => ({
       /**
@@ -83,13 +95,13 @@ export function SequenceFeatureDetailsF() {
       /**
        * #action
        */
-      setShowCoordinates(f: 'none' | 'relative' | 'genomic') {
+      setShowCoordinates(f: ShowCoordinatesMode) {
         self.showCoordinatesSetting = f
       },
       /**
        * #action
        */
-      setMode(mode: string) {
+      setMode(mode: SequenceDisplayMode) {
         self.mode = mode
       },
     }))
@@ -115,7 +127,9 @@ export function SequenceFeatureDetailsF() {
        * #getter
        */
       get hasCDS() {
-        return self.feature?.subfeatures?.some(sub => sub.type === 'CDS')
+        return self.feature?.subfeatures?.some(
+          sub => sub.type?.toLowerCase() === 'CDS',
+        )
       },
       /**
        * #getter

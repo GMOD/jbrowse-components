@@ -6,11 +6,15 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import SequencePanel from '../SequencePanel'
-import { useFeatureSequence } from '../hooks'
+import { useFeatureSequence } from '../useFeatureSequence'
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
 
-import { getSession, type SimpleFeatureSerialized } from '../../../util'
+import {
+  getSession,
+  SimpleFeature,
+  type SimpleFeatureSerialized,
+} from '../../../util'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
 
 const useStyles = makeStyles()({
@@ -42,7 +46,7 @@ const SequenceDialog = observer(function ({
   const { sequence, error } = useFeatureSequence({
     assemblyName,
     session,
-    feature,
+    feature: new SimpleFeature(feature),
     upDownBp,
     forceLoad,
   })
