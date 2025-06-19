@@ -3009,9 +3009,9 @@
     react-is "^19.1.0"
 
 "@mui/x-charts-vendor@^8.0.0":
-  version "8.5.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-charts-vendor/-/x-charts-vendor-8.5.2.tgz#84325a3a1b56c924492b7373bdc050aed148b927"
-  integrity sha512-93KFrEpo3Xhr0g2TQsbtPVqGAsbkKBN5J57ykrCM5GxFmq3kDGFU4k9+FpKiaIYYL8ijzgHGNh+jNVbP0pq3rQ==
+  version "8.5.3"
+  resolved "https://registry.yarnpkg.com/@mui/x-charts-vendor/-/x-charts-vendor-8.5.3.tgz#76d581008936c021dc18fcb321b2598b03c7b447"
+  integrity sha512-H05cb0c2qfRhWLPcwtiIU8BOcKTrMNvhgmRAvJJXpmlirOA1km8dUlR71VeUvJiCthhVIHKyFkPPzFYKgHAfng==
   dependencies:
     "@babel/runtime" "^7.27.6"
     "@types/d3-color" "^3.1.3"
@@ -3032,21 +3032,21 @@
     robust-predicates "^3.0.2"
 
 "@mui/x-data-grid@^8.0.0":
-  version "8.5.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-8.5.2.tgz#1788587711d2e49fabe3b8f6ccd5e38ef762f4b1"
-  integrity sha512-4KzawLZqRKp3KcGKsTDVz7zkEjACllQD5Zb8ds1QKlA6C3/oIoSU7PsemFLj+RL3rT5aORsLMBl97/egQ5tUhA==
+  version "8.5.3"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-8.5.3.tgz#fcba95abd3d2c1f6d776449803d207486c48ae8a"
+  integrity sha512-rA+de5yre16KFIGKRBUwb8kYIdn7SPPrZsBy1P3QxisqhC+Wz2AQg/W6WWv71aFHwplmGwsFUjU6d47Fy/wvXg==
   dependencies:
     "@babel/runtime" "^7.27.6"
     "@mui/utils" "^7.1.1"
-    "@mui/x-internals" "8.5.2"
+    "@mui/x-internals" "8.5.3"
     clsx "^2.1.1"
     prop-types "^15.8.1"
     use-sync-external-store "^1.5.0"
 
-"@mui/x-internals@8.5.2":
-  version "8.5.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-8.5.2.tgz#fba1bbbff2866ed118761c8fc4fcc7909d167f53"
-  integrity sha512-5YhB2AekK7G8d0YrAjg3WNf0uy3V73JD98WNxJhbIlCraQgl8QOQzr2zNO7MAf/X7mZQtjpjuAsiG3+gI2NVyg==
+"@mui/x-internals@8.5.3":
+  version "8.5.3"
+  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-8.5.3.tgz#60756111fae9b5d5c56e6eb72ee0a869dc900441"
+  integrity sha512-ImCg4E3DT3XoDIZO0pNCbB7iw14N+YCFY3J1V28POwCD7P2f3HSIz4jwzM006oYxI6bqeE6LMfpdPRDW6s6dQw==
   dependencies:
     "@babel/runtime" "^7.27.6"
     "@mui/utils" "^7.1.1"
@@ -9097,6 +9097,11 @@ functions-have-names@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
+
+g2p_mapper@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/g2p_mapper/-/g2p_mapper-1.0.7.tgz#0ab2d90091fc6645cdf0d2367cdebd444473c7d6"
+  integrity sha512-6jgkWZZ+vi08flXx6byllexAk7LUa/TWDFz8jVgWDC6V610xM8r2y4DWjCU0RPD0wnDhrptHZ263YRQCxnkz1Q==
 
 gauge@^4.0.3:
   version "4.0.4"

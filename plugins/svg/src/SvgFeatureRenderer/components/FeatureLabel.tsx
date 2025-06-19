@@ -5,15 +5,8 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 
-import type { DisplayModel } from './util'
+import type { DisplayModel, ViewParams } from './types'
 import type { Feature, Region } from '@jbrowse/core/util'
-
-interface ViewParams {
-  start: number
-  end: number
-  offsetPx: number
-  offsetPx1: number
-}
 
 const FeatureLabel = observer(function ({
   text,
