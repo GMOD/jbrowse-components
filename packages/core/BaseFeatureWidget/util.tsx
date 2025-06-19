@@ -25,7 +25,10 @@ export interface ErrorState {
   error: string
 }
 
-export function stitch(subfeats: Feat[], sequence: string) {
+export function stitch(
+  subfeats: { start: number; end: number }[],
+  sequence: string,
+) {
   return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
 }
 

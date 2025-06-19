@@ -19,7 +19,7 @@ const ProteinSequence = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   const { charactersPerRow, showCoordinates } = model
-  let str = convertCodingSequenceToPeptides({
+  const str = convertCodingSequenceToPeptides({
     cds,
     sequence,
     codonTable,

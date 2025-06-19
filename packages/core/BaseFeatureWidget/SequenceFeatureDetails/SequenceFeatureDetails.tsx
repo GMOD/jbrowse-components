@@ -7,8 +7,7 @@ import { useFeatureSequence } from './useFeatureSequence'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
-
-import { getSession, SimpleFeature } from '../../util'
+import { SimpleFeature, getSession } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'

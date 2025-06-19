@@ -9,12 +9,12 @@ import SequencePanel from '../SequencePanel'
 import { useFeatureSequence } from '../useFeatureSequence'
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
-
 import {
-  getSession,
   SimpleFeature,
   type SimpleFeatureSerialized,
+  getSession,
 } from '../../../util'
+
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
 
 const useStyles = makeStyles()({
