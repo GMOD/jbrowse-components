@@ -1,12 +1,12 @@
 import { lazy, useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   type AbstractSessionModel,
   localStorageGetItem,
 } from '@jbrowse/core/util'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Button,

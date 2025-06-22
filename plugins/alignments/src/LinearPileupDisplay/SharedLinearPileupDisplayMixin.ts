@@ -6,7 +6,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -18,6 +17,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import copy from 'copy-to-clipboard'
 import { autorun, observable } from 'mobx'
@@ -34,7 +34,6 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),
@@ -248,17 +247,6 @@ export function SharedLinearPileupDisplayMixin(
 
       /**
        * #action
-       * uses copy-to-clipboard and generates notification
-       */
-      copyFeatureToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
-      },
-
-      /**
-       * #action
        */
       setConfig(conf: AnyConfigurationModel) {
         self.configuration = conf
@@ -289,6 +277,16 @@ export function SharedLinearPileupDisplayMixin(
     }))
 
     .views(self => ({
+      /**
+       * #method
+       * uses copy-to-clipboard and generates notification
+       */
+      copyFeatureToClipboard(feature: Feature) {
+        const { uniqueId, ...rest } = feature.toJSON()
+        const session = getSession(self)
+        copy(JSON.stringify(rest, null, 4))
+        session.notify('Copied to clipboard', 'success')
+      },
       /**
        * #getter
        */

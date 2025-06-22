@@ -1,6 +1,5 @@
 import { fireEvent, within } from '@testing-library/react'
 
-// local
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 setup()
 

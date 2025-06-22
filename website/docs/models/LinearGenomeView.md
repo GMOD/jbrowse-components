@@ -296,6 +296,13 @@ number
 any[]
 ```
 
+#### getter: assemblyDisplayNames
+
+```js
+// type
+any
+```
+
 #### getter: isTopLevelView
 
 checking if lgv is a 'top-level' view is used for toggling pin track capability,
@@ -994,7 +1001,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promis...
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promise<...>
 ```
 
 #### action: navToLocation

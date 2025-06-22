@@ -5,7 +5,6 @@ import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-// local
 import type { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
 import type { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

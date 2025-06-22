@@ -4,7 +4,13 @@ title: Embedded components
 toplevel: true
 ---
 
-Our embedded components allow you to use JBrowse in your application
+Our embedded components allow you to embed JBrowse components on your webpage
+
+You can see a tutorial for setting up the embedded components here
+https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/
+
+See also our FAQ entry on embedded components
+http://jbrowse.org/jb2/docs/faq/#embedded-views-versus-full-jbrowse-app
 
 ## @jbrowse/react-app2
 
@@ -39,12 +45,12 @@ React component
 Here is a table of different usages of the `@jbrowse/react-linear-genome-view2`
 using different bundlers
 
-| Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                                                                      |
-| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| vite       | [demo](https://jbrowse.org/demos/lgv-vite)      | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo)      | Uses vite. This demo was updated to utilize webworkers in 2024                                                                                                                                            |
-| rsbuild    | [demo](https://jbrowse.org/demos/lgv-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo)   | Uses rsbuild (https://rsbuild.dev/)                                                                                                                                                                       |
-| next.js    | [demo](https://jbrowse.org/demos/lgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo)    | Uses next.js. Currently is hardcoded to use /demos/lgv-nextjs/ as sub-uri, update next.config.js to customize as needed. This demo was updated to use webworkers in 2024                                  |
-| vanilla js | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling. see also dev tutorial here https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/01_introduction/ |
+| Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                                                      |
+| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| vite       | [demo](https://jbrowse.org/demos/lgv-vite)      | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo)      | Uses vite. This demo was updated to utilize webworkers in 2024                                                                                                                            |
+| rsbuild    | [demo](https://jbrowse.org/demos/lgv-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo)   | Uses rsbuild (https://rsbuild.dev/)                                                                                                                                                       |
+| next.js    | [demo](https://jbrowse.org/demos/lgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo)    | Uses next.js. Currently is hardcoded to use /demos/lgv-nextjs/ as sub-uri, update next.config.js to customize as needed. This demo was updated to use webworkers in 2024                  |
+| vanilla js | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling. see also dev tutorial here https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/ |
 
 ## @jbrowse/react-circular-genome-view2
 

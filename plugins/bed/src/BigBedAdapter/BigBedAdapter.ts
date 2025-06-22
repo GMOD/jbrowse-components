@@ -260,20 +260,43 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
-          observer.next(
-            new SimpleFeature({
-              id: `${this.id}-${subs[0]?.uniqueId}-parent`,
-              data: {
-                type: 'gene',
-                subfeatures: subs,
-                strand: subs[0]?.strand || 1,
-                name,
-                start: s,
-                end: e,
-                refName: query.refName,
-              },
-            }),
-          )
+          if (
+            subs.every(s => {
+              return s.strand === (subs[0]?.strand || 1)
+            })
+          ) {
+            observer.next(
+              new SimpleFeature({
+                id: `${this.id}-${subs[0]?.uniqueId}-parent`,
+                data: {
+                  type: 'gene',
+                  subfeatures: subs,
+                  strand: subs[0]?.strand || 1,
+                  name,
+                  start: s,
+                  end: e,
+                  refName: query.refName,
+                },
+              }),
+            )
+          } else {
+            for (const sub of subs) {
+              observer.next(
+                new SimpleFeature({
+                  id: `${this.id}-${sub.uniqueId}-parent`,
+                  data: {
+                    type: 'gene',
+                    subfeatures: [sub],
+                    strand: subs[0]?.strand || 1,
+                    name,
+                    start: sub.start,
+                    end: sub.end,
+                    refName: query.refName,
+                  },
+                }),
+              )
+            }
+          }
         }
       })
     })

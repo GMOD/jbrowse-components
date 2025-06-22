@@ -8,6 +8,18 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+/**
+ * #config JBrowseConfiguration
+ * this is the entry under the `configuration` key
+ * e.g.
+ * ```json
+ * {
+ *   assemblies,
+ *   tracks,
+ *   configuration: { these entries here  }
+ * }
+ * ```
+ */
 export default function RootConfiguration({
   pluginManager,
 }: {

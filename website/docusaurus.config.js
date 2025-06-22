@@ -4,6 +4,11 @@ const data = JSON.parse(fs.readFileSync('./docusaurus.config.json'))
 
 module.exports = {
   ...data,
+
+  future: {
+    experimental_faster: true,
+    v4: true,
+  },
   themeConfig: {
     colorMode: {
       disableSwitch: true,

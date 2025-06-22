@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react'
 
-// local
 import Arcs from './Arcs'
 import BaseDisplayComponent from './BaseDisplayComponent'
 

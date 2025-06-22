@@ -34,6 +34,7 @@
     "**/component_tests/",
     "**/plugin-development-tools/",
     "**/webpack.config.js",
-    "**/website"
+    "**/website",
+    "**/auth_test_utils"
   ]
 }

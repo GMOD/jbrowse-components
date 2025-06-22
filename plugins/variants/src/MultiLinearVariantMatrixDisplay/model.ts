@@ -36,6 +36,9 @@ export default function stateModelFactory(
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
       get nrow() {
         return self.sources?.length || 1
       },

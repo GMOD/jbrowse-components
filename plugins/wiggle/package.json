@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -37,9 +37,9 @@
   },
   "dependencies": {
     "@gmod/bbi": "^7.0.0",
-    "@jbrowse/core": "^3.5.0",
-    "@jbrowse/plugin-data-management": "^3.5.0",
-    "@jbrowse/plugin-linear-genome-view": "^3.5.0",
+    "@jbrowse/core": "^3.5.1",
+    "@jbrowse/plugin-data-management": "^3.5.1",
+    "@jbrowse/plugin-linear-genome-view": "^3.5.1",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@mui/x-charts-vendor": "^8.0.0",

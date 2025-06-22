@@ -1,7 +1,11 @@
 import config from '../../docusaurus.config.json'
 
 export const Link = ({ extra, children }) => {
-  return <a href={`https://jbrowse.org/code/jb2/main/${extra}`}>{children}</a>
+  return (
+    <a target="_blank" href={`https://jbrowse.org/code/jb2/main/${extra}`}>
+      {children}
+    </a>
+  )
 }
 
 # JBrowse 2 demos
@@ -27,7 +31,7 @@ desktop.
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4">
     {'Human instance coloring methylation/modifications on nanopore reads'}
   </Link>
-- <Link extra="?config=test_data/breakpoint/config.json">
+- <Link extra="?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca">
     {'Breakpoint split view demo (showing multi-hop split read connection)'}
   </Link>
 - <Link extra="?config=test_data%2Fconfig_dotplot.json&session=share-zw51jIwuXb&password=i8WqY">

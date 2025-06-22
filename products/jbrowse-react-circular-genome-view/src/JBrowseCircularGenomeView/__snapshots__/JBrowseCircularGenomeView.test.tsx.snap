@@ -16,7 +16,6 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           class="css-10rokvf-container"
         >
           <button
-            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-iwqq6r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
             tabindex="0"

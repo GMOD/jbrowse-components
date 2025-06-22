@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -51,7 +51,6 @@
     "jexl": "^2.3.0",
     "librpc-web-mod": "^1.1.5",
     "load-script": "^2.0.0",
-    "material-ui-popup-state": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

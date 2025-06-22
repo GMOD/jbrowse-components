@@ -347,6 +347,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       */
+      get assemblyDisplayNames() {
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames.map(assemblyName => {
+          const assembly = assemblyManager.get(assemblyName)
+          return assembly?.displayName ?? assemblyName
+        })
+      },
+      /**
+       * #getter
        * checking if lgv is a 'top-level' view is used for toggling pin track
        * capability, sticky positioning
        */
@@ -393,7 +403,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       scaleBarDisplayPrefix() {
         return getParent<any>(self, 2).type === 'LinearSyntenyView'
-          ? self.assemblyNames[0]
+          ? self.assemblyDisplayNames[0]
           : ''
       },
       /**

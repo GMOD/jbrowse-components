@@ -1,3 +1,73 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.5.1
+
+## 3.5.1 (2025-06-05)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#5064](https://github.com/GMOD/jbrowse-components/pull/5064) Optimize
+    fetching many small sequences from IndexedFasta (e.g. MSA datasets)
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5059](https://github.com/GMOD/jbrowse-components/pull/5059) Canonicalize
+    refNames in search results ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5056](https://github.com/GMOD/jbrowse-components/pull/5056) Use assembly
+    displayName on synteny header and ruler
+    ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#5050](https://github.com/GMOD/jbrowse-components/pull/5050) Use standard
+    sessionId for linear synteny view to reduce data re-fetching
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `embedded-core`
+  - [#5063](https://github.com/GMOD/jbrowse-components/pull/5063) Improve
+    usability of dropdown menus by making submenus not disappear immediately
+    onMouseLeave ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5049](https://github.com/GMOD/jbrowse-components/pull/5049) Add react
+    compiler ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`
+  - [#5044](https://github.com/GMOD/jbrowse-components/pull/5044) Allow plugins
+    to register entries onto the root configuration
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#5062](https://github.com/GMOD/jbrowse-components/pull/5062) Fix useSWR
+    usage from plugins ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5053](https://github.com/GMOD/jbrowse-components/pull/5053) Fix
+    @jbrowse/img using a no-op css import
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5051](https://github.com/GMOD/jbrowse-components/pull/5051) Fix race
+    condition with text search using useEffect cleanup
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5058](https://github.com/GMOD/jbrowse-components/pull/5058) Improve speed
+    of navigation for fragmented assemblies
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#5047](https://github.com/GMOD/jbrowse-components/pull/5047) Reduce the
+  embedded website tutorial ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- Other
+  - [#5057](https://github.com/GMOD/jbrowse-components/pull/5057) Reduce S3
+    uploads per-branch ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5054](https://github.com/GMOD/jbrowse-components/pull/5054) Add ability to
+    make commits to update docs only and avoid running CI
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5061](https://github.com/GMOD/jbrowse-components/pull/5061) Modularize
+    some integration tests for launching views
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.94s.
+
 yarn run v1.22.18 $ lerna-changelog --silent --silent --next-version 3.5.0
 
 ## 3.5.0 (2025-05-27)

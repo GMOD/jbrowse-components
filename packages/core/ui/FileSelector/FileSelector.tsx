@@ -19,7 +19,6 @@ import UrlChooser from './UrlChooser'
 import { notEmpty, useLocalStorage } from '../../util'
 import { isAppRootModel, isUriLocation } from '../../util/types'
 
-// local types
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes'
 import type { AbstractRootModel, FileLocation } from '../../util/types'
 import type { ToggleButtonProps } from '@mui/material'

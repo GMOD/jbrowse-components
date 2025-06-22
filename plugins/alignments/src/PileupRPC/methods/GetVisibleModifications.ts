@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { getModTypes } from '../../ModificationParser'
+import { getModTypes } from '../../ModificationParser/getModTypes'
 import { getTagAlt } from '../../util'
 import PileupBaseRPC from '../base'
 
@@ -41,7 +41,8 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
 
     const uniqueModifications = new Map<string, ModificationType>()
     for (const feat of featuresArray) {
-      for (const mod of getModTypes(getTagAlt(feat, 'MM', 'Mm') || '')) {
+      const mmTag = getTagAlt(feat, 'MM', 'Mm')
+      for (const mod of getModTypes(typeof mmTag === 'string' ? mmTag : '')) {
         if (!uniqueModifications.has(mod.type)) {
           uniqueModifications.set(mod.type, mod)
         }

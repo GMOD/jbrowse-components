@@ -8,8 +8,6 @@ import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// local
-
 type LGV = LinearGenomeViewModel
 
 const Cloud = observer(function ({
