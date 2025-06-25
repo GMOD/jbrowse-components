@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
-import HelpIcon from '@mui/icons-material/Help'
 import {
-  Button,
   FormControlLabel,
   Grid,
   Paper,
   Radio,
   RadioGroup,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getAdapter } from './getAdapter'
+import {
+  AnchorsSelector,
+  PifGzSelector,
+  StandardFormatSelector,
+} from './selectors'
 import { basename, extName, getName, stripGz } from './util'
 
 import type { LinearSyntenyViewModel } from '../../model'
@@ -85,13 +87,6 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
     indexFileLocation,
     radioOption,
   ])
-  const helpStrings = {
-    '.paf': 'minimap2 target.fa query.fa',
-    '.pif.gz': 'minimap2 target.fa query.fa',
-    '.out': 'mashmap target.fa query.fa',
-    '.delta': 'mummer target.fa query.fa',
-    '.chain': 'e.g. queryToTarget.chain',
-  } as const
   return (
     <Paper style={{ padding: 12 }}>
       {error ? <ErrorMessage error={error} /> : null}
@@ -129,160 +124,42 @@ const ImportSyntenyOpenCustomTrack = observer(function ({
         {radioOption === '.paf' ||
         radioOption === '.out' ||
         radioOption === '.delta' ||
-        radioOption === '.chain' ||
-        radioOption === '.pif.gz' ? (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-            }}
-          >
-            <FileSelector
-              name={`${radioOption} location`}
-              inline
-              description=""
-              location={fileLocation}
-              setLocation={loc => {
-                setFileLocation(loc)
-              }}
-            />
-            <div>
-              <div>
-                Verify or click swap
-                <Tooltip title={<code>{helpStrings[radioOption]}</code>}>
-                  <HelpIcon />
-                </Tooltip>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 20,
-                }}
-              >
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: 4,
-                    alignItems: 'center',
-                  }}
-                >
-                  <div>
-                    <i>{swap ? assembly2 : assembly1}</i>
-                  </div>
-                  <div>query assembly</div>
-                  <div>
-                    <i>{swap ? assembly1 : assembly2}</i>
-                  </div>
-                  <div>target assembly</div>
-                </div>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setSwap(!swap)
-                  }}
-                >
-                  Swap?
-                </Button>
-              </div>
-            </div>
-          </div>
+        radioOption === '.chain' ? (
+          <StandardFormatSelector
+            assembly1={assembly1}
+            assembly2={assembly2}
+            swap={swap}
+            setSwap={setSwap}
+            fileLocation={fileLocation}
+            setFileLocation={setFileLocation}
+            radioOption={radioOption}
+          />
+        ) : radioOption === '.pif.gz' ? (
+          <PifGzSelector
+            assembly1={assembly1}
+            assembly2={assembly2}
+            swap={swap}
+            setSwap={setSwap}
+            fileLocation={fileLocation}
+            setFileLocation={setFileLocation}
+            indexFileLocation={indexFileLocation}
+            setIndexFileLocation={setIndexFileLocation}
+            radioOption={radioOption}
+          />
         ) : value === '.anchors' || value === '.anchors.simple' ? (
-          <div>
-            <div style={{ margin: 20 }}>
-              Open the {value} and .bed files for both genome assemblies from
-              the MCScan (Python version) pipeline{' '}
-              <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
-                (more info)
-              </a>
-            </div>
-            <div>
-              <FileSelector
-                inline
-                name={value}
-                location={fileLocation}
-                setLocation={loc => {
-                  setFileLocation(loc)
-                }}
-              />
-              <FileSelector
-                inline
-                name="genome 1 .bed (left column of anchors file)"
-                description=""
-                location={bed1Location}
-                setLocation={loc => {
-                  setBed1Location(loc)
-                }}
-              />
-              <FileSelector
-                inline
-                name="genome 2 .bed (right column of anchors file)"
-                description=""
-                location={bed2Location}
-                setLocation={loc => {
-                  setBed2Location(loc)
-                }}
-              />
-            </div>
-            <div
-              style={{
-                margin: 'auto',
-                display: 'flex',
-                justifyContent: 'center',
-                gap: 20,
-              }}
-            >
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 4,
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <i>{swap ? assembly2 : assembly1}</i>
-                </div>
-                <div>bed1 assembly</div>
-                <div>
-                  <i>{swap ? assembly1 : assembly2}</i>
-                </div>
-                <div>bed2 assembly</div>
-              </div>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setSwap(!swap)
-                }}
-              >
-                Swap?
-              </Button>
-            </div>
-          </div>
-        ) : value === '.pif.gz' ? (
-          <div style={{ display: 'flex' }}>
-            <div>
-              <FileSelector
-                name={`${value} location`}
-                description=""
-                location={fileLocation}
-                setLocation={loc => {
-                  setFileLocation(loc)
-                }}
-              />
-            </div>
-            <div>
-              <FileSelector
-                name={`${value} index location`}
-                description=""
-                location={indexFileLocation}
-                setLocation={loc => {
-                  setIndexFileLocation(loc)
-                }}
-              />
-            </div>
-          </div>
+          <AnchorsSelector
+            assembly1={assembly1}
+            assembly2={assembly2}
+            swap={swap}
+            setSwap={setSwap}
+            fileLocation={fileLocation}
+            setFileLocation={setFileLocation}
+            bed1Location={bed1Location}
+            setBed1Location={setBed1Location}
+            bed2Location={bed2Location}
+            setBed2Location={setBed2Location}
+            radioOption={value}
+          />
         ) : (
           <FileSelector
             name={value ? `${value} location` : ''}
