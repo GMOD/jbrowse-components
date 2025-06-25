@@ -8,6 +8,7 @@ import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
+import MAF from '@jbrowse/plugin-maf'
 import GCContent from '@jbrowse/plugin-gccontent'
 import Gff3 from '@jbrowse/plugin-gff3'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
@@ -35,6 +36,7 @@ const corePlugins = [
   Bed,
   CircularView,
   Config,
+  MAF,
   DataManagement,
   DotplotView,
   GtfPlugin,

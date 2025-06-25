@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`gap in assembly1 1`] = `
+[
+  ".....",
+  "...T.",
+]
+`;
+
+exports[`no showAllLetters 1`] = `
+[
+  ".....",
+  "..-.T",
+]
+`;
+
+exports[`showAllLetters 1`] = `
+[
+  "ACGTA",
+  "AC-TT",
+]
+`;

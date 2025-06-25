@@ -9,6 +9,7 @@ import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import GCContent from '@jbrowse/plugin-gccontent'
+import MAF from '@jbrowse/plugin-maf'
 import Gff3 from '@jbrowse/plugin-gff3'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 import GtfPlugin from '@jbrowse/plugin-gtf'
@@ -41,6 +42,7 @@ const corePlugins = [
   DotplotView,
   Gff3,
   GtfPlugin,
+  MAF,
   JobsManagementPlugin,
   LegacyJBrowse,
   LinearComparativeView,

@@ -5,6 +5,7 @@ import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
 import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
+import MAF from '@jbrowse/plugin-maf'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
@@ -45,6 +46,7 @@ const corePlugins = [
   LinearComparativeView,
   Lollipop,
   Menus,
+  MAF,
   RDF,
   Sequence,
   Variants,
