@@ -1412,7 +1412,7 @@ export function renderToStaticMarkup(node: React.ReactElement) {
   flushSync(() => {
     createRoot(div).render(node)
   })
-  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
+  return div.innerHTML
 }
 
 export function isGzip(buf: Uint8Array) {
