@@ -75,7 +75,7 @@ const Box = observer(function Box(props: {
       fill = frameColor
     }
   }
-
+  const stroke = readConfObject(config, 'outline', { feature }) as string
   // if feature has parent and type is intron, then don't render the intron
   // subfeature (if it doesn't have a parent, then maybe the introns are
   // separately displayed features that should be displayed)
@@ -89,9 +89,7 @@ const Box = observer(function Box(props: {
         width={widthWithinBlock}
         height={height}
         {...getFillProps(fill)}
-        {...getStrokeProps(
-          readConfObject(config, 'outline', { feature }) as string,
-        )}
+        {...getStrokeProps(stroke)}
       />
     </>
   )

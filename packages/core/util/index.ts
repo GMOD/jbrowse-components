@@ -1383,18 +1383,26 @@ export function stripAlpha(str: string) {
 }
 
 export function getStrokeProps(str: string) {
-  const c = colord(str)
-  return {
-    strokeOpacity: c.alpha(),
-    stroke: c.alpha(1).toHex(),
+  if (str) {
+    const c = colord(str)
+    return {
+      strokeOpacity: c.alpha(),
+      stroke: c.alpha(1).toHex(),
+    }
+  } else {
+    return {}
   }
 }
 
 export function getFillProps(str: string) {
-  const c = colord(str)
-  return {
-    fillOpacity: c.alpha(),
-    fill: c.alpha(1).toHex(),
+  if (str) {
+    const c = colord(str)
+    return {
+      fillOpacity: c.alpha(),
+      fill: c.alpha(1).toHex(),
+    }
+  } else {
+    return {}
   }
 }
 

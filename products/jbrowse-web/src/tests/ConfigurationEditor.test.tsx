@@ -32,6 +32,9 @@ test('change color on track', async () => {
   await user.type(elt, 'green')
 
   await waitFor(() => {
-    expect(getByTestId('box-test-vcf-604453')).toHaveAttribute('fill', 'green')
+    expect(getByTestId('box-test-vcf-604453')).toHaveAttribute(
+      'fill',
+      '#008000',
+    )
   }, delay)
 }, 40000)
