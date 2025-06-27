@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getFrame } from '@jbrowse/core/util'
+import { getFillProps, getFrame, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -88,8 +88,10 @@ const Box = observer(function Box(props: {
         y={top}
         width={widthWithinBlock}
         height={height}
-        fill={fill}
-        stroke={readConfObject(config, 'outline', { feature }) as string}
+        {...getFillProps(fill)}
+        {...getStrokeProps(
+          readConfObject(config, 'outline', { feature }) as string,
+        )}
       />
     </>
   )
