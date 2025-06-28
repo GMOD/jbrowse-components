@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getFrame } from '@jbrowse/core/util'
+import { getFillProps, getFrame, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -75,7 +75,7 @@ const Box = observer(function Box(props: {
       fill = frameColor
     }
   }
-
+  const stroke = readConfObject(config, 'outline', { feature }) as string
   // if feature has parent and type is intron, then don't render the intron
   // subfeature (if it doesn't have a parent, then maybe the introns are
   // separately displayed features that should be displayed)
@@ -88,8 +88,8 @@ const Box = observer(function Box(props: {
         y={top}
         width={widthWithinBlock}
         height={height}
-        fill={fill}
-        stroke={readConfObject(config, 'outline', { feature }) as string}
+        {...getFillProps(fill)}
+        {...getStrokeProps(stroke)}
       />
     </>
   )
