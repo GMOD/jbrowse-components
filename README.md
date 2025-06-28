@@ -4,6 +4,12 @@
 
 # jbrowse-components
 
+## JBrowse 2
+
+### The next-generation genome browser
+
+JBrowse is a new kind of genome browser that runs on the web, on your desktop, or embedded in your app.
+
 Monorepo using Lerna and Yarn workspaces containing many related packages for
 next-generation JBrowse development.
 
