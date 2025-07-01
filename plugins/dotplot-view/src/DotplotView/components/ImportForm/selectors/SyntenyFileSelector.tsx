@@ -1,28 +1,16 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import HelpIcon from '@mui/icons-material/Help'
-import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import { helpStrings } from './SelectorTypes'
+import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
 const useStyles = makeStyles()({
-  row: {
-    display: 'flex',
-    gap: 20,
-  },
   container: {
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
-  },
-  swap: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 4,
-    alignItems: 'center',
   },
 })
 
@@ -47,42 +35,15 @@ const SyntenyFileSelector = observer(function ({
           setFileLocation(loc)
         }}
       />
-      <div>
-        <div>
-          Verify or click swap
-          <Tooltip
-            title={
-              <code>
-                {helpStrings[radioOption as keyof typeof helpStrings]}
-              </code>
-            }
-          >
-            <HelpIcon />
-          </Tooltip>
-        </div>
-        <div className={classes.row}>
-          <div className={classes.swap}>
-            <div>
-              <i>{swap ? assembly2 : assembly1}</i>
-            </div>
-            <div>query assembly</div>
-            <div>
-              <i>{swap ? assembly1 : assembly2}</i>
-            </div>
-            <div>target assembly</div>
-          </div>
-          <Button
-            variant="contained"
-            onClick={() => {
-              if (setSwap) {
-                setSwap(!swap)
-              }
-            }}
-          >
-            Swap?
-          </Button>
-        </div>
-      </div>
+      <SwapAssemblies
+        assembly1={assembly1}
+        assembly2={assembly2}
+        swap={swap}
+        setSwap={setSwap}
+        radioOption={radioOption}
+        text1="query assembly"
+        text2="target assembly"
+      />
     </div>
   )
 })

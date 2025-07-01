@@ -1,6 +1,7 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
@@ -58,42 +59,15 @@ const AnchorsFileSelector = observer(function ({
           }}
         />
       </div>
-      <div
-        style={{
-          margin: 'auto',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 20,
-        }}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 4,
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <i>{swap ? assembly2 : assembly1}</i>
-          </div>
-          <div>bed1 assembly</div>
-          <div>
-            <i>{swap ? assembly1 : assembly2}</i>
-          </div>
-          <div>bed2 assembly</div>
-        </div>
-        <Button
-          variant="contained"
-          onClick={() => {
-            if (setSwap) {
-              setSwap(!swap)
-            }
-          }}
-        >
-          Swap?
-        </Button>
-      </div>
+      <SwapAssemblies
+        swap={swap}
+        radioOption={radioOption}
+        assembly1={assembly1}
+        assembly2={assembly2}
+        setSwap={setSwap}
+        text1="bed 1 assembly"
+        text2="bed 2 assembly"
+      />
     </div>
   )
 })
