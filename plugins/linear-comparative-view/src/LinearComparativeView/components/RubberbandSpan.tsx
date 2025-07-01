@@ -1,9 +1,10 @@
 import { useState } from 'react'
 
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
-import RubberbandTooltip from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/RubberbandTooltip'
 import { Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+import RubberbandTooltip from './RubberbandTooltip'
 
 const useStyles = makeStyles()(theme => {
   const { tertiary } = theme.palette
@@ -15,11 +16,6 @@ const useStyles = makeStyles()(theme => {
       position: 'absolute',
       zIndex: 830,
       textAlign: 'center',
-    },
-    rubberbandControl: {
-      cursor: 'crosshair',
-      width: '100%',
-      minHeight: 8,
     },
     rubberbandText: {
       color: theme.palette.tertiary.contrastText,

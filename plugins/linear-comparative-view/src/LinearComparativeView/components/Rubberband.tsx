@@ -8,7 +8,7 @@ import RubberbandSpan from './RubberbandSpan'
 import VerticalGuide from './VerticalGuide'
 import { useRangeSelect } from './useRangeSelect'
 
-import type { LinearComparativeViewModel } from '..'
+import type { LinearComparativeViewModel } from '../model'
 
 type LCV = LinearComparativeViewModel
 

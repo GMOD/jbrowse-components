@@ -1,10 +1,11 @@
 import type React from 'react'
 import { useEffect, useState } from 'react'
 
-import { getRelativeX } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/util'
 import { transaction } from 'mobx'
 
-import type { LinearComparativeViewModel } from '..'
+import { getRelativeX } from './util'
+
+import type { LinearComparativeViewModel } from '../model'
 
 interface AnchorPosition {
   offsetX: number
@@ -59,11 +60,8 @@ export function useRangeSelect(
         const offsets = computeOffsets(offsetX)
         if (offsets) {
           transaction(() => {
-            for (const [
-              idx,
-              { leftOffset, rightOffset },
-            ] of offsets.entries()) {
-              model.views[idx].setOffsets(leftOffset, rightOffset)
+            for (const [idx, elt] of offsets.entries()) {
+              model.views[idx]!.setOffsets(elt.leftOffset, elt.rightOffset)
             }
           })
         }
