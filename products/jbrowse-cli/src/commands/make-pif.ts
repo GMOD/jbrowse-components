@@ -50,31 +50,60 @@ export function swapIndelCigar(cigar: string) {
 
 export async function createPIF(
   filename: string | undefined,
-  stream: { write: (arg: string) => void },
+  stream: { write: (arg: string) => boolean },
 ) {
   const rl1 = filename ? getReadline(filename) : getStdReadline()
-  for await (const line of rl1) {
-    const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
 
-    stream.write(
-      `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`,
-    )
-    const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
-
-    const CIGAR = rest[cigarIdx]
-    if (CIGAR) {
-      rest[cigarIdx] = `cg:Z:${
-        strand === '-'
-          ? flipCigar(parseCigar(CIGAR.slice(5))).join('')
-          : swapIndelCigar(CIGAR.slice(5))
-      }`
+  // Properly handle backpressure by creating a promise-based write function
+  const writeWithBackpressure = (data: string): Promise<void> => {
+    // If the stream buffer is full (write returns false), we need to wait for drain
+    if (!stream.write(data)) {
+      return new Promise(resolve => {
+        const drainHandler = () => {
+          // @ts-expect-error - assuming stream is a Writable
+          stream.removeListener('drain', drainHandler)
+          resolve()
+        }
+        // @ts-expect-error - assuming stream is a Writable
+        stream.once('drain', drainHandler)
+      })
     }
-
-    stream.write(
-      `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
-    )
+    // If write returns true, the buffer is not full, so we can continue immediately
+    return Promise.resolve()
   }
-  rl1.close()
+
+  // Process the file line by line with backpressure handling
+  try {
+    for await (const line of rl1) {
+      const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
+
+      // Write the first line and handle backpressure
+      await writeWithBackpressure(
+        `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`,
+      )
+
+      const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
+
+      const CIGAR = rest[cigarIdx]
+      if (CIGAR) {
+        rest[cigarIdx] = `cg:Z:${
+          strand === '-'
+            ? flipCigar(parseCigar(CIGAR.slice(5))).join('')
+            : swapIndelCigar(CIGAR.slice(5))
+        }`
+      }
+
+      // Write the second line and handle backpressure
+      await writeWithBackpressure(
+        `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
+      )
+    }
+  } catch (error) {
+    console.error('Error processing PAF file:', error)
+    throw error
+  } finally {
+    rl1.close()
+  }
 }
 
 export default class MakePIF extends JBrowseCommand {
