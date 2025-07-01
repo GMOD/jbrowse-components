@@ -1,9 +1,10 @@
 import { FileSelector } from '@jbrowse/core/ui'
 import HelpIcon from '@mui/icons-material/Help'
-import { Button, Tooltip } from '@mui/material'
+import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { helpStrings } from './SelectorTypes'
+import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
@@ -41,40 +42,15 @@ const StandardFormatSelector = observer(function ({
             <HelpIcon />
           </Tooltip>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            gap: 20,
-          }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 4,
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <i>{swap ? assembly2 : assembly1}</i>
-            </div>
-            <div>query assembly</div>
-            <div>
-              <i>{swap ? assembly1 : assembly2}</i>
-            </div>
-            <div>target assembly</div>
-          </div>
-          <Button
-            variant="contained"
-            onClick={() => {
-              if (setSwap) {
-                setSwap(!swap)
-              }
-            }}
-          >
-            Swap?
-          </Button>
-        </div>
+        <SwapAssemblies
+          swap={swap}
+          radioOption={radioOption}
+          assembly1={assembly1}
+          assembly2={assembly2}
+          setSwap={setSwap}
+          text1="query assembly"
+          text2="target assembly"
+        />
       </div>
     </div>
   )

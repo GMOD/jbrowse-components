@@ -5,9 +5,6 @@ import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
-/**
- * Component for selecting PIF.GZ format files and their indexes
- */
 const PifGzSelector = observer(function ({
   assembly1,
   assembly2,
@@ -34,7 +31,7 @@ const PifGzSelector = observer(function ({
           setLocation={setFileLocation}
         />
         <FileSelector
-          name={`${radioOption} index location`}
+          name={`${radioOption} index location (.tbi or .csi)`}
           inline
           description=""
           location={indexFileLocation}

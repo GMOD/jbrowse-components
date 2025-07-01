@@ -5,20 +5,17 @@ import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
-/**
- * Component for selecting ANCHORS format files and their related BED files
- */
-const AnchorsSelector = observer(function ({
+const AnchorsFileSelector = observer(function ({
   assembly1,
   assembly2,
   swap,
   setSwap,
   fileLocation,
   setFileLocation,
-  bed1Location = undefined,
-  setBed1Location = () => {},
-  bed2Location = undefined,
-  setBed2Location = () => {},
+  bed1Location,
+  setBed1Location,
+  bed2Location,
+  setBed2Location,
   radioOption,
 }: SelectorProps) {
   return (
@@ -30,40 +27,49 @@ const AnchorsSelector = observer(function ({
           (more info)
         </a>
       </div>
-      <div style={{ maxWidth: 400, margin: '0 auto' }}>
+      <div>
         <FileSelector
           inline
           name={radioOption}
           location={fileLocation}
-          setLocation={setFileLocation}
+          setLocation={loc => {
+            setFileLocation(loc)
+          }}
         />
         <FileSelector
           inline
           name="genome 1 .bed (left column of anchors file)"
           description=""
           location={bed1Location}
-          setLocation={setBed1Location}
+          setLocation={loc => {
+            if (setBed1Location) {
+              setBed1Location(loc)
+            }
+          }}
         />
         <FileSelector
           inline
           name="genome 2 .bed (right column of anchors file)"
           description=""
           location={bed2Location}
-          setLocation={setBed2Location}
-        />
-
-        <SwapAssemblies
-          swap={swap}
-          radioOption={radioOption}
-          assembly1={assembly1}
-          assembly2={assembly2}
-          setSwap={setSwap}
-          text1="bed 1 assembly"
-          text2="bed 2 assembly"
+          setLocation={loc => {
+            if (setBed2Location) {
+              setBed2Location(loc)
+            }
+          }}
         />
       </div>
+      <SwapAssemblies
+        swap={swap}
+        radioOption={radioOption}
+        assembly1={assembly1}
+        assembly2={assembly2}
+        setSwap={setSwap}
+        text1="bed 1 assembly"
+        text2="bed 2 assembly"
+      />
     </div>
   )
 })
 
-export default AnchorsSelector
+export default AnchorsFileSelector
