@@ -1,5 +1,8 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
-import { WithCustomTheme } from './JBrowseLinearGenomeView.stories'
+import {
+  WithDarkTheme,
+  WithCustomTheme,
+} from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Theming" />
 
@@ -13,3 +16,10 @@ as well as the colors used for the DNA bases.
 See [here](https://jbrowse.org/jb2/docs/config_guides/theme/) for more info
 
 <Story of={WithCustomTheme} />
+
+## Dark theme
+
+Basic effort was made to make JBrowse dark mode compatible. This can be toggled
+via the 'mode':'dark' in the theme palette
+
+<Story of={WithDarkTheme} />

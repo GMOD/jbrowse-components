@@ -9,8 +9,8 @@ exports[`renders with the available plugins 1`] = `
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1d1r0im-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for="«r0»"
-        id="«r0»-label"
+        for="«r2»"
+        id="«r2»-label"
       >
         Filter plugins
       </label>
@@ -20,7 +20,7 @@ exports[`renders with the available plugins 1`] = `
         <input
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-          id="«r0»"
+          id="«r2»"
           type="text"
           value=""
         />

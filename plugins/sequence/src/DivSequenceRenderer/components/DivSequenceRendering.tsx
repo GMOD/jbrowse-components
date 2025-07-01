@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { Fragment } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   bpSpanPx,
   complement,
@@ -11,11 +10,11 @@ import {
   generateCodonTable,
   revcom,
 } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Frame, Region } from '@jbrowse/core/util'
-import type { Theme } from '@mui/material'
 
 function Translation({
   codonTable,
@@ -29,7 +28,6 @@ function Translation({
   height,
   y,
   reverse = false,
-  theme,
 }: {
   codonTable: Record<string, string>
   width: number
@@ -42,11 +40,11 @@ function Translation({
   reverse?: boolean
   height: number
   y: number
-  theme?: Theme
 }) {
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
   const frameShift = (normalizedFrame - seqFrame + 3) % 3
+  const theme = useTheme()
 
   const frameShiftAdjustedSeqLength = seq.length - frameShift
   const multipleOfThreeLength =
@@ -69,9 +67,10 @@ function Translation({
   const frameOffset = frameShift / bpPerPx
   const startOffset = (region.start - seqStart) / bpPerPx
   const offset = frameOffset - startOffset
+  const dark = theme.palette.mode === 'dark' ? 'dark' : 'main'
   const defaultFill = colorByCDS
-    ? theme?.palette.framesCDS.at(frame)?.main
-    : theme?.palette.frames.at(frame)?.main
+    ? theme.palette.framesCDS.at(frame)?.[dark]
+    : theme.palette.frames.at(frame)?.[dark]
   return (
     <>
       <rect x={0} y={y} width={width} height={height} fill={defaultFill} />
@@ -81,9 +80,9 @@ function Translation({
           : codonWidth * index + offset
         const { letter, codon } = element
         const codonFill = defaultStarts.includes(codon)
-          ? theme?.palette.startCodon
+          ? theme.palette.startCodon
           : defaultStops.includes(codon)
-            ? theme?.palette.stopCodon
+            ? theme.palette.stopCodon
             : undefined
         return !(renderLetter || codonFill) ? null : (
           <Fragment key={`${index}-${letter}`}>
@@ -122,13 +121,11 @@ function Sequence({
   region,
   feature,
   sequenceType,
-  theme,
   height,
   seq,
   y,
 }: {
   seq: string
-  theme: Theme
   bpPerPx: number
   sequenceType: string
   height: number
@@ -143,7 +140,7 @@ function Sequence({
   const reverse = region.reversed
   const len = e - s
   const w = Math.max((rightPx - leftPx) / len, 0.8)
-
+  const theme = useTheme()
   return (
     <>
       {seq.split('').map((letter, index) => {
@@ -152,6 +149,7 @@ function Sequence({
             ? // @ts-expect-error
               theme.palette.bases[letter.toUpperCase()]
             : undefined
+        const dark = theme.palette.mode === 'dark'
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
@@ -161,7 +159,7 @@ function Sequence({
               y={y}
               width={w}
               height={height}
-              fill={color ? color.main : '#aaa'}
+              fill={color ? (dark ? color.dark : color.main) : '#aaa'}
               stroke={render ? '#555' : 'none'}
             />
             {render ? (
@@ -188,7 +186,6 @@ function Sequence({
 function SequenceSVG({
   regions,
   width,
-  theme: configTheme,
   colorByCDS,
   features = new Map(),
   showReverse = true,
@@ -200,7 +197,6 @@ function SequenceSVG({
 }: {
   regions: Region[]
   width: number
-  theme?: Theme
   features: Map<string, Feature>
   colorByCDS: boolean
   showReverse?: boolean
@@ -211,7 +207,6 @@ function SequenceSVG({
   rowHeight: number
 }) {
   const region = regions[0]!
-  const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
   const [feature] = [...features.values()]
   if (!feature) {
@@ -250,7 +245,6 @@ function SequenceSVG({
           bpPerPx={bpPerPx}
           region={region}
           seqStart={feature.get('start')}
-          theme={theme}
           height={rowHeight}
           reverse={region.reversed}
         />
@@ -265,7 +259,6 @@ function SequenceSVG({
           region={region}
           seq={region.reversed ? complement(seq) : seq}
           bpPerPx={bpPerPx}
-          theme={theme}
         />
       ) : null}
 
@@ -278,7 +271,6 @@ function SequenceSVG({
           region={region}
           seq={region.reversed ? seq : complement(seq)}
           bpPerPx={bpPerPx}
-          theme={theme}
         />
       ) : null}
 
@@ -294,7 +286,6 @@ function SequenceSVG({
           bpPerPx={bpPerPx}
           region={region}
           seqStart={feature.get('start')}
-          theme={theme}
           height={rowHeight}
           reverse={!region.reversed}
         />
@@ -342,7 +333,6 @@ const DivSequenceRendering = observer(function ({
   bpPerPx,
   rowHeight,
   sequenceHeight,
-  theme,
   showForward,
   showReverse,
   showTranslation,
@@ -355,7 +345,6 @@ const DivSequenceRendering = observer(function ({
   rowHeight: number
   sequenceHeight: number
   config: AnyConfigurationModel
-  theme?: Theme
   showForward?: boolean
   showReverse?: boolean
   showTranslation?: boolean
@@ -369,7 +358,6 @@ const DivSequenceRendering = observer(function ({
         width={width}
         showReverse={showReverse}
         showForward={showForward}
-        theme={theme}
         showTranslation={showTranslation}
         colorByCDS={colorByCDS}
         bpPerPx={bpPerPx}

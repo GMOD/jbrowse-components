@@ -15,8 +15,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { DialogProps, PaperProps } from '@mui/material'
 
-// icons
-
 const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
@@ -29,7 +27,6 @@ const useStyles = makeStyles()(theme => ({
 function PaperComponent(props: PaperProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
-    // @ts-expect-error
     <Draggable
       nodeRef={ref}
       cancel={'[class*="MuiDialogContent-root"]'}
