@@ -21,6 +21,7 @@ export interface Glyph {
       bpPerPx: number
       topLevel?: boolean
       ctx: CanvasRenderingContext2D
+      reversed: boolean // Changed to required boolean
     },
   ) => void
   layOut?: (arg: FeatureLayOutArgs) => SceneGraph
@@ -80,7 +81,7 @@ export function chooseGlyphComponent({
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  reversed?: boolean
+  reversed: boolean // Changed to required boolean
   config: AnyConfigurationModel
 }
 

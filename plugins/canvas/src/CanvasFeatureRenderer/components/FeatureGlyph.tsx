@@ -42,7 +42,6 @@ const FeatureGlyph = observer(function (props: {
     description,
     shouldShowName,
     shouldShowDescription,
-    ctx,
   } = props
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
@@ -54,7 +53,6 @@ const FeatureGlyph = observer(function (props: {
   // Call the GlyphComponent's draw method
   GlyphComponent.draw({
     featureLayout,
-    ctx,
     ...props,
   })
 
@@ -65,7 +63,6 @@ const FeatureGlyph = observer(function (props: {
       y: rootLayout.getSubRecord('nameLabel')?.absolute.top || 0,
       color: readConfObject(config, ['labels', 'nameColor'], { feature }),
       featureWidth: featureLayout.width,
-      ctx,
       ...props,
     })
   }
@@ -79,7 +76,6 @@ const FeatureGlyph = observer(function (props: {
         feature,
       }),
       featureWidth: featureLayout.width,
-      ctx,
       ...props,
     })
   }

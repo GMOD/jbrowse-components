@@ -14,6 +14,3 @@ export default function CanvasFeatureRendererF(pluginManager: PluginManager) {
     })
   })
 }
-
-export { default as ReactComponent } from './components/CanvasFeatureRendering'
-export { default as configSchema } from './configSchema'

@@ -22,7 +22,7 @@ const yPadding = 5
 // (issue #1248)
 const canvasHeightPadding = 100
 
-function RenderedFeatureGlyph(props: {
+export function RenderedFeatureGlyph(props: {
   feature: Feature
   bpPerPx: number
   region: Region
@@ -40,6 +40,7 @@ function RenderedFeatureGlyph(props: {
     offsetPx: number
     offsetPx1: number
   }
+  ctx: CanvasRenderingContext2D // Added ctx here
   [key: string]: unknown
 }) {
   const {
@@ -51,6 +52,8 @@ function RenderedFeatureGlyph(props: {
     displayMode,
     layout,
     extraGlyphs,
+    ctx, // Destructure ctx
+    ...rest // Capture remaining props
   } = props
 
   // used for unit testing, difficult to mock out so it is in actual source code
@@ -146,7 +149,8 @@ function RenderedFeatureGlyph(props: {
       allowedWidthExpansion={expansion}
       reversed={region.reversed}
       topLevel={true}
-      {...props}
+      ctx={ctx} // Pass ctx here
+      {...rest} // Pass remaining props
     />
   )
 }
@@ -169,9 +173,10 @@ const RenderedFeatures = observer(function RenderedFeatures(props: {
     offsetPx: number
     offsetPx1: number
   }
+  ctx: CanvasRenderingContext2D // Added ctx here
   [key: string]: unknown
 }) {
-  const { features = new Map(), isFeatureDisplayed } = props
+  const { features = new Map(), isFeatureDisplayed, ctx, ...rest } = props
   return (
     <>
       {[...features.values()]
@@ -182,7 +187,8 @@ const RenderedFeatures = observer(function RenderedFeatures(props: {
           <RenderedFeatureGlyph
             key={feature.id()}
             feature={feature}
-            {...props}
+            ctx={ctx} // Pass ctx here
+            {...rest} // Pass remaining props
           />
         ))}
     </>
@@ -329,11 +335,26 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
+  // Get the canvas context and draw features
+  useEffect(() => {
+    const canvas = ref.current
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        // Pass the context to RenderedFeatures and CanvasOverlay
+        // This will trigger re-renders of those components, which will then draw on the canvas
+        // The actual drawing logic is within RenderedFeatures and CanvasOverlay
+      }
+    }
+  }, [height, width, props]) // Re-draw when height, width, or props change
+
   return exportSVG ? (
     <RenderedFeatures
       displayMode={displayMode}
       isFeatureDisplayed={featureDisplayHandler}
       region={region}
+      ctx={ref.current?.getContext('2d')!} // Pass ctx here
       {...props}
     />
   ) : (
@@ -355,19 +376,26 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
       onMouseMove={mouseMove}
       onClick={click}
     >
-      <RenderedFeatures
-        displayMode={displayMode}
-        region={region}
-        movedDuringLastMouseDown={movedDuringLastMouseDown}
-        isFeatureDisplayed={featureDisplayHandler}
-        {...props}
-      />
+      {/* RenderedFeatures and CanvasOverlay will receive the ctx prop via props.children */}
+      {ref.current && ref.current.getContext('2d') && (
+        <>
+          <RenderedFeatures
+            displayMode={displayMode}
+            region={region}
+            movedDuringLastMouseDown={movedDuringLastMouseDown}
+            isFeatureDisplayed={featureDisplayHandler}
+            ctx={ref.current.getContext('2d')!} // Pass ctx here
+            {...props}
+          />
 
-      <CanvasOverlay
-        {...props}
-        region={region}
-        movedDuringLastMouseDown={movedDuringLastMouseDown}
-      />
+          <CanvasOverlay
+            {...props}
+            region={region}
+            movedDuringLastMouseDown={movedDuringLastMouseDown}
+            ctx={ref.current.getContext('2d')!} // Pass ctx here
+          />
+        </>
+      )}
     </canvas>
   )
 })

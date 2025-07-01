@@ -18,8 +18,9 @@ function drawSubfeatures(props: {
   region: any // Region type
   reversed?: boolean
   extraGlyphs?: ExtraGlyphValidator[]
+  colorByCDS: boolean
 }) {
-  const { feature, featureLayout, selected, ctx, config, bpPerPx, region, reversed, extraGlyphs } = props
+  const { feature, featureLayout, selected, ctx, config, bpPerPx, region, reversed, extraGlyphs, colorByCDS } = props
 
   feature.get('subfeatures')?.forEach(subfeature => {
     const subfeatureId = String(subfeature.id())
@@ -40,6 +41,7 @@ function drawSubfeatures(props: {
         region,
         reversed,
         extraGlyphs,
+        colorByCDS,
       })
     }
   })
