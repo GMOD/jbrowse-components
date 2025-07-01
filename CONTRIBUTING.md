@@ -83,7 +83,7 @@ cd products/jbrowse-react-linear-genome-view
 yarn storybook
 ```
 
-You can simiarly run storybooks in the circular and react-app embedded
+You can similarly run storybooks in the circular and react-app embedded
 components
 
 ## Running eslint
