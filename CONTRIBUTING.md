@@ -1,9 +1,9 @@
 Welcome, we are happy to receive contributions to jbrowse 2. This short guide
 will help you get started
 
-## Source editing
+## TLDR
 
-The TLDR of getting started with the app is using
+To quickly boot up the jbrowse-web app, run these commands
 
 ```
 git clone https://github.com/GMOD/jbrowse-components
@@ -15,23 +15,99 @@ yarn start
 
 This will boot up a dev server of jbrowse-web, or web version of jbrowse 2
 
-To get orientated with the source code, please see
-https://jbrowse.org/jb2/docs/developer_guide
+### Additional pre-requisites on certain versions of nodejs
 
-As far as helpful tips, we suggest having lint-on-save configured for your
-source code editor, so that prettier and eslint fix simple issues in formatting
+The development environment sometimes can't install pre-built binaries of the
+node-canvas dependency (used only for unit test), and therefore you will need to
+download pre-requisites
 
-You can also run lint from the command line from the repo root
+To be clear, these dependencies are only needed for tests on certain platforms
 
-    yarn lint # optionally with --fix
+On macOS with homebrew:
+
+```
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
+On Ubuntu, with apt:
+
+```
+sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
+```
+
+## Windows git clone instructions
+
+Our repository uses symlinks, so you need to use a specialized git clone
+command:
+
+```pwsh
+# Make sure you check out line-endings as-is by running
+# `git config --global core.autocrlf false`
+# Also, make sure symlinks are enabled by running
+# `git config --global core.symlinks true`.
+# You may also need to clone as an administrator for symlinks to work.
+git clone -c core.symlinks=true https://github.com/GMOD/jbrowse-components.git
+cd .\jbrowse-components\
+yarn
+```
+
+## Running jbrowse-web
+
+```sh
+cd products/jbrowse-web
+yarn start
+```
+
+## Running jbrowse-desktop
+
+I recommend starting two different terminals, one that runs the webpack dev
+server, one with the electron shell
+
+```sh
+# starts webpack dev server
+cd products/jbrowse-desktop
+yarn start
+
+# starts electron window
+cd products/jbrowse-desktop
+yarn electron
+```
+
+## Running storybook
+
+For running e.g. jbrowse-react-linear-genome-view you can use storybook
+
+```sh
+cd products/jbrowse-react-linear-genome-view
+yarn storybook
+```
+
+You can simiarly run storybooks in the circular and react-app embedded
+components
+
+## Running eslint
+
+```sh
+yarn lint # optionally with --fix
+```
+
+It is a fairly heavy lint process, so takes time
+
+## Running typechecks
 
 We also use typescript, and you can use this command in the repo root
 
-    yarn tsc
+```sh
+yarn tsc
+```
 
-## Documentation
+Editing source code with your text editor should automatically pick up our
+typescript integration
 
-We store all our docs in the `website/` folder
+## Website documentation
+
+We store all our website docs in the `website/` folder
 
 To run the website
 
@@ -57,8 +133,6 @@ Your caption of the image here
 
 This creates a caption of the image properly in the PDF, and just shows the text
 below the image on the website
-
-## Developers
 
 ## Monorepo code organization
 
