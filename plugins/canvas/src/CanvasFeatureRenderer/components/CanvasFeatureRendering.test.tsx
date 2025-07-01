@@ -3,9 +3,9 @@ import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { fireEvent, render } from '@testing-library/react'
 
-import SvgRendererConfigSchema from '../configSchema'
-import Rendering from './SvgFeatureRendering'
-import SvgOverlay from './SvgOverlay'
+import CanvasRendererConfigSchema from '../configSchema'
+import Rendering from './CanvasFeatureRendering'
+import CanvasOverlay from './CanvasOverlay'
 
 import '@testing-library/jest-dom'
 
@@ -26,7 +26,7 @@ test('no features', () => {
         })
       }
       viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
-      config={SvgRendererConfigSchema.create({})}
+      config={CanvasRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
@@ -57,7 +57,7 @@ test('one feature', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={CanvasRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
@@ -107,7 +107,7 @@ test('click on one feature, and do not re-render', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={CanvasRendererConfigSchema.create({})}
       bpPerPx={3}
       detectRerender={() => counter++}
     />,
@@ -119,7 +119,7 @@ test('click on one feature, and do not re-render', () => {
 })
 
 test('one feature (compact mode)', () => {
-  const config = SvgRendererConfigSchema.create({ displayMode: 'compact' })
+  const config = CanvasRendererConfigSchema.create({ displayMode: 'compact' })
 
   const { container } = render(
     <Rendering
@@ -299,7 +299,7 @@ test('one feature (compact mode)', () => {
 })
 
 test('processed transcript (reducedRepresentation mode)', () => {
-  const config = SvgRendererConfigSchema.create({
+  const config = CanvasRendererConfigSchema.create({
     displayMode: 'reducedRepresentation',
   })
   const { container } = render(
@@ -501,7 +501,7 @@ test('processed transcript', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={CanvasRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
@@ -552,9 +552,9 @@ test('processed transcript (exons + impliedUTR)', () => {
                   id: 'mRNA779',
                   parent: 'gene407',
                   dbxref: [
-                    'GeneID:646262',
-                    'Genbank:NM_001289974.2',
-                    'HGNC:HGNC:35445',
+                        'GeneID:646262',
+                        'Genbank:NM_001289974.2',
+                        'HGNC:HGNC:35445',
                   ],
                   name: 'NM_001289974.2',
                   gbkey: 'mRNA',
@@ -1132,7 +1132,7 @@ test('processed transcript (exons + impliedUTR)', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={CanvasRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
@@ -1147,7 +1147,7 @@ test('processed transcript (exons + impliedUTR)', () => {
 test('svg selected', () => {
   const { container } = render(
     <svg>
-      <SvgOverlay
+      <CanvasOverlay
         blockKey="block1"
         region={{
           refName: 'zonk',
@@ -1209,7 +1209,7 @@ test('gene with CDS children', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={CanvasRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
   )

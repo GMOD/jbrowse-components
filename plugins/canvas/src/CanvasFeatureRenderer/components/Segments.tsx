@@ -18,6 +18,8 @@ function drawSegments(props: {
   reversed?: boolean
   subfeatures?: Feature[]
   ctx: CanvasRenderingContext2D
+  bpPerPx: number
+  colorByCDS: boolean
 }) {
   const {
     feature,
@@ -25,6 +27,8 @@ function drawSegments(props: {
     selected,
     config,
     ctx,
+    bpPerPx,
+    colorByCDS,
     // some subfeatures may be computed e.g. makeUTRs,
     // so these are passed as a prop, or feature.get('subfeatures') by default
     subfeatures = feature.get('subfeatures'),
@@ -59,6 +63,8 @@ function drawSegments(props: {
         featureLayout: subfeatureLayout,
         selected,
         ctx,
+        bpPerPx,
+        colorByCDS,
       })
     }
   })

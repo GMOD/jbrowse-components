@@ -2,13 +2,13 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { chooseGlyphComponent } from './components/util'
+import { chooseGlyphComponent } from './CanvasFeatureRenderer/components/util'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
 
-export default class CanvasFeatureRenderer extends BoxRendererType {
+export default class CanvasRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const { regions, bpPerPx, config, displayMode, layout } = renderProps
@@ -51,7 +51,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       ...result,
       features,
       layout: layout as BaseLayout<Feature>, // Cast layout to BaseLayout<Feature>
-      height: result.height, // Access height directly
+      height: result.height,
       width,
     })
 

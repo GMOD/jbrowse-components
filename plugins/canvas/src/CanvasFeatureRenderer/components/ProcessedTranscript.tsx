@@ -145,12 +145,14 @@ function drawProcessedTranscript(props: {
   reversed?: boolean
   subfeatures?: Feature[]
   ctx: CanvasRenderingContext2D
+  bpPerPx: number // Added bpPerPx
+  colorByCDS: boolean // Added colorByCDS
 }) {
-  const { feature, config } = props
+  const { feature, config, bpPerPx, colorByCDS } = props
   const subfeatures = getSubparts(feature, config)
 
   // we manually compute some subfeatures, so pass these separately
-  Segments.draw({ ...props, subfeatures })
+  Segments.draw({ ...props, subfeatures, bpPerPx, colorByCDS })
 }
 
 const ProcessedTranscript = {
