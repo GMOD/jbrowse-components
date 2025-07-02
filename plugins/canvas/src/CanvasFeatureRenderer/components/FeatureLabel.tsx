@@ -47,9 +47,7 @@ export function drawFeatureLabel({
   const totalWidth = featureWidth + allowedWidthExpansion
   const measuredTextWidth = measureText(text, fontHeight)
   const params =
-    displayModel && !exportSVG
-      ? getViewParams(displayModel)
-      : viewParams
+    displayModel && !exportSVG ? getViewParams(displayModel) : viewParams
 
   const viewLeft = reversed ? params.end : params.start
 
@@ -85,7 +83,8 @@ export function drawFeatureLabel({
 
   ctx.save()
   ctx.font = `${fontHeight}px Arial` // You might want to make font configurable
-  ctx.fillStyle = color === '#f0f' ? stripAlpha(theme.palette.text.primary) : color
+  ctx.fillStyle =
+    color === '#f0f' ? stripAlpha(theme.palette.text.primary) : color
   ctx.fillText(
     measuredTextWidth > totalWidth
       ? `${text.slice(0, totalWidth / (fontHeight * 0.6))}...`

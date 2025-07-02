@@ -10,20 +10,22 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 
 export interface Glyph {
-  draw: (
-    props: {
-      colorByCDS: boolean
-      feature: Feature
-      featureLayout: SceneGraph
-      selected?: boolean
-      config: AnyConfigurationModel
-      region: Region
-      bpPerPx: number
-      topLevel?: boolean
-      ctx: CanvasRenderingContext2D
-      reversed: boolean // Changed to required boolean
-    },
-  ) => void
+  draw: (props: {
+    colorByCDS: boolean
+    feature: Feature
+    // Removed featureLayout: SceneGraph
+    x: number
+    y: number
+    width: number
+    height: number
+    selected?: boolean
+    config: AnyConfigurationModel
+    region: Region
+    bpPerPx: number
+    topLevel?: boolean
+    ctx: CanvasRenderingContext2D
+    reversed: boolean
+  }) => void
   layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 
@@ -81,7 +83,7 @@ export function chooseGlyphComponent({
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  reversed: boolean // Changed to required boolean
+  reversed: boolean
   config: AnyConfigurationModel
 }
 

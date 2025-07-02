@@ -49,11 +49,21 @@ function drawOverlayRect({
     if (fillOpacity !== undefined) {
       ctx.globalAlpha = fillOpacity
     }
-    ctx.fillRect(leftWithinBlock - 2, rectTop - 2, widthWithinBlock + 4, rectHeight + 4)
+    ctx.fillRect(
+      leftWithinBlock - 2,
+      rectTop - 2,
+      widthWithinBlock + 4,
+      rectHeight + 4,
+    )
   }
   if (stroke) {
     ctx.strokeStyle = stroke
-    ctx.strokeRect(leftWithinBlock - 2, rectTop - 2, widthWithinBlock + 4, rectHeight + 4)
+    ctx.strokeRect(
+      leftWithinBlock - 2,
+      rectTop - 2,
+      widthWithinBlock + 4,
+      rectHeight + 4,
+    )
   }
   ctx.restore()
 }
@@ -115,7 +125,7 @@ const CanvasOverlay = observer(function ({
       region,
       bpPerPx,
       ctx,
-      fill: "#000",
+      fill: '#000',
       fillOpacity: 0.2,
     })
   }
@@ -125,7 +135,7 @@ const CanvasOverlay = observer(function ({
       region,
       bpPerPx,
       ctx,
-      stroke: "#00b8ff",
+      stroke: '#00b8ff',
     })
   }
 
