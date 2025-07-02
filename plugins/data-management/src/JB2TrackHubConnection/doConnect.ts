@@ -1,20 +1,18 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
+import { addRelativeUris } from './addRelativeUris'
 import { resolve } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-import { addRelativeUris } from './addRelativeUris'
 
 export async function doConnect(self: {
   configuration: AnyConfigurationModel
   addTrackConfs: (arg: Record<string, unknown>[]) => void
 }) {
-  const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const notLoadedAssemblies = [] as string[]
   try {
     const configJsonLocation = getConf(
       self,
@@ -30,16 +28,14 @@ export async function doConnect(self: {
       // @ts-expect-error
       configJsonLocation.baseUri,
     )
-    console.log({ configUri })
     addRelativeUris(configJson, new URL(configUri))
     const { assemblyManager } = session
-    configJson.assemblies.forEach((a: { name: string }) => {
-      const asm = assemblyManager.get(a.name)
-      if (!asm) {
+    for (const a of configJson.assemblies) {
+      if (!assemblyManager.get(a.name)) {
         // @ts-expect-error
-        session.addSessionAssembly(asm)
+        session.addSessionAssembly(a)
       }
-    })
+    }
 
     self.addTrackConfs(configJson.tracks)
     session.notify('Successfully loaded', 'success')
