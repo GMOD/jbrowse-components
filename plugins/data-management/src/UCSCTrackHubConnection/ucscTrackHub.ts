@@ -195,5 +195,3 @@ function makeTrackConfig({
     return generateUnknownTrackConf(name, baseTrackType)
   }
 }
-
-export { default as ucscAssemblies } from './ucscAssemblies'

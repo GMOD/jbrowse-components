@@ -6,7 +6,8 @@ import AddConnectionWidgetF from './AddConnectionWidget'
 import AddTrackWidgetF from './AddTrackWidget'
 import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
 import PluginStoreWidgetF from './PluginStoreWidget'
-import UCSCTrackHubConnectionF from './UCSCTrackHub'
+import UCSCTrackHubConnectionF from './UCSCTrackHubConnection'
+import JB2TrackHubConnectionF from './JB2TrackHubConnection'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -21,6 +22,7 @@ export default class DataManagementPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     UCSCTrackHubConnectionF(pluginManager)
+    JB2TrackHubConnectionF(pluginManager)
     AddTrackWidgetF(pluginManager)
     HierarchicalTrackSelectorWidgetF(pluginManager)
     AddConnectionWidgetF(pluginManager)
