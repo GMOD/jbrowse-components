@@ -140,19 +140,50 @@ function drawProcessedTranscript(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
-  featureLayout: SceneGraph
+  // Removed featureLayout: SceneGraph
+  x: number
+  y: number
+  width: number
+  height: number
   selected?: boolean
-  reversed?: boolean
+  reversed: boolean
   subfeatures?: Feature[]
   ctx: CanvasRenderingContext2D
-  bpPerPx: number // Added bpPerPx
-  colorByCDS: boolean // Added colorByCDS
+  bpPerPx: number
+  colorByCDS: boolean
 }) {
-  const { feature, config, bpPerPx, colorByCDS } = props
+  const {
+    feature,
+    config,
+    bpPerPx,
+    colorByCDS,
+    x,
+    y,
+    width,
+    height,
+    region,
+    reversed,
+    selected,
+    ctx,
+  } = props
   const subfeatures = getSubparts(feature, config)
 
   // we manually compute some subfeatures, so pass these separately
-  Segments.draw({ ...props, subfeatures, bpPerPx, colorByCDS })
+  Segments.draw({
+    feature,
+    region,
+    config,
+    x,
+    y,
+    width,
+    height,
+    selected,
+    reversed,
+    subfeatures,
+    ctx,
+    bpPerPx,
+    colorByCDS,
+  })
 }
 
 const ProcessedTranscript = {

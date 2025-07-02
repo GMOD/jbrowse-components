@@ -10,37 +10,59 @@ import type { Glyph } from './util'
 
 function drawSubfeatures(props: {
   feature: Feature
-  featureLayout: SceneGraph
+  // Removed featureLayout: SceneGraph
+  x: number
+  y: number
+  width: number
+  height: number
   selected?: boolean
   ctx: CanvasRenderingContext2D
   config: AnyConfigurationModel
   bpPerPx: number
   region: any // Region type
-  reversed?: boolean
+  reversed: boolean
   extraGlyphs?: ExtraGlyphValidator[]
   colorByCDS: boolean
 }) {
-  const { feature, featureLayout, selected, ctx, config, bpPerPx, region, reversed, extraGlyphs, colorByCDS } = props
+  const {
+    feature,
+    x,
+    y,
+    width,
+    height,
+    selected,
+    ctx,
+    config,
+    bpPerPx,
+    region,
+    reversed,
+    extraGlyphs,
+    colorByCDS,
+  } = props
 
   feature.get('subfeatures')?.forEach(subfeature => {
-    const subfeatureId = String(subfeature.id())
-    const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-    if (!subfeatureLayout) {
-      return
-    }
-    const { GlyphComponent } = subfeatureLayout.data || {}
+    const subX = x + (subfeature.get('start') - feature.get('start')) / bpPerPx
+    const subWidth = (subfeature.get('end') - subfeature.get('start')) / bpPerPx
+
+    const GlyphComponent = chooseGlyphComponent({
+      feature: subfeature,
+      extraGlyphs,
+      config,
+    })
+
     if (GlyphComponent && (GlyphComponent as Glyph).draw) {
       ;(GlyphComponent as Glyph).draw({
-        ...props,
         feature: subfeature,
-        featureLayout: subfeatureLayout,
+        x: subX,
+        y,
+        width: subWidth,
+        height,
         selected,
         ctx,
         config,
         bpPerPx,
         region,
         reversed,
-        extraGlyphs,
         colorByCDS,
       })
     }

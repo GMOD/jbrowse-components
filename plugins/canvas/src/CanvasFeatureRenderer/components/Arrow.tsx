@@ -4,18 +4,23 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 export function drawArrow({
   feature,
-  featureLayout,
+  x,
+  y,
+  width,
+  height,
   config,
   region,
   ctx,
 }: {
   region: Region
   feature: Feature
-  featureLayout: SceneGraph
+  x: number
+  y: number
+  width: number
+  height: number
   config: AnyConfigurationModel
   ctx: CanvasRenderingContext2D
 }) {
@@ -23,18 +28,17 @@ export function drawArrow({
   const size = 5
   const reverseFlip = region.reversed ? -1 : 1
   const offset = 7 * strand * reverseFlip
-  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
 
   const c = readConfObject(config, 'color2', { feature })
   const theme = createJBrowseTheme()
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
   const p =
     strand * reverseFlip === -1
-      ? left
+      ? x
       : strand * reverseFlip === 1
-        ? left + width
+        ? x + width
         : null
-  const y = top + height / 2
+  const arrowY = y + height / 2
 
   if (p !== null) {
     ctx.strokeStyle = color2
@@ -42,15 +46,15 @@ export function drawArrow({
 
     // Draw the line
     ctx.beginPath()
-    ctx.moveTo(p, y)
-    ctx.lineTo(p + offset, y)
+    ctx.moveTo(p, arrowY)
+    ctx.lineTo(p + offset, arrowY)
     ctx.stroke()
 
     // Draw the polygon (arrowhead)
     ctx.beginPath()
-    ctx.moveTo(p + offset / 2, y - size / 2)
-    ctx.lineTo(p + offset / 2, y + size / 2)
-    ctx.lineTo(p + offset, y)
+    ctx.moveTo(p + offset / 2, arrowY - size / 2)
+    ctx.lineTo(p + offset / 2, arrowY + size / 2)
+    ctx.lineTo(p + offset, arrowY)
     ctx.closePath()
     ctx.fill()
     ctx.stroke()

@@ -7,7 +7,6 @@ import { isUTR } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 const utrHeightFraction = 0.65
 
@@ -15,12 +14,17 @@ function drawBox(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
-  featureLayout: SceneGraph
+  // Removed featureLayout: SceneGraph
+  x: number
+  y: number
+  width: number
+  height: number
   bpPerPx: number
   selected?: boolean
   topLevel?: boolean
   colorByCDS: boolean
   ctx: CanvasRenderingContext2D
+  reversed: boolean
 }) {
   const theme = createJBrowseTheme()
   const {
@@ -28,10 +32,15 @@ function drawBox(props: {
     feature,
     region,
     config,
-    featureLayout,
+    // Removed featureLayout
+    x,
+    y,
+    width,
+    height,
     bpPerPx,
     topLevel,
     ctx,
+    reversed,
   } = props
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
@@ -40,20 +49,16 @@ function drawBox(props: {
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
   const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
-  const width = (featureEnd - featureStart) / bpPerPx
-  const { left = 0 } = featureLayout.absolute
-  let { top = 0, height = 0 } = featureLayout.absolute
 
-  if (left + width < 0) {
-    return
-  }
+  let currentY = y
+  let currentHeight = height
 
   if (isUTR(feature)) {
-    top += ((1 - utrHeightFraction) / 2) * height
-    height *= utrHeightFraction
+    currentY += ((1 - utrHeightFraction) / 2) * currentHeight
+    currentHeight *= utrHeightFraction
   }
-  const leftWithinBlock = Math.max(left, 0)
-  const diff = leftWithinBlock - left
+  const leftWithinBlock = Math.max(x, 0)
+  const diff = leftWithinBlock - x
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
 
   let fill: string = isUTR(feature)
@@ -88,16 +93,26 @@ function drawBox(props: {
   ctx.save()
   if (fill) {
     ctx.fillStyle = fill
-    ctx.fillRect(leftWithinBlock, top, widthWithinBlock, height)
+    ctx.fillRect(leftWithinBlock, currentY, widthWithinBlock, currentHeight)
   }
   if (stroke) {
     ctx.strokeStyle = stroke
-    ctx.strokeRect(leftWithinBlock, top, widthWithinBlock, height)
+    ctx.strokeRect(leftWithinBlock, currentY, widthWithinBlock, currentHeight)
   }
   ctx.restore()
 
   if (topLevel) {
-    drawArrow(props)
+    drawArrow({
+      feature,
+      x,
+      y: currentY,
+      width,
+      height: currentHeight,
+      config,
+      region,
+      ctx,
+      reversed,
+    })
   }
 }
 

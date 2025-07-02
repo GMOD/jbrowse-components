@@ -2,16 +2,22 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { chooseGlyphComponent } from './components/util'
+import { chooseGlyphComponent, layOutFeature } from './components/util'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
+
+// used to make features have a little padding for their labels
+const xPadding = 3
+const yPadding = 5
 
 export default class CanvasFeatureRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { regions, bpPerPx, config, displayMode, layout } = renderProps
+    const { regions, bpPerPx, config, displayMode } = renderProps
+
+    const layout = this.createLayoutInWorker(renderProps)
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
     const maxHeight = readConfObject(config, 'maxHeight')
@@ -21,27 +27,56 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       renderProps.statusCallback as (arg: string) => void, // Cast to correct type
       async () => {
         const height = (layout as BaseLayout<Feature>).getTotalHeight()
-        const canvasResult = renderToAbstractCanvas(width, height, renderProps, ctx => {
-          for (const feature of features.values()) {
-            const rootLayout = (layout as SceneGraph).getSubRecord(String(feature.id())) // Cast layout to SceneGraph
-            if (rootLayout) {
+        const canvasResult = renderToAbstractCanvas(
+          width,
+          height,
+          renderProps,
+          ctx => {
+            for (const feature of features.values()) {
+              const { reversed } = region
+              const featureStart = feature.get('start')
+              const featureEnd = feature.get('end')
+
+              const featureWidthPx = (featureEnd - featureStart) / bpPerPx
+              const featureHeight = readConfObject(config, 'height', {
+                feature,
+              }) as number
+
+              const topPx = (layout as BaseLayout<Feature>).addRect(
+                feature.id(),
+                featureStart,
+                featureEnd,
+                featureHeight + yPadding,
+              )
+
+              if (topPx === null) {
+                continue // Skip if feature cannot be laid out
+              }
+
+              const x = (featureStart - region.start) / bpPerPx
+              const y = topPx
+              const h = featureHeight
+              const w = featureWidthPx
+
               const GlyphComponent = chooseGlyphComponent({ config, feature })
               GlyphComponent.draw({
                 feature,
-                featureLayout: rootLayout,
+                x,
+                y,
+                width: w,
+                height: h,
                 config,
                 region,
                 bpPerPx,
                 topLevel: true,
                 colorByCDS: false, // This needs to be passed from config if applicable
                 ctx,
-                displayMode,
                 reversed: region.reversed,
               })
             }
-          }
-          return {} // Return an empty object
-        })
+            return {} // Return an empty object
+          },
+        )
         return canvasResult
       },
     )
@@ -51,7 +86,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       ...result,
       features,
       layout: layout as BaseLayout<Feature>, // Cast layout to BaseLayout<Feature>
-      height: result.height, // Access height directly
+      height: result.height,
       width,
     })
 

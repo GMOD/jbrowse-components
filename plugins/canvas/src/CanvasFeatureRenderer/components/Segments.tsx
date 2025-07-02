@@ -12,10 +12,14 @@ import type { Glyph } from './util'
 function drawSegments(props: {
   region: Region
   feature: Feature
-  featureLayout: SceneGraph
+  // Removed featureLayout: SceneGraph
+  x: number
+  y: number
+  width: number
+  height: number
   config: AnyConfigurationModel
   selected?: boolean
-  reversed?: boolean
+  reversed: boolean
   subfeatures?: Feature[]
   ctx: CanvasRenderingContext2D
   bpPerPx: number
@@ -23,12 +27,17 @@ function drawSegments(props: {
 }) {
   const {
     feature,
-    featureLayout,
+    // Removed featureLayout
+    x,
+    y,
+    width,
+    height,
     selected,
     config,
     ctx,
     bpPerPx,
     colorByCDS,
+    reversed,
     // some subfeatures may be computed e.g. makeUTRs,
     // so these are passed as a prop, or feature.get('subfeatures') by default
     subfeatures = feature.get('subfeatures'),
@@ -38,38 +47,58 @@ function drawSegments(props: {
   const c = readConfObject(config, 'color2', { feature })
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 
-  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
-
-  const y = top + height / 2
+  const segmentY = y + height / 2
 
   ctx.strokeStyle = color2
   ctx.beginPath()
-  ctx.moveTo(left, y)
-  ctx.lineTo(left + width, y)
+  ctx.moveTo(x, segmentY)
+  ctx.lineTo(x + width, segmentY)
   ctx.stroke()
 
   subfeatures?.forEach(subfeature => {
-    const subfeatureLayout = featureLayout.getSubRecord(String(subfeature.id()))
-    // This subfeature got filtered out
+    const subfeatureLayout = feature.get('subfeatures')
+      ? (feature.get('subfeatures') as Feature[]).find(
+          f => f.id() === subfeature.id(),
+        )
+      : undefined
+
     if (!subfeatureLayout) {
       return
     }
+
+    const subX = x + (subfeature.get('start') - feature.get('start')) / bpPerPx
+    const subWidth = (subfeature.get('end') - subfeature.get('start')) / bpPerPx
+
     const { GlyphComponent } = subfeatureLayout.data || {}
     if (GlyphComponent && (GlyphComponent as Glyph).draw) {
       ;(GlyphComponent as Glyph).draw({
         ...props,
         feature: subfeature,
         topLevel: false,
-        featureLayout: subfeatureLayout,
+        x: subX,
+        y,
+        width: subWidth,
+        height,
         selected,
         ctx,
         bpPerPx,
         colorByCDS,
+        reversed,
       })
     }
   })
 
-  drawArrow(props)
+  drawArrow({
+    feature,
+    x,
+    y,
+    width,
+    height,
+    config,
+    region,
+    ctx,
+    reversed,
+  })
 }
 
 const Segments = {

@@ -552,9 +552,9 @@ test('processed transcript (exons + impliedUTR)', () => {
                   id: 'mRNA779',
                   parent: 'gene407',
                   dbxref: [
-                        'GeneID:646262',
-                        'Genbank:NM_001289974.2',
-                        'HGNC:HGNC:35445',
+                    'GeneID:646262',
+                    'Genbank:NM_001289974.2',
+                    'HGNC:HGNC:35445',
                   ],
                   name: 'NM_001289974.2',
                   gbkey: 'mRNA',

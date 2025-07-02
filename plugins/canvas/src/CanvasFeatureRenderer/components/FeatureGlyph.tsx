@@ -22,7 +22,7 @@ const FeatureGlyph = observer(function (props: {
   exportSVG?: unknown
   displayModel?: DisplayModel
   selected?: boolean
-  reversed?: boolean
+  reversed: boolean
   topLevel?: boolean
   region: Region
   viewParams: {
@@ -42,6 +42,16 @@ const FeatureGlyph = observer(function (props: {
     description,
     shouldShowName,
     shouldShowDescription,
+    ctx,
+    region,
+    bpPerPx,
+    colorByCDS,
+    reversed,
+    selected,
+    topLevel,
+    viewParams,
+    fontHeight,
+    allowedWidthExpansion,
   } = props
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
@@ -49,11 +59,23 @@ const FeatureGlyph = observer(function (props: {
     return null
   }
   const { GlyphComponent } = featureLayout.data || {}
+  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
 
   // Call the GlyphComponent's draw method
   GlyphComponent.draw({
-    featureLayout,
-    ...props,
+    feature,
+    x: left,
+    y: top,
+    width,
+    height,
+    config,
+    region,
+    bpPerPx,
+    colorByCDS,
+    reversed,
+    selected,
+    topLevel,
+    ctx,
   })
 
   if (shouldShowName) {
@@ -63,7 +85,16 @@ const FeatureGlyph = observer(function (props: {
       y: rootLayout.getSubRecord('nameLabel')?.absolute.top || 0,
       color: readConfObject(config, ['labels', 'nameColor'], { feature }),
       featureWidth: featureLayout.width,
-      ...props,
+      feature,
+      region,
+      reversed,
+      bpPerPx,
+      exportSVG: props.exportSVG,
+      displayModel: props.displayModel,
+      viewParams,
+      fontHeight,
+      allowedWidthExpansion,
+      ctx,
     })
   }
 
@@ -76,7 +107,16 @@ const FeatureGlyph = observer(function (props: {
         feature,
       }),
       featureWidth: featureLayout.width,
-      ...props,
+      feature,
+      region,
+      reversed,
+      bpPerPx,
+      exportSVG: props.exportSVG,
+      displayModel: props.displayModel,
+      viewParams,
+      fontHeight,
+      allowedWidthExpansion,
+      ctx,
     })
   }
 
