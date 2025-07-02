@@ -2,15 +2,14 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
-import type { ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Glyph } from './util'
+import type { Region } from '@jbrowse/core/util'
 
 function drawSubfeatures(props: {
   feature: Feature
-  // Removed featureLayout: SceneGraph
   x: number
   y: number
   width: number
@@ -19,9 +18,7 @@ function drawSubfeatures(props: {
   ctx: CanvasRenderingContext2D
   config: AnyConfigurationModel
   bpPerPx: number
-  region: any // Region type
-  reversed: boolean
-  extraGlyphs?: ExtraGlyphValidator[]
+  region: Region
   colorByCDS: boolean
 }) {
   const {
@@ -35,8 +32,6 @@ function drawSubfeatures(props: {
     config,
     bpPerPx,
     region,
-    reversed,
-    extraGlyphs,
     colorByCDS,
   } = props
 
@@ -46,7 +41,6 @@ function drawSubfeatures(props: {
 
     const GlyphComponent = chooseGlyphComponent({
       feature: subfeature,
-      extraGlyphs,
       config,
     })
 
@@ -62,7 +56,6 @@ function drawSubfeatures(props: {
         config,
         bpPerPx,
         region,
-        reversed,
         colorByCDS,
       })
     }
@@ -77,14 +70,12 @@ const Subfeatures = {
     bpPerPx,
     reversed,
     config,
-    extraGlyphs,
   }: {
     layout: SceneGraph
     feature: Feature
     bpPerPx: number
     reversed: boolean
     config: AnyConfigurationModel
-    extraGlyphs: ExtraGlyphValidator[]
   }) => {
     const subLayout = layOutFeature({
       layout,
@@ -92,7 +83,6 @@ const Subfeatures = {
       bpPerPx,
       reversed,
       config,
-      extraGlyphs,
     })
     const displayMode = readConfObject(config, 'displayMode')
     if (displayMode !== 'reducedRepresentation') {
@@ -102,7 +92,6 @@ const Subfeatures = {
         for (const subfeature of subfeatures) {
           const SubfeatureGlyphComponent = chooseGlyphComponent({
             feature: subfeature,
-            extraGlyphs,
             config,
           })
           const subfeatureHeight = readConfObject(config, 'height', {
@@ -115,7 +104,6 @@ const Subfeatures = {
             bpPerPx,
             reversed,
             config,
-            extraGlyphs,
           })
           subSubLayout.move(0, topOffset)
           topOffset +=

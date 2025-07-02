@@ -6,20 +6,17 @@ import { drawArrow } from './Arrow'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Glyph } from './util'
 
 function drawSegments(props: {
   region: Region
   feature: Feature
-  // Removed featureLayout: SceneGraph
   x: number
   y: number
   width: number
   height: number
   config: AnyConfigurationModel
   selected?: boolean
-  reversed: boolean
   subfeatures?: Feature[]
   ctx: CanvasRenderingContext2D
   bpPerPx: number
@@ -27,9 +24,9 @@ function drawSegments(props: {
 }) {
   const {
     feature,
-    // Removed featureLayout
     x,
     y,
+    region,
     width,
     height,
     selected,
@@ -37,7 +34,6 @@ function drawSegments(props: {
     ctx,
     bpPerPx,
     colorByCDS,
-    reversed,
     // some subfeatures may be computed e.g. makeUTRs,
     // so these are passed as a prop, or feature.get('subfeatures') by default
     subfeatures = feature.get('subfeatures'),
@@ -83,7 +79,6 @@ function drawSegments(props: {
         ctx,
         bpPerPx,
         colorByCDS,
-        reversed,
       })
     }
   })
@@ -97,7 +92,6 @@ function drawSegments(props: {
     config,
     region,
     ctx,
-    reversed,
   })
 }
 

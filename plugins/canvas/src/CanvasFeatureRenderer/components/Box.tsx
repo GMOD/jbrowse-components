@@ -14,7 +14,6 @@ function drawBox(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
-  // Removed featureLayout: SceneGraph
   x: number
   y: number
   width: number
@@ -24,7 +23,6 @@ function drawBox(props: {
   topLevel?: boolean
   colorByCDS: boolean
   ctx: CanvasRenderingContext2D
-  reversed: boolean
 }) {
   const theme = createJBrowseTheme()
   const {
@@ -32,7 +30,6 @@ function drawBox(props: {
     feature,
     region,
     config,
-    // Removed featureLayout
     x,
     y,
     width,
@@ -40,7 +37,6 @@ function drawBox(props: {
     bpPerPx,
     topLevel,
     ctx,
-    reversed,
   } = props
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
@@ -111,7 +107,6 @@ function drawBox(props: {
       config,
       region,
       ctx,
-      reversed,
     })
   }
 }

@@ -140,13 +140,11 @@ function drawProcessedTranscript(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
-  // Removed featureLayout: SceneGraph
   x: number
   y: number
   width: number
   height: number
   selected?: boolean
-  reversed: boolean
   subfeatures?: Feature[]
   ctx: CanvasRenderingContext2D
   bpPerPx: number
@@ -162,7 +160,6 @@ function drawProcessedTranscript(props: {
     width,
     height,
     region,
-    reversed,
     selected,
     ctx,
   } = props
@@ -178,7 +175,6 @@ function drawProcessedTranscript(props: {
     width,
     height,
     selected,
-    reversed,
     subfeatures,
     ctx,
     bpPerPx,
@@ -194,14 +190,12 @@ const ProcessedTranscript = {
     bpPerPx,
     reversed,
     config,
-    extraGlyphs,
   }: {
     layout: SceneGraph
     feature: Feature
     bpPerPx: number
     reversed: boolean
     config: AnyConfigurationModel
-    extraGlyphs: ExtraGlyphValidator[]
   }) => {
     const subLayout = layOutFeature({
       layout,
@@ -209,7 +203,6 @@ const ProcessedTranscript = {
       bpPerPx,
       reversed,
       config,
-      extraGlyphs,
     })
     const subfeatures = getSubparts(feature, config)
     layOutSubfeatures({
@@ -218,7 +211,6 @@ const ProcessedTranscript = {
       bpPerPx,
       reversed,
       config,
-      extraGlyphs,
     })
     return subLayout
   },

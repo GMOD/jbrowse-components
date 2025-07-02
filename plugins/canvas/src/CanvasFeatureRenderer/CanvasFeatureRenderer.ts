@@ -22,6 +22,28 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     const width = (region.end - region.start) / bpPerPx
     const maxHeight = readConfObject(config, 'maxHeight')
 
+    await updateStatus(
+      'Creating layout',
+      renderProps.statusCallback as (arg: string) => void, // Cast to correct type
+      async () => {
+        for (const feature of features.values()) {
+          const featureStart = feature.get('start')
+          const featureEnd = feature.get('end')
+
+          const featureHeight = readConfObject(config, 'height', {
+            feature,
+          }) as number
+
+          ;(layout as BaseLayout<Feature>).addRect(
+            feature.id(),
+            featureStart,
+            featureEnd,
+            featureHeight + yPadding,
+          )
+        }
+      },
+    )
+
     const result = await updateStatus(
       'Rendering features',
       renderProps.statusCallback as (arg: string) => void, // Cast to correct type
@@ -71,7 +93,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
                 topLevel: true,
                 colorByCDS: false, // This needs to be passed from config if applicable
                 ctx,
-                reversed: region.reversed,
               })
             }
             return {} // Return an empty object
@@ -86,7 +107,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       ...result,
       features,
       layout: layout as BaseLayout<Feature>, // Cast layout to BaseLayout<Feature>
-      height: result.height,
+      height: layout.getTotalHeight(),
       width,
     })
 
@@ -95,7 +116,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       ...result,
       features: new Map(),
       layout: layout as BaseLayout<Feature>, // Cast layout to BaseLayout<Feature>
-      height: result.height,
+      height: layout.getTotalHeight(),
       width,
       maxHeightReached: (layout as BaseLayout<Feature>).maxHeightReached,
       containsNoTransferables: true,

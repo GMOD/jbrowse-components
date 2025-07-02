@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { observer } from 'mobx-react'
 
 import { drawFeatureLabel } from './FeatureLabel'
 
@@ -8,7 +7,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
-const FeatureGlyph = observer(function (props: {
+const FeatureGlyph = function (props: {
   feature: Feature
   rootLayout: SceneGraph
   config: AnyConfigurationModel
@@ -22,7 +21,6 @@ const FeatureGlyph = observer(function (props: {
   exportSVG?: unknown
   displayModel?: DisplayModel
   selected?: boolean
-  reversed: boolean
   topLevel?: boolean
   region: Region
   viewParams: {
@@ -46,7 +44,6 @@ const FeatureGlyph = observer(function (props: {
     region,
     bpPerPx,
     colorByCDS,
-    reversed,
     selected,
     topLevel,
     viewParams,
@@ -72,7 +69,6 @@ const FeatureGlyph = observer(function (props: {
     region,
     bpPerPx,
     colorByCDS,
-    reversed,
     selected,
     topLevel,
     ctx,
@@ -87,7 +83,6 @@ const FeatureGlyph = observer(function (props: {
       featureWidth: featureLayout.width,
       feature,
       region,
-      reversed,
       bpPerPx,
       exportSVG: props.exportSVG,
       displayModel: props.displayModel,
@@ -109,7 +104,6 @@ const FeatureGlyph = observer(function (props: {
       featureWidth: featureLayout.width,
       feature,
       region,
-      reversed,
       bpPerPx,
       exportSVG: props.exportSVG,
       displayModel: props.displayModel,
@@ -121,6 +115,6 @@ const FeatureGlyph = observer(function (props: {
   }
 
   return null // This component now only draws, it doesn't render JSX elements
-})
+}
 
 export default FeatureGlyph
