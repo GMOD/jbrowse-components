@@ -24,7 +24,6 @@ export interface Glyph {
     bpPerPx: number
     topLevel?: boolean
     ctx: CanvasRenderingContext2D
-    reversed: boolean
   }) => void
   layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
@@ -50,12 +49,10 @@ export interface ExtraGlyphValidator {
 
 export function chooseGlyphComponent({
   feature,
-  extraGlyphs,
   config,
 }: {
   feature: Feature
   config: AnyConfigurationModel
-  extraGlyphs?: ExtraGlyphValidator[]
 }): Glyph {
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
@@ -76,7 +73,7 @@ export function chooseGlyphComponent({
       return Segments
     }
   } else {
-    return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
+    return Box
   }
 }
 
@@ -89,12 +86,10 @@ interface BaseLayOutArgs {
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
   feature: Feature
-  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
-  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 export function layOut({
@@ -103,7 +98,6 @@ export function layOut({
   bpPerPx,
   reversed,
   config,
-  extraGlyphs,
 }: FeatureLayOutArgs): SceneGraph {
   const displayMode = readConfObject(config, 'displayMode')
   const subLayout = layOutFeature({
@@ -112,7 +106,6 @@ export function layOut({
     bpPerPx,
     reversed,
     config,
-    extraGlyphs,
   })
   if (displayMode !== 'reducedRepresentation') {
     layOutSubfeatures({
@@ -121,21 +114,19 @@ export function layOut({
       bpPerPx,
       reversed,
       config,
-      extraGlyphs,
     })
   }
   return subLayout
 }
 
 export function layOutFeature(args: FeatureLayOutArgs) {
-  const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
+  const { layout, feature, bpPerPx, reversed, config } = args
   const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Box
       : chooseGlyphComponent({
           feature,
-          extraGlyphs,
           config,
         })
   const parentFeature = feature.parent()
@@ -161,15 +152,14 @@ export function layOutFeature(args: FeatureLayOutArgs) {
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
-  const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
+  const { layout, subfeatures, bpPerPx, reversed, config } = args
   for (const feature of subfeatures) {
-    ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
+    ;(chooseGlyphComponent({ feature, config }).layOut || layOut)({
       layout,
       feature,
       bpPerPx,
       reversed,
       config,
-      extraGlyphs,
     })
   }
 }
