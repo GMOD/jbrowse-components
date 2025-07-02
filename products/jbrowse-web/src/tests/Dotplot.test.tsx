@@ -1,7 +1,5 @@
 import path from 'path'
 
-import { fireEvent } from '@testing-library/react'
-
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import dotplotSession from './dotplot_inverted_test.json'
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
