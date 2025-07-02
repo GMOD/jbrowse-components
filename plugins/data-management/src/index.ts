@@ -5,9 +5,9 @@ import Plugin from '@jbrowse/core/Plugin'
 import AddConnectionWidgetF from './AddConnectionWidget'
 import AddTrackWidgetF from './AddTrackWidget'
 import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
+import JB2TrackHubConnectionF from './JB2TrackHubConnection'
 import PluginStoreWidgetF from './PluginStoreWidget'
 import UCSCTrackHubConnectionF from './UCSCTrackHubConnection'
-import JB2TrackHubConnectionF from './JB2TrackHubConnection'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

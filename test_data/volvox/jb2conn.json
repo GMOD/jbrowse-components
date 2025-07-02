@@ -2,7 +2,6 @@
   "assemblies": [
     {
       "name": "connection_asm",
-      "aliases": ["vvx"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "connecion_asm_refseq",
