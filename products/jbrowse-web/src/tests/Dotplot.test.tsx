@@ -35,6 +35,7 @@ test('open a dotplot view with import form', async () => {
     },
   })
   fireEvent.click(await findByText('New track', ...opts))
+  fireEvent.click(await findByText('.paf'))
   fireEvent.change(await findByTestId('urlInput', ...opts), {
     target: {
       value: 'peach_grape_small.paf.gz',
