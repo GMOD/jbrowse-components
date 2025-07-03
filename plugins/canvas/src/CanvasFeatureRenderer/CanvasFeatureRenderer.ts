@@ -10,43 +10,44 @@ import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 // used to make features have a little padding for their labels
 const yPadding = 5
+const labelHeight = 10
 
 export default class CanvasFeatureRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { regions, bpPerPx, config } = renderProps
+    const { regions, bpPerPx, config, statusCallback = () => {} } = renderProps
 
     const layout = this.createLayoutInWorker(renderProps)
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    await updateStatus(
-      'Creating layout',
-      renderProps.statusCallback as (arg: string) => void, // Cast to correct type
-      async () => {
-        const displayMode = readConfObject(config, 'displayMode') as string
-        for (const feature of features.values()) {
-          const featureStart = feature.get('start')
-          const featureEnd = feature.get('end')
+    await updateStatus('Creating layout', statusCallback, async () => {
+      const displayMode = readConfObject(config, 'displayMode') as string
+      for (const feature of features.values()) {
+        const featureStart = feature.get('start')
+        const featureEnd = feature.get('end')
 
-          const featureHeight = chooseGlyphComponent({
-            config,
-            feature,
-          }).getHeight({ displayMode, feature, config })
+        const featureHeight = chooseGlyphComponent({
+          config,
+          feature,
+        }).getHeight({
+          displayMode,
+          feature,
+          config,
+        })
 
-          ;(layout as BaseLayout<Feature>).addRect(
-            feature.id(),
-            featureStart,
-            featureEnd,
-            featureHeight + yPadding,
-          )
-        }
-      },
-    )
+        ;(layout as BaseLayout<Feature>).addRect(
+          feature.id(),
+          featureStart,
+          featureEnd,
+          featureHeight + yPadding + labelHeight,
+        )
+      }
+    })
 
     const result = await updateStatus(
       'Rendering features',
-      renderProps.statusCallback as (arg: string) => void, // Cast to correct type
+      statusCallback,
       async () => {
         const height = (layout as BaseLayout<Feature>).getTotalHeight()
         const canvasResult = renderToAbstractCanvas(
@@ -71,7 +72,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
                 feature.id(),
                 featureStart,
                 featureEnd,
-                featureHeight + yPadding,
+                featureHeight + yPadding + labelHeight,
               )
 
               if (topPx === null) {
