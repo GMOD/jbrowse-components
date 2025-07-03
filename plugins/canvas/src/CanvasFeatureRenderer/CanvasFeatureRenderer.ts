@@ -30,7 +30,10 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           const featureStart = feature.get('start')
           const featureEnd = feature.get('end')
 
-          const featureHeight = chooseGlyphComponent({ config, feature }).getHeight({ feature, config })
+          const featureHeight = chooseGlyphComponent({
+            config,
+            feature,
+          }).getHeight({ feature, config })
 
           ;(layout as BaseLayout<Feature>).addRect(
             feature.id(),
@@ -59,7 +62,10 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
 
               const featureWidthPx = (featureEnd - featureStart) / bpPerPx
               const GlyphComponent = chooseGlyphComponent({ config, feature })
-              const featureHeight = GlyphComponent.getHeight({ feature, config })
+              const featureHeight = GlyphComponent.getHeight({
+                feature,
+                config,
+              })
 
               const topPx = (layout as BaseLayout<Feature>).addRect(
                 feature.id(),

@@ -2,9 +2,13 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import Segments from './Segments'
-import { isUTR, layOutFeature, layOutSubfeatures, chooseGlyphComponent } from './util'
+import {
+  chooseGlyphComponent,
+  isUTR,
+  layOutFeature,
+  layOutSubfeatures,
+} from './util'
 
-import type { ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -184,7 +188,13 @@ function drawProcessedTranscript(props: {
 
 const ProcessedTranscript = {
   draw: drawProcessedTranscript,
-  getHeight: ({ feature, config }: { feature: Feature; config: AnyConfigurationModel }) => {
+  getHeight: ({
+    feature,
+    config,
+  }: {
+    feature: Feature
+    config: AnyConfigurationModel
+  }) => {
     const subfeatures = getSubparts(feature, config)
     let maxHeight = 0
     for (const subfeature of subfeatures) {

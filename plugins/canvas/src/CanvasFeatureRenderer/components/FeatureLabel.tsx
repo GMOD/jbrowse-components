@@ -1,5 +1,5 @@
-import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
 
 import type { DisplayModel } from './util'
 import type { Feature, Region } from '@jbrowse/core/util'
