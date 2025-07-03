@@ -5,6 +5,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import FloatingLabels from './FloatingLabels'
 import LinearBlocks from './LinearBlocks'
 
 import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
@@ -33,6 +34,7 @@ const BaseLinearDisplay = observer(function (props: {
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
   const { TooltipComponent, DisplayMessageComponent, height } = model
+
   const items = model.contextMenuItems()
   const open = Boolean(contextCoord) && items.length > 0
   return (
@@ -66,6 +68,7 @@ const BaseLinearDisplay = observer(function (props: {
         <LinearBlocks {...props} />
       )}
       {children}
+      <FloatingLabels model={model} />
 
       <Suspense fallback={null}>
         <TooltipComponent
@@ -77,7 +80,6 @@ const BaseLinearDisplay = observer(function (props: {
           mouseCoord={offsetMouseCoord}
         />
       </Suspense>
-
       {open ? (
         <Menu
           open

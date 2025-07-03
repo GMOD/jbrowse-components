@@ -505,12 +505,24 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getRectangles(): Map<string, RectTuple> {
+    // @ts-expect-error
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
-        const { l, r, originalHeight, top } = rect
-        const t = (top || 0) * this.pitchY
-        const b = t + originalHeight
-        return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
+        const { l, r, originalHeight, top, data } = rect
+        const topPosition = (top || 0) * this.pitchY
+        const bottomPosition = topPosition + originalHeight
+        const leftPosition = l * this.pitchX
+        const rightPosition = r * this.pitchX
+
+        const rectTuple = [
+          leftPosition,
+          topPosition,
+          rightPosition,
+          bottomPosition,
+          data,
+        ]
+
+        return [id, rectTuple]
       }),
     )
   }
@@ -519,19 +531,38 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const regionRectangles: Record<string, RectTuple> = {}
     let maxHeightReached = false
     for (const [id, rect] of this.rectangles.entries()) {
-      const { l, r, originalHeight, top } = rect
+      const { l, r, originalHeight, top, data } = rect
       if (rect.top === null) {
         maxHeightReached = true
       } else {
-        const t = (top || 0) * this.pitchY
-        const b = t + originalHeight
-        const y1 = l * this.pitchX
-        const y2 = r * this.pitchX
-        const x1 = region.start
-        const x2 = region.end
-        // add +/- pitchX to avoid resolution causing errors
-        if (segmentsIntersect(x1, x2, y1 - this.pitchX, y2 + this.pitchX)) {
-          regionRectangles[id] = [y1, t, y2, b]
+        // Calculate coordinates in actual pixels rather than bitmap units
+        const topPosition = (top || 0) * this.pitchY
+        const bottomPosition = topPosition + originalHeight
+        const leftPosition = l * this.pitchX
+        const rightPosition = r * this.pitchX
+
+        // Get region bounds
+        const regionStart = region.start
+        const regionEnd = region.end
+
+        // Check if this rectangle intersects with the requested region
+        // Add +/- pitchX to avoid resolution causing errors
+        if (
+          segmentsIntersect(
+            regionStart,
+            regionEnd,
+            leftPosition - this.pitchX,
+            rightPosition + this.pitchX,
+          )
+        ) {
+          // Create a proper RectTuple (4 elements only)
+          regionRectangles[id] = [
+            leftPosition,
+            topPosition,
+            rightPosition,
+            bottomPosition,
+            data,
+          ]
         }
       }
     }

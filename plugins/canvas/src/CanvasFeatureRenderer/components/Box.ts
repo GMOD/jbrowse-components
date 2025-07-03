@@ -39,7 +39,6 @@ function drawBox(props: {
     ctx,
   } = props
   const { start, end } = region
-  const screenWidth = Math.ceil((end - start) / bpPerPx)
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const featureType: string | undefined = feature.get('type')
@@ -53,10 +52,6 @@ function drawBox(props: {
     currentY += ((1 - utrHeightFraction) / 2) * currentHeight
     currentHeight *= utrHeightFraction
   }
-  const leftWithinBlock = Math.max(x, 0)
-  const diff = leftWithinBlock - x
-  const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
-
   let fill: string = isUTR(feature)
     ? readConfObject(config, 'color3', { feature })
     : readConfObject(config, 'color1', { feature })
@@ -89,11 +84,11 @@ function drawBox(props: {
   ctx.save()
   if (fill) {
     ctx.fillStyle = fill
-    ctx.fillRect(leftWithinBlock, currentY, widthWithinBlock, currentHeight)
+    ctx.fillRect(x, currentY, width, currentHeight)
   }
   if (stroke) {
     ctx.strokeStyle = stroke
-    ctx.strokeRect(leftWithinBlock, currentY, widthWithinBlock, currentHeight)
+    ctx.strokeRect(x, currentY, width, currentHeight)
   }
   ctx.restore()
 

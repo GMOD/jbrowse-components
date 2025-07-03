@@ -41,6 +41,11 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           featureStart,
           featureEnd,
           featureHeight + yPadding + labelHeight,
+          {
+            refName: feature.get('refName'),
+            label: feature.get('name'),
+            description: feature.get('description'),
+          },
         )
       }
     })
