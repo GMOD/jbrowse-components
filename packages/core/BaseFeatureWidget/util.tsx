@@ -25,7 +25,10 @@ export interface ErrorState {
   error: string
 }
 
-export function stitch(subfeats: Feat[], sequence: string) {
+export function stitch(
+  subfeats: { start: number; end: number }[],
+  sequence: string,
+) {
   return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
 }
 
@@ -35,7 +38,7 @@ function getItemId(feat: Feat) {
 }
 
 // filters if successive elements share same start/end
-export function dedupe(list: Feat[]) {
+export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   return list.filter(
     (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )

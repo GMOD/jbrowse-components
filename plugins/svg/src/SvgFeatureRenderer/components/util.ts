@@ -1,50 +1,38 @@
-import type React from 'react'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import Box from './Box'
+import CDS from './CDS'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
 
+import type {
+  ExtraGlyphValidator,
+  FeatureLayOutArgs,
+  Glyph,
+  SubfeatureLayOutArgs,
+} from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 
-export interface Glyph
-  extends React.FC<{
-    colorByCDS: boolean
-    feature: Feature
-    featureLayout: SceneGraph
-    selected?: boolean
-    config: AnyConfigurationModel
-    region: Region
-    bpPerPx: number
-    topLevel?: boolean
-    [key: string]: unknown
-  }> {
-  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
-}
-
-type LayoutRecord = [number, number, number, number]
-
-export interface DisplayModel {
-  getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
-  getFeatureOverlapping?: (
-    blockKey: string,
-    bp: number,
-    y: number,
-  ) => string | undefined
-  selectedFeatureId?: string
-  featureIdUnderMouse?: string
-  contextMenuFeature?: Feature
-}
-
-export interface ExtraGlyphValidator {
-  glyph: Glyph
-  validator: (feature: Feature) => boolean
-}
-
+/**
+ * Selects the appropriate glyph component to render a feature based on its
+ * type and structure
+ *
+ * This function examines the feature's type and subfeatures to determine the
+ * most appropriate visualization component:
+ * - ProcessedTranscript: For transcript features with CDS subfeatures
+ * - Subfeatures: For container features with nested subfeatures
+ * - Segments: For features with simple subfeatures
+ * - Box (default): For simple features without subfeatures
+ * - Custom glyphs: Based on validator functions
+ *
+ * @param feature - The genomic feature to render
+ * @param extraGlyphs - Optional custom glyph components with validators
+ * @param config - Configuration model with display settings
+ * @returns The appropriate Glyph component to render the feature
+ */
 export function chooseGlyphComponent({
   feature,
   extraGlyphs,
@@ -72,28 +60,28 @@ export function chooseGlyphComponent({
     } else {
       return Segments
     }
+  } else if (type === 'CDS') {
+    return CDS
   } else {
     return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
   }
 }
 
-interface BaseLayOutArgs {
-  layout: SceneGraph
-  bpPerPx: number
-  reversed?: boolean
-  config: AnyConfigurationModel
-}
-
-interface FeatureLayOutArgs extends BaseLayOutArgs {
-  feature: Feature
-  extraGlyphs?: ExtraGlyphValidator[]
-}
-
-interface SubfeatureLayOutArgs extends BaseLayOutArgs {
-  subfeatures: Feature[]
-  extraGlyphs?: ExtraGlyphValidator[]
-}
-
+/**
+ * Main layout function that positions a feature and its subfeatures in the
+ * scene graph
+ *
+ * This function first lays out the main feature, then recursively lays out
+ * its subfeatures if the display mode permits showing subfeatures.
+ *
+ * @param layout - The scene graph to add the feature to
+ * @param feature - The feature to lay out
+ * @param bpPerPx - Base pairs per pixel (zoom level)
+ * @param reversed - Whether the display is reversed
+ * @param config - Configuration settings
+ * @param extraGlyphs - Optional custom glyphs
+ * @returns The updated scene graph with the feature and subfeatures added
+ */
 export function layOut({
   layout,
   feature,
@@ -124,6 +112,16 @@ export function layOut({
   return subLayout
 }
 
+/**
+ * Positions a single feature in the scene graph
+ *
+ * This function calculates the position of a feature based on its genomic coordinates,
+ * parent feature (if any), and display settings. It then adds the feature to the
+ * scene graph with the appropriate glyph component.
+ *
+ * @param args - Layout arguments including feature and display settings
+ * @returns The updated scene graph with the feature added
+ */
 export function layOutFeature(args: FeatureLayOutArgs) {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode') as string
@@ -138,6 +136,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
+    // Calculate x position relative to parent feature
     x =
       (reversed
         ? parentFeature.get('end') - feature.get('end')
@@ -157,9 +156,18 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   )
 }
 
+/**
+ * Lays out multiple subfeatures within a parent feature
+ *
+ * This function iterates through the subfeatures and lays out each one
+ * using either its custom layout function or the default layout function.
+ *
+ * @param args - Layout arguments including subfeatures array and display settings
+ */
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   for (const feature of subfeatures) {
+    // Use the feature's custom layout function if available, otherwise use the default
     ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
       layout,
       feature,
@@ -169,10 +177,4 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
       extraGlyphs,
     })
   }
-}
-
-export function isUTR(feature: Feature) {
-  return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
-    feature.get('type') || '',
-  )
 }
