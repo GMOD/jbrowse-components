@@ -53,7 +53,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           renderProps,
           ctx => {
             for (const feature of features.values()) {
-              const { reversed } = region
               const featureStart = feature.get('start')
               const featureEnd = feature.get('end')
 
