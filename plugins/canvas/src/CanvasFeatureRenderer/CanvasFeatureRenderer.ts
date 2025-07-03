@@ -1,26 +1,23 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
 import { chooseGlyphComponent } from './components/util'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 // used to make features have a little padding for their labels
-const xPadding = 3
 const yPadding = 5
 
 export default class CanvasFeatureRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { regions, bpPerPx, config, displayMode } = renderProps
+    const { regions, bpPerPx, config } = renderProps
 
     const layout = this.createLayoutInWorker(renderProps)
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
-    const maxHeight = readConfObject(config, 'maxHeight')
 
     await updateStatus(
       'Creating layout',
