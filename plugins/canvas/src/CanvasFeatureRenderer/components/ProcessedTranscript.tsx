@@ -6,7 +6,6 @@ import { chooseGlyphComponent, isUTR } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 // returns a callback that will filter features features according to the
 // subParts conf var
@@ -205,7 +204,6 @@ const ProcessedTranscript = {
     }
     return maxHeight
   },
-  
 }
 
 export default ProcessedTranscript

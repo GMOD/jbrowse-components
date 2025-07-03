@@ -8,6 +8,7 @@ import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const transcriptPadding = 10
+const subfeaturePadding = 2
 
 function drawSubfeatures(props: {
   feature: Feature
@@ -26,7 +27,6 @@ function drawSubfeatures(props: {
     feature,
     x,
     y,
-    height,
     selected,
     ctx,
     config,
@@ -35,6 +35,7 @@ function drawSubfeatures(props: {
     colorByCDS,
   } = props
 
+  let currentY = y
   feature.get('subfeatures')?.forEach(subfeature => {
     const subX = x + (subfeature.get('start') - feature.get('start')) / bpPerPx
     const subWidth = (subfeature.get('end') - subfeature.get('start')) / bpPerPx
@@ -43,14 +44,15 @@ function drawSubfeatures(props: {
       feature: subfeature,
       config,
     })
+    const subfeatureHeight = GlyphComponent.getHeight({ feature: subfeature, config })
 
     if (GlyphComponent && GlyphComponent.draw) {
       GlyphComponent.draw({
         feature: subfeature,
         x: subX,
-        y,
+        y: currentY,
         width: subWidth,
-        height,
+        height: subfeatureHeight,
         selected,
         ctx,
         config,
@@ -58,6 +60,7 @@ function drawSubfeatures(props: {
         region,
         colorByCDS,
       })
+      currentY += subfeatureHeight + subfeaturePadding
     }
   })
 }
@@ -72,21 +75,16 @@ const Subfeatures = {
     config: AnyConfigurationModel
   }) => {
     const displayMode = readConfObject(config, 'displayMode')
+    const l = feature.get('subfeatures')?.length || 0
+    const h = readConfObject(config, 'height') as number
     if (displayMode === 'reducedRepresentation') {
-      return readConfObject(config, 'height') as number
+      return h
     } else if (displayMode === 'compact') {
-      return (
-        (feature.get('subfeatures')?.length || 0) *
-        ((readConfObject(config, 'height') as number) / 3)
-      )
+      return l * (h / 3)
     } else {
-      return (
-        (feature.get('subfeatures')?.length || 0) *
-        ((readConfObject(config, 'height') as number) + 2)
-      )
+      return l * (h + 2)
     }
   },
-  
 }
 
 export default Subfeatures
