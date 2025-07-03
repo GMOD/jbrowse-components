@@ -147,8 +147,10 @@ function drawProcessedTranscript(props: {
   ctx: CanvasRenderingContext2D
   bpPerPx: number
   colorByCDS: boolean
+  displayMode: string
 }) {
   const {
+    displayMode,
     feature,
     config,
     bpPerPx,
@@ -165,6 +167,7 @@ function drawProcessedTranscript(props: {
 
   // we manually compute some subfeatures, so pass these separately
   Segments.draw({
+    displayMode,
     feature,
     region,
     config,
@@ -185,9 +188,11 @@ const ProcessedTranscript = {
   getHeight: ({
     feature,
     config,
+    displayMode,
   }: {
     feature: Feature
     config: AnyConfigurationModel
+    displayMode: string
   }) => {
     const subfeatures = getSubparts(feature, config)
     let maxHeight = 0
@@ -199,6 +204,7 @@ const ProcessedTranscript = {
       const subfeatureHeight = SubfeatureGlyphComponent.getHeight({
         feature: subfeature,
         config,
+        displayMode,
       })
       maxHeight = Math.max(maxHeight, subfeatureHeight)
     }

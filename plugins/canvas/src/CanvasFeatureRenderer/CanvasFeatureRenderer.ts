@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
@@ -23,6 +24,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       'Creating layout',
       renderProps.statusCallback as (arg: string) => void, // Cast to correct type
       async () => {
+        const displayMode = readConfObject(config, 'displayMode') as string
         for (const feature of features.values()) {
           const featureStart = feature.get('start')
           const featureEnd = feature.get('end')
@@ -30,7 +32,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           const featureHeight = chooseGlyphComponent({
             config,
             feature,
-          }).getHeight({ feature, config })
+          }).getHeight({ displayMode, feature, config })
 
           ;(layout as BaseLayout<Feature>).addRect(
             feature.id(),
@@ -52,6 +54,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           height,
           renderProps,
           ctx => {
+            const displayMode = readConfObject(config, 'displayMode') as string
             for (const feature of features.values()) {
               const featureStart = feature.get('start')
               const featureEnd = feature.get('end')
@@ -59,6 +62,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
               const featureWidthPx = (featureEnd - featureStart) / bpPerPx
               const GlyphComponent = chooseGlyphComponent({ config, feature })
               const featureHeight = GlyphComponent.getHeight({
+                displayMode,
                 feature,
                 config,
               })
@@ -81,6 +85,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
 
               GlyphComponent.draw({
                 feature,
+                displayMode,
                 x,
                 y,
                 width: w,
