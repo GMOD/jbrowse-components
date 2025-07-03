@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 
 import CanvasOverlay from './CanvasOverlay'
 import FeatureGlyph from './FeatureGlyph'
-import { chooseGlyphComponent, layOut } from './util'
+import { chooseGlyphComponent } from './util'
 
 import type { DisplayModel, ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

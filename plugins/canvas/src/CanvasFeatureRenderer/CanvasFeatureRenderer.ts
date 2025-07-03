@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { chooseGlyphComponent, layOutFeature } from './components/util'
+import { chooseGlyphComponent } from './components/util'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature, Region } from '@jbrowse/core/util'
