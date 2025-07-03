@@ -1,8 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { chooseGlyphComponent, layOut, layOutFeature } from './util'
+import { chooseGlyphComponent } from './util'
 
-import type { Glyph } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -27,7 +26,6 @@ function drawSubfeatures(props: {
     feature,
     x,
     y,
-    width,
     height,
     selected,
     ctx,
@@ -88,59 +86,7 @@ const Subfeatures = {
       )
     }
   },
-  layOut: ({
-    layout,
-    feature,
-    bpPerPx,
-    reversed,
-    config,
-  }: {
-    layout: SceneGraph
-    feature: Feature
-    bpPerPx: number
-    reversed: boolean
-    config: AnyConfigurationModel
-  }) => {
-    const subLayout = layOutFeature({
-      layout,
-      feature,
-      bpPerPx,
-      reversed,
-      config,
-    })
-    const displayMode = readConfObject(config, 'displayMode')
-    if (displayMode !== 'reducedRepresentation') {
-      let topOffset = 0
-      const subfeatures = feature.get('subfeatures')
-      if (subfeatures) {
-        for (const subfeature of subfeatures) {
-          const SubfeatureGlyphComponent = chooseGlyphComponent({
-            feature: subfeature,
-            config,
-          })
-          const subfeatureHeight = readConfObject(config, 'height', {
-            feature: subfeature,
-          }) as number
-
-          const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
-            layout: subLayout,
-            feature: subfeature,
-            bpPerPx,
-            reversed,
-            config,
-          })
-          subSubLayout.move(0, topOffset)
-          topOffset +=
-            displayMode === 'collapse'
-              ? 0
-              : (displayMode === 'compact'
-                  ? subfeatureHeight / 3
-                  : subfeatureHeight) + transcriptPadding
-        }
-      }
-    }
-    return subLayout
-  },
+  
 }
 
 export default Subfeatures

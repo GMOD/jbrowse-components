@@ -2,12 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import Segments from './Segments'
-import {
-  chooseGlyphComponent,
-  isUTR,
-  layOutFeature,
-  layOutSubfeatures,
-} from './util'
+import { chooseGlyphComponent, isUTR } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -210,36 +205,7 @@ const ProcessedTranscript = {
     }
     return maxHeight
   },
-  layOut: ({
-    layout,
-    feature,
-    bpPerPx,
-    reversed,
-    config,
-  }: {
-    layout: SceneGraph
-    feature: Feature
-    bpPerPx: number
-    reversed: boolean
-    config: AnyConfigurationModel
-  }) => {
-    const subLayout = layOutFeature({
-      layout,
-      feature,
-      bpPerPx,
-      reversed,
-      config,
-    })
-    const subfeatures = getSubparts(feature, config)
-    layOutSubfeatures({
-      layout: subLayout,
-      subfeatures,
-      bpPerPx,
-      reversed,
-      config,
-    })
-    return subLayout
-  },
+  
 }
 
 export default ProcessedTranscript
