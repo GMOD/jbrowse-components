@@ -21,6 +21,7 @@ function drawSegments(props: {
   ctx: CanvasRenderingContext2D
   bpPerPx: number
   colorByCDS: boolean
+  displayMode: string
 }) {
   const {
     feature,
@@ -34,6 +35,7 @@ function drawSegments(props: {
     ctx,
     bpPerPx,
     colorByCDS,
+    displayMode,
     // some subfeatures may be computed e.g. makeUTRs,
     // so these are passed as a prop, or feature.get('subfeatures') by default
     subfeatures = feature.get('subfeatures'),
@@ -83,6 +85,7 @@ function drawSegments(props: {
           ctx,
           bpPerPx,
           colorByCDS,
+          displayMode,
         })
       }
     }
@@ -102,8 +105,16 @@ function drawSegments(props: {
 
 const Segments = {
   draw: drawSegments,
-  getHeight: ({ config }: { config: AnyConfigurationModel }) =>
-    readConfObject(config, 'height') as number,
+  getHeight: ({
+    config,
+    displayMode,
+  }: {
+    config: AnyConfigurationModel
+    displayMode: string
+  }) => {
+    const height = readConfObject(config, 'height') as number
+    return displayMode === 'compact' ? height / 3 : height
+  },
 }
 
 export default Segments

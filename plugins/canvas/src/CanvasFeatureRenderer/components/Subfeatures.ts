@@ -20,9 +20,20 @@ function drawSubfeatures(props: {
   bpPerPx: number
   region: Region
   colorByCDS: boolean
+  displayMode: string
 }) {
-  const { feature, x, y, selected, ctx, config, bpPerPx, region, colorByCDS } =
-    props
+  const {
+    feature,
+    x,
+    y,
+    selected,
+    ctx,
+    config,
+    bpPerPx,
+    region,
+    displayMode,
+    colorByCDS,
+  } = props
 
   let currentY = y
   const subfeatures = feature.get('subfeatures')
@@ -41,6 +52,7 @@ function drawSubfeatures(props: {
       const subfeatureHeight = GlyphComponent.getHeight({
         feature: subfeature,
         config,
+        displayMode,
       })
 
       GlyphComponent.draw({
@@ -55,6 +67,7 @@ function drawSubfeatures(props: {
         bpPerPx,
         region,
         colorByCDS,
+        displayMode,
       })
       currentY += subfeatureHeight + subfeaturePadding
     }
@@ -66,11 +79,12 @@ const Subfeatures = {
   getHeight: ({
     feature,
     config,
+    displayMode,
   }: {
     feature: Feature
     config: AnyConfigurationModel
+    displayMode: string
   }) => {
-    const displayMode = readConfObject(config, 'displayMode')
     const l = feature.get('subfeatures')?.length || 0
     const h = readConfObject(config, 'height') as number
     if (displayMode === 'reducedRepresentation') {

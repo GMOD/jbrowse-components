@@ -116,12 +116,15 @@ const Box = {
   getHeight: ({
     feature,
     config,
+    displayMode,
   }: {
     feature: Feature
     config: AnyConfigurationModel
+    displayMode: string
   }) => {
     const height = readConfObject(config, 'height', { feature }) as number
-    return isUTR(feature) ? height * utrHeightFraction : height
+    const finalHeight = isUTR(feature) ? height * utrHeightFraction : height
+    return displayMode === 'compact' ? finalHeight / 3 : finalHeight
   },
 }
 

@@ -1,8 +1,9 @@
 import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
 
+
 import type { DisplayModel } from './util'
 import type { Feature, Region } from '@jbrowse/core/util'
-import { Theme } from '@mui/material'
+import type { Theme } from '@mui/material'
 
 interface ViewParams {
   start: number

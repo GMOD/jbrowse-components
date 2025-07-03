@@ -23,10 +23,12 @@ export interface Glyph {
     bpPerPx: number
     topLevel?: boolean
     ctx: CanvasRenderingContext2D
+    displayMode: string
   }) => void
   getHeight: (args: {
     feature: Feature
     config: AnyConfigurationModel
+    displayMode: string
   }) => number
 }
 
@@ -79,10 +81,9 @@ export function chooseGlyphComponent({
   }
 }
 
-
-
 export function isUTR(feature: Feature) {
   return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
     feature.get('type') || '',
   )
 }
+

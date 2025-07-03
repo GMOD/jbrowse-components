@@ -66,10 +66,15 @@ const Arrow = {
   getHeight: ({
     feature,
     config,
+    displayMode,
   }: {
     feature: Feature
     config: AnyConfigurationModel
-  }) => readConfObject(config, 'height', { feature }) as number,
+    displayMode: string
+  }) => {
+    const height = readConfObject(config, 'height', { feature }) as number
+    return displayMode === 'compact' ? height / 3 : height
+  },
 }
 
 export default Arrow
