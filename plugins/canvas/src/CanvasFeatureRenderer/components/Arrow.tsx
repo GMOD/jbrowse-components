@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { stripAlpha } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { stripAlpha } from '@jbrowse/core/util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'

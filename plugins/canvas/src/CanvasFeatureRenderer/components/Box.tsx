@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getFrame } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getFrame } from '@jbrowse/core/util'
 
 import Arrow from './Arrow'
 import { isUTR } from './util'

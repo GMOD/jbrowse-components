@@ -1,13 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { stripAlpha } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { stripAlpha } from '@jbrowse/core/util'
 
-import { chooseGlyphComponent } from './util'
 import Arrow from './Arrow'
+import { chooseGlyphComponent } from './util'
 
+import type { Glyph } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { Glyph } from './util'
 
 function drawSegments(props: {
   region: Region
@@ -52,37 +52,42 @@ function drawSegments(props: {
   ctx.lineTo(x + width, segmentY)
   ctx.stroke()
 
-  subfeatures?.forEach(subfeature => {
-    const subfeatureLayout = feature.get('subfeatures')
-      ? (feature.get('subfeatures') as Feature[]).find(
-          f => f.id() === subfeature.id(),
-        )
-      : undefined
+  if (subfeatures) {
+    for (const subfeature of subfeatures) {
+      const subfeatureLayout = feature.get('subfeatures')
+        ? feature.get('subfeatures')!.find(f => f.id() === subfeature.id())
+        : undefined
 
-    if (!subfeatureLayout) {
-      return
-    }
+      if (!subfeatureLayout) {
+        continue
+      }
 
-    const subX = x + (subfeature.get('start') - feature.get('start')) / bpPerPx
-    const subWidth = (subfeature.get('end') - subfeature.get('start')) / bpPerPx
+      const subX =
+        x + (subfeature.get('start') - feature.get('start')) / bpPerPx
+      const subWidth =
+        (subfeature.get('end') - subfeature.get('start')) / bpPerPx
 
-    const GlyphComponent = chooseGlyphComponent({ feature: subfeature, config })
-    if (GlyphComponent && GlyphComponent.draw) {
-      GlyphComponent.draw({
-        ...props,
+      const GlyphComponent = chooseGlyphComponent({
         feature: subfeature,
-        topLevel: false,
-        x: subX,
-        y,
-        width: subWidth,
-        height,
-        selected,
-        ctx,
-        bpPerPx,
-        colorByCDS,
+        config,
       })
+      if (GlyphComponent && GlyphComponent.draw) {
+        GlyphComponent.draw({
+          ...props,
+          feature: subfeature,
+          topLevel: false,
+          x: subX,
+          y,
+          width: subWidth,
+          height,
+          selected,
+          ctx,
+          bpPerPx,
+          colorByCDS,
+        })
+      }
     }
-  })
+  }
 
   Arrow.draw({
     feature,

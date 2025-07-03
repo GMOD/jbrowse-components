@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpToPx, measureText } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { observer } from 'mobx-react'
 
-import FeatureGlyph from './FeatureGlyph'
 import CanvasOverlay from './CanvasOverlay'
+import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
 import type { DisplayModel, ExtraGlyphValidator } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
-import { PrerenderedCanvas } from '@jbrowse/core/ui'
 
 // used to make features have a little padding for their labels
 const xPadding = 3

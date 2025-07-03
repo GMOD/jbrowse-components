@@ -2,11 +2,13 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
+import type { Glyph } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
-import type { Glyph } from './util'
-import type { Region } from '@jbrowse/core/util'
+
+const transcriptPadding = 10
 
 function drawSubfeatures(props: {
   feature: Feature
@@ -44,8 +46,8 @@ function drawSubfeatures(props: {
       config,
     })
 
-    if (GlyphComponent && (GlyphComponent as Glyph).draw) {
-      ;(GlyphComponent as Glyph).draw({
+    if (GlyphComponent && GlyphComponent.draw) {
+      GlyphComponent.draw({
         feature: subfeature,
         x: subX,
         y,
@@ -64,7 +66,13 @@ function drawSubfeatures(props: {
 
 const Subfeatures = {
   draw: drawSubfeatures,
-  getHeight: ({ feature, config }: { feature: Feature; config: AnyConfigurationModel }) => {
+  getHeight: ({
+    feature,
+    config,
+  }: {
+    feature: Feature
+    config: AnyConfigurationModel
+  }) => {
     const displayMode = readConfObject(config, 'displayMode')
     if (displayMode === 'reducedRepresentation') {
       return readConfObject(config, 'height') as number
@@ -127,7 +135,7 @@ const Subfeatures = {
               ? 0
               : (displayMode === 'compact'
                   ? subfeatureHeight / 3
-                  : subfeatureHeight) + 2
+                  : subfeatureHeight) + transcriptPadding
         }
       }
     }
