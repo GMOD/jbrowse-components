@@ -1,8 +1,8 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getViewParams, measureText, stripAlpha } from '@jbrowse/core/util'
 
 import type { DisplayModel } from './util'
 import type { Feature, Region } from '@jbrowse/core/util'
+import { Theme } from '@mui/material'
 
 interface ViewParams {
   start: number
@@ -26,6 +26,7 @@ export function drawFeatureLabel({
   featureWidth = 0,
   allowedWidthExpansion = 0,
   displayModel = {},
+  theme,
   ctx,
 }: {
   text: string
@@ -42,6 +43,7 @@ export function drawFeatureLabel({
   exportSVG?: unknown
   region: Region
   viewParams: ViewParams
+  theme: Theme
   ctx: CanvasRenderingContext2D
 }) {
   const totalWidth = featureWidth + allowedWidthExpansion
@@ -50,8 +52,6 @@ export function drawFeatureLabel({
     displayModel && !exportSVG ? getViewParams(displayModel) : viewParams
 
   const viewLeft = reversed ? params.end : params.start
-
-  const theme = createJBrowseTheme()
 
   const rstart = region.start
   const rend = region.end

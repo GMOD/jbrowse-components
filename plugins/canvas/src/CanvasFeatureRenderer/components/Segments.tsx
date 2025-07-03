@@ -5,7 +5,6 @@ import { stripAlpha } from '@jbrowse/core/util'
 import Arrow from './Arrow'
 import { chooseGlyphComponent } from './util'
 
-import type { Glyph } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
