@@ -36,6 +36,7 @@ export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
   layoutId: string
+  statusCallback?: (arg: string) => void
 }
 
 export interface RenderResults extends FeatureRenderResults {
