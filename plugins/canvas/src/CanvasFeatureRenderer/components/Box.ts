@@ -82,13 +82,14 @@ function drawBox(props: {
   }
 
   ctx.save()
+  const minW = Math.max(2, width)
   if (fill) {
     ctx.fillStyle = fill
-    ctx.fillRect(x, currentY, width, currentHeight)
+    ctx.fillRect(x, currentY, minW, currentHeight)
   }
   if (stroke) {
     ctx.strokeStyle = stroke
-    ctx.strokeRect(x, currentY, width, currentHeight)
+    ctx.strokeRect(x, currentY, minW, currentHeight)
   }
   ctx.restore()
 
