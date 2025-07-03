@@ -34,6 +34,7 @@ const Segments = observer(function Segments(props: {
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
+  console.log({ left, top })
 
   const y = top + height / 2
   return (
