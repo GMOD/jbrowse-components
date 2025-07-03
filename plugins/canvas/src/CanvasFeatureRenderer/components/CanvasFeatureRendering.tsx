@@ -18,12 +18,6 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
   width: number
   height: number
   exportSVG?: boolean
-  viewParams: {
-    start: number
-    end: number
-    offsetPx: number
-    offsetPx1: number
-  }
   featureDisplayHandler?: (f: Feature) => boolean
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler

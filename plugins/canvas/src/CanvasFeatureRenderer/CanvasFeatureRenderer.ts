@@ -10,7 +10,7 @@ import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 // used to make features have a little padding for their labels
 const yPadding = 5
-const labelHeight = 10
+const labelHeight = 20
 
 export default class CanvasFeatureRenderer extends BoxRendererType {
   async render(renderProps: RenderArgsDeserialized) {

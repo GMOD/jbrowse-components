@@ -25,12 +25,6 @@ const FeatureGlyph = observer(function (props: {
   reversed?: boolean
   topLevel?: boolean
   region: Region
-  viewParams: {
-    end: number
-    start: number
-    offsetPx: number
-    offsetPx1: number
-  }
   bpPerPx: number
 }) {
   const {
