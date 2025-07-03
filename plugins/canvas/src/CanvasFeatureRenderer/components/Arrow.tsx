@@ -5,7 +5,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export function drawArrow({
+function drawArrow({
   feature,
   x,
   y,
@@ -60,3 +60,16 @@ export function drawArrow({
     ctx.stroke()
   }
 }
+
+const Arrow = {
+  draw: drawArrow,
+  getHeight: ({
+    feature,
+    config,
+  }: {
+    feature: Feature
+    config: AnyConfigurationModel
+  }) => readConfObject(config, 'height', { feature }) as number,
+}
+
+export default Arrow

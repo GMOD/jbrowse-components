@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getFrame } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { drawArrow } from './Arrow'
+import Arrow from './Arrow'
 import { isUTR } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -98,7 +98,7 @@ function drawBox(props: {
   ctx.restore()
 
   if (topLevel) {
-    drawArrow({
+    Arrow.draw({
       feature,
       x,
       y: currentY,
@@ -113,6 +113,16 @@ function drawBox(props: {
 
 const Box = {
   draw: drawBox,
+  getHeight: ({
+    feature,
+    config,
+  }: {
+    feature: Feature
+    config: AnyConfigurationModel
+  }) => {
+    const height = readConfObject(config, 'height', { feature }) as number
+    return isUTR(feature) ? height * utrHeightFraction : height
+  },
 }
 
 export default Box
