@@ -25,6 +25,10 @@ export interface Glyph {
     topLevel?: boolean
     ctx: CanvasRenderingContext2D
   }) => void
+  getHeight: (args: {
+    feature: Feature
+    config: AnyConfigurationModel
+  }) => number
   layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 

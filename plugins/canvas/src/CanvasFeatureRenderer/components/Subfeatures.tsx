@@ -64,6 +64,22 @@ function drawSubfeatures(props: {
 
 const Subfeatures = {
   draw: drawSubfeatures,
+  getHeight: ({ feature, config }: { feature: Feature; config: AnyConfigurationModel }) => {
+    const displayMode = readConfObject(config, 'displayMode')
+    if (displayMode === 'reducedRepresentation') {
+      return readConfObject(config, 'height') as number
+    } else if (displayMode === 'compact') {
+      return (
+        (feature.get('subfeatures')?.length || 0) *
+        ((readConfObject(config, 'height') as number) / 3)
+      )
+    } else {
+      return (
+        (feature.get('subfeatures')?.length || 0) *
+        ((readConfObject(config, 'height') as number) + 2)
+      )
+    }
+  },
   layOut: ({
     layout,
     feature,

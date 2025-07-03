@@ -2,7 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { stripAlpha } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { drawArrow } from './Arrow'
+import { chooseGlyphComponent } from './util'
+import Arrow from './Arrow'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -65,9 +66,9 @@ function drawSegments(props: {
     const subX = x + (subfeature.get('start') - feature.get('start')) / bpPerPx
     const subWidth = (subfeature.get('end') - subfeature.get('start')) / bpPerPx
 
-    const { GlyphComponent } = subfeatureLayout.data || {}
-    if (GlyphComponent && (GlyphComponent as Glyph).draw) {
-      ;(GlyphComponent as Glyph).draw({
+    const GlyphComponent = chooseGlyphComponent({ feature: subfeature, config })
+    if (GlyphComponent && GlyphComponent.draw) {
+      GlyphComponent.draw({
         ...props,
         feature: subfeature,
         topLevel: false,
@@ -83,7 +84,7 @@ function drawSegments(props: {
     }
   })
 
-  drawArrow({
+  Arrow.draw({
     feature,
     x,
     y,
@@ -97,6 +98,8 @@ function drawSegments(props: {
 
 const Segments = {
   draw: drawSegments,
+  getHeight: ({ config }: { config: AnyConfigurationModel }) =>
+    readConfObject(config, 'height') as number,
 }
 
 export default Segments
