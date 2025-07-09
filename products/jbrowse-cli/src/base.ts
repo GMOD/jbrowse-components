@@ -5,7 +5,6 @@
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 
-import { Command } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
 
 import fetch from './fetchWithProxy'
@@ -142,7 +141,7 @@ interface GithubRelease {
   ]
 }
 
-export default abstract class JBrowseCommand extends Command {
+export default abstract class JBrowseCommand {
   async init() {}
 
   async readFile(location: string) {
@@ -150,32 +149,13 @@ export default abstract class JBrowseCommand extends Command {
   }
 
   async readJsonFile<T>(location: string): Promise<T> {
-    let contents: string
-    try {
-      contents = await fsPromises.readFile(location, { encoding: 'utf8' })
-    } catch (error) {
-      this.error(error instanceof Error ? error : `${error}`, {
-        suggestions: [
-          `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
-          'Run `jbrowse add-assembly` to create a config file',
-        ],
-        exit: 40,
-      })
-    }
-    let result: T
-    try {
-      result = parseJSON(contents)
-    } catch (error) {
-      this.error(error instanceof Error ? error : `${error}`, {
-        suggestions: [`Make sure "${location}" is a valid JSON file`],
-        exit: 50,
-      })
-    }
-    return result
+    const contents = await fsPromises.readFile(location, { encoding: 'utf8' })
+
+    return parseJSON(contents)
   }
 
   async writeJsonFile(location: string, contents: unknown) {
-    this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
+    console.log(`Writing JSON file to ${process.cwd()} ${location}`)
     return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
   }
 
@@ -205,13 +185,13 @@ export default abstract class JBrowseCommand extends Command {
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
       if (inPlace && filePath.startsWith('..')) {
-        this.warn(
+        console.warn(
           `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
         )
       }
       return inPlace ? location : filePath
     }
-    return this.error(`Could not resolve to a file or a URL: "${location}"`, {
+    throw new Error(`Could not resolve to a file or a URL: "${location}"`, {
       exit: 40,
     })
   }
@@ -222,7 +202,7 @@ export default abstract class JBrowseCommand extends Command {
     try {
       result = parseJSON(inlineOrFileName) as T
     } catch (error) {
-      this.debug(
+      console.log(
         `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
       )
       // not inline JSON, must be location of a JSON file
@@ -293,14 +273,14 @@ export default abstract class JBrowseCommand extends Command {
       )?.browser_download_url
 
       if (!file) {
-        this.error(
+        throw new Error(
           'Could not find version specified. Use --listVersions to see all available versions',
           { exit: 90 },
         )
       }
       return file
     }
-    return this.error(`Could not find version: ${response.statusText}`, {
+    throw new Error(`Could not find version: ${response.statusText}`, {
       exit: 90,
     })
   }

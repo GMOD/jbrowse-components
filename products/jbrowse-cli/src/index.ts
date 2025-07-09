@@ -86,8 +86,8 @@ async function main() {
 
     // Remove the command name from argv before passing to the command
     process.argv = [
-      process.argv[0],
-      process.argv[1],
+      process.argv[0]!,
+      process.argv[1]!,
       commandName,
       ...process.argv.slice(3),
     ]

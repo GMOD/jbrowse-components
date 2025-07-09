@@ -247,7 +247,7 @@ export default class TextIndex extends NativeCommand {
     }
   }
 
-  async perTrackIndex({ flags }: { flags }) {
+  async perTrackIndex({ flags }: { flags: any }) {
     const {
       out,
       target,
@@ -356,7 +356,7 @@ export default class TextIndex extends NativeCommand {
       fs.mkdirSync(trixDir)
     }
 
-    const trackConfigs = file
+    const trackConfigs = (file as string[])
       .map(file => guessAdapterFromFileName(file))
       .filter(fileConfig => supported(fileConfig.adapter?.type))
 
