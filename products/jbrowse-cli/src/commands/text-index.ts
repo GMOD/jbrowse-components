@@ -6,11 +6,7 @@ import { parseArgs } from 'util'
 import { ixIxxStream } from 'ixixx'
 
 import NativeCommand from '../native-base'
-import {
-  generateMeta,
-  guessAdapterFromFileName,
-  supported,
-} from '../types/common'
+import { guessAdapterFromFileName, supported } from '../types/common'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
 
@@ -33,7 +29,6 @@ function writeConf(obj: Config, path: string) {
 function getLoc(elt: UriLocation | LocalPathLocation) {
   return elt.locationType === 'LocalPathLocation' ? elt.localPath : elt.uri
 }
-
 
 export default class TextIndexNative extends NativeCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -139,7 +134,9 @@ export default class TextIndexNative extends NativeCommand {
     }
 
     const output = target || out || '.'
-    const outputPath = output.endsWith('.json') ? output : path.join(output, 'config.json')
+    const outputPath = output.endsWith('.json')
+      ? output
+      : path.join(output, 'config.json')
 
     // Either index from config.json or from individual files
     if (file && file.length > 0) {
@@ -168,26 +165,39 @@ export default class TextIndexNative extends NativeCommand {
     }
   }
 
-  async indexFromFiles(files: string[], options: {
-    attributes: string
-    exclude: string
-    prefixSize?: number
-    force: boolean
-    quiet: boolean
-    dryrun: boolean
-    outputPath: string
-  }) {
-    const { attributes, exclude, prefixSize, force, quiet, dryrun, outputPath } = options
+  async indexFromFiles(
+    files: string[],
+    options: {
+      attributes: string
+      exclude: string
+      prefixSize?: number
+      force: boolean
+      quiet: boolean
+      dryrun: boolean
+      outputPath: string
+    },
+  ) {
+    const {
+      attributes,
+      exclude,
+      prefixSize,
+      force,
+      quiet,
+      dryrun,
+      outputPath,
+    } = options
 
     console.log(`Indexing ${files.length} files...`)
-    
-    const config: Config = fs.existsSync(outputPath) ? readConf(outputPath) : {
-      assemblies: [],
-      tracks: [],
-      connections: [],
-      defaultSession: { name: 'New Session' },
-      aggregateTextSearchAdapters: [],
-    }
+
+    const config: Config = fs.existsSync(outputPath)
+      ? readConf(outputPath)
+      : {
+          assemblies: [],
+          tracks: [],
+          connections: [],
+          defaultSession: { name: 'New Session' },
+          aggregateTextSearchAdapters: [],
+        }
 
     if (!config.aggregateTextSearchAdapters) {
       config.aggregateTextSearchAdapters = []
@@ -202,8 +212,10 @@ export default class TextIndexNative extends NativeCommand {
 
       // @ts-expect-error
       if (!supported(adapterConfig)) {
-        // @ts-expect-error
-        console.warn(`Warning: Adapter type not supported for indexing: ${adapterConfig.type}`)
+        console.warn(
+          // @ts-expect-error
+          `Warning: Adapter type not supported for indexing: ${adapterConfig.type}`,
+        )
         continue
       }
 
@@ -214,7 +226,9 @@ export default class TextIndexNative extends NativeCommand {
       const metaFile = path.join(outDir, `${baseName}_meta.json`)
 
       if (!force && fs.existsSync(ixFile)) {
-        console.log(`Index already exists for ${file}, skipping (use --force to overwrite)`)
+        console.log(
+          `Index already exists for ${file}, skipping (use --force to overwrite)`,
+        )
         continue
       }
 
@@ -230,33 +244,47 @@ export default class TextIndexNative extends NativeCommand {
 
       try {
         let readable: Readable
-        // @ts-expect-error
-        if (adapterConfig.type === 'Gff3Adapter' || adapterConfig.type === 'Gff3TabixAdapter') {
+        if (
+          // @ts-expect-error
+          adapterConfig.type === 'Gff3Adapter' ||
+          // @ts-expect-error
+          adapterConfig.type === 'Gff3TabixAdapter'
+        ) {
           // @ts-expect-error
           readable = await indexGff3({
             config: adapterConfig,
             attributesToIndex: attributesArray,
-            // @ts-expect-error
-            inLocation: getLoc(adapterConfig.gffLocation || adapterConfig.gffGzLocation),
+            inLocation: getLoc(
+              // @ts-expect-error
+              adapterConfig.gffLocation || adapterConfig.gffGzLocation,
+            ),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
           })
-        // @ts-expect-error
-        } else if (adapterConfig.type === 'VcfAdapter' || adapterConfig.type === 'VcfTabixAdapter') {
+        } else if (
+          // @ts-expect-error
+          adapterConfig.type === 'VcfAdapter' ||
+          // @ts-expect-error
+          adapterConfig.type === 'VcfTabixAdapter'
+        ) {
           // @ts-expect-error
           readable = await indexVcf({
             config: adapterConfig,
             attributesToIndex: attributesArray,
-            // @ts-expect-error
-            inLocation: getLoc(adapterConfig.vcfLocation || adapterConfig.vcfGzLocation),
+            inLocation: getLoc(
+              // @ts-expect-error
+              adapterConfig.vcfLocation || adapterConfig.vcfGzLocation,
+            ),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
           })
         } else {
-          // @ts-expect-error
-          console.warn(`Warning: Indexing not implemented for adapter type: ${adapterConfig.type}`)
+          console.warn(
+            // @ts-expect-error
+            `Warning: Indexing not implemented for adapter type: ${adapterConfig.type}`,
+          )
           continue
         }
 
@@ -275,17 +303,30 @@ export default class TextIndexNative extends NativeCommand {
         })
 
         // Generate metadata
-        // @ts-expect-error
-        const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
-        fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+        // const meta = generateMeta({
+        //   ixFile,
+        //   ixxFile,
+        //   attributesArray,
+        //   excludeArray,
+        // })
+        // fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 
         // Add to config
         const adapter: TrixTextSearchAdapter = {
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: baseName,
-          ixFilePath: { uri: path.relative(path.dirname(outputPath), ixFile), locationType: 'UriLocation' },
-          ixxFilePath: { uri: path.relative(path.dirname(outputPath), ixxFile), locationType: 'UriLocation' },
-          metaFilePath: { uri: path.relative(path.dirname(outputPath), metaFile), locationType: 'UriLocation' },
+          ixFilePath: {
+            uri: path.relative(path.dirname(outputPath), ixFile),
+            locationType: 'UriLocation',
+          },
+          ixxFilePath: {
+            uri: path.relative(path.dirname(outputPath), ixxFile),
+            locationType: 'UriLocation',
+          },
+          metaFilePath: {
+            uri: path.relative(path.dirname(outputPath), metaFile),
+            locationType: 'UriLocation',
+          },
           assemblyNames: ['assembly'], // Default assembly name
         }
 
@@ -316,7 +357,18 @@ export default class TextIndexNative extends NativeCommand {
     prefixSize?: number
     dryrun: boolean
   }) {
-    const { outputPath, tracks, attributes, assemblies, force, quiet, perTrack, exclude, prefixSize, dryrun } = options
+    const {
+      outputPath,
+      tracks,
+      attributes,
+      assemblies,
+      force,
+      quiet,
+      perTrack,
+      exclude,
+      prefixSize,
+      dryrun,
+    } = options
 
     if (!fs.existsSync(outputPath)) {
       console.error(`Error: Config file not found at ${outputPath}`)
@@ -324,19 +376,19 @@ export default class TextIndexNative extends NativeCommand {
     }
 
     const config = readConf(outputPath)
-    
+
     if (!config.tracks || config.tracks.length === 0) {
       console.error('Error: No tracks found in config')
       process.exit(1)
     }
 
-    const tracksToIndex = tracks ? 
-      tracks.split(',').map(t => t.trim()) : 
-      config.tracks.map(t => t.trackId)
+    const tracksToIndex = tracks
+      ? tracks.split(',').map(t => t.trim())
+      : config.tracks.map(t => t.trackId)
 
-    const assembliesToIndex = assemblies ? 
-      assemblies.split(',').map(a => a.trim()) : 
-      config.assemblies?.map(a => a.name) || []
+    const assembliesToIndex = assemblies
+      ? assemblies.split(',').map(a => a.trim())
+      : config.assemblies?.map(a => a.name) || []
 
     if (assembliesToIndex.length === 0) {
       console.error('Error: No assemblies found to index')
@@ -346,7 +398,9 @@ export default class TextIndexNative extends NativeCommand {
     const attributesArray = attributes.split(',').map(a => a.trim())
     const excludeArray = exclude.split(',').map(e => e.trim())
 
-    console.log(`Indexing ${tracksToIndex.length} tracks for ${assembliesToIndex.length} assemblies...`)
+    console.log(
+      `Indexing ${tracksToIndex.length} tracks for ${assembliesToIndex.length} assemblies...`,
+    )
 
     if (!config.aggregateTextSearchAdapters) {
       config.aggregateTextSearchAdapters = []
@@ -355,9 +409,10 @@ export default class TextIndexNative extends NativeCommand {
     const outDir = path.dirname(outputPath)
 
     for (const assemblyName of assembliesToIndex) {
-      const tracksForAssembly = config.tracks.filter(track => 
-        tracksToIndex.includes(track.trackId) && 
-        track.assemblyNames.includes(assemblyName)
+      const tracksForAssembly = config.tracks.filter(
+        track =>
+          tracksToIndex.includes(track.trackId) &&
+          track.assemblyNames.includes(assemblyName),
       )
 
       if (tracksForAssembly.length === 0) {
@@ -398,22 +453,36 @@ export default class TextIndexNative extends NativeCommand {
     }
   }
 
-
-  async indexTrack(track: Track, assemblyName: string, options: {
-    attributesArray: string[]
-    excludeArray: string[]
-    prefixSize?: number
-    force: boolean
-    quiet: boolean
-    dryrun: boolean
-    outDir: string
-    config: Config
-  }) {
-    const { attributesArray, excludeArray, prefixSize, force, quiet, dryrun, outDir, config } = options
+  async indexTrack(
+    track: Track,
+    assemblyName: string,
+    options: {
+      attributesArray: string[]
+      excludeArray: string[]
+      prefixSize?: number
+      force: boolean
+      quiet: boolean
+      dryrun: boolean
+      outDir: string
+      config: Config
+    },
+  ) {
+    const {
+      attributesArray,
+      excludeArray,
+      prefixSize,
+      force,
+      quiet,
+      dryrun,
+      outDir,
+      config,
+    } = options
 
     // @ts-expect-error
     if (!supported(track.adapter)) {
-      console.log(`Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`)
+      console.log(
+        `Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`,
+      )
       return
     }
 
@@ -423,7 +492,9 @@ export default class TextIndexNative extends NativeCommand {
     const metaFile = path.join(outDir, `${indexName}_meta.json`)
 
     if (!force && fs.existsSync(ixFile)) {
-      console.log(`Index already exists for ${track.trackId}, skipping (use --force to overwrite)`)
+      console.log(
+        `Index already exists for ${track.trackId}, skipping (use --force to overwrite)`,
+      )
       return
     }
 
@@ -436,32 +507,44 @@ export default class TextIndexNative extends NativeCommand {
 
     try {
       let readable: Readable
-      if (track.adapter?.type === 'Gff3Adapter' || track.adapter?.type === 'Gff3TabixAdapter') {
+      if (
+        track.adapter?.type === 'Gff3Adapter' ||
+        track.adapter?.type === 'Gff3TabixAdapter'
+      ) {
         // @ts-expect-error
         readable = await indexGff3({
           // @ts-expect-error
           config: track.adapter,
           attributesToIndex: attributesArray,
-          // @ts-expect-error
-          inLocation: getLoc(track.adapter.gffLocation || track.adapter.gffGzLocation),
+          inLocation: getLoc(
+            // @ts-expect-error
+            track.adapter.gffLocation || track.adapter.gffGzLocation,
+          ),
           outLocation: ixFile,
           typesToExclude: excludeArray,
           quiet,
         })
-      } else if (track.adapter?.type === 'VcfAdapter' || track.adapter?.type === 'VcfTabixAdapter') {
+      } else if (
+        track.adapter?.type === 'VcfAdapter' ||
+        track.adapter?.type === 'VcfTabixAdapter'
+      ) {
         // @ts-expect-error
         readable = await indexVcf({
           // @ts-expect-error
           config: track.adapter,
           attributesToIndex: attributesArray,
-          // @ts-expect-error
-          inLocation: getLoc(track.adapter.vcfLocation || track.adapter.vcfGzLocation),
+          inLocation: getLoc(
+            // @ts-expect-error
+            track.adapter.vcfLocation || track.adapter.vcfGzLocation,
+          ),
           outLocation: ixFile,
           typesToExclude: excludeArray,
           quiet,
         })
       } else {
-        console.warn(`Warning: Indexing not implemented for adapter type: ${track.adapter?.type}`)
+        console.warn(
+          `Warning: Indexing not implemented for adapter type: ${track.adapter?.type}`,
+        )
         return
       }
 
@@ -480,17 +563,25 @@ export default class TextIndexNative extends NativeCommand {
       })
 
       // Generate metadata
-      // @ts-expect-error
-      const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
-      fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+      // const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
+      // fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 
       // Add to config
       const adapter: TrixTextSearchAdapter = {
         type: 'TrixTextSearchAdapter',
         textSearchAdapterId: indexName,
-        ixFilePath: { uri: path.relative(path.dirname(outDir), ixFile), locationType: 'UriLocation' },
-        ixxFilePath: { uri: path.relative(path.dirname(outDir), ixxFile), locationType: 'UriLocation' },
-        metaFilePath: { uri: path.relative(path.dirname(outDir), metaFile), locationType: 'UriLocation' },
+        ixFilePath: {
+          uri: path.relative(path.dirname(outDir), ixFile),
+          locationType: 'UriLocation',
+        },
+        ixxFilePath: {
+          uri: path.relative(path.dirname(outDir), ixxFile),
+          locationType: 'UriLocation',
+        },
+        metaFilePath: {
+          uri: path.relative(path.dirname(outDir), metaFile),
+          locationType: 'UriLocation',
+        },
         assemblyNames: [assemblyName],
       }
 
@@ -503,17 +594,30 @@ export default class TextIndexNative extends NativeCommand {
     }
   }
 
-  async indexAssembly(tracks: Track[], assemblyName: string, options: {
-    attributesArray: string[]
-    excludeArray: string[]
-    prefixSize?: number
-    force: boolean
-    quiet: boolean
-    dryrun: boolean
-    outDir: string
-    config: Config
-  }) {
-    const { attributesArray, excludeArray, prefixSize, force, quiet, dryrun, outDir, config } = options
+  async indexAssembly(
+    tracks: Track[],
+    assemblyName: string,
+    options: {
+      attributesArray: string[]
+      excludeArray: string[]
+      prefixSize?: number
+      force: boolean
+      quiet: boolean
+      dryrun: boolean
+      outDir: string
+      config: Config
+    },
+  ) {
+    const {
+      attributesArray,
+      excludeArray,
+      prefixSize,
+      force,
+      quiet,
+      dryrun,
+      outDir,
+      config,
+    } = options
 
     const indexName = assemblyName
     const ixFile = path.join(outDir, `${indexName}.ix`)
@@ -521,7 +625,9 @@ export default class TextIndexNative extends NativeCommand {
     const metaFile = path.join(outDir, `${indexName}_meta.json`)
 
     if (!force && fs.existsSync(ixFile)) {
-      console.log(`Index already exists for assembly ${assemblyName}, skipping (use --force to overwrite)`)
+      console.log(
+        `Index already exists for assembly ${assemblyName}, skipping (use --force to overwrite)`,
+      )
       return
     }
 
@@ -530,7 +636,9 @@ export default class TextIndexNative extends NativeCommand {
       return
     }
 
-    console.log(`Indexing assembly ${assemblyName} with ${tracks.length} tracks...`)
+    console.log(
+      `Indexing assembly ${assemblyName} with ${tracks.length} tracks...`,
+    )
 
     try {
       // For assembly-level indexing, we need to combine all tracks
@@ -539,31 +647,43 @@ export default class TextIndexNative extends NativeCommand {
       for (const track of tracks) {
         // @ts-expect-error
         if (!supported(track.adapter)) {
-          console.log(`Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`)
+          console.log(
+            `Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`,
+          )
           continue
         }
 
         let readable: Readable
-        if (track.adapter?.type === 'Gff3Adapter' || track.adapter?.type === 'Gff3TabixAdapter') {
+        if (
+          track.adapter?.type === 'Gff3Adapter' ||
+          track.adapter?.type === 'Gff3TabixAdapter'
+        ) {
           // @ts-expect-error
           readable = await indexGff3({
             // @ts-expect-error
             config: track.adapter,
             attributesToIndex: attributesArray,
-            // @ts-expect-error
-            inLocation: getLoc(track.adapter.gffLocation || track.adapter.gffGzLocation),
+            inLocation: getLoc(
+              // @ts-expect-error
+              track.adapter.gffLocation || track.adapter.gffGzLocation,
+            ),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
           })
-        } else if (track.adapter?.type === 'VcfAdapter' || track.adapter?.type === 'VcfTabixAdapter') {
+        } else if (
+          track.adapter?.type === 'VcfAdapter' ||
+          track.adapter?.type === 'VcfTabixAdapter'
+        ) {
           // @ts-expect-error
           readable = await indexVcf({
             // @ts-expect-error
             config: track.adapter,
             attributesToIndex: attributesArray,
-            // @ts-expect-error
-            inLocation: getLoc(track.adapter.vcfLocation || track.adapter.vcfGzLocation),
+            inLocation: getLoc(
+              // @ts-expect-error
+              track.adapter.vcfLocation || track.adapter.vcfGzLocation,
+            ),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
@@ -594,7 +714,7 @@ export default class TextIndexNative extends NativeCommand {
           return
         }
 
-        const readable = readables[currentIndex]
+        const readable = readables[currentIndex]!
         currentIndex++
 
         // @ts-expect-error
@@ -611,17 +731,25 @@ export default class TextIndexNative extends NativeCommand {
       })
 
       // Generate metadata
-      // @ts-expect-error
-      const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
-      fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+      // const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
+      // fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 
       // Add to config
       const adapter: TrixTextSearchAdapter = {
         type: 'TrixTextSearchAdapter',
         textSearchAdapterId: indexName,
-        ixFilePath: { uri: path.relative(path.dirname(outDir), ixFile), locationType: 'UriLocation' },
-        ixxFilePath: { uri: path.relative(path.dirname(outDir), ixxFile), locationType: 'UriLocation' },
-        metaFilePath: { uri: path.relative(path.dirname(outDir), metaFile), locationType: 'UriLocation' },
+        ixFilePath: {
+          uri: path.relative(path.dirname(outDir), ixFile),
+          locationType: 'UriLocation',
+        },
+        ixxFilePath: {
+          uri: path.relative(path.dirname(outDir), ixxFile),
+          locationType: 'UriLocation',
+        },
+        metaFilePath: {
+          uri: path.relative(path.dirname(outDir), metaFile),
+          locationType: 'UriLocation',
+        },
         assemblyNames: [assemblyName],
       }
 

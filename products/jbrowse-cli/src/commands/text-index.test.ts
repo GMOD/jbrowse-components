@@ -5,7 +5,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
 import { dataDir, runInTmpDir, runNativeCommand } from '../testUtil'

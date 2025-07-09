@@ -2,7 +2,6 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import { main as nativeMain } from './index-native'
 
 const { mkdir, mkdtemp } = fs.promises
@@ -32,45 +31,44 @@ export async function runInTmpDir(
     process.chdir(originalDir)
   }
 }
-export async function setup(str: string | string[]) {
-  return runCommand(str)
-}
 
 // Native command runner for testing
-export async function runNativeCommand(args: string | string[]): Promise<{ stdout?: string; stderr?: string; error?: Error }> {
+export async function runNativeCommand(
+  args: string | string[],
+): Promise<{ stdout: string; stderr: string; error?: Error }> {
   const originalArgv = process.argv
   const originalStdout = process.stdout.write
   const originalStderr = process.stderr.write
   const originalExit = process.exit
   const originalConsoleError = console.error
   const originalConsoleLog = console.log
-  
+
   let stdout = ''
   let stderr = ''
   let error: Error | undefined
-  
+
   try {
     // Mock stdout and stderr
     process.stdout.write = (chunk: any) => {
       stdout += chunk.toString()
       return true
     }
-    
+
     process.stderr.write = (chunk: any) => {
       stderr += chunk.toString()
       return true
     }
-    
+
     // Mock console.error to capture error messages
     console.error = (...args: any[]) => {
       stderr += args.join(' ') + '\n'
     }
-    
+
     // Mock console.log to capture log messages
     console.log = (...args: any[]) => {
       stdout += args.join(' ') + '\n'
     }
-    
+
     // Mock process.exit to capture exit codes
     process.exit = ((code?: number) => {
       if (code && code !== 0) {
@@ -78,20 +76,15 @@ export async function runNativeCommand(args: string | string[]): Promise<{ stdou
       }
       throw new Error('EXIT_MOCK')
     }) as any
-    
+
     // Parse arguments
     const argsArray = Array.isArray(args) ? args : [args]
-    
+
     // Set up process.argv for native command
-    process.argv = [
-      'node',
-      'jbrowse-native',
-      ...argsArray
-    ]
-    
+    process.argv = ['node', 'jbrowse-native', ...argsArray]
+
     // Run the native command
     await nativeMain()
-    
   } catch (err) {
     if (err instanceof Error && err.message !== 'EXIT_MOCK') {
       error = err
@@ -105,18 +98,22 @@ export async function runNativeCommand(args: string | string[]): Promise<{ stdou
     console.error = originalConsoleError
     console.log = originalConsoleLog
   }
-  
+
   // If we have stderr but no error, create an error from stderr
   if (!error && stderr.trim()) {
     error = new Error(stderr.trim())
   }
-  
+
   // Clean up the error message to remove EXIT_MOCK
   if (error && error.message.includes('Error: EXIT_MOCK')) {
     error = new Error(error.message.replace('\nError: EXIT_MOCK', ''))
   }
-  
-  return { stdout, stderr, error }
+
+  return {
+    stdout,
+    stderr,
+    error,
+  }
 }
 
 type Conf = Record<string, any>

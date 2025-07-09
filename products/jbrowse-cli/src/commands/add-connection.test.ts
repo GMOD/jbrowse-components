@@ -5,7 +5,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
 import { readConf, runInTmpDir, runNativeCommand } from '../testUtil'
@@ -63,7 +62,10 @@ test('adds an UCSCTrackHubConnection connection from a url', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/data/hub.txt').reply(200)
     await copyConf(ctx)
-    await runNativeCommand(['add-connection', 'https://mysite.com/data/hub.txt'])
+    await runNativeCommand([
+      'add-connection',
+      'https://mysite.com/data/hub.txt',
+    ])
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })
@@ -72,7 +74,10 @@ test('adds JBrowse1 connection from a url', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/jbrowse/data').reply(200)
     await copyConf(ctx)
-    await runNativeCommand(['add-connection', 'https://mysite.com/jbrowse/data'])
+    await runNativeCommand([
+      'add-connection',
+      'https://mysite.com/jbrowse/data',
+    ])
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })

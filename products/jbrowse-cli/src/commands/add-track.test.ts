@@ -5,8 +5,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
-
 import { ctxDir, readConf, runInTmpDir, runNativeCommand } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises

@@ -5,7 +5,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
 import {
@@ -28,7 +27,12 @@ test('add-assembly no load flag', async () => {
 })
 
 test('fails if using inline JSON sequence custom with no --name', async () => {
-  const { error } = await runNativeCommand(['add-assembly', '{}', '--load', 'copy'])
+  const { error } = await runNativeCommand([
+    'add-assembly',
+    '{}',
+    '--load',
+    'copy',
+  ])
   expect(error?.message).toMatchSnapshot()
 })
 test('fails if custom sequence adapter has no type', async () => {
@@ -85,7 +89,9 @@ test('fails if trying to add an assembly with a name that already exists', async
     )
     await copyFile(simple2bit, path.join(ctx.dir, path.basename(simple2bit)))
     await runNativeCommand('add-assembly simple.2bit --load copy')
-    const { error } = await runNativeCommand('add-assembly simple.2bit --load copy')
+    const { error } = await runNativeCommand(
+      'add-assembly simple.2bit --load copy',
+    )
     expect(error?.message).toMatchSnapshot()
   })
 })
@@ -167,7 +173,12 @@ test('adds an assembly from a FASTA (bgzip)', async () => {
       dataDir('simple.fasta.gz.gzi'),
       ctxDir(ctx, 'simple.fasta.gz.gzi'),
     )
-    await runNativeCommand(['add-assembly', 'simple.fasta.gz', '--load', 'copy'])
+    await runNativeCommand([
+      'add-assembly',
+      'simple.fasta.gz',
+      '--load',
+      'copy',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
@@ -185,7 +196,12 @@ test('adds an assembly from chrom.sizes', async () => {
       dataDir('simple.chrom.sizes'),
       ctxDir(ctx, 'simple.chrom.sizes'),
     )
-    await runNativeCommand(['add-assembly', 'simple.chrom.sizes', '--load', 'copy'])
+    await runNativeCommand([
+      'add-assembly',
+      'simple.chrom.sizes',
+      '--load',
+      'copy',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
@@ -385,7 +401,10 @@ test('relative path', async () => {
 test('adds an assembly from a URL', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/data/simple.2bit').reply(200)
-    await runNativeCommand(['add-assembly', 'https://mysite.com/data/simple.2bit'])
+    await runNativeCommand([
+      'add-assembly',
+      'https://mysite.com/data/simple.2bit',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })

@@ -5,8 +5,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
-
 import { dataDir, readConf, runInTmpDir, runNativeCommand } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
@@ -101,7 +99,11 @@ test('adds a default session from a file', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    await runNativeCommand(['set-default-session', '--session', simpleDefaultSession])
+    await runNativeCommand([
+      'set-default-session',
+      '--session',
+      simpleDefaultSession,
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
