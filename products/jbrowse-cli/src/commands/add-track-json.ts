@@ -6,7 +6,7 @@ import NativeCommand from '../native-base'
 import type { Config, Track } from '../base'
 
 export default class AddTrackJsonNative extends NativeCommand {
-  target: string = ''
+  target = ''
 
   static description =
     'Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration'

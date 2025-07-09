@@ -19,7 +19,7 @@ interface Config {
 }
 
 export default class SetDefaultSessionNative extends NativeCommand {
-  private target: string = ''
+  private target = ''
 
   static description = 'Set a default session with views and tracks'
 
@@ -35,7 +35,7 @@ export default class SetDefaultSessionNative extends NativeCommand {
   ]
 
   async run() {
-    const { values: flags, positionals } = parseArgs({
+    const { values: flags } = parseArgs({
       args: process.argv.slice(3), // Skip node, script, and command name
       options: {
         help: {
@@ -150,3 +150,4 @@ ${SetDefaultSessionNative.examples.join('\n')}
 `)
   }
 }
+

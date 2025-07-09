@@ -18,7 +18,7 @@ function isValidJSON(string: string) {
 }
 
 export default class AddAssemblyNative extends NativeCommand {
-  target: string = ''
+  target = ''
 
   static description = 'Add an assembly to a JBrowse 2 configuration'
 

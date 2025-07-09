@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { Readable } from 'stream'
 import { parseArgs } from 'util'
 
 import { ixIxxStream } from 'ixixx'
@@ -17,6 +16,7 @@ import type {
   TrixTextSearchAdapter,
   UriLocation,
 } from '../base'
+import type { Readable } from 'stream'
 
 function readConf(path: string) {
   return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
@@ -51,7 +51,7 @@ export default class TextIndexNative extends NativeCommand {
   ]
 
   async run() {
-    const { values: flags, positionals } = parseArgs({
+    const { values: flags } = parseArgs({
       args: process.argv.slice(3), // Skip node, script, and command name
       options: {
         help: {
@@ -139,30 +139,28 @@ export default class TextIndexNative extends NativeCommand {
       : path.join(output, 'config.json')
 
     // Either index from config.json or from individual files
-    if (file && file.length > 0) {
-      await this.indexFromFiles(file, {
-        attributes,
-        exclude,
-        prefixSize: prefixSizeInt,
-        force,
-        quiet,
-        dryrun,
-        outputPath,
-      })
-    } else {
-      await this.indexFromConfig({
-        outputPath,
-        tracks,
-        attributes,
-        assemblies,
-        force,
-        quiet,
-        perTrack,
-        exclude,
-        prefixSize: prefixSizeInt,
-        dryrun,
-      })
-    }
+    await (file && file.length > 0
+      ? this.indexFromFiles(file, {
+          attributes,
+          exclude,
+          prefixSize: prefixSizeInt,
+          force,
+          quiet,
+          dryrun,
+          outputPath,
+        })
+      : this.indexFromConfig({
+          outputPath,
+          tracks,
+          attributes,
+          assemblies,
+          force,
+          quiet,
+          perTrack,
+          exclude,
+          prefixSize: prefixSizeInt,
+          dryrun,
+        }))
   }
 
   async indexFromFiles(
@@ -205,6 +203,7 @@ export default class TextIndexNative extends NativeCommand {
 
     for (const file of files) {
       const adapterConfig = guessAdapterFromFileName(file)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!adapterConfig) {
         console.warn(`Warning: Could not guess adapter type for file: ${file}`)
         continue
@@ -251,7 +250,7 @@ export default class TextIndexNative extends NativeCommand {
           adapterConfig.type === 'Gff3TabixAdapter'
         ) {
           // @ts-expect-error
-          readable = await indexGff3({
+          readable = indexGff3({
             config: adapterConfig,
             attributesToIndex: attributesArray,
             inLocation: getLoc(
@@ -269,7 +268,7 @@ export default class TextIndexNative extends NativeCommand {
           adapterConfig.type === 'VcfTabixAdapter'
         ) {
           // @ts-expect-error
-          readable = await indexVcf({
+          readable = indexVcf({
             config: adapterConfig,
             attributesToIndex: attributesArray,
             inLocation: getLoc(
@@ -512,7 +511,7 @@ export default class TextIndexNative extends NativeCommand {
         track.adapter?.type === 'Gff3TabixAdapter'
       ) {
         // @ts-expect-error
-        readable = await indexGff3({
+        readable = indexGff3({
           // @ts-expect-error
           config: track.adapter,
           attributesToIndex: attributesArray,
@@ -529,7 +528,7 @@ export default class TextIndexNative extends NativeCommand {
         track.adapter?.type === 'VcfTabixAdapter'
       ) {
         // @ts-expect-error
-        readable = await indexVcf({
+        readable = indexVcf({
           // @ts-expect-error
           config: track.adapter,
           attributesToIndex: attributesArray,
@@ -659,7 +658,7 @@ export default class TextIndexNative extends NativeCommand {
           track.adapter?.type === 'Gff3TabixAdapter'
         ) {
           // @ts-expect-error
-          readable = await indexGff3({
+          readable = indexGff3({
             // @ts-expect-error
             config: track.adapter,
             attributesToIndex: attributesArray,
@@ -676,7 +675,7 @@ export default class TextIndexNative extends NativeCommand {
           track.adapter?.type === 'VcfTabixAdapter'
         ) {
           // @ts-expect-error
-          readable = await indexVcf({
+          readable = indexVcf({
             // @ts-expect-error
             config: track.adapter,
             attributesToIndex: attributesArray,

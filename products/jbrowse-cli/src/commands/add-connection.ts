@@ -4,13 +4,13 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import NativeCommand from '../native-base'
 import fetch from '../fetchWithProxy'
+import NativeCommand from '../native-base'
 
 import type { Config } from '../base'
 
 export default class AddConnectionNative extends NativeCommand {
-  private target: string = ''
+  private target = ''
 
   static description = 'Add a connection to a JBrowse 2 configuration'
 

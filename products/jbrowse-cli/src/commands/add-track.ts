@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
+
 import parseJSON from 'json-parse-better-errors'
 
 import NativeCommand from '../native-base'
@@ -88,7 +89,7 @@ interface LocalPathLocation {
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export default class AddTrackNative extends NativeCommand {
-  target: string = ''
+  target = ''
 
   static description = 'Add a track to a JBrowse 2 configuration'
 

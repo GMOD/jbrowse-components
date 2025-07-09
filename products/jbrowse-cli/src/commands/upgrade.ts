@@ -4,8 +4,8 @@ import { parseArgs } from 'util'
 
 import decompress from 'decompress'
 
-import NativeCommand from '../native-base'
 import fetch from '../fetchWithProxy'
+import NativeCommand from '../native-base'
 
 export default class UpgradeNative extends NativeCommand {
   static description = 'Upgrades JBrowse 2 to latest version'

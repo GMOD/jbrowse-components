@@ -2,8 +2,8 @@ import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
-import { createGunzip } from 'zlib'
 import { parseArgs } from 'util'
+import { createGunzip } from 'zlib'
 
 import { sync as commandExistsSync } from 'command-exists'
 

@@ -61,12 +61,12 @@ export async function runNativeCommand(
 
     // Mock console.error to capture error messages
     console.error = (...args: any[]) => {
-      stderr += args.join(' ') + '\n'
+      stderr += `${args.join(' ')  }\n`
     }
 
     // Mock console.log to capture log messages
     console.log = (...args: any[]) => {
-      stdout += args.join(' ') + '\n'
+      stdout += `${args.join(' ')  }\n`
     }
 
     // Mock process.exit to capture exit codes
@@ -105,7 +105,7 @@ export async function runNativeCommand(
   }
 
   // Clean up the error message to remove EXIT_MOCK
-  if (error && error.message.includes('Error: EXIT_MOCK')) {
+  if (error?.message.includes('Error: EXIT_MOCK')) {
     error = new Error(error.message.replace('\nError: EXIT_MOCK', ''))
   }
 

@@ -1,5 +1,8 @@
 import { promises as fsPromises } from 'fs'
+import path from 'path'
+
 import parseJSON from 'json-parse-better-errors'
+
 import fetch from './fetchWithProxy'
 
 interface GithubRelease {
@@ -71,7 +74,6 @@ export default abstract class NativeCommand {
       // ignore
     }
     if (locationPath) {
-      const path = await import('path')
       const filePath = path.relative(process.cwd(), locationPath)
       if (inPlace && filePath.startsWith('..')) {
         console.warn(
@@ -178,3 +180,4 @@ export default abstract class NativeCommand {
 
   abstract run(): Promise<void>
 }
+

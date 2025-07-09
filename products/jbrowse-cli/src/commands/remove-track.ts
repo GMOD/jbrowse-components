@@ -6,7 +6,7 @@ import NativeCommand from '../native-base'
 import type { Config } from '../base'
 
 export default class RemoveTrackNative extends NativeCommand {
-  target: string = ''
+  target = ''
 
   static description =
     'Remove a track configuration from a JBrowse 2 configuration. Be aware that this can cause crashes in saved sessions that refer to this track!'

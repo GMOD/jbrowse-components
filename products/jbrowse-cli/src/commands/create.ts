@@ -1,9 +1,10 @@
 import fs from 'fs'
 import { parseArgs } from 'util'
+
 import decompress from 'decompress'
 
-import NativeCommand from '../native-base'
 import fetch from '../fetchWithProxy'
+import NativeCommand from '../native-base'
 
 const fsPromises = fs.promises
 

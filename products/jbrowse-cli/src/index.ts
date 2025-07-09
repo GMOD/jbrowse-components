@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
-import { parseArgs } from 'util'
 import path from 'path'
+import { parseArgs } from 'util'
 
 // Command imports
-import Create from './commands/create'
 import AddAssembly from './commands/add-assembly'
-import AddTrack from './commands/add-track'
-import TextIndex from './commands/text-index'
-import AdminServer from './commands/admin-server'
-import Upgrade from './commands/upgrade'
-import MakePIF from './commands/make-pif'
-import SortGff from './commands/sort-gff'
-import SortBed from './commands/sort-bed'
 import AddConnection from './commands/add-connection'
+import AddTrack from './commands/add-track'
 import AddTrackJson from './commands/add-track-json'
+import AdminServer from './commands/admin-server'
+import Create from './commands/create'
+import MakePIF from './commands/make-pif'
 import RemoveTrack from './commands/remove-track'
 import SetDefaultSession from './commands/set-default-session'
+import SortBed from './commands/sort-bed'
+import SortGff from './commands/sort-gff'
+import TextIndex from './commands/text-index'
+import Upgrade from './commands/upgrade'
 
 const commands = {
   create: Create,
@@ -77,6 +77,7 @@ async function main() {
     }
 
     const CommandClass = commands[commandName as keyof typeof commands]
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!CommandClass) {
       console.error(`Error: Unknown command "${commandName}"`)
       console.error(`Available commands: ${Object.keys(commands).join(', ')}`)
@@ -84,11 +85,8 @@ async function main() {
     }
 
     // Remove the command name from argv before passing to the command
-    const originalArgv = process.argv
     process.argv = [
-      // @ts-expect-error
       process.argv[0],
-      // @ts-expect-error
       process.argv[1],
       commandName,
       ...process.argv.slice(3),
