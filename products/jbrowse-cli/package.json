@@ -19,8 +19,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
-    "jbrowse": "./bin/run",
-    "jbrowse-native": "./bin/run-native"
+    "jbrowse": "./bin/run"
   },
   "files": [
     "/bin",
