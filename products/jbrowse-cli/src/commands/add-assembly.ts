@@ -2,9 +2,9 @@ import fs from 'fs'
 import path from 'path'
 
 import JBrowseCommand from '../native-base'
-import { parseArgs } from 'node:util'
 
 import type { Assembly, Config, Sequence } from '../base'
+import { parseArgs } from 'util'
 
 const { rename, copyFile, mkdir, symlink } = fs.promises
 
@@ -405,8 +405,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       },
       allowPositionals: true,
     })
-    const argsSequence = positionals[0]!
-
+    const argsSequence = positionals[0]
     const output = runFlags.target || runFlags.out || '.'
 
     if (!(await exists(output))) {
