@@ -201,8 +201,9 @@ export default class AddTrackNative extends NativeCommand {
 
     const track = positionals[0]
     if (!track) {
-      console.error('Error: Missing required argument: track')
-      console.error('Usage: jbrowse add-track <track> [options]')
+      console.error('Missing 1 required arg:')
+      console.error('track  Track file or URL')
+      console.error('See more help with --help')
       process.exit(1)
     }
 

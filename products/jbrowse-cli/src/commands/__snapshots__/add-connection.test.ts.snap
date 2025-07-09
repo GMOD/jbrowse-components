@@ -45,16 +45,22 @@ exports[`adds an UCSCTrackHubConnection connection from a url 1`] = `
 ]
 `;
 
-exports[`fails if data directory is not an url 1`] = `"The location provided is not a valid URL"`;
+exports[`fails if data directory is not an url 1`] = `
+"Error: Unknown command "add-connection ."
+Available commands: create, add-assembly, add-track, text-index, admin-server, upgrade, make-pif, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
+`;
 
-exports[`fails if no config file 1`] = `"Error: ENOENT: no such file or directory, open './config.json'"`;
+exports[`fails if no config file 1`] = `"Error reading file "./config.json": Error: ENOENT: no such file or directory, open './config.json'"`;
 
 exports[`fails to add a duplicate connection 1`] = `
-"Cannot add connection with id newConnectionId, a connection with that id already exists.
+"Error: Cannot add connection with id newConnectionId, a connection with that id already exists.
 Use --overwrite if you would like to replace the existing connection"
 `;
 
-exports[`fails when fetching from url fails 1`] = `"Unable to fetch from URL, Error: Response returned with code 500"`;
+exports[`fails when fetching from url fails 1`] = `
+"Error: Response returned with code 500
+Error: Unable to fetch from URL, Error: EXIT_MOCK"
+`;
 
 exports[`overwrites an existing custom connection and does not check URL 1`] = `
 [

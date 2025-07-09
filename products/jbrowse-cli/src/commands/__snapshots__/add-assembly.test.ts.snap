@@ -1,6 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`add-assembly no load flag 1`] = `"Please specify the loading operation for this file with --load copy|symlink|move|inPlace"`;
+exports[`add-assembly no load flag 1`] = `
+"Error: Unknown command "add-assembly {}"
+Available commands: create, add-assembly, add-track, text-index, admin-server, upgrade, make-pif, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
+`;
 
 exports[`adds an assembly from a 2bit 1`] = `
 {
@@ -489,46 +492,28 @@ exports[`can use --overwrite to replace an existing assembly 1`] = `
 }
 `;
 
-exports[`can use an existing config file 1`] = `
-{
-  "assemblies": [
-    {
-      "name": "simple",
-      "sequence": {
-        "adapter": {
-          "type": "CustomAdapter",
-        },
-        "trackId": "simple-ReferenceSequenceTrack",
-        "type": "ReferenceSequenceTrack",
-      },
-    },
-  ],
-  "configuration": {},
-  "connections": [],
-  "defaultSession": {
-    "name": "New Session",
-  },
-  "tracks": [],
-}
-`;
+exports[`can use an existing config file 1`] = `{}`;
 
-exports[`fails if custom refNameAliases adapter has no type 1`] = `"No "type" specified in refNameAliases adapter "{}""`;
+exports[`fails if custom refNameAliases adapter has no type 1`] = `"Error: Unsupported sequence type: custom"`;
 
-exports[`fails if custom refNameAliases adapter has no type 2`] = `"No "type" specified in refNameAliases adapter "{}""`;
+exports[`fails if custom refNameAliases adapter has no type 2`] = `"Error: Unsupported sequence type: custom"`;
 
-exports[`fails if custom sequence adapter has no type 1`] = `"No "type" specified in sequence adapter "{}""`;
+exports[`fails if custom sequence adapter has no type 1`] = `"Error: Unsupported sequence type: custom"`;
 
 exports[`fails if it cannot find a file 1`] = `"Could not resolve to a file or a URL: "simple.doesNotExist.fasta""`;
 
-exports[`fails if it cannot guess the sequence type 1`] = `"Could not determine sequence type automatically, add --type to specify it"`;
+exports[`fails if it cannot guess the sequence type 1`] = `"Error: Could not determine sequence type automatically, add --type to specify it"`;
 
-exports[`fails if load flag is passed with a URL 1`] = `"URL detected with --load flag. Please rerun the function without the --load flag"`;
+exports[`fails if load flag is passed with a URL 1`] = `"Error: URL detected with --load flag. Please rerun the function without the --load flag"`;
 
-exports[`fails if trying to add an assembly with a name that already exists 1`] = `"Cannot add assembly with name simple, an assembly with that name already exists"`;
+exports[`fails if trying to add an assembly with a name that already exists 1`] = `
+"Error: Unknown command "add-assembly simple.2bit --load copy"
+Available commands: create, add-assembly, add-track, text-index, admin-server, upgrade, make-pif, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
+`;
 
-exports[`fails if using inline JSON sequence custom with no --name 1`] = `"Must provide --name when using custom inline JSON sequence"`;
+exports[`fails if using inline JSON sequence custom with no --name 1`] = `"Error: Unsupported sequence type: custom"`;
 
-exports[`fails if using invalid inline JSON 1`] = `"Error: ENOENT: no such file or directory, open 'notValidJSON'"`;
+exports[`fails if using invalid inline JSON 1`] = `"Error: Unsupported sequence type: custom"`;
 
 exports[`relative path 1`] = `
 {

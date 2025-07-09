@@ -7,7 +7,7 @@ import path from 'path'
 
 import { runCommand } from '@oclif/test'
 
-import { ctxDir, readConf, runInTmpDir } from '../testUtil'
+import { ctxDir, readConf, runInTmpDir, runNativeCommand } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises
 
@@ -47,17 +47,17 @@ function init2bit(ctx: { dir: string }) {
 afterAll(() => (process.exitCode = 0))
 
 test('fails if no track is specified', async () => {
-  const { error } = await runCommand(['add-track'])
+  const { error } = await runNativeCommand(['add-track'])
   expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if load flag is not passed in for a localFile', async () => {
-  const { error } = await runCommand(['add-track', simpleBam])
+  const { error } = await runNativeCommand(['add-track', simpleBam])
   expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if URL with load flag is passed', async () => {
-  const { error } = await runCommand([
+  const { error } = await runNativeCommand([
     'add-track',
     'https://mysite.com/data/simple.bam',
     '--load',
@@ -69,8 +69,8 @@ test('fails if URL with load flag is passed', async () => {
 test('cannot add a track with the same track id', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand(['add-track', simpleBam, '--load', 'copy'])
-    const { error } = await runCommand([
+    await runNativeCommand(['add-track', simpleBam, '--load', 'copy'])
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -84,8 +84,8 @@ test('use force to overwrite a symlink', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand(['add-track', simpleBam, '--load', 'symlink'])
-    const { error } = await runCommand([
+    await runNativeCommand(['add-track', simpleBam, '--load', 'symlink'])
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -100,8 +100,8 @@ test('use force to overwrite a copied file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand(['add-track', simpleBam, '--load', 'copy'])
-    const { error } = await runCommand([
+    await runNativeCommand(['add-track', simpleBam, '--load', 'copy'])
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -120,13 +120,13 @@ test('use force to overwrite a copied file', async () => {
 //     await fsPromises.copyFile(simpleBam, path.join(ctx.dir, 'new.bam'))
 //     await fsPromises.copyFile(simpleBai, path.join(ctx.dir, 'new.bam.bai'))
 //   })
-//   runCommand(['add-track', 'new.bam', '--load', 'move'])
-//   runCommand(['add-track', 'new.bam', '--load', 'move', '--force'])
+//   runNativeCommand(['add-track', 'new.bam', '--load', 'move'])
+//   runNativeCommand(['add-track', 'new.bam', '--load', 'move', '--force'])
 //   .it('use force to overwrite a moved file')
 
 test('cannot add a track if there is no config file', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runCommand([
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -139,7 +139,7 @@ test('fails if it cannot assume the assemblyname', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await writeFile(path.join(ctx.dir, 'config.json'), '{"assemblies":[]}')
-    const { error } = await runCommand([
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -153,7 +153,7 @@ test('fails if it cannot assume the assemblyname', async () => {
 test('adds a bam track with bai', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand(['add-track', simpleBam, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleBam, '--load', 'copy'])
     expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
     expect(exists(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
     expect(readConf(ctx).tracks).toMatchSnapshot()
@@ -163,7 +163,7 @@ test('adds a bam track with bai', async () => {
 test('adds a bam track with csi', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -180,7 +180,7 @@ test('adds a bam track with csi', async () => {
 test('adds a bam track with load inPlace', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       '/testing/in/place.bam',
       '--load',
@@ -193,7 +193,7 @@ test('adds a bam track with load inPlace', async () => {
 test('adds a bam+bai track with load inPlace', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       '/testing/in/place.bam',
       '--load',
@@ -208,7 +208,7 @@ test('adds a bam+bai track with load inPlace', async () => {
 test('adds a bam track with indexFile for bai', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -225,7 +225,7 @@ test('adds a bam track with indexFile for bai', async () => {
 test('adds a bam track with subDir', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -244,7 +244,7 @@ test('adds a bam track with subDir and localPath protocol', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -265,7 +265,7 @@ test('adds a bam track with all the custom fields', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -294,7 +294,7 @@ test('adds a bam track from a url', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand(['add-track', 'https://mysite.com/data/simple.bam'])
+    await runNativeCommand(['add-track', 'https://mysite.com/data/simple.bam'])
 
     expect(readConf(ctx).tracks).toMatchSnapshot()
   })
@@ -305,8 +305,8 @@ test('fails multiple assemblies exist but no assemblyNames passed', async () => 
     await initctx(ctx)
     await init2bit(ctx)
 
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    const { error } = await runCommand([
+    await runNativeCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -322,8 +322,8 @@ test('adds a track to a config with multiple assemblies', async () => {
     await initctx(ctx)
     await init2bit(ctx)
 
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    const { error } = await runCommand([
+    await runNativeCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    const { error } = await runNativeCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -340,7 +340,7 @@ test('adds a plaintext gff', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand(['add-track', simpleGff, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleGff, '--load', 'copy'])
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
     expect(readConf(ctx).tracks).toMatchSnapshot()
   })
@@ -350,7 +350,7 @@ test('adds a plaintext vcf', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand(['add-track', simpleVcf, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleVcf, '--load', 'copy'])
     expect(exists(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
     expect(readConf(ctx).tracks).toMatchSnapshot()
   })
@@ -359,7 +359,7 @@ test('adds a plaintext vcf', async () => {
 test('adds a plaintext gtf', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand(['add-track', simpleGtf, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleGtf, '--load', 'copy'])
     expect(exists(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
     expect(readConf(ctx).tracks).toMatchSnapshot()
   })
@@ -368,7 +368,7 @@ test('adds a plaintext gtf', async () => {
 test('adds a plaintext bed', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand(['add-track', simpleBed, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleBed, '--load', 'copy'])
 
     expect(exists(ctxDir(ctx, 'volvox.bed'))).toBeTruthy()
 
@@ -379,7 +379,7 @@ test('adds a plaintext bed', async () => {
 test('adds a plaintext bedpe', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand(['add-track', simpleBedpe, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleBedpe, '--load', 'copy'])
 
     expect(exists(ctxDir(ctx, 'volvox.bedpe'))).toBeTruthy()
 
@@ -391,7 +391,7 @@ test('adds a tabix gff with tbi', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand(['add-track', simpleGffGz, '--load', 'copy'])
+    await runNativeCommand(['add-track', simpleGffGz, '--load', 'copy'])
 
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
@@ -404,7 +404,7 @@ test('adds a tabix gff with csi', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleGffGz,
       '--load',
@@ -424,7 +424,7 @@ test('adds a paf.gz file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simplePafGz,
       '--assemblyNames',
@@ -442,7 +442,7 @@ test('adds a paf file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simplePaf,
       '--assemblyNames',
@@ -459,7 +459,7 @@ test('adds a paf file', async () => {
 test('adds a delta file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleDelta,
       '--assemblyNames',
@@ -476,7 +476,7 @@ test('adds a delta file', async () => {
 test('adds a mashmap file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleOut,
       '--assemblyNames',
@@ -494,7 +494,7 @@ test('adds a mcscan simple anchors file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleMcScanSimple,
       '--assemblyNames',
@@ -518,7 +518,7 @@ test('adds a mcscan anchors file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleMcScan,
       '--assemblyNames',
@@ -542,7 +542,7 @@ test('adds a chain file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    await runCommand([
+    await runNativeCommand([
       'add-track',
       simpleChain,
       '--assemblyNames',

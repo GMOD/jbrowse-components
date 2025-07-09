@@ -8,7 +8,7 @@ import path from 'path'
 import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
-import { runInTmpDir } from '../testUtil'
+import { runInTmpDir, runNativeCommand } from '../testUtil'
 
 const { readdir } = fs.promises
 
@@ -41,20 +41,20 @@ afterAll(() => (process.exitCode = 0))
 
 test('fails if no path is provided to the command', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runCommand(['create'])
+    const { error } = await runNativeCommand(['create'])
     expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('fails if no path is provided to the command, even with force', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runCommand(['create', '--force'])
+    const { error } = await runNativeCommand(['create', '--force'])
     expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('fails if user selects a directory that has existing files', async () => {
-  const { error } = await runCommand(['create', '.'])
+  const { error } = await runNativeCommand(['create', '.'])
   expect(error?.message).toMatchSnapshot()
 })
 test('fails if the fetch does not return the right file', async () => {
@@ -62,7 +62,7 @@ test('fails if the fetch does not return the right file', async () => {
     nock('https://example.com')
       .get('/jbrowse-web-v0.0.1.zip')
       .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
-    const { error } = await runCommand([
+    const { error } = await runNativeCommand([
       'create',
       'jbrowse',
       '--url',
@@ -78,7 +78,7 @@ test('download and unzips to new directory', async () => {
       .get('/repos/GMOD/jbrowse-components/releases?page=1')
       .reply(200, releaseArray)
     mockZip()
-    await runCommand(['create', 'jbrowse'])
+    await runNativeCommand(['create', 'jbrowse'])
     expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
       'manifest.json',
     )
@@ -88,7 +88,7 @@ test('download and unzips to new directory', async () => {
 test('downloads from a url', async () => {
   await runInTmpDir(async ctx => {
     mockZip()
-    await runCommand([
+    await runNativeCommand([
       'create',
       'jbrowse',
       '--url',
@@ -106,7 +106,7 @@ test('overwrites and succeeds in download in a non-empty directory with tag', as
       .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
       .reply(200, releaseArray[0])
     mockZip()
-    await runCommand(['create', 'jbrowse', '--tag', 'v0.0.1', '--force'])
+    await runNativeCommand(['create', 'jbrowse', '--tag', 'v0.0.1', '--force'])
     expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
       'manifest.json',
     )
@@ -118,7 +118,7 @@ test('fails to download a version that does not exist', async () => {
     nock('https://api.github.com')
       .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
       .reply(404, {})
-    const { error } = await runCommand([
+    const { error } = await runNativeCommand([
       'create',
       'jbrowse',
       '--tag',
@@ -135,8 +135,8 @@ test('fails because this directory is already set up', async () => {
       .get('/repos/GMOD/jbrowse-components/releases?page=1')
       .reply(200, releaseArray)
     mockZip()
-    await runCommand(['create', 'jbrowse'])
-    const { error } = await runCommand(['create', 'jbrowse'])
+    await runNativeCommand(['create', 'jbrowse'])
+    const { error } = await runNativeCommand(['create', 'jbrowse'])
     expect(error?.message).toMatchSnapshot()
   })
 })
@@ -148,7 +148,7 @@ test('lists versions', async () => {
       .reply(200, releaseArray)
       .get('/repos/GMOD/jbrowse-components/releases?page=2')
       .reply(200, [])
-    const { stdout } = await runCommand(['create', '--listVersions'])
+    const { stdout } = await runNativeCommand(['create', '--listVersions'])
     expect(stdout).toMatchSnapshot()
   })
 })

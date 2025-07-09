@@ -80,8 +80,9 @@ export default class CreateNative extends NativeCommand {
 
     const localPath = positionals[0]
     if (!localPath) {
-      console.error('Error: Missing required argument: localPath')
-      console.error('Usage: jbrowse create <localPath> [options]')
+      console.error('Missing 1 required arg:')
+      console.error('localPath  Location where JBrowse 2 will be installed')
+      console.error('See more help with --help')
       process.exit(1)
     }
 

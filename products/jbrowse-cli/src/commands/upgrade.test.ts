@@ -8,7 +8,7 @@ import path from 'path'
 import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
-import { runInTmpDir } from '../testUtil'
+import { runInTmpDir, runNativeCommand } from '../testUtil'
 
 const { stat, readdir, writeFile } = fs.promises
 
@@ -42,13 +42,13 @@ afterAll(() => (process.exitCode = 0))
 test('fails if user selects a directory that does not have a installation', async () => {
   await runInTmpDir(async () => {
     mkdirSync('jbrowse')
-    const { error } = await runCommand(['upgrade', 'jbrowse'])
+    const { error } = await runNativeCommand(['upgrade', 'jbrowse'])
     expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('fails if user selects a directory that does not exist', async () => {
-  const { error } = await runCommand(['upgrade', 'jbrowse'])
+  const { error } = await runNativeCommand(['upgrade', 'jbrowse'])
   expect(error?.message).toMatchSnapshot()
 })
 
@@ -65,7 +65,7 @@ test('upgrades a directory', async () => {
       )
     await writeFile('manifest.json', '{"name":"JBrowse"}')
     const prevStat = await stat(path.join(ctx.dir, 'manifest.json'))
-    await runCommand(['upgrade'])
+    await runNativeCommand(['upgrade'])
     expect(await readdir(ctx.dir)).toContain('manifest.json')
     // upgrade successful if it updates stats of manifest json
     expect(await stat('manifest.json')).not.toEqual(prevStat)
@@ -86,7 +86,7 @@ test('upgrades a directory with a specific version', async () => {
       )
 
     await writeFile('manifest.json', '{"name":"JBrowse"}')
-    await runCommand(['upgrade', '--tag', 'v0.0.1'])
+    await runNativeCommand(['upgrade', '--tag', 'v0.0.1'])
     expect(await readdir(ctx.dir)).toContain('manifest.json')
   })
 })
@@ -101,7 +101,7 @@ test('upgrades a directory from a url', async () => {
         { 'Content-Type': 'application/zip' },
       )
     await writeFile('manifest.json', '{"name":"JBrowse"}')
-    await runCommand([
+    await runNativeCommand([
       'upgrade',
       '--url',
       'https://example.com/JBrowse2-0.0.1.zip',
@@ -115,14 +115,14 @@ test('fails to upgrade if version does not exist', async () => {
     .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
     .reply(404, {})
 
-  const { error } = await runCommand(['upgrade', '--tag', 'v999.999.999'])
+  const { error } = await runNativeCommand(['upgrade', '--tag', 'v999.999.999'])
   expect(error?.message).toMatchSnapshot()
 })
 test('fails if the fetch does not return the right file', async () => {
   nock('https://example.com')
     .get('/JBrowse2-0.0.1.json')
     .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
-  const { error } = await runCommand([
+  const { error } = await runNativeCommand([
     'upgrade',
     '--url',
     'https://example.com/JBrowse2-0.0.1.json',
