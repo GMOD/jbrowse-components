@@ -67,7 +67,7 @@ test('fails if there is an invalid flag', async () => {
   })
 })
 
-test('indexes a local non-gz gff3 file', async () => {
+test('indexes local non-gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
     const gff3File = dataDir('au9_scaffold_subset_sync.gff3')
     fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
@@ -80,7 +80,7 @@ test('indexes a local non-gz gff3 file', async () => {
     verifyIxxFiles(ctx.dir)
   })
 })
-test('indexes a local gz gff3 file', async () => {
+test('indexes local gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
     // Gzipped File
     const gff3File = dataDir('volvox.sort.gff3.gz')
@@ -94,7 +94,7 @@ test('indexes a local gz gff3 file', async () => {
     verifyIxxFiles(ctx.dir)
   })
 })
-test('indexes a remote gz gff3 file', async () => {
+test('indexes remote gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
     nock('https://github.com')
       .get(
@@ -111,7 +111,7 @@ test('indexes a remote gz gff3 file', async () => {
   })
 })
 
-test('indexes a remote non-gz gff3 file', async () => {
+test('indexes remote non-gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
     nock('https://raw.githubusercontent.com')
       .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
@@ -167,7 +167,7 @@ test('indexes multiple remote gff3 file', async () => {
   })
 })
 
-test('indexes a remote and a local file', async () => {
+test('indexes remote and a local file', async () => {
   await runInTmpDir(async ctx => {
     nock('https://raw.githubusercontent.com')
       .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
@@ -186,7 +186,7 @@ test('indexes a remote and a local file', async () => {
   })
 })
 
-test('indexes a track using only the attributes tag', async () => {
+test('indexes track using only the attributes tag', async () => {
   await runInTmpDir(async ctx => {
     const gff3File = dataDir('volvox.sort.gff3.gz')
     fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
@@ -202,7 +202,7 @@ test('indexes a track using only the attributes tag', async () => {
 })
 
 // no attributes in track
-test('indexes a track with no attributes in the config', async () => {
+test('indexes track with no attributes in the config', async () => {
   await runInTmpDir(async ctx => {
     const gff3File = dataDir('volvox.sort.gff3.gz')
     fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
@@ -229,7 +229,7 @@ test('indexes with multiple per-file args', async () => {
   })
 })
 
-test('indexes with  single per-file arg', async () => {
+test('indexes with single per-file arg', async () => {
   await runInTmpDir(async ctx => {
     fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
     await runNativeCommand(['text-index', '--file', 'volvox.sort.gff3.gz'])

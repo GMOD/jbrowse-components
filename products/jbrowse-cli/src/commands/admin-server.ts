@@ -62,8 +62,9 @@ export default class AdminServerNative extends NativeCommand {
    * @returns The configuration file path and base directory
    */
   async setupConfigFile(
-    output = '.',
+    root?: string,
   ): Promise<{ outFile: string; baseDir: string }> {
+    const output = root || '.'
     const isDir = fs.lstatSync(output).isDirectory()
     const outFile = isDir ? `${output}/config.json` : output
     const baseDir = path.dirname(outFile)
@@ -102,14 +103,36 @@ export default class AdminServerNative extends NativeCommand {
     key: string
     keyPath: string
   } {
+    // Create Express application
     const app = express()
+
+    // Configure middleware
     app.use(express.static(baseDir))
     app.use(cors())
     app.use(express.json({ limit: bodySizeLimit }))
 
+    // Add error handling middleware
+    app.use((err: any, _req: Request, res: Response, next: Function) => {
+      if (err) {
+        console.error('Server error:', err)
+        res.status(500).setHeader('Content-Type', 'text/plain')
+        res.send('Internal Server Error')
+      } else {
+        next()
+      }
+    })
+
+    // Generate admin key and store it
     const key = generateKey()
     const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
-    fs.writeFileSync(keyPath, key)
+
+    try {
+      fs.writeFileSync(keyPath, key)
+      this.debug(`Admin key stored at ${keyPath}`)
+    } catch (error: any) {
+      console.error(`Failed to write admin key to ${keyPath}:`, error.message)
+      // Continue anyway, as this is not critical
+    }
 
     // Set up routes
     this.setupRoutes(app, baseDir, outFile, key)
@@ -132,67 +155,106 @@ export default class AdminServerNative extends NativeCommand {
   ): void {
     // Root route
     app.get('/', (_req: Request, res: Response) => {
-      res.json({ message: 'JBrowse Admin Server' })
+      res.setHeader('Content-Type', 'text/plain')
+      res.send('JBrowse Admin Server')
     })
 
     // Update config route
     app.post('/updateConfig', (req: Request, res: Response) => {
       const { body } = req
-      const { adminKey } = req.query
+      // Check for adminKey in both query parameters and request body for backward compatibility
+      const adminKeyFromQuery = req.query.adminKey as string | undefined
+      const adminKeyFromBody = body.adminKey as string | undefined
+      const adminKey = adminKeyFromBody || adminKeyFromQuery
+      const config = body.config as string | undefined
+      // Get configPath from either body or query parameters
+      const configPathParam =
+        body.configPath || (req.query.config as string | undefined)
 
       if (adminKey !== key) {
-        res.status(401).json({ error: 'Invalid admin key' })
+        res.status(401).setHeader('Content-Type', 'text/plain')
+        res.send('Error: Invalid admin key')
         return
       }
 
+      // Remove adminKey from body before saving to config
+      if (body.adminKey) {
+        delete body.adminKey
+      }
+
       try {
-        const configPath = req.query.config
-          ? path.join(baseDir, req.query.config as string)
+        // Normalize the config path
+        const configPath = configPathParam
+          ? path.normalize(path.join(baseDir, configPathParam))
           : outFile
 
-        // Ensure the config path is within the base directory for security
-        if (!configPath.startsWith(baseDir)) {
-          res.status(403).json({ error: 'Invalid config path' })
+        // Check for directory traversal attempts
+        const normalizedBaseDir = path.normalize(baseDir)
+        const relPath = path.relative(normalizedBaseDir, configPath)
+
+        // Ensure the config path is within the base directory and doesn't
+        // contain path traversal
+        if (relPath.startsWith('..') || path.isAbsolute(relPath)) {
+          res.status(401).setHeader('Content-Type', 'text/plain')
+          res.send('Error: Cannot perform directory traversal')
           return
         }
 
-        fs.writeFileSync(configPath, JSON.stringify(body, null, 2))
-        res.json({ message: 'Config updated successfully' })
-      } catch (error: any) {
-        console.error('Error updating config:', error)
-        res.status(500).json({ error: 'Failed to update config' })
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+        res.setHeader('Content-Type', 'text/plain')
+        res.send('Config updated successfully')
+      } catch (error) {
+        res.status(500).setHeader('Content-Type', 'text/plain')
+        res.send('Error: Failed to update config')
       }
     })
 
     // Get config route
     app.get('/config', (req: Request, res: Response) => {
-      const { adminKey } = req.query
+      const { body } = req
+      // Check for adminKey in both query parameters and request body for backward compatibility
+      const adminKeyFromQuery = req.query.adminKey as string | undefined
+      const adminKeyFromBody = body?.adminKey as string | undefined
+      const adminKey = adminKeyFromBody || adminKeyFromQuery
+      // Get configPath from query parameters or body
+      const configPathParam =
+        body?.configPath || (req.query.config as string | undefined)
 
       if (adminKey !== key) {
-        res.status(401).json({ error: 'Invalid admin key' })
+        res.status(401).setHeader('Content-Type', 'text/plain')
+        res.send('Error: Invalid admin key')
         return
       }
 
       try {
-        const configPath = req.query.config
-          ? path.join(baseDir, req.query.config as string)
+        // Normalize the config path
+        const configPath = configPathParam
+          ? path.normalize(path.join(baseDir, configPathParam))
           : outFile
 
-        // Ensure the config path is within the base directory for security
-        if (!configPath.startsWith(baseDir)) {
-          res.status(403).json({ error: 'Invalid config path' })
+        // Check for directory traversal attempts
+        const normalizedBaseDir = path.normalize(baseDir)
+        const relPath = path.relative(normalizedBaseDir, configPath)
+
+        // Ensure the config path is within the base directory and doesn't contain path traversal
+        if (relPath.startsWith('..') || path.isAbsolute(relPath)) {
+          res.status(401).setHeader('Content-Type', 'text/plain')
+          res.send('Error: Cannot perform directory traversal')
           return
         }
 
         if (fs.existsSync(configPath)) {
-          const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-          res.json(config)
+          const config = fs.readFileSync(configPath, 'utf8')
+          res.setHeader('Content-Type', 'text/plain')
+          res.send(config)
         } else {
-          res.status(404).json({ error: 'Config file not found' })
+          res.status(404).setHeader('Content-Type', 'text/plain')
+          res.send('Error: Config file not found')
         }
       } catch (error: any) {
         console.error('Error reading config:', error)
-        res.status(500).json({ error: 'Failed to read config' })
+        res.status(500).setHeader('Content-Type', 'text/plain')
+        res.send('Error: Failed to read config')
       }
     })
   }
@@ -264,6 +326,7 @@ export default class AdminServerNative extends NativeCommand {
     outFile: string,
     keyPath: string,
   ): void {
+    // Start the server
     const server = app.listen(port, () => {
       console.log(
         `Admin server started on port ${port}\n\n` +
@@ -275,6 +338,16 @@ export default class AdminServerNative extends NativeCommand {
       )
     })
 
+    // Handle server errors
+    server.on('error', (error: any) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`Error: Port ${port} is already in use`)
+      } else {
+        console.error('Server error:', error.message)
+      }
+      process.exit(1)
+    })
+
     // Common shutdown handler
     const shutdownHandler = () => {
       console.log('\nShutting down admin server...')
@@ -282,6 +355,7 @@ export default class AdminServerNative extends NativeCommand {
         // Clean up admin key file
         try {
           fs.unlinkSync(keyPath)
+          this.debug(`Removed admin key file: ${keyPath}`)
         } catch (error) {
           // Ignore errors when cleaning up
         }
