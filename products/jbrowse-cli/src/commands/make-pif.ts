@@ -107,7 +107,8 @@ export async function createPIF(
 }
 
 export default class MakePIFNative extends NativeCommand {
-  static description = 'creates pairwise indexed PAF (PIF), with bgzip and tabix'
+  static description =
+    'creates pairwise indexed PAF (PIF), with bgzip and tabix'
 
   static examples = [
     '$ jbrowse make-pif input.paf # creates input.pif.gz in same directory',

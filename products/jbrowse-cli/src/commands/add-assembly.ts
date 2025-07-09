@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
+import { parseArgs } from 'util'
 
 import JBrowseCommand from '../native-base'
 
 import type { Assembly, Config, Sequence } from '../base'
-import { parseArgs } from 'util'
 
 const { rename, copyFile, mkdir, symlink } = fs.promises
 
@@ -61,12 +61,10 @@ export default class AddAssembly extends JBrowseCommand {
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       throw new Error(
         'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
-        { exit: 110 },
       )
     } else if (!this.needLoadData(argsSequence) && runFlags.load) {
       throw new Error(
         'URL detected with --load flag. Please rerun the function without the --load flag',
-        { exit: 120 },
       )
     }
 
@@ -259,7 +257,6 @@ export default class AddAssembly extends JBrowseCommand {
           if (isValidJSON(argsSequence)) {
             throw new Error(
               'Must provide --name when using custom inline JSON sequence',
-              { exit: 130 },
             )
           } else {
             name = path.basename(argsSequence, '.json')
@@ -271,7 +268,6 @@ export default class AddAssembly extends JBrowseCommand {
             `No "type" specified in sequence adapter "${JSON.stringify(
               adapter,
             )}"`,
-            { exit: 140 },
           )
         }
         sequence = {
@@ -406,7 +402,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       },
       allowPositionals: true,
     })
-    const argsSequence = positionals[0]
+    const argsSequence = positionals[0] || ''
     const output = runFlags.target || runFlags.out || '.'
 
     if (!(await exists(output))) {
@@ -449,7 +445,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
               refNameAliasesConfig,
             )}"`,
-            { exit: 150 },
           )
         }
         this.debug(
@@ -522,7 +517,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
       } else {
         throw new Error(
           `Cannot add assembly with name ${assembly.name}, an assembly with that name already exists`,
-          { exit: 160 },
         )
       }
     } else {
@@ -568,7 +562,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
     throw new Error(
       'Could not determine sequence type automatically, add --type to specify it',
-      { exit: 170 },
     )
   }
 

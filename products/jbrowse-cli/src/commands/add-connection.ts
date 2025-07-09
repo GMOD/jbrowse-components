@@ -82,7 +82,9 @@ export default class AddConnectionNative extends NativeCommand {
     const connectionUrlOrPath = positionals[0]
     if (!connectionUrlOrPath) {
       console.error('Error: Missing required argument: connectionUrlOrPath')
-      console.error('Usage: jbrowse add-connection <connectionUrlOrPath> [options]')
+      console.error(
+        'Usage: jbrowse add-connection <connectionUrlOrPath> [options]',
+      )
       process.exit(1)
     }
 
@@ -90,7 +92,15 @@ export default class AddConnectionNative extends NativeCommand {
     const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    const { assemblyNames, type, name, config, connectionId, skipCheck, force } = flags
+    const {
+      assemblyNames,
+      type,
+      name,
+      config,
+      connectionId,
+      skipCheck,
+      force,
+    } = flags
 
     const url = await this.resolveURL(
       connectionUrlOrPath,
@@ -100,7 +110,9 @@ export default class AddConnectionNative extends NativeCommand {
     this.debug(`Using config file ${this.target}`)
 
     if (!configContents.assemblies?.length) {
-      console.error('Error: No assemblies found. Please add one before adding connections')
+      console.error(
+        'Error: No assemblies found. Please add one before adding connections',
+      )
       process.exit(120)
     }
 
@@ -108,7 +120,7 @@ export default class AddConnectionNative extends NativeCommand {
     const id =
       connectionId ||
       [configType, assemblyNames, +Date.now()].filter(f => !!f).join('-')
-    
+
     const connectionConfig = {
       type: configType,
       name: name || id,

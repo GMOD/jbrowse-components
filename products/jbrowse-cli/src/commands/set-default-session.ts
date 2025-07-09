@@ -150,4 +150,3 @@ ${SetDefaultSessionNative.examples.join('\n')}
 `)
   }
 }
-

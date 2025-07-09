@@ -62,9 +62,9 @@ export default class AdminServerNative extends NativeCommand {
    * @returns The configuration file path and base directory
    */
   async setupConfigFile(
-    root?: string,
+    root = '.',
   ): Promise<{ outFile: string; baseDir: string }> {
-    const output = root || '.'
+    const output = root
     const isDir = fs.lstatSync(output).isDirectory()
     const outFile = isDir ? `${output}/config.json` : output
     const baseDir = path.dirname(outFile)
@@ -112,7 +112,7 @@ export default class AdminServerNative extends NativeCommand {
     app.use(express.json({ limit: bodySizeLimit }))
 
     // Add error handling middleware
-    app.use((err: any, _req: Request, res: Response, next: Function) => {
+    app.use((err: any, _req: Request, res: Response, next: () => void) => {
       if (err) {
         console.error('Server error:', err)
         res.status(500).setHeader('Content-Type', 'text/plain')

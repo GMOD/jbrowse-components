@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { parseArgs } from 'util'
 import { Readable } from 'stream'
+import { parseArgs } from 'util'
 
 import { ixIxxStream } from 'ixixx'
 
@@ -369,7 +369,7 @@ export default class TextIndex extends NativeCommand {
     await this.indexDriver({
       trackConfigs,
       outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!),
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
       quiet,
       attributes: attributes.split(','),
       typesToExclude: exclude.split(','),

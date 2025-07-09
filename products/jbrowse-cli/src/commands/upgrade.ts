@@ -82,7 +82,7 @@ export default class UpgradeNative extends NativeCommand {
     }
 
     this.debug(`Want to upgrade at: ${localPath}`)
-    
+
     if (!localPath) {
       console.error('Error: No installation path provided')
       process.exit(1)
@@ -102,7 +102,9 @@ export default class UpgradeNative extends NativeCommand {
     // Check if this looks like a JBrowse installation
     const indexPath = path.join(localPath, 'index.html')
     if (!fs.existsSync(indexPath)) {
-      console.warn(`Warning: ${localPath} doesn't appear to be a JBrowse installation (no index.html found)`)
+      console.warn(
+        `Warning: ${localPath} doesn't appear to be a JBrowse installation (no index.html found)`,
+      )
     }
 
     const locationUrl =

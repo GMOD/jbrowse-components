@@ -195,8 +195,13 @@ export default class AddTrackNative extends NativeCommand {
     }
 
     // Validate load flag options
-    if (flags.load && !['copy', 'symlink', 'move', 'inPlace'].includes(flags.load)) {
-      console.error('Error: --load must be one of: copy, symlink, move, inPlace')
+    if (
+      flags.load &&
+      !['copy', 'symlink', 'move', 'inPlace'].includes(flags.load)
+    ) {
+      console.error(
+        'Error: --load must be one of: copy, symlink, move, inPlace',
+      )
       process.exit(1)
     }
 
@@ -297,7 +302,9 @@ export default class AddTrackNative extends NativeCommand {
     const configContents: Config = await this.readJsonFile(this.target)
 
     if (!configContents.assemblies?.length) {
-      console.error('Error: No assemblies found. Please add one before adding tracks')
+      console.error(
+        'Error: No assemblies found. Please add one before adding tracks',
+      )
       process.exit(150)
     }
     if (configContents.assemblies.length > 1 && !assemblyNames) {

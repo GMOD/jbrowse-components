@@ -81,7 +81,7 @@ export async function runNativeCommand(
   const processExitSpy = shouldMock
     ? jest
         .spyOn(process, 'exit')
-        .mockImplementation((code?: string | number | null | undefined) => {
+        .mockImplementation((code?: string | number | null) => {
           if (code && code !== 0) {
             error = new Error(
               stderr.trim() || `Process exited with code ${code}`,

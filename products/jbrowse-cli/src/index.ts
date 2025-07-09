@@ -86,7 +86,7 @@ async function main(args: string[]) {
 
     // Pass the remaining arguments to the command
     const commandArgs = args.slice(1) // Remove the command name from args
-    
+
     const command = new CommandClass()
     await command.run(commandArgs)
   } catch (error) {
