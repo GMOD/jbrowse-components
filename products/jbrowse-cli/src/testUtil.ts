@@ -37,7 +37,6 @@ export async function runNativeCommand(
   args: string | string[],
   options?: { mock?: boolean },
 ): Promise<{ stdout: string; stderr: string; error?: Error }> {
-  const originalArgv = process.argv
   const shouldMock = options?.mock !== false
 
   let stdout = ''

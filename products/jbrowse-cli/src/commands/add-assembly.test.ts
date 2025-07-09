@@ -306,7 +306,8 @@ test('can specify a refNameAliases file', async () => {
 test('can specify a refNameAliases file type custom', async () => {
   await runInTmpDir(async ctx => {
     await runCommand([
-      'add-assembly {"type":"CustomAdapter"}',
+      'add-assembly',
+      '{"type":"CustomAdapter"}',
       '--name',
       'simple',
       '--refNameAliases',
@@ -323,7 +324,8 @@ test('can specify a refNameAliases file type custom', async () => {
 test('can specify a custom name and alias and refNameColors', async () => {
   await runInTmpDir(async ctx => {
     await runCommand([
-      'add-assembly {"type":"CustomAdapter"}',
+      'add-assembly',
+      '{"type":"CustomAdapter"}',
       '--name',
       'simple',
       '--refNameColors',
