@@ -1,0 +1,245 @@
+import fs from 'fs'
+import path from 'path'
+import { parseArgs } from 'util'
+
+import parseJSON from 'json-parse-better-errors'
+
+import NativeCommand from '../native-base'
+import fetch from '../fetchWithProxy'
+
+import type { Config } from '../base'
+
+export default class AddConnectionNative extends NativeCommand {
+  private target: string = ''
+
+  static description = 'Add a connection to a JBrowse 2 configuration'
+
+  static examples = [
+    '$ jbrowse add-connection http://mysite.com/jbrowse/data/ -a hg19',
+    '$ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
+    '$ jbrowse add-connection http://mysite.com/path/to/hub.txt',
+    '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
+    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
+    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
+  ]
+
+  async run() {
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        type: {
+          type: 'string',
+          short: 't',
+        },
+        assemblyNames: {
+          type: 'string',
+          short: 'a',
+        },
+        config: {
+          type: 'string',
+          short: 'c',
+        },
+        connectionId: {
+          type: 'string',
+        },
+        name: {
+          type: 'string',
+          short: 'n',
+        },
+        target: {
+          type: 'string',
+        },
+        out: {
+          type: 'string',
+        },
+        skipCheck: {
+          type: 'boolean',
+          default: false,
+        },
+        overwrite: {
+          type: 'boolean',
+          default: false,
+        },
+        force: {
+          type: 'boolean',
+          short: 'f',
+          default: false,
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const connectionUrlOrPath = positionals[0]
+    if (!connectionUrlOrPath) {
+      console.error('Error: Missing required argument: connectionUrlOrPath')
+      console.error('Usage: jbrowse add-connection <connectionUrlOrPath> [options]')
+      process.exit(1)
+    }
+
+    const output = flags.target || flags.out || '.'
+    const isDir = fs.lstatSync(output).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
+    const { assemblyNames, type, name, config, connectionId, skipCheck, force } = flags
+
+    const url = await this.resolveURL(
+      connectionUrlOrPath,
+      !(skipCheck || force),
+    )
+    const configContents = await this.readJsonFile<Config>(this.target)
+    this.debug(`Using config file ${this.target}`)
+
+    if (!configContents.assemblies?.length) {
+      console.error('Error: No assemblies found. Please add one before adding connections')
+      process.exit(120)
+    }
+
+    const configType = type || this.determineConnectionType(url)
+    const id =
+      connectionId ||
+      [configType, assemblyNames, +Date.now()].filter(f => !!f).join('-')
+    
+    // @ts-ignore
+    const connectionConfig = {
+      type: configType,
+      name: name || id,
+      ...(configType === 'UCSCTrackHubConnection'
+        ? {
+            hubTxtLocation: {
+              uri: url,
+              locationType: 'UriLocation',
+            },
+          }
+        : {}),
+      ...(configType === 'JBrowse1Connection'
+        ? {
+            dataDirLocation: {
+              uri: url,
+              locationType: 'UriLocation',
+            },
+          }
+        : {}),
+      connectionId: id,
+      assemblyNames: assemblyNames
+        ? assemblyNames.split(',')
+        : type === 'JBrowse1Connection'
+          ? [configContents.assemblies[0]?.name]
+          : undefined,
+      ...(config ? parseJSON(config) : {}),
+    }
+
+    if (!configContents.connections) {
+      configContents.connections = []
+    }
+    const idx = configContents.connections.findIndex(
+      c => c.connectionId === connectionId,
+    )
+
+    if (idx !== -1) {
+      if (force || flags.overwrite) {
+        // @ts-ignore
+        configContents.connections[idx] = connectionConfig
+      } else {
+        console.error(
+          `Error: Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
+        )
+        process.exit(150)
+      }
+    } else {
+      // @ts-ignore
+      configContents.connections.push(connectionConfig)
+    }
+
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
+
+    console.log(
+      `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name || id}" ${
+        idx !== -1 ? 'in' : 'to'
+      } ${this.target}`,
+    )
+  }
+
+  async resolveURL(location: string, check = true) {
+    let locationUrl: URL | undefined
+    try {
+      locationUrl = new URL(location)
+    } catch (error) {
+      console.error('Error: The location provided is not a valid URL')
+      process.exit(160)
+    }
+    try {
+      if (check) {
+        const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
+        if (!response.ok) {
+          console.error(`Error: Response returned with code ${response.status}`)
+          process.exit(1)
+        }
+      }
+      return locationUrl.href
+    } catch (error) {
+      console.error(`Error: Unable to fetch from URL, ${error}`)
+      process.exit(170)
+    }
+  }
+
+  determineConnectionType(url: string) {
+    if (path.basename(url) === 'hub.txt') {
+      return 'UCSCTrackHubConnection'
+    }
+    if (url.includes('jbrowse/data')) {
+      return 'JBrowse1Connection'
+    }
+    return 'custom'
+  }
+
+  isValidJSON(str: string) {
+    try {
+      JSON.parse(str)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+  showHelp() {
+    console.log(`
+${AddConnectionNative.description}
+
+USAGE
+  $ jbrowse add-connection <connectionUrlOrPath> [options]
+
+ARGUMENTS
+  connectionUrlOrPath  URL of data directory
+                       For hub file, usually called hub.txt
+                       For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
+
+OPTIONS
+  -h, --help                      Show help
+  -t, --type <type>               Type of connection (JBrowse1Connection, UCSCTrackHubConnection, custom)
+  -a, --assemblyNames <names>     For UCSC: optional comma separated list of assembly names to filter
+                                  For JBrowse: a single assembly name
+  -c, --config <config>           Extra config settings to add to connection in JSON object format
+  --connectionId <connectionId>   Id for the connection that must be unique to JBrowse
+  -n, --name <name>               Name of the connection. Defaults to connectionId if not provided
+  --target <target>               Path to config file in JB2 installation directory to write out to
+  --out <out>                     Synonym for target
+  --skipCheck                     Don't check whether the data directory URL exists
+  --overwrite                     Overwrites any existing connections if same connection id
+  -f, --force                     Equivalent to --skipCheck --overwrite
+
+EXAMPLES
+${AddConnectionNative.examples.join('\n')}
+`)
+  }
+}

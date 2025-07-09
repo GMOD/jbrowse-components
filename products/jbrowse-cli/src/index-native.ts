@@ -10,6 +10,13 @@ import AddTrackNative from './commands/add-track-native'
 import TextIndexNative from './commands/text-index-native'
 import AdminServerNative from './commands/admin-server-native'
 import UpgradeNative from './commands/upgrade-native'
+import MakePIFNative from './commands/make-pif-native'
+import SortGffNative from './commands/sort-gff-native'
+import SortBedNative from './commands/sort-bed-native'
+import AddConnectionNative from './commands/add-connection-native'
+import AddTrackJsonNative from './commands/add-track-json-native'
+import RemoveTrackNative from './commands/remove-track-native'
+import SetDefaultSessionNative from './commands/set-default-session-native'
 
 const commands = {
   create: CreateNative,
@@ -18,6 +25,13 @@ const commands = {
   'text-index': TextIndexNative,
   'admin-server': AdminServerNative,
   upgrade: UpgradeNative,
+  'make-pif': MakePIFNative,
+  'sort-gff': SortGffNative,
+  'sort-bed': SortBedNative,
+  'add-connection': AddConnectionNative,
+  'add-track-json': AddTrackJsonNative,
+  'remove-track': RemoveTrackNative,
+  'set-default-session': SetDefaultSessionNative,
 }
 
 async function main() {
@@ -88,12 +102,19 @@ USAGE
   $ jbrowse-native <command> [options]
 
 COMMANDS
-  create        Downloads and installs the latest JBrowse 2 release
-  add-assembly  Add an assembly to a JBrowse 2 configuration
-  add-track     Add a track to a JBrowse 2 configuration
-  text-index    Make a text-indexing file for any given track(s)
-  admin-server  Start up a small admin server for JBrowse configuration
-  upgrade       Upgrades JBrowse 2 to latest version
+  create               Downloads and installs the latest JBrowse 2 release
+  add-assembly         Add an assembly to a JBrowse 2 configuration
+  add-track            Add a track to a JBrowse 2 configuration
+  text-index           Make a text-indexing file for any given track(s)
+  admin-server         Start up a small admin server for JBrowse configuration
+  upgrade              Upgrades JBrowse 2 to latest version
+  make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
+  sort-gff             Helper utility to sort GFF files for tabix
+  sort-bed             Helper utility to sort BED files for tabix
+  add-connection       Add a connection to a JBrowse 2 configuration
+  add-track-json       Add a track configuration directly from a JSON hunk
+  remove-track         Remove a track configuration from a JBrowse 2 configuration
+  set-default-session  Set a default session with views and tracks
   
 OPTIONS
   -h, --help     Show help
