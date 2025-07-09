@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { main as nativeMain } from './index-native'
+import { main as nativeMain } from './index'
 
 const { mkdir, mkdtemp } = fs.promises
 
@@ -37,46 +37,41 @@ export async function runNativeCommand(
   args: string | string[],
 ): Promise<{ stdout: string; stderr: string; error?: Error }> {
   const originalArgv = process.argv
-  const originalStdout = process.stdout.write
-  const originalStderr = process.stderr.write
-  const originalExit = process.exit
-  const originalConsoleError = console.error
-  const originalConsoleLog = console.log
-
+  
   let stdout = ''
   let stderr = ''
   let error: Error | undefined
 
+  // Mock console functions using Jest spies
+  const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
+    stdout += `${args.join(' ')}\n`
+  })
+  
+  const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation((...args: any[]) => {
+    stderr += `${args.join(' ')}\n`
+  })
+
+  // Mock process.stdout.write
+  const stdoutWriteSpy = jest.spyOn(process.stdout, 'write').mockImplementation((chunk: any) => {
+    stdout += chunk.toString()
+    return true
+  })
+
+  // Mock process.stderr.write
+  const stderrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation((chunk: any) => {
+    stderr += chunk.toString()
+    return true
+  })
+
+  // Mock process.exit
+  const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code?: number) => {
+    if (code && code !== 0) {
+      error = new Error(stderr.trim() || `Process exited with code ${code}`)
+    }
+    throw new Error('EXIT_MOCK')
+  })
+
   try {
-    // Mock stdout and stderr
-    process.stdout.write = (chunk: any) => {
-      stdout += chunk.toString()
-      return true
-    }
-
-    process.stderr.write = (chunk: any) => {
-      stderr += chunk.toString()
-      return true
-    }
-
-    // Mock console.error to capture error messages
-    console.error = (...args: any[]) => {
-      stderr += `${args.join(' ')  }\n`
-    }
-
-    // Mock console.log to capture log messages
-    console.log = (...args: any[]) => {
-      stdout += `${args.join(' ')  }\n`
-    }
-
-    // Mock process.exit to capture exit codes
-    process.exit = ((code?: number) => {
-      if (code && code !== 0) {
-        error = new Error(stderr.trim() || `Process exited with code ${code}`)
-      }
-      throw new Error('EXIT_MOCK')
-    }) as any
-
     // Parse arguments
     const argsArray = Array.isArray(args) ? args : [args]
 
@@ -92,11 +87,13 @@ export async function runNativeCommand(
   } finally {
     // Restore original functions
     process.argv = originalArgv
-    process.stdout.write = originalStdout
-    process.stderr.write = originalStderr
-    process.exit = originalExit
-    console.error = originalConsoleError
-    console.log = originalConsoleLog
+    
+    // Restore Jest mocks
+    consoleLogSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+    stdoutWriteSpy.mockRestore()
+    stderrWriteSpy.mockRestore()
+    processExitSpy.mockRestore()
   }
 
   // If we have stderr but no error, create an error from stderr
