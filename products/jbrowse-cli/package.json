@@ -4,8 +4,7 @@
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
-    "jbrowse2",
-    "oclif"
+    "jbrowse2"
   ],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
@@ -24,8 +23,7 @@
   "files": [
     "/bin",
     "/lib",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json"
+    "/npm-shrinkwrap.json"
   ],
   "engines": {
     "node": ">=18.3.0"
@@ -33,20 +31,15 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "tsc --build",
-    "postpack": "rimraf oclif.manifest.json",
     "clean": "rimraf lib",
     "prepack": "npm run clean  && npm run build && npm run manifest && npm run docs",
-    "manifest": "oclif manifest",
     "version": "npm run docs && npm run docs:version:add",
     "predocs": "npm run build",
     "docs": "npm run docs:create && npm run docs:format",
-    "docs:create": "oclif readme",
     "docs:format": "prettier --write README.md",
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
-    "@oclif/core": "^4.0.19",
-    "@oclif/plugin-help": "^6.0.15",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",
@@ -61,14 +54,6 @@
   },
   "devDependencies": {
     "typescript": "^5.1.3"
-  },
-  "oclif": {
-    "commands": "./lib/commands",
-    "bin": "jbrowse",
-    "plugins": [
-      "@oclif/plugin-help"
-    ],
-    "repositoryPrefix": "<%- repo %>/blob/v<%- version %>/products/jbrowse-cli/<%- commandPath %>"
   },
   "publishConfig": {
     "access": "public"
