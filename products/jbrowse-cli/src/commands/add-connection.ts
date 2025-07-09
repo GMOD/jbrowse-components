@@ -23,9 +23,9 @@ export default class AddConnectionNative extends NativeCommand {
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
-  async run() {
+  async run(args?: string[]) {
     const { values: flags, positionals } = parseArgs({
-      args: process.argv.slice(3), // Skip node, script, and command name
+      args,
       options: {
         help: {
           type: 'boolean',

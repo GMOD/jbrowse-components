@@ -286,7 +286,7 @@ export default class AddAssembly extends JBrowseCommand {
     return { name, sequence }
   }
 
-  async run() {
+  async run(args?: string[]) {
     // https://stackoverflow.com/a/35008327/2129219
     const exists = (s: string) =>
       new Promise(r => {
@@ -296,6 +296,7 @@ export default class AddAssembly extends JBrowseCommand {
       })
 
     const { positionals, values: runFlags } = parseArgs({
+      args,
       options: {
         type: {
           type: 'string',

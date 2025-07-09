@@ -259,9 +259,9 @@ export default class AdminServerNative extends NativeCommand {
     })
   }
 
-  async run() {
+  async run(args?: string[]) {
     const { values: flags } = parseArgs({
-      args: process.argv.slice(3), // Skip node, script, and command name
+      args,
       options: {
         help: {
           type: 'boolean',

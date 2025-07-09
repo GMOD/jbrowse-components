@@ -669,4 +669,4 @@ track  Track file or URL
 See more help with --help"
 `;
 
-exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `undefined`;
+exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `"Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag"`;

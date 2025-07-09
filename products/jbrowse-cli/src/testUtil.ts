@@ -94,13 +94,10 @@ export async function runNativeCommand(
 
   try {
     // Parse arguments
-    const argsArray = Array.isArray(args) ? args : [args]
+    const argsArray = Array.isArray(args) ? args : args.split(' ')
 
-    // Set up process.argv for native command
-    process.argv = ['node', 'jbrowse', ...argsArray]
-
-    // Run the native command
-    await nativeMain()
+    // Run the native command with args directly instead of mutating process.argv
+    await nativeMain(argsArray)
 
     // Wait for any pending asynchronous console output
     // This handles cases where commands start servers or other async operations
@@ -130,9 +127,6 @@ export async function runNativeCommand(
       error = err
     }
   } finally {
-    // Restore original functions
-    process.argv = originalArgv
-
     // Restore Jest mocks
     if (shouldMock) {
       consoleLogSpy?.mockRestore()

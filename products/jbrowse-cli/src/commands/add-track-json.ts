@@ -16,9 +16,9 @@ export default class AddTrackJsonNative extends NativeCommand {
     '$ jbrowse add-track-json track.json --update',
   ]
 
-  async run() {
+  async run(args?: string[]) {
     const { values: flags, positionals } = parseArgs({
-      args: process.argv.slice(3), // Skip node, script, and command name
+      args,
       options: {
         help: {
           type: 'boolean',

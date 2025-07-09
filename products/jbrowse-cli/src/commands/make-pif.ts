@@ -115,9 +115,9 @@ export default class MakePIFNative extends NativeCommand {
     '$ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
   ]
 
-  async run() {
+  async run(args?: string[]) {
     const { values: flags, positionals } = parseArgs({
-      args: process.argv.slice(3), // Skip node, script, and command name
+      args,
       options: {
         help: {
           type: 'boolean',

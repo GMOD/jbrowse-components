@@ -23,6 +23,10 @@ export default abstract class NativeCommand {
     }
   }
 
+  log(message: string) {
+    console.log(message)
+  }
+
   async readFile(location: string) {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
@@ -178,5 +182,5 @@ export default abstract class NativeCommand {
     return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
   }
 
-  abstract run(): Promise<void>
+  abstract run(args?: string[]): Promise<void>
 }

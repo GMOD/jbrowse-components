@@ -34,10 +34,10 @@ const commands = {
   'set-default-session': SetDefaultSession,
 }
 
-async function main() {
+async function main(args: string[]) {
   try {
     const { values: flags, positionals } = parseArgs({
-      args: process.argv.slice(2),
+      args,
       options: {
         help: {
           type: 'boolean',
@@ -84,16 +84,11 @@ async function main() {
       process.exit(1)
     }
 
-    // Remove the command name from argv before passing to the command
-    process.argv = [
-      process.argv[0]!,
-      process.argv[1]!,
-      commandName,
-      ...process.argv.slice(3),
-    ]
-
+    // Pass the remaining arguments to the command
+    const commandArgs = args.slice(1) // Remove the command name from args
+    
     const command = new CommandClass()
-    await command.run()
+    await command.run(commandArgs)
   } catch (error) {
     console.error('Error:', error instanceof Error ? error.message : error)
     process.exit(1)
@@ -132,7 +127,7 @@ Use "jbrowse <command> --help" for more information about a command.
 
 // Check if this file is being run directly
 if (typeof require !== 'undefined' && require.main === module) {
-  main().catch(console.error)
+  main(process.argv.slice(2)).catch(console.error)
 }
 
 export { main }

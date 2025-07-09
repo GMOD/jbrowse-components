@@ -54,9 +54,9 @@ export default class TextIndex extends NativeCommand {
     '$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes',
   ]
 
-  async run() {
+  async run(args?: string[]) {
     const { values: flags } = parseArgs({
-      args: process.argv.slice(3), // Skip node, script, and command name
+      args,
       options: {
         help: { type: 'boolean', short: 'h', description: 'Show CLI help' },
         tracks: {
