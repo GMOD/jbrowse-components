@@ -23,15 +23,15 @@
   "files": [
     "/bin",
     "/lib",
-    "/npm-shrinkwrap.json"
+    "/dist"
   ],
   "engines": {
     "node": ">=18.3.0"
   },
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc --build",
-    "clean": "rimraf lib",
+    "build": "tsc --build && tsup src/index.ts",
+    "clean": "rimraf lib dist",
     "prepack": "npm run clean  && npm run build && npm run manifest && npm run docs",
     "version": "npm run docs && npm run docs:version:add",
     "predocs": "npm run build",
@@ -39,7 +39,7 @@
     "docs:format": "prettier --write README.md",
     "docs:version:add": "git add README.md"
   },
-  "dependencies": {
+  "devDependencies": {
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",
@@ -49,13 +49,10 @@
     "express": "^4.17.1",
     "ixixx": "^2.0.1",
     "json-parse-better-errors": "^1.0.2",
-    "node-fetch-native": "^1.6.4",
-    "tslib": "^2.3.1"
-  },
-  "devDependencies": {
-    "typescript": "^5.1.3"
+    "node-fetch-native": "^1.6.4"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "dependencies": {}
 }
