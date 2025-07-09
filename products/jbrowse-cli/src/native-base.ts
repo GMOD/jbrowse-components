@@ -180,4 +180,3 @@ export default abstract class NativeCommand {
 
   abstract run(): Promise<void>
 }
-

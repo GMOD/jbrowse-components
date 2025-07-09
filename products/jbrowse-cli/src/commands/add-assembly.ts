@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import NativeCommand from '../native-base'
-
+import JBrowseCommand from '../native-base'
 import { parseArgs } from 'node:util'
+
 import type { Assembly, Config, Sequence } from '../base'
 
 const { rename, copyFile, mkdir, symlink } = fs.promises
@@ -17,7 +17,7 @@ function isValidJSON(string: string) {
   }
 }
 
-export default class AddAssembly extends NativeCommand {
+export default class AddAssembly extends JBrowseCommand {
   // @ts-expect-error
   target: string
 
@@ -50,14 +50,13 @@ export default class AddAssembly extends NativeCommand {
   ]
 
   async getAssembly({
-    argsSequence,
     runFlags,
+    argsSequence,
   }: {
     runFlags: any
     argsSequence: string
   }): Promise<Assembly> {
     let sequence: Sequence
-    // Define the options for parseArgs
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       throw new Error(
@@ -296,27 +295,25 @@ export default class AddAssembly extends NativeCommand {
         })
       })
 
-    // Parse the command-line arguments
-    const { values: runFlags, positionals: runArgs } = parseArgs({
+    const { positionals, values: runFlags } = parseArgs({
       options: {
-        // Named options (flags)
         type: {
           type: 'string',
           short: 't',
           description: `type of sequence, by default inferred from sequence file
 
-  indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
-                 can optionally specify --faiLocation
+indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
+               can optionally specify --faiLocation
 
-  bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
-                 can optionally specify --faiLocation and/or --gziLocation
+bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
+               can optionally specify --faiLocation and/or --gziLocation
 
-  twoBit         A twoBit (e.g. .2bit) file
+twoBit         A twoBit (e.g. .2bit) file
 
-  chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
+chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
 
-  custom         Either a JSON file location or inline JSON that defines a custom
-                 sequence adapter; must provide --name if using inline JSON`,
+custom         Either a JSON file location or inline JSON that defines a custom
+               sequence adapter; must provide --name if using inline JSON`,
           choices: [
             'indexedFasta',
             'bgzipFasta',
@@ -362,6 +359,7 @@ export default class AddAssembly extends NativeCommand {
           description:
             'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
           choices: ['aliases', 'custom'],
+          dependsOn: ['refNameAliases'],
         },
         refNameColors: {
           type: 'string',
@@ -380,7 +378,7 @@ export default class AddAssembly extends NativeCommand {
         help: {
           type: 'boolean',
           short: 'h',
-          description: 'Show help',
+          description: 'Display help for command',
         },
         load: {
           type: 'string',
@@ -405,10 +403,9 @@ export default class AddAssembly extends NativeCommand {
           description: 'Equivalent to `--skipCheck --overwrite`',
         },
       },
-      strict: true,
       allowPositionals: true,
     })
-    const [argsSequence] = runArgs
+    const argsSequence = positionals[0]!
 
     const output = runFlags.target || runFlags.out || '.'
 
@@ -425,14 +422,14 @@ export default class AddAssembly extends NativeCommand {
     this.debug(`Sequence location is: ${argsSequence}`)
     const { name } = runFlags
 
-    const assembly = await this.getAssembly({ argsSequence, runFlags })
+    const assembly = await this.getAssembly({ runFlags, argsSequence })
     if (runFlags.alias?.length) {
       this.debug(`Adding assembly aliases: ${runFlags.alias}`)
       assembly.aliases = runFlags.alias
     }
 
     if (runFlags.refNameColors) {
-      const colors = (runFlags.refNameColors as string)
+      const colors = runFlags.refNameColors
         .split(',')
         .map(color => color.trim())
       this.debug(`Adding refName colors: ${colors}`)
@@ -535,7 +532,7 @@ export default class AddAssembly extends NativeCommand {
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
 
-    console.log(
+    this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
       } ${this.target}`,

@@ -37,55 +37,65 @@ export async function runNativeCommand(
   args: string | string[],
 ): Promise<{ stdout: string; stderr: string; error?: Error }> {
   const originalArgv = process.argv
-  
+
   let stdout = ''
   let stderr = ''
   let error: Error | undefined
   let outputReceived = false
 
   // Mock console functions using Jest spies
-  const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
-    stdout += `${args.join(' ')}\n`
-    outputReceived = true
-  })
-  
-  const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation((...args: any[]) => {
-    stderr += `${args.join(' ')}\n`
-    outputReceived = true
-  })
+  const consoleLogSpy = jest
+    .spyOn(console, 'log')
+    .mockImplementation((...args: any[]) => {
+      stdout += `${args.join(' ')}\n`
+      outputReceived = true
+    })
+
+  const consoleErrorSpy = jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: any[]) => {
+      stderr += `${args.join(' ')}\n`
+      outputReceived = true
+    })
 
   // Mock process.stdout.write
-  const stdoutWriteSpy = jest.spyOn(process.stdout, 'write').mockImplementation((chunk: any) => {
-    stdout += chunk.toString()
-    outputReceived = true
-    return true
-  })
+  const stdoutWriteSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation((chunk: any) => {
+      stdout += chunk.toString()
+      outputReceived = true
+      return true
+    })
 
   // Mock process.stderr.write
-  const stderrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation((chunk: any) => {
-    stderr += chunk.toString()
-    outputReceived = true
-    return true
-  })
+  const stderrWriteSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation((chunk: any) => {
+      stderr += chunk.toString()
+      outputReceived = true
+      return true
+    })
 
   // Mock process.exit
-  const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code?: number) => {
-    if (code && code !== 0) {
-      error = new Error(stderr.trim() || `Process exited with code ${code}`)
-    }
-    throw new Error('EXIT_MOCK')
-  })
+  const processExitSpy = jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code?: number) => {
+      if (code && code !== 0) {
+        error = new Error(stderr.trim() || `Process exited with code ${code}`)
+      }
+      throw new Error('EXIT_MOCK')
+    })
 
   try {
     // Parse arguments
     const argsArray = Array.isArray(args) ? args : [args]
 
     // Set up process.argv for native command
-    process.argv = ['node', 'jbrowse-native', ...argsArray]
+    process.argv = ['node', 'jbrowse', ...argsArray]
 
     // Run the native command
     await nativeMain()
-    
+
     // Wait for any pending asynchronous console output
     // This handles cases where commands start servers or other async operations
     // that log output after the main command completes
@@ -114,7 +124,7 @@ export async function runNativeCommand(
   } finally {
     // Restore original functions
     process.argv = originalArgv
-    
+
     // Restore Jest mocks
     consoleLogSpy.mockRestore()
     consoleErrorSpy.mockRestore()
