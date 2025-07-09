@@ -60,11 +60,11 @@ export async function createPIF(
     if (!stream.write(data)) {
       return new Promise(resolve => {
         const drainHandler = () => {
-          // @ts-ignore - assuming stream is a Writable
+          // @ts-expect-error - assuming stream is a Writable
           stream.removeListener('drain', drainHandler)
           resolve()
         }
-        // @ts-ignore - assuming stream is a Writable
+        // @ts-expect-error - assuming stream is a Writable
         stream.once('drain', drainHandler)
       })
     }

@@ -109,7 +109,7 @@ export default class AddConnectionNative extends NativeCommand {
       connectionId ||
       [configType, assemblyNames, +Date.now()].filter(f => !!f).join('-')
     
-    // @ts-ignore
+    // @ts-expect-error
     const connectionConfig = {
       type: configType,
       name: name || id,
@@ -147,7 +147,7 @@ export default class AddConnectionNative extends NativeCommand {
 
     if (idx !== -1) {
       if (force || flags.overwrite) {
-        // @ts-ignore
+        // @ts-expect-error
         configContents.connections[idx] = connectionConfig
       } else {
         console.error(
@@ -156,7 +156,7 @@ export default class AddConnectionNative extends NativeCommand {
         process.exit(150)
       }
     } else {
-      // @ts-ignore
+      // @ts-expect-error
       configContents.connections.push(connectionConfig)
     }
 

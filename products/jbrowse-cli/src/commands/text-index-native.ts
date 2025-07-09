@@ -200,9 +200,9 @@ export default class TextIndexNative extends NativeCommand {
         continue
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       if (!supported(adapterConfig)) {
-        // @ts-ignore
+        // @ts-expect-error
         console.warn(`Warning: Adapter type not supported for indexing: ${adapterConfig.type}`)
         continue
       }
@@ -230,53 +230,53 @@ export default class TextIndexNative extends NativeCommand {
 
       try {
         let readable: Readable
-        // @ts-ignore
+        // @ts-expect-error
         if (adapterConfig.type === 'Gff3Adapter' || adapterConfig.type === 'Gff3TabixAdapter') {
-          // @ts-ignore
+          // @ts-expect-error
           readable = await indexGff3({
             config: adapterConfig,
             attributesToIndex: attributesArray,
-            // @ts-ignore
+            // @ts-expect-error
             inLocation: getLoc(adapterConfig.gffLocation || adapterConfig.gffGzLocation),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
           })
-        // @ts-ignore
+        // @ts-expect-error
         } else if (adapterConfig.type === 'VcfAdapter' || adapterConfig.type === 'VcfTabixAdapter') {
-          // @ts-ignore
+          // @ts-expect-error
           readable = await indexVcf({
             config: adapterConfig,
             attributesToIndex: attributesArray,
-            // @ts-ignore
+            // @ts-expect-error
             inLocation: getLoc(adapterConfig.vcfLocation || adapterConfig.vcfGzLocation),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
           })
         } else {
-          // @ts-ignore
+          // @ts-expect-error
           console.warn(`Warning: Indexing not implemented for adapter type: ${adapterConfig.type}`)
           continue
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         const writableStream = ixIxxStream(ixFile, ixxFile, {
           prefixSize: prefixSize || 6,
         })
 
-        // @ts-ignore
+        // @ts-expect-error
         await new Promise<void>((resolve, reject) => {
-          // @ts-ignore
+          // @ts-expect-error
           readable.pipe(writableStream)
-          // @ts-ignore
+          // @ts-expect-error
           writableStream.on('finish', resolve)
-          // @ts-ignore
+          // @ts-expect-error
           writableStream.on('error', reject)
         })
 
         // Generate metadata
-        // @ts-ignore
+        // @ts-expect-error
         const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
         fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 
@@ -412,7 +412,7 @@ export default class TextIndexNative extends NativeCommand {
   }) {
     const { attributesArray, excludeArray, prefixSize, force, quiet, dryrun, outDir, config } = options
 
-    // @ts-ignore
+    // @ts-expect-error
     if (!supported(track.adapter)) {
       console.log(`Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`)
       return
@@ -437,55 +437,55 @@ export default class TextIndexNative extends NativeCommand {
 
     try {
       let readable: Readable
-      // @ts-ignore
+      // @ts-expect-error
       if (track.adapter?.type === 'Gff3Adapter' || track.adapter?.type === 'Gff3TabixAdapter') {
-        // @ts-ignore
+        // @ts-expect-error
         readable = await indexGff3({
-          // @ts-ignore
+          // @ts-expect-error
           config: track.adapter,
           attributesToIndex: attributesArray,
-          // @ts-ignore
+          // @ts-expect-error
           inLocation: getLoc(track.adapter.gffLocation || track.adapter.gffGzLocation),
           outLocation: ixFile,
           typesToExclude: excludeArray,
           quiet,
         })
-      // @ts-ignore
+      // @ts-expect-error
       } else if (track.adapter?.type === 'VcfAdapter' || track.adapter?.type === 'VcfTabixAdapter') {
-        // @ts-ignore
+        // @ts-expect-error
         readable = await indexVcf({
-          // @ts-ignore
+          // @ts-expect-error
           config: track.adapter,
           attributesToIndex: attributesArray,
-          // @ts-ignore
+          // @ts-expect-error
           inLocation: getLoc(track.adapter.vcfLocation || track.adapter.vcfGzLocation),
           outLocation: ixFile,
           typesToExclude: excludeArray,
           quiet,
         })
       } else {
-        // @ts-ignore
+        // @ts-expect-error
         console.warn(`Warning: Indexing not implemented for adapter type: ${track.adapter?.type}`)
         return
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       const writableStream = ixIxxStream(ixFile, ixxFile, {
         prefixSize: prefixSize || 6,
       })
 
-      // @ts-ignore
+      // @ts-expect-error
       await new Promise<void>((resolve, reject) => {
-        // @ts-ignore
+        // @ts-expect-error
         readable.pipe(writableStream)
-        // @ts-ignore
+        // @ts-expect-error
         writableStream.on('finish', resolve)
-        // @ts-ignore
+        // @ts-expect-error
         writableStream.on('error', reject)
       })
 
       // Generate metadata
-      // @ts-ignore
+      // @ts-expect-error
       const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
       fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 
@@ -542,34 +542,34 @@ export default class TextIndexNative extends NativeCommand {
       const readables: Readable[] = []
 
       for (const track of tracks) {
-        // @ts-ignore
+        // @ts-expect-error
         if (!supported(track.adapter)) {
           console.log(`Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`)
           continue
         }
 
         let readable: Readable
-        // @ts-ignore
+        // @ts-expect-error
         if (track.adapter?.type === 'Gff3Adapter' || track.adapter?.type === 'Gff3TabixAdapter') {
-          // @ts-ignore
+          // @ts-expect-error
           readable = await indexGff3({
-            // @ts-ignore
+            // @ts-expect-error
             config: track.adapter,
             attributesToIndex: attributesArray,
-            // @ts-ignore
+            // @ts-expect-error
             inLocation: getLoc(track.adapter.gffLocation || track.adapter.gffGzLocation),
             outLocation: ixFile,
             typesToExclude: excludeArray,
             quiet,
           })
-        // @ts-ignore
+        // @ts-expect-error
         } else if (track.adapter?.type === 'VcfAdapter' || track.adapter?.type === 'VcfTabixAdapter') {
-          // @ts-ignore
+          // @ts-expect-error
           readable = await indexVcf({
-            // @ts-ignore
+            // @ts-expect-error
             config: track.adapter,
             attributesToIndex: attributesArray,
-            // @ts-ignore
+            // @ts-expect-error
             inLocation: getLoc(track.adapter.vcfLocation || track.adapter.vcfGzLocation),
             outLocation: ixFile,
             typesToExclude: excludeArray,
@@ -587,7 +587,7 @@ export default class TextIndexNative extends NativeCommand {
         return
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       const writableStream = ixIxxStream(ixFile, ixxFile, {
         prefixSize: prefixSize || 6,
       })
@@ -596,7 +596,7 @@ export default class TextIndexNative extends NativeCommand {
       let currentIndex = 0
       const pipeNext = () => {
         if (currentIndex >= readables.length) {
-          // @ts-ignore
+          // @ts-expect-error
           writableStream.end()
           return
         }
@@ -604,22 +604,22 @@ export default class TextIndexNative extends NativeCommand {
         const readable = readables[currentIndex]
         currentIndex++
 
-        // @ts-ignore
+        // @ts-expect-error
         readable.pipe(writableStream, { end: false })
         readable.on('end', pipeNext)
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       await new Promise<void>((resolve, reject) => {
-        // @ts-ignore
+        // @ts-expect-error
         writableStream.on('finish', resolve)
-        // @ts-ignore
+        // @ts-expect-error
         writableStream.on('error', reject)
         pipeNext()
       })
 
       // Generate metadata
-      // @ts-ignore
+      // @ts-expect-error
       const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
       fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 

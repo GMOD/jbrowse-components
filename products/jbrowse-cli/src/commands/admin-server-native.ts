@@ -170,7 +170,7 @@ export default class AdminServerNative extends NativeCommand {
           {
             padding: 1,
             margin: 1,
-            // @ts-ignore
+            // @ts-expect-error
             borderStyle: 'round',
             borderColor: 'green',
           },
