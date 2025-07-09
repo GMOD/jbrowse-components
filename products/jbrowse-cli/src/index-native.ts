@@ -6,10 +6,18 @@ import path from 'path'
 // Command imports
 import CreateNative from './commands/create-native'
 import AddAssemblyNative from './commands/add-assembly-native'
+import AddTrackNative from './commands/add-track-native'
+import TextIndexNative from './commands/text-index-native'
+import AdminServerNative from './commands/admin-server-native'
+import UpgradeNative from './commands/upgrade-native'
 
 const commands = {
   create: CreateNative,
   'add-assembly': AddAssemblyNative,
+  'add-track': AddTrackNative,
+  'text-index': TextIndexNative,
+  'admin-server': AdminServerNative,
+  upgrade: UpgradeNative,
 }
 
 async function main() {
@@ -74,21 +82,24 @@ async function main() {
 
 function showGlobalHelp() {
   console.log(`
-JBrowse CLI
+JBrowse CLI (Native)
 
 USAGE
-  $ jbrowse <command> [options]
+  $ jbrowse-native <command> [options]
 
 COMMANDS
   create        Downloads and installs the latest JBrowse 2 release
   add-assembly  Add an assembly to a JBrowse 2 configuration
   add-track     Add a track to a JBrowse 2 configuration
+  text-index    Make a text-indexing file for any given track(s)
+  admin-server  Start up a small admin server for JBrowse configuration
+  upgrade       Upgrades JBrowse 2 to latest version
   
 OPTIONS
   -h, --help     Show help
   -v, --version  Show version
 
-Use "jbrowse <command> --help" for more information about a command.
+Use "jbrowse-native <command> --help" for more information about a command.
 `)
 }
 
