@@ -1,13 +1,13 @@
 import fs from 'fs'
 import path from 'path'
+import { parseArgs } from 'util'
 
-import { Args, Flags } from '@oclif/core'
 import decompress from 'decompress'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 import fetch from '../fetchWithProxy'
 
-export default class Upgrade extends JBrowseCommand {
+export default class UpgradeNative extends NativeCommand {
   static description = 'Upgrades JBrowse 2 to latest version'
 
   static examples = [
@@ -30,63 +30,79 @@ export default class Upgrade extends JBrowseCommand {
     '$ jbrowse upgrade --nightly',
   ]
 
-  static args = {
-    localPath: Args.string({
-      required: false,
-      description: 'Location where JBrowse 2 is installed',
-      default: '.',
-    }),
-  }
-
-  static flags = {
-    help: Flags.help({ char: 'h' }),
-    // will need to account for pagination once there is a lot of releases
-    listVersions: Flags.boolean({
-      char: 'l',
-      description: 'Lists out all versions of JBrowse 2',
-    }),
-    tag: Flags.string({
-      char: 't',
-      description:
-        'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
-    }),
-    branch: Flags.string({
-      description: 'Download a development build from a named git branch',
-    }),
-    nightly: Flags.boolean({
-      description: 'Download the latest development build from the main branch',
-    }),
-    clean: Flags.boolean({
-      description: 'Removes old js,map,and LICENSE files in the installation',
-    }),
-    url: Flags.string({
-      char: 'u',
-      description: 'A direct URL to a JBrowse 2 release',
-    }),
-  }
-
   async run() {
-    const { args: runArgs, flags: runFlags } = await this.parse(Upgrade)
-    const { localPath: argsPath } = runArgs as { localPath: string }
-    const { clean, listVersions, tag, url, branch, nightly } = runFlags
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        listVersions: {
+          type: 'boolean',
+          short: 'l',
+          default: false,
+        },
+        tag: {
+          type: 'string',
+          short: 't',
+        },
+        branch: {
+          type: 'string',
+        },
+        nightly: {
+          type: 'boolean',
+          default: false,
+        },
+        clean: {
+          type: 'boolean',
+          default: false,
+        },
+        url: {
+          type: 'string',
+          short: 'u',
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const { clean, listVersions, tag, url, branch, nightly } = flags
+    const localPath = positionals[0] || '.'
 
     if (listVersions) {
       const versions = (await this.fetchGithubVersions()).map(v => v.tag_name)
-      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
-      this.exit()
+      console.log(`All JBrowse versions:\n${versions.join('\n')}`)
+      process.exit(0)
     }
 
-    this.debug(`Want to upgrade at: ${argsPath}`)
-    if (!argsPath) {
-      this.error('No directory supplied', { exit: 100 })
+    this.debug(`Want to upgrade at: ${localPath}`)
+    
+    if (!localPath) {
+      console.error('Error: No installation path provided')
+      process.exit(1)
     }
 
-    if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
-      this.error(
-        `No manifest.json found in this directory, are you sure it is an
-        existing jbrowse 2 installation?`,
-        { exit: 10 },
-      )
+    if (!fs.existsSync(localPath)) {
+      console.error(`Error: Path ${localPath} does not exist`)
+      process.exit(1)
+    }
+
+    const isDir = fs.lstatSync(localPath).isDirectory()
+    if (!isDir) {
+      console.error(`Error: ${localPath} is not a directory`)
+      process.exit(1)
+    }
+
+    // Check if this looks like a JBrowse installation
+    const indexPath = path.join(localPath, 'index.html')
+    if (!fs.existsSync(indexPath)) {
+      console.warn(`Warning: ${localPath} doesn't appear to be a JBrowse installation (no index.html found)`)
     }
 
     const locationUrl =
@@ -95,10 +111,11 @@ export default class Upgrade extends JBrowseCommand {
       (branch ? await this.getBranch(branch) : '') ||
       (tag ? await this.getTag(tag) : await this.getLatest())
 
-    this.log(`Fetching ${locationUrl}...`)
+    console.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)
     if (!response.ok) {
-      this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })
+      console.error(`Error: Failed to fetch: ${response.statusText}`)
+      process.exit(100)
     }
 
     const type = response.headers.get('content-type')
@@ -107,21 +124,95 @@ export default class Upgrade extends JBrowseCommand {
       type !== 'application/zip' &&
       type !== 'application/octet-stream'
     ) {
-      this.error(
-        'The URL provided does not seem to be a JBrowse installation URL',
+      console.error(
+        'Error: The URL provided does not seem to be a JBrowse installation URL',
       )
+      process.exit(1)
     }
 
+    // Clean old files if requested
     if (clean) {
-      fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
-      for (const f of fs
-        .readdirSync(argsPath)
-        .filter(f => f.includes('worker.js'))) {
-        fs.unlinkSync(path.join(argsPath, f))
+      console.log('Cleaning old files...')
+      await this.cleanOldFiles(localPath)
+    }
+
+    // Extract the new version
+    console.log(`Extracting to ${localPath}...`)
+    await decompress(Buffer.from(await response.arrayBuffer()), localPath)
+
+    console.log(`Successfully upgraded JBrowse at ${localPath}`)
+  }
+
+  async cleanOldFiles(installPath: string) {
+    const filesToClean = [
+      'static/js',
+      'static/css',
+      'static/media',
+      'LICENSE',
+      'manifest.json',
+      'asset-manifest.json',
+    ]
+
+    for (const file of filesToClean) {
+      const fullPath = path.join(installPath, file)
+      if (fs.existsSync(fullPath)) {
+        this.debug(`Removing ${fullPath}`)
+        try {
+          if (fs.lstatSync(fullPath).isDirectory()) {
+            fs.rmSync(fullPath, { recursive: true, force: true })
+          } else {
+            fs.unlinkSync(fullPath)
+          }
+        } catch (error) {
+          console.warn(`Warning: Could not remove ${fullPath}: ${error}`)
+        }
       }
     }
 
-    await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
-    this.log(`Unpacked ${locationUrl} at ${argsPath}`)
+    // Clean any .js.map files
+    const staticDir = path.join(installPath, 'static')
+    if (fs.existsSync(staticDir)) {
+      const cleanMapFiles = (dir: string) => {
+        const files = fs.readdirSync(dir)
+        for (const file of files) {
+          const fullPath = path.join(dir, file)
+          if (fs.lstatSync(fullPath).isDirectory()) {
+            cleanMapFiles(fullPath)
+          } else if (file.endsWith('.map')) {
+            this.debug(`Removing ${fullPath}`)
+            try {
+              fs.unlinkSync(fullPath)
+            } catch (error) {
+              console.warn(`Warning: Could not remove ${fullPath}: ${error}`)
+            }
+          }
+        }
+      }
+      cleanMapFiles(staticDir)
+    }
+  }
+
+  showHelp() {
+    console.log(`
+${UpgradeNative.description}
+
+USAGE
+  $ jbrowse upgrade [localPath] [options]
+
+ARGUMENTS
+  localPath  Location where JBrowse 2 is installed (default: current directory)
+
+OPTIONS
+  -h, --help              Show help
+  -l, --listVersions      Lists out all versions of JBrowse 2
+  -t, --tag <tag>         Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest
+  --branch <branch>       Download a development build from a named git branch
+  --nightly               Download the latest development build from the main branch
+  --clean                 Removes old js, map, and LICENSE files in the installation
+  -u, --url <url>         A direct URL to a JBrowse 2 release
+
+EXAMPLES
+${UpgradeNative.examples.join('\n')}
+`)
   }
 }

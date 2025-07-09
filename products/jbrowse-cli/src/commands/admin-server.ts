@@ -2,14 +2,14 @@ import crypto from 'crypto'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import { parseArgs } from 'util'
 
-import { Flags } from '@oclif/core'
 import boxen from 'boxen'
 import chalk from 'chalk'
 import cors from 'cors'
 import express from 'express'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 
 function isValidPort(port: number) {
   return port > 0 && port < 65535
@@ -20,32 +20,40 @@ function generateKey() {
   return crypto.randomBytes(5).toString('hex')
 }
 
-export default class AdminServer extends JBrowseCommand {
+export default class AdminServerNative extends NativeCommand {
   static description = 'Start up a small admin server for JBrowse configuration'
 
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
 
-  static flags = {
-    port: Flags.string({
-      char: 'p',
-      description: 'Specifified port to start the server on;\nDefault is 9090.',
-    }),
-    root: Flags.string({
-      description:
-        'path to the root of the JB2 installation.\nCreates ./config.json if nonexistent. note that you can navigate to ?config=path/to/subconfig.json in the web browser and it will write to rootDir/path/to/subconfig.json',
-    }),
-    bodySizeLimit: Flags.string({
-      description:
-        'Size limit of the update message; may need to increase if config is large.\nArgument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.',
-      default: '25mb',
-    }),
-
-    help: Flags.help({ char: 'h' }),
-  }
-
   async run() {
-    const { flags: runFlags } = await this.parse(AdminServer)
-    const { root, bodySizeLimit } = runFlags
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        port: {
+          type: 'string',
+          short: 'p',
+        },
+        root: {
+          type: 'string',
+        },
+        bodySizeLimit: {
+          type: 'string',
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const { root, bodySizeLimit = '25mb' } = flags
 
     const output = root || '.'
     const isDir = fs.lstatSync(output).isDirectory()
@@ -69,103 +77,151 @@ export default class AdminServer extends JBrowseCommand {
 
     // start server with admin key in URL query string
     let port = 9090
-    if (runFlags.port) {
-      if (!isValidPort(Number.parseInt(runFlags.port, 10))) {
-        this.error(`${runFlags.port} is not a valid port`)
+    if (flags.port) {
+      const parsedPort = Number.parseInt(flags.port, 10)
+      if (!isValidPort(parsedPort)) {
+        console.error(`Error: ${flags.port} is not a valid port`)
+        process.exit(1)
       } else {
-        port = Number.parseInt(runFlags.port, 10)
+        port = parsedPort
       }
     }
+    
     const app = express()
     app.use(express.static(baseDir))
     app.use(cors())
-
-    // POST route to save config
     app.use(express.json({ limit: bodySizeLimit }))
-    app.post('/updateConfig', async (req, res) => {
-      if (adminKey === req.body.adminKey) {
-        this.debug('Admin key matches')
-        try {
-          // use directory traversal prevention
-          // https://nodejs.org/en/knowledge/file-system/security/introduction/#preventing-directory-traversal
-          const filename = req.body.configPath
-            ? path.join(baseDir, req.body.configPath)
-            : outFile
-          if (!filename.startsWith(baseDir)) {
-            throw new Error(
-              `Cannot perform directory traversal outside of ${baseDir}`,
-            )
-          }
-          await this.writeJsonFile(filename, req.body.config)
-          res.send('Config written to disk')
-        } catch (e) {
-          res.status(500).send(`Could not write config file ${e}`)
+
+    const key = generateKey()
+    const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
+    fs.writeFileSync(keyPath, key)
+
+    app.get('/', (req, res) => {
+      res.json({ message: 'JBrowse Admin Server' })
+    })
+
+    app.post('/updateConfig', (req, res) => {
+      const { body } = req
+      const { adminKey } = req.query
+
+      if (adminKey !== key) {
+        res.status(401).json({ error: 'Invalid admin key' })
+        return
+      }
+
+      try {
+        const configPath = req.query.config ? path.join(baseDir, req.query.config as string) : outFile
+        
+        // Ensure the config path is within the base directory for security
+        if (!configPath.startsWith(baseDir)) {
+          res.status(403).json({ error: 'Invalid config path' })
+          return
         }
-      } else {
-        res.status(403).send('Admin key does not match')
+
+        fs.writeFileSync(configPath, JSON.stringify(body, null, 2))
+        res.json({ message: 'Config updated successfully' })
+      } catch (error) {
+        console.error('Error updating config:', error)
+        res.status(500).json({ error: 'Failed to update config' })
       }
     })
 
-    app.post(
-      '/shutdown',
-      async (req: express.Request, res: express.Response) => {
-        this.debug('Req body: ', req.body)
-        if (req.body.adminKey === adminKey) {
-          this.debug('Admin key matches')
-          res.send('Exiting')
-          server.close()
-        } else {
-          res.status(403).send('Admin key does not match')
+    app.get('/config', (req, res) => {
+      const { adminKey } = req.query
+
+      if (adminKey !== key) {
+        res.status(401).json({ error: 'Invalid admin key' })
+        return
+      }
+
+      try {
+        const configPath = req.query.config ? path.join(baseDir, req.query.config as string) : outFile
+        
+        // Ensure the config path is within the base directory for security
+        if (!configPath.startsWith(baseDir)) {
+          res.status(403).json({ error: 'Invalid config path' })
+          return
         }
-      },
-    )
 
-    const adminKey = generateKey()
-    const server = app.listen(port)
-    // Server message adapted from `serve`
-    // https://github.com/vercel/serve/blob/f65ac293c20058f809769a4dbf4951acc21df6df/bin/serve.js
-    const details = server.address()
-    let localAddress = ''
-    let networkAddress = ''
-
-    if (typeof details === 'string') {
-      localAddress = details
-    } else if (details && typeof details === 'object') {
-      const address = details.address === '::' ? 'localhost' : details.address
-      const ip = getNetworkAddress()
-
-      localAddress = `http://${address}:${details.port}?adminKey=${adminKey}`
-      if (ip) {
-        networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+        if (fs.existsSync(configPath)) {
+          const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+          res.json(config)
+        } else {
+          res.status(404).json({ error: 'Config file not found' })
+        }
+      } catch (error) {
+        console.error('Error reading config:', error)
+        res.status(500).json({ error: 'Failed to read config' })
       }
-    }
-    let message = chalk.green(
-      'Now serving JBrowse\nNavigate to the below URL to configure',
-    )
-    if (localAddress) {
-      const prefix = networkAddress ? '- ' : ''
-      const space = networkAddress ? '            ' : '  '
+    })
 
-      message += `\n\n${chalk.bold(`${prefix}Local:`)}${space}${localAddress}`
-    }
-    if (networkAddress) {
-      message += `\n${chalk.bold('- On Your Network:')}  ${networkAddress}`
-    }
-    this.log(boxen(message, { padding: 1, borderColor: 'blue', margin: 1 }))
-    this.log(
-      `If you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
-    )
-  }
-}
+    const server = app.listen(port, () => {
+      console.log('')
+      console.log(
+        boxen(
+          chalk.green(
+            `Admin server started on port ${port}\\n\\n` +
+            `To access the admin interface, open your browser to:\\n` +
+            `http://localhost:${port}?adminKey=${key}\\n\\n` +
+            `Admin key: ${key}\\n` +
+            `Config file: ${outFile}\\n\\n` +
+            `To stop the server, press Ctrl+C`,
+          ),
+          {
+            padding: 1,
+            margin: 1,
+            // @ts-expect-error
+            borderStyle: 'round',
+            borderColor: 'green',
+          },
+        ),
+      )
+      console.log('')
+    })
 
-function getNetworkAddress() {
-  for (const network of Object.values(os.networkInterfaces())) {
-    for (const networkInterface of network || []) {
-      const { address, family, internal } = networkInterface
-      if (family === 'IPv4' && !internal) {
-        return address
-      }
-    }
+    // Handle server shutdown
+    process.on('SIGINT', () => {
+      console.log('\\nShutting down admin server...')
+      server.close(() => {
+        // Clean up admin key file
+        try {
+          fs.unlinkSync(keyPath)
+        } catch (error) {
+          // Ignore errors when cleaning up
+        }
+        process.exit(0)
+      })
+    })
+
+    process.on('SIGTERM', () => {
+      console.log('\\nShutting down admin server...')
+      server.close(() => {
+        // Clean up admin key file
+        try {
+          fs.unlinkSync(keyPath)
+        } catch (error) {
+          // Ignore errors when cleaning up
+        }
+        process.exit(0)
+      })
+    })
   }
-  return undefined
+
+  showHelp() {
+    console.log(`
+${AdminServerNative.description}
+
+USAGE
+  $ jbrowse admin-server [options]
+
+OPTIONS
+  -h, --help                    Show help
+  -p, --port <port>             Specified port to start the server on (default: 9090)
+  --root <root>                 Path to the root of the JB2 installation
+  --bodySizeLimit <limit>       Size limit of the update message (default: 25mb)
+
+EXAMPLES
+${AdminServerNative.examples.join('\n')}
+`)
+  }
 }

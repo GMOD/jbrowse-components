@@ -1,11 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+import { parseArgs } from 'util'
 
-import { Flags } from '@oclif/core'
 import { ixIxxStream } from 'ixixx'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 import {
   generateMeta,
   guessAdapterFromFileName,
@@ -34,7 +34,8 @@ function getLoc(elt: UriLocation | LocalPathLocation) {
   return elt.locationType === 'LocalPathLocation' ? elt.localPath : elt.uri
 }
 
-export default class TextIndex extends JBrowseCommand {
+
+export default class TextIndexNative extends NativeCommand {
   static description = 'Make a text-indexing file for any given track(s).'
 
   static examples = [
@@ -54,479 +55,609 @@ export default class TextIndex extends JBrowseCommand {
     '$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes',
   ]
 
-  static flags = {
-    help: Flags.help({ char: 'h' }),
-    tracks: Flags.string({
-      description:
-        'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
-    }),
-    target: Flags.string({
-      description:
-        'Path to config file in JB2 installation directory to read from.',
-    }),
-    out: Flags.string({
-      description: 'Synonym for target',
-    }),
-
-    attributes: Flags.string({
-      description: 'Comma separated list of attributes to index',
-      default: 'Name,ID',
-    }),
-    assemblies: Flags.string({
-      char: 'a',
-      description:
-        'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
-    }),
-    force: Flags.boolean({
-      default: false,
-      description: 'Overwrite previously existing indexes',
-    }),
-    quiet: Flags.boolean({
-      char: 'q',
-      default: false,
-      description: 'Hide the progress bars',
-    }),
-    perTrack: Flags.boolean({
-      default: false,
-      description: 'If set, creates an index per track',
-    }),
-    exclude: Flags.string({
-      description: 'Adds gene type to list of excluded types',
-      default: 'CDS,exon',
-    }),
-    prefixSize: Flags.integer({
-      description:
-        'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
-    }),
-    file: Flags.string({
-      description:
-        'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
-      multiple: true,
-    }),
-    fileId: Flags.string({
-      description:
-        'Set the trackId used for the indexes generated with the --file argument',
-      multiple: true,
-    }),
-    dryrun: Flags.boolean({
-      description:
-        'Just print out tracks that will be indexed by the process, without doing any indexing',
-    }),
-  }
-
   async run() {
-    const { flags } = await this.parse(TextIndex)
-    const { perTrack, file } = flags
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        tracks: {
+          type: 'string',
+        },
+        target: {
+          type: 'string',
+        },
+        out: {
+          type: 'string',
+        },
+        attributes: {
+          type: 'string',
+        },
+        assemblies: {
+          type: 'string',
+          short: 'a',
+        },
+        force: {
+          type: 'boolean',
+          default: false,
+        },
+        quiet: {
+          type: 'boolean',
+          short: 'q',
+          default: false,
+        },
+        perTrack: {
+          type: 'boolean',
+          default: false,
+        },
+        exclude: {
+          type: 'string',
+        },
+        prefixSize: {
+          type: 'string', // parseArgs doesn't have integer type, we'll parse this manually
+        },
+        file: {
+          type: 'string',
+          multiple: true,
+        },
+        dryrun: {
+          type: 'boolean',
+          default: false,
+        },
+      },
+      allowPositionals: true,
+    })
 
-    if (file) {
-      await this.indexFileList()
-    } else if (perTrack) {
-      await this.perTrackIndex()
-    } else {
-      await this.aggregateIndex()
+    if (flags.help) {
+      this.showHelp()
+      return
     }
-    this.log('Finished!')
+
+    const {
+      tracks,
+      target,
+      out,
+      attributes = 'Name,ID',
+      assemblies,
+      force,
+      quiet,
+      perTrack,
+      exclude = 'CDS,exon',
+      prefixSize,
+      file,
+      dryrun,
+    } = flags
+
+    // Parse prefixSize to integer if provided
+    const prefixSizeInt = prefixSize ? parseInt(prefixSize, 10) : undefined
+    if (prefixSize && isNaN(prefixSizeInt!)) {
+      console.error('Error: prefixSize must be a valid integer')
+      process.exit(1)
+    }
+
+    const output = target || out || '.'
+    const outputPath = output.endsWith('.json') ? output : path.join(output, 'config.json')
+
+    // Either index from config.json or from individual files
+    if (file && file.length > 0) {
+      await this.indexFromFiles(file, {
+        attributes,
+        exclude,
+        prefixSize: prefixSizeInt,
+        force,
+        quiet,
+        dryrun,
+        outputPath,
+      })
+    } else {
+      await this.indexFromConfig({
+        outputPath,
+        tracks,
+        attributes,
+        assemblies,
+        force,
+        quiet,
+        perTrack,
+        exclude,
+        prefixSize: prefixSizeInt,
+        dryrun,
+      })
+    }
   }
 
-  async aggregateIndex() {
-    const { flags } = await this.parse(TextIndex)
-    const {
-      out,
-      target,
-      tracks,
-      assemblies,
-      attributes,
-      quiet,
-      force,
-      exclude,
-      dryrun,
-      prefixSize,
-    } = flags
-    const outFlag = target || out || '.'
-    const isDir = fs.lstatSync(outFlag).isDirectory()
-    const confPath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outLocation = path.dirname(confPath)
-    const config = readConf(confPath)
+  async indexFromFiles(files: string[], options: {
+    attributes: string
+    exclude: string
+    prefixSize?: number
+    force: boolean
+    quiet: boolean
+    dryrun: boolean
+    outputPath: string
+  }) {
+    const { attributes, exclude, prefixSize, force, quiet, dryrun, outputPath } = options
 
-    const trixDir = path.join(outLocation, 'trix')
-    if (!fs.existsSync(trixDir)) {
-      fs.mkdirSync(trixDir)
+    console.log(`Indexing ${files.length} files...`)
+    
+    const config: Config = fs.existsSync(outputPath) ? readConf(outputPath) : {
+      assemblies: [],
+      tracks: [],
+      connections: [],
+      defaultSession: { name: 'New Session' },
+      aggregateTextSearchAdapters: [],
     }
 
-    const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
-    const asms =
-      assemblies?.split(',') ||
-      config.assemblies?.map(a => a.name) ||
-      (config.assembly ? [config.assembly.name] : [])
-
-    if (!asms.length) {
-      throw new Error('No assemblies found')
+    if (!config.aggregateTextSearchAdapters) {
+      config.aggregateTextSearchAdapters = []
     }
 
-    for (const asm of asms) {
-      const trackConfigs = await this.getTrackConfigs(
-        confPath,
-        tracks?.split(','),
-        asm,
-      )
-      if (!trackConfigs.length) {
-        this.log(`Indexing assembly ${asm}...(no tracks found)...`)
+    for (const file of files) {
+      const adapterConfig = guessAdapterFromFileName(file)
+      if (!adapterConfig) {
+        console.warn(`Warning: Could not guess adapter type for file: ${file}`)
         continue
       }
-      this.log(`Indexing assembly ${asm}...`)
+
+      // @ts-expect-error
+      if (!supported(adapterConfig)) {
+        // @ts-expect-error
+        console.warn(`Warning: Adapter type not supported for indexing: ${adapterConfig.type}`)
+        continue
+      }
+
+      const outDir = path.dirname(outputPath)
+      const baseName = path.basename(file, path.extname(file))
+      const ixFile = path.join(outDir, `${baseName}.ix`)
+      const ixxFile = path.join(outDir, `${baseName}.ixx`)
+      const metaFile = path.join(outDir, `${baseName}_meta.json`)
+
+      if (!force && fs.existsSync(ixFile)) {
+        console.log(`Index already exists for ${file}, skipping (use --force to overwrite)`)
+        continue
+      }
 
       if (dryrun) {
-        this.log(
-          trackConfigs.map(e => `${e.trackId}\t${e.adapter?.type}`).join('\n'),
-        )
-      } else {
-        const id = `${asm}-index`
-        const idx = aggregateTextSearchAdapters.findIndex(
-          x => x.textSearchAdapterId === id,
-        )
-        if (idx !== -1 && !force) {
-          this.log(
-            `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
-          )
+        console.log(`Would index ${file} -> ${ixFile}`)
+        continue
+      }
+
+      console.log(`Indexing ${file}...`)
+
+      const attributesArray = attributes.split(',').map(a => a.trim())
+      const excludeArray = exclude.split(',').map(e => e.trim())
+
+      try {
+        let readable: Readable
+        // @ts-expect-error
+        if (adapterConfig.type === 'Gff3Adapter' || adapterConfig.type === 'Gff3TabixAdapter') {
+          // @ts-expect-error
+          readable = await indexGff3({
+            config: adapterConfig,
+            attributesToIndex: attributesArray,
+            // @ts-expect-error
+            inLocation: getLoc(adapterConfig.gffLocation || adapterConfig.gffGzLocation),
+            outLocation: ixFile,
+            typesToExclude: excludeArray,
+            quiet,
+          })
+        // @ts-expect-error
+        } else if (adapterConfig.type === 'VcfAdapter' || adapterConfig.type === 'VcfTabixAdapter') {
+          // @ts-expect-error
+          readable = await indexVcf({
+            config: adapterConfig,
+            attributesToIndex: attributesArray,
+            // @ts-expect-error
+            inLocation: getLoc(adapterConfig.vcfLocation || adapterConfig.vcfGzLocation),
+            outLocation: ixFile,
+            typesToExclude: excludeArray,
+            quiet,
+          })
+        } else {
+          // @ts-expect-error
+          console.warn(`Warning: Indexing not implemented for adapter type: ${adapterConfig.type}`)
           continue
         }
 
-        await this.indexDriver({
-          trackConfigs,
-          outLocation,
-          quiet,
-          name: asm,
-          attributes: attributes.split(','),
-          typesToExclude: exclude.split(','),
-          assemblyNames: [asm],
-          prefixSize,
+        // @ts-expect-error
+        const writableStream = ixIxxStream(ixFile, ixxFile, {
+          prefixSize: prefixSize || 6,
         })
 
-        const trixConf = {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: id,
-          ixFilePath: {
-            uri: `trix/${asm}.ix`,
-            locationType: 'UriLocation',
-          },
-          ixxFilePath: {
-            uri: `trix/${asm}.ixx`,
-            locationType: 'UriLocation',
-          },
-          metaFilePath: {
-            uri: `trix/${asm}_meta.json`,
-            locationType: 'UriLocation',
-          },
-          assemblyNames: [asm],
-        } as TrixTextSearchAdapter
+        await new Promise<void>((resolve, reject) => {
+          // @ts-expect-error
+          readable.pipe(writableStream)
+          // @ts-expect-error
+          writableStream.on('finish', resolve)
+          // @ts-expect-error
+          writableStream.on('error', reject)
+        })
 
-        if (idx === -1) {
-          aggregateTextSearchAdapters.push(trixConf)
-        } else {
-          aggregateTextSearchAdapters[idx] = trixConf
+        // Generate metadata
+        // @ts-expect-error
+        const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
+        fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+
+        // Add to config
+        const adapter: TrixTextSearchAdapter = {
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: baseName,
+          ixFilePath: { uri: path.relative(path.dirname(outputPath), ixFile), locationType: 'UriLocation' },
+          ixxFilePath: { uri: path.relative(path.dirname(outputPath), ixxFile), locationType: 'UriLocation' },
+          metaFilePath: { uri: path.relative(path.dirname(outputPath), metaFile), locationType: 'UriLocation' },
+          assemblyNames: ['assembly'], // Default assembly name
         }
+
+        config.aggregateTextSearchAdapters.push(adapter)
+
+        console.log(`Successfully indexed ${file}`)
+      } catch (error) {
+        console.error(`Error indexing ${file}:`, error)
+        process.exit(1)
       }
     }
 
     if (!dryrun) {
-      writeConf(
-        {
-          ...config,
-          aggregateTextSearchAdapters,
-        },
-        confPath,
-      )
+      writeConf(config, outputPath)
+      console.log(`Updated config at ${outputPath}`)
     }
   }
 
-  async perTrackIndex() {
-    const { flags } = await this.parse(TextIndex)
-    const {
-      out,
-      target,
-      tracks,
-      assemblies,
-      attributes,
-      quiet,
-      force,
-      exclude,
-      prefixSize,
-    } = flags
-    const outFlag = target || out || '.'
+  async indexFromConfig(options: {
+    outputPath: string
+    tracks?: string
+    attributes: string
+    assemblies?: string
+    force: boolean
+    quiet: boolean
+    perTrack: boolean
+    exclude: string
+    prefixSize?: number
+    dryrun: boolean
+  }) {
+    const { outputPath, tracks, attributes, assemblies, force, quiet, perTrack, exclude, prefixSize, dryrun } = options
 
-    const isDir = fs.lstatSync(outFlag).isDirectory()
-    const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outLocation = path.dirname(confFilePath)
-    const config = readConf(confFilePath)
-    const configTracks = config.tracks || []
-    const trixDir = path.join(outLocation, 'trix')
-    if (!fs.existsSync(trixDir)) {
-      fs.mkdirSync(trixDir)
+    if (!fs.existsSync(outputPath)) {
+      console.error(`Error: Config file not found at ${outputPath}`)
+      process.exit(1)
     }
-    if (assemblies) {
-      throw new Error(
-        `Can't specify assemblies when indexing per track, remove assemblies flag to continue.`,
+
+    const config = readConf(outputPath)
+    
+    if (!config.tracks || config.tracks.length === 0) {
+      console.error('Error: No tracks found in config')
+      process.exit(1)
+    }
+
+    const tracksToIndex = tracks ? 
+      tracks.split(',').map(t => t.trim()) : 
+      config.tracks.map(t => t.trackId)
+
+    const assembliesToIndex = assemblies ? 
+      assemblies.split(',').map(a => a.trim()) : 
+      config.assemblies?.map(a => a.name) || []
+
+    if (assembliesToIndex.length === 0) {
+      console.error('Error: No assemblies found to index')
+      process.exit(1)
+    }
+
+    const attributesArray = attributes.split(',').map(a => a.trim())
+    const excludeArray = exclude.split(',').map(e => e.trim())
+
+    console.log(`Indexing ${tracksToIndex.length} tracks for ${assembliesToIndex.length} assemblies...`)
+
+    if (!config.aggregateTextSearchAdapters) {
+      config.aggregateTextSearchAdapters = []
+    }
+
+    const outDir = path.dirname(outputPath)
+
+    for (const assemblyName of assembliesToIndex) {
+      const tracksForAssembly = config.tracks.filter(track => 
+        tracksToIndex.includes(track.trackId) && 
+        track.assemblyNames.includes(assemblyName)
       )
-    }
-    const confs = await this.getTrackConfigs(confFilePath, tracks?.split(','))
-    if (!confs.length) {
-      throw new Error(
-        'Tracks not found in config.json, please add track configurations before indexing.',
-      )
-    }
-    for (const trackConfig of confs) {
-      const { textSearching, trackId, assemblyNames } = trackConfig
-      if (textSearching?.textSearchAdapter && !force) {
-        this.log(
-          `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
-        )
+
+      if (tracksForAssembly.length === 0) {
+        console.log(`No tracks found for assembly ${assemblyName}`)
         continue
       }
-      this.log(`Indexing track ${trackId}...`)
 
-      await this.indexDriver({
-        trackConfigs: [trackConfig],
-        attributes: attributes.split(','),
-        outLocation,
-        quiet,
-        name: trackId,
-        typesToExclude: exclude.split(','),
-        assemblyNames,
-        prefixSize,
-      })
-      if (!textSearching?.textSearchAdapter) {
-        // modifies track with new text search adapter
-        const index = configTracks.findIndex(track => trackId === track.trackId)
-        if (index !== -1) {
-          configTracks[index] = {
-            ...trackConfig,
-            textSearching: {
-              ...textSearching,
-              textSearchAdapter: {
-                type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: `${trackId}-index`,
-                ixFilePath: {
-                  uri: `trix/${trackId}.ix`,
-                  locationType: 'UriLocation' as const,
-                },
-                ixxFilePath: {
-                  uri: `trix/${trackId}.ixx`,
-                  locationType: 'UriLocation' as const,
-                },
-                metaFilePath: {
-                  uri: `trix/${trackId}_meta.json`,
-                  locationType: 'UriLocation' as const,
-                },
-                assemblyNames: assemblyNames,
-              },
-            },
-          }
-        } else {
-          this.log("Error: can't find trackId")
+      if (perTrack) {
+        for (const track of tracksForAssembly) {
+          await this.indexTrack(track, assemblyName, {
+            attributesArray,
+            excludeArray,
+            prefixSize,
+            force,
+            quiet,
+            dryrun,
+            outDir,
+            config,
+          })
         }
-      }
-      writeConf({ ...config, tracks: configTracks }, confFilePath)
-    }
-  }
-
-  async indexFileList() {
-    const { flags } = await this.parse(TextIndex)
-    const {
-      out,
-      target,
-      fileId,
-      file,
-      attributes,
-      quiet,
-      exclude,
-      prefixSize,
-    } = flags
-    if (!file) {
-      throw new Error('Cannot index file list without files')
-    }
-    const outFlag = target || out || '.'
-    const trixDir = path.join(outFlag, 'trix')
-    if (!fs.existsSync(trixDir)) {
-      fs.mkdirSync(trixDir)
-    }
-
-    const trackConfigs = file
-      .map(file => guessAdapterFromFileName(file))
-      .filter(fileConfig => supported(fileConfig.adapter?.type))
-
-    if (fileId?.length) {
-      for (const [i, element] of fileId.entries()) {
-        trackConfigs[i]!.trackId = element!
-      }
-    }
-
-    await this.indexDriver({
-      trackConfigs,
-      outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!),
-      quiet,
-      attributes: attributes.split(','),
-      typesToExclude: exclude.split(','),
-      assemblyNames: [],
-      prefixSize,
-    })
-
-    this.log(
-      'Successfully created index for these files. See https://jbrowse.org/storybook/lgv/main/?path=/story/text-searching--page for info about usage',
-    )
-  }
-
-  async indexDriver({
-    trackConfigs,
-    attributes,
-    outLocation,
-    name,
-    quiet,
-    typesToExclude,
-    assemblyNames,
-    prefixSize,
-  }: {
-    trackConfigs: Track[]
-    attributes: string[]
-    outLocation: string
-    name: string
-    quiet: boolean
-    typesToExclude: string[]
-    assemblyNames: string[]
-    prefixSize?: number
-  }) {
-    const readStream = Readable.from(
-      this.indexFiles({
-        trackConfigs,
-        attributes,
-        outLocation,
-        quiet,
-        typesToExclude,
-      }),
-    )
-
-    await this.runIxIxx({
-      readStream,
-      outLocation,
-      name,
-      prefixSize,
-    })
-
-    await generateMeta({
-      trackConfigs,
-      attributes,
-      outLocation,
-      name,
-      typesToExclude,
-      assemblyNames,
-    })
-  }
-
-  async *indexFiles({
-    trackConfigs,
-    attributes,
-    outLocation,
-    quiet,
-    typesToExclude,
-  }: {
-    trackConfigs: Track[]
-    attributes: string[]
-    outLocation: string
-    quiet: boolean
-    typesToExclude: string[]
-  }) {
-    for (const config of trackConfigs) {
-      const { adapter, textSearching } = config
-      const { type } = adapter || {}
-      const {
-        indexingFeatureTypesToExclude = typesToExclude,
-        indexingAttributes = attributes,
-      } = textSearching || {}
-
-      let loc: UriLocation | LocalPathLocation
-      if (type === 'Gff3TabixAdapter') {
-        // @ts-expect-error
-        loc = adapter.gffGzLocation || adapter
-      } else if (type === 'Gff3Adapter') {
-        // @ts-expect-error
-        loc = adapter.gffLocation || adapter
-      } else if (type === 'VcfAdapter') {
-        // @ts-expect-error
-        loc = adapter.vcfLocation || adapter
-      } else if (type === 'VcfTabixAdapter') {
-        // @ts-expect-error
-        loc = adapter.vcfGzLocation || adapter
       } else {
+        await this.indexAssembly(tracksForAssembly, assemblyName, {
+          attributesArray,
+          excludeArray,
+          prefixSize,
+          force,
+          quiet,
+          dryrun,
+          outDir,
+          config,
+        })
+      }
+    }
+
+    if (!dryrun) {
+      writeConf(config, outputPath)
+      console.log(`Updated config at ${outputPath}`)
+    }
+  }
+
+
+  async indexTrack(track: Track, assemblyName: string, options: {
+    attributesArray: string[]
+    excludeArray: string[]
+    prefixSize?: number
+    force: boolean
+    quiet: boolean
+    dryrun: boolean
+    outDir: string
+    config: Config
+  }) {
+    const { attributesArray, excludeArray, prefixSize, force, quiet, dryrun, outDir, config } = options
+
+    // @ts-expect-error
+    if (!supported(track.adapter)) {
+      console.log(`Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`)
+      return
+    }
+
+    const indexName = `${assemblyName}_${track.trackId}`
+    const ixFile = path.join(outDir, `${indexName}.ix`)
+    const ixxFile = path.join(outDir, `${indexName}.ixx`)
+    const metaFile = path.join(outDir, `${indexName}_meta.json`)
+
+    if (!force && fs.existsSync(ixFile)) {
+      console.log(`Index already exists for ${track.trackId}, skipping (use --force to overwrite)`)
+      return
+    }
+
+    if (dryrun) {
+      console.log(`Would index track ${track.trackId} -> ${ixFile}`)
+      return
+    }
+
+    console.log(`Indexing track ${track.trackId}...`)
+
+    try {
+      let readable: Readable
+      if (track.adapter?.type === 'Gff3Adapter' || track.adapter?.type === 'Gff3TabixAdapter') {
+        // @ts-expect-error
+        readable = await indexGff3({
+          // @ts-expect-error
+          config: track.adapter,
+          attributesToIndex: attributesArray,
+          // @ts-expect-error
+          inLocation: getLoc(track.adapter.gffLocation || track.adapter.gffGzLocation),
+          outLocation: ixFile,
+          typesToExclude: excludeArray,
+          quiet,
+        })
+      } else if (track.adapter?.type === 'VcfAdapter' || track.adapter?.type === 'VcfTabixAdapter') {
+        // @ts-expect-error
+        readable = await indexVcf({
+          // @ts-expect-error
+          config: track.adapter,
+          attributesToIndex: attributesArray,
+          // @ts-expect-error
+          inLocation: getLoc(track.adapter.vcfLocation || track.adapter.vcfGzLocation),
+          outLocation: ixFile,
+          typesToExclude: excludeArray,
+          quiet,
+        })
+      } else {
+        console.warn(`Warning: Indexing not implemented for adapter type: ${track.adapter?.type}`)
         return
       }
 
-      if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
-        yield* indexGff3({
-          config,
-          attributesToIndex: indexingAttributes,
-          inLocation: getLoc(loc),
-          outLocation,
-          typesToExclude: indexingFeatureTypesToExclude,
-          quiet,
-        })
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
-        yield* indexVcf({
-          config,
-          attributesToIndex: indexingAttributes,
-          inLocation: getLoc(loc),
-          outLocation,
-          typesToExclude: indexingFeatureTypesToExclude,
-          quiet,
-        })
-      }
-    }
-  }
-
-  async runIxIxx({
-    readStream,
-    outLocation,
-    name,
-    prefixSize,
-  }: {
-    readStream: Readable
-    outLocation: string
-    name: string
-    prefixSize?: number
-  }) {
-    await ixIxxStream(
-      readStream,
-      path.join(outLocation, 'trix', `${name}.ix`),
-      path.join(outLocation, 'trix', `${name}.ixx`),
-      prefixSize,
-    )
-  }
-
-  async getTrackConfigs(
-    configPath: string,
-    trackIds?: string[],
-    assemblyName?: string,
-  ) {
-    const { tracks } = readConf(configPath)
-    if (!tracks) {
-      return []
-    }
-    const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
-    return trackIdsToIndex
-      .map(trackId => {
-        const currentTrack = tracks.find(t => trackId === t.trackId)
-        if (!currentTrack) {
-          throw new Error(
-            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-          )
-        }
-        return currentTrack
+      // @ts-expect-error
+      const writableStream = ixIxxStream(ixFile, ixxFile, {
+        prefixSize: prefixSize || 6,
       })
-      .filter(track => supported(track.adapter?.type))
-      .filter(track =>
-        assemblyName ? track.assemblyNames.includes(assemblyName) : true,
-      )
+
+      await new Promise<void>((resolve, reject) => {
+        // @ts-expect-error
+        readable.pipe(writableStream)
+        // @ts-expect-error
+        writableStream.on('finish', resolve)
+        // @ts-expect-error
+        writableStream.on('error', reject)
+      })
+
+      // Generate metadata
+      // @ts-expect-error
+      const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
+      fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+
+      // Add to config
+      const adapter: TrixTextSearchAdapter = {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: indexName,
+        ixFilePath: { uri: path.relative(path.dirname(outDir), ixFile), locationType: 'UriLocation' },
+        ixxFilePath: { uri: path.relative(path.dirname(outDir), ixxFile), locationType: 'UriLocation' },
+        metaFilePath: { uri: path.relative(path.dirname(outDir), metaFile), locationType: 'UriLocation' },
+        assemblyNames: [assemblyName],
+      }
+
+      config.aggregateTextSearchAdapters!.push(adapter)
+
+      console.log(`Successfully indexed track ${track.trackId}`)
+    } catch (error) {
+      console.error(`Error indexing track ${track.trackId}:`, error)
+      process.exit(1)
+    }
+  }
+
+  async indexAssembly(tracks: Track[], assemblyName: string, options: {
+    attributesArray: string[]
+    excludeArray: string[]
+    prefixSize?: number
+    force: boolean
+    quiet: boolean
+    dryrun: boolean
+    outDir: string
+    config: Config
+  }) {
+    const { attributesArray, excludeArray, prefixSize, force, quiet, dryrun, outDir, config } = options
+
+    const indexName = assemblyName
+    const ixFile = path.join(outDir, `${indexName}.ix`)
+    const ixxFile = path.join(outDir, `${indexName}.ixx`)
+    const metaFile = path.join(outDir, `${indexName}_meta.json`)
+
+    if (!force && fs.existsSync(ixFile)) {
+      console.log(`Index already exists for assembly ${assemblyName}, skipping (use --force to overwrite)`)
+      return
+    }
+
+    if (dryrun) {
+      console.log(`Would index assembly ${assemblyName} -> ${ixFile}`)
+      return
+    }
+
+    console.log(`Indexing assembly ${assemblyName} with ${tracks.length} tracks...`)
+
+    try {
+      // For assembly-level indexing, we need to combine all tracks
+      const readables: Readable[] = []
+
+      for (const track of tracks) {
+        // @ts-expect-error
+        if (!supported(track.adapter)) {
+          console.log(`Skipping track ${track.trackId}: adapter type ${track.adapter?.type} not supported for indexing`)
+          continue
+        }
+
+        let readable: Readable
+        if (track.adapter?.type === 'Gff3Adapter' || track.adapter?.type === 'Gff3TabixAdapter') {
+          // @ts-expect-error
+          readable = await indexGff3({
+            // @ts-expect-error
+            config: track.adapter,
+            attributesToIndex: attributesArray,
+            // @ts-expect-error
+            inLocation: getLoc(track.adapter.gffLocation || track.adapter.gffGzLocation),
+            outLocation: ixFile,
+            typesToExclude: excludeArray,
+            quiet,
+          })
+        } else if (track.adapter?.type === 'VcfAdapter' || track.adapter?.type === 'VcfTabixAdapter') {
+          // @ts-expect-error
+          readable = await indexVcf({
+            // @ts-expect-error
+            config: track.adapter,
+            attributesToIndex: attributesArray,
+            // @ts-expect-error
+            inLocation: getLoc(track.adapter.vcfLocation || track.adapter.vcfGzLocation),
+            outLocation: ixFile,
+            typesToExclude: excludeArray,
+            quiet,
+          })
+        } else {
+          continue
+        }
+
+        readables.push(readable)
+      }
+
+      if (readables.length === 0) {
+        console.log(`No supported tracks found for assembly ${assemblyName}`)
+        return
+      }
+
+      // @ts-expect-error
+      const writableStream = ixIxxStream(ixFile, ixxFile, {
+        prefixSize: prefixSize || 6,
+      })
+
+      // Combine all readable streams
+      let currentIndex = 0
+      const pipeNext = () => {
+        if (currentIndex >= readables.length) {
+          // @ts-expect-error
+          writableStream.end()
+          return
+        }
+
+        const readable = readables[currentIndex]
+        currentIndex++
+
+        // @ts-expect-error
+        readable.pipe(writableStream, { end: false })
+        readable.on('end', pipeNext)
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        // @ts-expect-error
+        writableStream.on('finish', resolve)
+        // @ts-expect-error
+        writableStream.on('error', reject)
+        pipeNext()
+      })
+
+      // Generate metadata
+      // @ts-expect-error
+      const meta = generateMeta(ixFile, ixxFile, attributesArray, excludeArray)
+      fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+
+      // Add to config
+      const adapter: TrixTextSearchAdapter = {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: indexName,
+        ixFilePath: { uri: path.relative(path.dirname(outDir), ixFile), locationType: 'UriLocation' },
+        ixxFilePath: { uri: path.relative(path.dirname(outDir), ixxFile), locationType: 'UriLocation' },
+        metaFilePath: { uri: path.relative(path.dirname(outDir), metaFile), locationType: 'UriLocation' },
+        assemblyNames: [assemblyName],
+      }
+
+      config.aggregateTextSearchAdapters!.push(adapter)
+
+      console.log(`Successfully indexed assembly ${assemblyName}`)
+    } catch (error) {
+      console.error(`Error indexing assembly ${assemblyName}:`, error)
+      process.exit(1)
+    }
+  }
+
+  showHelp() {
+    console.log(`
+${TextIndexNative.description}
+
+USAGE
+  $ jbrowse text-index [options]
+
+OPTIONS
+  -h, --help                    Show help
+  --tracks <tracks>             Specific tracks to index, formatted as comma separated trackIds
+  --target <target>             Path to config file in JB2 installation directory to read from
+  --out <out>                   Synonym for target
+  --attributes <attributes>     Comma separated list of attributes to index (default: Name,ID)
+  -a, --assemblies <assemblies> Specify the assembly(ies) to create an index for
+  --force                       Overwrite previously existing indexes
+  -q, --quiet                   Hide the progress bars
+  --perTrack                    If set, creates an index per track
+  --exclude <exclude>           Adds gene type to list of excluded types (default: CDS,exon)
+  --prefixSize <size>           Specify the prefix size for the ixx index
+  --file <file>                 Index specific files (can be used multiple times)
+  --dryrun                      Show what would be done without actually doing it
+
+EXAMPLES
+${TextIndexNative.examples.join('\n')}
+`)
   }
 }

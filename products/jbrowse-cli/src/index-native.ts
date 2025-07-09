@@ -4,19 +4,19 @@ import { parseArgs } from 'util'
 import path from 'path'
 
 // Command imports
-import CreateNative from './commands/create-native'
-import AddAssemblyNative from './commands/add-assembly-native'
-import AddTrackNative from './commands/add-track-native'
-import TextIndexNative from './commands/text-index-native'
-import AdminServerNative from './commands/admin-server-native'
-import UpgradeNative from './commands/upgrade-native'
-import MakePIFNative from './commands/make-pif-native'
-import SortGffNative from './commands/sort-gff-native'
-import SortBedNative from './commands/sort-bed-native'
-import AddConnectionNative from './commands/add-connection-native'
-import AddTrackJsonNative from './commands/add-track-json-native'
-import RemoveTrackNative from './commands/remove-track-native'
-import SetDefaultSessionNative from './commands/set-default-session-native'
+import CreateNative from './commands/create'
+import AddAssemblyNative from './commands/add-assembly'
+import AddTrackNative from './commands/add-track'
+import TextIndexNative from './commands/text-index'
+import AdminServerNative from './commands/admin-server'
+import UpgradeNative from './commands/upgrade'
+import MakePIFNative from './commands/make-pif'
+import SortGffNative from './commands/sort-gff'
+import SortBedNative from './commands/sort-bed'
+import AddConnectionNative from './commands/add-connection'
+import AddTrackJsonNative from './commands/add-track-json'
+import RemoveTrackNative from './commands/remove-track'
+import SetDefaultSessionNative from './commands/set-default-session'
 
 const commands = {
   create: CreateNative,
@@ -62,11 +62,12 @@ async function main() {
 
     if (flags.version && positionals.length === 0) {
       const fs = await import('fs')
-      const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'))
+      const packageJson = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'),
+      )
       console.log(`@jbrowse/cli version ${packageJson.version}`)
       return
     }
-
 
     const commandName = positionals[0]
     if (!commandName) {
@@ -84,7 +85,14 @@ async function main() {
 
     // Remove the command name from argv before passing to the command
     const originalArgv = process.argv
-    process.argv = [process.argv[0], process.argv[1], commandName, ...process.argv.slice(3)]
+    process.argv = [
+      // @ts-expect-error
+      process.argv[0],
+      // @ts-expect-error
+      process.argv[1],
+      commandName,
+      ...process.argv.slice(3),
+    ]
 
     const command = new CommandClass()
     await command.run()
@@ -115,7 +123,7 @@ COMMANDS
   add-track-json       Add a track configuration directly from a JSON hunk
   remove-track         Remove a track configuration from a JBrowse 2 configuration
   set-default-session  Set a default session with views and tracks
-  
+
 OPTIONS
   -h, --help     Show help
   -v, --version  Show version

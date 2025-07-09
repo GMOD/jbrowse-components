@@ -1,11 +1,11 @@
 import { spawn } from 'child_process'
+import { parseArgs } from 'util'
 
-import { Args, Flags } from '@oclif/core'
 import { sync as commandExistsSync } from 'command-exists'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 
-export default class SortGff extends JBrowseCommand {
+export default class SortGffNative extends NativeCommand {
   static description =
     'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
 
@@ -15,21 +15,30 @@ export default class SortGff extends JBrowseCommand {
     '$ tabix sorted.gff.gz',
   ]
 
-  static args = {
-    file: Args.string({
-      required: true,
-      description: 'GFF file',
-    }),
-  }
-
-  static flags = {
-    help: Flags.help({ char: 'h' }),
-  }
-
   async run() {
-    const {
-      args: { file },
-    } = await this.parse(SortGff)
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const file = positionals[0]
+    if (!file) {
+      console.error('Error: Missing required argument: file')
+      console.error('Usage: jbrowse sort-gff <file>')
+      process.exit(1)
+    }
 
     if (
       commandExistsSync('sh') &&
@@ -49,9 +58,28 @@ export default class SortGff extends JBrowseCommand {
         },
       )
     } else {
-      throw new Error(
-        'Unable to sort, requires unix type environment with sort, grep',
+      console.error(
+        'Error: Unable to sort, requires unix type environment with sort, grep',
       )
+      process.exit(1)
     }
+  }
+
+  showHelp() {
+    console.log(`
+${SortGffNative.description}
+
+USAGE
+  $ jbrowse sort-gff <file>
+
+ARGUMENTS
+  file  GFF file
+
+OPTIONS
+  -h, --help  Show help
+
+EXAMPLES
+${SortGffNative.examples.join('\n')}
+`)
   }
 }

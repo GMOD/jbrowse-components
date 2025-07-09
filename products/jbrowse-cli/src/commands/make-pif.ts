@@ -3,11 +3,11 @@ import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
 import { createGunzip } from 'zlib'
+import { parseArgs } from 'util'
 
-import { Args, Flags } from '@oclif/core'
 import { sync as commandExistsSync } from 'command-exists'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 
@@ -106,38 +106,48 @@ export async function createPIF(
   }
 }
 
-export default class MakePIF extends JBrowseCommand {
-  static description =
-    'creates pairwise indexed PAF (PIF), with bgzip and tabix'
+export default class MakePIFNative extends NativeCommand {
+  static description = 'creates pairwise indexed PAF (PIF), with bgzip and tabix'
 
   static examples = [
-    '$ jbrowse pif input.paf # creates input.pif.gz in same directory',
+    '$ jbrowse make-pif input.paf # creates input.pif.gz in same directory',
     '',
-    '$ jbrowse pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
+    '$ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
   ]
 
-  static flags = {
-    out: Flags.string({
-      description:
-        'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
-    }),
-    csi: Flags.boolean({
-      description: 'Create a CSI index for the PIF file instead of TBI',
-    }),
-    help: Flags.help({ char: 'h' }),
-  }
-  static args = {
-    file: Args.string({
-      required: true,
-      description: 'PAF file as input',
-    }),
-  }
-
   async run() {
-    const {
-      args: { file },
-      flags: { out, csi },
-    } = await this.parse(MakePIF)
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        out: {
+          type: 'string',
+        },
+        csi: {
+          type: 'boolean',
+          default: false,
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const file = positionals[0]
+    if (!file) {
+      console.error('Error: Missing required argument: file')
+      console.error('Usage: jbrowse make-pif <file> [options]')
+      process.exit(1)
+    }
+
+    const { out, csi } = flags
 
     if (
       commandExistsSync('sh') &&
@@ -166,9 +176,30 @@ export default class MakePIF extends JBrowseCommand {
         child.on('close', resolve)
       })
     } else {
-      throw new Error(
-        'Unable to sort, requires unix type environment with sort, grep, bgzip, tabix',
+      console.error(
+        'Error: Unable to sort, requires unix type environment with sort, grep, bgzip, tabix',
       )
+      process.exit(1)
     }
+  }
+
+  showHelp() {
+    console.log(`
+${MakePIFNative.description}
+
+USAGE
+  $ jbrowse make-pif <file> [options]
+
+ARGUMENTS
+  file  PAF file as input
+
+OPTIONS
+  -h, --help       Show help
+  --out <out>      Where to write the output file. will write \${file}.pif.gz and \${file}.pif.gz.tbi
+  --csi            Create a CSI index for the PIF file instead of TBI
+
+EXAMPLES
+${MakePIFNative.examples.join('\n')}
+`)
   }
 }

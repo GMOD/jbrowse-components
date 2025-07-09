@@ -1,9 +1,9 @@
 import fs from 'fs'
+import { parseArgs } from 'util'
 
-import { Flags } from '@oclif/core'
 import parseJSON from 'json-parse-better-errors'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 
 const fsPromises = fs.promises
 
@@ -18,9 +18,8 @@ interface Config {
   tracks?: Track[]
 }
 
-export default class SetDefaultSession extends JBrowseCommand {
-  // @ts-expect-error
-  private target: string
+export default class SetDefaultSessionNative extends NativeCommand {
+  private target: string = ''
 
   static description = 'Set a default session with views and tracks'
 
@@ -35,40 +34,49 @@ export default class SetDefaultSession extends JBrowseCommand {
     '$ jbrowse set-default-session --currentSession # Prints out current default session',
   ]
 
-  static flags = {
-    session: Flags.string({
-      char: 's',
-      description:
-        'set path to a file containing session in json format (required, unless using delete/currentSession flags)',
-    }),
-    name: Flags.string({
-      char: 'n',
-      description: 'Give a name for the default session',
-      default: 'New Default Session',
-    }),
-    currentSession: Flags.boolean({
-      char: 'c',
-      description: 'List out the current default session',
-    }),
-    target: Flags.string({
-      description:
-        'path to config file in JB2 installation directory to write out to',
-    }),
-    out: Flags.string({
-      description: 'synonym for target',
-    }),
-    delete: Flags.boolean({
-      description: 'Delete any existing default session.',
-    }),
-    help: Flags.help({
-      char: 'h',
-    }),
-  }
-
   async run() {
-    const { flags: runFlags } = await this.parse(SetDefaultSession)
-    const { session, currentSession, delete: deleteDefaultSession } = runFlags
-    const output = runFlags.target || runFlags.out || '.'
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        session: {
+          type: 'string',
+          short: 's',
+        },
+        name: {
+          type: 'string',
+          short: 'n',
+        },
+        currentSession: {
+          type: 'boolean',
+          short: 'c',
+          default: false,
+        },
+        target: {
+          type: 'string',
+        },
+        out: {
+          type: 'string',
+        },
+        delete: {
+          type: 'boolean',
+          default: false,
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const { session, currentSession, delete: deleteDefaultSession } = flags
+    const output = flags.target || flags.out || '.'
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
     const configContents: Config = await this.readJsonFile(this.target)
@@ -76,20 +84,26 @@ export default class SetDefaultSession extends JBrowseCommand {
     if (deleteDefaultSession) {
       configContents.defaultSession = undefined
       await this.writeJsonFile(this.target, configContents)
+      console.log(`Deleted default session from ${this.target}`)
     } else if (currentSession) {
-      this.log(
+      console.log(
         `The current default session is ${JSON.stringify(
           configContents.defaultSession,
+          null,
+          2,
         )}`,
       )
-      this.exit()
+      process.exit(0)
     } else if (!session) {
-      this.error('Please provide a --session file', { exit: 120 })
+      console.error('Error: Please provide a --session file')
+      process.exit(120)
     } else if (session) {
+      const sessionData = await this.readDefaultSessionFile(session)
       await this.writeJsonFile(this.target, {
         ...configContents,
-        defaultSession: await this.readDefaultSessionFile(session),
+        defaultSession: sessionData,
       })
+      console.log(`Set default session from ${session} in ${this.target}`)
     }
   }
 
@@ -100,7 +114,8 @@ export default class SetDefaultSession extends JBrowseCommand {
         encoding: 'utf8',
       })
     } catch (error) {
-      return this.error('Could not read the provided file', { exit: 150 })
+      console.error('Error: Could not read the provided file')
+      process.exit(150)
     }
 
     try {
@@ -109,9 +124,29 @@ export default class SetDefaultSession extends JBrowseCommand {
       // "File -> Export session"
       return session.session || session
     } catch (error) {
-      return this.error('Could not parse the given default session file', {
-        exit: 160,
-      })
+      console.error('Error: Could not parse the given default session file')
+      process.exit(160)
     }
+  }
+
+  showHelp() {
+    console.log(`
+${SetDefaultSessionNative.description}
+
+USAGE
+  $ jbrowse set-default-session [options]
+
+OPTIONS
+  -h, --help                Show help
+  -s, --session <session>   Set path to a file containing session in json format
+  -n, --name <name>         Give a name for the default session (default: "New Default Session")
+  -c, --currentSession      List out the current default session
+  --target <target>         Path to config file in JB2 installation directory to write out to
+  --out <out>               Synonym for target
+  --delete                  Delete any existing default session
+
+EXAMPLES
+${SetDefaultSessionNative.examples.join('\n')}
+`)
   }
 }

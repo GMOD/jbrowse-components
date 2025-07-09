@@ -1,35 +1,44 @@
 import { spawn } from 'child_process'
+import { parseArgs } from 'util'
 
-import { Args, Flags } from '@oclif/core'
 import { sync as commandExistsSync } from 'command-exists'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 
-export default class SortGff extends JBrowseCommand {
+export default class SortBedNative extends NativeCommand {
   static description =
-    'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
+    'Helper utility to sort BED files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
 
   static examples = [
-    '# sort gff and pipe to bgzip',
-    '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',
-    '$ tabix sorted.gff.gz',
+    '# sort bed and pipe to bgzip',
+    '$ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz',
+    '$ tabix sorted.bed.gz',
   ]
 
-  static args = {
-    file: Args.string({
-      required: true,
-      description: 'GFF file',
-    }),
-  }
-
-  static flags = {
-    help: Flags.help({ char: 'h' }),
-  }
-
   async run() {
-    const {
-      args: { file },
-    } = await this.parse(SortGff)
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+      },
+      allowPositionals: true,
+    })
+
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    const file = positionals[0]
+    if (!file) {
+      console.error('Error: Missing required argument: file')
+      console.error('Usage: jbrowse sort-bed <file>')
+      process.exit(1)
+    }
 
     if (
       commandExistsSync('sh') &&
@@ -37,6 +46,7 @@ export default class SortGff extends JBrowseCommand {
       commandExistsSync('grep')
     ) {
       // this command comes from the tabix docs http://www.htslib.org/doc/tabix.html
+      // BED files use columns 1,2 (0-based) for chromosome and start position
       spawn(
         'sh',
         [
@@ -49,9 +59,28 @@ export default class SortGff extends JBrowseCommand {
         },
       )
     } else {
-      throw new Error(
-        'Unable to sort, requires unix type environment with sort, grep',
+      console.error(
+        'Error: Unable to sort, requires unix type environment with sort, grep',
       )
+      process.exit(1)
     }
+  }
+
+  showHelp() {
+    console.log(`
+${SortBedNative.description}
+
+USAGE
+  $ jbrowse sort-bed <file>
+
+ARGUMENTS
+  file  BED file
+
+OPTIONS
+  -h, --help  Show help
+
+EXAMPLES
+${SortBedNative.examples.join('\n')}
+`)
   }
 }

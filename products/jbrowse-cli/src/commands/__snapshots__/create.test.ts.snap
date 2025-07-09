@@ -21,11 +21,7 @@ exports[`fails if user selects a directory that has existing files 1`] = `"This 
 exports[`fails to download a version that does not exist 1`] = `"Could not find version: "`;
 
 exports[`lists versions 1`] = `
-"  [2mconsole.log[22m
-    All JBrowse versions:
-    v0.0.1
-[2m[22m
-[2m      [2mat CreateNative.log ([22m[2mproducts/jbrowse-cli/src/commands/create-native.ts[2m:77:15)[22m[2m[22m
-
+"All JBrowse versions:
+v0.0.1
 "
 `;

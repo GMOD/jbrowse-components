@@ -43,6 +43,7 @@ export async function runNativeCommand(args: string | string[]): Promise<{ stdou
   const originalStderr = process.stderr.write
   const originalExit = process.exit
   const originalConsoleError = console.error
+  const originalConsoleLog = console.log
   
   let stdout = ''
   let stderr = ''
@@ -63,6 +64,11 @@ export async function runNativeCommand(args: string | string[]): Promise<{ stdou
     // Mock console.error to capture error messages
     console.error = (...args: any[]) => {
       stderr += args.join(' ') + '\n'
+    }
+    
+    // Mock console.log to capture log messages
+    console.log = (...args: any[]) => {
+      stdout += args.join(' ') + '\n'
     }
     
     // Mock process.exit to capture exit codes
@@ -97,6 +103,7 @@ export async function runNativeCommand(args: string | string[]): Promise<{ stdou
     process.stderr.write = originalStderr
     process.exit = originalExit
     console.error = originalConsoleError
+    console.log = originalConsoleLog
   }
   
   // If we have stderr but no error, create an error from stderr

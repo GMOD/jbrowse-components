@@ -1,10 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-
-import { Args, Flags } from '@oclif/core'
+import { parseArgs } from 'util'
 import parseJSON from 'json-parse-better-errors'
 
-import JBrowseCommand from '../base'
+import NativeCommand from '../native-base'
 
 import type { Config, Track } from '../base'
 
@@ -88,9 +87,8 @@ interface LocalPathLocation {
 
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
-export default class AddTrack extends JBrowseCommand {
-  // @ts-expect-error
-  target: string
+export default class AddTrackNative extends NativeCommand {
+  target: string = ''
 
   static description = 'Add a track to a JBrowse 2 configuration'
 
@@ -98,112 +96,117 @@ export default class AddTrack extends JBrowseCommand {
     '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
     '$ jbrowse add-track /path/to/my.bam --load copy',
     '',
-
     '# copy my.bam and my.bam.bai to /path/to/jb2/bam and adds track entry to /path/to/jb2/bam/config.json',
     '$ jbrowse add-track my.bam --load copy --out /path/to/jb2 --subDir bam',
     '',
-
     '# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai',
     '$ jbrowse add-track my.bam --indexFile my.bai --load copy',
     '',
-
     '# creates symlink for /path/to/my.bam and adds track to config.json',
     '$ jbrowse add-track /path/to/my.bam --load symlink',
     '',
-
     '# add track from URL to config.json, no --load flag needed',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     '',
-
     '# --load inPlace adds a track without doing file operations',
     '$ jbrowse add-track /url/relative/path.bam --load inPlace',
   ]
 
-  static args = {
-    track: Args.string({
-      required: true,
-      description: 'Track file or URL',
-    }),
-  }
-
-  static flags = {
-    trackType: Flags.string({
-      char: 't',
-      description: 'Type of track, by default inferred from track file',
-    }),
-    name: Flags.string({
-      char: 'n',
-      description:
-        'Name of the track. Will be defaulted to the trackId if none specified',
-    }),
-    indexFile: Flags.string({
-      description: 'Optional index file for the track',
-    }),
-    description: Flags.string({
-      char: 'd',
-      description: 'Optional description of the track',
-    }),
-    assemblyNames: Flags.string({
-      char: 'a',
-      description:
-        'Assembly name or names for track as comma separated string. If none, will default to the assembly in your config file',
-    }),
-    category: Flags.string({
-      description:
-        'Optional Comma separated string of categories to group tracks',
-    }),
-    config: Flags.string({
-      description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
-    }),
-    target: Flags.string({
-      description: 'path to config file in JB2 installation to write out to.',
-    }),
-    out: Flags.string({
-      description: 'synonym for target',
-    }),
-    subDir: Flags.string({
-      description:
-        'when using --load a file, output to a subdirectory of the target dir',
-      default: '',
-    }),
-    help: Flags.help({ char: 'h' }),
-    trackId: Flags.string({
-      description:
-        'trackId for the track, by default inferred from filename, must be unique throughout config',
-    }),
-    load: Flags.string({
-      char: 'l',
-      description:
-        'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or inPlace to leave track alone',
-      options: ['copy', 'symlink', 'move', 'inPlace'],
-    }),
-    skipCheck: Flags.boolean({
-      description:
-        'Skip check for whether or not the file or URL exists or if you are in a JBrowse directory',
-    }),
-    overwrite: Flags.boolean({
-      description: 'Overwrites existing track if it shares the same trackId',
-    }),
-    force: Flags.boolean({
-      char: 'f',
-      description: 'Equivalent to `--skipCheck --overwrite`',
-    }),
-    protocol: Flags.string({
-      description: 'Force protocol to a specific value',
-      default: 'uri',
-    }),
-    bed1: Flags.string({
-      description: 'Used only for mcscan anchors/simpleAnchors types',
-    }),
-    bed2: Flags.string({
-      description: 'Used only for mcscan anchors/simpleAnchors types',
-    }),
-  }
-
   async run() {
-    const { args: runArgs, flags: runFlags } = await this.parse(AddTrack)
+    const { values: flags, positionals } = parseArgs({
+      args: process.argv.slice(3), // Skip node, script, and command name
+      options: {
+        help: {
+          type: 'boolean',
+          short: 'h',
+          default: false,
+        },
+        trackType: {
+          type: 'string',
+          short: 't',
+        },
+        name: {
+          type: 'string',
+          short: 'n',
+        },
+        indexFile: {
+          type: 'string',
+        },
+        description: {
+          type: 'string',
+          short: 'd',
+        },
+        assemblyNames: {
+          type: 'string',
+          short: 'a',
+        },
+        category: {
+          type: 'string',
+        },
+        config: {
+          type: 'string',
+        },
+        target: {
+          type: 'string',
+        },
+        out: {
+          type: 'string',
+        },
+        subDir: {
+          type: 'string',
+        },
+        trackId: {
+          type: 'string',
+        },
+        load: {
+          type: 'string',
+          short: 'l',
+        },
+        skipCheck: {
+          type: 'boolean',
+          default: false,
+        },
+        overwrite: {
+          type: 'boolean',
+          default: false,
+        },
+        force: {
+          type: 'boolean',
+          short: 'f',
+          default: false,
+        },
+        protocol: {
+          type: 'string',
+        },
+        bed1: {
+          type: 'string',
+        },
+        bed2: {
+          type: 'string',
+        },
+      },
+      allowPositionals: true,
+    })
 
-    const { track: argsTrack } = runArgs
+    if (flags.help) {
+      this.showHelp()
+      return
+    }
+
+    // Validate load flag options
+    if (flags.load && !['copy', 'symlink', 'move', 'inPlace'].includes(flags.load)) {
+      console.error('Error: --load must be one of: copy, symlink, move, inPlace')
+      process.exit(1)
+    }
+
+    const track = positionals[0]
+    if (!track) {
+      console.error('Missing 1 required arg:')
+      console.error('track  Track file or URL')
+      console.error('See more help with --help')
+      process.exit(1)
+    }
+
     const {
       config,
       skipCheck,
@@ -212,28 +215,22 @@ export default class AddTrack extends JBrowseCommand {
       category,
       description,
       load,
-      subDir,
+      subDir = '',
       target,
-      protocol,
+      protocol = 'uri',
       out,
       indexFile: index,
       bed1,
       bed2,
-    } = runFlags
+    } = flags
 
     const output = target || out || '.'
     const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    let { trackType, trackId, name, assemblyNames } = runFlags
+    let { trackType, trackId, name, assemblyNames } = flags
 
     const configDir = path.dirname(this.target)
-    if (!argsTrack) {
-      this.error(
-        'No track provided. Example usage: jbrowse add-track yourfile.bam',
-        { exit: 120 },
-      )
-    }
 
     if (subDir) {
       const dir = path.join(configDir, subDir)
@@ -241,7 +238,7 @@ export default class AddTrack extends JBrowseCommand {
         fs.mkdirSync(dir)
       }
     }
-    const location = argsTrack
+    const location = track
 
     const mapLoc = (p: string) => {
       return !p || isUrl(p) || load === 'inPlace'
@@ -270,41 +267,43 @@ export default class AddTrack extends JBrowseCommand {
     ) {
       // @ts-expect-error
       // this is for the adapter's assembly names
-      adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
+      adapter.assemblyNames = assemblyNames?.split(',').map(a => a.trim())
     }
 
     if (isUrl(location) && load) {
-      this.error(
-        'The --load flag is used for local files only, but a URL was provided',
-        { exit: 100 },
+      console.error(
+        'Error: The --load flag is used for local files only, but a URL was provided',
       )
+      process.exit(100)
     } else if (!isUrl(location) && !load) {
-      this.error(
-        `The --load flag should be used if a local file is used, example --load
+      console.error(
+        `Error: The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are
         copy/move/symlink/inPlace (inPlace for no file operations)`,
-        { exit: 110 },
       )
+      process.exit(110)
     }
     if (adapter.type === 'UNKNOWN') {
-      this.error('Track type is not recognized', { exit: 120 })
+      console.error('Error: Track type is not recognized')
+      process.exit(120)
     }
     if (adapter.type === 'UNSUPPORTED') {
-      this.error('Track type is not supported', { exit: 130 })
+      console.error('Error: Track type is not supported')
+      process.exit(130)
     }
 
     // only add track if there is an existing config.json
     const configContents: Config = await this.readJsonFile(this.target)
 
     if (!configContents.assemblies?.length) {
-      this.error('No assemblies found. Please add one before adding tracks', {
-        exit: 150,
-      })
+      console.error('Error: No assemblies found. Please add one before adding tracks')
+      process.exit(150)
     }
     if (configContents.assemblies.length > 1 && !assemblyNames) {
-      this.error(
-        'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
+      console.error(
+        'Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
       )
+      process.exit(1)
     }
 
     // set up the track information
@@ -334,7 +333,8 @@ export default class AddTrack extends JBrowseCommand {
         // @ts-expect-error
         trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
       } else if (!skipCheck) {
-        this.error(`Failed to find assemblyName ${assemblyNames}`)
+        console.error(`Error: Failed to find assemblyName ${assemblyNames}`)
+        process.exit(1)
       }
     }
 
@@ -350,10 +350,10 @@ export default class AddTrack extends JBrowseCommand {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
       } else {
-        this.error(
-          `Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
-          { exit: 160 },
+        console.error(
+          `Error: Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
         )
+        process.exit(160)
       }
     } else {
       configContents.tracks.push(trackConfig)
@@ -381,7 +381,7 @@ export default class AddTrack extends JBrowseCommand {
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
 
-    this.log(
+    console.log(
       `${
         idx !== -1 ? 'Overwrote' : 'Added'
       } track with name "${name}" and trackId "${trackId}" ${
@@ -648,6 +648,42 @@ export default class AddTrack extends JBrowseCommand {
 
   guessTrackType(adapterType: string): string {
     return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
+  }
+
+  showHelp() {
+    console.log(`
+${AddTrackNative.description}
+
+USAGE
+  $ jbrowse add-track <track> [options]
+
+ARGUMENTS
+  track  Track file or URL
+
+OPTIONS
+  -h, --help               Show help
+  -t, --trackType <type>   Type of track, by default inferred from track file
+  -n, --name <name>        Name of the track. Will be defaulted to the trackId if none specified
+  --indexFile <file>       Optional index file for the track
+  -d, --description <desc> Optional description of the track
+  -a, --assemblyNames <names> Assembly name or names for track as comma separated string
+  --category <category>    Optional comma separated string of categories to group tracks
+  --config <config>        Any extra config settings to add to a track
+  --target <target>        Path to config file in JB2 installation to write out to
+  --out <out>              Synonym for target
+  --subDir <subDir>        When using --load a file, output to a subdirectory of the target dir
+  --trackId <trackId>      trackId for the track, by default inferred from filename
+  -l, --load <load>        How to manage the track (copy, symlink, move, inPlace)
+  --skipCheck             Skip check for whether file or URL exists
+  --overwrite             Overwrites existing track if it shares the same trackId
+  -f, --force             Equivalent to --skipCheck --overwrite
+  --protocol <protocol>    Force protocol to a specific value
+  --bed1 <bed1>           Used only for mcscan anchors/simpleAnchors types
+  --bed2 <bed2>           Used only for mcscan anchors/simpleAnchors types
+
+EXAMPLES
+${AddTrackNative.examples.join('\n')}
+`)
   }
 }
 
