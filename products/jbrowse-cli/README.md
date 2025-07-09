@@ -478,7 +478,7 @@ DESCRIPTION
 ```
 
 _See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.29/src/commands/help.ts)_
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.30/src/commands/help.ts)_
 
 ## `jbrowse make-pif FILE`
 

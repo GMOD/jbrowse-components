@@ -19,7 +19,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
-    "jbrowse": "./bin/run"
+    "jbrowse": "./bin/run",
+    "jbrowse-native": "./bin/run-native"
   },
   "files": [
     "/bin",
@@ -28,7 +29,7 @@
     "/oclif.manifest.json"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18.3.0"
   },
   "scripts": {
     "prebuild": "npm run clean",
