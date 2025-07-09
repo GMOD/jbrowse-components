@@ -2,91 +2,30 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import parseJSON from 'json-parse-better-errors'
-
 import NativeCommand from '../native-base'
+import {
+  validateLoadOption,
+  validateTrackArg,
+  validateLoadAndLocation,
+  validateAdapterType,
+  validateAssemblies,
+  validateTrackId,
+  createTargetDirectory,
+} from './add-track-utils/validators'
+import { fileOperation, destinationFn } from './add-track-utils/file-operations'
+import {
+  guessAdapter,
+  guessTrackType,
+  guessFileNames,
+} from './add-track-utils/adapter-utils'
+import {
+  mapLocationForFiles,
+  buildTrackConfig,
+  addSyntenyAssemblyNames,
+} from './add-track-utils/track-config'
 
-import type { Config, Track } from '../base'
+import type { Config } from '../base'
 
-const { copyFile, rename, symlink } = fs.promises
-const { COPYFILE_EXCL } = fs.constants
-
-function makeLocationProtocol(protocol: string) {
-  return (location: string) => {
-    if (protocol === 'uri') {
-      return {
-        uri: location,
-        locationType: 'UriLocation',
-      } as UriLocation
-    }
-    if (protocol === 'localPath') {
-      return {
-        localPath: location,
-        locationType: 'LocalPathLocation',
-      } as LocalPathLocation
-    }
-    throw new Error(`invalid protocol ${protocol}`)
-  }
-}
-
-function fileOperation({
-  srcFilename,
-  destFilename,
-  mode,
-}: {
-  srcFilename: string
-  destFilename: string
-  mode: string
-}) {
-  if (mode === 'copy') {
-    return copyFile(srcFilename, destFilename, COPYFILE_EXCL)
-  } else if (mode === 'move') {
-    return rename(srcFilename, destFilename)
-  } else if (mode === 'symlink') {
-    return symlink(path.resolve(srcFilename), destFilename)
-  }
-  return undefined
-}
-
-// get path of destination, and remove file at that path if it exists and force
-// is set
-function destinationFn({
-  destinationDir,
-  srcFilename,
-  subDir,
-  force,
-}: {
-  destinationDir: string
-  srcFilename: string
-  subDir: string
-  force: boolean
-}) {
-  const dest = path.resolve(
-    path.join(destinationDir, subDir, path.basename(srcFilename)),
-  )
-  if (force) {
-    try {
-      fs.unlinkSync(dest)
-    } catch (e) {
-      /* unconditionally unlinkSync, due to
-       * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
-       * and https://github.com/GMOD/jbrowse-components/issues/2768 */
-    }
-  }
-  return dest
-}
-
-interface UriLocation {
-  uri: string
-  locationType: 'UriLocation'
-}
-
-interface LocalPathLocation {
-  localPath: string
-  locationType: 'LocalPathLocation'
-}
-
-const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export default class AddTrackNative extends NativeCommand {
   target = ''
@@ -194,24 +133,10 @@ export default class AddTrackNative extends NativeCommand {
       return
     }
 
-    // Validate load flag options
-    if (
-      flags.load &&
-      !['copy', 'symlink', 'move', 'inPlace'].includes(flags.load)
-    ) {
-      console.error(
-        'Error: --load must be one of: copy, symlink, move, inPlace',
-      )
-      process.exit(1)
-    }
+    validateLoadOption(flags.load)
 
     const track = positionals[0]
-    if (!track) {
-      console.error('Missing 1 required arg:')
-      console.error('track  Track file or URL')
-      console.error('See more help with --help')
-      process.exit(1)
-    }
+    validateTrackArg(track)
 
     const {
       config,
@@ -238,21 +163,12 @@ export default class AddTrackNative extends NativeCommand {
 
     const configDir = path.dirname(this.target)
 
-    if (subDir) {
-      const dir = path.join(configDir, subDir)
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir)
-      }
-    }
+    createTargetDirectory(configDir, subDir)
     const location = track
 
-    const mapLoc = (p: string) => {
-      return !p || isUrl(p) || load === 'inPlace'
-        ? p
-        : path.join(subDir, path.basename(p))
-    }
+    const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
 
-    const adapter = this.guessAdapter({
+    let adapter = guessAdapter({
       protocol,
       location: mapLoc(location),
       index: index ? mapLoc(index) : undefined,
@@ -260,116 +176,46 @@ export default class AddTrackNative extends NativeCommand {
       bed2: bed2 ? mapLoc(bed2) : undefined,
     })
 
-    if (
-      [
-        'PAFAdapter',
-        'PairwiseIndexedPAFAdapter',
-        'DeltaAdapter',
-        'ChainAdapter',
-        'MashMapAdapter',
-        'MCScanAnchorsAdapter',
-        'MCScanSimpleAnchorsAdapter',
-      ].includes(adapter.type)
-    ) {
-      // @ts-expect-error
-      // this is for the adapter's assembly names
-      adapter.assemblyNames = assemblyNames?.split(',').map(a => a.trim())
-    }
+    adapter = addSyntenyAssemblyNames(adapter, assemblyNames)
 
-    if (isUrl(location) && load) {
-      console.error(
-        'Error: The --load flag is used for local files only, but a URL was provided',
-      )
-      process.exit(100)
-    } else if (!isUrl(location) && !load) {
-      console.error(
-        `Error: The --load flag should be used if a local file is used, example --load
-        copy to copy the file into the config directory. Options for load are
-        copy/move/symlink/inPlace (inPlace for no file operations)`,
-      )
-      process.exit(110)
-    }
-    if (adapter.type === 'UNKNOWN') {
-      console.error('Error: Track type is not recognized')
-      process.exit(120)
-    }
-    if (adapter.type === 'UNSUPPORTED') {
-      console.error('Error: Track type is not supported')
-      process.exit(130)
-    }
+    validateLoadAndLocation(location, load)
+    validateAdapterType(adapter.type)
 
-    // only add track if there is an existing config.json
     const configContents: Config = await this.readJsonFile(this.target)
+    validateAssemblies(configContents, assemblyNames)
 
-    if (!configContents.assemblies?.length) {
-      console.error(
-        'Error: No assemblies found. Please add one before adding tracks',
-      )
-      process.exit(150)
-    }
-    if (configContents.assemblies.length > 1 && !assemblyNames) {
-      console.error(
-        'Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
-      )
-      process.exit(1)
-    }
-
-    // set up the track information
-    trackType = trackType || this.guessTrackType(adapter.type)
+    trackType = trackType || guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
-    assemblyNames = assemblyNames || configContents.assemblies[0]?.name || ''
+    assemblyNames = assemblyNames || configContents.assemblies?.[0]?.name || ''
 
-    const configObj = config ? parseJSON(config) : {}
-    const trackConfig: Track = {
-      type: trackType,
+    const trackConfig = buildTrackConfig({
+      location,
+      trackType,
       trackId,
       name,
-      adapter,
-      category: category?.split(',').map(c => c.trim()),
-      assemblyNames: assemblyNames.split(',').map(a => a.trim()),
+      assemblyNames,
+      category,
       description,
-      ...configObj,
-    }
+      config,
+      adapter,
+      configContents,
+      skipCheck,
+    })
 
-    // any special track modifications go here
-    if (trackType === 'AlignmentsTrack') {
-      const assembly = configContents.assemblies.find(
-        asm => asm.name === assemblyNames,
-      )
-      if (assembly) {
-        // @ts-expect-error
-        trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
-      } else if (!skipCheck) {
-        console.error(`Error: Failed to find assemblyName ${assemblyNames}`)
-        process.exit(1)
-      }
-    }
-
-    if (!configContents.tracks) {
-      configContents.tracks = []
-    }
-
-    const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
+    const idx = validateTrackId(configContents, trackId, force, overwrite)
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
-      if (force || overwrite) {
-        this.debug(`Overwriting track ${trackId} in configuration`)
-        configContents.tracks[idx] = trackConfig
-      } else {
-        console.error(
-          `Error: Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
-        )
-        process.exit(160)
-      }
+      this.debug(`Overwriting track ${trackId} in configuration`)
+      configContents.tracks![idx] = trackConfig
     } else {
-      configContents.tracks.push(trackConfig)
+      configContents.tracks!.push(trackConfig)
     }
 
     if (load && load !== 'inPlace') {
       await Promise.all(
-        Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
+        Object.values(guessFileNames({ location, index, bed1, bed2 }))
           .filter(f => !!f)
           .map(srcFilename =>
             fileOperation({
@@ -398,265 +244,6 @@ export default class AddTrackNative extends NativeCommand {
     )
   }
 
-  guessFileNames({
-    location,
-    index,
-    bed1,
-    bed2,
-  }: {
-    location: string
-    index?: string
-    bed1?: string
-    bed2?: string
-  }) {
-    if (/\.anchors(.simple)?$/i.test(location)) {
-      return {
-        file: location,
-        bed1: bed1!,
-        bed2: bed2!,
-      }
-    } else if (/\.bam$/i.test(location)) {
-      return {
-        file: location,
-        index: index || `${location}.bai`,
-      }
-    } else if (/\.cram$/i.test(location)) {
-      return {
-        file: location,
-        index: index || `${location}.crai`,
-      }
-    } else if (
-      /\.gff3?\.b?gz$/i.test(location) ||
-      /\.vcf\.b?gz$/i.test(location) ||
-      /\.bed\.b?gz$/i.test(location) ||
-      /\.pif\.b?gz$/i.test(location)
-    ) {
-      return {
-        file: location,
-        index: index || `${location}.tbi`,
-      }
-    } else if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
-      return {
-        file: location,
-        index: index || `${location}.fai`,
-      }
-    } else if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
-      return {
-        file: location,
-        index: `${location}.fai`,
-        index2: `${location}.gzi`,
-      }
-    } else if (
-      /\.2bit$/i.test(location) ||
-      /\.bedpe(\.gz)?$/i.test(location) ||
-      /\/trackData.jsonz?$/i.test(location) ||
-      /\/sparql$/i.test(location) ||
-      /\.out(\.gz)?$/i.test(location) ||
-      /\.paf(\.gz)?$/i.test(location) ||
-      /\.delta(\.gz)?$/i.test(location) ||
-      /\.bed?$/i.test(location) ||
-      /\.(bw|bigwig)$/i.test(location) ||
-      /\.(bb|bigbed)$/i.test(location) ||
-      /\.vcf$/i.test(location) ||
-      /\.gtf?$/i.test(location) ||
-      /\.gff3?$/i.test(location) ||
-      /\.chain(\.gz)?$/i.test(location) ||
-      /\.hic$/i.test(location)
-    ) {
-      return {
-        file: location,
-      }
-    }
-
-    return {}
-  }
-
-  // find way to import this instead of having to paste it
-  guessAdapter({
-    location,
-    protocol,
-    index,
-    bed1,
-    bed2,
-  }: {
-    location: string
-    protocol: string
-    index?: string
-    bed1?: string
-    bed2?: string
-  }) {
-    const makeLocation = makeLocationProtocol(protocol)
-    if (/\.bam$/i.test(location)) {
-      return {
-        type: 'BamAdapter',
-        bamLocation: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.bai`),
-          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
-        },
-      }
-    } else if (/\.cram$/i.test(location)) {
-      return {
-        type: 'CramAdapter',
-        cramLocation: makeLocation(location),
-        craiLocation: makeLocation(`${location}.crai`),
-      }
-    } else if (/\.gff3?$/i.test(location)) {
-      return {
-        type: 'Gff3Adapter',
-        gffLocation: makeLocation(location),
-      }
-    } else if (/\.gff3?\.b?gz$/i.test(location)) {
-      return {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.tbi`),
-          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-        },
-      }
-    } else if (/\.gtf?$/i.test(location)) {
-      return {
-        type: 'GtfAdapter',
-        gtfLocation: makeLocation(location),
-      }
-    } else if (/\.vcf$/i.test(location)) {
-      return {
-        type: 'VcfAdapter',
-        vcfLocation: makeLocation(location),
-      }
-    } else if (/\.vcf\.b?gz$/i.test(location)) {
-      return {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.tbi`),
-          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-        },
-      }
-    } else if (/\.vcf\.idx$/i.test(location)) {
-      return {
-        type: 'UNSUPPORTED',
-      }
-    } else if (/\.bedpe(.gz)?$/i.test(location)) {
-      return {
-        type: 'BedpeAdapter',
-        bedpeLocation: makeLocation(location),
-      }
-    } else if (/\.bed$/i.test(location)) {
-      return {
-        type: 'BedAdapter',
-        bedLocation: makeLocation(location),
-      }
-    } else if (/\.pif\.b?gz$/i.test(location)) {
-      return {
-        type: 'PairwiseIndexedPAFAdapter',
-        pifGzLocation: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.tbi`),
-          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-        },
-      }
-    } else if (/\.bed\.b?gz$/i.test(location)) {
-      return {
-        type: 'BedTabixAdapter',
-        bedGzLocation: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.tbi`),
-          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-        },
-      }
-    } else if (/\.(bb|bigbed)$/i.test(location)) {
-      return {
-        type: 'BigBedAdapter',
-        bigBedLocation: makeLocation(location),
-      }
-    } else if (/\.(bw|bigwig)$/i.test(location)) {
-      return {
-        type: 'BigWigAdapter',
-        bigWigLocation: makeLocation(location),
-      }
-    } else if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: makeLocation(location),
-        faiLocation: makeLocation(index || `${location}.fai`),
-      }
-    } else if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
-      return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(location),
-        faiLocation: makeLocation(`${location}.fai`),
-        gziLocation: makeLocation(`${location}.gzi`),
-      }
-    } else if (/\.2bit$/i.test(location)) {
-      return {
-        type: 'TwoBitAdapter',
-        twoBitLocation: makeLocation(location),
-      }
-    } else if (/\.sizes$/i.test(location)) {
-      return {
-        type: 'UNSUPPORTED',
-      }
-    } else if (/\/trackData.jsonz?$/i.test(location)) {
-      return {
-        type: 'NCListAdapter',
-        rootUrlTemplate: makeLocation(location),
-      }
-    } else if (/\/sparql$/i.test(location)) {
-      return {
-        type: 'SPARQLAdapter',
-        endpoint: location,
-      }
-    } else if (/\.hic$/i.test(location)) {
-      return {
-        type: 'HicAdapter',
-        hicLocation: makeLocation(location),
-      }
-    } else if (/\.paf(.gz)?$/i.test(location)) {
-      return {
-        type: 'PAFAdapter',
-        pafLocation: makeLocation(location),
-      }
-    } else if (/\.out(.gz)?$/i.test(location)) {
-      return {
-        type: 'MashMapAdapter',
-        outLocation: makeLocation(location),
-      }
-    } else if (/\.chain(.gz)?$/i.test(location)) {
-      return {
-        type: 'ChainAdapter',
-        chainLocation: makeLocation(location),
-      }
-    } else if (/\.delta(.gz)?$/i.test(location)) {
-      return {
-        type: 'DeltaAdapter',
-        deltaLocation: makeLocation(location),
-      }
-    } else if (/\.anchors(.gz)?$/i.test(location)) {
-      return {
-        type: 'MCScanAnchorsAdapter',
-        mcscanAnchorsLocation: makeLocation(location),
-        bed1Location: bed1 ? makeLocation(bed1) : undefined,
-        bed2Location: bed2 ? makeLocation(bed2) : undefined,
-      }
-    } else if (/\.anchors.simple(.gz)?$/i.test(location)) {
-      return {
-        type: 'MCScanSimpleAnchorsAdapter',
-        mcscanSimpleAnchorsLocation: makeLocation(location),
-        bed1Location: bed1 ? makeLocation(bed1) : undefined,
-        bed2Location: bed2 ? makeLocation(bed2) : undefined,
-      }
-    }
-
-    return {
-      type: 'UNKNOWN',
-    }
-  }
-
-  guessTrackType(adapterType: string): string {
-    return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
-  }
 
   showHelp() {
     console.log(`
@@ -693,25 +280,4 @@ EXAMPLES
 ${AddTrackNative.examples.join('\n')}
 `)
   }
-}
-
-const adapterTypesToTrackTypeMap: Record<string, string> = {
-  BamAdapter: 'AlignmentsTrack',
-  CramAdapter: 'AlignmentsTrack',
-  BgzipFastaAdapter: 'ReferenceSequenceTrack',
-  BigWigAdapter: 'QuantitativeTrack',
-  IndexedFastaAdapter: 'ReferenceSequenceTrack',
-  TwoBitAdapter: 'ReferenceSequenceTrack',
-  VcfTabixAdapter: 'VariantTrack',
-  VcfAdapter: 'VariantTrack',
-  BedpeAdapter: 'VariantTrack',
-  BedAdapter: 'FeatureTrack',
-  HicAdapter: 'HicTrack',
-  PAFAdapter: 'SyntenyTrack',
-  DeltaAdapter: 'SyntenyTrack',
-  ChainAdapter: 'SyntenyTrack',
-  MashMapAdapter: 'SyntenyTrack',
-  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-  MCScanAnchorsAdapter: 'SyntenyTrack',
-  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
 }

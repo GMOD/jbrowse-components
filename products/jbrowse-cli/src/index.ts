@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import path from 'path'
+import fs from 'fs'
 import { parseArgs } from 'util'
 
 // Command imports
@@ -34,7 +35,7 @@ const commands = {
   'set-default-session': SetDefaultSession,
 }
 
-async function main(args: string[]) {
+export async function main(args: string[]) {
   try {
     const { values: flags, positionals } = parseArgs({
       args,
@@ -61,7 +62,6 @@ async function main(args: string[]) {
     }
 
     if (flags.version && positionals.length === 0) {
-      const fs = await import('fs')
       const packageJson = JSON.parse(
         fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'),
       )
@@ -124,10 +124,3 @@ OPTIONS
 Use "jbrowse <command> --help" for more information about a command.
 `)
 }
-
-// Check if this file is being run directly
-if (typeof require !== 'undefined' && require.main === module) {
-  main(process.argv.slice(2)).catch(console.error)
-}
-
-export { main }
