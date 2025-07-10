@@ -3,16 +3,20 @@ import { useState } from 'react'
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
 import { Button } from '@mui/material'
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
+import { isStateTreeNode } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import FileInfoPanel from './FileInfoPanel'
 import RefNameInfoDialog from './RefNameInfoDialog'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+// locals
 
 const useStyles = makeStyles()({
   content: {
@@ -36,12 +40,13 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
 
 const AboutDialogContents = observer(function ({
   config,
+  session,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
 }) {
   const [copied, setCopied] = useState(false)
-  const conf = readConfObject(config)
-  const session = getSession(config)
+  const conf = isStateTreeNode(config) ? readConfObject(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
@@ -120,9 +125,10 @@ const AboutDialogContents = observer(function ({
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfoPanel config={config} />
+      <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog
+          session={session}
           config={config}
           onClose={() => {
             setShowRefNames(false)
