@@ -5,10 +5,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
-import { readConf, runInTmpDir } from '../testUtil'
+import { readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
 
@@ -30,9 +29,6 @@ async function copyConf(ctx: { dir: string }) {
   )
 }
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 beforeAll(() => (Date.now = jest.fn(() => 1)))
 
 test('fails if no config file', async () => {

@@ -24,6 +24,7 @@ export default tseslint.config(
       'products/**/webpack.config.js',
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',
+      'products/jbrowse-cli/bundle/**',
       'products/jbrowse-desktop/scripts/notarize.js',
       'auth_test_utils/**/*',
       'component_tests/**/*',

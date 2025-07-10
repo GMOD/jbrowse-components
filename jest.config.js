@@ -40,8 +40,4 @@ module.exports = {
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
   testEnvironment: 'jsdom',
-
-  // verbose true is needed for oclif jest tests due to
-  // https://github.com/oclif/core/issues/1185
-  verbose: true,
 }

@@ -1,11 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`fails if no track ids are provided with --tracks flag. 1`] = `"Flag --tracks expects a value"`;
+exports[`fails if no track ids are provided with --tracks flag. 1`] = `"Error: TypeError [ERR_PARSE_ARGS_INVALID_OPTION_VALUE]: Option '--tracks <value>' argument missing"`;
 
-exports[`fails if there is an invalid flag 1`] = `
-"Nonexistent flag: --Command
-See more help with --help"
-`;
+exports[`fails if there is an invalid flag 1`] = `"Error: TypeError [ERR_PARSE_ARGS_UNKNOWN_OPTION]: Unknown option '--Command'"`;
 
 exports[`indexes a local gz gff3 file 1`] = `
 "agt221.3 ["ctgA%3A7500..8000"|"gff3tabix_genes"|"agt221.3"|"Match4"],1
