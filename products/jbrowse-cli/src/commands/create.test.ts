@@ -7,7 +7,7 @@ import path from 'path'
 
 import nock from 'nock'
 
-import { runInTmpDir, runCommand } from '../testUtil'
+import { runCommand, runInTmpDir } from '../testUtil'
 
 const { readdir } = fs.promises
 

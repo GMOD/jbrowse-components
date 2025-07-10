@@ -19,25 +19,14 @@ interface Config {
 }
 
 async function readDefaultSessionFile(defaultSessionFile: string) {
-  let defaultSessionJson: string
-  try {
-    defaultSessionJson = await fsPromises.readFile(defaultSessionFile, {
-      encoding: 'utf8',
-    })
-  } catch (error) {
-    console.error('Error: Could not read the provided file')
-    process.exit(150)
-  }
+  const defaultSessionJson = await fsPromises.readFile(defaultSessionFile, {
+    encoding: 'utf8',
+  })
 
-  try {
-    const session = parseJSON(defaultSessionJson)
-    // return top-level "session" if it exists, such as in files created by
-    // "File -> Export session"
-    return session.session || session
-  } catch (error) {
-    console.error('Error: Could not parse the given default session file')
-    process.exit(160)
-  }
+  const session = parseJSON(defaultSessionJson)
+  // return top-level "session" if it exists, such as in files created by
+  // "File -> Export session"
+  return session.session || session
 }
 
 export async function run(args?: string[]) {

@@ -1,7 +1,6 @@
 import { parseArgs } from 'util'
 
 import { debug, printHelp } from '../utils'
-
 import {
   addAssemblyToConfig,
   enhanceAssembly,

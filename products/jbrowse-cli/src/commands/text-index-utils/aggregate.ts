@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { readConf, writeConf, getTrackConfigs } from './config-utils'
+import { getTrackConfigs, readConf, writeConf } from './config-utils'
 import { indexDriver } from './indexing-utils'
 
 import type { TrixTextSearchAdapter } from '../../base'
@@ -41,11 +41,7 @@ export async function aggregateIndex(flags: any) {
   }
 
   for (const asm of asms) {
-    const trackConfigs = await getTrackConfigs(
-      confPath,
-      tracks?.split(','),
-      asm,
-    )
+    const trackConfigs = getTrackConfigs(confPath, tracks?.split(','), asm)
     if (!trackConfigs.length) {
       console.log(`Indexing assembly ${asm}...(no tracks found)...`)
       continue

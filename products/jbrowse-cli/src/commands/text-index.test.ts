@@ -7,7 +7,7 @@ import path from 'path'
 
 import nock from 'nock'
 
-import { dataDir, runInTmpDir, runCommand } from '../testUtil'
+import { dataDir, runCommand, runInTmpDir } from '../testUtil'
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(

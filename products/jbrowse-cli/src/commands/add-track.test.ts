@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { ctxDir, readConf, runInTmpDir, runCommand } from '../testUtil'
+import { ctxDir, readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises
 

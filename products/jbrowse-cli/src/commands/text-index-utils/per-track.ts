@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { createPerTrackTrixAdapter } from './adapter-utils'
-import { readConf, writeConf, getTrackConfigs } from './config-utils'
+import { getTrackConfigs, readConf, writeConf } from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { validateAssembliesForPerTrack } from './validators'
 
@@ -30,7 +30,7 @@ export async function perTrackIndex(flags: any) {
     fs.mkdirSync(trixDir)
   }
   validateAssembliesForPerTrack(assemblies)
-  const confs = await getTrackConfigs(confFilePath, tracks?.split(','))
+  const confs = getTrackConfigs(confFilePath, tracks?.split(','))
   if (!confs.length) {
     throw new Error(
       'Tracks not found in config.json, please add track configurations before indexing.',

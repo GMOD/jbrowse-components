@@ -12,8 +12,8 @@ import {
   dataDir,
   readConf,
   readConfAlt,
-  runInTmpDir,
   runCommand,
+  runInTmpDir,
 } from '../testUtil'
 
 const { copyFile, writeFile, mkdir } = fs.promises

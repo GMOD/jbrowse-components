@@ -1,10 +1,12 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { debug, printHelp } from '../utils'
+import { printHelp } from '../utils'
 import { guessAdapter } from './add-track-utils/adapter-utils'
-import { mapLocationForFiles } from './add-track-utils/track-config'
-import { addSyntenyAssemblyNames } from './add-track-utils/track-config'
+import {
+  addSyntenyAssemblyNames,
+  mapLocationForFiles,
+} from './add-track-utils/track-config'
 import {
   createTargetDirectory,
   validateAdapterType,

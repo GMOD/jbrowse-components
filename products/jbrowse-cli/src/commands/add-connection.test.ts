@@ -7,7 +7,7 @@ import path from 'path'
 
 import nock from 'nock'
 
-import { readConf, runInTmpDir, runCommand } from '../testUtil'
+import { readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
 
