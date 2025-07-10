@@ -2,4 +2,6 @@
 
 import { main } from './index'
 
-await main(process.argv.slice(2))
+main(process.argv.slice(2)).catch((e: unknown) => {
+  console.error(e)
+})
