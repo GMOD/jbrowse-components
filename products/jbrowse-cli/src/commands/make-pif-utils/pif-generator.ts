@@ -53,17 +53,15 @@ export async function createPIF(
 
 export function spawnSortProcess(outputFile: string, useCsi: boolean) {
   // Use a more portable approach to avoid E2BIG errors
-  const sortCommand = 'sort -t\t -k1,1 -k3,3n'
-  const bgzipCommand = `bgzip > ${outputFile}`
-  const tabixCommand = `tabix ${useCsi ? '-C ' : ''}-s1 -b3 -e4 -0 ${outputFile}`
-  const fullCommand = `${sortCommand} | ${bgzipCommand}; ${tabixCommand}`
 
-  // Minimize environment variables to avoid E2BIG errors
+  const sortCmd = `sort -t"\`printf '\\t'\`" -k1,1 -k3,3n`
+  const bgzipCommand = `bgzip > "${outputFile}"`
+  const tabixCommand = `tabix ${useCsi ? '-C ' : ''}-s1 -b3 -e4 -0 "${outputFile}"`
+  const fullCommand = `${sortCmd} | ${bgzipCommand}; ${tabixCommand}`
   const minimalEnv = {
     ...process.env,
     LC_ALL: 'C',
   }
-
   return spawn('sh', ['-c', fullCommand], {
     env: minimalEnv,
     stdio: ['pipe', process.stdout, process.stderr],

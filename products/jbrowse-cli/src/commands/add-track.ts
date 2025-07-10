@@ -8,7 +8,7 @@ import {
   guessFileNames,
   guessTrackType,
 } from './add-track-utils/adapter-utils'
-import { destinationFn, fileOperation } from './add-track-utils/file-operations'
+import { loadFile } from './add-track-utils/file-operations'
 import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
@@ -232,20 +232,17 @@ export async function run(args?: string[]) {
     configContents.tracks!.push(trackConfig)
   }
 
-  if (load && load !== 'inPlace') {
+  if (load) {
     await Promise.all(
       Object.values(guessFileNames({ location, index, bed1, bed2 }))
         .filter(f => !!f)
-        .map(srcFilename =>
-          fileOperation({
+        .map(src =>
+          loadFile({
+            src,
+            destDir: configDir,
             mode: load,
-            srcFilename,
-            destFilename: destinationFn({
-              destinationDir: configDir,
-              srcFilename,
-              force,
-              subDir,
-            }),
+            subDir,
+            force,
           }),
         ),
     )

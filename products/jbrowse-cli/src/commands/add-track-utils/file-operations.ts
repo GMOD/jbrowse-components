@@ -1,50 +1,44 @@
 import fs from 'fs'
 import path from 'path'
 
-const { copyFile, rename, symlink } = fs.promises
+const { copyFile, rename, symlink, unlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
-export function fileOperation({
-  srcFilename,
-  destFilename,
+export async function loadFile({
+  src,
+  destDir,
   mode,
+  subDir = '',
+  force = false,
 }: {
-  srcFilename: string
-  destFilename: string
+  src: string
+  destDir: string
   mode: string
-}) {
-  if (mode === 'copy') {
-    return copyFile(srcFilename, destFilename, COPYFILE_EXCL)
-  } else if (mode === 'move') {
-    return rename(srcFilename, destFilename)
-  } else if (mode === 'symlink') {
-    return symlink(path.resolve(srcFilename), destFilename)
-  }
-  return undefined
-}
-
-export function destinationFn({
-  destinationDir,
-  srcFilename,
-  subDir,
-  force,
-}: {
-  destinationDir: string
-  srcFilename: string
-  subDir: string
+  subDir?: string
   force?: boolean
 }) {
-  const dest = path.resolve(
-    path.join(destinationDir, subDir, path.basename(srcFilename)),
-  )
+  if (mode === 'inPlace') {
+    return
+  }
+  const dest = path.join(destDir, subDir, path.basename(src))
   if (force) {
     try {
-      fs.unlinkSync(dest)
-    } catch (e) {
-      /* unconditionally unlinkSync, due to
-       * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
-       * and https://github.com/GMOD/jbrowse-components/issues/2768 */
+      await unlink(dest)
+    } catch (e: any) {
+      if (e.code !== 'ENOENT') {
+        throw e
+      }
     }
   }
-  return dest
+
+  if (mode === 'copy') {
+    return copyFile(src, dest, force ? 0 : COPYFILE_EXCL)
+  }
+  if (mode === 'move') {
+    return rename(src, dest)
+  }
+  if (mode === 'symlink') {
+    return symlink(path.resolve(src), dest)
+  }
+  return undefined
 }
