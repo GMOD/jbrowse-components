@@ -1,19 +1,10 @@
-import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { debug, printHelp, readJsonFile, writeJsonFile } from '../utils'
-import {
-  guessAdapter,
-  guessFileNames,
-  guessTrackType,
-} from './add-track-utils/adapter-utils'
-import { loadFile } from './add-track-utils/file-operations'
-import {
-  addSyntenyAssemblyNames,
-  buildTrackConfig,
-  mapLocationForFiles,
-} from './add-track-utils/track-config'
+import { debug, printHelp } from '../utils'
+import { guessAdapter } from './add-track-utils/adapter-utils'
+import { mapLocationForFiles } from './add-track-utils/track-config'
+import { addSyntenyAssemblyNames } from './add-track-utils/track-config'
 import {
   createTargetDirectory,
   validateAdapterType,
@@ -21,8 +12,16 @@ import {
   validateLoadAndLocation,
   validateLoadOption,
   validateTrackArg,
-  validateTrackId,
 } from './add-track-utils/validators'
+import {
+  addTrackToConfig,
+  buildTrackParams,
+  createTrackConfiguration,
+  loadTrackConfig,
+  processTrackFiles,
+  resolveTrackConfigPath,
+  saveTrackConfigAndReport,
+} from './track-utils'
 
 import type { Config } from '../base'
 
@@ -175,9 +174,7 @@ export async function run(args?: string[]) {
   } = flags
 
   const output = target || out || '.'
-  const isDir = fs.lstatSync(output).isDirectory()
-  const targetConfigPath = isDir ? `${output}/config.json` : output
-
+  const targetConfigPath = resolveTrackConfigPath(output)
   const configDir = path.dirname(targetConfigPath)
 
   createTargetDirectory(configDir, subDir)
@@ -198,62 +195,48 @@ export async function run(args?: string[]) {
   validateLoadAndLocation(location, load)
   validateAdapterType(adapter.type)
 
-  const configContents: Config = await readJsonFile(targetConfigPath)
+  const configContents: Config = await loadTrackConfig(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
-  const trackType = flags.trackType || guessTrackType(adapter.type)
-  const trackId =
-    flags.trackId || path.basename(location, path.extname(location))
-  const name = flags.name || trackId
-  const assemblyNames =
-    flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
-
-  const trackConfig = buildTrackConfig({
+  const trackParams = buildTrackParams({
+    flags,
     location,
-    trackType,
-    trackId,
-    name,
-    assemblyNames,
-    category,
-    description: trackDescription,
-    config,
+    adapter,
+    configContents,
+  })
+  const trackConfig = createTrackConfiguration({
+    location,
+    trackParams,
+    flags: { category, description: trackDescription, config },
     adapter,
     configContents,
     skipCheck,
   })
 
-  const idx = validateTrackId(configContents, trackId, force, overwrite)
+  const { updatedConfig, wasOverwritten } = addTrackToConfig({
+    configContents,
+    trackConfig,
+    trackId: trackParams.trackId,
+    force,
+    overwrite,
+  })
 
-  if (idx !== -1) {
-    debug(`Found existing trackId ${trackId} in configuration`)
-    debug(`Overwriting track ${trackId} in configuration`)
-    configContents.tracks![idx] = trackConfig
-  } else {
-    configContents.tracks!.push(trackConfig)
-  }
+  await processTrackFiles({
+    location,
+    index,
+    bed1,
+    bed2,
+    load,
+    configDir,
+    subDir,
+    force,
+  })
 
-  if (load) {
-    await Promise.all(
-      Object.values(guessFileNames({ location, index, bed1, bed2 }))
-        .filter(f => !!f)
-        .map(src =>
-          loadFile({
-            src,
-            destDir: configDir,
-            mode: load,
-            subDir,
-            force,
-          }),
-        ),
-    )
-  }
-
-  debug(`Writing configuration to file ${targetConfigPath}`)
-  await writeJsonFile(targetConfigPath, configContents)
-
-  console.log(
-    `${idx !== -1 ? 'Overwrote' : 'Added'} track with name "${name}" and trackId "${trackId}" ${
-      idx !== -1 ? 'in' : 'to'
-    } ${targetConfigPath}`,
-  )
+  await saveTrackConfigAndReport({
+    config: updatedConfig,
+    targetConfigPath,
+    name: trackParams.name,
+    trackId: trackParams.trackId,
+    wasOverwritten,
+  })
 }
