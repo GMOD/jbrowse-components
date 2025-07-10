@@ -35,18 +35,20 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse sort-gff <file> [options]',
+      usage: 'jbrowse sort-gff [file] [options]',
       options,
     })
     return
   }
 
   const file = positionals[0]
-  validateFileArgument(file)
+  if (file) {
+    validateFileArgument(file)
+  }
   validateRequiredCommands()
 
   try {
-    const child = spawnSortProcess({ file })
+    const child = spawnSortProcess({ file: file || '-' })
     const exitCode = await waitForProcessClose(child)
 
     if (exitCode !== 0) {

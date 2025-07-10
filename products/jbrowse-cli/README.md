@@ -335,7 +335,7 @@ $ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates 
 ```
 Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
 
-Usage: jbrowse sort-gff <file> [options]
+Usage: jbrowse sort-gff [file] [options]
 
 Options:
   -h, --help                    undefined
@@ -353,7 +353,7 @@ $ cat input.gff | jbrowse sort-gff | bgzip > sorted.gff.gz
 ```
 Helper utility to sort BED files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
 
-Usage: jbrowse sort-bed <file> [options]
+Usage: jbrowse sort-bed [file] [options]
 
 Options:
   -h, --help                    undefined
@@ -361,6 +361,8 @@ Options:
 # sort bed and pipe to bgzip
 $ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz
 $ tabix sorted.bed.gz
+
+# OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
 
 ## jbrowse add-connection
@@ -428,16 +430,16 @@ $ jbrowse remove-track trackId
 ```
 Set a default session with views and tracks
 
-Usage: jbrowse set-default-session [options]
+Usage: jbrowse add-track <track> [options]
 
 Options:
-  -h, --help                    undefined
-  -s, --session                 Set path to a file containing session in json format
-  -n, --name                    Give a name for the default session (default: "New Default Session")
+  -s, --session                 set path to a file containing session in json format (required, unless using delete/currentSession flags)
+  -n, --name                    Give a name for the default session
   -c, --currentSession          List out the current default session
-     , --target                  Path to config file in JB2 installation directory to write out to
-     , --out                     Synonym for target
-     , --delete                  Delete any existing default session
+     , --target                  path to config file in JB2 installation directory to write out to
+     , --out                     synonym for target
+     , --delete                  Delete any existing default session.
+  -h, --help                    Show help
 
 # set default session for the config.json in your current directory
 $ jbrowse set-default-session --session /path/to/default/session.json

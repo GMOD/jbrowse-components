@@ -1,9 +1,13 @@
 import { sync as commandExistsSync } from 'command-exists'
 
 export function validateFileArgument(file?: string): void {
-  if (!file) {
+  // Allow no file argument for stdin input
+  if (!file && process.stdin.isTTY) {
     console.error('Error: Missing required argument: file')
     console.error('Usage: jbrowse sort-bed <file>')
+    console.error(
+      '       OR pipe data via stdin: cat file.bed | jbrowse sort-bed',
+    )
     process.exit(1)
   }
 }
