@@ -22,15 +22,6 @@ this is a config model representing a config.json (for jbrowse-web) or
 somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse
 extension)
 
-includes
-
-- [FormatDetails](../formatdetails) for global (instead of per-track) feature
-  detail formatters
-- [FormatAbout](../formatabout) for global (instead of per-track) about track
-  formatters
-- [HierarchicalConfigSchema](../hierarchicalconfigschema) for track selector
-  configs
-
 also includes any pluginManager.pluginConfigurationSchemas(), so plugins that
 have a configurationSchema field on their class are mixed into this object
 

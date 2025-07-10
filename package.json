@@ -22,7 +22,7 @@
     "test": "jest",
     "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node --experimental-strip-types docs/generateConfigDocs.ts",
     "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node --experimental-strip-types docs/generateStateModelDocs.ts",
-    "autogen": "yarn statedocs && yarn configdocs && yarn prettier --write website",
+    "autogen": "yarn statedocs && yarn configdocs && yarn format",
     "releasenotes": "yarn prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
     "copynotes": "yarn --silent releasenotes | xclip -selection clipboard"
   },

@@ -87,6 +87,15 @@ controlled by a reaction
 setMessage: (messageText: string) => void
 ```
 
+#### action: setLoadingStatus
+
+controlled by a reaction
+
+```js
+// type signature
+setLoadingStatus: (messageText: string) => void
+```
+
 #### action: setRendered
 
 controlled by a reaction
