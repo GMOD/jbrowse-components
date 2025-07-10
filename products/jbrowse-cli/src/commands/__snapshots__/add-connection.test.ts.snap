@@ -57,10 +57,7 @@ exports[`fails to add a duplicate connection 1`] = `
 Use --overwrite if you would like to replace the existing connection"
 `;
 
-exports[`fails when fetching from url fails 1`] = `
-"Error: Response returned with code 500
-Error: Unable to fetch from URL, Error: EXIT_MOCK"
-`;
+exports[`fails when fetching from url fails 1`] = `"Error: Unable to fetch from URL, Error: HTTP 500 fetching https://mysite.com/notafile.txt"`;
 
 exports[`overwrites an existing custom connection and does not check URL 1`] = `
 [

@@ -1,27 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`fails if the fetch does not return the right file 1`] = `
-"No directory supplied
-Error: EXIT_MOCK
+"Error: No directory supplied
 "
 `;
 
 exports[`fails if user selects a directory that does not exist 1`] = `
-"No manifest.json found in this directory, are you sure it is an
+"Error: No manifest.json found in this directory, are you sure it is an
         existing jbrowse 2 installation?
-Error: EXIT_MOCK
 "
 `;
 
 exports[`fails if user selects a directory that does not have a installation 1`] = `
-"No manifest.json found in this directory, are you sure it is an
+"Error: No manifest.json found in this directory, are you sure it is an
         existing jbrowse 2 installation?
-Error: EXIT_MOCK
 "
 `;
 
 exports[`fails to upgrade if version does not exist 1`] = `
-"No directory supplied
-Error: EXIT_MOCK
+"Error: No directory supplied
 "
 `;

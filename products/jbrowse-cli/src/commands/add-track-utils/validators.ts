@@ -50,16 +50,12 @@ export function validateAssemblies(
   assemblyNames?: string,
 ): void {
   if (!configContents.assemblies?.length) {
-    console.error(
-      'Error: No assemblies found. Please add one before adding tracks',
-    )
-    process.exit(150)
+    throw new Error('No assemblies found. Please add one before adding tracks')
   }
   if (configContents.assemblies.length > 1 && !assemblyNames) {
-    console.error(
-      'Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
+    throw new Error(
+      'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
     )
-    process.exit(1)
   }
 }
 
@@ -76,10 +72,9 @@ export function validateTrackId(
   const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
 
   if (idx !== -1 && !force && !overwrite) {
-    console.error(
-      `Error: Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
+    throw new Error(
+      `Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
     )
-    process.exit(160)
   }
 
   return idx

@@ -97,16 +97,14 @@ export async function run(args: string[]) {
   }
 
   if (!argsPath) {
-    console.error('No directory supplied')
-    process.exit(100)
+    throw new Error('No directory supplied')
   }
 
   if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
-    console.error(
+    throw new Error(
       `No manifest.json found in this directory, are you sure it is an
         existing jbrowse 2 installation?`,
     )
-    process.exit(10)
   }
 
   const locationUrl =
@@ -118,8 +116,9 @@ export async function run(args: string[]) {
   console.log(`Fetching ${locationUrl}...`)
   const response = await fetch(locationUrl)
   if (!response.ok) {
-    console.error(`Failed to fetch: ${response.statusText}`)
-    process.exit(100)
+    throw new Error(
+      `HTTP ${response.status} fetching ${locationUrl}: ${response.statusText}`,
+    )
   }
 
   const type = response.headers.get('content-type')
@@ -128,10 +127,9 @@ export async function run(args: string[]) {
     type !== 'application/zip' &&
     type !== 'application/octet-stream'
   ) {
-    console.error(
+    throw new Error(
       'The URL provided does not seem to be a JBrowse installation URL',
     )
-    process.exit(1)
   }
 
   if (clean) {

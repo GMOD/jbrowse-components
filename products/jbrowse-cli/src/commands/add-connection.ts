@@ -14,21 +14,18 @@ async function resolveURL(location: string, check = true) {
   try {
     locationUrl = new URL(location)
   } catch (error) {
-    console.error('Error: The location provided is not a valid URL')
-    process.exit(160)
+    throw new Error('The location provided is not a valid URL')
   }
   try {
     if (check) {
       const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
       if (!response.ok) {
-        console.error(`Error: Response returned with code ${response.status}`)
-        process.exit(1)
+        throw new Error(`HTTP ${response.status} fetching ${locationUrl}`)
       }
     }
     return locationUrl.href
   } catch (error) {
-    console.error(`Error: Unable to fetch from URL, ${error}`)
-    process.exit(170)
+    throw new Error(`Unable to fetch from URL, ${error}`)
   }
 }
 
@@ -147,10 +144,9 @@ export async function run(args?: string[]) {
   debug(`Using config file ${target}`)
 
   if (!configContents.assemblies?.length) {
-    console.error(
-      'Error: No assemblies found. Please add one before adding connections',
+    throw new Error(
+      'No assemblies found. Please add one before adding connections',
     )
-    process.exit(120)
   }
 
   const configType = type || determineConnectionType(url)

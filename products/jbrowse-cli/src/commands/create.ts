@@ -148,15 +148,3 @@ async function checkPath(userPath: string) {
     )
   }
 }
-
-// async catch(error: unknown) {
-//   // @ts-expect-error
-//   if (error.parse?.output.flags.listVersions) {
-//     const versions = (await this.fetchGithubVersions()).map(
-//       version => version.tag_name,
-//     )
-//     console.log(`All JBrowse versions:\n${versions.join('\n')}`)
-//     this.exit()
-//   }
-//   throw error
-// }
