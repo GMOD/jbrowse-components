@@ -13,7 +13,7 @@ import {
   readConf,
   readConfAlt,
   runInTmpDir,
-  runNativeCommand as runCommand,
+  runCommand,
 } from '../testUtil'
 
 const { copyFile, writeFile, mkdir } = fs.promises

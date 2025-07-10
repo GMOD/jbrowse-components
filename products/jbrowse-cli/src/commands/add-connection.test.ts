@@ -7,7 +7,7 @@ import path from 'path'
 
 import nock from 'nock'
 
-import { readConf, runInTmpDir, runNativeCommand } from '../testUtil'
+import { readConf, runInTmpDir, runCommand } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
 
@@ -37,7 +37,7 @@ beforeAll(() => (Date.now = jest.fn(() => 1)))
 test('fails if no config file', async () => {
   nock('https://example.com').head('/hub.txt').reply(200)
 
-  const { error } = await runNativeCommand([
+  const { error } = await runCommand([
     'add-connection',
     'https://example.com/hub.txt',
   ])
@@ -45,13 +45,13 @@ test('fails if no config file', async () => {
 })
 
 test('fails if data directory is not an url', async () => {
-  const { error } = await runNativeCommand(['add-connection .'])
+  const { error } = await runCommand(['add-connection .'])
   expect(error?.message).toMatchSnapshot()
 })
 
 test('fails when fetching from url fails', async () => {
   nock('https://mysite.com').head('/notafile.txt').reply(500)
-  const { error } = await runNativeCommand([
+  const { error } = await runCommand([
     'add-connection',
     'https://mysite.com/notafile.txt',
   ])
@@ -62,7 +62,7 @@ test('adds an UCSCTrackHubConnection connection from a url', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/data/hub.txt').reply(200)
     await copyConf(ctx)
-    await runNativeCommand([
+    await runCommand([
       'add-connection',
       'https://mysite.com/data/hub.txt',
     ])
@@ -74,7 +74,7 @@ test('adds JBrowse1 connection from a url', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/jbrowse/data').reply(200)
     await copyConf(ctx)
-    await runNativeCommand([
+    await runCommand([
       'add-connection',
       'https://mysite.com/jbrowse/data',
     ])
@@ -85,7 +85,7 @@ test('adds a custom connection with user set fields', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/custom').reply(200)
     await copyConf(ctx)
-    await runNativeCommand([
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--type',
@@ -106,7 +106,7 @@ test('fails to add a duplicate connection', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/custom').reply(200)
     await copyConf(ctx)
-    await runNativeCommand([
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
@@ -115,7 +115,7 @@ test('fails to add a duplicate connection', async () => {
       '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
     nock('https://mysite.com').head('/custom').reply(200)
-    const { error } = await runNativeCommand([
+    const { error } = await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
@@ -130,7 +130,7 @@ test('overwrites an existing custom connection and does not check URL', async ()
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/custom').reply(200)
     await copyConf(ctx)
-    await runNativeCommand([
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
@@ -140,7 +140,7 @@ test('overwrites an existing custom connection and does not check URL', async ()
       '--force',
     ])
     nock('https://mysite.com').head('/custom').reply(200)
-    await runNativeCommand([
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',

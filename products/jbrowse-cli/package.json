@@ -15,14 +15,13 @@
     "directory": "products/jbrowse-cli"
   },
   "author": "JBrowse Team",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
   "bin": {
     "jbrowse": "./bin/run"
   },
   "files": [
     "/bin",
-    "/lib",
+    "/bundle",
     "/dist"
   ],
   "engines": {
@@ -31,7 +30,7 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "tsc --build && webpack",
-    "clean": "rimraf lib dist",
+    "clean": "rimraf dist bundle",
     "prepack": "npm run clean  && npm run docs",
     "predocs": "npm run build",
     "docs": "./generate_readme.sh > README.md"

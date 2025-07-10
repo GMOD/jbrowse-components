@@ -33,7 +33,7 @@ export async function runInTmpDir(
 }
 
 // Native command runner for testing
-export async function runNativeCommand(
+export async function runCommand(
   args: string | string[],
 ): Promise<{ stdout: string; stderr: string; error?: Error }> {
   let stdout = ''

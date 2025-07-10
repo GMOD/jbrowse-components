@@ -10,7 +10,7 @@ import nock from 'nock'
 import {
   dataDir,
   runInTmpDir,
-  runNativeCommand as runCommand,
+  runCommand,
 } from '../testUtil'
 
 const configPath = dataDir('indexing_config.json')

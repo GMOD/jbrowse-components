@@ -6,7 +6,7 @@ module.exports = {
   entry: './src/bin.ts',
   target: 'node',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'bundle'),
     filename: 'index.js',
     libraryTarget: 'commonjs2',
   },
@@ -20,6 +20,10 @@ module.exports = {
   plugins: [
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
+    }),
+    new webpack.BannerPlugin({
+      banner: '#!/usr/bin/env node',
+      raw: true,
     }),
   ],
   module: {

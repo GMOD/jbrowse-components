@@ -6,7 +6,7 @@ import fs from 'fs'
 import path from 'path'
 
 import fetch from '../fetchWithProxy'
-import { dataDir, readConf, runInTmpDir, runNativeCommand } from '../testUtil'
+import { dataDir, readConf, runInTmpDir, runCommand } from '../testUtil'
 
 const { copyFile, rename, chmod } = fs.promises
 
@@ -48,7 +48,7 @@ async function killExpress({ stdout }: { stdout: string }) {
 test('creates a default config', async () => {
   await runInTmpDir(async ctx => {
     await copyFile(testIndex, path.join(ctx.dir, path.basename(testIndex)))
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9091',
@@ -67,7 +67,7 @@ test('does not overwrite an existing config', async () => {
       path.join(ctx.dir, 'config.json'),
     )
 
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9092',
@@ -80,7 +80,7 @@ test('does not overwrite an existing config', async () => {
 
 test('uses port 9090 if not specified', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runNativeCommand(['admin-server'])
+    const { stdout } = await runCommand(['admin-server'])
     expect(stdout).toMatch(
       /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12}/,
     )
@@ -90,14 +90,14 @@ test('uses port 9090 if not specified', async () => {
 
 test('throws an error with a negative port', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runNativeCommand(['admin-server', '--port', '-10'])
+    const { error } = await runCommand(['admin-server', '--port', '-10'])
     expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('throws an error with a port greater than 65535', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runNativeCommand([
+    const { error } = await runCommand([
       'admin-server',
       '--port',
       '66666',
@@ -108,7 +108,7 @@ test('throws an error with a port greater than 65535', async () => {
 
 test('notifies the user if adminKey is incorrect', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9093',
@@ -129,7 +129,7 @@ test('notifies the user if adminKey is incorrect', async () => {
 
 test('writes the config to disk if adminKey is valid', async () => {
   await runInTmpDir(async ctx => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9094',
@@ -152,7 +152,7 @@ test('writes the config to disk if adminKey is valid', async () => {
 
 test('throws an error if unable to write to config.json', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9095',
@@ -175,7 +175,7 @@ test('throws an error if unable to write to config.json', async () => {
 })
 test('throws an error if unable to write to config.json pt 2', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9096',
@@ -199,7 +199,7 @@ test('throws an error if unable to write to config.json pt 2', async () => {
 
 test('blocks relative path traversal attempts in updateConfig', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9097',
@@ -223,7 +223,7 @@ test('blocks relative path traversal attempts in updateConfig', async () => {
 
 test('blocks relative path traversal attempts in config route', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9098',
@@ -247,7 +247,7 @@ test('blocks relative path traversal attempts in config route', async () => {
 
 test('allows valid configPath in updateConfig', async () => {
   await runInTmpDir(async ctx => {
-    const { stdout } = await runNativeCommand([
+    const { stdout } = await runCommand([
       'admin-server',
       '--port',
       '9099',

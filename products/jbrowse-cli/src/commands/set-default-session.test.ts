@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { dataDir, readConf, runInTmpDir, runNativeCommand } from '../testUtil'
+import { dataDir, readConf, runInTmpDir, runCommand } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
 
@@ -25,7 +25,7 @@ test('fails when no necessary default session information is provided', async ()
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    const { error } = await runNativeCommand(['set-default-session'])
+    const { error } = await runCommand(['set-default-session'])
     expect(error?.message).toMatchSnapshot()
   })
 })
@@ -37,7 +37,7 @@ test('fails when default session is not readable', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    const { error } = await runNativeCommand([
+    const { error } = await runCommand([
       'set-default-session',
       '--session',
       '{}',
@@ -52,7 +52,7 @@ test('fails when file does not exist', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    const { error } = await runNativeCommand([
+    const { error } = await runCommand([
       'set-default-session',
       '--session',
       path.join(simpleDefaultSession, 'nonexist.json'),
@@ -69,7 +69,7 @@ test('fails when file is does not have a default session to read', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    const { error } = await runNativeCommand([
+    const { error } = await runCommand([
       'set-default-session',
       '--session',
       simpleBam,
@@ -85,7 +85,7 @@ test('deletes a default session', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    await runNativeCommand(['set-default-session', '--delete'])
+    await runCommand(['set-default-session', '--delete'])
 
     expect(readConf(ctx)).toMatchSnapshot()
   })
@@ -99,7 +99,7 @@ test('adds a default session from a file', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    await runNativeCommand([
+    await runCommand([
       'set-default-session',
       '--session',
       simpleDefaultSession,
