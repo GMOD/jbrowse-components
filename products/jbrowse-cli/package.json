@@ -30,15 +30,13 @@
   },
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc --build && tsup src/index.ts",
+    "build": "tsc --build && webpack",
     "clean": "rimraf lib dist",
     "prepack": "npm run clean  && npm run docs",
     "predocs": "npm run build",
     "docs": "./generate_readme.sh > README.md"
   },
-  "devDependencies": {
-    "boxen": "^4.2.0",
-    "chalk": "^4.1.0",
+  "dependencies": {
     "cli-progress": "^3.9.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",
@@ -50,6 +48,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {}
+  }
 }
