@@ -649,7 +649,7 @@ exports[`adds tabix gff with tbi 1`] = `
 ]
 `;
 
-exports[`cannot add a track if there is no config file 1`] = `"Error reading file "./config.json": Error: ENOENT: no such file or directory, open './config.json'"`;
+exports[`cannot add a track if there is no config file 1`] = `"Error: Error: ENOENT: no such file or directory, open './config.json'"`;
 
 exports[`cannot add a track with the same track id 1`] = `"Error: Cannot add track with id simple, a track with that id already exists (use --force to override)"`;
 

@@ -27,21 +27,8 @@ export async function readFile(location: string) {
 }
 
 export async function readJsonFile<T>(location: string): Promise<T> {
-  let contents: string
-  try {
-    contents = await fsPromises.readFile(location, { encoding: 'utf8' })
-  } catch (error) {
-    console.error(`Error reading file "${location}": ${error}`)
-    process.exit(40)
-  }
-  let result: T
-  try {
-    result = parseJSON(contents)
-  } catch (error) {
-    console.error(`Error parsing JSON in file "${location}": ${error}`)
-    process.exit(50)
-  }
-  return result
+  const contents = await fsPromises.readFile(location, { encoding: 'utf8' })
+  return parseJSON(contents)
 }
 
 export async function writeJsonFile(location: string, contents: unknown) {
@@ -85,8 +72,7 @@ export async function resolveFileLocation(
     }
     return inPlace ? location : filePath
   }
-  console.error(`Could not resolve to a file or a URL: "${location}"`)
-  process.exit(40)
+  throw new Error(`Could not resolve to a file or a URL: "${location}"`)
 }
 
 export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
@@ -166,15 +152,13 @@ export async function getTag(tag: string) {
     )?.browser_download_url
 
     if (!file) {
-      console.error(
+      throw new Error(
         'Could not find version specified. Use --listVersions to see all available versions',
       )
-      process.exit(90)
     }
     return file
   }
-  console.error(`Could not find version: ${response.statusText}`)
-  process.exit(90)
+  throw new Error(`Could not find version: ${response.statusText}`)
 }
 
 export async function getBranch(branch: string) {

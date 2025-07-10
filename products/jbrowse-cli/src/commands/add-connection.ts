@@ -14,19 +14,15 @@ async function resolveURL(location: string, check = true) {
   try {
     locationUrl = new URL(location)
   } catch (error) {
-    throw new Error('The location provided is not a valid URL')
+    throw new Error(`The location ${location} provided is not a valid URL`)
   }
-  try {
-    if (check) {
-      const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} fetching ${locationUrl}`)
-      }
+  if (check) {
+    const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} fetching ${locationUrl}`)
     }
-    return locationUrl.href
-  } catch (error) {
-    throw new Error(`Unable to fetch from URL, ${error}`)
   }
+  return locationUrl.href
 }
 
 function determineConnectionType(url: string) {
@@ -193,10 +189,9 @@ export async function run(args?: string[]) {
     if (force || flags.overwrite) {
       configContents.connections[idx] = connectionConfig
     } else {
-      console.error(
-        `Error: Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
+      throw new Error(
+        `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
       )
-      process.exit(150)
     }
   } else {
     configContents.connections.push(connectionConfig)

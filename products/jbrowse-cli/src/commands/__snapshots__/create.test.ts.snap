@@ -18,7 +18,7 @@ exports[`fails if the fetch does not return the right file 1`] = `"Error: The UR
 
 exports[`fails if user selects a directory that has existing files 1`] = `"Error: This directory (.) has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files"`;
 
-exports[`fails to download a version that does not exist 1`] = `"Could not find version: "`;
+exports[`fails to download a version that does not exist 1`] = `"Error: Could not find version:"`;
 
 exports[`lists versions 1`] = `
 "All JBrowse versions:
