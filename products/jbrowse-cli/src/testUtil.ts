@@ -35,61 +35,54 @@ export async function runInTmpDir(
 // Native command runner for testing
 export async function runNativeCommand(
   args: string | string[],
-  options?: { mock?: boolean },
 ): Promise<{ stdout: string; stderr: string; error?: Error }> {
-  const shouldMock = options?.mock !== false
-
   let stdout = ''
   let stderr = ''
   let error: Error | undefined
   let outputReceived = false
 
   // Mock console functions using Jest spies
-  const consoleLogSpy = shouldMock
-    ? jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
-        stdout += `${args.join(' ')}\n`
-        outputReceived = true
-      })
-    : null
+  const consoleLogSpy = jest
+    .spyOn(console, 'log')
+    .mockImplementation((...args: any[]) => {
+      stdout += `${args.join(' ')}\n`
+      outputReceived = true
+    })
 
-  const consoleErrorSpy = shouldMock
-    ? jest.spyOn(console, 'error').mockImplementation((...args: any[]) => {
-        stderr += `${args.join(' ')}\n`
-        outputReceived = true
-      })
-    : null
+  const consoleErrorSpy = jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: any[]) => {
+      stderr += `${args.join(' ')}\n`
+      outputReceived = true
+    })
 
   // Mock process.stdout.write
-  const stdoutWriteSpy = shouldMock
-    ? jest.spyOn(process.stdout, 'write').mockImplementation((chunk: any) => {
-        stdout += chunk.toString()
-        outputReceived = true
-        return true
-      })
-    : null
+  const stdoutWriteSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation((chunk: any) => {
+      stdout += chunk.toString()
+      outputReceived = true
+      return true
+    })
 
   // Mock process.stderr.write
-  const stderrWriteSpy = shouldMock
-    ? jest.spyOn(process.stderr, 'write').mockImplementation((chunk: any) => {
-        stderr += chunk.toString()
-        outputReceived = true
-        return true
-      })
-    : null
+  const stderrWriteSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation((chunk: any) => {
+      stderr += chunk.toString()
+      outputReceived = true
+      return true
+    })
 
   // Mock process.exit
-  const processExitSpy = shouldMock
-    ? jest
-        .spyOn(process, 'exit')
-        .mockImplementation((code?: string | number | null) => {
-          if (code && code !== 0) {
-            error = new Error(
-              stderr.trim() || `Process exited with code ${code}`,
-            )
-          }
-          throw new Error('EXIT_MOCK')
-        })
-    : null
+  const processExitSpy = jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code?: string | number | null) => {
+      if (code && code !== 0) {
+        error = new Error(stderr.trim() || `Process exited with code ${code}`)
+      }
+      throw new Error('EXIT_MOCK')
+    })
 
   try {
     // Parse arguments
@@ -101,39 +94,35 @@ export async function runNativeCommand(
     // Wait for any pending asynchronous console output
     // This handles cases where commands start servers or other async operations
     // that log output after the main command completes
-    if (shouldMock) {
-      await new Promise(resolve => {
-        if (outputReceived) {
-          // If we received output, wait a bit for any additional async output
-          setTimeout(resolve, 50)
-        } else {
-          // If no output yet, wait longer and check periodically
-          let attempts = 0
-          const checkForOutput = () => {
-            if (outputReceived || attempts > 10) {
-              resolve(undefined)
-            } else {
-              attempts++
-              setTimeout(checkForOutput, 10)
-            }
+    await new Promise(resolve => {
+      if (outputReceived) {
+        // If we received output, wait a bit for any additional async output
+        setTimeout(resolve, 50)
+      } else {
+        // If no output yet, wait longer and check periodically
+        let attempts = 0
+        const checkForOutput = () => {
+          if (outputReceived || attempts > 10) {
+            resolve(undefined)
+          } else {
+            attempts++
+            setTimeout(checkForOutput, 10)
           }
-          checkForOutput()
         }
-      })
-    }
+        checkForOutput()
+      }
+    })
   } catch (err) {
     if (err instanceof Error && err.message !== 'EXIT_MOCK') {
       error = err
     }
   } finally {
     // Restore Jest mocks
-    if (shouldMock) {
-      consoleLogSpy?.mockRestore()
-      consoleErrorSpy?.mockRestore()
-      stdoutWriteSpy?.mockRestore()
-      stderrWriteSpy?.mockRestore()
-      processExitSpy?.mockRestore()
-    }
+    consoleLogSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+    stdoutWriteSpy.mockRestore()
+    stderrWriteSpy.mockRestore()
+    processExitSpy.mockRestore()
   }
 
   // If we have stderr but no error, create an error from stderr
