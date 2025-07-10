@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-dotplot-view",
-  "version": "3.6.2",
+  "version": "3.6.1",
   "description": "JBrowse 2 dotplot view",
   "keywords": [
     "jbrowse",
@@ -36,8 +36,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.6.2",
-    "@jbrowse/plugin-alignments": "^3.6.2",
+    "@jbrowse/core": "^3.6.1",
+    "@jbrowse/plugin-alignments": "^3.6.1",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@mui/x-data-grid": "^8.0.0",
