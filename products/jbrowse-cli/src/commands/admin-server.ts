@@ -53,13 +53,7 @@ export async function run(args?: string[]) {
   const { outFile, baseDir } = await setupConfigFile({ root })
 
   // Parse and validate port
-  let port: number
-  try {
-    port = parsePort({ portStr: flags.port })
-  } catch (error: any) {
-    console.error(`Error: ${error.message}`)
-    process.exit(1)
-  }
+  const port = parsePort({ portStr: flags.port })
 
   // Set up the Express server
   const { app, key, keyPath } = setupServer({ baseDir, outFile, bodySizeLimit })

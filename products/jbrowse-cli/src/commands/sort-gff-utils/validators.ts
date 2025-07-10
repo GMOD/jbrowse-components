@@ -19,9 +19,8 @@ export function validateRequiredCommands(): void {
   )
 
   if (missingCommands.length > 0) {
-    console.error(
+    throw new Error(
       'Error: Unable to sort, requires unix type environment with sort, grep',
     )
-    process.exit(1)
   }
 }

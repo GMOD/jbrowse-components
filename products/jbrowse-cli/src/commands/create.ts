@@ -120,8 +120,9 @@ export async function run(args: string[]) {
   console.log(`Fetching ${locationUrl}...`)
   const response = await fetch(locationUrl)
   if (!response.ok) {
-    console.error(`Failed to fetch: ${response.statusText}`)
-    process.exit(100)
+    throw new Error(
+      `HTTP ${response.status} fetching ${locationUrl}: ${response.statusText}`,
+    )
   }
 
   const type = response.headers.get('content-type')
@@ -130,10 +131,9 @@ export async function run(args: string[]) {
     type !== 'application/zip' &&
     type !== 'application/octet-stream'
   ) {
-    console.error(
+    throw new Error(
       'The URL provided does not seem to be a JBrowse installation URL',
     )
-    process.exit(1)
   }
   await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
 
@@ -143,10 +143,9 @@ export async function run(args: string[]) {
 async function checkPath(userPath: string) {
   const allFiles = await fsPromises.readdir(userPath)
   if (allFiles.length > 0) {
-    console.error(
+    throw new Error(
       `This directory (${userPath}) has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
     )
-    process.exit(120)
   }
 }
 

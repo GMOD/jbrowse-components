@@ -87,10 +87,9 @@ export async function run(args?: string[]) {
       debug(`Overwriting track ${existing} in configuration`)
       config.tracks[idx] = trackConfig
     } else {
-      console.error(
-        `Error: Cannot add track ${trackConfig.name}, a track with that trackId already exists: ${existing}`,
+      throw new Error(
+        `Cannot add track ${trackConfig.name}, a track with that trackId already exists: ${existing}`,
       )
-      process.exit(160)
     }
   } else {
     config.tracks.push(trackConfig)

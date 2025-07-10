@@ -7,8 +7,9 @@ const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
-    console.error('Error: --load must be one of: copy, symlink, move, inPlace')
-    process.exit(1)
+    throw new Error(
+      'Error: --load must be one of: copy, symlink, move, inPlace',
+    )
   }
 }
 
@@ -23,28 +24,24 @@ export function validateTrackArg(track?: string): void {
 
 export function validateLoadAndLocation(location: string, load?: string): void {
   if (isUrl(location) && load) {
-    console.error(
-      'Error: The --load flag is used for local files only, but a URL was provided',
+    throw new Error(
+      'The --load flag is used for local files only, but a URL was provided',
     )
-    process.exit(100)
   } else if (!isUrl(location) && !load) {
-    console.error(
-      `Error: The --load flag should be used if a local file is used, example --load
+    throw new Error(
+      `The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are
         copy/move/symlink/inPlace (inPlace for no file operations)`,
     )
-    process.exit(110)
   }
 }
 
 export function validateAdapterType(adapterType: string): void {
   if (adapterType === 'UNKNOWN') {
-    console.error('Error: Track type is not recognized')
-    process.exit(120)
+    throw new Error('Track type is not recognized')
   }
   if (adapterType === 'UNSUPPORTED') {
-    console.error('Error: Track type is not supported')
-    process.exit(130)
+    throw new Error('Track type is not supported')
   }
 }
 
