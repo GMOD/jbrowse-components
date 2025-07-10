@@ -239,35 +239,4 @@ export default class AddConnectionNative extends NativeCommand {
       return false
     }
   }
-
-  showHelp() {
-    console.log(`
-${AddConnectionNative.description}
-
-USAGE
-  $ jbrowse add-connection <connectionUrlOrPath> [options]
-
-ARGUMENTS
-  connectionUrlOrPath  URL of data directory
-                       For hub file, usually called hub.txt
-                       For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
-
-OPTIONS
-  -h, --help                      Show help
-  -t, --type <type>               Type of connection (JBrowse1Connection, UCSCTrackHubConnection, custom)
-  -a, --assemblyNames <names>     For UCSC: optional comma separated list of assembly names to filter
-                                  For JBrowse: a single assembly name
-  -c, --config <config>           Extra config settings to add to connection in JSON object format
-  --connectionId <connectionId>   Id for the connection that must be unique to JBrowse
-  -n, --name <name>               Name of the connection. Defaults to connectionId if not provided
-  --target <target>               Path to config file in JB2 installation directory to write out to
-  --out <out>                     Synonym for target
-  --skipCheck                     Don't check whether the data directory URL exists
-  --overwrite                     Overwrites any existing connections if same connection id
-  -f, --force                     Equivalent to --skipCheck --overwrite
-
-EXAMPLES
-${AddConnectionNative.examples.join('\n')}
-`)
-  }
 }

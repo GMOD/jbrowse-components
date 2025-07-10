@@ -205,28 +205,4 @@ export default class UpgradeNative extends NativeCommand {
       cleanMapFiles(staticDir)
     }
   }
-
-  showHelp() {
-    console.log(`
-${UpgradeNative.description}
-
-USAGE
-  $ jbrowse upgrade [localPath] [options]
-
-ARGUMENTS
-  localPath  Location where JBrowse 2 is installed (default: current directory)
-
-OPTIONS
-  -h, --help              Show help
-  -l, --listVersions      Lists out all versions of JBrowse 2
-  -t, --tag <tag>         Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest
-  --branch <branch>       Download a development build from a named git branch
-  --nightly               Download the latest development build from the main branch
-  --clean                 Removes old js, map, and LICENSE files in the installation
-  -u, --url <url>         A direct URL to a JBrowse 2 release
-
-EXAMPLES
-${UpgradeNative.examples.join('\n')}
-`)
-  }
 }

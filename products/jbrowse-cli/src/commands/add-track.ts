@@ -267,40 +267,4 @@ export default class AddTrackNative extends NativeCommand {
       } ${this.target}`,
     )
   }
-
-  showHelp() {
-    console.log(`
-${AddTrackNative.description}
-
-USAGE
-  $ jbrowse add-track <track> [options]
-
-ARGUMENTS
-  track  Track file or URL
-
-OPTIONS
-  -h, --help               Show help
-  -t, --trackType <type>   Type of track, by default inferred from track file
-  -n, --name <name>        Name of the track. Will be defaulted to the trackId if none specified
-  --indexFile <file>       Optional index file for the track
-  -d, --description <desc> Optional description of the track
-  -a, --assemblyNames <names> Assembly name or names for track as comma separated string
-  --category <category>    Optional comma separated string of categories to group tracks
-  --config <config>        Any extra config settings to add to a track
-  --target <target>        Path to config file in JB2 installation to write out to
-  --out <out>              Synonym for target
-  --subDir <subDir>        When using --load a file, output to a subdirectory of the target dir
-  --trackId <trackId>      trackId for the track, by default inferred from filename
-  -l, --load <load>        How to manage the track (copy, symlink, move, inPlace)
-  --skipCheck             Skip check for whether file or URL exists
-  --overwrite             Overwrites existing track if it shares the same trackId
-  -f, --force             Equivalent to --skipCheck --overwrite
-  --protocol <protocol>    Force protocol to a specific value
-  --bed1 <bed1>           Used only for mcscan anchors/simpleAnchors types
-  --bed2 <bed2>           Used only for mcscan anchors/simpleAnchors types
-
-EXAMPLES
-${AddTrackNative.examples.join('\n')}
-`)
-  }
 }

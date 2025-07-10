@@ -191,24 +191,4 @@ export default class MakePIFNative extends NativeCommand {
       process.exit(1)
     }
   }
-
-  showHelp() {
-    console.log(`
-${MakePIFNative.description}
-
-USAGE
-  $ jbrowse make-pif <file> [options]
-
-ARGUMENTS
-  file  PAF file as input
-
-OPTIONS
-  -h, --help       Show help
-  --out <out>      Where to write the output file. will write \${file}.pif.gz and \${file}.pif.gz.tbi
-  --csi            Create a CSI index for the PIF file instead of TBI
-
-EXAMPLES
-${MakePIFNative.examples.join('\n')}
-`)
-  }
 }

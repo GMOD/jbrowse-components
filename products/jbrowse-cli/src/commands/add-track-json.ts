@@ -100,25 +100,4 @@ export default class AddTrackJsonNative extends NativeCommand {
       } ${this.target}`,
     )
   }
-
-  showHelp() {
-    console.log(`
-${AddTrackJsonNative.description}
-
-USAGE
-  $ jbrowse add-track-json <track> [options]
-
-ARGUMENTS
-  track  track JSON file or command line arg blob
-
-OPTIONS
-  -h, --help         Show help
-  -u, --update       Update the contents of an existing track, matched based on trackId
-  --target <target>  Path to config file in JB2 installation directory to write out to
-  --out <out>        Synonym for target
-
-EXAMPLES
-${AddTrackJsonNative.examples.join('\n')}
-`)
-  }
 }
