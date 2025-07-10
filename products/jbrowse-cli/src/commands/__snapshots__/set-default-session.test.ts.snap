@@ -63,10 +63,10 @@ exports[`deletes a default session 1`] = `
 }
 `;
 
-exports[`fails when default session is not readable 1`] = `"Error: Error: ENOENT: no such file or directory, open '{}'"`;
+exports[`fails when default session is not readable 1`] = `"Error: Could not read the provided file"`;
 
-exports[`fails when file does not exist 1`] = `"Error: Error: ENOTDIR: not a directory, open '/home/cdiesh/src/jbrowse-components/products/jbrowse-cli/test/data/sampleDefaultSession.json/nonexist.json'"`;
+exports[`fails when file does not exist 1`] = `"Error: Could not read the provided file"`;
 
-exports[`fails when file is does not have a default session to read 1`] = `"Error: Unexpected end of JSON input while parsing near ''"`;
+exports[`fails when file is does not have a default session to read 1`] = `"Error: Could not parse the given default session file"`;
 
 exports[`fails when no necessary default session information is provided 1`] = `"Error: Please provide a --session file"`;

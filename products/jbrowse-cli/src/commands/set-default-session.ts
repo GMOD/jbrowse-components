@@ -18,84 +18,62 @@ interface Config {
   tracks?: Track[]
 }
 
-async function readDefaultSessionFile(defaultSessionFile: string) {
-  const defaultSessionJson = await fsPromises.readFile(defaultSessionFile, {
-    encoding: 'utf8',
-  })
+const description = 'Set a default session with views and tracks'
 
-  const session = parseJSON(defaultSessionJson)
-  // return top-level "session" if it exists, such as in files created by
-  // "File -> Export session"
-  return session.session || session
-}
+const examples = [
+  '# set default session for the config.json in your current directory',
+  '$ jbrowse set-default-session --session /path/to/default/session.json',
+  '',
+  '# make session.json the defaultSession on the specified target config.json file',
+  '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json',
+  '',
+  '# print current default session',
+  '$ jbrowse set-default-session --currentSession # Prints out current default session',
+]
+const options = {
+  session: {
+    type: 'string',
+    short: 's',
+    description:
+      'set path to a file containing session in json format (required, unless using delete/currentSession flags)',
+  },
+  name: {
+    type: 'string',
+    short: 'n',
+    description: 'Give a name for the default session',
+    default: 'New Default Session',
+  },
+  currentSession: {
+    type: 'boolean',
+    short: 'c',
+    description: 'List out the current default session',
+  },
+  target: {
+    type: 'string',
+    description:
+      'path to config file in JB2 installation directory to write out to',
+  },
+  out: { type: 'string', description: 'synonym for target' },
+  delete: {
+    type: 'boolean',
+    description: 'Delete any existing default session.',
+  },
+  help: { type: 'boolean', short: 'h', description: 'Show help' },
+} as const
 
-export async function run(args?: string[]) {
-  const options = {
-    help: {
-      type: 'boolean',
-      short: 'h',
-    },
-    session: {
-      type: 'string',
-      short: 's',
-      description: 'Set path to a file containing session in json format',
-    },
-    name: {
-      type: 'string',
-      short: 'n',
-      description:
-        'Give a name for the default session (default: "New Default Session")',
-    },
-    currentSession: {
-      type: 'boolean',
-      short: 'c',
-      description: 'List out the current default session',
-    },
-    target: {
-      type: 'string',
-      description:
-        'Path to config file in JB2 installation directory to write out to',
-    },
-    out: {
-      type: 'string',
-      description: 'Synonym for target',
-    },
-    delete: {
-      type: 'boolean',
-      description: 'Delete any existing default session',
-    },
-  } as const
-  const { values: flags } = parseArgs({
-    args,
-    options,
-    allowPositionals: true,
-  })
-
-  const description = 'Set a default session with views and tracks'
-
-  const examples = [
-    '# set default session for the config.json in your current directory',
-    '$ jbrowse set-default-session --session /path/to/default/session.json',
-    '',
-    '# make session.json the defaultSession on the specified target config.json file',
-    '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json',
-    '',
-    '# print current default session',
-    '$ jbrowse set-default-session --currentSession # Prints out current default session',
-  ]
-
-  if (flags.help) {
+export async function run(args: string[]) {
+  const { values: runFlags } = parseArgs({ options, args })
+  if (runFlags.help) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse set-default-session [options]',
+      usage: 'jbrowse add-track <track> [options]',
       options,
     })
     return
   }
-
-  const { session, currentSession, delete: deleteDefaultSession } = flags
-  const output = flags.target || flags.out || '.'
+  const { session, currentSession, delete: deleteDefaultSession } = runFlags
+  const output = runFlags.target || runFlags.out || '.'
   const isDir = (await fsPromises.lstat(output)).isDirectory()
   const target = isDir ? `${output}/config.json` : output
   const configContents: Config = await readJsonFile(target)
@@ -103,25 +81,39 @@ export async function run(args?: string[]) {
   if (deleteDefaultSession) {
     configContents.defaultSession = undefined
     await writeJsonFile(target, configContents)
-    console.log(`Deleted default session from ${target}`)
   } else if (currentSession) {
     console.log(
       `The current default session is ${JSON.stringify(
         configContents.defaultSession,
-        null,
-        2,
       )}`,
     )
-    process.exit(0)
+    process.exit()
   } else if (!session) {
-    console.error('Error: Please provide a --session file')
-    process.exit(120)
+    throw new Error('Please provide a --session file')
   } else if (session) {
-    const sessionData = await readDefaultSessionFile(session)
     await writeJsonFile(target, {
       ...configContents,
-      defaultSession: sessionData,
+      defaultSession: await readDefaultSessionFile(session),
     })
-    console.log(`Set default session from ${session} in ${target}`)
+  }
+}
+
+async function readDefaultSessionFile(defaultSessionFile: string) {
+  let defaultSessionJson: string
+  try {
+    defaultSessionJson = await fsPromises.readFile(defaultSessionFile, {
+      encoding: 'utf8',
+    })
+  } catch (error) {
+    throw new Error('Could not read the provided file')
+  }
+
+  try {
+    const session = parseJSON(defaultSessionJson)
+    // return top-level "session" if it exists, such as in files created by
+    // "File -> Export session"
+    return session.session || session
+  } catch (error) {
+    throw new Error('Could not parse the given default session file')
   }
 }
