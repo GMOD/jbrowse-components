@@ -4,14 +4,14 @@ exports[`fails because this directory is already set up 1`] = `"This directory (
 
 exports[`fails if no path is provided to the command 1`] = `
 "Missing 1 required arg:
-localPath  Location where JBrowse 2 will be installed
-See more help with --help"
+    localPath  Location where JBrowse 2 will be installed
+    See more help with --help"
 `;
 
 exports[`fails if no path is provided to the command, even with force 1`] = `
 "Missing 1 required arg:
-localPath  Location where JBrowse 2 will be installed
-See more help with --help"
+    localPath  Location where JBrowse 2 will be installed
+    See more help with --help"
 `;
 
 exports[`fails if the fetch does not return the right file 1`] = `"The URL provided does not seem to be a JBrowse installation URL"`;
