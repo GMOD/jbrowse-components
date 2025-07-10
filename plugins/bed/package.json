@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "3.6.1",
+  "version": "3.6.2",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -41,7 +41,7 @@
     "@gmod/bed": "^2.1.2",
     "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/tabix": "^3.0.1",
-    "@jbrowse/core": "^3.6.1",
+    "@jbrowse/core": "^3.6.2",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

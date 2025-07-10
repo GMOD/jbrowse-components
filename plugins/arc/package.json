@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-arc",
-  "version": "3.6.1",
+  "version": "3.6.2",
   "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -36,9 +36,9 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.6.1",
-    "@jbrowse/plugin-linear-genome-view": "^3.6.1",
-    "@jbrowse/plugin-wiggle": "^3.6.1",
+    "@jbrowse/core": "^3.6.2",
+    "@jbrowse/plugin-linear-genome-view": "^3.6.2",
+    "@jbrowse/plugin-wiggle": "^3.6.2",
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
