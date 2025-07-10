@@ -1,3 +1,69 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.6.0
+
+## 3.6.0 (2025-07-10)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#5102](https://github.com/GMOD/jbrowse-components/pull/5102) Refactor CLI
+    to use built-in nodejs parseArgs ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5090](https://github.com/GMOD/jbrowse-components/pull/5090) Optimize some
+    MM tag parsing for performance and readability
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5087](https://github.com/GMOD/jbrowse-components/pull/5087) Better usage
+    of dark mode on sequence track ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5095](https://github.com/GMOD/jbrowse-components/pull/5095) Fix alpha
+    rendering of SVG renderer box stroke/fill
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5086](https://github.com/GMOD/jbrowse-components/pull/5086) Add status
+    message reporting for synteny view loading
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#5100](https://github.com/GMOD/jbrowse-components/pull/5100) Fix adding
+    .pif file from dotplot and linear synteny import form
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5098](https://github.com/GMOD/jbrowse-components/pull/5098) Also migrate
+    the linear-comparative-view rubberband tooltip to default MUI tooltip to
+    avoid potential UI hangs ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5097](https://github.com/GMOD/jbrowse-components/pull/5097) Fix make pif
+    on large files throwing ENOBUFS error in certain cases
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5089](https://github.com/GMOD/jbrowse-components/pull/5089) Additional
+    type check to catch non-string MM tags from older Cell Ranger version BAM
+    files ([@haessar](https://github.com/haessar))
+  - [#5085](https://github.com/GMOD/jbrowse-components/pull/5085) Fix rubberband
+    getting stuck under certain conditions
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#5080](https://github.com/GMOD/jbrowse-components/pull/5080) Fix crash on
+    multi-wiggle importer on jbrowse-web
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#5095](https://github.com/GMOD/jbrowse-components/pull/5095) Fix alpha
+    rendering of SVG renderer box stroke/fill
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#5099](https://github.com/GMOD/jbrowse-components/pull/5099) Update readme
+  with short description of what JBrowse 2 is, new links, and publications
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `__mocks__`, `app-core`, `core`
+  - [#5077](https://github.com/GMOD/jbrowse-components/pull/5077) Bump
+    generic-filehandle with mock for test environment
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Will Haese-Hill ([@haessar](https://github.com/haessar)) Done in 1.34s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 3.5.1
 
 ## 3.5.1 (2025-06-05)
