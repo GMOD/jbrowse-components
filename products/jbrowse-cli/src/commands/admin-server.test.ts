@@ -15,10 +15,6 @@ const testConfig = dataDir('test_config.json')
 // extend setup to include the addition of a simple HTML index to serve statically
 const testIndex = dataDir('simpleIndex.html')
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
-
 function getPort(output: string) {
   const portMatch = /localhost:([0-9]{4})/.exec(output)
   const port = portMatch?.[1]
@@ -48,11 +44,7 @@ async function killExpress({ stdout }: { stdout: string }) {
 test('creates a default config', async () => {
   await runInTmpDir(async ctx => {
     await copyFile(testIndex, path.join(ctx.dir, path.basename(testIndex)))
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9091',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9091'])
     expect(readConf(ctx)).toMatchSnapshot()
     await killExpress({ stdout })
   })
@@ -67,11 +59,7 @@ test('does not overwrite an existing config', async () => {
       path.join(ctx.dir, 'config.json'),
     )
 
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9092',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9092'])
 
     expect(readConf(ctx)).toMatchSnapshot()
     await killExpress({ stdout })
@@ -97,22 +85,14 @@ test('throws an error with a negative port', async () => {
 
 test('throws an error with a port greater than 65535', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runCommand([
-      'admin-server',
-      '--port',
-      '66666',
-    ])
+    const { error } = await runCommand(['admin-server', '--port', '66666'])
     expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('notifies the user if adminKey is incorrect', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9093',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9093'])
     const payload = { adminKey: 'badKey' }
     const response = await fetch('http://localhost:9093/updateConfig', {
       method: 'POST',
@@ -129,11 +109,7 @@ test('notifies the user if adminKey is incorrect', async () => {
 
 test('writes the config to disk if adminKey is valid', async () => {
   await runInTmpDir(async ctx => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9094',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9094'])
     const adminKey = getAdminKey(stdout)
     const config = { foo: 'bar' }
     const response = await fetch(`http://localhost:9094/updateConfig`, {
@@ -152,11 +128,7 @@ test('writes the config to disk if adminKey is valid', async () => {
 
 test('throws an error if unable to write to config.json', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9095',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9095'])
     await chmod('config.json', '444')
     const adminKey = getAdminKey(stdout)
     const config = { foo: 'bar' }
@@ -175,11 +147,7 @@ test('throws an error if unable to write to config.json', async () => {
 })
 test('throws an error if unable to write to config.json pt 2', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9096',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9096'])
     const adminKey = getAdminKey(stdout)
     const configPath = '/etc/passwd'
     const config = { foo: 'bar' }
@@ -199,11 +167,7 @@ test('throws an error if unable to write to config.json pt 2', async () => {
 
 test('blocks relative path traversal attempts in updateConfig', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9097',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9097'])
     const adminKey = getAdminKey(stdout)
     const configPath = '../../../etc/passwd'
     const config = { foo: 'bar' }
@@ -223,11 +187,7 @@ test('blocks relative path traversal attempts in updateConfig', async () => {
 
 test('blocks relative path traversal attempts in config route', async () => {
   await runInTmpDir(async () => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9098',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9098'])
     const adminKey = getAdminKey(stdout)
     const configPath = '../../../etc/passwd'
     const response = await fetch(
@@ -247,11 +207,7 @@ test('blocks relative path traversal attempts in config route', async () => {
 
 test('allows valid configPath in updateConfig', async () => {
   await runInTmpDir(async ctx => {
-    const { stdout } = await runCommand([
-      'admin-server',
-      '--port',
-      '9099',
-    ])
+    const { stdout } = await runCommand(['admin-server', '--port', '9099'])
     const adminKey = getAdminKey(stdout)
     const configPath = 'custom-config.json'
     const config = { foo: 'custom' }

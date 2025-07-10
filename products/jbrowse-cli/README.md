@@ -78,16 +78,17 @@ Use "jbrowse <command> --help" for more information about a command.
 ```
 Downloads and installs the latest JBrowse 2 release
 
-Usage: jbrowse create <localPath> [options]
+Usage: jbrowse create [localPath] [options]
 
 Options:
-  -h, --help                    undefined
+  -h, --help                    Show help
   -f, --force                   Overwrites existing JBrowse 2 installation if present in path
   -l, --listVersions            Lists out all versions of JBrowse 2
      , --branch                  Download a development build from a named git branch
      , --nightly                 Download the latest development build from the main branch
   -u, --url                     A direct URL to a JBrowse 2 release
-  -t, --tag                     Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest
+  -t, --tag                     Version of JBrowse 2 to install. Format is v1.0.0.
+                             Defaults to latest
 
 # Download latest release from github, and put in specific path
 $ jbrowse create /path/to/new/installation
@@ -284,12 +285,13 @@ Upgrades JBrowse 2 to latest version
 Usage: jbrowse upgrade [localPath] [options]
 
 Options:
-  -h, --help                    undefined
+  -h, --help                    Display help for command
   -l, --listVersions            Lists out all versions of JBrowse 2
-  -t, --tag                     Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest
+  -t, --tag                     Version of JBrowse 2 to install. Format is v1.0.0.
+                             Defaults to latest
      , --branch                  Download a development build from a named git branch
      , --nightly                 Download the latest development build from the main branch
-     , --clean                   Removes old js, map, and LICENSE files in the installation
+     , --clean                   Removes old js,map,and LICENSE files in the installation
   -u, --url                     A direct URL to a JBrowse 2 release
 
 # Upgrades current directory to latest jbrowse release

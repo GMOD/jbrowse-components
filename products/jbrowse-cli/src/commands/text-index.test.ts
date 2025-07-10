@@ -7,11 +7,7 @@ import path from 'path'
 
 import nock from 'nock'
 
-import {
-  dataDir,
-  runInTmpDir,
-  runCommand,
-} from '../testUtil'
+import { dataDir, runInTmpDir, runCommand } from '../testUtil'
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
@@ -52,10 +48,6 @@ function verifyIxxFiles(ctx: string, base = 'volvox') {
   expect(ixdata.length).toMatchSnapshot()
   expect(ixxdata).toMatchSnapshot()
 }
-
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 
 test('fails if no track ids are provided with --tracks flag.', async () => {
   await runInTmpDir(async () => {

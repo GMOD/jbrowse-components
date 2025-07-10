@@ -34,10 +34,6 @@ function mockZip() {
     )
 }
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
-
 test('fails if no path is provided to the command', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['create'])

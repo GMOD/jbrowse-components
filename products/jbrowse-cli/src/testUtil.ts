@@ -7,7 +7,7 @@ import { main as nativeMain } from './index'
 const { mkdir, mkdtemp } = fs.promises
 
 // increase test timeout for all tests
-jest.setTimeout(20000)
+// jest.setTimeout(20000)
 
 // On macOS, os.tmpdir() is not a real path:
 // https://github.com/nodejs/node/issues/11422

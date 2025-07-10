@@ -13,10 +13,6 @@ const simpleBam = dataDir('simple.bam')
 const simpleDefaultSession = dataDir('sampleDefaultSession.json')
 const testConfig = dataDir('test_config.json')
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
-
 test('fails when no necessary default session information is provided', async () => {
   await runInTmpDir(async ctx => {
     await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
@@ -99,11 +95,7 @@ test('adds a default session from a file', async () => {
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
-    await runCommand([
-      'set-default-session',
-      '--session',
-      simpleDefaultSession,
-    ])
+    await runCommand(['set-default-session', '--session', simpleDefaultSession])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })

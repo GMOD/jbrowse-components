@@ -34,10 +34,6 @@ const releaseArray = [
   },
 ]
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
-
 test('fails if user selects a directory that does not have a installation', async () => {
   await runInTmpDir(async () => {
     mkdirSync('jbrowse')
@@ -114,11 +110,7 @@ test('fails to upgrade if version does not exist', async () => {
     .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
     .reply(404, {})
 
-  const { stderr } = await runCommand([
-    'upgrade',
-    '--tag',
-    'v999.999.999',
-  ])
+  const { stderr } = await runCommand(['upgrade', '--tag', 'v999.999.999'])
   expect(stderr).toMatchSnapshot()
 })
 test('fails if the fetch does not return the right file', async () => {

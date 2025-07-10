@@ -29,9 +29,6 @@ async function copyConf(ctx: { dir: string }) {
   )
 }
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 beforeAll(() => (Date.now = jest.fn(() => 1)))
 
 test('fails if no config file', async () => {
@@ -62,10 +59,7 @@ test('adds an UCSCTrackHubConnection connection from a url', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/data/hub.txt').reply(200)
     await copyConf(ctx)
-    await runCommand([
-      'add-connection',
-      'https://mysite.com/data/hub.txt',
-    ])
+    await runCommand(['add-connection', 'https://mysite.com/data/hub.txt'])
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })
@@ -74,10 +68,7 @@ test('adds JBrowse1 connection from a url', async () => {
   await runInTmpDir(async ctx => {
     nock('https://mysite.com').head('/jbrowse/data').reply(200)
     await copyConf(ctx)
-    await runCommand([
-      'add-connection',
-      'https://mysite.com/jbrowse/data',
-    ])
+    await runCommand(['add-connection', 'https://mysite.com/jbrowse/data'])
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })
