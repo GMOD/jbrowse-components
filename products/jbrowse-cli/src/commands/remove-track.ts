@@ -1,7 +1,7 @@
 import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 import type { Config } from '../base'
 
@@ -14,26 +14,35 @@ export default class RemoveTrackNative extends NativeCommand {
   static examples = ['$ jbrowse remove-track trackId']
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+        description: 'Show help',
+      },
+      target: {
+        type: 'string',
+        description:
+          'Path to config file in JB2 installation directory to write out to',
+      },
+      out: {
+        type: 'string',
+        description: 'Synonym for target',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        target: {
-          type: 'string',
-        },
-        out: {
-          type: 'string',
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: RemoveTrackNative.description,
+        examples: RemoveTrackNative.examples,
+        usage: 'jbrowse remove-track <trackId> [options]',
+        options,
+      })
       return
     }
 
@@ -62,25 +71,5 @@ export default class RemoveTrackNative extends NativeCommand {
       await this.writeJsonFile(this.target, config)
       console.log(`Removed track with trackId: ${trackId} from ${this.target}`)
     }
-  }
-
-  showHelp() {
-    console.log(`
-${RemoveTrackNative.description}
-
-USAGE
-  $ jbrowse remove-track <trackId> [options]
-
-ARGUMENTS
-  trackId  trackId of the track to remove
-
-OPTIONS
-  -h, --help         Show help
-  --target <target>  Path to config file in JB2 installation directory to write out to
-  --out <out>        Synonym for target
-
-EXAMPLES
-${RemoveTrackNative.examples.join('\n')}
-`)
   }
 }

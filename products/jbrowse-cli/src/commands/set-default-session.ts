@@ -3,7 +3,7 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 const fsPromises = fs.promises
 
@@ -35,43 +35,54 @@ export default class SetDefaultSessionNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+      session: {
+        type: 'string',
+        short: 's',
+        description: 'Set path to a file containing session in json format',
+      },
+      name: {
+        type: 'string',
+        short: 'n',
+        description:
+          'Give a name for the default session (default: "New Default Session")',
+      },
+      currentSession: {
+        type: 'boolean',
+        short: 'c',
+        description: 'List out the current default session',
+      },
+      target: {
+        type: 'string',
+        description:
+          'Path to config file in JB2 installation directory to write out to',
+      },
+      out: {
+        type: 'string',
+        description: 'Synonym for target',
+      },
+      delete: {
+        type: 'boolean',
+        description: 'Delete any existing default session',
+      },
+    } as const
     const { values: flags } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        session: {
-          type: 'string',
-          short: 's',
-        },
-        name: {
-          type: 'string',
-          short: 'n',
-        },
-        currentSession: {
-          type: 'boolean',
-          short: 'c',
-          default: false,
-        },
-        target: {
-          type: 'string',
-        },
-        out: {
-          type: 'string',
-        },
-        delete: {
-          type: 'boolean',
-          default: false,
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: SetDefaultSessionNative.description,
+        examples: SetDefaultSessionNative.examples,
+        usage: 'jbrowse set-default-session [options]',
+        options,
+      })
       return
     }
 
@@ -127,26 +138,5 @@ export default class SetDefaultSessionNative extends NativeCommand {
       console.error('Error: Could not parse the given default session file')
       process.exit(160)
     }
-  }
-
-  showHelp() {
-    console.log(`
-${SetDefaultSessionNative.description}
-
-USAGE
-  $ jbrowse set-default-session [options]
-
-OPTIONS
-  -h, --help                Show help
-  -s, --session <session>   Set path to a file containing session in json format
-  -n, --name <name>         Give a name for the default session (default: "New Default Session")
-  -c, --currentSession      List out the current default session
-  --target <target>         Path to config file in JB2 installation directory to write out to
-  --out <out>               Synonym for target
-  --delete                  Delete any existing default session
-
-EXAMPLES
-${SetDefaultSessionNative.examples.join('\n')}
-`)
   }
 }

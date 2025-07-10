@@ -7,7 +7,7 @@ import { createGunzip } from 'zlib'
 
 import { sync as commandExistsSync } from 'command-exists'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 
@@ -117,27 +117,35 @@ export default class MakePIFNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+        description: 'Show help',
+      },
+      out: {
+        type: 'string',
+        description:
+          'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
+      },
+      csi: {
+        type: 'boolean',
+        description: 'Create a CSI index for the PIF file instead of TBI',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        out: {
-          type: 'string',
-        },
-        csi: {
-          type: 'boolean',
-          default: false,
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: MakePIFNative.description,
+        examples: MakePIFNative.examples,
+        usage: 'jbrowse make-pif <file> [options]',
+        options,
+      })
       return
     }
 

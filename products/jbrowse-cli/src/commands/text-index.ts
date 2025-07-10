@@ -5,7 +5,7 @@ import { parseArgs } from 'util'
 
 import { ixIxxStream } from 'ixixx'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 import {
   generateMeta,
   guessAdapterFromFileName,
@@ -56,77 +56,94 @@ export default class TextIndex extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+        description: 'Show CLI help',
+      },
+      tracks: {
+        type: 'string',
+        description:
+          'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
+      },
+      target: {
+        type: 'string',
+        description:
+          'Path to config file in JB2 installation directory to read from.',
+      },
+      out: { type: 'string', description: 'Synonym for target' },
+      attributes: {
+        type: 'string',
+        description: 'Comma separated list of attributes to index',
+        default: 'Name,ID',
+      },
+      assemblies: {
+        type: 'string',
+        short: 'a',
+        description:
+          'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
+      },
+      force: {
+        type: 'boolean',
+        default: false,
+        description: 'Overwrite previously existing indexes',
+      },
+      quiet: {
+        type: 'boolean',
+        short: 'q',
+        default: false,
+        description: 'Hide the progress bars',
+      },
+      perTrack: {
+        type: 'boolean',
+        default: false,
+        description: 'If set, creates an index per track',
+      },
+      exclude: {
+        type: 'string',
+        description: 'Adds gene type to list of excluded types',
+        default: 'CDS,exon',
+      },
+      prefixSize: {
+        type: 'string',
+        description:
+          'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
+      },
+      file: {
+        type: 'string',
+        multiple: true,
+        description:
+          'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
+      },
+      fileId: {
+        type: 'string',
+        multiple: true,
+        description:
+          'Set the trackId used for the indexes generated with the --file argument',
+      },
+      dryrun: {
+        type: 'boolean',
+        description:
+          'Just print out tracks that will be indexed by the process, without doing any indexing',
+      },
+    } as const
+
     const { values: flags } = parseArgs({
       args,
-      options: {
-        help: { type: 'boolean', short: 'h', description: 'Show CLI help' },
-        tracks: {
-          type: 'string',
-          description:
-            'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
-        },
-        target: {
-          type: 'string',
-          description:
-            'Path to config file in JB2 installation directory to read from.',
-        },
-        out: { type: 'string', description: 'Synonym for target' },
-        attributes: {
-          type: 'string',
-          description: 'Comma separated list of attributes to index',
-          default: 'Name,ID',
-        },
-        assemblies: {
-          type: 'string',
-          short: 'a',
-          description:
-            'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
-        },
-        force: {
-          type: 'boolean',
-          default: false,
-          description: 'Overwrite previously existing indexes',
-        },
-        quiet: {
-          type: 'boolean',
-          short: 'q',
-          default: false,
-          description: 'Hide the progress bars',
-        },
-        perTrack: {
-          type: 'boolean',
-          default: false,
-          description: 'If set, creates an index per track',
-        },
-        exclude: {
-          type: 'string',
-          description: 'Adds gene type to list of excluded types',
-          default: 'CDS,exon',
-        },
-        prefixSize: {
-          type: 'string',
-          description:
-            'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
-        },
-        file: {
-          type: 'string',
-          multiple: true,
-          description:
-            'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
-        },
-        fileId: {
-          type: 'string',
-          multiple: true,
-          description:
-            'Set the trackId used for the indexes generated with the --file argument',
-        },
-        dryrun: {
-          type: 'boolean',
-          description:
-            'Just print out tracks that will be indexed by the process, without doing any indexing',
-        },
-      },
+      options,
     })
+
+    if (flags.help) {
+      printHelp({
+        description: TextIndex.description,
+        examples: TextIndex.examples,
+        usage: 'jbrowse text-index [options]',
+        options,
+      })
+      return
+    }
+
     const { perTrack, file } = flags
 
     if (file) {

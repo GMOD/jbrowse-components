@@ -5,7 +5,7 @@ import { parseArgs } from 'util'
 import decompress from 'decompress'
 
 import fetch from '../fetchWithProxy'
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 export default class UpgradeNative extends NativeCommand {
   static description = 'Upgrades JBrowse 2 to latest version'
@@ -31,44 +31,56 @@ export default class UpgradeNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+      listVersions: {
+        type: 'boolean',
+        short: 'l',
+        description: 'Lists out all versions of JBrowse 2',
+      },
+      tag: {
+        type: 'string',
+        short: 't',
+        description:
+          'Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest',
+      },
+      branch: {
+        type: 'string',
+        short: 'b',
+        description: 'Download a development build from a named git branch',
+      },
+      nightly: {
+        type: 'boolean',
+        description:
+          'Download the latest development build from the main branch',
+      },
+      clean: {
+        type: 'boolean',
+        description:
+          'Removes old js, map, and LICENSE files in the installation',
+      },
+      url: {
+        type: 'string',
+        short: 'u',
+        description: 'A direct URL to a JBrowse 2 release',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        listVersions: {
-          type: 'boolean',
-          short: 'l',
-          default: false,
-        },
-        tag: {
-          type: 'string',
-          short: 't',
-        },
-        branch: {
-          type: 'string',
-        },
-        nightly: {
-          type: 'boolean',
-          default: false,
-        },
-        clean: {
-          type: 'boolean',
-          default: false,
-        },
-        url: {
-          type: 'string',
-          short: 'u',
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: UpgradeNative.description,
+        examples: UpgradeNative.examples,
+        usage: 'jbrowse upgrade [localPath] [options]',
+        options,
+      })
       return
     }
 

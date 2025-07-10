@@ -38,10 +38,6 @@ function getAdminKey(output: string) {
 }
 
 async function killExpress({ stdout }: { stdout: string }) {
-  // if (!stdout || typeof stdout !== 'string') {
-  //   // This test didn't start a server
-  //   return
-  // }
   return fetch(`http://localhost:${getPort(stdout)}/shutdown`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

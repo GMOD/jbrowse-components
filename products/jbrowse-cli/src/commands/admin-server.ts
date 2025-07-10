@@ -9,11 +9,9 @@ import { parseArgs } from 'util'
 import cors from 'cors'
 import express from 'express'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 import type { Express, Request, Response } from 'express'
-
-// Local imports
 
 /**
  * Validates if a port number is in the valid range
@@ -260,30 +258,38 @@ export default class AdminServerNative extends NativeCommand {
   }
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+      port: {
+        type: 'string',
+        short: 'p',
+        description: 'Specified port to start the server on (default: 9090)',
+      },
+      root: {
+        type: 'string',
+        description: 'Path to the root of the JB2 installation',
+      },
+      bodySizeLimit: {
+        type: 'string',
+        description: 'Size limit of the update message (default: 25mb)',
+      },
+    } as const
     const { values: flags } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        port: {
-          type: 'string',
-          short: 'p',
-        },
-        root: {
-          type: 'string',
-        },
-        bodySizeLimit: {
-          type: 'string',
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: AdminServerNative.description,
+        examples: AdminServerNative.examples,
+        usage: 'jbrowse admin-server [options]',
+        options,
+      })
       return
     }
 
@@ -366,26 +372,5 @@ export default class AdminServerNative extends NativeCommand {
     // Handle server shutdown
     process.on('SIGINT', shutdownHandler)
     process.on('SIGTERM', shutdownHandler)
-  }
-
-  /**
-   * Display help information for the command
-   */
-  showHelp() {
-    console.log(`
-${AdminServerNative.description}
-
-USAGE
-  $ jbrowse admin-server [options]
-
-OPTIONS
-  -h, --help                    Show help
-  -p, --port <port>             Specified port to start the server on (default: 9090)
-  --root <root>                 Path to the root of the JB2 installation
-  --bodySizeLimit <limit>       Size limit of the update message (default: 25mb)
-
-EXAMPLES
-${AdminServerNative.examples.join('\n')}
-`)
   }
 }

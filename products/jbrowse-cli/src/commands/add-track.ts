@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 import {
   validateLoadOption,
   validateTrackArg,
@@ -52,89 +52,114 @@ export default class AddTrackNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+        description: 'Show help',
+      },
+      trackType: {
+        type: 'string',
+        short: 't',
+        description: 'Type of track, by default inferred from track file',
+      },
+      name: {
+        type: 'string',
+        short: 'n',
+        description:
+          'Name of the track. Will be defaulted to the trackId if none specified',
+      },
+      indexFile: {
+        type: 'string',
+        description: 'Optional index file for the track',
+      },
+      description: {
+        type: 'string',
+        short: 'd',
+        description: 'Optional description of the track',
+      },
+      assemblyNames: {
+        type: 'string',
+        short: 'a',
+        description:
+          'Assembly name or names for track as comma separated string',
+      },
+      category: {
+        type: 'string',
+        description:
+          'Optional comma separated string of categories to group tracks',
+      },
+      config: {
+        type: 'string',
+        description: 'Any extra config settings to add to a track',
+      },
+      target: {
+        type: 'string',
+        description: 'Path to config file in JB2 installation to write out to',
+      },
+      out: {
+        type: 'string',
+        description: 'Synonym for target',
+      },
+      subDir: {
+        type: 'string',
+        description:
+          'When using --load a file, output to a subdirectory of the target dir',
+      },
+      trackId: {
+        type: 'string',
+        description: 'trackId for the track, by default inferred from filename',
+      },
+      load: {
+        type: 'string',
+        short: 'l',
+        description: 'How to manage the track (copy, symlink, move, inPlace)',
+      },
+      skipCheck: {
+        type: 'boolean',
+        description: 'Skip check for whether file or URL exists',
+      },
+      overwrite: {
+        type: 'boolean',
+        description: 'Overwrites existing track if it shares the same trackId',
+      },
+      force: {
+        type: 'boolean',
+        short: 'f',
+        description: 'Equivalent to --skipCheck --overwrite',
+      },
+      protocol: {
+        type: 'string',
+        description: 'Force protocol to a specific value',
+      },
+      bed1: {
+        type: 'string',
+        description: 'Used only for mcscan anchors/simpleAnchors types',
+      },
+      bed2: {
+        type: 'string',
+        description: 'Used only for mcscan anchors/simpleAnchors types',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        trackType: {
-          type: 'string',
-          short: 't',
-        },
-        name: {
-          type: 'string',
-          short: 'n',
-        },
-        indexFile: {
-          type: 'string',
-        },
-        description: {
-          type: 'string',
-          short: 'd',
-        },
-        assemblyNames: {
-          type: 'string',
-          short: 'a',
-        },
-        category: {
-          type: 'string',
-        },
-        config: {
-          type: 'string',
-        },
-        target: {
-          type: 'string',
-        },
-        out: {
-          type: 'string',
-        },
-        subDir: {
-          type: 'string',
-        },
-        trackId: {
-          type: 'string',
-        },
-        load: {
-          type: 'string',
-          short: 'l',
-        },
-        skipCheck: {
-          type: 'boolean',
-          default: false,
-        },
-        overwrite: {
-          type: 'boolean',
-          default: false,
-        },
-        force: {
-          type: 'boolean',
-          short: 'f',
-          default: false,
-        },
-        protocol: {
-          type: 'string',
-        },
-        bed1: {
-          type: 'string',
-        },
-        bed2: {
-          type: 'string',
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: AddTrackNative.description,
+        examples: AddTrackNative.examples,
+        usage: 'jbrowse add-track <track> [options]',
+        options,
+      })
       return
     }
 
     validateLoadOption(flags.load)
 
-    const track = positionals[0]
+    const track = positionals[0]!
     validateTrackArg(track)
 
     const {

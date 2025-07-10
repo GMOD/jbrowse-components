@@ -32,7 +32,7 @@ export function destinationFn({
   destinationDir: string
   srcFilename: string
   subDir: string
-  force: boolean
+  force?: boolean
 }) {
   const dest = path.resolve(
     path.join(destinationDir, subDir, path.basename(srcFilename)),

@@ -68,8 +68,8 @@ export function validateAssemblies(
 export function validateTrackId(
   configContents: Config,
   trackId: string,
-  force: boolean,
-  overwrite: boolean,
+  force?: boolean,
+  overwrite?: boolean,
 ): number {
   if (!configContents.tracks) {
     configContents.tracks = []

@@ -1,7 +1,7 @@
 import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 import type { Config, Track } from '../base'
 
@@ -17,31 +17,40 @@ export default class AddTrackJsonNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+      update: {
+        type: 'boolean',
+        short: 'u',
+        description:
+          'Update the contents of an existing track, matched based on trackId',
+      },
+      target: {
+        type: 'string',
+        description:
+          'Path to config file in JB2 installation directory to write out to',
+      },
+      out: {
+        type: 'string',
+        description: 'Synonym for target',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        update: {
-          type: 'boolean',
-          short: 'u',
-          default: false,
-        },
-        target: {
-          type: 'string',
-        },
-        out: {
-          type: 'string',
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: AddTrackJsonNative.description,
+        examples: AddTrackJsonNative.examples,
+        usage: 'jbrowse add-track-json <track> [options]',
+        options,
+      })
       return
     }
 

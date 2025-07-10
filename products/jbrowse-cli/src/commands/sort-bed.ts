@@ -1,86 +1,61 @@
-import { spawn } from 'child_process'
 import { parseArgs } from 'util'
 
-import { sync as commandExistsSync } from 'command-exists'
-
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
+import {
+  validateFileArgument,
+  validateRequiredCommands,
+} from './sort-bed-utils/validators'
+import { spawnSortProcess } from './sort-bed-utils/sort-utils'
+import {
+  waitForProcessClose,
+  handleProcessError,
+} from './sort-bed-utils/process-utils'
+import {
+  SORT_BED_DESCRIPTION,
+  SORT_BED_EXAMPLES,
+} from './sort-bed-utils/constants'
 
 export default class SortBedNative extends NativeCommand {
-  static description =
-    'Helper utility to sort BED files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
-
-  static examples = [
-    '# sort bed and pipe to bgzip',
-    '$ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz',
-    '$ tabix sorted.bed.gz',
-  ]
+  static description = SORT_BED_DESCRIPTION
+  static examples = SORT_BED_EXAMPLES
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: SortBedNative.description,
+        examples: SortBedNative.examples,
+        usage: 'jbrowse sort-bed <file> [options]',
+        options,
+      })
       return
     }
 
-    const file = positionals[0]
-    if (!file) {
-      console.error('Error: Missing required argument: file')
-      console.error('Usage: jbrowse sort-bed <file>')
-      process.exit(1)
+    const file = positionals[0]!
+    validateFileArgument(file)
+    validateRequiredCommands()
+
+    try {
+      const child = spawnSortProcess({ file })
+      const exitCode = await waitForProcessClose(child)
+
+      if (exitCode !== 0) {
+        console.error(`Sort process exited with code ${exitCode}`)
+        process.exit(exitCode || 1)
+      }
+    } catch (error) {
+      handleProcessError(error)
     }
-
-    if (
-      commandExistsSync('sh') &&
-      commandExistsSync('sort') &&
-      commandExistsSync('grep')
-    ) {
-      // this command comes from the tabix docs http://www.htslib.org/doc/tabix.html
-      // BED files use columns 1,2 (0-based) for chromosome and start position
-      spawn(
-        'sh',
-        [
-          '-c',
-          `(grep "^#" "${file}"; grep -v "^#" "${file}" | sort -t"\`printf '\t'\`" -k1,1 -k2,2n)`,
-        ],
-        {
-          env: { ...process.env, LC_ALL: 'C' },
-          stdio: 'inherit',
-        },
-      )
-    } else {
-      console.error(
-        'Error: Unable to sort, requires unix type environment with sort, grep',
-      )
-      process.exit(1)
-    }
-  }
-
-  showHelp() {
-    console.log(`
-${SortBedNative.description}
-
-USAGE
-  $ jbrowse sort-bed <file>
-
-ARGUMENTS
-  file  BED file
-
-OPTIONS
-  -h, --help  Show help
-
-EXAMPLES
-${SortBedNative.examples.join('\n')}
-`)
   }
 }

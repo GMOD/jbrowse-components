@@ -23,10 +23,6 @@ export default abstract class NativeCommand {
     }
   }
 
-  log(message: string) {
-    console.log(message)
-  }
-
   async readFile(location: string) {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
@@ -183,4 +179,34 @@ export default abstract class NativeCommand {
   }
 
   abstract run(args?: string[]): Promise<void>
+}
+
+export function printHelp({
+  description,
+  options,
+  examples,
+  usage,
+}: {
+  description: string
+  options: Record<string, unknown>
+  examples: string[]
+  usage?: string
+}) {
+  console.log(description)
+  console.log(`
+Usage: ${usage || 'jbrowse <command> [options]'}`)
+  console.log('\nOptions:')
+  for (const [name, option] of Object.entries(options)) {
+    const short =
+      'short' in (option as any) && (option as any).short
+        ? `-${(option as any).short},`
+        : '   '
+    const namePadded = `--${name}`.padEnd(25, ' ')
+    const desc = (option as any).description?.replace(
+      /\n/g,
+      `\n${' '.repeat(29)}`,
+    )
+    console.log(`  ${short} ${namePadded} ${desc}`)
+  }
+  console.log(`\n${examples.join('\n')}`)
 }

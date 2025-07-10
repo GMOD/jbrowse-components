@@ -4,7 +4,7 @@ import { parseArgs } from 'util'
 import decompress from 'decompress'
 
 import fetch from '../fetchWithProxy'
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 const fsPromises = fs.promises
 
@@ -29,45 +29,56 @@ export default class CreateNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+      force: {
+        type: 'boolean',
+        short: 'f',
+        description:
+          'Overwrites existing JBrowse 2 installation if present in path',
+      },
+      listVersions: {
+        type: 'boolean',
+        short: 'l',
+        description: 'Lists out all versions of JBrowse 2',
+      },
+      branch: {
+        type: 'string',
+        description: 'Download a development build from a named git branch',
+      },
+      nightly: {
+        type: 'boolean',
+        description:
+          'Download the latest development build from the main branch',
+      },
+      url: {
+        type: 'string',
+        short: 'u',
+        description: 'A direct URL to a JBrowse 2 release',
+      },
+      tag: {
+        type: 'string',
+        short: 't',
+        description:
+          'Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        force: {
-          type: 'boolean',
-          short: 'f',
-          default: false,
-        },
-        listVersions: {
-          type: 'boolean',
-          short: 'l',
-          default: false,
-        },
-        branch: {
-          type: 'string',
-        },
-        nightly: {
-          type: 'boolean',
-          default: false,
-        },
-        url: {
-          type: 'string',
-          short: 'u',
-        },
-        tag: {
-          type: 'string',
-          short: 't',
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: CreateNative.description,
+        examples: CreateNative.examples,
+        usage: 'jbrowse create <localPath> [options]',
+        options,
+      })
       return
     }
 
@@ -133,29 +144,5 @@ export default class CreateNative extends NativeCommand {
       )
       process.exit(120)
     }
-  }
-
-  showHelp() {
-    console.log(`
-${CreateNative.description}
-
-USAGE
-  $ jbrowse create <localPath> [options]
-
-ARGUMENTS
-  localPath  Location where JBrowse 2 will be installed
-
-OPTIONS
-  -h, --help         Show help
-  -f, --force        Overwrites existing JBrowse 2 installation if present in path
-  -l, --listVersions Lists out all versions of JBrowse 2
-  --branch <branch>  Download a development build from a named git branch
-  --nightly          Download the latest development build from the main branch
-  -u, --url <url>    A direct URL to a JBrowse 2 release
-  -t, --tag <tag>    Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest
-
-EXAMPLES
-${CreateNative.examples.join('\n')}
-`)
   }
 }

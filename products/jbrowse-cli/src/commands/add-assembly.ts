@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import JBrowseCommand from '../native-base'
+import JBrowseCommand, { printHelp } from '../native-base'
 
 import type { Assembly, Config, Sequence } from '../base'
 
@@ -291,13 +291,11 @@ export default class AddAssembly extends JBrowseCommand {
         })
       })
 
-    const { positionals, values: runFlags } = parseArgs({
-      args,
-      options: {
-        type: {
-          type: 'string',
-          short: 't',
-          description: `type of sequence, by default inferred from sequence file
+    const options = {
+      type: {
+        type: 'string',
+        short: 't',
+        description: `type of sequence, by default inferred from sequence file
 
 indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
                can optionally specify --faiLocation
@@ -311,97 +309,111 @@ chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
 
 custom         Either a JSON file location or inline JSON that defines a custom
                sequence adapter; must provide --name if using inline JSON`,
-          choices: [
-            'indexedFasta',
-            'bgzipFasta',
-            'twoBit',
-            'chromSizes',
-            'custom',
-          ],
-        },
-        name: {
-          type: 'string',
-          short: 'n',
-          description:
-            'Name of the assembly; if not specified, will be guessed using the sequence file name',
-        },
-        alias: {
-          type: 'string',
-          short: 'a',
-          description:
-            'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
-          multiple: true,
-        },
-        displayName: {
-          type: 'string',
-          description:
-            'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
-        },
-        faiLocation: {
-          type: 'string',
-          description: '[default: <fastaLocation>.fai] FASTA index file or URL',
-        },
-        gziLocation: {
-          type: 'string',
-          description:
-            '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
-        },
-        refNameAliases: {
-          type: 'string',
-          description:
-            'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
-        },
-        refNameAliasesType: {
-          type: 'string',
-          description:
-            'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
-          choices: ['aliases', 'custom'],
-          dependsOn: ['refNameAliases'],
-        },
-        refNameColors: {
-          type: 'string',
-          description:
-            'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
-        },
-        target: {
-          type: 'string',
-          description:
-            'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-        },
-        out: {
-          type: 'string',
-          description: 'synonym for target',
-        },
-        help: {
-          type: 'boolean',
-          short: 'h',
-          description: 'Display help for command',
-        },
-        load: {
-          type: 'string',
-          short: 'l',
-          description:
-            'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
-          choices: ['copy', 'symlink', 'move', 'inPlace'],
-        },
-        skipCheck: {
-          type: 'boolean',
-          description:
-            "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
-        },
-        overwrite: {
-          type: 'boolean',
-          description:
-            'Overwrite existing assembly if one with the same name exists',
-        },
-        force: {
-          type: 'boolean',
-          short: 'f',
-          description: 'Equivalent to `--skipCheck --overwrite`',
-        },
+        choices: [
+          'indexedFasta',
+          'bgzipFasta',
+          'twoBit',
+          'chromSizes',
+          'custom',
+        ],
       },
+      name: {
+        type: 'string',
+        short: 'n',
+        description:
+          'Name of the assembly; if not specified, will be guessed using the sequence file name',
+      },
+      alias: {
+        type: 'string',
+        short: 'a',
+        description:
+          'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
+        multiple: true,
+      },
+      displayName: {
+        type: 'string',
+        description:
+          'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
+      },
+      faiLocation: {
+        type: 'string',
+        description: '[default: <fastaLocation>.fai] FASTA index file or URL',
+      },
+      gziLocation: {
+        type: 'string',
+        description:
+          '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
+      },
+      refNameAliases: {
+        type: 'string',
+        description:
+          'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
+      },
+      refNameAliasesType: {
+        type: 'string',
+        description:
+          'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
+        choices: ['aliases', 'custom'],
+        dependsOn: ['refNameAliases'],
+      },
+      refNameColors: {
+        type: 'string',
+        description:
+          'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
+      },
+      target: {
+        type: 'string',
+        description:
+          'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
+      },
+      out: {
+        type: 'string',
+        description: 'synonym for target',
+      },
+      help: {
+        type: 'boolean',
+        short: 'h',
+        description: 'Display help for command',
+      },
+      load: {
+        type: 'string',
+        short: 'l',
+        description:
+          'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
+        choices: ['copy', 'symlink', 'move', 'inPlace'],
+      },
+      skipCheck: {
+        type: 'boolean',
+        description:
+          "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
+      },
+      overwrite: {
+        type: 'boolean',
+        description:
+          'Overwrite existing assembly if one with the same name exists',
+      },
+      force: {
+        type: 'boolean',
+        short: 'f',
+        description: 'Equivalent to `--skipCheck --overwrite`',
+      },
+    } as const
+    const { positionals, values: runFlags } = parseArgs({
+      args,
+      options,
       allowPositionals: true,
     })
+
+    if (runFlags.help) {
+      printHelp({
+        description: AddAssembly.description,
+        examples: AddAssembly.examples,
+        usage: 'jbrowse add-assembly <sequence> [options]',
+        options,
+      })
+      return
+    }
+
     const argsSequence = positionals[0] || ''
     const output = runFlags.target || runFlags.out || '.'
 
@@ -425,11 +437,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
 
     if (runFlags.refNameColors) {
-      const colors = runFlags.refNameColors
+      assembly.refNameColors = runFlags.refNameColors
         .split(',')
         .map(color => color.trim())
-      this.debug(`Adding refName colors: ${colors}`)
-      assembly.refNameColors = colors
     }
 
     if (runFlags.refNameAliases) {
@@ -526,7 +536,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
 
-    this.log(
+    console.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
       } ${this.target}`,

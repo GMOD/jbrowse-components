@@ -5,7 +5,7 @@ import { parseArgs } from 'util'
 import parseJSON from 'json-parse-better-errors'
 
 import fetch from '../fetchWithProxy'
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 
 import type { Config } from '../base'
 
@@ -24,58 +24,77 @@ export default class AddConnectionNative extends NativeCommand {
   ]
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+        description: 'Show help',
+      },
+      type: {
+        type: 'string',
+        short: 't',
+        description:
+          'Type of connection (JBrowse1Connection, UCSCTrackHubConnection, custom)',
+      },
+      assemblyNames: {
+        type: 'string',
+        short: 'a',
+        description:
+          'For UCSC: optional comma separated list of assembly names to filter. For JBrowse: a single assembly name',
+      },
+      config: {
+        type: 'string',
+        short: 'c',
+        description:
+          'Extra config settings to add to connection in JSON object format',
+      },
+      connectionId: {
+        type: 'string',
+        description: 'Id for the connection that must be unique to JBrowse',
+      },
+      name: {
+        type: 'string',
+        short: 'n',
+        description:
+          'Name of the connection. Defaults to connectionId if not provided',
+      },
+      target: {
+        type: 'string',
+        description:
+          'Path to config file in JB2 installation directory to write out to',
+      },
+      out: {
+        type: 'string',
+        description: 'Synonym for target',
+      },
+      skipCheck: {
+        type: 'boolean',
+        description: "Don't check whether the data directory URL exists",
+      },
+      overwrite: {
+        type: 'boolean',
+        description:
+          'Overwrites any existing connections if same connection id',
+      },
+      force: {
+        type: 'boolean',
+        short: 'f',
+        description: 'Equivalent to --skipCheck --overwrite',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-        type: {
-          type: 'string',
-          short: 't',
-        },
-        assemblyNames: {
-          type: 'string',
-          short: 'a',
-        },
-        config: {
-          type: 'string',
-          short: 'c',
-        },
-        connectionId: {
-          type: 'string',
-        },
-        name: {
-          type: 'string',
-          short: 'n',
-        },
-        target: {
-          type: 'string',
-        },
-        out: {
-          type: 'string',
-        },
-        skipCheck: {
-          type: 'boolean',
-          default: false,
-        },
-        overwrite: {
-          type: 'boolean',
-          default: false,
-        },
-        force: {
-          type: 'boolean',
-          short: 'f',
-          default: false,
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: AddConnectionNative.description,
+        examples: AddConnectionNative.examples,
+        usage: 'jbrowse add-connection <connectionUrlOrPath> [options]',
+        options,
+      })
       return
     }
 

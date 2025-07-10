@@ -5,10 +5,10 @@ export function parseCigar(cigar = ''): string[] {
 }
 
 export function flipCigar(cigar: string[]): string[] {
-  const arr = []
+  const arr = [] as string[]
   for (let i = cigar.length - 2; i >= 0; i -= 2) {
-    arr.push(cigar[i])
-    const op = cigar[i + 1]
+    arr.push(cigar[i]!)
+    const op = cigar[i + 1]!
     if (op === 'D') {
       arr.push('I')
     } else if (op === 'I') {

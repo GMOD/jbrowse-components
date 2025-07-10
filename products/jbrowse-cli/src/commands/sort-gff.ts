@@ -1,6 +1,6 @@
 import { parseArgs } from 'util'
 
-import NativeCommand from '../native-base'
+import NativeCommand, { printHelp } from '../native-base'
 import {
   validateFileArgument,
   validateRequiredCommands,
@@ -14,27 +14,31 @@ import {
   SORT_GFF_DESCRIPTION,
   SORT_GFF_EXAMPLES,
 } from './sort-gff-utils/constants'
-import { getHelpText } from './sort-gff-utils/help-text'
 
 export default class SortGffNative extends NativeCommand {
   static description = SORT_GFF_DESCRIPTION
   static examples = SORT_GFF_EXAMPLES
 
   async run(args?: string[]) {
+    const options = {
+      help: {
+        type: 'boolean',
+        short: 'h',
+      },
+    } as const
     const { values: flags, positionals } = parseArgs({
       args,
-      options: {
-        help: {
-          type: 'boolean',
-          short: 'h',
-          default: false,
-        },
-      },
+      options,
       allowPositionals: true,
     })
 
     if (flags.help) {
-      this.showHelp()
+      printHelp({
+        description: SortGffNative.description,
+        examples: SortGffNative.examples,
+        usage: 'jbrowse sort-gff <file> [options]',
+        options,
+      })
       return
     }
 
@@ -53,9 +57,5 @@ export default class SortGffNative extends NativeCommand {
     } catch (error) {
       handleProcessError(error)
     }
-  }
-
-  showHelp() {
-    console.log(getHelpText())
   }
 }
