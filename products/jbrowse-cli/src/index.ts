@@ -5,34 +5,34 @@ import fs from 'fs'
 import { parseArgs } from 'util'
 
 // Command imports
-import AddAssembly from './commands/add-assembly'
-import AddConnection from './commands/add-connection'
-import AddTrack from './commands/add-track'
-import AddTrackJson from './commands/add-track-json'
-import AdminServer from './commands/admin-server'
-import Create from './commands/create'
-import MakePIF from './commands/make-pif'
-import RemoveTrack from './commands/remove-track'
-import SetDefaultSession from './commands/set-default-session'
-import SortBed from './commands/sort-bed'
-import SortGff from './commands/sort-gff'
-import TextIndex from './commands/text-index'
-import Upgrade from './commands/upgrade'
+import { run as addAssemblyRun } from './commands/add-assembly'
+import { run as addConnectionRun } from './commands/add-connection'
+import { run as addTrackRun } from './commands/add-track'
+import { run as addTrackJsonRun } from './commands/add-track-json'
+import { run as adminServerRun } from './commands/admin-server'
+import { run as createRun } from './commands/create'
+import { run as makePIFRun } from './commands/make-pif'
+import { run as removeTrackRun } from './commands/remove-track'
+import { run as setDefaultSessionRun } from './commands/set-default-session'
+import { run as sortBedRun } from './commands/sort-bed'
+import { run as sortGffRun } from './commands/sort-gff'
+import { run as textIndexRun } from './commands/text-index'
+import { run as upgradeRun } from './commands/upgrade'
 
 const commands = {
-  create: Create,
-  'add-assembly': AddAssembly,
-  'add-track': AddTrack,
-  'text-index': TextIndex,
-  'admin-server': AdminServer,
-  upgrade: Upgrade,
-  'make-pif': MakePIF,
-  'sort-gff': SortGff,
-  'sort-bed': SortBed,
-  'add-connection': AddConnection,
-  'add-track-json': AddTrackJson,
-  'remove-track': RemoveTrack,
-  'set-default-session': SetDefaultSession,
+  create: createRun,
+  'add-assembly': addAssemblyRun,
+  'add-track': addTrackRun,
+  'text-index': textIndexRun,
+  'admin-server': adminServerRun,
+  upgrade: upgradeRun,
+  'make-pif': makePIFRun,
+  'sort-gff': sortGffRun,
+  'sort-bed': sortBedRun,
+  'add-connection': addConnectionRun,
+  'add-track-json': addTrackJsonRun,
+  'remove-track': removeTrackRun,
+  'set-default-session': setDefaultSessionRun,
 }
 
 export async function main(args: string[]) {
@@ -76,9 +76,9 @@ export async function main(args: string[]) {
       process.exit(1)
     }
 
-    const CommandClass = commands[commandName as keyof typeof commands]
+    const command = commands[commandName as keyof typeof commands]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!CommandClass) {
+    if (!command) {
       console.error(`Error: Unknown command "${commandName}"`)
       console.error(`Available commands: ${Object.keys(commands).join(', ')}`)
       process.exit(1)
@@ -86,9 +86,7 @@ export async function main(args: string[]) {
 
     // Pass the remaining arguments to the command
     const commandArgs = args.slice(1) // Remove the command name from args
-
-    const command = new CommandClass()
-    await command.run(commandArgs)
+    await command(commandArgs)
   } catch (error) {
     console.error('Error:', error instanceof Error ? error.message : error)
     process.exit(1)

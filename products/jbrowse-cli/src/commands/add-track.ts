@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import NativeCommand, { printHelp } from '../native-base'
+import { debug, readJsonFile, writeJsonFile, printHelp } from '../utils'
 import {
   validateLoadOption,
   validateTrackArg,
@@ -26,12 +26,103 @@ import {
 
 import type { Config } from '../base'
 
-export default class AddTrackNative extends NativeCommand {
-  target = ''
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+    trackType: {
+      type: 'string',
+      short: 't',
+      description: 'Type of track, by default inferred from track file',
+    },
+    name: {
+      type: 'string',
+      short: 'n',
+      description:
+        'Name of the track. Will be defaulted to the trackId if none specified',
+    },
+    indexFile: {
+      type: 'string',
+      description: 'Optional index file for the track',
+    },
+    description: {
+      type: 'string',
+      short: 'd',
+      description: 'Optional description of the track',
+    },
+    assemblyNames: {
+      type: 'string',
+      short: 'a',
+      description: 'Assembly name or names for track as comma separated string',
+    },
+    category: {
+      type: 'string',
+      description:
+        'Optional comma separated string of categories to group tracks',
+    },
+    config: {
+      type: 'string',
+      description: 'Any extra config settings to add to a track',
+    },
+    target: {
+      type: 'string',
+      description: 'Path to config file in JB2 installation to write out to',
+    },
+    out: {
+      type: 'string',
+      description: 'Synonym for target',
+    },
+    subDir: {
+      type: 'string',
+      description:
+        'When using --load a file, output to a subdirectory of the target dir',
+    },
+    trackId: {
+      type: 'string',
+      description: 'trackId for the track, by default inferred from filename',
+    },
+    load: {
+      type: 'string',
+      short: 'l',
+      description: 'How to manage the track (copy, symlink, move, inPlace)',
+    },
+    skipCheck: {
+      type: 'boolean',
+      description: 'Skip check for whether file or URL exists',
+    },
+    overwrite: {
+      type: 'boolean',
+      description: 'Overwrites existing track if it shares the same trackId',
+    },
+    force: {
+      type: 'boolean',
+      short: 'f',
+      description: 'Equivalent to --skipCheck --overwrite',
+    },
+    protocol: {
+      type: 'string',
+      description: 'Force protocol to a specific value',
+    },
+    bed1: {
+      type: 'string',
+      description: 'Used only for mcscan anchors/simpleAnchors types',
+    },
+    bed2: {
+      type: 'string',
+      description: 'Used only for mcscan anchors/simpleAnchors types',
+    },
+  } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
 
-  static description = 'Add a track to a JBrowse 2 configuration'
+  const description = 'Add a track to a JBrowse 2 configuration'
 
-  static examples = [
+  const examples = [
     '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
     '$ jbrowse add-track /path/to/my.bam --load copy',
     '',
@@ -51,220 +142,120 @@ export default class AddTrackNative extends NativeCommand {
     '$ jbrowse add-track /url/relative/path.bam --load inPlace',
   ]
 
-  async run(args?: string[]) {
-    const options = {
-      help: {
-        type: 'boolean',
-        short: 'h',
-        description: 'Show help',
-      },
-      trackType: {
-        type: 'string',
-        short: 't',
-        description: 'Type of track, by default inferred from track file',
-      },
-      name: {
-        type: 'string',
-        short: 'n',
-        description:
-          'Name of the track. Will be defaulted to the trackId if none specified',
-      },
-      indexFile: {
-        type: 'string',
-        description: 'Optional index file for the track',
-      },
-      description: {
-        type: 'string',
-        short: 'd',
-        description: 'Optional description of the track',
-      },
-      assemblyNames: {
-        type: 'string',
-        short: 'a',
-        description:
-          'Assembly name or names for track as comma separated string',
-      },
-      category: {
-        type: 'string',
-        description:
-          'Optional comma separated string of categories to group tracks',
-      },
-      config: {
-        type: 'string',
-        description: 'Any extra config settings to add to a track',
-      },
-      target: {
-        type: 'string',
-        description: 'Path to config file in JB2 installation to write out to',
-      },
-      out: {
-        type: 'string',
-        description: 'Synonym for target',
-      },
-      subDir: {
-        type: 'string',
-        description:
-          'When using --load a file, output to a subdirectory of the target dir',
-      },
-      trackId: {
-        type: 'string',
-        description: 'trackId for the track, by default inferred from filename',
-      },
-      load: {
-        type: 'string',
-        short: 'l',
-        description: 'How to manage the track (copy, symlink, move, inPlace)',
-      },
-      skipCheck: {
-        type: 'boolean',
-        description: 'Skip check for whether file or URL exists',
-      },
-      overwrite: {
-        type: 'boolean',
-        description: 'Overwrites existing track if it shares the same trackId',
-      },
-      force: {
-        type: 'boolean',
-        short: 'f',
-        description: 'Equivalent to --skipCheck --overwrite',
-      },
-      protocol: {
-        type: 'string',
-        description: 'Force protocol to a specific value',
-      },
-      bed1: {
-        type: 'string',
-        description: 'Used only for mcscan anchors/simpleAnchors types',
-      },
-      bed2: {
-        type: 'string',
-        description: 'Used only for mcscan anchors/simpleAnchors types',
-      },
-    } as const
-    const { values: flags, positionals } = parseArgs({
-      args,
+  if (flags.help) {
+    printHelp({
+      description,
+      examples,
+      usage: 'jbrowse add-track <track> [options]',
       options,
-      allowPositionals: true,
     })
+    return
+  }
 
-    if (flags.help) {
-      printHelp({
-        description: AddTrackNative.description,
-        examples: AddTrackNative.examples,
-        usage: 'jbrowse add-track <track> [options]',
-        options,
-      })
-      return
-    }
+  validateLoadOption(flags.load)
 
-    validateLoadOption(flags.load)
+  const track = positionals[0]
+  validateTrackArg(track)
 
-    const track = positionals[0]!
-    validateTrackArg(track)
+  const {
+    config,
+    skipCheck,
+    force,
+    overwrite,
+    category,
+    description: trackDescription,
+    load,
+    subDir = '',
+    target,
+    protocol = 'uri',
+    out,
+    indexFile: index,
+    bed1,
+    bed2,
+  } = flags
 
-    const {
-      config,
-      skipCheck,
-      force,
-      overwrite,
-      category,
-      description,
-      load,
-      subDir = '',
-      target,
-      protocol = 'uri',
-      out,
-      indexFile: index,
-      bed1,
-      bed2,
-    } = flags
+  const output = target || out || '.'
+  const isDir = fs.lstatSync(output).isDirectory()
+  const targetConfigPath = isDir ? `${output}/config.json` : output
 
-    const output = target || out || '.'
-    const isDir = fs.lstatSync(output).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
+  const configDir = path.dirname(targetConfigPath)
 
-    let { trackType, trackId, name, assemblyNames } = flags
+  createTargetDirectory(configDir, subDir)
+  const location = track!
 
-    const configDir = path.dirname(this.target)
+  const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
 
-    createTargetDirectory(configDir, subDir)
-    const location = track
+  let adapter = guessAdapter({
+    protocol,
+    location: mapLoc(location),
+    index: index ? mapLoc(index) : undefined,
+    bed1: bed1 ? mapLoc(bed1) : undefined,
+    bed2: bed2 ? mapLoc(bed2) : undefined,
+  })
 
-    const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
+  adapter = addSyntenyAssemblyNames(adapter, flags.assemblyNames)
 
-    let adapter = guessAdapter({
-      protocol,
-      location: mapLoc(location),
-      index: index ? mapLoc(index) : undefined,
-      bed1: bed1 ? mapLoc(bed1) : undefined,
-      bed2: bed2 ? mapLoc(bed2) : undefined,
-    })
+  validateLoadAndLocation(location, load)
+  validateAdapterType(adapter.type)
 
-    adapter = addSyntenyAssemblyNames(adapter, assemblyNames)
+  const configContents: Config = await readJsonFile(targetConfigPath)
+  validateAssemblies(configContents, flags.assemblyNames)
 
-    validateLoadAndLocation(location, load)
-    validateAdapterType(adapter.type)
+  let trackType = flags.trackType || guessTrackType(adapter.type)
+  let trackId = flags.trackId || path.basename(location, path.extname(location))
+  let name = flags.name || trackId
+  const assemblyNames =
+    flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
 
-    const configContents: Config = await this.readJsonFile(this.target)
-    validateAssemblies(configContents, assemblyNames)
+  const trackConfig = buildTrackConfig({
+    location,
+    trackType,
+    trackId,
+    name,
+    assemblyNames,
+    category,
+    description: trackDescription,
+    config,
+    adapter,
+    configContents,
+    skipCheck,
+  })
 
-    trackType = trackType || guessTrackType(adapter.type)
-    trackId = trackId || path.basename(location, path.extname(location))
-    name = name || trackId
-    assemblyNames = assemblyNames || configContents.assemblies?.[0]?.name || ''
+  const idx = validateTrackId(configContents, trackId, force, overwrite)
 
-    const trackConfig = buildTrackConfig({
-      location,
-      trackType,
-      trackId,
-      name,
-      assemblyNames,
-      category,
-      description,
-      config,
-      adapter,
-      configContents,
-      skipCheck,
-    })
+  if (idx !== -1) {
+    debug(`Found existing trackId ${trackId} in configuration`)
+    debug(`Overwriting track ${trackId} in configuration`)
+    configContents.tracks![idx] = trackConfig
+  } else {
+    configContents.tracks!.push(trackConfig)
+  }
 
-    const idx = validateTrackId(configContents, trackId, force, overwrite)
-
-    if (idx !== -1) {
-      this.debug(`Found existing trackId ${trackId} in configuration`)
-      this.debug(`Overwriting track ${trackId} in configuration`)
-      configContents.tracks![idx] = trackConfig
-    } else {
-      configContents.tracks!.push(trackConfig)
-    }
-
-    if (load && load !== 'inPlace') {
-      await Promise.all(
-        Object.values(guessFileNames({ location, index, bed1, bed2 }))
-          .filter(f => !!f)
-          .map(srcFilename =>
-            fileOperation({
-              mode: load,
+  if (load && load !== 'inPlace') {
+    await Promise.all(
+      Object.values(guessFileNames({ location, index, bed1, bed2 }))
+        .filter(f => !!f)
+        .map(srcFilename =>
+          fileOperation({
+            mode: load,
+            srcFilename,
+            destFilename: destinationFn({
+              destinationDir: configDir,
               srcFilename,
-              destFilename: destinationFn({
-                destinationDir: configDir,
-                srcFilename,
-                force,
-                subDir,
-              }),
+              force,
+              subDir,
             }),
-          ),
-      )
-    }
-
-    this.debug(`Writing configuration to file ${this.target}`)
-    await this.writeJsonFile(this.target, configContents)
-
-    console.log(
-      `${
-        idx !== -1 ? 'Overwrote' : 'Added'
-      } track with name "${name}" and trackId "${trackId}" ${
-        idx !== -1 ? 'in' : 'to'
-      } ${this.target}`,
+          }),
+        ),
     )
   }
+
+  debug(`Writing configuration to file ${targetConfigPath}`)
+  await writeJsonFile(targetConfigPath, configContents)
+
+  console.log(
+    `${idx !== -1 ? 'Overwrote' : 'Added'} track with name "${name}" and trackId "${trackId}" ${
+      idx !== -1 ? 'in' : 'to'
+    } ${targetConfigPath}`,
+  )
 }

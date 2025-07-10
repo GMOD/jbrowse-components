@@ -7,7 +7,7 @@ import { createGunzip } from 'zlib'
 
 import { sync as commandExistsSync } from 'command-exists'
 
-import NativeCommand, { printHelp } from '../native-base'
+import { printHelp } from '../utils'
 
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 
@@ -106,89 +106,85 @@ export async function createPIF(
   }
 }
 
-export default class MakePIFNative extends NativeCommand {
-  static description =
-    'creates pairwise indexed PAF (PIF), with bgzip and tabix'
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+    out: {
+      type: 'string',
+      description:
+        'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
+    },
+    csi: {
+      type: 'boolean',
+      description: 'Create a CSI index for the PIF file instead of TBI',
+    },
+  } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
 
-  static examples = [
+  const description = 'creates pairwise indexed PAF (PIF), with bgzip and tabix'
+
+  const examples = [
     '$ jbrowse make-pif input.paf # creates input.pif.gz in same directory',
     '',
     '$ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
   ]
 
-  async run(args?: string[]) {
-    const options = {
-      help: {
-        type: 'boolean',
-        short: 'h',
-        description: 'Show help',
-      },
-      out: {
-        type: 'string',
-        description:
-          'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
-      },
-      csi: {
-        type: 'boolean',
-        description: 'Create a CSI index for the PIF file instead of TBI',
-      },
-    } as const
-    const { values: flags, positionals } = parseArgs({
-      args,
+  if (flags.help) {
+    printHelp({
+      description,
+      examples,
+      usage: 'jbrowse make-pif <file> [options]',
       options,
-      allowPositionals: true,
     })
+    return
+  }
 
-    if (flags.help) {
-      printHelp({
-        description: MakePIFNative.description,
-        examples: MakePIFNative.examples,
-        usage: 'jbrowse make-pif <file> [options]',
-        options,
-      })
-      return
-    }
+  const file = positionals[0]
+  if (!file) {
+    console.error('Error: Missing required argument: file')
+    console.error('Usage: jbrowse make-pif <file> [options]')
+    process.exit(1)
+  }
 
-    const file = positionals[0]
-    if (!file) {
-      console.error('Error: Missing required argument: file')
-      console.error('Usage: jbrowse make-pif <file> [options]')
-      process.exit(1)
-    }
+  const { out, csi } = flags
 
-    const { out, csi } = flags
-
-    if (
-      commandExistsSync('sh') &&
-      commandExistsSync('sort') &&
-      commandExistsSync('grep') &&
-      commandExistsSync('tabix') &&
-      commandExistsSync('bgzip')
-    ) {
-      const fn = out || `${path.basename(file || 'output', '.paf')}.pif.gz`
-      const child = spawn(
-        'sh',
-        [
-          '-c',
-          `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip > ${fn}; tabix ${
-            csi ? '-C ' : ''
-          }-s1 -b3 -e4 -0 ${fn}`,
-        ],
-        {
-          env: { ...process.env, LC_ALL: 'C' },
-          stdio: ['pipe', process.stdout, process.stderr],
-        },
-      )
-      await createPIF(file, child.stdin)
-      child.stdin.end()
-      await new Promise(resolve => {
-        child.on('close', resolve)
-      })
-    } else {
-      console.error(
-        'Error: Unable to sort, requires unix type environment with sort, grep, bgzip, tabix',
-      )
-      process.exit(1)
-    }
+  if (
+    commandExistsSync('sh') &&
+    commandExistsSync('sort') &&
+    commandExistsSync('grep') &&
+    commandExistsSync('tabix') &&
+    commandExistsSync('bgzip')
+  ) {
+    const fn = out || `${path.basename(file || 'output', '.paf')}.pif.gz`
+    const child = spawn(
+      'sh',
+      [
+        '-c',
+        `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip > ${fn}; tabix ${
+          csi ? '-C ' : ''
+        }-s1 -b3 -e4 -0 ${fn}`,
+      ],
+      {
+        env: { ...process.env, LC_ALL: 'C' },
+        stdio: ['pipe', process.stdout, process.stderr],
+      },
+    )
+    await createPIF(file, child.stdin)
+    child.stdin.end()
+    await new Promise(resolve => {
+      child.on('close', resolve)
+    })
+  } else {
+    console.error(
+      'Error: Unable to sort, requires unix type environment with sort, grep, bgzip, tabix',
+    )
+    process.exit(1)
   }
 }

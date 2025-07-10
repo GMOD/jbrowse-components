@@ -1,6 +1,6 @@
 import { parseArgs } from 'util'
 
-import NativeCommand, { printHelp } from '../native-base'
+import { printHelp } from '../utils'
 import {
   validateFileArgument,
   validateRequiredCommands,
@@ -15,47 +15,45 @@ import {
   SORT_BED_EXAMPLES,
 } from './sort-bed-utils/constants'
 
-export default class SortBedNative extends NativeCommand {
-  static description = SORT_BED_DESCRIPTION
-  static examples = SORT_BED_EXAMPLES
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+  } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
 
-  async run(args?: string[]) {
-    const options = {
-      help: {
-        type: 'boolean',
-        short: 'h',
-      },
-    } as const
-    const { values: flags, positionals } = parseArgs({
-      args,
+  const description = SORT_BED_DESCRIPTION
+  const examples = SORT_BED_EXAMPLES
+
+  if (flags.help) {
+    printHelp({
+      description,
+      examples,
+      usage: 'jbrowse sort-bed <file> [options]',
       options,
-      allowPositionals: true,
     })
+    return
+  }
 
-    if (flags.help) {
-      printHelp({
-        description: SortBedNative.description,
-        examples: SortBedNative.examples,
-        usage: 'jbrowse sort-bed <file> [options]',
-        options,
-      })
-      return
+  const file = positionals[0]!
+  validateFileArgument(file)
+  validateRequiredCommands()
+
+  try {
+    const child = spawnSortProcess({ file })
+    const exitCode = await waitForProcessClose(child)
+
+    if (exitCode !== 0) {
+      console.error(`Sort process exited with code ${exitCode}`)
+      process.exit(exitCode || 1)
     }
-
-    const file = positionals[0]!
-    validateFileArgument(file)
-    validateRequiredCommands()
-
-    try {
-      const child = spawnSortProcess({ file })
-      const exitCode = await waitForProcessClose(child)
-
-      if (exitCode !== 0) {
-        console.error(`Sort process exited with code ${exitCode}`)
-        process.exit(exitCode || 1)
-      }
-    } catch (error) {
-      handleProcessError(error)
-    }
+  } catch (error) {
+    handleProcessError(error)
   }
 }
