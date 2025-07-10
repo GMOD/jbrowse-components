@@ -3,10 +3,10 @@ import { parseArgs } from 'util'
 
 import {
   debug,
-  readJsonFile,
-  readInlineOrFileJson,
-  writeJsonFile,
   printHelp,
+  readInlineOrFileJson,
+  readJsonFile,
+  writeJsonFile,
 } from '../utils'
 
 import type { Config, Track } from '../base'

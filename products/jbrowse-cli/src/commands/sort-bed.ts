@@ -2,18 +2,18 @@ import { parseArgs } from 'util'
 
 import { printHelp } from '../utils'
 import {
-  validateFileArgument,
-  validateRequiredCommands,
-} from './sort-bed-utils/validators'
-import { spawnSortProcess } from './sort-bed-utils/sort-utils'
-import {
-  waitForProcessClose,
-  handleProcessError,
-} from './sort-bed-utils/process-utils'
-import {
   SORT_BED_DESCRIPTION,
   SORT_BED_EXAMPLES,
 } from './sort-bed-utils/constants'
+import {
+  handleProcessError,
+  waitForProcessClose,
+} from './sort-bed-utils/process-utils'
+import { spawnSortProcess } from './sort-bed-utils/sort-utils'
+import {
+  validateFileArgument,
+  validateRequiredCommands,
+} from './sort-bed-utils/validators'
 
 export async function run(args?: string[]) {
   const options = {

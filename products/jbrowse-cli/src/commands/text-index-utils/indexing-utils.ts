@@ -1,6 +1,9 @@
 import path from 'path'
 import { Readable } from 'stream'
+
 import { ixIxxStream } from 'ixixx'
+
+import { getAdapterLocation, getLoc } from './adapter-utils'
 import {
   generateMeta,
   guessAdapterFromFileName,
@@ -8,7 +11,7 @@ import {
 } from '../../types/common'
 import { indexGff3 } from '../../types/gff3Adapter'
 import { indexVcf } from '../../types/vcfAdapter'
-import { getAdapterLocation, getLoc } from './adapter-utils'
+
 import type { Track } from '../../base'
 
 export async function runIxIxx({
@@ -65,9 +68,7 @@ export async function* indexFiles({
         typesToExclude: indexingFeatureTypesToExclude,
         quiet,
       })
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
+    } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
       yield* indexVcf({
         config,
         attributesToIndex: indexingAttributes,

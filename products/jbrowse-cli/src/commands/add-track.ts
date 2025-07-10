@@ -2,27 +2,27 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { debug, readJsonFile, writeJsonFile, printHelp } from '../utils'
-import {
-  validateLoadOption,
-  validateTrackArg,
-  validateLoadAndLocation,
-  validateAdapterType,
-  validateAssemblies,
-  validateTrackId,
-  createTargetDirectory,
-} from './add-track-utils/validators'
-import { fileOperation, destinationFn } from './add-track-utils/file-operations'
+import { debug, printHelp, readJsonFile, writeJsonFile } from '../utils'
 import {
   guessAdapter,
-  guessTrackType,
   guessFileNames,
+  guessTrackType,
 } from './add-track-utils/adapter-utils'
+import { destinationFn, fileOperation } from './add-track-utils/file-operations'
 import {
-  mapLocationForFiles,
-  buildTrackConfig,
   addSyntenyAssemblyNames,
+  buildTrackConfig,
+  mapLocationForFiles,
 } from './add-track-utils/track-config'
+import {
+  createTargetDirectory,
+  validateAdapterType,
+  validateAssemblies,
+  validateLoadAndLocation,
+  validateLoadOption,
+  validateTrackArg,
+  validateTrackId,
+} from './add-track-utils/validators'
 
 import type { Config } from '../base'
 
@@ -201,9 +201,10 @@ export async function run(args?: string[]) {
   const configContents: Config = await readJsonFile(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
-  let trackType = flags.trackType || guessTrackType(adapter.type)
-  let trackId = flags.trackId || path.basename(location, path.extname(location))
-  let name = flags.name || trackId
+  const trackType = flags.trackType || guessTrackType(adapter.type)
+  const trackId =
+    flags.trackId || path.basename(location, path.extname(location))
+  const name = flags.name || trackId
   const assemblyNames =
     flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
 

@@ -4,11 +4,11 @@ import { parseArgs } from 'util'
 
 import {
   debug,
-  readJsonFile,
-  writeJsonFile,
-  resolveFileLocation,
-  readInlineOrFileJson,
   printHelp,
+  readInlineOrFileJson,
+  readJsonFile,
+  resolveFileLocation,
+  writeJsonFile,
 } from '../utils'
 
 import type { Assembly, Config, Sequence } from '../base'

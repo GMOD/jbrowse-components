@@ -1,7 +1,7 @@
 import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
-import { readJsonFile, writeJsonFile, printHelp } from '../utils'
+import { printHelp, readJsonFile, writeJsonFile } from '../utils'
 
 import type { Config } from '../base'
 

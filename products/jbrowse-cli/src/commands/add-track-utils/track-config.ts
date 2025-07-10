@@ -1,9 +1,12 @@
 import path from 'path'
+
 import parseJSON from 'json-parse-better-errors'
-import type { Config, Track } from '../../base'
+
 import { isUrl } from './validators'
 
-const SYNTENY_ADAPTERS = [
+import type { Config, Track } from '../../base'
+
+const SYNTENY_ADAPTERS = new Set([
   'PAFAdapter',
   'PairwiseIndexedPAFAdapter',
   'DeltaAdapter',
@@ -11,7 +14,7 @@ const SYNTENY_ADAPTERS = [
   'MashMapAdapter',
   'MCScanAnchorsAdapter',
   'MCScanSimpleAnchorsAdapter',
-]
+])
 
 export function mapLocationForFiles(
   p: string,
@@ -88,7 +91,7 @@ export function addSyntenyAssemblyNames(
   adapter: any,
   assemblyNames?: string,
 ): any {
-  if (SYNTENY_ADAPTERS.includes(adapter.type)) {
+  if (SYNTENY_ADAPTERS.has(adapter.type)) {
     return {
       ...adapter,
       assemblyNames: assemblyNames?.split(',').map(a => a.trim()),

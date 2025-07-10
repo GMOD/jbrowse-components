@@ -1,5 +1,8 @@
-import { spawn, ChildProcess } from 'child_process'
+import { spawn } from 'child_process'
+
 import tmp from 'tmp'
+
+import type { ChildProcess } from 'child_process'
 
 export interface SortOptions {
   file?: string
@@ -51,9 +54,7 @@ export function spawnSortProcessFromStdin(): ChildProcess {
 }
 
 export function spawnSortProcess(options: SortOptions): ChildProcess {
-  if (options.file) {
-    return spawnSortProcessFromFile(options.file)
-  } else {
-    return spawnSortProcessFromStdin()
-  }
+  return options.file
+    ? spawnSortProcessFromFile(options.file)
+    : spawnSortProcessFromStdin()
 }

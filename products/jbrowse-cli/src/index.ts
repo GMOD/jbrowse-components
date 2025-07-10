@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import { parseArgs } from 'util'
 
 // Command imports

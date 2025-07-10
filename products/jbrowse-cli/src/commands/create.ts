@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { parseArgs } from 'util'
 
 import decompress from 'decompress'
 
@@ -10,7 +11,6 @@ import {
   getTag,
   printHelp,
 } from '../utils'
-import { parseArgs } from 'util'
 
 const fsPromises = fs.promises
 

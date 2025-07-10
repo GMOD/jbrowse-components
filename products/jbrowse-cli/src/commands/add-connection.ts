@@ -5,7 +5,7 @@ import { parseArgs } from 'util'
 import parseJSON from 'json-parse-better-errors'
 
 import fetch from '../fetchWithProxy'
-import { debug, readJsonFile, writeJsonFile, printHelp } from '../utils'
+import { debug, printHelp, readJsonFile, writeJsonFile } from '../utils'
 
 import type { Config } from '../base'
 
@@ -40,15 +40,6 @@ function determineConnectionType(url: string) {
     return 'JBrowse1Connection'
   }
   return 'custom'
-}
-
-function isValidJSON(str: string) {
-  try {
-    JSON.parse(str)
-    return true
-  } catch (error) {
-    return false
-  }
 }
 
 export async function run(args?: string[]) {

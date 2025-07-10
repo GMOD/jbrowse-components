@@ -1,12 +1,14 @@
 import { spawn } from 'child_process'
 import path from 'path'
+
+import { flipCigar, parseCigar, swapIndelCigar } from './cigar-utils'
 import {
+  createWriteWithBackpressure,
   getReadline,
   getStdReadline,
-  createWriteWithBackpressure,
-  WritableStream,
 } from './file-utils'
-import { parseCigar, flipCigar, swapIndelCigar } from './cigar-utils'
+
+import type { WritableStream } from './file-utils'
 
 export async function createPIF(
   filename: string | undefined,

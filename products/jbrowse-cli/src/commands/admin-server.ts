@@ -7,7 +7,7 @@ import { parseArgs } from 'util'
 import cors from 'cors'
 import express from 'express'
 
-import { debug, writeJsonFile, readJsonFile, printHelp } from '../utils'
+import { debug, printHelp, writeJsonFile } from '../utils'
 
 import type { Express, Request, Response } from 'express'
 

@@ -3,7 +3,7 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import { readJsonFile, writeJsonFile, printHelp } from '../utils'
+import { printHelp, readJsonFile, writeJsonFile } from '../utils'
 
 const fsPromises = fs.promises
 

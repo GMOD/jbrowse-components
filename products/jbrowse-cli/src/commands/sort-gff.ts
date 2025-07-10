@@ -2,18 +2,18 @@ import { parseArgs } from 'util'
 
 import { printHelp } from '../utils'
 import {
-  validateFileArgument,
-  validateRequiredCommands,
-} from './sort-gff-utils/validators'
-import { spawnSortProcess } from './sort-gff-utils/sort-utils'
-import {
-  waitForProcessClose,
-  handleProcessError,
-} from './sort-gff-utils/process-utils'
-import {
   SORT_GFF_DESCRIPTION,
   SORT_GFF_EXAMPLES,
 } from './sort-gff-utils/constants'
+import {
+  handleProcessError,
+  waitForProcessClose,
+} from './sort-gff-utils/process-utils'
+import { spawnSortProcess } from './sort-gff-utils/sort-utils'
+import {
+  validateFileArgument,
+  validateRequiredCommands,
+} from './sort-gff-utils/validators'
 
 export async function run(args?: string[]) {
   const options = {

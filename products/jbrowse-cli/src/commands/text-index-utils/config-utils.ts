@@ -1,7 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-import type { Config, Track } from '../../base'
+
 import { supported } from '../../types/common'
+
+import type { Config, Track } from '../../base'
 
 export function readConf(configPath: string): Config {
   return JSON.parse(fs.readFileSync(configPath, 'utf8')) as Config

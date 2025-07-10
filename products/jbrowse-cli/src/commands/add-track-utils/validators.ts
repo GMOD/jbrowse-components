@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+
 import type { Config } from '../../base'
 
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)

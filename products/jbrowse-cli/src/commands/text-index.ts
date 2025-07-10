@@ -5,7 +5,6 @@ import { parseArgs } from 'util'
 
 import { ixIxxStream } from 'ixixx'
 
-import { debug, readJsonFile, writeJsonFile, printHelp } from '../utils'
 import {
   generateMeta,
   guessAdapterFromFileName,
@@ -13,6 +12,8 @@ import {
 } from '../types/common'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
+import { printHelp } from '../utils'
+import { createPerTrackTrixAdapter } from './text-index-utils/adapter-utils'
 
 import type {
   Config,
@@ -21,7 +22,6 @@ import type {
   TrixTextSearchAdapter,
   UriLocation,
 } from '../base'
-import { createPerTrackTrixAdapter } from './text-index-utils/adapter-utils'
 
 function readConf(path: string) {
   return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
