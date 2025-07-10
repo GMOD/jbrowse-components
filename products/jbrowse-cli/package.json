@@ -17,7 +17,7 @@
   "author": "JBrowse Team",
   "main": "dist/index.js",
   "bin": {
-    "jbrowse": "./bin/run"
+    "jbrowse": "./dist/bin.js"
   },
   "files": [
     "/bin",

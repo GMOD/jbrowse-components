@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": "lib",
+    "outDir": "dist",
     "rootDir": "src",
     "strict": true,
     "lib": ["es2021"],
@@ -10,5 +10,5 @@
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/testUtil.ts", "lib"]
+  "exclude": ["**/*.test.ts", "**/testUtil.ts", "dist"]
 }
