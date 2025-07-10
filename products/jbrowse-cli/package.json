@@ -32,12 +32,8 @@
     "prebuild": "npm run clean",
     "build": "tsc --build && tsup src/index.ts",
     "clean": "rimraf lib dist",
-    "prepack": "npm run clean  && npm run build && npm run manifest && npm run docs",
-    "version": "npm run docs && npm run docs:version:add",
-    "predocs": "npm run build",
-    "docs": "npm run docs:create && npm run docs:format",
-    "docs:format": "prettier --write README.md",
-    "docs:version:add": "git add README.md"
+    "prepack": "npm run clean  && npm run build && npm run docs",
+    "version": "npm run docs && npm run docs:version:add"
   },
   "devDependencies": {
     "boxen": "^4.2.0",

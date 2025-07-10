@@ -5,13 +5,8 @@ import type { Config } from '../../base'
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export function validateLoadOption(load?: string): void {
-  if (
-    load &&
-    !['copy', 'symlink', 'move', 'inPlace'].includes(load)
-  ) {
-    console.error(
-      'Error: --load must be one of: copy, symlink, move, inPlace',
-    )
+  if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
+    console.error('Error: --load must be one of: copy, symlink, move, inPlace')
     process.exit(1)
   }
 }
@@ -92,7 +87,10 @@ export function validateTrackId(
   return idx
 }
 
-export function createTargetDirectory(configDir: string, subDir?: string): void {
+export function createTargetDirectory(
+  configDir: string,
+  subDir?: string,
+): void {
   if (subDir) {
     const dir = path.join(configDir, subDir)
     if (!fs.existsSync(dir)) {

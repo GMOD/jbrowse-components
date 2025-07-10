@@ -26,7 +26,6 @@ import {
 
 import type { Config } from '../base'
 
-
 export default class AddTrackNative extends NativeCommand {
   target = ''
 
@@ -243,7 +242,6 @@ export default class AddTrackNative extends NativeCommand {
       } ${this.target}`,
     )
   }
-
 
   showHelp() {
     console.log(`

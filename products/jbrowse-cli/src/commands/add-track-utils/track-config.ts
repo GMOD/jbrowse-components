@@ -49,11 +49,13 @@ export function buildTrackConfig({
   skipCheck: boolean
 }): Track {
   const configObj = config ? parseJSON(config) : {}
-  
-  const finalTrackId = trackId || path.basename(location, path.extname(location))
+
+  const finalTrackId =
+    trackId || path.basename(location, path.extname(location))
   const finalName = name || finalTrackId
-  const finalAssemblyNames = assemblyNames || configContents.assemblies?.[0]?.name || ''
-  
+  const finalAssemblyNames =
+    assemblyNames || configContents.assemblies?.[0]?.name || ''
+
   const trackConfig: Track = {
     type: trackType!,
     trackId: finalTrackId,

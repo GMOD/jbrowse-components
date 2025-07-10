@@ -1,19 +1,24 @@
-import { spawn } from 'child_process'
 import { parseArgs } from 'util'
 
-import { sync as commandExistsSync } from 'command-exists'
-
 import NativeCommand from '../native-base'
+import {
+  validateFileArgument,
+  validateRequiredCommands,
+} from './sort-gff-utils/validators'
+import { spawnSortProcess } from './sort-gff-utils/sort-utils'
+import {
+  waitForProcessClose,
+  handleProcessError,
+} from './sort-gff-utils/process-utils'
+import {
+  SORT_GFF_DESCRIPTION,
+  SORT_GFF_EXAMPLES,
+} from './sort-gff-utils/constants'
+import { getHelpText } from './sort-gff-utils/help-text'
 
 export default class SortGffNative extends NativeCommand {
-  static description =
-    'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
-
-  static examples = [
-    '# sort gff and pipe to bgzip',
-    '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',
-    '$ tabix sorted.gff.gz',
-  ]
+  static description = SORT_GFF_DESCRIPTION
+  static examples = SORT_GFF_EXAMPLES
 
   async run(args?: string[]) {
     const { values: flags, positionals } = parseArgs({
@@ -34,52 +39,23 @@ export default class SortGffNative extends NativeCommand {
     }
 
     const file = positionals[0]
-    if (!file) {
-      console.error('Error: Missing required argument: file')
-      console.error('Usage: jbrowse sort-gff <file>')
-      process.exit(1)
-    }
+    validateFileArgument(file)
+    validateRequiredCommands()
 
-    if (
-      commandExistsSync('sh') &&
-      commandExistsSync('sort') &&
-      commandExistsSync('grep')
-    ) {
-      // this command comes from the tabix docs http://www.htslib.org/doc/tabix.html
-      spawn(
-        'sh',
-        [
-          '-c',
-          `(grep "^#" "${file}"; grep -v "^#" "${file}" | sort -t"\`printf '\t'\`" -k1,1 -k4,4n)`,
-        ],
-        {
-          env: { ...process.env, LC_ALL: 'C' },
-          stdio: 'inherit',
-        },
-      )
-    } else {
-      console.error(
-        'Error: Unable to sort, requires unix type environment with sort, grep',
-      )
-      process.exit(1)
+    try {
+      const child = spawnSortProcess({ file })
+      const exitCode = await waitForProcessClose(child)
+
+      if (exitCode !== 0) {
+        console.error(`Sort process exited with code ${exitCode}`)
+        process.exit(exitCode || 1)
+      }
+    } catch (error) {
+      handleProcessError(error)
     }
   }
 
   showHelp() {
-    console.log(`
-${SortGffNative.description}
-
-USAGE
-  $ jbrowse sort-gff <file>
-
-ARGUMENTS
-  file  GFF file
-
-OPTIONS
-  -h, --help  Show help
-
-EXAMPLES
-${SortGffNative.examples.join('\n')}
-`)
+    console.log(getHelpText())
   }
 }

@@ -21,6 +21,7 @@ import type {
   TrixTextSearchAdapter,
   UriLocation,
 } from '../base'
+import { createPerTrackTrixAdapter } from './text-index-utils/adapter-utils'
 
 function readConf(path: string) {
   return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
@@ -309,23 +310,10 @@ export default class TextIndex extends NativeCommand {
             ...trackConfig,
             textSearching: {
               ...textSearching,
-              textSearchAdapter: {
-                type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: `${trackId}-index`,
-                ixFilePath: {
-                  uri: `trix/${trackId}.ix`,
-                  locationType: 'UriLocation' as const,
-                },
-                ixxFilePath: {
-                  uri: `trix/${trackId}.ixx`,
-                  locationType: 'UriLocation' as const,
-                },
-                metaFilePath: {
-                  uri: `trix/${trackId}_meta.json`,
-                  locationType: 'UriLocation' as const,
-                },
-                assemblyNames: assemblyNames,
-              },
+              textSearchAdapter: createPerTrackTrixAdapter(
+                trackId,
+                assemblyNames,
+              ),
             },
           }
         } else {
