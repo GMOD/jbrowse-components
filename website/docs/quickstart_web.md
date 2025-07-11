@@ -57,6 +57,14 @@ npx @jbrowse/cli --version
 
 :::
 
+Another way which involves downloading a single file bundle is to use
+
+```sh-session
+wget https://unpkg.com/@jbrowse/cli/bundle/index.js -O jbrowse
+chmod +x jbrowse
+./jbrowse --help
+```
+
 ### Using `jbrowse create` to download JBrowse 2
 
 In the directory where you would like to download JBrowse 2, run
