@@ -61,7 +61,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const features = await this.getFeatures(renderProps)
 
     const { makeImageData } = await import('./makeImageData')
-    const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+    const imageDataResult = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData(ctx, {
         ...renderProps,
         yScalar: height / Math.max(height, hyp),
@@ -71,7 +71,7 @@ export default class HicRenderer extends ServerSideRendererType {
     )
     const results = await super.render({
       ...renderProps,
-      ...res,
+      ...imageDataResult,
       features,
       region: renderProps.regions[0],
       height,
@@ -80,9 +80,10 @@ export default class HicRenderer extends ServerSideRendererType {
 
     return {
       ...results,
-      ...res,
+      ...imageDataResult,
       height,
       width,
+      scoreMatrix: imageDataResult.scoreMatrix,
     }
   }
 
