@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sv-inspector",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "description": "JBrowse 2 SV inspector view",
   "keywords": [
     "jbrowse",
@@ -36,10 +36,10 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.6.2",
-    "@jbrowse/plugin-circular-view": "^3.6.2",
-    "@jbrowse/plugin-spreadsheet-view": "^3.6.2",
-    "@jbrowse/sv-core": "^3.6.2",
+    "@jbrowse/core": "^3.6.3",
+    "@jbrowse/plugin-circular-view": "^3.6.3",
+    "@jbrowse/plugin-spreadsheet-view": "^3.6.3",
+    "@jbrowse/sv-core": "^3.6.3",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",

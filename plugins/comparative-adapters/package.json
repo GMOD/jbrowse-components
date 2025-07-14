@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-comparative-adapters",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "description": "JBrowse 2 comparative adapters",
   "keywords": [
     "jbrowse",
@@ -38,9 +38,9 @@
   "dependencies": {
     "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/tabix": "^3.0.1",
-    "@jbrowse/core": "^3.6.2",
-    "@jbrowse/plugin-alignments": "^3.6.2",
-    "@jbrowse/plugin-linear-genome-view": "^3.6.2",
+    "@jbrowse/core": "^3.6.3",
+    "@jbrowse/plugin-alignments": "^3.6.3",
+    "@jbrowse/plugin-linear-genome-view": "^3.6.3",
     "@mui/material": "^7.0.0",
     "generic-filehandle2": "^2.0.1",
     "mobx": "^6.0.0",

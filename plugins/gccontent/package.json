@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gccontent",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "description": "JBrowse 2 gccontent concepts",
   "keywords": [
     "jbrowse",
@@ -36,10 +36,10 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.6.2",
-    "@jbrowse/plugin-linear-genome-view": "^3.6.2",
-    "@jbrowse/plugin-sequence": "^3.6.2",
-    "@jbrowse/plugin-wiggle": "^3.6.2",
+    "@jbrowse/core": "^3.6.3",
+    "@jbrowse/plugin-linear-genome-view": "^3.6.3",
+    "@jbrowse/plugin-sequence": "^3.6.3",
+    "@jbrowse/plugin-wiggle": "^3.6.3",
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
