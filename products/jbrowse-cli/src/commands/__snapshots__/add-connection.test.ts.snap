@@ -57,7 +57,7 @@ exports[`fails to add a duplicate connection 1`] = `
 Use --overwrite if you would like to replace the existing connection"
 `;
 
-exports[`fails when fetching from url fails 1`] = `"Error: The location https://mysite.com/notafile.txt provided is not a valid URL"`;
+exports[`fails when fetching from url fails 1`] = `"Error: HTTP 500 fetching https://mysite.com/notafile.txt"`;
 
 exports[`overwrites an existing custom connection and does not check URL 1`] = `
 [
