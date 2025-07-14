@@ -1,7 +1,8 @@
+import React, { useRef, useState } from 'react'
+
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
-import React, { useState, useRef } from 'react'
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -15,7 +16,9 @@ const HicRendering = observer(function HicRendering(props: {
 }) {
   const { width, height, scoreMatrix } = props
   const canvasWidth = Math.ceil(width)
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null)
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(
+    null,
+  )
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = (event: React.MouseEvent) => {
@@ -23,7 +26,7 @@ const HicRendering = observer(function HicRendering(props: {
       const rect = containerRef.current.getBoundingClientRect()
       setMousePos({
         x: event.clientX - rect.left,
-        y: event.clientY - rect.top
+        y: event.clientY - rect.top,
       })
     }
   }
@@ -33,18 +36,27 @@ const HicRendering = observer(function HicRendering(props: {
   }
 
   const getMatrixScore = (x: number, y: number): number | null => {
-    if (!scoreMatrix || !scoreMatrix.length) return null
-    
+    if (!scoreMatrix?.length) {
+      return null
+    }
+
     const matrixSize = scoreMatrix.length
     const xIndex = Math.floor((x / width) * matrixSize)
     const yIndex = Math.floor((y / height) * matrixSize)
-    
-    if (xIndex < 0 || yIndex < 0 || xIndex >= matrixSize || yIndex >= matrixSize) {
+
+    if (
+      xIndex < 0 ||
+      yIndex < 0 ||
+      xIndex >= matrixSize ||
+      yIndex >= matrixSize
+    ) {
       return null
     }
-    
-    if (yIndex > xIndex) return null
-    
+
+    if (yIndex > xIndex) {
+      return null
+    }
+
     return scoreMatrix[yIndex]?.[xIndex] ?? null
   }
 
@@ -58,7 +70,7 @@ const HicRendering = observer(function HicRendering(props: {
       placement="top"
       arrow
     >
-      <div 
+      <div
         ref={containerRef}
         style={{ position: 'relative', width: canvasWidth, height }}
         onMouseMove={handleMouseMove}
@@ -76,11 +88,13 @@ const HicRendering = observer(function HicRendering(props: {
               top: 0,
               width: canvasWidth,
               height,
-              pointerEvents: 'none'
+              pointerEvents: 'none',
             }}
           >
             <g stroke="#000" strokeWidth="1" fill="none">
-              <path d={`M ${mousePos.x - mousePos.y} 0 L ${mousePos.x} ${mousePos.y} L ${mousePos.x + mousePos.y} 0`} />
+              <path
+                d={`M ${mousePos.x - mousePos.y} 0 L ${mousePos.x} ${mousePos.y} L ${mousePos.x + mousePos.y} 0`}
+              />
             </g>
           </svg>
         )}

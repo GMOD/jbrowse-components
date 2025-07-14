@@ -61,13 +61,17 @@ export default class HicRenderer extends ServerSideRendererType {
     const features = await this.getFeatures(renderProps)
 
     const { makeImageData } = await import('./makeImageData')
-    const imageDataResult = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      makeImageData(ctx, {
-        ...renderProps,
-        yScalar: height / Math.max(height, hyp),
-        features,
-        pluginManager: this.pluginManager,
-      }),
+    const imageDataResult = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx =>
+        makeImageData(ctx, {
+          ...renderProps,
+          yScalar: height / Math.max(height, hyp),
+          features,
+          pluginManager: this.pluginManager,
+        }),
     )
     const results = await super.render({
       ...renderProps,

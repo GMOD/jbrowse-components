@@ -63,9 +63,9 @@ export async function makeImageData(
   const w = res / (bpPerPx * Math.sqrt(2))
   const baseColor = colord(readConfObject(config, 'baseColor'))
   const offset = Math.floor(region.start / res)
-  
+
   let scoreMatrix: number[][] | undefined
-  
+
   if (features.length) {
     let maxScore = 0
     let minBin = 0
@@ -77,10 +77,12 @@ export async function makeImageData(
       maxBin = Math.max(Math.max(bin1, bin2), maxBin)
     }
     checkStopToken(stopToken)
-    
+
     const matrixSize = maxBin - minBin + 1
-    scoreMatrix = Array(matrixSize).fill(null).map(() => Array(matrixSize).fill(0))
-    
+    scoreMatrix = new Array(matrixSize)
+      .fill(null)
+      .map(() => new Array(matrixSize).fill(0))
+
     for (const { bin1, bin2, counts } of features) {
       const row = bin1 - minBin
       const col = bin2 - minBin
