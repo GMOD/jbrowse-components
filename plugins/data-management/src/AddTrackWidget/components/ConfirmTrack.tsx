@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import {
@@ -47,14 +47,11 @@ const ConfirmTrack = observer(function ConfirmTrack({
     trackAdapter,
     trackType,
     warningMessage,
-    adapterHint,
+    autoComputedAdapterHint,
+    manuallySelectedAdapterHint,
   } = model
 
-  useEffect(() => {
-    if (adapterHint === '' && trackAdapter) {
-      model.setAdapterHint(trackAdapter.type)
-    }
-  }, [adapterHint, trackAdapter, trackAdapter?.type, model])
+  // Note: autoComputedAdapterHint is now a computed getter and doesn't need to be set
 
   if (unsupported) {
     return <Unsupported />

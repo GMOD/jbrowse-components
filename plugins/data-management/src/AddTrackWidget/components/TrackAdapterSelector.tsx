@@ -7,18 +7,18 @@ import { categorizeAdapters } from './util'
 import type { AddTrackModel } from '../model'
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const { trackAdapter } = model
+  const { trackAdapter, manuallySelectedAdapterHint } = model
   const { pluginManager } = getEnv(model)
 
   return (
     <TextField
-      value={trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : ''}
+      value={manuallySelectedAdapterHint || (trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : '')}
       label="Adapter type"
       variant="outlined"
       select
       fullWidth
       onChange={event => {
-        model.setAdapterHint(event.target.value)
+        model.setManuallySelectedAdapterHint(event.target.value)
       }}
       slotProps={{
         select: {

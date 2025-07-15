@@ -59,7 +59,7 @@ export default function f(pluginManager: PluginManager) {
       altTrackName: '',
       altTrackType: '',
 
-      adapterHint: '',
+      manuallySelectedAdapterHint: '',
       textIndexTrack: true,
       textIndexingConf: undefined as IndexingAttr | undefined,
       mixinData: {},
@@ -71,8 +71,8 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setAdapterHint(obj: string) {
-        self.adapterHint = obj
+      setManuallySelectedAdapterHint(obj: string) {
+        self.manuallySelectedAdapterHint = obj
       },
       /**
        * #action
@@ -97,8 +97,8 @@ export default function f(pluginManager: PluginManager) {
        */
       setTrackData(obj: FileLocation) {
         self.trackData = obj
-        // Clear adapter hint when track data changes to force re-evaluation
-        self.adapterHint = ''
+        // Clear manual adapter hint when track data changes to force re-evaluation
+        self.manuallySelectedAdapterHint = ''
       },
       /**
        * #action
@@ -132,7 +132,7 @@ export default function f(pluginManager: PluginManager) {
         self.altTrackName = ''
         self.altTrackType = ''
         self.altAssemblyName = ''
-        self.adapterHint = ''
+        self.manuallySelectedAdapterHint = ''
         self.indexTrackData = undefined
         self.trackData = undefined
         self.textIndexingConf = undefined
@@ -143,11 +143,23 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get autoComputedAdapterHint() {
+        const { trackData, indexTrackData } = self
+        if (!trackData) return ''
+        
+        const guessedAdapter = guessAdapter(trackData, indexTrackData, '', self)
+        return guessedAdapter?.type === 'UNKNOWN' ? '' : guessedAdapter?.type || ''
+      },
+      
+      /**
+       * #getter
+       */
       get trackAdapter() {
-        const { trackData, indexTrackData, adapterHint } = self
+        const { trackData, indexTrackData, manuallySelectedAdapterHint } = self
+        const effectiveAdapterHint = manuallySelectedAdapterHint || this.autoComputedAdapterHint
 
         return trackData
-          ? guessAdapter(trackData, indexTrackData, adapterHint, self)
+          ? guessAdapter(trackData, indexTrackData, effectiveAdapterHint, self)
           : undefined
       },
 
