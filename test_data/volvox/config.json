@@ -95,6 +95,7 @@
         }
       }
     },
+
     {
       "name": "volvox_del",
       "sequence": {
@@ -1865,6 +1866,21 @@
       },
       "category": ["Integration test"],
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_del2.paf",
+      "name": "volvox_del2.paf",
+      "assemblyNames": ["volvox", "volvox_del2"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "targetAssembly": "volvox",
+        "queryAssembly": "volvox_del2",
+        "pafLocation": {
+          "uri": "volvox_del.paf"
+        }
+      }
     },
     {
       "type": "SyntenyTrack",

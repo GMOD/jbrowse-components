@@ -33,6 +33,10 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       const superAddConnectionConf = self.addConnectionConf
       return {
         /**
+         * #method
+         */
+        hasConnectionConf(connectionConf: BaseConnectionConfigModel) {},
+        /**
          * #action
          */
         addConnectionConf(connectionConf: BaseConnectionConfigModel) {
@@ -41,9 +45,9 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
           } else {
             const { connectionId, type } = connectionConf
             if (!type) {
-              throw new Error(`unknown connection type ${type}`)
+              throw new Error(`unknown connection type "${type}"`)
             }
-            const connection = self.sessionTracks.find(
+            const connection = self.sessionConnections.find(
               c => c.connectionId === connectionId,
             )
             if (connection) {

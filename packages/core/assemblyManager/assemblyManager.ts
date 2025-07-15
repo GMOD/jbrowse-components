@@ -1,5 +1,5 @@
 import { reaction } from 'mobx'
-import { addDisposer, getParent, types } from 'mobx-state-tree'
+import { addDisposer, getParent, getRoot, types } from 'mobx-state-tree'
 
 import { readConfObject } from '../configuration'
 import { when } from '../util'
@@ -47,7 +47,22 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * #method
        */
       get(asmName: string) {
-        return self.assemblyNameMap[asmName]
+        const assembly = self.assemblyNameMap[asmName]
+        if (assembly) {
+          return assembly
+        }
+
+        // Extension point for loading unrecognized assemblies
+        // Allows plugins to provide custom logic for assembly resolution
+        return pm.evaluateExtensionPoint(
+          'Core-getUnrecognizedAssembly',
+          undefined,
+          {
+            assemblyName: asmName,
+            assemblyManager: self,
+            rootModel: getRoot(self),
+          },
+        )
       },
 
       /**

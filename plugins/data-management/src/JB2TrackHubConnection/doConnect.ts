@@ -29,15 +29,18 @@ export async function doConnect(self: {
       configJsonLocation.baseUri,
     )
     addRelativeUris(configJson, new URL(configUri))
-    const { assemblyManager } = session
-    for (const a of configJson.assemblies) {
-      if (!assemblyManager.get(a.name)) {
-        // @ts-expect-error
-        session.addSessionAssembly(a)
+    if (configJson.assemblies) {
+      for (const assembly of configJson.assemblies) {
+        if (!session.assemblyManager.get(assembly.name)) {
+          // @ts-expect-error
+          session.addSessionAssembly(assembly)
+        }
       }
     }
 
-    self.addTrackConfs(configJson.tracks)
+    if (configJson.tracks) {
+      self.addTrackConfs(configJson.tracks)
+    }
     session.notify('Successfully loaded', 'success')
   } catch (e) {
     console.error(e)

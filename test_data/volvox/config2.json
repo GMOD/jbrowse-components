@@ -1,0 +1,22 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox_del2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_del2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox_del.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox_del.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ]
+}

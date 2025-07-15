@@ -9,6 +9,31 @@
     install(pluginManager) {
       const React = pluginManager.jbrequire('react')
 
+      pluginManager.addToExtensionPoint(
+        'Core-getUnrecognizedAssembly',
+        (defaultResult, { assemblyName, assemblyManager, rootModel }) => {
+          // Custom logic to load/create assembly
+
+          console.log({ assemblyName })
+
+          if (
+            assemblyName &&
+            !rootModel.session.sessionConnections.find(
+              f => f.connectionId === 'wow',
+            )
+          ) {
+            const conf = {
+              type: 'JB2TrackHubConnection',
+              uri: 'http://localhost:3000/test_data/volvox/config2.json',
+              name: 'my conn',
+              connectionId: 'wow',
+            }
+            rootModel.session.addConnectionConf(conf)
+            rootModel.session.makeConnection(conf)
+          }
+        },
+      )
+
       function NewAboutComponent() {
         return React.createElement(
           'div',
