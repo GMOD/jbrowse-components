@@ -8,26 +8,8 @@ export const config: Options.Testrunner = {
   // WebdriverIO supports running e2e tests as well as unit and component tests.
   runner: 'local',
 
-  //
-  // ==================
-  // Specify Test Files
-  // ==================
-  // Define which test specs should run. The pattern is relative to the directory
-  // of the configuration file being run.
-  //
-  // The specs are defined as an array of spec files (optionally using wildcards
-  // that will be expanded). The test for each spec file will be run in a separate
-  // worker process. In order to have a group of spec files run in the same worker
-  // process simply enclose them in an array within the specs array.
-  //
-  // The path of the spec files will be resolved relative from the directory of
-  // of the config file unless it's absolute.
-  //
   specs: ['./test/specs/**/*.ts'],
-  // Patterns to exclude.
-  exclude: [
-    // 'path/to/excluded/files'
-  ],
+
   //
   // ============
   // Capabilities
@@ -50,15 +32,20 @@ export const config: Options.Testrunner = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://saucelabs.com/platform/platform-configurator
   //
+  //
+  // If you have trouble getting all important capabilities together, check out the
+  // Sauce Labs platform configurator - a great tool to configure your capabilities:
+  // https://saucelabs.com/platform/platform-configurator
+  //
+
   capabilities: [
     {
       browserName: 'electron',
-      // Electron service options
-      // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
       'wdio:electronServiceOptions': {
-        // custom application args
-        appBinaryPath:
-          '/home/cdiesh/src/jbrowse-components/products/jbrowse-desktop/node_modules/.bin/electron',
+        // WebdriverIO can automatically find your bundled application
+        // if you use Electron Forge or electron-builder, otherwise you
+        // can define it here, e.g.:
+        appBinaryPath: 'dist/linux-unpacked/jbrowse-desktop',
       },
     },
   ],
@@ -70,7 +57,8 @@ export const config: Options.Testrunner = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: 'info',
+  logLevel: 'error',
+  // logLevel: 'info',
   //
   // Set specific log levels per logger
   // loggers:
@@ -141,4 +129,15 @@ export const config: Options.Testrunner = {
     ui: 'bdd',
     timeout: 60000,
   },
+
+  // Hooks
+  // afterTest: async () => {
+  //   // Close Electron window after each test
+  //   try {
+  //     const { browser } = await import('@wdio/globals')
+  //     await browser.closeWindow()
+  //   } catch (error) {
+  //     console.log('Could not close window:', error)
+  //   }
+  // },
 }
