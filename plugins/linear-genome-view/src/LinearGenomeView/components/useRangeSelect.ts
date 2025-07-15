@@ -111,7 +111,6 @@ export function useRangeSelect(
 
   function mouseOut() {
     setGuideX(undefined)
-    model.setOffsets(undefined, undefined)
   }
 
   function handleClose() {
