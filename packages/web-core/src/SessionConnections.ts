@@ -33,10 +33,6 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       const superAddConnectionConf = self.addConnectionConf
       return {
         /**
-         * #method
-         */
-        hasConnectionConf(connectionConf: BaseConnectionConfigModel) {},
-        /**
          * #action
          */
         addConnectionConf(connectionConf: BaseConnectionConfigModel) {

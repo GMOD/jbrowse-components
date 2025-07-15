@@ -11,22 +11,18 @@
 
       pluginManager.addToExtensionPoint(
         'Core-getUnrecognizedAssembly',
-        (defaultResult, { assemblyName, assemblyManager, rootModel }) => {
-          // Custom logic to load/create assembly
-
-          console.log({ assemblyName })
-
+        (_defaultResult, { assemblyName, rootModel }) => {
           if (
             assemblyName &&
-            !rootModel.session.sessionConnections.find(
-              f => f.connectionId === 'wow',
-            )
+            !rootModel.session.connections.find(f => f.connectionId === 'wow')
           ) {
+            const jb2asm = `jb2hub-${assemblyName}`
             const conf = {
               type: 'JB2TrackHubConnection',
               uri: 'http://localhost:3000/test_data/volvox/config2.json',
               name: 'my conn',
-              connectionId: 'wow',
+              assemblyNames: [assemblyName],
+              connectionId: jb2asm,
             }
             rootModel.session.addConnectionConf(conf)
             rootModel.session.makeConnection(conf)
