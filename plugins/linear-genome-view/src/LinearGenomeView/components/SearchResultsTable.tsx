@@ -55,29 +55,24 @@ export default function SearchResultsTable({
     return ''
   }
   async function handleClick(result: BaseResult) {
-    try {
-      if (result.hasLocation()) {
-        await navToOption({
-          option: result,
-          model,
-          assemblyName,
-        })
-      } else {
-        // label is used if it is a refName, it has no location
-        const location = result.getLabel()
-        const newRegion = assembly?.regions?.find(
-          region => location === region.refName,
-        )
-        if (newRegion) {
-          model.setDisplayedRegions([newRegion])
-          // we use showAllRegions after setDisplayedRegions to make the entire
-          // region visible, xref #1703
-          model.showAllRegions()
-        }
+    if (result.hasLocation()) {
+      await navToOption({
+        option: result,
+        model,
+        assemblyName,
+      })
+    } else {
+      // label is used if it is a refName, it has no location
+      const location = result.getLabel()
+      const newRegion = assembly?.regions?.find(
+        region => location === region.refName,
+      )
+      if (newRegion) {
+        model.setDisplayedRegions([newRegion])
+        // we use showAllRegions after setDisplayedRegions to make the entire
+        // region visible, xref #1703
+        model.showAllRegions()
       }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
     }
   }
   return (
