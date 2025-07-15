@@ -54,8 +54,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
     <div>
       <Alert severity="info">
         Click and type within the <strong>label</strong> field to annotate your
-        bookmark. Double click the <strong>label</strong> field to do so within
-        a dialog.
+        bookmark
       </Alert>
       <div className={classes.flex}>
         <CascadingMenuButton
