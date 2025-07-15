@@ -82,18 +82,7 @@ function CascadingSubmenu({
 
   return (
     <>
-      <MenuItem
-        {...bindFocus(popupState)}
-        onMouseOver={(event: React.MouseEvent) => {
-          if (parentPopupState?.childHandle) {
-            parentPopupState.childHandle.close()
-            parentPopupState.setChildHandle(undefined)
-          }
-
-          // Use the existing bindHover functionality
-          bindHover(popupState).onMouseOver(event)
-        }}
-      >
+      <MenuItem {...bindFocus(popupState)} {...bindHover(popupState)}>
         {Icon ? (
           <ListItemIcon>
             <Icon />
