@@ -10,6 +10,7 @@
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "node scripts/start.js",
+    "webdriver-test": "yarn wdio",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -b tsconfig.electron.json",
     "preelectron": "npm run electron-ts",

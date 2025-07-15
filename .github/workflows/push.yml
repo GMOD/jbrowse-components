@@ -49,8 +49,8 @@ jobs:
         with:
           working-directory: website
       - name: Build website
+        working-directory: website
         run: |
-          cd website/
           yarn build
           mkdir testing
           mv build testing/jb2
@@ -93,6 +93,11 @@ jobs:
           yarn
           yarn e2e
         working-directory: component_tests/app-vite
+      - name: Test desktop app
+        run: |
+          yarn build-electron:linux
+          yarn webdriver-test
+        working-directory: products/jbrowse-desktop
 
   # Conditionally run the buildjbrowseweb job
   buildjbrowseweb:
@@ -111,10 +116,8 @@ jobs:
         uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
       - name: Build project
         run: |
-          echo $RELEASE_VERSION
-          cd products/jbrowse-web/
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
-          cd ../../
+        working-directory: products/jbrowse-web
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
         with:
@@ -122,12 +125,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Copy branch build to S3
+        working-directory: products/jbrowse-web
         run: |
-          cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
-          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync --delete --exclude="*.map" products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" build .
+          cp build/test_data/config.json build/config.json
+          aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
-
       - name: Build LGV
         run: |
           yarn storybook:build
