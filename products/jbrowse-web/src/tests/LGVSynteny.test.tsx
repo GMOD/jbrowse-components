@@ -11,7 +11,9 @@ import {
   setup,
 } from './util'
 
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view/src/LinearSyntenyView/model'
+import type { SessionWithConnections } from '@jbrowse/product-core'
 
 setup()
 
@@ -78,14 +80,12 @@ test('nav to synteny from right click, with launch connection plugin', async () 
 
     getEnv(session).pluginManager.addToExtensionPoint(
       'Core-handleUnrecognizedAssembly',
-      (
-        _defaultResult: any,
-        { assemblyName, session }: { assemblyName: string; session: any },
-      ) => {
+      (_defaultResult, { assemblyName, session }) => {
         const jb2asm = `jb2hub-${assemblyName}`
+        const s = session as AbstractSessionModel & SessionWithConnections
         if (
           assemblyName &&
-          !session.connections.some(f => f.connectionId === jb2asm)
+          !s.connections.some(f => f.connectionId === jb2asm)
         ) {
           const conf = {
             type: 'JB2TrackHubConnection',
@@ -94,8 +94,10 @@ test('nav to synteny from right click, with launch connection plugin', async () 
             assemblyNames: [assemblyName],
             connectionId: jb2asm,
           }
-          session.addConnectionConf(conf)
-          session.makeConnection(conf)
+          // @ts-expect-error
+          s.addConnectionConf(conf)
+          // @ts-expect-error
+          s.makeConnection(conf)
         }
       },
     )
@@ -114,6 +116,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,221..34,669')
       expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
     }, delay)
+    await new Promise(res => setTimeout(res, 1000))
     expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
   })
 }, 60000)

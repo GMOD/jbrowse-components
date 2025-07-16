@@ -213,7 +213,7 @@ export function setupRoutes({
 
     res.setHeader('Content-Type', 'text/plain')
     res.send('Server shutting down')
-    
+
     // Shutdown the server after sending response
     setImmediate(() => {
       if (serverRef.current) {
@@ -234,11 +234,7 @@ export function setupServer({
   baseDir: string
   outFile: string
   bodySizeLimit: string
-}): {
-  app: Express
-  key: string
-  keyPath: string
-} {
+}) {
   // Create Express application
   const app = express()
 
