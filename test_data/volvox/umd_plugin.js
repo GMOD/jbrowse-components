@@ -19,7 +19,7 @@
             const jb2asm = `jb2hub-${assemblyName}`
             const conf = {
               type: 'JB2TrackHubConnection',
-              uri: 'http://localhost:3000/test_data/volvox/config2.json',
+              uri: 'config2.json',
               name: 'my conn',
               assemblyNames: [assemblyName],
               connectionId: jb2asm,

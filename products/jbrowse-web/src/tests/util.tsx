@@ -106,7 +106,10 @@ export function createViewNoWait(args?: any, adminMode?: boolean): Results {
 }
 
 export function doBeforeEach(
-  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
+  cb = (str: string) =>
+    require.resolve(
+      `../../test_data/volvox/${str.replace('http://localhost:3000/test_data/volvox/', '')}`,
+    ),
 ) {
   clearCache()
   clearAdapterCache()
