@@ -1,8 +1,8 @@
 import { reaction } from 'mobx'
-import { addDisposer, getParent, getRoot, types } from 'mobx-state-tree'
+import { addDisposer, getParent, types } from 'mobx-state-tree'
 
 import { readConfObject } from '../configuration'
-import { getSession, when } from '../util'
+import { when } from '../util'
 import assemblyFactory from './assembly'
 
 import type { AnyConfigurationModel } from '../configuration'
@@ -133,6 +133,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw assembly.error
         }
         return assembly

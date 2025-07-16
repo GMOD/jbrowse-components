@@ -4,7 +4,7 @@
       "name": "connection_asm",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "connecion_asm_refseq",
+        "trackId": "connection_asm_refseq",
         "metadata": {
           "date": "2020-08-20"
         },

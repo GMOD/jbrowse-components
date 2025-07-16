@@ -1,6 +1,6 @@
+import { getEnv } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { getEnv } from '@jbrowse/core/util'
 
 import {
   createView,
@@ -85,12 +85,12 @@ test('nav to synteny from right click, with launch connection plugin', async () 
         const jb2asm = `jb2hub-${assemblyName}`
         if (
           assemblyName &&
-          !session.connections.find(f => f.connectionId === jb2asm)
+          !session.connections.some(f => f.connectionId === jb2asm)
         ) {
           const conf = {
             type: 'JB2TrackHubConnection',
             uri: 'http://localhost:3000/test_data/volvox/config2.json',
-            name: 'my conn' + jb2asm,
+            name: `my conn${jb2asm}`,
             assemblyNames: [assemblyName],
             connectionId: jb2asm,
           }
@@ -111,7 +111,8 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[1]?.coarseVisibleLocStrings).toBeTruthy()
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,221..34,669')
+      expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
     }, delay)
     expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
   })
