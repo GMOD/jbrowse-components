@@ -7,10 +7,10 @@ import {
 } from '@jbrowse/core/ui'
 import { measureGridWidth, notEmpty } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
+import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import StarIcon from '@mui/icons-material/Star'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
-import { Button, IconButton, Typography } from '@mui/material'
+import { Button, IconButton, Link, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
@@ -30,6 +30,7 @@ const useStyles = makeStyles()({
   span: {
     marginBottom: 20,
     marginTop: 20,
+    display: 'flex',
   },
 })
 
@@ -47,6 +48,7 @@ export default function MainGenomesDialogPanel({
   const [selected, setSelected] = useState<Set<GridRowId>>()
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
+  const [multipleSelection, setMultipleSelection] = useState(false)
   const { height: innerHeight, width: innerWidth } = useInnerDims()
 
   const { classes } = useStyles()
@@ -78,11 +80,9 @@ export default function MainGenomesDialogPanel({
     : undefined
   return (
     <div>
-      <div style={{ display: 'flex' }}>
-        <div className={classes.span}>
-          <Typography variant="h6" style={{ display: 'inline' }}>
-            Main genome browsers
-          </Typography>
+      <div className={classes.span}>
+        <Typography variant="h6">Main genome browsers</Typography>
+        {multipleSelection ? (
           <Button
             className={classes.ml}
             onClick={() => {
@@ -105,35 +105,44 @@ export default function MainGenomesDialogPanel({
           >
             Go
           </Button>
+        ) : null}
 
-          <CascadingMenuButton
-            menuItems={[
-              {
-                label: 'Show favorites only?',
-                checked: showOnlyFavs,
-                type: 'checkbox',
-                onClick: () => {
-                  setShowOnlyFavs(!showOnlyFavs)
-                },
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: 'Enable multiple selection',
+              checked: multipleSelection,
+              type: 'checkbox',
+              onClick: () => {
+                setMultipleSelection(!multipleSelection)
+                setSelected(new Set())
               },
-              {
-                label: 'Reset favorites list to defaults',
-                onClick: () => {
-                  setFavorites(defaultFavs)
-                },
+            },
+            {
+              label: 'Show favorites only?',
+              checked: showOnlyFavs,
+              type: 'checkbox',
+              onClick: () => {
+                setShowOnlyFavs(!showOnlyFavs)
               },
-              {
-                label: 'More information',
-                icon: Help,
-                onClick: () => {
-                  setMoreInfoDialogOpen(true)
-                },
+            },
+            {
+              label: 'Reset favorites list to defaults',
+              onClick: () => {
+                setFavorites(defaultFavs)
               },
-            ]}
-          >
-            <MoreVert />
-          </CascadingMenuButton>
-        </div>
+            },
+            {
+              label: 'More information',
+              icon: Help,
+              onClick: () => {
+                setMoreInfoDialogOpen(true)
+              },
+            },
+          ]}
+        >
+          <MoreVert />
+        </CascadingMenuButton>
         <div style={{ flexGrow: 1 }} />
       </div>
       <div>
@@ -151,7 +160,7 @@ export default function MainGenomesDialogPanel({
               showToolbar
               rowHeight={25}
               columnHeaderHeight={35}
-              checkboxSelection
+              checkboxSelection={multipleSelection}
               disableRowSelectionOnClick
               onRowSelectionModelChange={userSelectedIds => {
                 setSelected(userSelectedIds.ids)
@@ -161,31 +170,59 @@ export default function MainGenomesDialogPanel({
                   field: 'name',
                   width: widths[0]! + 40,
                   renderCell: ({ row, value }) => {
+                    const isFavorite = favs.has(row.id)
+
+                    const handleLaunch = (event: React.MouseEvent) => {
+                      event.preventDefault()
+                      launch([
+                        {
+                          shortName: row.id,
+                          jbrowseConfig: row.jbrowseConfig,
+                        },
+                      ])
+                      onClose()
+                    }
+
+                    const handleToggleFavorite = () => {
+                      if (isFavorite) {
+                        setFavorites(favorites.filter(fav => fav.id !== row.id))
+                      } else {
+                        setFavorites([
+                          ...favorites,
+                          {
+                            id: row.id,
+                            shortName: row.name,
+                            description: row.description,
+                            jbrowseConfig: row.jbrowseConfig,
+                          },
+                        ])
+                      }
+                    }
+
                     return (
-                      <div>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            if (favs.has(row.id)) {
-                              setFavorites(
-                                favorites.filter(fav => fav.id !== row.id),
-                              )
-                            } else {
-                              setFavorites([
-                                ...favorites,
-                                {
-                                  id: row.id,
-                                  shortName: row.name,
-                                  description: row.description,
-                                  jbrowseConfig: row.jbrowseConfig,
-                                },
-                              ])
-                            }
-                          }}
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {multipleSelection ? (
+                          value
+                        ) : (
+                          <Link href="#" onClick={handleLaunch}>
+                            {value}
+                          </Link>
+                        )}
+                        {isFavorite ? (
+                          <StarIcon style={{ marginLeft: 4, fontSize: 16 }} />
+                        ) : null}
+                        <CascadingMenuButton
+                          menuItems={[
+                            {
+                              label: isFavorite
+                                ? 'Remove from favorites'
+                                : 'Add to favorites',
+                              onClick: handleToggleFavorite,
+                            },
+                          ]}
                         >
-                          {favs.has(value) ? <StarIcon /> : <StarBorderIcon />}
-                        </IconButton>{' '}
-                        {value}
+                          <MoreHoriz />
+                        </CascadingMenuButton>
                       </div>
                     )
                   },
