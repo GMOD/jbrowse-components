@@ -134,11 +134,13 @@ export function setupRoutes({
   baseDir,
   outFile,
   key,
+  serverRef,
 }: {
   app: Express
   baseDir: string
   outFile: string
   key: string
+  serverRef: { current: any }
 }): void {
   // Root route
   app.get('/', (_req: Request, res: Response) => {
@@ -197,6 +199,28 @@ export function setupRoutes({
       res.send('Error: Failed to read config')
     }
   })
+
+  // Shutdown route for testing
+  app.post('/shutdown', (req: Request, res: Response) => {
+    const { body } = req
+    const adminKey = body?.adminKey as string | undefined
+
+    if (adminKey !== key) {
+      res.status(401).setHeader('Content-Type', 'text/plain')
+      res.send('Error: Invalid admin key')
+      return
+    }
+
+    res.setHeader('Content-Type', 'text/plain')
+    res.send('Server shutting down')
+
+    // Shutdown the server after sending response
+    setImmediate(() => {
+      if (serverRef.current) {
+        serverRef.current.close()
+      }
+    })
+  })
 }
 
 /**
@@ -210,11 +234,7 @@ export function setupServer({
   baseDir: string
   outFile: string
   bodySizeLimit: string
-}): {
-  app: Express
-  key: string
-  keyPath: string
-} {
+}) {
   // Create Express application
   const app = express()
 
@@ -246,10 +266,13 @@ export function setupServer({
     // Continue anyway, as this is not critical
   }
 
-  // Set up routes
-  setupRoutes({ app, baseDir, outFile, key })
+  // Create server reference for shutdown route
+  const serverRef = { current: null }
 
-  return { app, key, keyPath }
+  // Set up routes
+  setupRoutes({ app, baseDir, outFile, key, serverRef })
+
+  return { app, key, keyPath, serverRef }
 }
 
 /**
@@ -261,12 +284,14 @@ export function startServer({
   key,
   outFile,
   keyPath,
+  serverRef,
 }: {
   app: Express
   port: number
   key: string
   outFile: string
   keyPath: string
+  serverRef: { current: any }
 }): void {
   // Start the server
   const server = app.listen(port, () => {
@@ -279,6 +304,9 @@ export function startServer({
         `To stop the server, press Ctrl+C`,
     )
   })
+
+  // Store server reference for shutdown route
+  serverRef.current = server
 
   // Handle server errors
   server.on('error', (error: any) => {

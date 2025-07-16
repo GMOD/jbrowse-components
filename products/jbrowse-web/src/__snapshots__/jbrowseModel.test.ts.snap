@@ -3419,6 +3419,45 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox_del.paf",
         },
+        "queryAssembly": "volvox_del2",
+        "targetAssembly": "volvox",
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_del2",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_del2.paf-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_del2.paf",
+      "trackId": "volvox_del2.paf",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "pafLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del.paf",
+        },
         "queryAssembly": "volvox_del",
         "targetAssembly": "volvox",
         "type": "PAFAdapter",

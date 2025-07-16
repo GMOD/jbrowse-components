@@ -56,8 +56,12 @@ export async function run(args?: string[]) {
   const port = parsePort({ portStr: flags.port })
 
   // Set up the Express server
-  const { app, key, keyPath } = setupServer({ baseDir, outFile, bodySizeLimit })
+  const { app, key, keyPath, serverRef } = setupServer({
+    baseDir,
+    outFile,
+    bodySizeLimit,
+  })
 
   // Start the server and set up shutdown handlers
-  startServer({ app, port, key, outFile, keyPath })
+  startServer({ app, port, key, outFile, keyPath, serverRef })
 }

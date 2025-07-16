@@ -60,10 +60,13 @@ export default function SyntenyContextMenu({
 
             const l1 = view.views[model.level]!
             const l2 = view.views[model.level + 1]!
+            const l1asm = l1.assemblyNames[0]
+            const l2asm = l2.assemblyNames[0]
+
             l1.navToLocString(`${refName}:${start}-${end}`).catch(
               (e: unknown) => {
-                const err = `${l1.assemblyNames[0]}:${e}`
-                console.error(err)
+                const err = `${l1asm}:${e}`
+                console.error(l1asm, err)
                 getSession(model).notifyError(err, e)
               },
             )
@@ -71,8 +74,8 @@ export default function SyntenyContextMenu({
             l2.navToLocString(
               `${mate.refName}:${mate.start}-${mate.end}`,
             ).catch((e: unknown) => {
-              const err = `${l2.assemblyNames[0]}:${e}`
-              console.error(err)
+              const err = `${l2asm}:${e}`
+              console.error(l2asm, err)
               getSession(model).notifyError(err, e)
             })
           },

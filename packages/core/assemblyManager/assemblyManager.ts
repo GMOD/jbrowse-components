@@ -43,11 +43,37 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
     }))
     .views(self => ({
+      getCanonicalAssemblyName(asmName: string) {
+        return self.assemblyNameMap[asmName]?.name
+      },
       /**
        * #method
        */
       get(asmName: string) {
-        return self.assemblyNameMap[asmName]
+        if (asmName) {
+          const assembly = self.assemblyNameMap[asmName]
+          if (assembly) {
+            return assembly
+          } else if (!this.assemblyNamesList.includes(asmName)) {
+            // Extension point for loading unrecognized assemblies. Allows
+            // plugins to provide custom logic for assembly resolution
+            //
+            // Note: this does not return any particular value. however, it can
+            // trigger things like like adding connections, that will
+            // eventually trigger assemblies to be loaded and new evaluations
+            // via observable behavior
+            pm.evaluateExtensionPoint(
+              'Core-handleUnrecognizedAssembly',
+              undefined,
+              {
+                assemblyName: asmName,
+                session: getParent<any>(self).session,
+              },
+            )
+          }
+        }
+
+        return undefined
       },
 
       /**
@@ -91,7 +117,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         let assembly = self.get(assemblyName)
         if (!assembly) {
           try {
-            await when(() => Boolean(self.get(assemblyName)), { timeout: 1000 })
+            await when(() => Boolean(self.get(assemblyName)), {
+              timeout: 10000,
+            })
             assembly = self.get(assemblyName)
           } catch (e) {
             // ignore
