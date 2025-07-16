@@ -34,8 +34,7 @@
     "node-fetch": "^2.6.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tmp": "^0.2.1",
-    "yargs": "^17.3.0"
+    "tmp": "^0.2.1"
   },
   "publishConfig": {
     "access": "public"

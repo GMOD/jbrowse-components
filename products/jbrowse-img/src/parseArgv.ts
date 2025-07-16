@@ -1,3 +1,5 @@
+import { parseArgs } from 'node:util'
+
 export type Entry = [string, string[]]
 
 // example (see parseArgv.test.js):
@@ -13,21 +15,76 @@ export type Entry = [string, string[]]
 //   ['noRasterize', []],
 // ])
 export function parseArgv(argv: string[]) {
-  const map = [] as Entry[]
-  while (argv.length) {
-    const val = argv[0]!.slice(2)
-    argv = argv.slice(1)
-    const next = argv.findIndex(arg => arg.startsWith('-'))
-
-    if (next !== -1) {
-      map.push([val, argv.slice(0, next)])
-      argv = argv.slice(next)
-    } else {
-      map.push([val, argv])
-      break
+  // First pass: identify all possible option names from the argv
+  const optionNames = new Set<string>()
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg && arg.startsWith('--')) {
+      optionNames.add(arg.slice(2))
     }
   }
-  return map
+
+  // Build options config for parseArgs
+  const options: Record<
+    string,
+    { type: 'string' | 'boolean'; multiple?: boolean }
+  > = {}
+  const trackTypes = [
+    'bam',
+    'cram',
+    'vcfgz',
+    'hic',
+    'bigwig',
+    'bigbed',
+    'bedgz',
+    'gffgz',
+    'configtracks',
+  ]
+
+  for (const name of optionNames) {
+    if (['defaultSession', 'noRasterize'].includes(name)) {
+      options[name] = { type: 'boolean' }
+    } else if (trackTypes.includes(name)) {
+      options[name] = { type: 'string', multiple: true }
+    } else {
+      options[name] = { type: 'string' }
+    }
+  }
+
+  const parsed = parseArgs({ args: argv, options, allowPositionals: true })
+
+  // Convert to the expected format
+  const result: Entry[] = []
+
+  // Process options in the order they appear in argv
+  let i = 0
+  while (i < argv.length) {
+    const arg = argv[i]
+    if (arg && arg.startsWith('--')) {
+      const optionName = arg.slice(2)
+      i++
+
+      if (options[optionName]?.type === 'boolean') {
+        result.push([optionName, []])
+      } else {
+        const values: string[] = []
+        // Collect values until next option or end
+        while (i < argv.length) {
+          const currentArg = argv[i]
+          if (!currentArg || currentArg.startsWith('--')) {
+            break
+          }
+          values.push(currentArg)
+          i++
+        }
+        result.push([optionName, values])
+      }
+    } else {
+      i++
+    }
+  }
+
+  return result
 }
 
 export function standardizeArgv(args: Entry[], trackTypes: string[]) {
