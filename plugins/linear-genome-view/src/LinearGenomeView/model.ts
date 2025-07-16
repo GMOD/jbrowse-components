@@ -1808,6 +1808,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               self
                 .navToLocString(init.loc, init.assembly)
                 .catch((e: unknown) => {
+                  console.error(init, e)
                   getSession(self).notifyError(`${e}`, e)
                 })
 

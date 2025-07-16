@@ -117,7 +117,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         let assembly = self.get(assemblyName)
         if (!assembly) {
           try {
-            await when(() => Boolean(self.get(assemblyName)), { timeout: 1000 })
+            await when(() => Boolean(self.get(assemblyName)), {
+              timeout: 10000,
+            })
             assembly = self.get(assemblyName)
           } catch (e) {
             // ignore
