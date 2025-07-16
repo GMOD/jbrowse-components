@@ -28,7 +28,7 @@ export async function doConnect(self: {
       // @ts-expect-error
       configJsonLocation.baseUri || 'http://localhost:3000/test_data/volvox/',
     )
-    console.log('WOWOWOWOW', { configJsonLocation, configUri })
+    console.log('JB2 doConnect', { configJsonLocation, configUri })
     addRelativeUris(configJson, new URL(configUri))
     if (configJson.assemblies) {
       for (const assembly of configJson.assemblies) {

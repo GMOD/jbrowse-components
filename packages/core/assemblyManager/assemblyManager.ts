@@ -2,7 +2,7 @@ import { reaction } from 'mobx'
 import { addDisposer, getParent, getRoot, types } from 'mobx-state-tree'
 
 import { readConfObject } from '../configuration'
-import { when } from '../util'
+import { getSession, when } from '../util'
 import assemblyFactory from './assembly'
 
 import type { AnyConfigurationModel } from '../configuration'
@@ -43,6 +43,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
     }))
     .views(self => ({
+      getCanonicalAssemblyName(asmName: string) {
+        return self.assemblyNameMap[asmName]?.name
+      },
       /**
        * #method
        */
@@ -51,18 +54,26 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         if (assembly) {
           return assembly
         }
+        if (!self.assemblies.length) {
+          return undefined
+        }
+        console.log('trying to load ', asmName)
 
-        // Extension point for loading unrecognized assemblies
-        // Allows plugins to provide custom logic for assembly resolution
-        return pm.evaluateExtensionPoint(
-          'Core-getUnrecognizedAssembly',
+        // Extension point for loading unrecognized assemblies. Allows plugins
+        // to provide custom logic for assembly resolution
+        //
+        // Note: this does not return any particular value, it just can do
+        // asynchronous stuff
+        pm.evaluateExtensionPoint(
+          'Core-handleUnrecognizedAssembly',
           undefined,
           {
             assemblyName: asmName,
             assemblyManager: self,
-            rootModel: getRoot(self),
+            session: getParent<any>(self).session,
           },
         )
+        return undefined
       },
 
       /**
@@ -122,7 +133,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
-           
           throw assembly.error
         }
         return assembly

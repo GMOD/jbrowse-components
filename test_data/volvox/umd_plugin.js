@@ -10,22 +10,23 @@
       const React = pluginManager.jbrequire('react')
 
       pluginManager.addToExtensionPoint(
-        'Core-getUnrecognizedAssembly',
-        (_defaultResult, { assemblyName, rootModel }) => {
+        'Core-handleUnrecognizedAssembly',
+        (_defaultResult, { assemblyName, session }) => {
+          const jb2asm = `jb2hub-${assemblyName}`
           if (
             assemblyName &&
-            !rootModel.session.connections.find(f => f.connectionId === 'wow')
+            !session.connections.find(f => f.connectionId === jb2asm)
           ) {
-            const jb2asm = `jb2hub-${assemblyName}`
+            console.log('getUnrecognizedAssembly', { assemblyName })
             const conf = {
               type: 'JB2TrackHubConnection',
-              uri: 'config2.json',
+              uri: 'http://localhost:3000/test_data/volvox/config2.json',
               name: 'my conn',
               assemblyNames: [assemblyName],
               connectionId: jb2asm,
             }
-            rootModel.session.addConnectionConf(conf)
-            rootModel.session.makeConnection(conf)
+            session.addConnectionConf(conf)
+            session.makeConnection(conf)
           }
         },
       )
