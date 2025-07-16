@@ -15,6 +15,7 @@ const { ipcRenderer } = window.require('electron')
 const useStyles = makeStyles()({
   button: {
     margin: 5,
+    display: 'block',
   },
 })
 
@@ -35,9 +36,6 @@ export default function OpenSequencePanel({
 
   return (
     <div>
-      <Typography variant="h6" style={{ marginBottom: 5 }}>
-        Select a sequence file e.g. reference genome FASTA file
-      </Typography>
       <Button
         variant="contained"
         color="primary"
@@ -46,7 +44,7 @@ export default function OpenSequencePanel({
           setSequenceDialogOpen(true)
         }}
       >
-        Open sequence file(s)
+        Open new genome
       </Button>
       <Button
         variant="contained"
