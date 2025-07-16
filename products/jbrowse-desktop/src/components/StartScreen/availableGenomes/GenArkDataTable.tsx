@@ -7,9 +7,9 @@ import {
 } from '@jbrowse/core/ui'
 import { measureGridWidth, notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
+import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import StarIcon from '@mui/icons-material/Star'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
 import {
   Button,
   IconButton,
@@ -152,6 +152,7 @@ export default function GenArkDataTable({
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
+  const [multipleSelection, setMultipleSelection] = useState(false)
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
     'mammals',
@@ -216,27 +217,29 @@ export default function GenArkDataTable({
           GenArk genome browsers
         </Typography>
 
-        <Button
-          variant="contained"
-          disabled={!selected?.size}
-          onClick={() => {
-            if (selected && r2) {
-              const r3 = Object.fromEntries(r2.map(r => [r.accession, r]))
-              launch(
-                [...selected]
-                  .map(r => r3[r])
-                  .filter(notEmpty)
-                  .map(r => ({
-                    jbrowseConfig: r.jbrowseConfig,
-                    shortName: r.accession,
-                  })),
-              )
-              onClose()
-            }
-          }}
-        >
-          Go
-        </Button>
+        {multipleSelection ? (
+          <Button
+            variant="contained"
+            disabled={!selected?.size}
+            onClick={() => {
+              if (selected && r2) {
+                const r3 = Object.fromEntries(r2.map(r => [r.accession, r]))
+                launch(
+                  [...selected]
+                    .map(r => r3[r])
+                    .filter(notEmpty)
+                    .map(r => ({
+                      jbrowseConfig: r.jbrowseConfig,
+                      shortName: r.accession,
+                    })),
+                )
+                onClose()
+              }
+            }}
+          >
+            Go
+          </Button>
+        ) : null}
         <TextField
           select
           name="typeOption"
@@ -256,6 +259,15 @@ export default function GenArkDataTable({
         </TextField>
         <CascadingMenuButton
           menuItems={[
+            {
+              label: 'Enable multiple selection',
+              checked: multipleSelection,
+              type: 'checkbox',
+              onClick: () => {
+                setMultipleSelection(!multipleSelection)
+                setSelected(new Set())
+              },
+            },
             {
               label: 'Show favorites only?',
               checked: showOnlyFavs,
@@ -344,7 +356,7 @@ export default function GenArkDataTable({
             showToolbar
             rowHeight={25}
             columnHeaderHeight={35}
-            checkboxSelection
+            checkboxSelection={multipleSelection}
             disableRowSelectionOnClick
             onRowSelectionModelChange={userSelectedIds => {
               setSelected(userSelectedIds.ids)
@@ -356,35 +368,61 @@ export default function GenArkDataTable({
                     headerName: c.title,
                     width: widths.commonName! + 40,
                     renderCell: ({ row, value }) => {
+                      const isFavorite = favs.has(row.id)
+
+                      const handleLaunch = (event: React.MouseEvent) => {
+                        event.preventDefault()
+                        launch([
+                          {
+                            jbrowseConfig: row.jbrowseConfig,
+                            shortName: row.accession,
+                          },
+                        ])
+                        onClose()
+                      }
+
+                      const handleToggleFavorite = () => {
+                        if (isFavorite) {
+                          setFavorites(
+                            favorites.filter(fav => fav.id !== row.id),
+                          )
+                        } else {
+                          setFavorites([
+                            ...favorites,
+                            {
+                              id: row.id,
+                              shortName: row.ncbiAssemblyName,
+                              description: row.commonName,
+                              jbrowseConfig: row.jbrowseConfig,
+                            },
+                          ])
+                        }
+                      }
+
                       return (
-                        <div>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              if (favs.has(row.id)) {
-                                setFavorites(
-                                  favorites.filter(fav => fav.id !== row.id),
-                                )
-                              } else {
-                                setFavorites([
-                                  ...favorites,
-                                  {
-                                    id: row.id,
-                                    shortName: row.ncbiAssemblyName,
-                                    description: row.commonName,
-                                    jbrowseConfig: row.jbrowseConfig,
-                                  },
-                                ])
-                              }
-                            }}
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          {multipleSelection ? (
+                            value
+                          ) : (
+                            <Link href="#" onClick={handleLaunch}>
+                              {value}
+                            </Link>
+                          )}
+                          {isFavorite ? (
+                            <StarIcon style={{ marginLeft: 4, fontSize: 16 }} />
+                          ) : null}
+                          <CascadingMenuButton
+                            menuItems={[
+                              {
+                                label: isFavorite
+                                  ? 'Remove from favorites'
+                                  : 'Add to favorites',
+                                onClick: handleToggleFavorite,
+                              },
+                            ]}
                           >
-                            {favs.has(row.id) ? (
-                              <StarIcon />
-                            ) : (
-                              <StarBorderIcon />
-                            )}
-                          </IconButton>{' '}
-                          {value}
+                            <MoreHoriz />
+                          </CascadingMenuButton>
                         </div>
                       )
                     },
