@@ -50,24 +50,27 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * #method
        */
       get(asmName: string) {
-        const assembly = self.assemblyNameMap[asmName]
-        if (assembly) {
-          return assembly
-        } else if (!this.assemblyNamesList.includes(asmName)) {
-          // Extension point for loading unrecognized assemblies. Allows
-          // plugins to provide custom logic for assembly resolution
-          //
-          // Note: this does not return any particular value, it just can do
-          // asynchronous stuff like adding connections, that will eventually
-          // trigger new evaluations via observable behavior
-          pm.evaluateExtensionPoint(
-            'Core-handleUnrecognizedAssembly',
-            undefined,
-            {
-              assemblyName: asmName,
-              session: getParent<any>(self).session,
-            },
-          )
+        if (asmName) {
+          const assembly = self.assemblyNameMap[asmName]
+          if (assembly) {
+            return assembly
+          } else if (!this.assemblyNamesList.includes(asmName)) {
+            // Extension point for loading unrecognized assemblies. Allows
+            // plugins to provide custom logic for assembly resolution
+            //
+            // Note: this does not return any particular value. however, it can
+            // trigger things like like adding connections, that will
+            // eventually trigger assemblies to be loaded and new evaluations
+            // via observable behavior
+            pm.evaluateExtensionPoint(
+              'Core-handleUnrecognizedAssembly',
+              undefined,
+              {
+                assemblyName: asmName,
+                session: getParent<any>(self).session,
+              },
+            )
+          }
         }
 
         return undefined

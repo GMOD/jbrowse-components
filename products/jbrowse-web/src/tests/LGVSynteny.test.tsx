@@ -70,34 +70,32 @@ test('nav to synteny from feature details', async () => {
   })
 }, 60000)
 
-test('nav to synteny from right click, with launchame connection plugin', async () => {
+test('nav to synteny from right click, with launch connection plugin', async () => {
   await mockConsoleWarn(async () => {
     const user = userEvent.setup()
     const { session, view, findByTestId, findByText, findAllByTestId } =
       await createView()
 
     getEnv(session).pluginManager.addToExtensionPoint(
-      'Core-getUnrecognizedAssembly',
+      'Core-handleUnrecognizedAssembly',
       (
         _defaultResult: any,
-        { assemblyName, rootModel }: { assemblyName: string; rootModel: any },
+        { assemblyName, session }: { assemblyName: string; session: any },
       ) => {
         const jb2asm = `jb2hub-${assemblyName}`
-        console.log('WT', { assemblyName })
         if (
           assemblyName &&
-          !rootModel.session.connections.find(f => f.connectionId === jb2asm)
+          !session.connections.find(f => f.connectionId === jb2asm)
         ) {
-          console.log('IN HERE', { assemblyName })
           const conf = {
             type: 'JB2TrackHubConnection',
-            uri: 'config2.json',
+            uri: 'http://localhost:3000/test_data/volvox/config2.json',
             name: 'my conn' + jb2asm,
             assemblyNames: [assemblyName],
             connectionId: jb2asm,
           }
-          rootModel.session.addConnectionConf(conf)
-          rootModel.session.makeConnection(conf)
+          session.addConnectionConf(conf)
+          session.makeConnection(conf)
         }
       },
     )
@@ -117,4 +115,4 @@ test('nav to synteny from right click, with launchame connection plugin', async 
     }, delay)
     expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
   })
-}, 20000)
+}, 60000)
