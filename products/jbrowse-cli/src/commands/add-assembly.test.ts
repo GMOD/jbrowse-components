@@ -370,12 +370,20 @@ test('relative path', async () => {
     await mkdir('jbrowse')
     await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
     process.chdir('jbrowse')
+    
+    // Suppress the expected warning about file being outside JBrowse directory
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    
     await runCommand([
       'add-assembly',
       path.join('..', 'simple.2bit'),
       '--load',
       'inPlace',
     ])
+    
+    // Restore console.warn
+    consoleSpy.mockRestore()
+    
     expect(readConf(ctx, 'jbrowse')).toMatchSnapshot()
   })
 })
