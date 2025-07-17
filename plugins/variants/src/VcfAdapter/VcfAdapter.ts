@@ -1,11 +1,12 @@
 import IntervalTree from '@flatten-js/interval-tree'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzip, getProgressDisplayStr } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import VcfFeature from '../VcfFeature'
+import { parseVcfBuffer } from './vcfParser'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -37,40 +38,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts || {}
     const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
-    const headerLines = []
-    const featureMap = {} as Record<string, string[]>
-    let blockStart = 0
-
-    const decoder = new TextDecoder('utf8')
-    let i = 0
-    while (blockStart < buffer.length) {
-      const n = buffer.indexOf(10, blockStart)
-      // could be a non-newline ended file, so slice to end of file if n===-1
-      const b =
-        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
-      const line = decoder.decode(b).trim()
-      if (line) {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else {
-          const ret = line.indexOf('\t')
-          const refName = line.slice(0, ret)
-          if (!featureMap[refName]) {
-            featureMap[refName] = []
-          }
-          featureMap[refName].push(line)
-        }
-      }
-      if (i++ % 10_000 === 0) {
-        statusCallback(
-          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-        )
-      }
-
-      blockStart = n + 1
-    }
-
-    const header = headerLines.join('\n')
+    
+    const { header, featureMap } = parseVcfBuffer(buffer, statusCallback)
     const parser = new VcfParser({ header })
 
     const intervalTreeMap = Object.fromEntries(

@@ -7,12 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import SyntenyFeature from '../SyntenyFeature'
-import {
-  flipCigar,
-  parseLineByLine,
-  parsePAFLine,
-  swapIndelCigar,
-} from '../util'
+import { flipCigar, parsePAFLine, swapIndelCigar } from '../util'
 import { getWeightedMeans } from './util'
 
 import type { PAFRecord } from './util'
@@ -20,6 +15,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 const { parseCigar } = MismatchParser
 
@@ -43,14 +39,19 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions) {
-    return parseLineByLine(
+    const lines = [] as PAFRecord[]
+    parseLineByLine(
       await fetchAndMaybeUnzip(
         openLocation(this.getConf('pafLocation'), this.pluginManager),
         opts,
       ),
-      parsePAFLine,
-      opts,
+      line => {
+        lines.push(parsePAFLine(line))
+        return true
+      },
+      opts?.statusCallback,
     )
+    return lines
   }
 
   async hasDataForRefName() {

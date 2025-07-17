@@ -2,20 +2,25 @@ import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
-import { parseLineByLine } from '../util'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
-    return parseLineByLine(
+    const lines = [] as ReturnType<typeof parseMashMapLine>[]
+    parseLineByLine(
       await fetchAndMaybeUnzip(
         openLocation(this.getConf('outLocation'), this.pluginManager),
         opts,
       ),
-      parseMashMapLine,
-      opts,
+      line => {
+        lines.push(parseMashMapLine(line))
+        return true
+      },
+      opts?.statusCallback,
     )
+    return lines
   }
 }
 
