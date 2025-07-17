@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material'
 
-import SessionCard from './SessionCard'
+import SessionCard from './RecentSessionCard'
 import { loadPluginManager } from '../util'
 
 import type { RecentSessionData } from '../types'

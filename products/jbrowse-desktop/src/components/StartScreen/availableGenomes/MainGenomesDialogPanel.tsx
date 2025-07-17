@@ -10,7 +10,7 @@ import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import StarIcon from '@mui/icons-material/Star'
-import { Button, IconButton, Link, Typography } from '@mui/material'
+import { Button, Link, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
@@ -213,6 +213,10 @@ export default function MainGenomesDialogPanel({
                         ) : null}
                         <CascadingMenuButton
                           menuItems={[
+                            {
+                              label: 'Launch',
+                              onClick: handleLaunch,
+                            },
                             {
                               label: isFavorite
                                 ? 'Remove from favorites'
