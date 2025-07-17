@@ -1,9 +1,9 @@
-import { useState } from 'react'
-
-import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
+import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { useLocalStorage } from '@jbrowse/core/util'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { Button, Checkbox, IconButton, Typography } from '@mui/material'
+import MoreHoriz from '@mui/icons-material/MoreHoriz'
+import { IconButton, Link, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import { useInnerDims } from '../availableGenomes/util'
@@ -11,9 +11,6 @@ import { useInnerDims } from '../availableGenomes/util'
 import type { Fav, LaunchCallback } from '../types'
 
 const useStyles = makeStyles()(theme => ({
-  button: {
-    margin: theme.spacing(2),
-  },
   panel: {
     marginTop: theme.spacing(2),
     overflow: 'auto',
@@ -21,39 +18,28 @@ const useStyles = makeStyles()(theme => ({
   mb: {
     marginBottom: 5,
   },
-  p0: {
-    padding: 0,
-  },
+
   headerContainer: {
     display: 'flex',
     alignItems: 'center',
-  },
-  toggleButton: {
-    padding: theme.spacing(0.5),
-  },
-  cell: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    marginLeft: 20,
   },
 }))
 
 export default function FavoriteGenomesPanel({
   favorites,
+  setFavorites,
   launch,
 }: {
   favorites: Fav[]
+  setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
   const { classes } = useStyles()
-  const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [isVisible, setIsVisible] = useLocalStorage(
     'startScreen-favMinimized',
     true,
   )
   const { height: innerHeight } = useInnerDims()
-  const favMap = Object.fromEntries(favorites.map(r => [r.id, r]))
 
   return (
     <div>
@@ -69,23 +55,6 @@ export default function FavoriteGenomesPanel({
         <Typography variant="h6" className={classes.mb}>
           Favorite genomes
         </Typography>
-        {isVisible ? (
-          <Button
-            className={classes.button}
-            variant="contained"
-            disabled={!Object.values(selected).some(Boolean)}
-            onClick={() => {
-              launch(
-                Object.entries(selected)
-                  .filter(([_key, val]) => !!val)
-                  .map(([key]) => favMap[key])
-                  .filter(notEmpty),
-              )
-            }}
-          >
-            Go
-          </Button>
-        ) : null}
       </div>
 
       {isVisible ? (
@@ -93,26 +62,55 @@ export default function FavoriteGenomesPanel({
           <div className={classes.panel} style={{ maxHeight: innerHeight / 4 }}>
             <table>
               <tbody>
-                {favorites.map(({ id, shortName, description }) => (
-                  <tr key={id}>
-                    <td>
-                      <Checkbox
-                        className={classes.p0}
-                        checked={selected[id] || false}
-                        onChange={() => {
-                          setSelected({
-                            ...selected,
-                            [id]: !selected[id],
-                          })
-                        }}
-                      />
-                    </td>
-                    <td>{shortName}</td>
-                    <td>
-                      <div className={classes.cell}>{description}</div>
-                    </td>
-                  </tr>
-                ))}
+                {favorites.map(
+                  ({ id, shortName, description, jbrowseConfig }) => {
+                    const handleLaunch = () => {
+                      launch([
+                        {
+                          shortName,
+                          jbrowseConfig,
+                        },
+                      ])
+                    }
+
+                    const handleRemove = () => {
+                      setFavorites(favorites.filter(fav => fav.id !== id))
+                    }
+
+                    return (
+                      <tr key={id}>
+                        <td>
+                          <Link
+                            href="#"
+                            onClick={event => {
+                              event.preventDefault()
+                              handleLaunch()
+                            }}
+                          >
+                            {[shortName, description]
+                              .filter(f => !!f)
+                              .join(' - ')}
+                          </Link>{' '}
+                          <CascadingMenuButton
+                            style={{ padding: 0, margin: 0 }}
+                            menuItems={[
+                              {
+                                label: 'Launch',
+                                onClick: handleLaunch,
+                              },
+                              {
+                                label: 'Remove from favorites',
+                                onClick: handleRemove,
+                              },
+                            ]}
+                          >
+                            <MoreHoriz />
+                          </CascadingMenuButton>
+                        </td>
+                      </tr>
+                    )
+                  },
+                )}
               </tbody>
             </table>
           </div>
