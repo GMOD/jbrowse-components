@@ -54,18 +54,16 @@ const UnindexedFastaAdapterInput = observer(function ({
 }) {
   return (
     <>
-      <Alert severity="warning" style={{ margin: 30 }}>
+      <Alert severity="warning" style={{ margin: 8 }}>
         Note: use only relatively small files for this type, it is loaded into
         memory
       </Alert>
       <div>
         <FileSelector
           inline
-          name="fastaLocation"
+          name="FASTA file"
           location={fastaLocation}
-          setLocation={loc => {
-            setFastaLocation(loc)
-          }}
+          setLocation={setFastaLocation}
         />
       </div>
     </>
@@ -88,21 +86,17 @@ const IndexedFastaAdapterInput = observer(function ({
       <div>
         <FileSelector
           inline
-          name="fastaLocation"
+          name="FASTA file"
           location={fastaLocation}
-          setLocation={loc => {
-            setFastaLocation(loc)
-          }}
+          setLocation={setFastaLocation}
         />
       </div>
       <div>
         <FileSelector
           inline
-          name="faiLocation"
+          name="FASTA index (.fai) file"
           location={faiLocation}
-          setLocation={loc => {
-            setFaiLocation(loc)
-          }}
+          setLocation={setFaiLocation}
         />
       </div>
     </>
@@ -129,31 +123,25 @@ const BgzipFastaAdapterInput = observer(function ({
       <div>
         <FileSelector
           inline
-          name="fastaLocation"
+          name="FASTA file (.fa.gz)"
           location={fastaLocation}
-          setLocation={loc => {
-            setFastaLocation(loc)
-          }}
+          setLocation={setFastaLocation}
         />
       </div>
       <div>
         <FileSelector
           inline
-          name="faiLocation"
+          name="FASTA index (.fai) file"
           location={faiLocation}
-          setLocation={loc => {
-            setFaiLocation(loc)
-          }}
+          setLocation={setFaiLocation}
         />
       </div>
       <div>
         <FileSelector
           inline
-          name="gziLocation"
+          name="FASTA gzip index (.gzi) file"
           location={gziLocation}
-          setLocation={loc => {
-            setGziLocation(loc)
-          }}
+          setLocation={setGziLocation}
         />
       </div>
     </>
@@ -176,21 +164,17 @@ const TwoBitAdapterInput = observer(function ({
       <div>
         <FileSelector
           inline
-          name="twoBitLocation"
+          name="2bit file"
           location={twoBitLocation}
-          setLocation={loc => {
-            setTwoBitLocation(loc)
-          }}
+          setLocation={setTwoBitLocation}
         />
       </div>
       <div>
         <FileSelector
           inline
-          name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
+          name=".chrom.sizes (optional, can speed up loading 2bit files with many contigs)"
           location={chromSizesLocation}
-          setLocation={loc => {
-            setChromSizesLocation(loc)
-          }}
+          setLocation={setChromSizesLocation}
         />
       </div>
     </>
@@ -247,7 +231,7 @@ const AssemblyAddForm = observer(function ({
           }}
         />
         <TextField
-          id="assembly-name"
+          id="assembly-display-name"
           label="Assembly display name"
           helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
           variant="outlined"
