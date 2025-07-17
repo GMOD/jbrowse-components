@@ -13,9 +13,15 @@ ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2
     const buffer = new TextEncoder().encode(gffContent)
     const result = parseGffBuffer(buffer)
 
-    expect(result.header).toBe('##gff-version 3\n# This is a comment\n##sequence-region ctgA 1 50001')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	contig	1	50001	.	.	.	Name=ctgA\nctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
-    expect(result.featureMap.ctgB).toBe('ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2\n')
+    expect(result.header).toBe(
+      '##gff-version 3\n# This is a comment\n##sequence-region ctgA 1 50001',
+    )
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	contig	1	50001	.	.	.	Name=ctgA\nctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
+    expect(result.featureMap.ctgB).toBe(
+      'ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2\n',
+    )
   })
 
   it('should handle empty content', () => {
@@ -35,7 +41,9 @@ ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2
     const buffer = new TextEncoder().encode(gffContent)
     const result = parseGffBuffer(buffer)
 
-    expect(result.header).toBe('##gff-version 3\n# This is a comment\n##sequence-region ctgA 1 50001')
+    expect(result.header).toBe(
+      '##gff-version 3\n# This is a comment\n##sequence-region ctgA 1 50001',
+    )
     expect(result.featureMap).toEqual({})
   })
 
@@ -49,8 +57,12 @@ ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	contig	1	50001	.	.	.	Name=ctgA\nctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
-    expect(result.featureMap.ctgB).toBe('ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	contig	1	50001	.	.	.	Name=ctgA\nctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
+    expect(result.featureMap.ctgB).toBe(
+      'ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2\n',
+    )
   })
 
   it('should handle file with trailing newline', () => {
@@ -62,7 +74,9 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('##gff-version 3')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
   })
 
   it('should handle file without trailing newline', () => {
@@ -73,7 +87,9 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN`
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('##gff-version 3')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
   })
 
   it('should handle empty lines', () => {
@@ -90,8 +106,12 @@ ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('##gff-version 3')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
-    expect(result.featureMap.ctgB).toBe('ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
+    expect(result.featureMap.ctgB).toBe(
+      'ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2\n',
+    )
   })
 
   it('should stop parsing at FASTA sequence section', () => {
@@ -106,7 +126,9 @@ ctgB	example	gene	2000	8000	.	-	.	ID=GENE2;Name=GENE2
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('##gff-version 3')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
     expect(result.featureMap.ctgB).toBeUndefined()
   })
 
@@ -121,7 +143,9 @@ ctgA	example	gene	5000	6000	.	+	.	ID=GENE3;Name=GENE3
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('##gff-version 3')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	2000	.	+	.	ID=GENE1;Name=GENE1\nctgA	example	gene	3000	4000	.	+	.	ID=GENE2;Name=GENE2\nctgA	example	gene	5000	6000	.	+	.	ID=GENE3;Name=GENE3\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	2000	.	+	.	ID=GENE1;Name=GENE1\nctgA	example	gene	3000	4000	.	+	.	ID=GENE2;Name=GENE2\nctgA	example	gene	5000	6000	.	+	.	ID=GENE3;Name=GENE3\n',
+    )
   })
 
   it('should call status callback during parsing', () => {
@@ -131,10 +155,12 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
 
     const buffer = new TextEncoder().encode(gffContent)
     const mockStatusCallback = jest.fn()
-    
+
     parseGffBuffer(buffer, mockStatusCallback)
 
-    expect(mockStatusCallback).toHaveBeenCalledWith(expect.stringContaining('Loading'))
+    expect(mockStatusCallback).toHaveBeenCalledWith(
+      expect.stringContaining('Loading'),
+    )
   })
 
   it('should handle single line file without newline', () => {
@@ -144,7 +170,9 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
   })
 
   it('should handle whitespace-only lines', () => {
@@ -158,6 +186,8 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
     const result = parseGffBuffer(buffer)
 
     expect(result.header).toBe('##gff-version 3')
-    expect(result.featureMap.ctgA).toBe('ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n')
+    expect(result.featureMap.ctgA).toBe(
+      'ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN\n',
+    )
   })
 })

@@ -22,7 +22,7 @@ export function parseVcfBuffer(
 
   parseLineByLine(
     buffer,
-    (line) => {
+    line => {
       if (line.startsWith('#')) {
         headerLines.push(line)
       } else {

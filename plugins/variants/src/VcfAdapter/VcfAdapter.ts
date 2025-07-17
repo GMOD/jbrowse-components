@@ -38,7 +38,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts || {}
     const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
-    
+
     const { header, featureMap } = parseVcfBuffer(buffer, statusCallback)
     const parser = new VcfParser({ header })
 

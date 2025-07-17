@@ -14,14 +14,14 @@ ctgB	1500	.	T	G	40	PASS	DP=20
     const buffer = new TextEncoder().encode(vcfContent)
     const result = parseVcfBuffer(buffer)
 
-    expect(result.header).toBe('##fileformat=VCFv4.1\n##samtoolsVersion=0.1.18\n##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO')
+    expect(result.header).toBe(
+      '##fileformat=VCFv4.1\n##samtoolsVersion=0.1.18\n##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO',
+    )
     expect(result.featureMap.ctgA).toEqual([
       'ctgA	1000	.	G	A	60	PASS	DP=30',
-      'ctgA	2000	.	C	T	50	PASS	DP=25'
+      'ctgA	2000	.	C	T	50	PASS	DP=25',
     ])
-    expect(result.featureMap.ctgB).toEqual([
-      'ctgB	1500	.	T	G	40	PASS	DP=20'
-    ])
+    expect(result.featureMap.ctgB).toEqual(['ctgB	1500	.	T	G	40	PASS	DP=20'])
   })
 
   it('should handle empty content', () => {
@@ -42,7 +42,9 @@ ctgB	1500	.	T	G	40	PASS	DP=20
     const buffer = new TextEncoder().encode(vcfContent)
     const result = parseVcfBuffer(buffer)
 
-    expect(result.header).toBe('##fileformat=VCFv4.1\n##samtoolsVersion=0.1.18\n##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO')
+    expect(result.header).toBe(
+      '##fileformat=VCFv4.1\n##samtoolsVersion=0.1.18\n##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO',
+    )
     expect(result.featureMap).toEqual({})
   })
 
@@ -58,11 +60,9 @@ ctgB	1500	.	T	G	40	PASS	DP=20
     expect(result.header).toBe('')
     expect(result.featureMap.ctgA).toEqual([
       'ctgA	1000	.	G	A	60	PASS	DP=30',
-      'ctgA	2000	.	C	T	50	PASS	DP=25'
+      'ctgA	2000	.	C	T	50	PASS	DP=25',
     ])
-    expect(result.featureMap.ctgB).toEqual([
-      'ctgB	1500	.	T	G	40	PASS	DP=20'
-    ])
+    expect(result.featureMap.ctgB).toEqual(['ctgB	1500	.	T	G	40	PASS	DP=20'])
   })
 
   it('should handle file with trailing newline', () => {
@@ -120,7 +120,7 @@ ctgA	3000	.	T	G	40	PASS	DP=20
     expect(result.featureMap.ctgA).toEqual([
       'ctgA	1000	.	G	A	60	PASS	DP=30',
       'ctgA	2000	.	C	T	50	PASS	DP=25',
-      'ctgA	3000	.	T	G	40	PASS	DP=20'
+      'ctgA	3000	.	T	G	40	PASS	DP=20',
     ])
   })
 
@@ -131,10 +131,12 @@ ctgA	1000	.	G	A	60	PASS	DP=30
 
     const buffer = new TextEncoder().encode(vcfContent)
     const mockStatusCallback = jest.fn()
-    
+
     parseVcfBuffer(buffer, mockStatusCallback)
 
-    expect(mockStatusCallback).toHaveBeenCalledWith(expect.stringContaining('Loading'))
+    expect(mockStatusCallback).toHaveBeenCalledWith(
+      expect.stringContaining('Loading'),
+    )
   })
 
   it('should handle whitespace-only lines', () => {
@@ -175,7 +177,9 @@ ctgB	2000	rs123	C	T	50	PASS	DP=25	GT	1/1
     const buffer = new TextEncoder().encode(vcfContent)
     const result = parseVcfBuffer(buffer)
 
-    expect(result.header).toBe('##fileformat=VCFv4.1\n##contig=<ID=ctgA,length=50001>\n##contig=<ID=ctgB,length=6079>\n##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample1')
+    expect(result.header).toBe(
+      '##fileformat=VCFv4.1\n##contig=<ID=ctgA,length=50001>\n##contig=<ID=ctgB,length=6079>\n##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample1',
+    )
     expect(result.featureMap.ctgA).toEqual(['ctgA	1000	.	G	A	60	PASS	DP=30	GT	0/1'])
     expect(result.featureMap.ctgB).toEqual(['ctgB	2000	rs123	C	T	50	PASS	DP=25	GT	1/1'])
   })

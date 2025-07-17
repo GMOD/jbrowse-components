@@ -7,11 +7,11 @@ line2
 line3`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
     })
-    
+
     expect(lines).toEqual(['line1', 'line2', 'line3'])
   })
 
@@ -22,15 +22,15 @@ line3
 line4`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
       if (line === 'line2') {
         return false
       }
       return true
     })
-    
+
     expect(lines).toEqual(['line1', 'line2'])
   })
 
@@ -40,11 +40,11 @@ line4`
 line3`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
     })
-    
+
     expect(lines).toEqual(['line1', 'line3'])
   })
 
@@ -53,11 +53,11 @@ line3`
 line2`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
     })
-    
+
     expect(lines).toEqual(['line1', 'line2'])
   })
 
@@ -66,10 +66,12 @@ line2`
 line2`
     const buffer = new TextEncoder().encode(content)
     const mockStatusCallback = jest.fn()
-    
+
     parseLineByLine(buffer, () => {}, mockStatusCallback)
-    
-    expect(mockStatusCallback).toHaveBeenCalledWith(expect.stringContaining('Loading'))
+
+    expect(mockStatusCallback).toHaveBeenCalledWith(
+      expect.stringContaining('Loading'),
+    )
   })
 
   it('should provide line index to callback', () => {
@@ -78,22 +80,22 @@ line2
 line3`
     const buffer = new TextEncoder().encode(content)
     const lineIndices: number[] = []
-    
+
     parseLineByLine(buffer, (line, index) => {
       lineIndices.push(index)
     })
-    
+
     expect(lineIndices).toEqual([0, 1, 2])
   })
 
   it('should handle empty buffer', () => {
     const buffer = new TextEncoder().encode('')
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
     })
-    
+
     expect(lines).toEqual([])
   })
 
@@ -103,11 +105,11 @@ line3`
 	`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
     })
-    
+
     expect(lines).toEqual([])
   })
 
@@ -115,11 +117,11 @@ line3`
     const content = `single line`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
-    
-    parseLineByLine(buffer, (line) => {
+
+    parseLineByLine(buffer, line => {
       lines.push(line)
     })
-    
+
     expect(lines).toEqual(['single line'])
   })
 })

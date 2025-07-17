@@ -29,7 +29,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       openLocation(this.getConf('gffLocation'), this.pluginManager),
       opts,
     )
-    
+
     const { header, featureMap } = parseGffBuffer(buffer, statusCallback)
 
     const intervalTreeMap = Object.fromEntries(
