@@ -21,6 +21,11 @@ module.exports = {
       },
       items: [
         {
+          to: 'http://jbrowse.org/demos/jb2hubs/',
+          label: 'Genomes',
+          position: 'left',
+        },
+        {
           to: 'docs/',
           activeBasePath: 'docs',
           label: 'Docs',
