@@ -10,6 +10,7 @@ line3`
 
     parseLineByLine(buffer, line => {
       lines.push(line)
+      return true
     })
 
     expect(lines).toEqual(['line1', 'line2', 'line3'])
@@ -43,6 +44,7 @@ line3`
 
     parseLineByLine(buffer, line => {
       lines.push(line)
+      return true
     })
 
     expect(lines).toEqual(['line1', 'line3'])
@@ -56,6 +58,7 @@ line2`
 
     parseLineByLine(buffer, line => {
       lines.push(line)
+      return true
     })
 
     expect(lines).toEqual(['line1', 'line2'])
@@ -67,7 +70,13 @@ line2`
     const buffer = new TextEncoder().encode(content)
     const mockStatusCallback = jest.fn()
 
-    parseLineByLine(buffer, () => {}, mockStatusCallback)
+    parseLineByLine(
+      buffer,
+      () => {
+        return true
+      },
+      mockStatusCallback,
+    )
 
     expect(mockStatusCallback).toHaveBeenCalledWith(
       expect.stringContaining('Loading'),
@@ -83,6 +92,7 @@ line3`
 
     parseLineByLine(buffer, (line, index) => {
       lineIndices.push(index)
+      return true
     })
 
     expect(lineIndices).toEqual([0, 1, 2])
@@ -94,20 +104,22 @@ line3`
 
     parseLineByLine(buffer, line => {
       lines.push(line)
+      return true
     })
 
     expect(lines).toEqual([])
   })
 
   it('should handle buffer with only whitespace', () => {
-    const content = `   
-    
+    const content = `
+
 	`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
     parseLineByLine(buffer, line => {
       lines.push(line)
+      return true
     })
 
     expect(lines).toEqual([])
@@ -120,6 +132,7 @@ line3`
 
     parseLineByLine(buffer, line => {
       lines.push(line)
+      return true
     })
 
     expect(lines).toEqual(['single line'])

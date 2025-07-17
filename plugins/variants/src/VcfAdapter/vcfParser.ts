@@ -33,6 +33,7 @@ export function parseVcfBuffer(
         }
         featureMap[refName].push(line)
       }
+      return true
     },
     statusCallback,
   )

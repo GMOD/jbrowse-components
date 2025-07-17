@@ -1,10 +1,10 @@
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {

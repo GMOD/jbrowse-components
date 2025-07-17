@@ -23,8 +23,9 @@
  * SOFTWARE.
  */
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function generate_record(
   qname: string,

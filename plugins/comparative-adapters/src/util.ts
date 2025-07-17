@@ -1,7 +1,4 @@
-import {
-  fetchAndMaybeUnzipText,
-  getProgressDisplayStr,
-} from '@jbrowse/core/util'
+import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
 import type { PAFRecord } from './PAFAdapter/util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

@@ -4,11 +4,11 @@ import {
   SimpleFeature,
   doesIntersect2,
   fetchAndMaybeUnzip,
-  getProgressDisplayStr,
   max,
   min,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
@@ -19,7 +19,6 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 type StatusCallback = (arg: string) => void
 
