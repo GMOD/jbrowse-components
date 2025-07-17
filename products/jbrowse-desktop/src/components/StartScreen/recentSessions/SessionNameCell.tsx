@@ -87,4 +87,3 @@ function SessionNameCell({
 }
 
 export default SessionNameCell
-

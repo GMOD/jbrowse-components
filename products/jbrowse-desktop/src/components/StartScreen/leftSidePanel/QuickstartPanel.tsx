@@ -32,6 +32,7 @@ const useStyles = makeStyles()(theme => ({
   headerContainer: {
     display: 'flex',
     alignItems: 'center',
+    cursor: 'pointer',
   },
 }))
 
@@ -60,13 +61,13 @@ export default function QuickstartPanel({
   const e = listError
   return (
     <div>
-      <div className={classes.headerContainer}>
-        <IconButton
-          size="small"
-          onClick={() => {
-            setIsVisible(!isVisible)
-          }}
-        >
+      <div
+        className={classes.headerContainer}
+        onClick={() => {
+          setIsVisible(!isVisible)
+        }}
+      >
+        <IconButton size="small">
           {isVisible ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </IconButton>
         <Typography variant="h6" className={classes.mb}>
