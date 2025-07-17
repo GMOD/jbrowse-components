@@ -4,11 +4,11 @@ import {
   SimpleFeature,
   doesIntersect2,
   fetchAndMaybeUnzip,
-  getProgressDisplayStr,
   max,
   min,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
@@ -31,26 +31,18 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
   }>
 
   private async loadDataP(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
     const loc = openLocation(this.getConf('gtfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
-    const headerLines = []
+    const headerLines = [] as string[]
     const featureMap = {} as Record<string, string>
-    let blockStart = 0
 
-    let i = 0
-    const decoder = new TextDecoder('utf8')
-    while (blockStart < buffer.length) {
-      const n = buffer.indexOf(10, blockStart)
-      // could be a non-newline ended file, so slice to end of file if n===-1
-      const b =
-        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
-      const line = decoder.decode(b).trim()
-      if (line) {
+    parseLineByLine(
+      buffer,
+      line => {
         if (line.startsWith('#')) {
           headerLines.push(line)
         } else if (line.startsWith('>')) {
-          break
+          return false
         } else {
           const ret = line.indexOf('\t')
           const refName = line.slice(0, ret)
@@ -59,15 +51,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           }
           featureMap[refName] += `${line}\n`
         }
-      }
-      if (i++ % 10_000 === 0) {
-        statusCallback(
-          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-        )
-      }
-
-      blockStart = n + 1
-    }
+        return true
+      },
+      opts?.statusCallback,
+    )
 
     const intervalTreeMap = Object.fromEntries(
       Object.entries(featureMap).map(([refName, lines]) => [

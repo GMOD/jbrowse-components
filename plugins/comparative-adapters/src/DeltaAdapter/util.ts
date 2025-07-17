@@ -1,4 +1,4 @@
-import { getProgressDisplayStr } from '@jbrowse/core/util'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOptions'
 
@@ -45,39 +45,30 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let y = 0
   let seen_gt = false
 
-  const records = []
+  const records = [] as {
+    qname: string
+    qstart: number
+    qend: number
+    tname: string
+    tstart: number
+    tend: number
+    strand: number
+    extra: Record<string, unknown>
+  }[]
   const regex = new RegExp(/^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/)
 
-  let blockStart = 0
-  let i = 0
-  let j = 0
-  const decoder = new TextDecoder('utf8')
-  let s = performance.now()
-  while (blockStart < buffer.length) {
-    if (j++ % 10_000 === 0 && performance.now() - s > 50) {
-      statusCallback(
-        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-      )
-      s = performance.now()
-    }
-    const n = buffer.indexOf(10, blockStart)
-    if (n === -1) {
-      break
-    }
-    const b = buffer.subarray(blockStart, n)
-    const line = decoder.decode(b).trim()
-    blockStart = n + 1
-    i++
-    if (line) {
+  parseLineByLine(
+    buffer,
+    line => {
       const m = regex.exec(line)
       if (m !== null) {
         rname = m[1]!
         qname = m[2]!
         seen_gt = true
-        continue
+        return true
       }
       if (!seen_gt) {
-        continue
+        return true
       }
       const t = line.split(' ')
       if (t.length === 7) {
@@ -101,13 +92,13 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
           const cigar_str = []
 
           if (re - rs - x !== qe - qs - y) {
-            throw new Error(`inconsistent alignment on line ${i}`)
+            throw new Error(`inconsistent alignment on line ${line}`)
           }
           cigar.push((re - rs - x) << 4)
           for (const entry of cigar) {
             const rlen = entry >> 4
             blen += rlen
-            cigar_str.push(rlen + 'MID'.charAt(cigar[i]! & 0xf))
+            cigar_str.push(rlen + 'MID'.charAt(entry & 0xf))
           }
 
           records.push({
@@ -154,8 +145,9 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
           } // insertion
         }
       }
-    }
-  }
-  statusCallback('')
+      return true
+    },
+    statusCallback,
+  )
   return records
 }
