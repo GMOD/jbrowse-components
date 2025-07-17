@@ -9,7 +9,7 @@ import { useLocalStorage } from '@jbrowse/core/util'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
-import { Button, Checkbox, IconButton, Typography } from '@mui/material'
+import { IconButton, Link, Typography } from '@mui/material'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
@@ -20,9 +20,6 @@ import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog'
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
-  button: {
-    margin: theme.spacing(2),
-  },
   panel: {
     marginTop: theme.spacing(2),
   },
@@ -44,7 +41,6 @@ export default function QuickstartPanel({
   launch: (arg0: string[]) => void
 }) {
   const { classes } = useStyles()
-  const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string>()
   const [renameDialogOpen, setRenameDialogOpen] = useState<string>()
   const [isVisible, setIsVisible] = useLocalStorage(
@@ -76,76 +72,70 @@ export default function QuickstartPanel({
         <Typography variant="h6" className={classes.mb}>
           Quickstart list
         </Typography>
-        {isVisible ? (
-          <Button
-            className={classes.button}
-            onClick={() => {
-              launch(
-                Object.keys(selected).filter(
-                  n => selected[n] && quickstarts?.includes(n),
-                ),
-              )
-            }}
-            variant="contained"
-            disabled={!Object.values(selected).some(Boolean)}
-          >
-            Go
-          </Button>
-        ) : null}
       </div>
 
       {isVisible ? (
         <div className={classes.panel}>
           {e ? <ErrorMessage error={e} /> : null}
 
-          {quickstarts ? (
-            <div
-              className={classes.tableContainer}
-              style={{ maxHeight: innerHeight / 4 }}
-            >
-              <table>
-                <tbody>
-                  {quickstarts.map(name => (
-                    <tr key={name}>
-                      <td>
-                        <Checkbox
-                          style={{ padding: 0 }}
-                          checked={selected[name] || false}
-                          onChange={() => {
-                            setSelected({
-                              ...selected,
-                              [name]: !selected[name],
-                            })
-                          }}
-                        />
-                      </td>
-                      <td>
-                        {name}{' '}
-                        <CascadingMenuButton
-                          style={{ padding: 0 }}
-                          menuItems={[
-                            {
-                              label: 'Delete',
-                              onClick: () => {
-                                setDeleteDialogOpen(name)
-                              },
-                            },
-                            {
-                              label: 'Rename',
-                              onClick: () => {
-                                setRenameDialogOpen(name)
-                              },
-                            },
-                          ]}
-                        >
-                          <MoreIcon />
-                        </CascadingMenuButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {quickstarts !== undefined ? (
+            quickstarts.length ? (
+              <div
+                className={classes.tableContainer}
+                style={{ maxHeight: innerHeight / 4 }}
+              >
+                <table>
+                  <tbody>
+                    {quickstarts.map(name => {
+                      const handleLaunch = () => {
+                        launch([name])
+                      }
+
+                      return (
+                        <tr key={name}>
+                          <td>
+                            <Link
+                              href="#"
+                              onClick={event => {
+                                event.preventDefault()
+                                handleLaunch()
+                              }}
+                            >
+                              {name}
+                            </Link>{' '}
+                            <CascadingMenuButton
+                              style={{ padding: 0 }}
+                              menuItems={[
+                                {
+                                  label: 'Launch',
+                                  onClick: handleLaunch,
+                                },
+                                {
+                                  label: 'Delete',
+                                  onClick: () => {
+                                    setDeleteDialogOpen(name)
+                                  },
+                                },
+                                {
+                                  label: 'Rename',
+                                  onClick: () => {
+                                    setRenameDialogOpen(name)
+                                  },
+                                },
+                              ]}
+                            >
+                              <MoreIcon />
+                            </CascadingMenuButton>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div>No quickstarts available</div>
+            )
           ) : (
             <LoadingEllipses />
           )}

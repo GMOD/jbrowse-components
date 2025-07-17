@@ -107,6 +107,7 @@ export default function LauncherPanel({
           />
           <FavoriteGenomesPanel
             favorites={favorites}
+            setFavorites={setFavorites}
             launch={sel =>
               structuredCb(async () => {
                 await initializeSession(await fetchData(sel))
