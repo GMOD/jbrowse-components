@@ -15,8 +15,8 @@ import {
 import { makeStyles } from 'tss-react/mui'
 
 import Checkbox2 from '../Checkbox2'
-import RecentSessionsCards from './RecentSessionCards'
-import RecentSessionsList from './RecentSessionList'
+import RecentSessionsCards from './RecentSessionsCards'
+import RecentSessionsList from './RecentSessionsDataGrid'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog'
 
@@ -97,10 +97,18 @@ export default function RecentSessionPanel({
     )
   }
 
-  const [favorites] = useLocalStorage(
+  const [favorites, setFavorites] = useLocalStorage(
     'startScreen-favoriteSessions',
     [] as string[],
   )
+
+  const toggleFavorite = (sessionPath: string) => {
+    if (favs.has(sessionPath)) {
+      setFavorites(favorites.filter(path => path !== sessionPath))
+    } else {
+      setFavorites([...favorites, sessionPath])
+    }
+  }
 
   const favs = new Set(favorites)
   const filteredSessions = sortedSessions.filter(f =>
@@ -201,6 +209,8 @@ export default function RecentSessionPanel({
             setError={setError}
             setSessionsToDelete={setSessionsToDelete}
             setSessionToRename={setSessionToRename}
+            favorites={favorites}
+            toggleFavorite={toggleFavorite}
           />
         ) : (
           <RecentSessionsList
@@ -209,6 +219,8 @@ export default function RecentSessionPanel({
             setSelectedSessions={setSelectedSessions}
             setSessionToRename={setSessionToRename}
             sessions={filteredSessions}
+            favorites={favorites}
+            toggleFavorite={toggleFavorite}
           />
         )
       ) : (

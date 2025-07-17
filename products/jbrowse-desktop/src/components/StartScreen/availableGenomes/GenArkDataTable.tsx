@@ -10,14 +10,7 @@ import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import StarIcon from '@mui/icons-material/Star'
-import {
-  Button,
-  IconButton,
-  Link,
-  MenuItem,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Button, Link, MenuItem, TextField, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
@@ -352,7 +345,7 @@ export default function GenArkDataTable({
           }}
         >
           <DataGrid
-            rows={r2.filter(f => (showOnlyFavs ? favs.has(f.accession) : true))}
+            rows={r2.filter(f => (showOnlyFavs ? favs.has(f.id) : true))}
             showToolbar
             rowHeight={25}
             columnHeaderHeight={35}
@@ -413,6 +406,10 @@ export default function GenArkDataTable({
                           ) : null}
                           <CascadingMenuButton
                             menuItems={[
+                              {
+                                label: 'Launch',
+                                onClick: handleLaunch,
+                              },
                               {
                                 label: isFavorite
                                   ? 'Remove from favorites'
