@@ -1,9 +1,9 @@
+import { CascadingMenuButton } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
-import EditIcon from '@mui/icons-material/Edit'
+import { measureGridWidth } from '@jbrowse/core/util'
+import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import StarIcon from '@mui/icons-material/Star'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
-import { IconButton, Link, Tooltip } from '@mui/material'
+import { Link, Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { formatDistanceToNow } from 'date-fns'
 import { makeStyles } from 'tss-react/mui'
@@ -29,12 +29,16 @@ export default function RecentSessionsList({
   setSelectedSessions,
   setSessionToRename,
   setPluginManager,
+  favorites,
+  toggleFavorite,
 }: {
   setError: (e: unknown) => void
   setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
+  favorites: string[]
+  toggleFavorite: (sessionPath: string) => void
 }) {
   const { classes } = useStyles()
 
@@ -61,7 +65,6 @@ export default function RecentSessionsList({
   const arr = ['name', 'path', 'lastModified']
 
   const widths = {
-    rename: 40,
     ...Object.fromEntries(
       arr.map(e => [
         e,
@@ -70,23 +73,12 @@ export default function RecentSessionsList({
           : measureGridWidth(
               rows.map(r => r[e as keyof (typeof rows)[0]]),
               { stripHTML: true },
-            ) + 20,
+            ) + 40,
       ]),
     ),
   } as Record<string, number>
 
-  const [favorites, setFavorites] = useLocalStorage(
-    'startScreen-favoriteSessions',
-    [] as string[],
-  )
   const favs = new Set(favorites)
-  const toggleFavorite = (genomeName: string) => {
-    if (favs.has(genomeName)) {
-      setFavorites(favorites.filter(name => name !== genomeName))
-    } else {
-      setFavorites([...favorites, genomeName])
-    }
-  }
 
   return (
     <div style={{ maxHeight: innerHeight / 2, overflow: 'auto' }}>
@@ -102,77 +94,70 @@ export default function RecentSessionsList({
           columnHeaderHeight={33}
           columns={[
             {
-              field: 'rename',
-              minWidth: 40,
-              width: widths.rename,
-              sortable: false,
-              filterable: false,
-              headerName: 'rename',
-              renderCell: params => (
-                <IconButton
-                  onClick={() => {
-                    const { lastModified, ...rest } = params.row
-                    setSessionToRename({
-                      ...rest,
-                    })
-                  }}
-                >
-                  <Tooltip title="Rename session">
-                    <EditIcon />
-                  </Tooltip>
-                </IconButton>
-              ),
-            },
-            {
-              field: 'fav',
-              minWidth: 40,
-              width: widths.rename,
-              sortable: false,
-              filterable: false,
-              renderCell: params => (
-                <Tooltip
-                  title={
-                    favs.has(params.row.id)
-                      ? 'Remove from favorites'
-                      : 'Add to favorites'
-                  }
-                >
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      toggleFavorite(params.row.id)
-                    }}
-                  >
-                    {favs.has(params.row.id) ? (
-                      <StarIcon />
-                    ) : (
-                      <StarBorderIcon />
-                    )}
-                  </IconButton>
-                </Tooltip>
-              ),
-            },
-            {
               field: 'name',
               headerName: 'Session name',
               width: widths.name,
-              renderCell: ({ value, row }) => (
-                <Link
-                  href="#"
-                  className={classes.cell}
-                  onClick={async event => {
-                    event.preventDefault()
-                    try {
-                      setPluginManager(await loadPluginManager(row.path))
-                    } catch (e) {
-                      console.error(e)
-                      setError(e)
-                    }
-                  }}
-                >
-                  {value as string}
-                </Link>
-              ),
+              renderCell: ({ value, row }) => {
+                const isFavorite = favs.has(row.id)
+
+                const handleLaunch = async () => {
+                  try {
+                    setPluginManager(await loadPluginManager(row.path))
+                  } catch (e) {
+                    console.error(e)
+                    setError(e)
+                  }
+                }
+
+                const handleToggleFavorite = () => {
+                  toggleFavorite(row.id)
+                }
+
+                const handleRename = () => {
+                  const { lastModified, ...rest } = row
+                  setSessionToRename({
+                    ...rest,
+                  })
+                }
+
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Link
+                      href="#"
+                      className={classes.cell}
+                      onClick={async event => {
+                        event.preventDefault()
+                        await handleLaunch()
+                      }}
+                    >
+                      {value as string}
+                    </Link>
+                    {isFavorite ? (
+                      <StarIcon style={{ marginLeft: 4, fontSize: 16 }} />
+                    ) : null}
+                    <CascadingMenuButton
+                      menuItems={[
+                        {
+                          label: 'Launch',
+                          onClick: handleLaunch,
+                        },
+                        {
+                          label: isFavorite
+                            ? 'Remove from favorites'
+                            : 'Add to favorites',
+                          onClick: handleToggleFavorite,
+                        },
+                        {
+                          label: 'Rename',
+                          onClick: handleRename,
+                        },
+                      ]}
+                    >
+                      <MoreHoriz />
+                    </CascadingMenuButton>
+                  </div>
+                )
+              },
             },
             {
               field: 'path',
