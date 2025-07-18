@@ -3,18 +3,33 @@ import { useCallback, useMemo } from 'react'
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import StarIcon from '@mui/icons-material/Star'
-import { Link } from '@mui/material'
+import { Link, Tooltip } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { loadPluginManager } from '../util'
 
 import type { RecentSessionData } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+const useStyles = makeStyles()({
+  flexContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  starIcon: {
+    marginLeft: 4,
+    fontSize: 16,
+    color: 'darkorange',
+  },
+})
+
 function SessionNameCell({
   value,
   row,
   isFavorite,
-  classes,
   setPluginManager,
   setError,
   toggleFavorite,
@@ -23,12 +38,12 @@ function SessionNameCell({
   value: string
   row: any
   isFavorite: boolean
-  classes: any
   setPluginManager: (pm: PluginManager) => void
   setError: (e: unknown) => void
   toggleFavorite: (sessionPath: string) => void
   setSessionToRename: (arg: RecentSessionData) => void
 }) {
+  const { classes } = useStyles()
   const handleLaunch = useCallback(async () => {
     try {
       setPluginManager(await loadPluginManager(row.path))
@@ -75,10 +90,14 @@ function SessionNameCell({
 
   return (
     <div className={classes.flexContainer}>
-      <Link href="#" className={classes.cell} onClick={handleLinkClick}>
+      <Link href="#" onClick={handleLinkClick}>
         {value}
       </Link>
-      {isFavorite ? <StarIcon className={classes.starIcon} /> : null}
+      {isFavorite ? (
+        <Tooltip title="Favorite">
+          <StarIcon className={classes.starIcon} />
+        </Tooltip>
+      ) : null}{' '}
       <CascadingMenuButton menuItems={menuItems}>
         <MoreHoriz />
       </CascadingMenuButton>
