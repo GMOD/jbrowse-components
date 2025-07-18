@@ -20,14 +20,6 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  flexContainer: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  starIcon: {
-    marginLeft: 4,
-    fontSize: 16,
-  },
 })
 
 function RecentSessionsList({
@@ -113,7 +105,6 @@ function RecentSessionsList({
             value={value as string}
             row={row}
             isFavorite={favs.has(row.id)}
-            classes={classes}
             setPluginManager={setPluginManager}
             setError={setError}
             toggleFavorite={toggleFavorite}
