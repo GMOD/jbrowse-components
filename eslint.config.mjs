@@ -144,6 +144,7 @@ export default tseslint.config(
       'unicorn/better-regex': 'off',
       'unicorn/escape-case': 'off',
       'unicorn/prefer-number-properties': 'off',
+      'unicorn/no-array-reverse': 'off',
       'unicorn/no-process-exit': 'off',
       'unicorn/prefer-at': 'off',
       'unicorn/prefer-string-replace-all': 'off',

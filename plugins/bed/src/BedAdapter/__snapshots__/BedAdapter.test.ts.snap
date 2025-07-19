@@ -155,6 +155,94 @@ exports[`adapter can fetch features bed with autosql 1`] = `
 ]
 `;
 
+exports[`adapter can fetch features from chr1 1`] = `
+[
+  {
+    "end": 1050,
+    "field6": "1000",
+    "field7": "1050",
+    "field8": "255,0,0",
+    "name": "feature1",
+    "refName": "chr1",
+    "score": 960,
+    "start": 1000,
+    "strand": 1,
+    "subfeatures": undefined,
+    "uniqueId": "test-chr1-0",
+  },
+  {
+    "end": 1150,
+    "field6": "1100",
+    "field7": "1150",
+    "field8": "0,255,0",
+    "name": "feature2",
+    "refName": "chr1",
+    "score": 850,
+    "start": 1100,
+    "strand": -1,
+    "subfeatures": undefined,
+    "uniqueId": "test-chr1-1",
+  },
+  {
+    "end": 1250,
+    "field6": "1200",
+    "field7": "1250",
+    "field8": "0,0,255",
+    "name": "feature3",
+    "refName": "chr1",
+    "score": 700,
+    "start": 1200,
+    "strand": 1,
+    "subfeatures": undefined,
+    "uniqueId": "test-chr1-2",
+  },
+]
+`;
+
+exports[`adapter can fetch features from chr1, no trailing newline 1`] = `
+[
+  {
+    "end": 1050,
+    "field6": "1000",
+    "field7": "1050",
+    "field8": "255,0,0",
+    "name": "feature1",
+    "refName": "chr1",
+    "score": 960,
+    "start": 1000,
+    "strand": 1,
+    "subfeatures": undefined,
+    "uniqueId": "test-chr1-0",
+  },
+  {
+    "end": 1150,
+    "field6": "1100",
+    "field7": "1150",
+    "field8": "0,255,0",
+    "name": "feature2",
+    "refName": "chr1",
+    "score": 850,
+    "start": 1100,
+    "strand": -1,
+    "subfeatures": undefined,
+    "uniqueId": "test-chr1-1",
+  },
+  {
+    "end": 1250,
+    "field6": "1200",
+    "field7": "1250",
+    "field8": "0,0,255",
+    "name": "feature3",
+    "refName": "chr1",
+    "score": 700,
+    "start": 1200,
+    "strand": 1,
+    "subfeatures": undefined,
+    "uniqueId": "test-chr1-2",
+  },
+]
+`;
+
 exports[`adapter can fetch features from volvox.sort.bed simple bed3 1`] = `
 [
   {

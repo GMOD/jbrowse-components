@@ -165,3 +165,47 @@ test('adapter can use gwas header', async () => {
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
+
+test('adapter can fetch features from chr1', async () => {
+  const adapter = new BedAdapter(
+    MyConfigSchema.create({
+      bedLocation: {
+        localPath: require.resolve('./test_data/chr1_no_trailing_newline.bed'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+
+  const features = adapter.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 20000,
+    assemblyName: 'hg19',
+  })
+
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  const featuresJsonArray = featuresArray.map(f => f.toJSON())
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
+})
+
+test('adapter can fetch features from chr1, no trailing newline', async () => {
+  const adapter = new BedAdapter(
+    MyConfigSchema.create({
+      bedLocation: {
+        localPath: require.resolve('./test_data/chr1_no_trailing_newline.bed'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+
+  const features = adapter.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 20000,
+    assemblyName: 'hg19',
+  })
+
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  const featuresJsonArray = featuresArray.map(f => f.toJSON())
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
+})
