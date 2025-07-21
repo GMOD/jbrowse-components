@@ -294,57 +294,86 @@ const OpenSequenceDialog = observer(
     }
 
     async function createAssemblyConfig() {
-      const adapterConfig = getAdapterConfig()
+      const { needsIndexing, ...adapterConfig } = getAdapterConfig()
 
-      if (adapterConfig.needsIndexing) {
+      if (needsIndexing) {
         setLoading('Creating .fai file for FASTA')
         const faiLocation = await ipcRenderer.invoke(
           'indexFasta',
           fastaLocation,
         )
-        adapterConfig.faiLocation = { localPath: faiLocation }
-        delete adapterConfig.needsIndexing
-      }
-
-      return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${assemblyName}-${Date.now()}`,
-          adapter: adapterConfig,
-        },
-        ...(!isBlank(refNameAliasesLocation)
-          ? {
-              refNameAliases: {
-                adapter: {
-                  type: 'RefNameAliasAdapter',
-                  location: refNameAliasesLocation,
+        return {
+          name: assemblyName,
+          displayName: assemblyDisplayName,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${assemblyName}-${Date.now()}`,
+            adapter: {
+              ...adapterConfig,
+              faiLocation: { localPath: faiLocation },
+            },
+          },
+          ...(!isBlank(refNameAliasesLocation)
+            ? {
+                refNameAliases: {
+                  adapter: {
+                    type: 'RefNameAliasAdapter',
+                    location: refNameAliasesLocation,
+                  },
                 },
-              },
-            }
-          : {}),
-        ...(!isBlank(cytobandsLocation)
-          ? {
-              cytobands: {
-                adapter: {
-                  type: 'CytobandAdapter',
-                  cytobandsLocation: cytobandsLocation,
+              }
+            : {}),
+          ...(!isBlank(cytobandsLocation)
+            ? {
+                cytobands: {
+                  adapter: {
+                    type: 'CytobandAdapter',
+                    cytobandsLocation: cytobandsLocation,
+                  },
                 },
-              },
-            }
-          : {}),
+              }
+            : {}),
+        }
+      } else {
+        return {
+          name: assemblyName,
+          displayName: assemblyDisplayName,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${assemblyName}-${Date.now()}`,
+            adapter: adapterConfig,
+          },
+          ...(!isBlank(refNameAliasesLocation)
+            ? {
+                refNameAliases: {
+                  adapter: {
+                    type: 'RefNameAliasAdapter',
+                    location: refNameAliasesLocation,
+                  },
+                },
+              }
+            : {}),
+          ...(!isBlank(cytobandsLocation)
+            ? {
+                cytobands: {
+                  adapter: {
+                    type: 'CytobandAdapter',
+                    cytobandsLocation: cytobandsLocation,
+                  },
+                },
+              }
+            : {}),
+        }
       }
     }
     return (
-      <Dialog open onClose={() => onClose()} title="Open sequence(s)">
+      <Dialog open onClose={() => onClose()} title="Open genome(s)">
         <DialogContent>
           <Typography>
-            Use this dialog to open one or more indexed FASTA files
-            (IndexedFastaAdapter), bgzipped+indexed FASTA files
-            (BgzipFastaAdapter), or .2bit files (TwoBitAdapter) of a genome
-            assembly or other sequence. A plain FASTA file can also be supplied
-            (FastaAdapter), which will be indexed on submit.
+            Use this dialog to open an indexed FASTA file (.fa and .fai),
+            bgzipped+indexed FASTA files (.fa.gz, .fa.gz.fai, and .fa.gz.gzi),
+            or .2bit files. A plaintext FASTA file can also be supplied , which
+            will be indexed on submit.
           </Typography>
 
           {assemblyConfs.length ? (
@@ -408,41 +437,42 @@ const OpenSequenceDialog = observer(
                 setChromSizesLocation={setChromSizesLocation}
               />
             )}
-          </Paper>
 
-          <Button
-            onClick={() => {
-              setShowAdvanced(a => !a)
-            }}
-            variant="contained"
-          >
-            {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
-          </Button>
-          {showAdvanced ? (
-            <Paper className={classes.paper}>
-              <TextField
-                label="Assembly display name"
-                helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
-                variant="outlined"
-                value={assemblyDisplayName}
-                onChange={event => {
-                  setAssemblyDisplayName(event.target.value)
-                }}
-              />
-              <FileSelector
-                inline
-                name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
-                location={refNameAliasesLocation}
-                setLocation={setRefNameAliasesLocation}
-              />
-              <FileSelector
-                inline
-                name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
-                location={cytobandsLocation}
-                setLocation={setCytobandsLocation}
-              />
-            </Paper>
-          ) : null}
+            <Button
+              variant="contained"
+              style={{ marginTop: 10 }}
+              onClick={() => {
+                setShowAdvanced(a => !a)
+              }}
+            >
+              {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
+            </Button>
+            {showAdvanced ? (
+              <>
+                <TextField
+                  label="Assembly display name"
+                  helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+                  variant="outlined"
+                  value={assemblyDisplayName}
+                  onChange={event => {
+                    setAssemblyDisplayName(event.target.value)
+                  }}
+                />
+                <FileSelector
+                  inline
+                  name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
+                  location={refNameAliasesLocation}
+                  setLocation={setRefNameAliasesLocation}
+                />
+                <FileSelector
+                  inline
+                  name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
+                  location={cytobandsLocation}
+                  setLocation={setCytobandsLocation}
+                />
+              </>
+            ) : null}
+          </Paper>
         </DialogContent>
         <DialogActions>
           <Button
