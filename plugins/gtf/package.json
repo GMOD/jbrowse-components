@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gtf",
-  "version": "3.6.3",
+  "version": "3.6.4",
   "description": "JBrowse 2 gtf feature adapter",
   "keywords": [
     "jbrowse",
@@ -38,8 +38,8 @@
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^4.0.0",
-    "@jbrowse/core": "^3.6.3",
-    "@jbrowse/plugin-linear-genome-view": "^3.6.3",
+    "@jbrowse/core": "^3.6.4",
+    "@jbrowse/plugin-linear-genome-view": "^3.6.4",
     "@mui/material": "^7.0.0",
     "gtf-nostream": "^1.0.0",
     "mobx": "^6.0.0",
