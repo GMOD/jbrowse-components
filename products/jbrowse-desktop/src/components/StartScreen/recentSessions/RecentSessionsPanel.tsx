@@ -209,8 +209,6 @@ export default function RecentSessionPanel({
             setError={setError}
             setSessionsToDelete={setSessionsToDelete}
             setSessionToRename={setSessionToRename}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
           />
         ) : (
           <RecentSessionsList
