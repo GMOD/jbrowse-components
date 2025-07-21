@@ -1,6 +1,6 @@
 ---
-id: ucsctrackhubconnection
-title: UCSCTrackHubConnection
+id: jb2trackhubconnection
+title: JB2TrackHubConnection
 ---
 
 Note: this document is automatically generated from configuration objects in our
@@ -12,24 +12,25 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/UCSCTrackHubConnection.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JB2TrackHubConnection.md)
 
 ## Docs
 
-### UCSCTrackHubConnection - Slots
+### JB2TrackHubConnection - Slots
 
-#### slot: hubTxtLocation
+#### slot: configJsonLocation
 
 ```js
-hubTxtLocation: {
+configJsonLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: 'http:
         locationType: 'UriLocation',
       },
-      description: 'location of the hub file (usually called hub.txt)',
+      description:
+        'location of the jb2 config file (usually called config.json)',
     }
 ```
 
@@ -40,11 +41,11 @@ assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        'optional list of genomes to import from this track hub, if empty all genomes will be imported',
+        'optional list of genomes to import from this config.json, if empty all genomes will be imported',
     }
 ```
 
-### UCSCTrackHubConnection - Derives from
+### JB2TrackHubConnection - Derives from
 
 ```js
 baseConfiguration: baseConnectionConfig
