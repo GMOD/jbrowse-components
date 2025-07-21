@@ -11,7 +11,7 @@ const useStyles = makeStyles()({
   root: {
     marginLeft: 100,
     marginRight: 100,
-    marginTop: 60,
+    marginTop: 50,
     display: 'flex',
     gap: 10,
   },
