@@ -17,7 +17,7 @@ function configSchemaF(pluginManager: PluginManager) {
     const l2name = mate?.name || mate?.id
     return [
       l1name ? `Name1: ${l1name}` : '',
-      l2name ? `Name1: ${l2name}` : '',
+      l2name ? `Name2: ${l2name}` : '',
       `Loc1: ${assembleLocString({
         refName: f.get('refName'),
         start: f.get('start'),
