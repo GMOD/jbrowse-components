@@ -77,7 +77,11 @@ export function useWidthSetter(
       })
     }
 
-    return () => cancelAnimationFrame(token)
+    return () => {
+      if (token) {
+        cancelAnimationFrame(token)
+      }
+    }
   }, [padding, view, width])
   return ref
 }

@@ -12,14 +12,8 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('regular', async () => {
-  const {
-    view,
-    container,
-    findByTestId,
-    findAllByText,
-    findByText,
-    findAllByTestId,
-  } = await createView()
+  const { view, findByTestId, findAllByText, findByText, findAllByTestId } =
+    await createView()
 
   await view.navToLocString('ctgA')
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
