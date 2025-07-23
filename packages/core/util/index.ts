@@ -72,7 +72,7 @@ export function useWidthSetter(
       // https://stackoverflow.com/a/58701523/2129219
       // avoids ResizeObserver loop error being shown during development
       requestAnimationFrame(() => {
-        view.setWidth(width - Number.parseInt(padding, 10) * 2)
+        view.setWidth(width)
       })
     }
   }, [padding, view, width])
