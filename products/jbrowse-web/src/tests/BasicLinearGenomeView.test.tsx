@@ -142,7 +142,7 @@ test('click to display center line with correct value', async () => {
   fireEvent.click(await findByText('Show center line', ...opts))
   expect(view.showCenterLine).toBe(true)
   expect(view.centerLineInfo?.refName).toBe('ctgA')
-  expect(view.centerLineInfo?.offset).toEqual(120)
+  expect(view.centerLineInfo?.offset).toEqual(120.2)
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {

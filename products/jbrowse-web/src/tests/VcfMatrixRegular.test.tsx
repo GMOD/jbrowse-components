@@ -12,7 +12,8 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('regular', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = await createView()
+  const { view, findByTestId, findAllByText, findByText, findAllByTestId } =
+    await createView()
 
   await view.navToLocString('ctgA')
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
@@ -23,7 +24,7 @@ test('regular', async () => {
     await findByText('Multi-sample variant display (regular)', ...opts),
   )
   await new Promise(res => setTimeout(res, 1000))
-  fireEvent.click(await findByText('Force load', ...opts))
+  fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
 
   expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
 }, 40000)
