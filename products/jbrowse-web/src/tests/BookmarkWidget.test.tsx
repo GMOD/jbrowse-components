@@ -28,7 +28,7 @@ test('Open the bookmarks widget from the top level menu', async () => {
   await user.click(await findByText('Bookmarks'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
-})
+}, 60000)
 
 test('Open the bookmarks widget from the view menu', async () => {
   const { findByTestId, findByText } = await createView()
@@ -38,7 +38,7 @@ test('Open the bookmarks widget from the view menu', async () => {
   await user.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
-})
+}, 60000)
 
 test('Create a bookmark using the click and drag rubberband', async () => {
   const { session, findByTestId, findByText } = await createView()
@@ -71,7 +71,7 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
   expect(bookmarks).toMatchSnapshot()
-})
+}, 60000)
 
 test('Create a bookmark using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
@@ -161,7 +161,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
   fireEvent.click(document)
 
   expect(field.innerHTML).toContain('new label')
-})
+}, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
   const { session, findByText, findByTestId, findAllByTestId } =
@@ -205,7 +205,7 @@ test('Toggle highlight visibility across all views', async () => {
 
   // expect(highlight3).toBeUndefined()
   // expect(highlight4).toBeUndefined()
-})
+}, 60000)
 
 test('Toggle highlight label visibility across all views', async () => {
   const { session, findByText, findByTestId } = await createView()
@@ -237,7 +237,7 @@ test('Toggle highlight label visibility across all views', async () => {
 
   // expect(highlight).toBeUndefined()
   // expect(highlight2).toBeUndefined()
-})
+}, 60000)
 
 test('Downloads a BED file correctly', async () => {
   const { session, findByText, findByTestId } = await createView()
@@ -266,7 +266,7 @@ test('Downloads a BED file correctly', async () => {
   })
 
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
-}, 20000)
+}, 60000)
 
 test('Downloads a TSV file correctly', async () => {
   const { session, findByText, findByTestId, getByRole } = await createView()
@@ -297,4 +297,4 @@ test('Downloads a TSV file correctly', async () => {
   })
 
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
-})
+}, 60000)

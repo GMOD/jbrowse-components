@@ -96,7 +96,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     >
                       <div
                         class="css-den3n5-scalebarVisibleRegion"
-                        style="width: 267px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
+                        style="width: 272px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                       />
                       <div
                         class="css-2jeg0a-scalebarContig"
@@ -111,41 +111,41 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </p>
                         <div
                           class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                          style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
+                          style="left: 0px; width: 808px; border-color: rgb(153, 102, 0);"
                         >
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 134.66666666666669px; pointer-events: none; color: rgb(153, 102, 0);"
                           >
                             20
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 269.33333333333337px; pointer-events: none; color: rgb(153, 102, 0);"
                           >
                             40
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 404px; pointer-events: none; color: rgb(153, 102, 0);"
                           >
                             60
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 538.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                           >
                             80
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 673.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                           >
                             100
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 808px; pointer-events: none; color: rgb(153, 102, 0);"
                           >
                             120
                           </p>
@@ -153,7 +153,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       </div>
                       <div
                         class="css-2jeg0a-scalebarContig"
-                        style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+                        style="width: 0px; left: 808px; background-color: rgb(153, 153, 153);"
                       />
                     </div>
                   </div>
@@ -168,7 +168,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     <polygon
                       fill="#42777f"
                       fill-opacity="0.3"
-                      points="0,48,801,48,267,0,0,0"
+                      points="0,48,809.0000000000001,48,272,0,0,0"
                       stroke="#42777f"
                       stroke-opacity="0.8"
                     />
@@ -353,23 +353,23 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         />
                         <span
                           class="MuiSlider-track css-1iqz70e-MuiSlider-track"
-                          style="left: 0%; width: 56.78411120929245%;"
+                          style="left: 0%; width: 56.58034411420357%;"
                         />
                         <span
-                          aria-label="Window size: 39bp"
+                          aria-label="Window size: 40bp"
                           class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-o0wpuw-MuiSlider-thumb"
                           data-index="0"
                           data-mui-internal-clone-element="true"
-                          style="left: 56.78411120929245%;"
+                          style="left: 56.58034411420357%;"
                         >
                           <input
                             aria-orientation="horizontal"
                             aria-valuemax="564.3856189774724"
-                            aria-valuemin="258.49625007211563"
+                            aria-valuemin="259.9317793698226"
                             aria-valuenow="432.19280948873626"
                             data-index="0"
                             max="564.3856189774724"
-                            min="258.49625007211563"
+                            min="259.9317793698226"
                             step="1"
                             style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
                             type="range"

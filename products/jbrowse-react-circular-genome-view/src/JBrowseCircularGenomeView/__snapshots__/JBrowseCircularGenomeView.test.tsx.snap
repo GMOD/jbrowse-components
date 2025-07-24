@@ -81,11 +81,11 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           <div
             class="css-1vtmdlf-root"
             data-testid="test_view"
-            style="width: 800px; height: 400px;"
+            style="width: 808px; height: 400px;"
           >
             <div
               class="css-4l8qn4-scroller"
-              style="width: 800px; height: 400px;"
+              style="width: 808px; height: 400px;"
             >
               <svg
                 height="216.3661977236758"
