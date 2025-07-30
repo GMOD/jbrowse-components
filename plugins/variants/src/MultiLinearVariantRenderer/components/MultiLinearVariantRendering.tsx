@@ -47,8 +47,8 @@ const MultiVariantRendering = observer(function (props: {
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
-  const { featureGenotypeMap, totalHeight, scrollTop } = props
-  const { rbush, displayModel } = props
+  const { rbush, displayModel, featureGenotypeMap, totalHeight, scrollTop } =
+    props
   const ref = useRef<HTMLDivElement>(null)
   const rbush2 = useMemo(() => new RBush<RBushData>().fromJSON(rbush), [rbush])
 
