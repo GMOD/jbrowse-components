@@ -2,10 +2,10 @@ import { useCallback, useMemo } from 'react'
 
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
-import StarIcon from '@mui/icons-material/Star'
-import { Link, Tooltip } from '@mui/material'
+import { Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
+import StarIcon from '../StarIcon'
 import { loadPluginManager } from '../util'
 
 import type { RecentSessionData } from '../types'
@@ -18,11 +18,6 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  starIcon: {
-    marginLeft: 4,
-    fontSize: 16,
-    color: 'darkorange',
   },
 })
 
@@ -93,11 +88,7 @@ function SessionNameCell({
       <Link href="#" onClick={handleLinkClick}>
         {value}
       </Link>
-      {isFavorite ? (
-        <Tooltip title="Favorite">
-          <StarIcon className={classes.starIcon} />
-        </Tooltip>
-      ) : null}{' '}
+      {isFavorite ? <StarIcon /> : null}
       <CascadingMenuButton menuItems={menuItems}>
         <MoreHoriz />
       </CascadingMenuButton>
