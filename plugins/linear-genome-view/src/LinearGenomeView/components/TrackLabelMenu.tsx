@@ -26,7 +26,7 @@ const TrackLabelMenu = observer(function ({
   const { isTopLevelView } = view
 
   const items = [
-    ...(isTopLevelView
+    ...(!isTopLevelView
       ? []
       : [
           {
