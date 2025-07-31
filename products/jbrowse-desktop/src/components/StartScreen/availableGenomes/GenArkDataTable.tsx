@@ -16,8 +16,8 @@ import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
 import { fetchjson } from '../util'
+import DataGridWrapper from './DataGridWrapper'
 import MoreInfoDialog from './MoreInfoDialog'
-import { useInnerDims } from './util'
 
 import type { Fav, LaunchCallback } from '../types'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
@@ -151,7 +151,6 @@ export default function GenArkDataTable({
     'mammals',
   )
   const [showAllColumns, setShowAllColumns] = useState(false)
-  const { height: innerHeight, width: innerWidth } = useInnerDims()
   const { classes } = useStyles()
 
   const { data, error } = useSWR(
@@ -327,23 +326,11 @@ export default function GenArkDataTable({
           <MoreVert />
         </CascadingMenuButton>
       </div>
-      <div>
-        These data are based on UCSC GenArk, please see{' '}
-        <Link href="https://hgdownload.soe.ucsc.edu/hubs/">
-          https://hgdownload.soe.ucsc.edu/hubs/
-        </Link>{' '}
-        for more information
-      </div>
 
       {error ? <ErrorMessage error={error} /> : null}
 
-      {r2 && widths ? (
-        <div
-          style={{
-            width: innerWidth * (3 / 4),
-            height: innerHeight * (1 / 2),
-          }}
-        >
+      <DataGridWrapper>
+        {r2 && widths ? (
           <DataGrid
             rows={r2.filter(f => (showOnlyFavs ? favs.has(f.id) : true))}
             showToolbar
@@ -432,10 +419,10 @@ export default function GenArkDataTable({
                   } satisfies GridColDef<(typeof r2)[0]>)
             })}
           />
-        </div>
-      ) : (
-        <LoadingEllipses variant="h6" />
-      )}
+        ) : (
+          <LoadingEllipses variant="h6" />
+        )}
+      </DataGridWrapper>
       {moreInfoDialogOpen ? (
         <MoreInfoDialog
           onClose={() => {
