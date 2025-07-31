@@ -362,7 +362,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get isTopLevelView() {
         const session = getSession(self)
-        return !!session.views.find(r => r.id === self.id)
+        return session.views.some(r => r.id === self.id)
       },
       /**
        * #getter
