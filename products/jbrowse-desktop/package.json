@@ -9,7 +9,7 @@
   "dir": "src",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
-    "start": "cross-env BROWSER=none node scripts/start.js",
+    "start": "node scripts/start.js",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -b tsconfig.electron.json",
     "preelectron": "npm run electron-ts",
@@ -97,6 +97,7 @@
     "rxjs": "^7.0.0",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.3.5",
+    "swr": "^2.3.3",
     "tss-react": "^4.4.1",
     "use-query-params": "^2.0.0"
   },
