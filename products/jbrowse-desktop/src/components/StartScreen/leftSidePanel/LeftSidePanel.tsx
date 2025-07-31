@@ -60,7 +60,7 @@ export default function LauncherPanel({
 
   async function initializeSession(entries: JBrowseConfig[]) {
     try {
-      setLoading('Creating session...')
+      setLoading('Creating session')
       setPluginManager(
         await loadPluginManager(
           await ipcRenderer.invoke('createInitialAutosaveFile', {
@@ -79,7 +79,7 @@ export default function LauncherPanel({
 
   async function structuredCb(cb: () => Promise<void>) {
     try {
-      setLoading('Launching...')
+      setLoading('Launching')
       await cb()
     } catch (e) {
       setError(e)
@@ -94,7 +94,7 @@ export default function LauncherPanel({
       {loading ? (
         <LoadingEllipses variant="h6" message={loading} />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <>
           <OpenSequencePanel
             setPluginManager={setPluginManager}
             favorites={favorites}
@@ -121,7 +121,7 @@ export default function LauncherPanel({
               })
             }
           />
-        </div>
+        </>
       )}
     </div>
   )

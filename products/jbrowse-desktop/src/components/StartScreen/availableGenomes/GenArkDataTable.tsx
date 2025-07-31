@@ -9,7 +9,6 @@ import { measureGridWidth, notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
-import StarIcon from '@mui/icons-material/Star'
 import { Button, Link, MenuItem, TextField, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import useSWR from 'swr'
@@ -18,6 +17,7 @@ import { makeStyles } from 'tss-react/mui'
 import { fetchjson } from '../util'
 import DataGridWrapper from './DataGridWrapper'
 import MoreInfoDialog from './MoreInfoDialog'
+import StarIcon from '../StarIcon'
 
 import type { Fav, LaunchCallback } from '../types'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
@@ -59,18 +59,13 @@ const useStyles = makeStyles()({
   },
 })
 
-function applyId(
-  r: {
-    jbrowseConfig: string
-    accession: string
-    commonName: string
-    ncbiAssemblyName: string
-  }[],
-) {
-  return r.map(r => ({
-    ...r,
-    id: r.accession,
-  }))
+interface Entry {
+  jbrowseConfig: string
+  accession: string
+  commonName: string
+  ncbiAssemblyName: string
+  ncbiName: string
+  ncbiRefSeqCategory: string
 }
 
 const order = {
@@ -157,21 +152,31 @@ export default function GenArkDataTable({
     `genark-${typeOption}`,
     () =>
       fetchjson(
-        `https://s3.amazonaws.com/jbrowse.org/hubJson2/${typeOption}.json`,
-      ) as Promise<any[]>,
+        `https://jbrowse.org/processedHubJson/${typeOption}.json`,
+      ) as Promise<Entry[]>,
   )
 
+  const preRows = useMemo(
+    () =>
+      data
+        ?.map(r => ({
+          ...r,
+          id: r.accession,
+        }))
+        .filter(f => !!f.id),
+    [data],
+  )
   const rows = useMemo(() => {
     if (filterOption === 'refseq') {
-      return data?.filter(r => r.ncbiName.startsWith('GCF_'))
+      return preRows?.filter(r => r.ncbiName.startsWith('GCF_'))
     } else if (filterOption === 'genbank') {
-      return data?.filter(r => r.ncbiName.startsWith('GCA_'))
+      return preRows?.filter(r => r.ncbiName.startsWith('GCA_'))
     } else if (filterOption === 'designatedReference') {
-      return data?.filter(r => r.ncbiRefSeqCategory === 'reference genome')
+      return preRows?.filter(r => r.ncbiRefSeqCategory === 'reference genome')
     } else {
-      return data
+      return preRows
     }
-  }, [filterOption, data])
+  }, [filterOption, preRows])
 
   const favs = new Set(favorites.map(r => r.id))
   const colNames = columns.map(c => c.field)
@@ -201,7 +206,6 @@ export default function GenArkDataTable({
   const visibleColumns = columns.filter(
     column => showAllColumns || !column.extra,
   )
-  const r2 = rows ? applyId(rows) : undefined
   return (
     <div className={classes.panel}>
       <div className={classes.span}>
@@ -214,8 +218,8 @@ export default function GenArkDataTable({
             variant="contained"
             disabled={!selected?.size}
             onClick={() => {
-              if (selected && r2) {
-                const r3 = Object.fromEntries(r2.map(r => [r.accession, r]))
+              if (selected && rows) {
+                const r3 = Object.fromEntries(rows.map(r => [r.accession, r]))
                 launch(
                   [...selected]
                     .map(r => r3[r])
@@ -330,9 +334,9 @@ export default function GenArkDataTable({
       {error ? <ErrorMessage error={error} /> : null}
 
       <DataGridWrapper>
-        {r2 && widths ? (
+        {rows && widths ? (
           <DataGrid
-            rows={r2.filter(f => (showOnlyFavs ? favs.has(f.id) : true))}
+            rows={rows.filter(f => (showOnlyFavs ? favs.has(f.id) : true))}
             showToolbar
             rowHeight={25}
             columnHeaderHeight={35}
@@ -388,9 +392,7 @@ export default function GenArkDataTable({
                               {value}
                             </Link>
                           )}
-                          {isFavorite ? (
-                            <StarIcon style={{ marginLeft: 4, fontSize: 16 }} />
-                          ) : null}
+                          {isFavorite ? <StarIcon /> : null}
                           <CascadingMenuButton
                             menuItems={[
                               {
@@ -410,13 +412,13 @@ export default function GenArkDataTable({
                         </div>
                       )
                     },
-                  } satisfies GridColDef<(typeof r2)[0]>)
+                  } satisfies GridColDef<(typeof rows)[0]>)
                 : ({
                     field: c.field,
                     headerName: c.title,
                     width: widths[c.field],
                     sortComparator: c.sortComparator,
-                  } satisfies GridColDef<(typeof r2)[0]>)
+                  } satisfies GridColDef<(typeof rows)[0]>)
             })}
           />
         ) : (

@@ -9,7 +9,6 @@ import { measureGridWidth, notEmpty } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
-import StarIcon from '@mui/icons-material/Star'
 import { Button, Link, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import useSWR from 'swr'
@@ -19,6 +18,7 @@ import { defaultFavs } from '../const'
 import { fetchjson } from '../util'
 import DataGridWrapper from './DataGridWrapper'
 import MoreInfoDialog from './MoreInfoDialog'
+import StarIcon from '../StarIcon'
 
 import type { Fav, LaunchCallback, UCSCListGenome } from '../types'
 import type { GridRowId } from '@mui/x-data-grid'
@@ -70,6 +70,7 @@ export default function MainGenomesDialogPanel({
             name: r[0],
             jbrowseConfig: `https://jbrowse.org/ucsc/${r[0]}/config.json`,
           }))
+          .filter(f => !!f.id)
       : undefined
   }, [list, favorites, showOnlyFavs])
 
@@ -77,6 +78,7 @@ export default function MainGenomesDialogPanel({
   const widths = rows
     ? colNames.map(e => measureGridWidth(rows.map(r => r[e as keyof typeof r])))
     : undefined
+  console.log({ rows })
   return (
     <div>
       <div className={classes.span}>
@@ -202,9 +204,7 @@ export default function MainGenomesDialogPanel({
                             {value}
                           </Link>
                         )}
-                        {isFavorite ? (
-                          <StarIcon style={{ marginLeft: 4, fontSize: 16 }} />
-                        ) : null}
+                        {isFavorite ? <StarIcon /> : null}
                         <CascadingMenuButton
                           menuItems={[
                             {
