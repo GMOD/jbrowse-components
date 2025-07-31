@@ -15,9 +15,9 @@ import { DataGrid } from '@mui/x-data-grid'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
-import { fetchjson } from '../util'
-import { useInnerDims } from './util'
 import { defaultFavs } from '../const'
+import { fetchjson } from '../util'
+import DataGridWrapper from './DataGridWrapper'
 import MoreInfoDialog from './MoreInfoDialog'
 
 import type { Fav, LaunchCallback, UCSCListGenome } from '../types'
@@ -49,7 +49,6 @@ export default function MainGenomesDialogPanel({
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
   const [multipleSelection, setMultipleSelection] = useState(false)
-  const { height: innerHeight, width: innerWidth } = useInnerDims()
 
   const { classes } = useStyles()
   const { data: list, error } = useSWR(
@@ -148,13 +147,8 @@ export default function MainGenomesDialogPanel({
       <div>
         {error ? <ErrorMessage error={error} /> : null}
 
-        {rows && widths ? (
-          <div
-            style={{
-              width: innerWidth * (3 / 4),
-              height: innerHeight * (1 / 2),
-            }}
-          >
+        <DataGridWrapper>
+          {rows && widths ? (
             <DataGrid
               rows={rows}
               showToolbar
@@ -236,10 +230,10 @@ export default function MainGenomesDialogPanel({
                 { field: 'description', width: widths[3] },
               ]}
             />
-          </div>
-        ) : (
-          <LoadingEllipses />
-        )}
+          ) : (
+            <LoadingEllipses />
+          )}
+        </DataGridWrapper>
       </div>
       {moreInfoDialogOpen ? (
         <MoreInfoDialog
