@@ -10,7 +10,7 @@ export default function DataGridWrapper({
     <div
       style={{
         width: innerWidth * (3 / 4),
-        height: innerHeight * (1 / 2),
+        height: innerHeight * (3 / 5),
       }}
     >
       {children}
