@@ -6,6 +6,7 @@ import ListIcon from '@mui/icons-material/List'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
+  Button,
   FormControl,
   ToggleButton,
   ToggleButtonGroup,
@@ -19,6 +20,7 @@ import RecentSessionsCards from './RecentSessionsCards'
 import RecentSessionsList from './RecentSessionsDataGrid'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog'
+import { loadPluginManager } from '../util'
 
 import type { RecentSessionData } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -29,7 +31,7 @@ const { ipcRenderer } = window.require('electron')
 const useStyles = makeStyles()({
   flex: {
     display: 'flex',
-    gap: 20,
+    gap: 10,
   },
   verticalCenter: {
     margin: 'auto 0',
@@ -102,15 +104,8 @@ export default function RecentSessionPanel({
     [] as string[],
   )
 
-  const toggleFavorite = (sessionPath: string) => {
-    if (favs.has(sessionPath)) {
-      setFavorites(favorites.filter(path => path !== sessionPath))
-    } else {
-      setFavorites([...favorites, sessionPath])
-    }
-  }
-
   const favs = new Set(favorites)
+
   const filteredSessions = sortedSessions.filter(f =>
     showFavoritesOnly ? favs.has(f.path) : true,
   )
@@ -168,16 +163,13 @@ export default function RecentSessionPanel({
               value="quickstart"
               title="Add sessions to quickstart list"
               disabled={!selectedSessions?.length}
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    await addToQuickstartList(selectedSessions || [])
-                  } catch (e) {
-                    setError(e)
-                    console.error(e)
-                  }
-                })()
+              onClick={async () => {
+                try {
+                  await addToQuickstartList(selectedSessions || [])
+                } catch (e) {
+                  setError(e)
+                  console.error(e)
+                }
               }}
             >
               <PlaylistAddIcon />
@@ -198,32 +190,63 @@ export default function RecentSessionPanel({
             setShowFavoritesOnly(!showFavoritesOnly)
           }}
         />
+
+        <div className={classes.verticalCenter}>
+          <Button variant="contained" component="label" onClick={() => {}}>
+            Open saved session (.jbrowse) file
+            <input
+              type="file"
+              hidden
+              onChange={async event => {
+                try {
+                  const file = event.target.files?.[0]
+                  if (file) {
+                    const { webUtils } = window.require('electron')
+                    const path = webUtils.getPathForFile(file)
+                    setPluginManager(await loadPluginManager(path))
+                  }
+                } catch (e) {
+                  console.error(e)
+                  setError(e)
+                }
+              }}
+            />
+          </Button>
+        </div>
       </div>
 
-      {sortedSessions.length ? (
-        displayMode === 'grid' ? (
-          <RecentSessionsCards
-            addToQuickstartList={entry => addToQuickstartList([entry])}
-            setPluginManager={setPluginManager}
-            sessions={filteredSessions}
-            setError={setError}
-            setSessionsToDelete={setSessionsToDelete}
-            setSessionToRename={setSessionToRename}
-          />
-        ) : (
-          <RecentSessionsList
-            setPluginManager={setPluginManager}
-            setError={setError}
-            setSelectedSessions={setSelectedSessions}
-            setSessionToRename={setSessionToRename}
-            sessions={filteredSessions}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
-          />
-        )
-      ) : (
+      {!sortedSessions.length ? (
         <Typography>No sessions available</Typography>
-      )}
+      ) : null}
+
+      {sortedSessions.length > 0 && displayMode === 'grid' ? (
+        <RecentSessionsCards
+          addToQuickstartList={entry => addToQuickstartList([entry])}
+          setPluginManager={setPluginManager}
+          sessions={filteredSessions}
+          setError={setError}
+          setSessionsToDelete={setSessionsToDelete}
+          setSessionToRename={setSessionToRename}
+        />
+      ) : null}
+
+      {sortedSessions.length > 0 && displayMode === 'list' ? (
+        <RecentSessionsList
+          setPluginManager={setPluginManager}
+          setError={setError}
+          setSelectedSessions={setSelectedSessions}
+          setSessionToRename={setSessionToRename}
+          sessions={filteredSessions}
+          favorites={favorites}
+          toggleFavorite={sessionPath => {
+            if (favs.has(sessionPath)) {
+              setFavorites(favorites.filter(path => path !== sessionPath))
+            } else {
+              setFavorites([...favorites, sessionPath])
+            }
+          }}
+        />
+      ) : null}
     </div>
   )
 }
