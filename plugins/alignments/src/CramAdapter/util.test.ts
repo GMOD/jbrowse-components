@@ -1,5 +1,5 @@
-import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 import { readFeaturesToCIGAR } from './readFeaturesToCIGAR'
+import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 
 test('cram read features mismatches', () => {
   expect(
