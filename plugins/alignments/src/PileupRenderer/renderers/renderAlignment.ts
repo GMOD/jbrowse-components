@@ -1,10 +1,10 @@
 import { getAlignmentShapeColor } from './getAlignmentShapeColor'
 import { renderAlignmentShape } from './renderAlignmentShape'
+import { renderMethylation } from './renderMethylation'
 import { renderModifications } from './renderModifications'
 import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { parseCigar } from '../../MismatchParser'
-import { renderMethylation } from './renderMethylation'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'

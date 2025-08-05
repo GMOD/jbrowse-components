@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import Flatbush from 'flatbush'
 import { observer } from 'mobx-react'
 
 import { minElt } from './util'
@@ -10,7 +11,6 @@ import { makeSimpleAltString } from '../../VcfFeature/util'
 import type { Source } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import Flatbush from 'flatbush'
 
 interface Item {
   genotype: string

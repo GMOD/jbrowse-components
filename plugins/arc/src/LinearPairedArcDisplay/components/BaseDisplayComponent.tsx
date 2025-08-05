@@ -7,8 +7,9 @@ import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearArcDisplayModel } from '../model'
 import LoadingBar from './LoadingBar'
+
+import type { LinearArcDisplayModel } from '../model'
 
 const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),

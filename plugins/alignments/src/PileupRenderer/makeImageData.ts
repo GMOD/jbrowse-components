@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import Flatbush from 'flatbush'
 
 import { renderAlignment } from './renderers/renderAlignment'
 import { renderMismatches } from './renderers/renderMismatches'
@@ -15,7 +16,6 @@ import {
 
 import type { ProcessedRenderArgs } from './types'
 import type { Feature } from '@jbrowse/core/util'
-import Flatbush from 'flatbush'
 
 interface LayoutFeature {
   heightPx: number
@@ -107,7 +107,7 @@ export function makeImageData({
   })
   const flatbush = new Flatbush(items.length)
   for (let i = 0; i < coords.length; i += 4) {
-    flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2]!, coords[i + 3]!)
+    flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
   }
   flatbush.finish()
   return {

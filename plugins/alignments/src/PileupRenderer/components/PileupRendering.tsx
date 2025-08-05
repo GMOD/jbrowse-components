@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
+import Flatbush from 'flatbush'
 import { observer } from 'mobx-react'
 
+import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
-import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
-import Flatbush from 'flatbush'
 
 const PileupRendering = observer(function (props: {
   blockKey: string
