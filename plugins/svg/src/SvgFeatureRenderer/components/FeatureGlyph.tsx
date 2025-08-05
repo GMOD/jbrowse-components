@@ -43,7 +43,9 @@ const FeatureGlyph = observer(function (props: {
     shouldShowDescription,
   } = props
 
-  const featureLayout = rootLayout.getSubRecord(feature.id())
+  // bad or old code might not be a string id but try to assume it is
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
+  const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   if (!featureLayout) {
     return null
   }

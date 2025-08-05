@@ -19,7 +19,6 @@ export function readFeaturesToMismatches(
     const { refPos: p, code, pos, data, sub, ref } = ret
     sublen = refPos - lastPos
     lastPos = refPos
-    // console.log({ ret })
 
     if (sublen && insLen > 0) {
       mismatches[j++] = {
@@ -44,7 +43,6 @@ export function readFeaturesToMismatches(
         type: 'mismatch',
       }
     } else if (code === 'I') {
-      console.log('HERE', ret)
       // insertion
       mismatches[j++] = {
         start: refPos,

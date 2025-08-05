@@ -16,7 +16,9 @@ const Subfeatures = observer(function Subfeatures(props: {
   const { feature, featureLayout, selected } = props
 
   return feature.get('subfeatures')?.map(subfeature => {
-    const subfeatureId = subfeature.id()
+    // bad or old code might not be a string id but try to assume it is
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
+    const subfeatureId = String(subfeature.id())
     const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
     if (!subfeatureLayout) {
       return null
