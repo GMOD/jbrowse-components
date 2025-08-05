@@ -48,7 +48,6 @@ export function cigarToMismatches(
         start: roffset,
         type: 'deletion',
         base: '*',
-        deletedBases: ref?.slice(roffset, roffset + len),
         length: len,
       })
     } else if (op === 'N') {
