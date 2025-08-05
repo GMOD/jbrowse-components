@@ -66,7 +66,7 @@ const SessionManager = observer(function ({
             if (session.savedSessionMetadata) {
               for (const elt of session.savedSessionMetadata) {
                 if (
-                  differenceInDays(+Date.now(), elt.createdAt) > 1 &&
+                  differenceInDays(Date.now(), elt.createdAt) > 1 &&
                   !elt.favorite
                 ) {
                   // @ts-expect-error

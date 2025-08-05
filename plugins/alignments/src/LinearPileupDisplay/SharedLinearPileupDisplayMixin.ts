@@ -681,10 +681,10 @@ export function SharedLinearPileupDisplayMixin(
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
+                  // check featureIdUnderMouse is still the same
+                  // as the feature.id that was returned e.g. that
+                  // the user hasn't moused over to a new position
+                  // during the async operation above
                   if (
                     isAlive(self) &&
                     feature &&

@@ -234,7 +234,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           const outLocation = path.join(
             userData,
             'nameIndices',
-            `trix-${+Date.now()}`,
+            `trix-${Date.now()}`,
           )
           fs.mkdirSync(outLocation, { recursive: true })
           await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {

@@ -148,7 +148,7 @@ export async function run(args?: string[]) {
   const configType = type || determineConnectionType(url)
   const id =
     connectionId ||
-    [configType, assemblyNames, +Date.now()].filter(f => !!f).join('-')
+    [configType, assemblyNames, Date.now()].filter(f => !!f).join('-')
 
   const connectionConfig = {
     type: configType,

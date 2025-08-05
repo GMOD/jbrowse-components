@@ -13,7 +13,7 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model'
 
-const toP = (s = 0) => +(+s).toFixed(1)
+const toP = (s = 0) => +s.toFixed(1)
 
 const RegionWidthEditorDialog = observer(function ({
   model,
