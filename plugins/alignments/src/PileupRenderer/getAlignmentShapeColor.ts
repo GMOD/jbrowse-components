@@ -1,13 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { fillColor } from '../../shared/color'
 import {
   colorByInsertSize,
   colorByMappingQuality,
   colorByOrientation,
   colorByStrand,
   colorByStrandedRnaSeq,
-} from '../colorBy'
+} from './colorBy'
+import { fillColor } from '../shared/color'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
