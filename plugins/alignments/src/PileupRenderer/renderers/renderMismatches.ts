@@ -1,11 +1,11 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { fillRect } from './util'
+import { fillRect } from '../util'
 
-import type { ProcessedRenderArgs } from './types'
-import type { LayoutFeature } from './util'
-import type { Mismatch } from '../shared/types'
+import type { ProcessedRenderArgs } from '../types'
+import type { LayoutFeature } from '../util'
+import type { Mismatch } from '../../shared/types'
 
 export function renderMismatches({
   ctx,
@@ -38,22 +38,20 @@ export function renderMismatches({
   charHeight: number
   canvasWidth: number
 }) {
+  const items = [] as { seq: string }[]
+  const coords = [] as number[]
   const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
   const region = regions[0]!
   const start = feature.get('start')
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)
-  const mismatches = feature.get('mismatches') as Mismatch[] | undefined
+  const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const heightLim = charHeight - 2
 
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx + 1 : -1
-
-  if (!mismatches) {
-    return
-  }
 
   // two pass rendering: first pass, draw all the mismatches except wide
   // insertion markers
@@ -140,6 +138,9 @@ export function renderMismatches({
             colorMap.insertion,
           )
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+            items.push({ seq: mismatch.base })
+            coords.push(leftPx, topPx)
+
             const l = Math.round(pos - insW)
             fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
             fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
@@ -184,6 +185,8 @@ export function renderMismatches({
       if (mismatch.type === 'insertion' && len >= 10) {
         const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
         const txt = `${len}`
+        items.push({ seq: mismatch.base })
+        coords.push(leftPx, topPx)
         if (bpPerPx > largeInsertionIndicatorScale) {
           fillRect(
             ctx,
@@ -222,5 +225,9 @@ export function renderMismatches({
         }
       }
     }
+  }
+  return {
+    coords,
+    items,
   }
 }

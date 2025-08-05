@@ -39,6 +39,7 @@ export function cigarToMismatches(
         start: roffset,
         type: 'insertion',
         base: `${len}`,
+        insertedBases: seq?.slice(soffset, soffset + len),
         length: 0,
       })
       soffset += len
@@ -47,6 +48,7 @@ export function cigarToMismatches(
         start: roffset,
         type: 'deletion',
         base: '*',
+        deletedBases: ref?.slice(roffset, roffset + len),
         length: len,
       })
     } else if (op === 'N') {

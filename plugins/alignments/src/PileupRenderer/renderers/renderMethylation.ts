@@ -1,11 +1,11 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { fillRect } from './util'
-import { getMethBins } from '../ModificationParser/getMethBins'
+import { fillRect } from '../util'
+import { getMethBins } from '../../ModificationParser/getMethBins'
 
-import type { ProcessedRenderArgs } from './types'
-import type { LayoutFeature } from './util'
+import type { ProcessedRenderArgs } from '../types'
+import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 // Color by methylation is slightly modified version of color by modifications

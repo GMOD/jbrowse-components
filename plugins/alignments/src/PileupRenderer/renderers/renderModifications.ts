@@ -1,11 +1,11 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
-import { fillRect } from './util'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
-import { alphaColor } from '../shared/util'
+import { fillRect } from '../util'
+import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
+import { alphaColor } from '../../shared/util'
 
-import type { ProcessedRenderArgs } from './types'
-import type { LayoutFeature } from './util'
+import type { ProcessedRenderArgs } from '../types'
+import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 // render modifications stored in MM tag in BAM
