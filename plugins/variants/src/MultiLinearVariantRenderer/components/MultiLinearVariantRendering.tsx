@@ -57,11 +57,12 @@ const MultiVariantRendering = observer(function (props: {
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     let offsetX = 0
     let offsetY = 0
-    if (ref.current) {
-      const r = ref.current.getBoundingClientRect()
-      offsetX = eventClientX - r.left
-      offsetY = eventClientY - r.top - (displayModel?.scrollTop || 0)
+    if (!ref.current) {
+      return
     }
+    const rect = ref.current.getBoundingClientRect()
+    offsetX = eventClientX - rect.left
+    offsetY = eventClientY - rect.top - (displayModel?.scrollTop || 0)
 
     const x = flatbush2.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
     if (x.length) {

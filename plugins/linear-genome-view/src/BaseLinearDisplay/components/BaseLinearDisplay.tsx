@@ -7,7 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import LinearBlocks from './LinearBlocks'
 
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import type { BaseLinearDisplayModel } from '../model'
 
 const useStyles = makeStyles()({
   display: {
