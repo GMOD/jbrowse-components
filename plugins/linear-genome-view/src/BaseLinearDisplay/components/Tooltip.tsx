@@ -42,7 +42,6 @@ const Tooltip = observer(function ({
   const x = clientMouseCoord[0] + 15
   const y = clientMouseCoord[1]
 
-  console.log({ mouseoverExtraInformation })
   const contents = featureUnderMouse
     ? getConf(model, 'mouseover', {
         feature: featureUnderMouse,

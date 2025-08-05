@@ -92,7 +92,6 @@ export default class PileupRenderer extends BoxRendererType {
         )
       },
     )
-    console.log({ res })
 
     const results = await super.render({
       ...renderProps,

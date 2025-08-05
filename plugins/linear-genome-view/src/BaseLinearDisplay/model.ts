@@ -319,7 +319,6 @@ function stateModelFactory() {
        * #action
        */
       setMouseoverExtraInformation(extra?: string) {
-        console.log('LOL', extra)
         self.mouseoverExtraInformation = extra
       },
     }))

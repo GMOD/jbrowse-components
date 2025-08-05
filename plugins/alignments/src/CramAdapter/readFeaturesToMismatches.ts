@@ -43,7 +43,6 @@ export function readFeaturesToMismatches(
         type: 'mismatch',
       }
     } else if (code === 'I') {
-      console.log('HERE', ret)
       // insertion
       mismatches[j++] = {
         start: refPos,
