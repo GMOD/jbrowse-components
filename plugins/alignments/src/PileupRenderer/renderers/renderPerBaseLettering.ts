@@ -1,8 +1,8 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import { fillRect } from './util'
+import { fillRect } from '../util'
 
-import type { LayoutFeature } from './util'
+import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 export function renderPerBaseLettering({

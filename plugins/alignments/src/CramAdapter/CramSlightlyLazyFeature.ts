@@ -1,4 +1,5 @@
-import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
+import { readFeaturesToMismatches } from './readFeaturesToMismatches'
+import { readFeaturesToCIGAR } from './readFeaturesToCIGAR'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
