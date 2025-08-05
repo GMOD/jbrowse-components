@@ -138,8 +138,10 @@ export function renderMismatches({
             colorMap.insertion,
           )
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
-            items.push({ seq: mismatch.base })
-            coords.push(leftPx, topPx)
+            items.push({
+              seq: mismatch.insertedBases || 'unknown',
+            })
+            coords.push(leftPx, topPx, leftPx + insW, topPx + heightPx)
 
             const l = Math.round(pos - insW)
             fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
@@ -185,8 +187,10 @@ export function renderMismatches({
       if (mismatch.type === 'insertion' && len >= 10) {
         const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
         const txt = `${len}`
-        items.push({ seq: mismatch.base })
-        coords.push(leftPx, topPx)
+        items.push({
+          seq: mismatch.insertedBases || 'unknown',
+        })
+        coords.push(leftPx - 1, topPx, leftPx + 2, topPx + heightPx)
         if (bpPerPx > largeInsertionIndicatorScale) {
           fillRect(
             ctx,

@@ -1,7 +1,7 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { isAlive } from 'mobx-state-tree'
 
-import type { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
+import type { BaseLinearDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 // stats estimation autorun calls getFeatureDensityStats against the data

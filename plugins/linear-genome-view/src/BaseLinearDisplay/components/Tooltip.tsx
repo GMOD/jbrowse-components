@@ -33,16 +33,21 @@ const Tooltip = observer(function ({
 }: {
   model: {
     featureUnderMouse: Feature | undefined
+    mouseoverExtraInformation: string | undefined
     configuration: AnyConfigurationModel
   }
   clientMouseCoord: Coord
 }) {
-  const { featureUnderMouse } = model
+  const { featureUnderMouse, mouseoverExtraInformation } = model
   const x = clientMouseCoord[0] + 15
   const y = clientMouseCoord[1]
 
+  console.log({ mouseoverExtraInformation })
   const contents = featureUnderMouse
-    ? getConf(model, 'mouseover', { feature: featureUnderMouse })
+    ? getConf(model, 'mouseover', {
+        feature: featureUnderMouse,
+        mouseoverExtraInformation,
+      })
     : undefined
 
   return featureUnderMouse && contents ? (
