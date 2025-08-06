@@ -24,8 +24,7 @@ Example SyntenyTrack config:
 We can load a SyntenyTrack from PAF with the CLI e.g. with:
 
 ```bash
-jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
-    grape,peach --load copy --out /var/www/html/jbrowse2
+jbrowse add-track myfile.paf --assemblyNames grape,peach --load copy --out /var/www/html/jbrowse2
 ```
 
 The first assembly is the "target" and the second assembly is the "query."
