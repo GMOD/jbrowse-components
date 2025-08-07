@@ -37,8 +37,8 @@ function Home() {
                 The next-generation genome browser
               </Typography>
               <Typography variant="body1">
-                JBrowse is a genome browser that runs on the web, on
-                your desktop, or embedded in your app.
+                JBrowse is a genome browser that runs on the web, on your
+                desktop, or embedded in your app.
               </Typography>
             </Box>
 
@@ -71,8 +71,8 @@ function Home() {
             </Box>
             <Box sx={{ textAlign: 'center' }}>
               <Typography>
-                Check out our{' '}
-                <a href="/jb2/blog">latest release blogpost</a>, our{' '}
+                Check out our <a href="/jb2/blog">latest release blogpost</a>,
+                our{' '}
                 <a href="/jb2/docs/embedded_components/">embedded components</a>
                 , and our{' '}
                 <a href="/jb2/download/#jbrowse-cli-tools">
@@ -120,9 +120,9 @@ function Home() {
                   circular, dotplot, and synteny views
                 </li>
                 <li>
-                  In-browser <b>protein 3D structure displays</b>{' '}
-                  with integrated alignment and phylogenetic tree views.
-                  Mouse over a genomic variant to see where it lands on the structure!
+                  In-browser <b>protein 3D structure displays</b> with
+                  integrated alignment and phylogenetic tree views. Mouse over a
+                  genomic variant to see where it lands on the structure!
                 </li>
                 <li>
                   <b>Support for many common data types</b> including BAM, CRAM,
@@ -175,8 +175,8 @@ function Home() {
             publish, please cite the most recent JBrowse paper:
           </p>
           <cite>
-            Diesh <em>et al</em>, 2023. JBrowse 2: a modular genome browser with views of synteny and
-            structural variation. Genome Biology 24:74.{' '}
+            Diesh <em>et al</em>, 2023. JBrowse 2: a modular genome browser with
+            views of synteny and structural variation. Genome Biology 24:74.{' '}
             <a href="https://doi.org/10.1186/s13059-023-02914-z">
               https://doi.org/10.1186/s13059-023-02914-z
             </a>
@@ -197,10 +197,10 @@ function Home() {
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
           <Typography variant="body1">
-            JBrowse development has received support from the US National Institutes of
-            Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
-            Institute for Cancer Research (OICR), and the University of
-            California, Berkeley.
+            JBrowse development has received support from the US National
+            Institutes of Health (U41 HG003751), The Chan Zuckerberg Initiative,
+            The Ontario Institute for Cancer Research (OICR), and the University
+            of California, Berkeley.
           </Typography>
         </Box>
       </Box>
