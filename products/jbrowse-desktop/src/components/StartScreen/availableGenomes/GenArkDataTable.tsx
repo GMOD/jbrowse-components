@@ -69,8 +69,9 @@ const useStyles = makeStyles()({
     borderCollapse: 'collapse',
     '& th, & td': {
       textAlign: 'left',
-      padding: '8px 12px',
-      borderBottom: '1px solid #ddd',
+      padding: '4px 8px',
+      border: '1px solid #ddd',
+      fontSize: '0.9rem',
     },
     '& th': {
       backgroundColor: '#f5f5f5',
@@ -216,9 +217,11 @@ export default function GenArkDataTable({
   const [searchQuery, setSearchQuery] = useState('')
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 200,
+    pageSize: 50,
   })
-  const [sorting, setSorting] = useState<Array<{id: string, desc: boolean}>>([])
+  const [sorting, setSorting] = useState<Array<{ id: string; desc: boolean }>>(
+    [],
+  )
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
     'mammals',
@@ -268,11 +271,19 @@ export default function GenArkDataTable({
       return preRows
     }
     if (filterOption === 'refseq') {
-      return preRows?.filter(r => 'ncbiName' in r && r.ncbiName?.startsWith('GCF_'))
+      return preRows?.filter(
+        r => 'ncbiName' in r && r.ncbiName?.startsWith('GCF_'),
+      )
     } else if (filterOption === 'genbank') {
-      return preRows?.filter(r => 'ncbiName' in r && r.ncbiName?.startsWith('GCA_'))
+      return preRows?.filter(
+        r => 'ncbiName' in r && r.ncbiName?.startsWith('GCA_'),
+      )
     } else if (filterOption === 'designatedReference') {
-      return preRows?.filter(r => 'ncbiRefSeqCategory' in r && r.ncbiRefSeqCategory === 'reference genome')
+      return preRows?.filter(
+        r =>
+          'ncbiRefSeqCategory' in r &&
+          r.ncbiRefSeqCategory === 'reference genome',
+      )
     } else {
       return preRows
     }
@@ -290,6 +301,7 @@ export default function GenArkDataTable({
       rows?.filter(row => {
         const searchText = [
           row.commonName,
+          row.accession,
           'scientificName' in row ? row.scientificName : '',
           'ncbiAssemblyName' in row ? row.ncbiAssemblyName : '',
           'organism' in row ? row.organism : '',
@@ -452,7 +464,16 @@ export default function GenArkDataTable({
           },
         }),
         columnHelper.accessor('assemblyStatus', { header: 'Assembly Status' }),
-        columnHelper.accessor('seqReleaseDate', { header: 'Release Date' }),
+        columnHelper.accessor('seqReleaseDate', {
+          header: 'Release Date',
+          cell: info => {
+            const date = info.getValue()
+            if (!date) return ''
+            // Parse the date and format it to show only the date part (YYYY-MM-DD)
+            const dateObj = new Date(date)
+            return dateObj.toISOString().split('T')[0]
+          },
+        }),
         columnHelper.accessor('scientificName', {
           header: 'Scientific Name',
           cell: info => highlightText(info.getValue() || '', searchQuery),
@@ -783,9 +804,11 @@ export default function GenArkDataTable({
                 }}
                 style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
               >
+                <option value={50}>50</option>
                 <option value={100}>100</option>
                 <option value={200}>200</option>
                 <option value={500}>500</option>
+                <option value={1000}>1000</option>
                 <option value={1000}>1000</option>
               </select>
               <span style={{ marginLeft: '0.5rem' }}>rows</span>
